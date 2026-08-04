@@ -10,6 +10,11 @@ Die App zur Erfassung, Analyse und Dokumentation von Zählerständen.
 Konzeptphase. Es existieren die Strategie- und Architekturdokumente; Produktcode folgt,
 sobald die offenen Entscheidungen getroffen sind.
 
+## Klick-Dummy
+
+Jede Produktänderung wird sofort im klickbaren Entwurf sichtbar gemacht
+(`docs/prototype/index.html`) — siehe [CLAUDE.md](CLAUDE.md), Regel 1.
+
 ## Dokumente
 
 | Dokument | Inhalt |
@@ -20,6 +25,7 @@ sobald die offenen Entscheidungen getroffen sind.
 | [03 – UX-Konzept](docs/03-ux-konzept.md) | Navigation, Kernscreens, Design-System |
 | [04 – Monetarisierung](docs/04-monetarisierung.md) | Free/Pro/Vermieter, Preise, Begründung |
 | [05 – Roadmap](docs/05-roadmap.md) | v1-Scope, Ausschlüsse, Umsetzungsreihenfolge |
+| [CLAUDE.md](CLAUDE.md) | Arbeitsweise, Prüfschritte, Sprachregeln |
 
 ## Grundprinzipien
 
