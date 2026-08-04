@@ -10,7 +10,7 @@ Zug aktualisiert und als Artifact neu veröffentlicht.
 ist sie nicht fertig.
 
 - Veröffentlichen immer über **denselben Artifact-Pfad**, damit die URL stabil
-  bleibt: `/tmp/.../scratchpad/pulsemeter-prototype.html`. Der Versionswähler
+  bleibt: `/tmp/.../scratchpad/pulsemeter-klickdummy.html`. Der Versionswähler
   im Artifact hält die Historie.
 - Aus einer neuen Sitzung heraus die URL unten als `url` mitgeben — sonst
   entsteht ein zweiter Link und die Historie reißt ab.
@@ -26,7 +26,7 @@ etwas am Produkt geändert hat. Nicht als Verweis auf das Seitenpanel, nicht
 am Ende, sondern als anklickbare Zeile ganz oben:
 
 ```
-🔗 Klick-Dummy: https://claude.ai/code/artifact/a38bded3-eb21-46f7-a14d-b2fc05ad963e
+🔗 Klick-Dummy: https://claude.ai/code/artifact/720b5f91-ac9d-4371-a2ed-2d9da645b28c
 ```
 
 Diese URL bleibt über alle Sitzungen dieselbe.
