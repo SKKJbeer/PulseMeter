@@ -80,6 +80,70 @@ public enum ResourceKind: Hashable, Codable, Sendable {
     }
 }
 
+extension ResourceKind {
+
+    /// Stabile Kennung für die Speicherung.
+    ///
+    /// Bewusst kein `Codable`-Blob: Als eigene Spalte bleibt die Zählerart
+    /// abfragbar („alle Gaszähler"), und ein späteres Umbenennen eines Falls
+    /// bricht keine bestehenden Datenbestände. Die Zeichenketten sind damit
+    /// Teil des Dateiformats und dürfen sich nie ändern.
+    public var storageID: String {
+        switch self {
+        case .electricity:     return "electricity"
+        case .water:           return "water"
+        case .hotWater:        return "hotWater"
+        case .gas:             return "gas"
+        case .districtHeating: return "districtHeating"
+        case .heatingOil:      return "heatingOil"
+        case .solarProduction: return "solarProduction"
+        case .wallbox:         return "wallbox"
+        case .batteryStorage:  return "batteryStorage"
+        case .operatingHours:  return "operatingHours"
+        case .rainwater:       return "rainwater"
+        case .custom:          return "custom"
+        }
+    }
+
+    public var customName: String? {
+        if case .custom(let name, _) = self { return name }
+        return nil
+    }
+
+    public var customUnit: MeasurementUnit? {
+        if case .custom(_, let unit) = self { return unit }
+        return nil
+    }
+
+    /// Stellt eine Zählerart aus den gespeicherten Feldern wieder her.
+    ///
+    /// Eine unbekannte Kennung — etwa aus einer neueren App-Version — wird zu
+    /// einem frei definierten Zähler statt zu einem Fehler. Ein Nutzer verliert
+    /// dadurch nur die Vorbelegung, nie seine Ablesungen.
+    public static func restore(
+        storageID: String,
+        customName: String? = nil,
+        customUnit: MeasurementUnit? = nil
+    ) -> ResourceKind {
+        switch storageID {
+        case "electricity":     return .electricity
+        case "water":           return .water
+        case "hotWater":        return .hotWater
+        case "gas":             return .gas
+        case "districtHeating": return .districtHeating
+        case "heatingOil":      return .heatingOil
+        case "solarProduction": return .solarProduction
+        case "wallbox":         return .wallbox
+        case "batteryStorage":  return .batteryStorage
+        case "operatingHours":  return .operatingHours
+        case "rainwater":       return .rainwater
+        default:
+            return .custom(name: customName ?? storageID,
+                           unit: customUnit ?? .kilowattHour)
+        }
+    }
+}
+
 /// Erwarteter Ableserhythmus — Grundlage für Erinnerungen und für die Erkennung
 /// von Datenlücken.
 public enum ReadingInterval: String, Hashable, Codable, Sendable, CaseIterable {
