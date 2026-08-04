@@ -45,6 +45,13 @@ Nachfrage sinnvoll: Sie ist in sich geschlossen und läuft ohne Login und ohne
 Netz. GitHub Pages scheidet vorerst aus — das Repo ist privat, und Pages setzt
 dafür GitHub Pro voraus.
 
+## Regel 1b — Version und Release Notes
+
+Jede Änderung bekommt eine Version und einen Eintrag in `CHANGELOG.md`, und
+jede Änderung wird getestet — ohne dass der Nutzer danach fragt. Der Ablauf
+steht in `.claude/skills/release-discipline/SKILL.md` und gilt auch für kleine
+Änderungen.
+
 ## Regel 2 — Der Prototyp rechnet echt
 
 Der Klick-Dummy enthält eine verkürzte Fassung von `PulseCore` in JavaScript.
