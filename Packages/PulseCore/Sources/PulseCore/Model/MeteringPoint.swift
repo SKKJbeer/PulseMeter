@@ -134,6 +134,9 @@ public struct MeteringPoint: Identifiable, Hashable, Codable, Sendable {
     /// Wechselhistorie. Darf leer sein — dann ist die Gerätezuordnung unbekannt.
     public var devices: [MeterDevice]
     public var readingInterval: ReadingInterval
+    /// Rhythmus, in dem der Versorger abrechnet. `nil`, solange der Nutzer ihn
+    /// nicht hinterlegt hat — dann bleiben nur Kalenderzeiträume.
+    public var billingCycle: BillingCycle?
     public var isArchived: Bool
     public var sortIndex: Int
     public var note: String?
@@ -148,6 +151,7 @@ public struct MeteringPoint: Identifiable, Hashable, Codable, Sendable {
         registers: [Register]? = nil,
         devices: [MeterDevice] = [],
         readingInterval: ReadingInterval? = nil,
+        billingCycle: BillingCycle? = nil,
         isArchived: Bool = false,
         sortIndex: Int = 0,
         note: String? = nil
@@ -161,6 +165,7 @@ public struct MeteringPoint: Identifiable, Hashable, Codable, Sendable {
         self.registers = registers ?? [.standard(for: kind)]
         self.devices = devices
         self.readingInterval = readingInterval ?? kind.defaultInterval
+        self.billingCycle = billingCycle
         self.isArchived = isArchived
         self.sortIndex = sortIndex
         self.note = note
@@ -181,6 +186,17 @@ public struct MeteringPoint: Identifiable, Hashable, Codable, Sendable {
         devices.first { device in
             day >= device.installedOn && (device.removedOn.map { day <= $0 } ?? true)
         }
+    }
+
+    /// Der laufende Abrechnungszeitraum, am angegebenen Tag abgeschnitten.
+    public func runningBillingPeriod(on day: CalendarDay) -> DayRange? {
+        billingCycle?.runningPeriod(on: day)
+    }
+
+    /// Der zuletzt abgeschlossene Abrechnungszeitraum — der Zeitraum, zu dem
+    /// die Jahresabrechnung des Versorgers vorliegt und den ein Bericht prüfen soll.
+    public func lastCompletedBillingPeriod(before day: CalendarDay) -> DayRange? {
+        billingCycle?.completedPeriod(before: day)
     }
 
     // MARK: - Vorlagen

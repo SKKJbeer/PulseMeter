@@ -104,6 +104,64 @@ public struct Tariff: Identifiable, Hashable, Codable, Sendable {
     }
 }
 
+/// Der Jahresrhythmus, in dem ein Versorger abrechnet.
+///
+/// Er beginnt fast nie am 1. Januar: Strom oft im April, Gas im Oktober, und
+/// bei einem Umzug irgendwann mitten im Monat. Wer die Jahresabrechnung mit
+/// einem Kalenderjahr vergleicht, vergleicht zwei verschiedene Zeiträume — die
+/// Fehlerklasse, die sich durch dieses Projekt zieht.
+public struct BillingCycle: Hashable, Codable, Sendable {
+
+    public let anchorMonth: Int
+    public let anchorDay: Int
+
+    /// Gibt `nil` zurück, wenn Monat oder Tag außerhalb des Möglichen liegen.
+    public init?(anchorMonth: Int, anchorDay: Int) {
+        guard (1...12).contains(anchorMonth), (1...31).contains(anchorDay) else { return nil }
+        self.anchorMonth = anchorMonth
+        self.anchorDay = anchorDay
+    }
+
+    /// Der Stichtag in einem bestimmten Jahr.
+    ///
+    /// Auf die Länge des Monats begrenzt: Ein Rhythmus mit Stichtag 31. wird im
+    /// Februar zum 28. bzw. 29. Sonst gäbe es Jahre ganz ohne Stichtag.
+    public func anchor(in year: Int) -> CalendarDay {
+        let lastDay = CalendarDay.daysInMonth(year: year, month: anchorMonth)
+        return CalendarDay(year: year, month: anchorMonth, day: Swift.min(anchorDay, lastDay))!
+    }
+
+    /// Beginn des Abrechnungszeitraums, in den dieser Tag fällt.
+    public func periodStart(onOrBefore day: CalendarDay) -> CalendarDay {
+        let candidate = anchor(in: day.year)
+        return candidate <= day ? candidate : anchor(in: day.year - 1)
+    }
+
+    /// Der vollständige Abrechnungszeitraum um einen Tag herum.
+    ///
+    /// Ende ist der nächste Stichtag: Ein Verbrauch ist die Differenz zweier
+    /// Zählerstände, und der Stand am Stichtag gehört beiden Zeiträumen an —
+    /// dem alten als Endstand, dem neuen als Anfangsstand.
+    public func period(containing day: CalendarDay) -> DayRange {
+        let start = periodStart(onOrBefore: day)
+        return DayRange(start: start, end: anchor(in: start.year + 1))!
+    }
+
+    /// Der laufende Zeitraum, am angegebenen Tag abgeschnitten.
+    /// `nil` genau am Stichtag, weil dann noch kein Tag vergangen ist.
+    public func runningPeriod(on day: CalendarDay) -> DayRange? {
+        let range = DayRange(start: periodStart(onOrBefore: day), end: day)
+        return (range?.spanInDays ?? 0) > 0 ? range : nil
+    }
+
+    /// Der zuletzt abgeschlossene Zeitraum — der, zu dem die Jahresabrechnung
+    /// des Versorgers vorliegt.
+    public func completedPeriod(before day: CalendarDay) -> DayRange {
+        let start = periodStart(onOrBefore: day)
+        return DayRange(start: anchor(in: start.year - 1), end: start)!
+    }
+}
+
 /// Ein Abrechnungszeitraum mit Abschlagszahlung.
 ///
 /// Diese Entität macht aus einer Zahlensammlung ein Produkt: Erst sie erlaubt die

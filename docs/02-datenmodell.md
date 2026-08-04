@@ -171,6 +171,40 @@ struct Tariff: Identifiable, Hashable {
 
 Tarife sind **zeitlich versioniert**. Ein Preiswechsel legt einen neuen Tarif an, korrigiert nie den alten. Der Rechenkern teilt Zeiträume an Tarifgrenzen und rechnet abschnittsweise. Genau hier liegen die Rechenfehler der Wettbewerber.
 
+### BillingCycle – Abrechnungsrhythmus
+
+```swift
+struct BillingCycle: Hashable {
+    var anchorMonth: Int      // 1...12
+    var anchorDay: Int        // 1...31, auf die Monatslänge begrenzt
+
+    func anchor(in year: Int) -> CalendarDay
+    func periodStart(onOrBefore: CalendarDay) -> CalendarDay
+    func period(containing: CalendarDay) -> DayRange
+    func runningPeriod(on: CalendarDay) -> DayRange?
+    func completedPeriod(before: CalendarDay) -> DayRange
+}
+```
+
+Der Abrechnungszeitraum eines Versorgers beginnt fast nie am 1. Januar: Strom
+häufig im April, Gas im Oktober, nach einem Umzug irgendwann mitten im Monat.
+Ein Bericht über das Kalenderjahr taugt deshalb nicht zum Prüfen der
+Jahresabrechnung — er beschreibt einen anderen Zeitraum als die Rechnung.
+
+Zwei Feinheiten, die beide getestet sind:
+
+- **Der Stichtag wird auf die Monatslänge begrenzt.** Ein Rhythmus zum 31.
+  wird im Februar zum 28. bzw. 29. Ohne diese Begrenzung gäbe es Jahre ohne
+  Stichtag und damit Zeiträume ohne Anfang.
+- **Aufeinanderfolgende Zeiträume teilen sich ihren Grenztag.** Der Stand am
+  Stichtag ist Endstand des alten und Anfangsstand des neuen Zeitraums.
+  Andernfalls fiele der Verbrauch eines Tages zwischen die Zeiträume — derselbe
+  Fehler wie bei den Tarifgrenzen in `CostEngine`.
+
+`MeteringPoint.billingCycle` ist optional. Ohne hinterlegten Rhythmus bleiben
+nur Kalenderzeiträume, und die Oberfläche bietet die Abrechnungsjahre gar nicht
+erst an, statt einen zu erfinden.
+
 ### BillingPeriod – Abrechnungszeitraum & Abschlag
 
 ```swift
