@@ -779,6 +779,17 @@ table.doc-t td.dim { color: #9A9384; }
     </div>
   </div>
 
+  <!-- Bericht einrichten -->
+  <div class="sheet" id="sheet-repcfg" role="dialog" aria-modal="true" aria-label="Bericht einrichten">
+    <div class="grabber"></div>
+    <div class="sheet-head">
+      <button type="button" class="sheet-close" data-close>Abbrechen</button>
+      <div class="sheet-title">Bericht</div>
+      <button type="button" class="sheet-close" style="visibility:hidden">Abbrechen</button>
+    </div>
+    <div class="sheet-body" id="repcfg-body"></div>
+  </div>
+
   <!-- Bericht -->
   <div class="sheet" id="sheet-report" role="dialog" aria-modal="true" aria-label="Verbrauchsbericht">
     <div class="grabber"></div>
@@ -906,6 +917,8 @@ const METERS = [
     icon: '<path d="M13 2 4 13h6l-1 9 9-11h-6z"/>',
     interval: 30, unit: "kWh", int: 6, frac: 1,
     price: 0.34, base: 12.90, prepay: 100, feedInPrice: 0.082,
+    billing: { m: 4, d: 1 },   // Abrechnungsjahr des Versorgers: 1. April
+
     serial: "1ESY1161284302",
     registers: [
       { id: "strom-bezug", label: null, unit: "kWh", int: 6, frac: 1,
@@ -930,6 +943,8 @@ const METERS = [
     icon: '<path d="M12 2.5c3 4 1 6 0 6.5C10 7 8 8.5 8 11c0 1.6.8 2.7 1.6 3.4C8 14 6.5 12.6 6.5 10 4.9 12 4 14 4 16a8 8 0 0 0 16 0c0-5.5-4.5-9-8-13.5z"/>',
     interval: 30, unit: "m³", int: 5, frac: 3,
     price: 0.112, base: 14.20, prepay: 245, zZahl: 0.9563, brennwert: 11.482,
+    billing: { m: 10, d: 1 },  // Abrechnungsjahr des Versorgers: 1. Oktober
+
     serial: "BK-G4 4471902",
     registers: [
       { id: "gas-r", label: null, unit: "m³", int: 5, frac: 3,
@@ -1615,11 +1630,59 @@ function buildCsv(kind) {
    dem Vermieter oder dem eigenen Ordner gibt
    ============================================================ */
 
-function reportRows() {
-  const from = { y: 2026, m: 1, d: 1 };
-  return METERS.map(m => {
+let repScope = "all", repPeriod = "ytd";
+
+const dayBefore = d => { const s = serial(d.y, d.m, d.d) - 1;
+  const a = s + 32044, b2 = ((4*a+3)/146097|0), c = a - (146097*b2/4|0), d2 = ((4*c+3)/1461|0),
+        e = c - (1461*d2/4|0), mm = ((5*e+2)/153|0);
+  return { y: 100*b2 + d2 - 4800 + (mm/10|0), m: mm + 3 - 12*(mm/10|0), d: e - ((153*mm+2)/5|0) + 1 }; };
+/* Bei abgeschlossenen Zeiträumen ist `to` der Stichtag danach — angezeigt wird
+   der letzte enthaltene Tag. Bei laufenden Zeiträumen ist `to` heute und wird
+   selbst angezeigt, weil „bis 3. August" am 4. August schlicht verwirrt. */
+const rangeLabel = (f, t, openEnd) => {
+  const e = openEnd ? t : dayBefore(t);
+  return `${f.d}. ${MONTHS_LONG[f.m-1]} ${f.y} bis ${e.d}. ${MONTHS_LONG[e.m-1]} ${e.y}`;
+};
+
+/* Zeiträume, die der Bericht abdecken kann.
+   Der Abrechnungszeitraum des Versorgers beginnt selten am 1. Januar — genau
+   deshalb ist er als eigene Auswahl nötig und nicht als Kalenderjahr getarnt. */
+function reportPeriods() {
+  const list = [
+    { key: "ytd", label: "Laufendes Jahr", from: { y: 2026, m: 1, d: 1 }, to: TODAY, openEnd: true },
+    { key: "last12", label: "Letzte 12 Monate", from: shiftYear(TODAY, -1), to: TODAY, openEnd: true },
+    { key: "y2025", label: "Kalenderjahr 2025", from: { y: 2025, m: 1, d: 1 }, to: { y: 2026, m: 1, d: 1 } },
+    { key: "y2024", label: "Kalenderjahr 2024", from: { y: 2024, m: 1, d: 1 }, to: { y: 2025, m: 1, d: 1 } }
+  ];
+  const m = repScope === "all" ? null : METERS.find(x => x.id === repScope);
+  if (m && m.billing) {
+    // Beginn des laufenden Abrechnungsjahres: der letzte Stichtag vor heute.
+    const thisYear = { y: TODAY.y, m: m.billing.m, d: m.billing.d };
+    const start = serial(thisYear.y, thisYear.m, thisYear.d) <= serial(TODAY.y, TODAY.m, TODAY.d)
+      ? thisYear : { ...thisYear, y: TODAY.y - 1 };
+    const prevStart = { ...start, y: start.y - 1 };
+    const yy = n => String(n).slice(-2);
+    list.unshift(
+      { key: "billCurrent", label: `Laufendes Abrechnungsjahr ${start.y}/${yy(start.y + 1)}`,
+        from: start, to: TODAY, openEnd: true },
+      { key: "billLast", label: `Abrechnungsjahr ${prevStart.y}/${yy(start.y)} · abgeschlossen`,
+        from: prevStart, to: start }
+    );
+  }
+  return list;
+}
+function activePeriod() {
+  const list = reportPeriods();
+  return list.find(p => p.key === repPeriod) || list[0];
+}
+function reportMeters() {
+  return repScope === "all" ? METERS : [METERS.find(x => x.id === repScope)];
+}
+
+function reportRows(meters, from, to) {
+  return meters.map(m => {
     const reg = m.registers[0];
-    const c = consumption(reg, from, TODAY);
+    const c = consumption(reg, from, to);
     if (!c) return null;
     const prev = consumption(reg, shiftYear(c.cfrom, -1), shiftYear(c.cto, -1));
     const delta = prev && prev.complete && prev.value ? (c.value - prev.value) / prev.value : null;
@@ -1632,11 +1695,14 @@ function reportRows() {
       if (f) feed = f.value * m.feedInPrice;
     }
     const base = m.base * 12 / 365 * c.days;
+    // Monate des gewählten Zeitraums, jeder gegen denselben Monat des Vorjahres.
     const months = [];
-    for (let i = 1; i <= 12; i++) {
-      const a = monthConsumption(reg, 2026, i), b = monthConsumption(reg, 2025, i);
-      if (!a || !a.complete) continue;
-      months.push({ i, a: a.value, b: b && b.complete ? b.value : null });
+    let cur = { y: c.cfrom.y, m: c.cfrom.m, d: 1 };
+    while (serial(cur.y, cur.m, 1) < serial(c.cto.y, c.cto.m, c.cto.d)) {
+      const a = monthConsumption(reg, cur.y, cur.m);
+      const b = monthConsumption(reg, cur.y - 1, cur.m);
+      if (a && a.complete) months.push({ y: cur.y, i: cur.m, a: a.value, b: b && b.complete ? b.value : null });
+      cur = cur.m === 12 ? { y: cur.y + 1, m: 1, d: 1 } : { y: cur.y, m: cur.m + 1, d: 1 };
     }
     return {
       m, reg, c, prev, delta, work, feed, base, months,
@@ -1646,9 +1712,42 @@ function reportRows() {
   }).filter(Boolean);
 }
 
+function openReportConfig() {
+  const scopes = [{ id: "all", name: "Alle Zähler" }].concat(METERS.map(m => ({ id: m.id, name: m.name })));
+  // Nach einem Zählerwechsel kann der zuvor gewählte Zeitraum wegfallen —
+  // etwa das Abrechnungsjahr, das es nur beim Einzelzähler gibt.
+  if (!reportPeriods().some(p => p.key === repPeriod)) repPeriod = "ytd";
+
+  const check = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4 10-10"/></svg>';
+  document.getElementById("repcfg-body").innerHTML = `
+    <div class="section-label" style="margin-top:4px">Umfang</div>
+    <div class="picker" style="padding-bottom:4px">${scopes.map(x =>
+      `<button type="button" class="pick" style="--c:var(--tint)" data-scope="${x.id}"
+        aria-selected="${x.id === repScope}">${x.name}</button>`).join("")}</div>
+    <div class="section-label">Zeitraum</div>
+    <div class="list" style="margin-top:0">${reportPeriods().map(p =>
+      `<button type="button" class="rowbtn" data-period="${p.key}">
+        <div class="rl">${p.label}<small>${rangeLabel(p.from, p.to, p.openEnd)}</small></div>
+        <span style="color:var(--tint);${p.key === repPeriod ? "" : "visibility:hidden"}">${check}</span>
+      </button>`).join("")}</div>
+    ${repScope === "all"
+      ? `<div class="note">Der Abrechnungszeitraum des Versorgers beginnt bei Strom im April, bei Gas im Oktober. Für einen gemeinsamen Bericht gibt es deshalb keinen. Wähle einen einzelnen Zähler, um nach seinem Abrechnungsjahr zu berichten.</div>`
+      : ""}
+    <button type="button" class="save" id="makereport" style="--c:var(--tint)">Bericht erstellen</button>`;
+  openSheet("sheet-repcfg");
+  document.getElementById("makereport").onclick = () => { renderReport(); openSheet("sheet-report"); };
+}
+
 function renderReport() {
-  const rows = reportRows();
-  const days = between({ y: 2026, m: 1, d: 1 }, TODAY);
+  const period = activePeriod();
+  const rows = reportRows(reportMeters(), period.from, period.to);
+  if (!rows.length) {
+    document.getElementById("doc").innerHTML =
+      `<div class="doc-head"><h1>Kein Bericht möglich</h1>
+       <div class="meta">Für ${period.label.toLowerCase()} liegen keine Ablesungen vor.</div></div>`;
+    return;
+  }
+  const days = between(period.from, period.to);
   const months = days / 365 * 12;
   const cost = rows.reduce((s, r) => s + r.cost, 0);
   // Nur Zähler mit hinterlegtem Abschlag dürfen in den Saldo. Würde man die
@@ -1660,13 +1759,15 @@ function renderReport() {
   const balance = prepaid - costOnAccount;
   const namesOnAccount = onAccount.map(r => r.m.name).join(" und ");
   const dp = q => q >= 3 ? 1 : 0;
-  const anyEstimated = rows.some(r => r.reg.readings.some(x =>
-    x.origin === "estimated" && x.y === 2026));
-  const anyPartial = rows.some(r => r.c.cto.m !== TODAY.m || r.c.cto.d !== TODAY.d);
+  const anyEstimated = rows.some(r => r.reg.readings.some(x => x.origin === "estimated"
+    && serial(x.y, x.m, x.d) >= serial(period.from.y, period.from.m, period.from.d)
+    && serial(x.y, x.m, x.d) <= serial(period.to.y, period.to.m, period.to.d)));
+  const anyPartial = rows.some(r => !r.c.complete);
 
   const head = `<div class="doc-head">
-      <h1>Verbrauchsbericht 2026</h1>
-      <div class="meta">Zuhause · 1. Januar bis ${dateLabel(TODAY)} · erstellt am ${dateLabel(TODAY)}</div>
+      <h1>Verbrauchsbericht</h1>
+      <div class="meta">${period.label} · ${rangeLabel(period.from, period.to, period.openEnd)}<br>
+        Zuhause · ${repScope === "all" ? rows.length + " Zähler" : rows[0].m.name} · erstellt am ${dateLabel(TODAY)}</div>
     </div>`;
 
   const summary = `<h2>Zusammenfassung</h2>
@@ -1684,7 +1785,7 @@ function renderReport() {
     const deltaTxt = r.delta === null ? "—" : pct(r.delta);
     const deltaCls = r.delta === null ? "dim" : (r.delta < 0 ? "neg" : "pos");
     const monthRows = r.months.map(x => `<tr>
-        <td>${MONTHS_LONG[x.i - 1]}</td>
+        <td>${MONTHS[x.i - 1]} ${String(x.y).slice(-2)}</td>
         <td>${nf(x.a, d)}</td>
         <td class="dim">${x.b === null ? "—" : nf(x.b, d)}</td>
         <td class="${x.b === null ? "dim" : (x.a < x.b ? "neg" : "pos")}">${x.b === null || x.b === 0 ? "—" : pct((x.a - x.b) / x.b)}</td>
@@ -1698,7 +1799,7 @@ function renderReport() {
           bis ${nf(r.end.v, m.frac)} am ${dateShort(r.c.cto)}${r.c.complete ? "" : " (letzte vorliegende Ablesung)"}</div>
       </div>
       <table class="doc-t">
-        <thead><tr><th>Monat</th><th>2026</th><th>2025</th><th>Δ</th></tr></thead>
+        <thead><tr><th>Monat</th><th>Wert</th><th>Vorjahr</th><th>Δ</th></tr></thead>
         <tbody>${monthRows}
           <tr class="t"><td>Zeitraum</td><td>${nf(r.c.value, d)}</td>
             <td>${r.prev && r.prev.complete ? nf(r.prev.value, d) : "—"}</td>
@@ -1961,7 +2062,7 @@ function renderAll() {
 
 /* Ereignisse */
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-capture],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export],[data-month],[data-open]");
+  const t = e.target.closest("[data-capture],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export],[data-month],[data-open],[data-scope],[data-period]");
   if (!t) return;
 
   if (t.dataset.capture) return openCapture(t.dataset.capture);
@@ -2021,7 +2122,9 @@ document.addEventListener("click", e => {
     return renderTable();
   }
   if (t.dataset.open === "readings") return openSheet("sheet-readings");
-  if (t.dataset.open === "report") { renderReport(); return openSheet("sheet-report"); }
+  if (t.dataset.open === "report") return openReportConfig();
+  if (t.dataset.scope) { repScope = t.dataset.scope; return openReportConfig(); }
+  if (t.dataset.period) { repPeriod = t.dataset.period; return openReportConfig(); }
   if (t.dataset.export) return openExport(t.dataset.export);
 });
 document.getElementById("print").addEventListener("click", () => window.print());
