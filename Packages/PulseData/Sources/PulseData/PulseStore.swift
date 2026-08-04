@@ -5,16 +5,21 @@ import PulseCore
 /// Aufbau und Verwaltung des Datenspeichers.
 public enum PulseStore {
 
-    public static let schema = Schema([
-        PropertyRecord.self,
-        RentalUnitRecord.self,
-        MeteringPointRecord.self,
-        RegisterRecord.self,
-        MeterDeviceRecord.self,
-        ReadingRecord.self,
-        TariffRecord.self,
-        BillingPeriodRecord.self
-    ])
+    /// Berechnet statt gespeichert: `Schema` ist nicht `Sendable`, und eine
+    /// statische Konstante wäre unter Swift 6 global geteilter Zustand. Der
+    /// Aufbau ist billig und geschieht ohnehin nur beim Start.
+    public static var schema: Schema {
+        Schema([
+            PropertyRecord.self,
+            RentalUnitRecord.self,
+            MeteringPointRecord.self,
+            RegisterRecord.self,
+            MeterDeviceRecord.self,
+            ReadingRecord.self,
+            TariffRecord.self,
+            BillingPeriodRecord.self
+        ])
+    }
 
     public enum StoreError: Error {
         case containerUnavailable(underlying: Error)
