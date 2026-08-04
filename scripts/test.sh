@@ -22,10 +22,13 @@ if [ "$SCOPE" = "all" ] || [ "$SCOPE" = "app" ]; then
   say "App im Simulator"
   [ -d PulseMeter.xcodeproj ] || xcodegen generate
   DEVICE=$(scripts/sim.sh)
+  # Dasselbe Ableseverzeichnis wie run.sh, damit die Screenshots den bereits
+  # gebauten Stand verwenden und nicht ein zweites Mal übersetzen.
   xcodebuild test \
     -project PulseMeter.xcodeproj \
     -scheme PulseMeter \
     -destination "id=$DEVICE" \
+    -derivedDataPath "${PULSE_DERIVED_DATA:-build/DerivedData}" \
     -quiet \
     CODE_SIGNING_ALLOWED=NO
 fi

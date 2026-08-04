@@ -44,11 +44,11 @@ jobs:
       - name: App bauen und Oberflächentests
         run: scripts/test.sh app
 
+      # Verwendet den Build aus dem Testschritt weiter — ein zweiter
+      # vollständiger Build kostet auf einem macOS-Läufer mehrere Minuten.
       - name: Screenshots
         if: success()
-        run: |
-          scripts/run.sh light build/screenshot-light.png
-          scripts/run.sh dark  build/screenshot-dark.png
+        run: scripts/run.sh build
 
       - name: Ergebnisse sichern
         if: always()
