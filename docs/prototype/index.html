@@ -524,6 +524,61 @@ table.data tr.est td:first-child::after {
 .chart-hint { text-align: center; font-size: var(--fs-cap); color: var(--ink-3); margin-top: 10px; }
 #chart rect[data-month] { cursor: pointer; }
 
+/* ---------- Bericht ----------
+   Ein Dokument, kein Bildschirm. Papier bleibt Papier: Die Farben sind
+   festgelegt und folgen nicht dem Erscheinungsbild des Geräts, weil das
+   Blatt am Ende gedruckt oder als PDF weitergegeben wird. */
+.doc {
+  background: #FFFFFF; color: #17150F;
+  border-radius: 4px; padding: 26px 22px 22px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.16), 0 0 0 1px rgba(0,0,0,.07);
+  font-size: 11.5px; line-height: 1.5;
+}
+.doc-head { border-bottom: 2px solid #17150F; padding-bottom: 12px; margin-bottom: 16px; }
+.doc-head h1 { font-size: 21px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 3px; }
+.doc-head .meta { font-size: 11px; color: #6B6659; }
+.doc h2 {
+  font-size: 10px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase;
+  color: #6B6659; margin: 20px 0 8px; padding-bottom: 5px; border-bottom: 1px solid #E7E3DA;
+}
+.doc h2:first-of-type { margin-top: 0; }
+.doc-sum { display: flex; flex-direction: column; gap: 6px; }
+.doc-sum div { display: flex; justify-content: space-between; gap: 12px; }
+.doc-sum .k { color: #6B6659; }
+.doc-sum .v { font-variant-numeric: tabular-nums; font-weight: 620; white-space: nowrap; }
+.doc-sum .big { border-top: 1.5px solid #17150F; padding-top: 7px; margin-top: 3px; font-size: 13px; }
+.doc-sum .big .k, .doc-sum .big .v { font-weight: 700; }
+.doc-meter { margin-bottom: 4px; }
+.doc-meter .name { font-size: 14px; font-weight: 680; letter-spacing: -0.01em; }
+.doc-meter .serial { font-size: 10px; color: #9A9384; margin-bottom: 7px; }
+table.doc-t { width: 100%; border-collapse: collapse; font-size: 10.5px; font-variant-numeric: tabular-nums; }
+table.doc-t th {
+  text-align: right; font-size: 9px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; color: #9A9384; padding: 0 0 4px 8px; border-bottom: 1px solid #E7E3DA;
+}
+table.doc-t th:first-child, table.doc-t td:first-child { text-align: left; padding-left: 0; }
+table.doc-t td { text-align: right; padding: 3.5px 0 3.5px 8px; }
+table.doc-t tr.t td { border-top: 1px solid #17150F; font-weight: 700; padding-top: 5px; }
+table.doc-t td.neg { color: #1F6B42; }
+table.doc-t td.pos { color: #A8322F; }
+table.doc-t td.dim { color: #9A9384; }
+.doc-note {
+  margin-top: 18px; padding-top: 10px; border-top: 1px solid #E7E3DA;
+  font-size: 9.5px; line-height: 1.55; color: #6B6659;
+}
+.doc-note b { color: #17150F; }
+
+@media print {
+  body { background: #fff; padding: 0; display: block; }
+  .stage-head, .controls, .hint, .scrim, .tabbar, .statusbar, .screen { display: none !important; }
+  .sheet:not(#sheet-report) { display: none !important; }
+  .device { border: 0; box-shadow: none; border-radius: 0; height: auto; width: 100%; overflow: visible; }
+  #sheet-report { position: static; transform: none; max-height: none; box-shadow: none; background: #fff; }
+  #sheet-report .grabber, #sheet-report .sheet-head, #sheet-report .save { display: none !important; }
+  #sheet-report .sheet-body { overflow: visible; padding: 0; }
+  .doc { box-shadow: none; border-radius: 0; padding: 0; font-size: 10.5pt; }
+}
+
 .list { background: var(--surface); border-radius: var(--r-card); box-shadow: var(--shadow-card); margin-top: 16px; overflow: hidden; }
 .row {
   display: flex; align-items: center; gap: 12px;
@@ -722,6 +777,17 @@ table.data tr.est td:first-child::after {
       <button type="button" class="save" id="save" disabled>Sichern</button>
       <div class="save-note">Datum: heute, 4. August 2026 · antippen zum Ändern</div>
     </div>
+  </div>
+
+  <!-- Bericht -->
+  <div class="sheet" id="sheet-report" role="dialog" aria-modal="true" aria-label="Verbrauchsbericht">
+    <div class="grabber"></div>
+    <div class="sheet-head">
+      <button type="button" class="sheet-close" data-close>Schließen</button>
+      <div class="sheet-title">Bericht</div>
+      <button type="button" class="sheet-close" id="print">Drucken</button>
+    </div>
+    <div class="sheet-body"><div class="doc" id="doc"></div></div>
   </div>
 
   <!-- Ablesungen -->
@@ -1544,6 +1610,125 @@ function buildCsv(kind) {
   return lines.join("\n");
 }
 
+/* ============================================================
+   Verbrauchsbericht — das Dokument, das man dem Versorger,
+   dem Vermieter oder dem eigenen Ordner gibt
+   ============================================================ */
+
+function reportRows() {
+  const from = { y: 2026, m: 1, d: 1 };
+  return METERS.map(m => {
+    const reg = m.registers[0];
+    const c = consumption(reg, from, TODAY);
+    if (!c) return null;
+    const prev = consumption(reg, shiftYear(c.cfrom, -1), shiftYear(c.cto, -1));
+    const delta = prev && prev.complete && prev.value ? (c.value - prev.value) / prev.value : null;
+    const work = billedUnits(m, c.value) * m.price;
+    // Einspeisung mindert die Kosten — beim Zweirichtungszähler gehört sie
+    // in dieselbe Zeile wie der Bezug, sonst stimmt die Summe nicht.
+    let feed = 0;
+    if (m.registers[1] && m.feedInPrice) {
+      const f = consumption(m.registers[1], c.cfrom, c.cto);
+      if (f) feed = f.value * m.feedInPrice;
+    }
+    const base = m.base * 12 / 365 * c.days;
+    const months = [];
+    for (let i = 1; i <= 12; i++) {
+      const a = monthConsumption(reg, 2026, i), b = monthConsumption(reg, 2025, i);
+      if (!a || !a.complete) continue;
+      months.push({ i, a: a.value, b: b && b.complete ? b.value : null });
+    }
+    return {
+      m, reg, c, prev, delta, work, feed, base, months,
+      cost: work - feed + base,
+      start: cumulativeAt(reg, c.cfrom), end: cumulativeAt(reg, c.cto)
+    };
+  }).filter(Boolean);
+}
+
+function renderReport() {
+  const rows = reportRows();
+  const days = between({ y: 2026, m: 1, d: 1 }, TODAY);
+  const months = days / 365 * 12;
+  const cost = rows.reduce((s, r) => s + r.cost, 0);
+  // Nur Zähler mit hinterlegtem Abschlag dürfen in den Saldo. Würde man die
+  // Gesamtkosten gegen die Abschläge von zwei Zählern stellen, entstünde eine
+  // erfundene Nachzahlung in Höhe der übrigen Zähler.
+  const onAccount = rows.filter(r => r.m.prepay);
+  const costOnAccount = onAccount.reduce((s, r) => s + r.cost, 0);
+  const prepaid = onAccount.reduce((s, r) => s + r.m.prepay * months, 0);
+  const balance = prepaid - costOnAccount;
+  const namesOnAccount = onAccount.map(r => r.m.name).join(" und ");
+  const dp = q => q >= 3 ? 1 : 0;
+  const anyEstimated = rows.some(r => r.reg.readings.some(x =>
+    x.origin === "estimated" && x.y === 2026));
+  const anyPartial = rows.some(r => r.c.cto.m !== TODAY.m || r.c.cto.d !== TODAY.d);
+
+  const head = `<div class="doc-head">
+      <h1>Verbrauchsbericht 2026</h1>
+      <div class="meta">Zuhause · 1. Januar bis ${dateLabel(TODAY)} · erstellt am ${dateLabel(TODAY)}</div>
+    </div>`;
+
+  const summary = `<h2>Zusammenfassung</h2>
+    <div class="doc-sum">
+      <div><span class="k">Kosten im Zeitraum · ${rows.length} Zähler</span><span class="v">${money(cost)}</span></div>
+      ${onAccount.length ? `
+      <div><span class="k">davon über Abschlag abgerechnet · ${namesOnAccount}</span><span class="v">${money(costOnAccount)}</span></div>
+      <div><span class="k">Gezahlte Abschläge · ${nf(months, 1)} Monate</span><span class="v">${money(prepaid)}</span></div>
+      <div class="big"><span class="k">${balance >= 0 ? "Guthaben" : "Nachzahlung"} bei ${namesOnAccount}</span><span class="v">${money(Math.abs(balance))}</span></div>`
+      : ""}
+    </div>`;
+
+  const sections = rows.map(r => {
+    const m = r.m, d = dp(m.frac);
+    const deltaTxt = r.delta === null ? "—" : pct(r.delta);
+    const deltaCls = r.delta === null ? "dim" : (r.delta < 0 ? "neg" : "pos");
+    const monthRows = r.months.map(x => `<tr>
+        <td>${MONTHS_LONG[x.i - 1]}</td>
+        <td>${nf(x.a, d)}</td>
+        <td class="dim">${x.b === null ? "—" : nf(x.b, d)}</td>
+        <td class="${x.b === null ? "dim" : (x.a < x.b ? "neg" : "pos")}">${x.b === null || x.b === 0 ? "—" : pct((x.a - x.b) / x.b)}</td>
+      </tr>`).join("");
+
+    return `<h2>${m.name}</h2>
+      <div class="doc-meter">
+        <div class="name">${nf(r.c.value, d)} ${m.unit}
+          <span style="font-weight:500;color:#6B6659;font-size:11.5px">im Zeitraum</span></div>
+        <div class="serial">Zählernummer ${m.serial} · Stand ${nf(r.start.v, m.frac)} am ${dateShort(r.c.cfrom)}
+          bis ${nf(r.end.v, m.frac)} am ${dateShort(r.c.cto)}${r.c.complete ? "" : " (letzte vorliegende Ablesung)"}</div>
+      </div>
+      <table class="doc-t">
+        <thead><tr><th>Monat</th><th>2026</th><th>2025</th><th>Δ</th></tr></thead>
+        <tbody>${monthRows}
+          <tr class="t"><td>Zeitraum</td><td>${nf(r.c.value, d)}</td>
+            <td>${r.prev && r.prev.complete ? nf(r.prev.value, d) : "—"}</td>
+            <td class="${deltaCls}">${deltaTxt}</td></tr>
+        </tbody>
+      </table>
+      <div class="doc-sum" style="margin-top:9px">
+        <div><span class="k">Arbeitspreis${m.zZahl ? ` · ${nf(billedUnits(m, r.c.value), 0)} kWh × ${nf(m.price, 3)} €` : ` · ${nf(m.price, 2)} € je ${m.unit}`}</span><span class="v">${money(r.work)}</span></div>
+        ${r.feed ? `<div><span class="k">Einspeisevergütung</span><span class="v">− ${money(r.feed)}</span></div>` : ""}
+        ${m.base ? `<div><span class="k">Grundpreis · ${r.c.days} Tage</span><span class="v">${money(r.base)}</span></div>` : ""}
+        <div class="big"><span class="k">Kosten ${m.name}</span><span class="v">${money(r.cost)}</span></div>
+      </div>`;
+  }).join("");
+
+  const note = `<div class="doc-note">
+      <b>Wie diese Zahlen entstehen.</b> Verbräuche sind die Differenz abgelesener Zählerstände.
+      ${anyPartial ? "Wo die letzte Ablesung vor dem Stichtag liegt, endet der Zeitraum dort — es wird nicht hochgerechnet. " : ""}
+      ${anyEstimated ? "Als geschätzt erfasste Ablesungen sind im Verlauf gekennzeichnet und fließen hier mit ein. " : ""}
+      Gas wird in m³ gemessen und mit Zustandszahl und Brennwert in kWh umgerechnet; beide Werte stammen
+      aus deiner Jahresrechnung. Vergleiche mit dem Vorjahr verwenden immer denselben Zeitausschnitt.
+      In den Saldo fließen nur Zähler mit hinterlegtem Abschlag; alle übrigen sind in den Gesamtkosten
+      enthalten, werden aber getrennt bezahlt.
+      <br><br>
+      <b>Dieser Bericht ersetzt keine Abrechnung.</b> Er dient dazu, die Abrechnung deines Versorgers
+      nachzuvollziehen und zu prüfen. Maßgeblich bleibt die Rechnung des Versorgers.
+    </div>`;
+
+  document.getElementById("doc").innerHTML = head + summary + sections + note;
+}
+
 function openExport(kind) {
   const csv = buildCsv(kind);
   const name = kind === "readings" ? "Ablesungen" : "Auswertung";
@@ -1556,10 +1741,11 @@ function openExport(kind) {
       <div class="rl">CSV, Semikolon getrennt<small>${rows} Zeilen · öffnet sich in Excel und Numbers</small></div>
       <span class="freebadge">frei</span>
     </div>
-    <div class="row" style="padding-left:0;padding-right:0;border-bottom:0">
-      <div class="rl">PDF-Bericht<small>Gestaltetes Dokument mit Diagrammen</small></div>
+    <button type="button" class="rowbtn" data-open="report" style="padding-left:0;padding-right:0">
+      <div class="rl">Verbrauchsbericht<small>Gestaltetes Dokument zum Prüfen der Jahresabrechnung</small></div>
       <span class="freebadge pro">Pro</span>
-    </div>
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+    </button>
     <div class="preview">${csv.split("\n").slice(0, 14).join("\n")
       .replace(/&/g, "&amp;").replace(/</g, "&lt;")}${rows > 13 ? "\n…" : ""}</div>
     <button type="button" class="save" id="dl" style="--c:var(--tint)">CSV sichern</button>
@@ -1742,8 +1928,10 @@ function openExplain(id) {
    Navigation
    ============================================================ */
 function openSheet(id) {
+  // Bögen stapeln sich nicht: Der neue ersetzt den vorherigen, sonst schiebt
+  // sich der Export vor den Bericht, den er gerade geöffnet hat.
+  document.querySelectorAll(".sheet").forEach(x => x.classList.toggle("on", x.id === id));
   document.getElementById("scrim").classList.add("on");
-  document.getElementById(id).classList.add("on");
 }
 function closeSheets() {
   document.getElementById("scrim").classList.remove("on");
@@ -1833,8 +2021,10 @@ document.addEventListener("click", e => {
     return renderTable();
   }
   if (t.dataset.open === "readings") return openSheet("sheet-readings");
+  if (t.dataset.open === "report") { renderReport(); return openSheet("sheet-report"); }
   if (t.dataset.export) return openExport(t.dataset.export);
 });
+document.getElementById("print").addEventListener("click", () => window.print());
 document.getElementById("scrim").addEventListener("click", closeSheets);
 document.getElementById("save").addEventListener("click", saveReading);
 document.addEventListener("keydown", e => {
