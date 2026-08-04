@@ -9,6 +9,17 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.9.1 — 2026-08-04
+
+### Geändert
+- Die Roadmap nennt den erreichten Stand je Schritt, die nächsten drei
+  Schritte und wo welche Arbeit geprüft werden kann. Damit findet sich eine
+  Sitzung auf einem anderen Rechner ohne Gesprächsverlauf zurecht.
+
+_Nur Dokumentation, keine Codeänderung. 82 Tests unverändert grün._
+
+---
+
 ## 0.9.0 — 2026-08-04
 
 ### Hinzugefügt

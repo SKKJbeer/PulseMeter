@@ -96,10 +96,43 @@ Die Reihenfolge ist bewusst nicht „Screens von oben nach unten", sondern nach 
 
 ---
 
-## Aktueller Stand und nächster Schritt
+## Aktueller Stand — Version 0.9.0
 
-Erledigt ist Schritt 1 der Reihenfolge: `Packages/PulseCore` enthält das vollständige Domänenmodell und den Rechenkern, abgesichert durch 50 Unit-Tests. Abgedeckt sind alle Randfälle aus `02`, Abschnitt 3 — Zählerwechsel, Überlauf, unerklärter Rücksprung, Interpolation, Tarifwechsel im Zeitraum, Gas-Umrechnung, Einspeisegutschrift, saisonale Hochrechnung, Abschlagsvergleich.
+| Schritt | Stand |
+|---|---|
+| 1. `PulseCore` + Tests | **fertig** — 82 Tests, alle Randfälle aus `02`, Abschnitt 3 |
+| 2. `PulseData` + Repositories | **geschrieben, ungeprüft** — braucht Xcode |
+| 3. `PulseUI` Design-System | offen |
+| 4. Erfassungsfluss | im Prototyp entworfen, nicht in SwiftUI |
+| 5. Übersicht | im Prototyp entworfen, nicht in SwiftUI |
+| 6.–10. | offen |
 
-Nächster Schritt ist `PulseData`: SwiftData-Modelle als Spiegel der Domänentypen, Repository-Protokolle, Migrations- und Backup-Pfad.
+Zusätzlich entstanden, weil der Prototyp es nötig machte: Datenansicht mit
+Monats-, Quartals- und Jahresvergleich, Verbrauchsbericht mit Zeitraumwahl,
+CSV-Export, `BillingCycle`, `ScaledDecimal`, `PulseSnapshot`.
 
-**Einschränkung der Arbeitsumgebung:** Die Session läuft auf Linux mit Swift-6-Toolchain. `PulseCore` wird hier gebaut und getestet. `PulseUI`, `PulseData` und `PulseFeatures` hängen an Apple-Frameworks — sie können hier geschrieben, aber erst in Xcode auf einem Mac kompiliert und im Simulator geprüft werden.
+**Es gibt noch kein Xcode-Projekt.** Ohne App-Target existieren nur
+Bibliotheken, keine App. Das ist der nächste konkrete Engpass.
+
+### Die nächsten drei Schritte
+
+1. **0.9.1 — `PulseData` grün.** `open Packages/PulseData/Package.swift`, dann
+   `⌘U`. Erwartbare Stolpersteine stehen in `Packages/PulseData/README.md`:
+   `#Predicate`-Eigenheiten und die CloudKit-Regeln für Beziehungen.
+2. **0.10.0 — App-Gerüst und `PulseUI`.** iOS-App-Target, das beide Pakete
+   einbindet, dazu Farben, Typografie und die Kernkomponenten. Vor den
+   Features, sonst müssen sie hinterher vereinheitlicht werden.
+3. **0.11.0 — Erfassungsscreen in SwiftUI.** Bewusst vor der Übersicht: der
+   Screen, an dem das Produkt gewinnt oder verliert. Die Vorlage steht im
+   Klick-Dummy, inklusive Zählwerk-Optik und Live-Plausibilisierung.
+
+### Wo gearbeitet wird
+
+`PulseCore` und der Klick-Dummy lassen sich unter Linux vollständig prüfen —
+Swift-Toolchain unter `/opt/swift/usr/bin`, Chromium für Playwright unter
+`/opt/pw-browsers`. Alles mit SwiftUI, SwiftData oder CloudKit braucht Xcode
+auf einem Mac.
+
+Wer dort mit Claude Code weiterarbeitet, findet die Arbeitsweise in `CLAUDE.md`
+und den Ablauf für Versionen, Release Notes und Tests in
+`.claude/skills/release-discipline/SKILL.md`. Beides wird automatisch gelesen.
