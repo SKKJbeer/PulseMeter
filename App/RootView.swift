@@ -78,7 +78,7 @@ struct OverviewView: View {
                                     .foregroundStyle(.secondary)
                             }
                             if let value = row.lastValue, let day = row.lastDay {
-                                Text("Stand \(format(value, digits: 1)) \(row.unit) am \(day.description)")
+                                Text("Stand \(format(value, digits: 1)) \(row.unit) am \(germanDate(day))")
                                     .font(.caption)
                                     .foregroundStyle(.tertiary)
                             }
@@ -151,6 +151,22 @@ struct OverviewView: View {
         } catch {
             problem = "Die Beispieldaten ließen sich nicht anlegen: \(error.localizedDescription)"
         }
+    }
+
+    /// Datum in der Sprache des Nutzers, nicht in der des Datenmodells.
+    ///
+    /// `CalendarDay.description` liefert `2026-08-04` — richtig für ein
+    /// Protokoll, aber technisches Vokabular auf dem Schirm und damit ein
+    /// Verstoß gegen Produktprinzip 6.
+    private func germanDate(_ day: CalendarDay) -> String {
+        var components = DateComponents()
+        components.year = day.year
+        components.month = day.month
+        components.day = day.day
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = .current
+        guard let date = calendar.date(from: components) else { return day.description }
+        return date.formatted(.dateTime.day().month(.wide).year().locale(Locale(identifier: "de_DE")))
     }
 
     private func format(_ value: Decimal, digits: Int) -> String {

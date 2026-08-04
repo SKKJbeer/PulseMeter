@@ -9,6 +9,38 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.10.2 — 2026-08-04
+
+Die erste Fassung, die auf einer Apple-Plattform tatsächlich gebaut, getestet
+und gestartet wurde. Die CI auf einem macOS-Läufer fand innerhalb einer Stunde
+fünf Fehler, die unter Linux allesamt unsichtbar waren.
+
+### Behoben
+- `Schema` lag als statische Konstante vor. `Schema` ist nicht `Sendable`,
+  also unter Swift 6 global geteilter Zustand — `PulseData` ließ sich nicht
+  übersetzen. Jetzt berechnet.
+- Der Wiederherstellungstest legte einen zweiten Speicher im selben Prozess an
+  und brachte ihn zu Fall. SwiftData verträgt das nicht, auch nicht mit
+  unterschiedlichen Namen. Der leere Zustand entsteht jetzt durch Löschen —
+  und belegt nebenbei, dass die Löschregel die Ablesungen mitnimmt.
+- Die Oberflächentests waren nicht an den Hauptakteur gebunden. Die
+  XCUITest-Schnittstellen sind es unter Swift 6, das Testziel ließ sich nicht
+  bauen.
+- Das Datum stand als `2026-08-04` auf dem Schirm — die Rohform des
+  Kalendertags und damit technisches Vokabular. Jetzt „4. August 2026".
+
+### Geändert
+- Der Screenshot-Schritt übersetzte die App ein zweites Mal vollständig, für
+  dasselbe Programm. Test- und Screenshot-Schritt teilen sich jetzt das
+  Ableseverzeichnis; Hell und Dunkel entstehen durch Neustarten statt
+  Neubauen. Spart auf einem gemieteten macOS-Läufer mehrere Minuten je Lauf.
+
+_82 Tests in PulseCore, 10 in PulseData, beide Oberflächentests — alle grün auf
+macOS. Die App startet im Simulator und zeigt einen vom Rechenkern ermittelten
+Verbrauch._
+
+---
+
 ## 0.10.1 — 2026-08-04
 
 ### Hinzugefügt

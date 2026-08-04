@@ -101,7 +101,7 @@ Die Reihenfolge ist bewusst nicht „Screens von oben nach unten", sondern nach 
 | Schritt | Stand |
 |---|---|
 | 1. `PulseCore` + Tests | **fertig** — 82 Tests, alle Randfälle aus `02`, Abschnitt 3 |
-| 2. `PulseData` + Repositories | **geschrieben, ungeprüft** — braucht Xcode |
+| 2. `PulseData` + Repositories | **fertig** — 10 Tests, auf macOS geprüft |
 | 3. `PulseUI` Design-System | offen |
 | 4. Erfassungsfluss | im Prototyp entworfen, nicht in SwiftUI |
 | 5. Übersicht | im Prototyp entworfen, nicht in SwiftUI |
@@ -111,20 +111,20 @@ Zusätzlich entstanden, weil der Prototyp es nötig machte: Datenansicht mit
 Monats-, Quartals- und Jahresvergleich, Verbrauchsbericht mit Zeitraumwahl,
 CSV-Export, `BillingCycle`, `ScaledDecimal`, `PulseSnapshot`.
 
-**Es gibt noch kein Xcode-Projekt.** Ohne App-Target existieren nur
-Bibliotheken, keine App. Das ist der nächste konkrete Engpass.
+Das Xcode-Projekt entsteht aus `project.yml`, und eine CI auf einem
+macOS-Läufer baut, testet und startet die App bei jedem Push. Sie legt
+Screenshots in Hell und Dunkel ab — damit lässt sich das Ergebnis auch ohne
+Mac beurteilen.
 
 ### Die nächsten drei Schritte
 
-1. **0.9.1 — `PulseData` grün.** `open Packages/PulseData/Package.swift`, dann
-   `⌘U`. Erwartbare Stolpersteine stehen in `Packages/PulseData/README.md`:
-   `#Predicate`-Eigenheiten und die CloudKit-Regeln für Beziehungen.
-2. **0.10.0 — App-Gerüst und `PulseUI`.** iOS-App-Target, das beide Pakete
-   einbindet, dazu Farben, Typografie und die Kernkomponenten. Vor den
-   Features, sonst müssen sie hinterher vereinheitlicht werden.
-3. **0.11.0 — Erfassungsscreen in SwiftUI.** Bewusst vor der Übersicht: der
+1. **0.11.0 — `PulseUI`.** Farben, Typografie und die Kernkomponenten aus
+   `03-ux-konzept.md`. Vor den Features, sonst müssen sie hinterher
+   vereinheitlicht werden.
+2. **0.12.0 — Erfassungsscreen in SwiftUI.** Bewusst vor der Übersicht: der
    Screen, an dem das Produkt gewinnt oder verliert. Die Vorlage steht im
    Klick-Dummy, inklusive Zählwerk-Optik und Live-Plausibilisierung.
+3. **0.13.0 — Übersicht.** Erst danach Verlauf, Zähler und Tarife.
 
 ### Wo gearbeitet wird
 
