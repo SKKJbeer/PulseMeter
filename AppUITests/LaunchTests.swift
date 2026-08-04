@@ -5,6 +5,10 @@ import XCTest
 /// Bewusst schmal. Sein Zweck ist, dass eine Sitzung ohne Bildschirm feststellen
 /// kann, ob die App überhaupt hochkommt — ein Übersetzungsfehler fällt beim
 /// Bauen auf, ein Absturz beim Start nicht.
+/// Am Hauptakteur, weil die XCUITest-Schnittstellen es unter Swift 6 sind:
+/// Fenster und Bedienelemente gehören dem Hauptthread, und der Compiler
+/// besteht darauf.
+@MainActor
 final class LaunchTests: XCTestCase {
 
     override func setUp() {
