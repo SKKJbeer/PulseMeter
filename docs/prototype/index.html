@@ -496,6 +496,34 @@ table.data tr.est td:first-child::after {
 }
 .pro { color: var(--tint); background: color-mix(in srgb, var(--tint) 14%, transparent); }
 
+/* ---------- Vergleich desselben Monats über die Jahre ----------
+   Die eigentlich interessante Frage: Februar 2026 gegen Februar 2025.
+   Ein Balken je Jahr, gleiche Grundlinie, gleicher Maßstab. */
+.cmp-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+.cmp-title { font-size: 19px; font-weight: 680; letter-spacing: -0.02em; }
+.cmp-delta { font-size: var(--fs-sub); font-weight: 640; }
+.cmp-delta.down { color: var(--good); }
+.cmp-delta.up { color: var(--red); }
+.cmp-delta.none { color: var(--ink-3); font-weight: 500; }
+.cmp-rows { display: flex; flex-direction: column; gap: 9px; }
+.cmp-row { display: flex; align-items: center; gap: 11px; font-size: var(--fs-sub); }
+.cmp-row .yr { width: 34px; flex: none; color: var(--ink-2); font-weight: 560; }
+.cmp-row.current .yr { color: var(--ink); font-weight: 680; }
+.cmp-row .track { flex: 1; height: 22px; border-radius: 5px; background: var(--surface-2); overflow: hidden; }
+.cmp-row .track i {
+  display: block; height: 100%; border-radius: 5px; background: var(--hairline-2);
+  transform-origin: left; animation: grow .42s cubic-bezier(.2,.8,.3,1) both;
+}
+.cmp-row.current .track i { background: var(--c); }
+.cmp-row .num { width: 86px; flex: none; text-align: right; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.cmp-row.current .num { font-weight: 680; }
+@keyframes grow { from { transform: scaleX(0); } to { transform: none; } }
+.cmp-foot { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--hairline);
+  font-size: var(--fs-cap); color: var(--ink-2); line-height: 1.5; }
+.cmp-foot b { color: var(--ink); font-weight: 620; }
+.chart-hint { text-align: center; font-size: var(--fs-cap); color: var(--ink-3); margin-top: 10px; }
+#chart rect[data-month] { cursor: pointer; }
+
 .list { background: var(--surface); border-radius: var(--r-card); box-shadow: var(--shadow-card); margin-top: 16px; overflow: hidden; }
 .row {
   display: flex; align-items: center; gap: 12px;
@@ -593,6 +621,11 @@ table.data tr.est td:first-child::after {
             <span><i style="background:var(--hairline-2)"></i>2025</span>
             <span><i style="background:repeating-linear-gradient(45deg,var(--ink-3) 0 2px,transparent 2px 4px)"></i><span id="lg-hatch">geschätzt</span></span>
           </div>
+          <div class="chart-hint" id="chart-hint">Tippe einen Monat an, um ihn mit den Vorjahren zu vergleichen</div>
+        </div>
+        <div id="compare-block">
+          <div class="section-label">Gleicher Monat, andere Jahre</div>
+          <div class="chart-card" id="compare"></div>
         </div>
         <div class="section-label">Ablesungen</div>
         <div class="list" id="readings"></div>
@@ -1059,6 +1092,68 @@ function renderPicker() {
       aria-selected="${m.id === histMeter}">${m.name}</button>`).join("");
 }
 
+/* Vom Nutzer gewählter Monat, `null` bis zur ersten Auswahl. */
+let selMonth = null;
+
+/* Ohne eigene Wahl der zuletzt vollständig erfasste Monat — die Zahl, die
+   den Nutzer beim Öffnen am ehesten interessiert. */
+function activeMonth(reg) {
+  if (selMonth !== null) return selMonth;
+  for (let i = 11; i >= 0; i--) {
+    const c = monthConsumption(reg, YEARS[0], i + 1);
+    if (c && c.complete) return i;
+  }
+  return 0;
+}
+
+function monthDays(y, m) {
+  return between({ y, m, d: 1 }, m === 12 ? { y: y + 1, m: 1, d: 1 } : { y, m: m + 1, d: 1 });
+}
+
+/* Derselbe Monat über alle Jahre — ein Balken je Jahr auf gemeinsamem Maßstab.
+   Das ist der Vergleich, der wirklich etwas aussagt: Gleiche Jahreszeit,
+   gleiche Länge, gleiches Wetterfenster. */
+function renderCompare(m, reg, idx) {
+  const month = idx + 1;
+  const rows = YEARS.map(y => {
+    const c = monthConsumption(reg, y, month);
+    return { y, v: c && c.complete ? c.value : null, days: monthDays(y, month) };
+  });
+  const max = Math.max(...rows.map(r => r.v ?? 0), 0.0001);
+  const dp = m.frac >= 3 ? 1 : 0;
+  const cur = rows[0], prev = rows[1];
+  const delta = cur.v !== null && prev.v !== null && prev.v !== 0 ? (cur.v - prev.v) / prev.v : null;
+
+  const head = delta !== null
+    ? `<div class="cmp-delta ${delta < 0 ? "down" : "up"}">${pct(delta)} ggü. ${prev.y}</div>`
+    : `<div class="cmp-delta none">${cur.v === null ? "noch keine Ablesung" : "kein Vorjahreswert"}</div>`;
+
+  const body = rows.map(r => `<div class="cmp-row ${r.y === YEARS[0] ? "current" : ""}">
+      <span class="yr">${r.y}</span>
+      <div class="track">${r.v === null ? "" : `<i style="width:${Math.max(2, r.v / max * 100)}%"></i>`}</div>
+      <span class="num">${r.v === null ? "—" : nf(r.v, dp) + " " + m.unit}</span>
+    </div>`).join("");
+
+  let foot = "";
+  if (cur.v !== null && prev.v !== null) {
+    foot = `<div class="cmp-foot">Pro Tag <b>${nf(cur.v / cur.days, 2)} ${m.unit}</b>
+      gegenüber ${nf(prev.v / prev.days, 2)} ${m.unit} im Vorjahr.`;
+    if (m.price) {
+      const c1 = billedUnits(m, cur.v) * m.price, c0 = billedUnits(m, prev.v) * m.price;
+      foot += ` Arbeitspreis <b>${money(c1)}</b> gegenüber ${money(c0)}.`;
+    }
+    foot += `</div>`;
+  } else if (cur.v === null) {
+    foot = `<div class="cmp-foot">Für ${MONTHS_LONG[idx]} ${YEARS[0]} liegt noch keine
+      vollständige Ablesung vor. Der Vergleich wird nachgetragen, sobald der Monat
+      abgeschlossen ist.</div>`;
+  }
+
+  document.getElementById("compare").innerHTML =
+    `<div class="cmp-head"><div class="cmp-title">${MONTHS_LONG[idx]}</div>${head}</div>
+     <div class="cmp-rows" style="--c:${m.color}">${body}</div>${foot}`;
+}
+
 const readingOn = (reg, y, m, d) => reg.readings.find(r => r.y === y && r.m === m && r.d === d);
 /* Ein Monat gilt als geschätzt, sobald eine seiner Grenzablesungen geschätzt ist. */
 function monthEstimated(reg, y, m) {
@@ -1101,6 +1196,10 @@ function renderChart() {
     }
     for (let i = 0; i < 12; i++) {
       const cx = i * bw;
+      if (i === selMonth) {
+        svg += `<rect x="${cx + 1}" y="0" width="${bw - 2}" height="${H}" rx="4"
+          fill="var(--ink)" opacity=".055"/>`;
+      }
       if (prev[i] !== null) {
         const h = (prev[i] / max) * (H - 12);
         svg += `<rect x="${cx + bw * .16}" y="${H - h}" width="${bw * .68}" height="${h}" rx="2.5" fill="var(--hairline-2)" opacity=".85"/>`;
@@ -1109,7 +1208,13 @@ function renderChart() {
         const h = (now[i] / max) * (H - 12);
         svg += `<rect x="${cx + bw * .28}" y="${H - h}" width="${bw * .44}" height="${h}" rx="2.5" fill="${est[i] ? "url(#hatch)" : m.color}"/>`;
       }
-      svg += `<text x="${cx + bw / 2}" y="${H + 13}" text-anchor="middle" font-size="9" fill="var(--ink-3)" font-family="-apple-system,sans-serif">${MONTHS[i]}</text>`;
+      svg += `<text x="${cx + bw / 2}" y="${H + 13}" text-anchor="middle" font-size="9"
+        fill="${i === selMonth ? "var(--ink)" : "var(--ink-3)"}"
+        font-weight="${i === selMonth ? 660 : 400}"
+        font-family="-apple-system,sans-serif">${MONTHS[i]}</text>`;
+      // Ganze Spalte als Trefferfläche — ein 14 Punkt breiter Balken ist mit
+      // dem Daumen nicht zuverlässig zu treffen.
+      svg += `<rect x="${cx}" y="0" width="${bw}" height="${H + 16}" fill="transparent" data-month="${i}"/>`;
     }
     host.innerHTML = svg + "</svg>";
     document.getElementById("chart-total").textContent = nf(ytd.value, dp) + " " + m.unit;
@@ -1143,6 +1248,12 @@ function renderChart() {
 
   document.getElementById("lg-hatch").textContent =
     histScale === "month" ? "geschätzt" : "hochgerechnet";
+
+  // Der Monatsvergleich hat im Jahresmaßstab keine Entsprechung.
+  const inMonth = histScale === "month";
+  document.getElementById("compare-block").style.display = inMonth ? "" : "none";
+  document.getElementById("chart-hint").style.display = inMonth ? "" : "none";
+  if (inMonth) renderCompare(m, reg, activeMonth(reg));
 
   const d = document.getElementById("chart-delta");
   if (yoy !== null) {
@@ -1634,7 +1745,7 @@ function renderAll() {
 
 /* Ereignisse */
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-capture],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export]");
+  const t = e.target.closest("[data-capture],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export],[data-month]");
   if (!t) return;
 
   if (t.dataset.capture) return openCapture(t.dataset.capture);
@@ -1684,6 +1795,10 @@ document.addEventListener("click", e => {
     if (t.disabled) return;
     histMetric = t.dataset.metric;
     return renderTable();
+  }
+  if (t.dataset.month !== undefined) {
+    selMonth = Number(t.dataset.month);
+    return renderChart();
   }
   if (t.dataset.perday) {
     histPerDay = t.dataset.perday === "day";
