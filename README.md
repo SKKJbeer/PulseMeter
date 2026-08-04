@@ -12,8 +12,10 @@ sobald die offenen Entscheidungen getroffen sind.
 
 ## Klick-Dummy
 
-Jede Produktänderung wird sofort im klickbaren Entwurf sichtbar gemacht
-(`docs/prototype/index.html`) — siehe [CLAUDE.md](CLAUDE.md), Regel 1.
+**[Zum klickbaren Entwurf →](https://claude.ai/code/artifact/a38bded3-eb21-46f7-a14d-b2fc05ad963e)**
+
+Jede Produktänderung wird sofort dort sichtbar gemacht, unter derselben URL
+(Quelle: `docs/prototype/index.html`) — siehe [CLAUDE.md](CLAUDE.md), Regel 1.
 
 ## Dokumente
 

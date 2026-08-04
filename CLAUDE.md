@@ -12,10 +12,24 @@ ist sie nicht fertig.
 - Veröffentlichen immer über **denselben Artifact-Pfad**, damit die URL stabil
   bleibt: `/tmp/.../scratchpad/pulsemeter-prototype.html`. Der Versionswähler
   im Artifact hält die Historie.
+- Aus einer neuen Sitzung heraus die URL unten als `url` mitgeben — sonst
+  entsteht ein zweiter Link und die Historie reißt ab.
 - `label` je Veröffentlichung kurz und beschreibend setzen („datenansicht",
   „erfassung-v2").
 - Danach dieselbe Datei nach `docs/prototype/index.html` kopieren und
   mitcommitten — der Container wird irgendwann abgeräumt, das Repo nicht.
+
+## Regel 1a — Der Link steht in jeder Antwort
+
+Die URL des Klick-Dummys gehört **an den Anfang jeder Antwort**, in der sich
+etwas am Produkt geändert hat. Nicht als Verweis auf das Seitenpanel, nicht
+am Ende, sondern als anklickbare Zeile ganz oben:
+
+```
+🔗 Klick-Dummy: https://claude.ai/code/artifact/a38bded3-eb21-46f7-a14d-b2fc05ad963e
+```
+
+Diese URL bleibt über alle Sitzungen dieselbe.
 
 ## Regel 2 — Der Prototyp rechnet echt
 
