@@ -469,6 +469,9 @@ table.data tr.est td:first-child::after {
   color: var(--warn-ink); background: var(--warn-bg); padding: 2px 5px; border-radius: 4px;
 }
 .controlrow { display: flex; gap: 8px; margin-bottom: 14px; }
+.tabletop { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+.segmented.tiny { width: 172px; margin-bottom: 0; }
+.segmented.tiny button { font-size: 12.5px; padding: 6px 0; }
 .controlrow .segmented { margin-bottom: 0; }
 .segmented button[disabled] { cursor: not-allowed; }
 .footnote { font-size: var(--fs-cap); color: var(--ink-3); line-height: 1.5; padding: 12px 2px 8px; }
@@ -608,6 +611,12 @@ table.data tr.est td:first-child::after {
           </div>
         </div>
         <div class="tablecard">
+          <div class="tabletop" id="tabletop">
+            <div class="segmented tiny" id="perday">
+              <button type="button" aria-selected="true" data-perday="total">Summe</button>
+              <button type="button" aria-selected="false" data-perday="day">Ø je Tag</button>
+            </div>
+          </div>
           <div class="tablewrap" id="table"></div>
           <div class="footnote" id="tablenote"></div>
         </div>
@@ -1038,7 +1047,7 @@ function renderCards() {
    Verlauf
    ============================================================ */
 let histMeter = "strom", histScale = "month";
-let histMode = "chart", histGran = "month", histMetric = "usage";
+let histMode = "chart", histGran = "month", histMetric = "usage", histPerDay = false;
 
 function renderPicker() {
   const items = METERS.map(m => ({ id: m.id, name: m.name, color: m.color }));
@@ -1227,6 +1236,8 @@ function unitOf(target) {
 }
 function fmtCell(target, v) {
   if (v === null) return null;
+  // Ein Tagesmittel von 9 kWh wäre auf ganze Zahlen gerundet wertlos.
+  if (histPerDay) return nf(v, 2);
   if (target === "all" || histMetric === "cost") return nf(v, 2);
   const m = METERS.find(x => x.id === target);
   return nf(v, m.frac >= 3 ? 1 : 0);
@@ -1270,20 +1281,31 @@ function renderTable() {
       const cells = YEARS.map(y => {
         const shifted = { from: { ...p.from, y: p.from.y - (YEARS[0] - y) },
                           to: { ...p.to, y: p.to.y - (YEARS[0] - y) } };
-        return { y, v: cellValue(target, shifted), est: periodEstimated(target, shifted) };
+        const raw = cellValue(target, shifted);
+        const days = between(shifted.from, shifted.to);
+        // Je Tag normalisiert: Nur so lassen sich Januar und Februar
+        // nebeneinander lesen — 31 gegen 28 Tage sind sonst ein Drittel
+        // Unterschied, der nichts über den Verbrauch aussagt.
+        return { y, days, raw, v: raw === null ? null : (histPerDay ? raw / days : raw),
+                 est: periodEstimated(target, shifted) };
       });
       const a = cells[0].v, b = cells[1].v;
       return { label: p.label, cells, delta: a !== null && b !== null && b !== 0 ? (a - b) / b : null };
     });
 
     const sums = YEARS.map((y, k) => {
-      const vals = rows.map(r => r.cells[k].v).filter(v => v !== null);
-      return vals.length ? vals.reduce((s, v) => s + v, 0) : null;
+      const present = rows.map(r => r.cells[k]).filter(c => c.raw !== null);
+      if (!present.length) return null;
+      const total = present.reduce((s, c) => s + c.raw, 0);
+      return histPerDay ? total / present.reduce((s, c) => s + c.days, 0) : total;
     });
     // Zeiträume, die in allen drei Jahren vorliegen — nur diese sind vergleichbar.
     const paired = rows.filter(r => r.cells.every(c => c.v !== null));
-    const pairedSums = YEARS.map((y, k) =>
-      paired.length ? paired.reduce((s, r) => s + r.cells[k].v, 0) : null);
+    const pairedSums = YEARS.map((y, k) => {
+      if (!paired.length) return null;
+      const total = paired.reduce((s, r) => s + r.cells[k].raw, 0);
+      return histPerDay ? total / paired.reduce((s, r) => s + r.cells[k].days, 0) : total;
+    });
     const pairedDelta = paired.length && pairedSums[1] !== 0
       ? (pairedSums[0] - pairedSums[1]) / pairedSums[1] : null;
     const window = paired.length
@@ -1299,7 +1321,7 @@ function renderTable() {
         deltaCell(r.delta) + `</tr>`).join("") +
       // Erst die rohen Summen je Spalte, dann die einzige Zeile, die man
       // wirklich nebeneinander lesen darf: derselbe Ausschnitt in allen Jahren.
-      `<tr class="sum"><td>Summe</td>` +
+      `<tr class="sum"><td>${histPerDay ? "Ø je Tag" : "Summe"}</td>` +
         sums.map((s, k) => s === null ? '<td class="na">—</td>'
           : `<td class="${k === 0 && paired.length < rows.length ? "na" : ""}">${fmtCell(target, s)}</td>`).join("") +
         `<td class="na">—</td></tr>` +
@@ -1309,13 +1331,21 @@ function renderTable() {
           deltaCell(pairedDelta) + `</tr>`
         : "") +
       `</tbody></table>`;
-    note = paired.length < rows.length
-      ? `Alle Werte in ${unit}. Die Summenzeile addiert je Spalte, was vorliegt — für ${YEARS[0]} sind das nur ${paired.length} von ${rows.length} Zeiträumen. Nebeneinander lesen lässt sich nur die Zeile „${window}“: derselbe Ausschnitt in allen drei Jahren.`
-      : `Alle Werte in ${unit}. Zeiträume ohne vollständige Daten bleiben leer, statt geschätzt zu werden.`;
+    const unitNote = `Alle Werte in ${unit}${histPerDay ? " je Tag" : ""}.`;
+    const perDayNote = histPerDay
+      ? " Durch die Tageszahl geteilt, damit sich unterschiedlich lange Zeiträume vergleichen lassen."
+      : ` Monate haben unterschiedlich viele Tage — für den Vergleich untereinander ist „Ø je Tag“ die ehrlichere Größe.`;
+    note = (paired.length < rows.length
+      ? `${unitNote} Die Summenzeile ${histPerDay ? "mittelt" : "addiert"} je Spalte, was vorliegt — für ${YEARS[0]} sind das nur ${paired.length} von ${rows.length} Zeiträumen. Nebeneinander lesen lässt sich nur die Zeile „${window}“: derselbe Ausschnitt in allen drei Jahren.`
+      : `${unitNote} Zeiträume ohne vollständige Daten bleiben leer, statt geschätzt zu werden.`) + perDayNote;
   }
 
   host.innerHTML = html;
   document.getElementById("tablenote").textContent = note;
+  // In der Jahresansicht gibt es „Ø je Tag“ bereits als eigene Spalte.
+  document.getElementById("tabletop").style.display = histGran === "year" ? "none" : "";
+  document.querySelectorAll("#perday button").forEach(b =>
+    b.setAttribute("aria-selected", String((b.dataset.perday === "day") === histPerDay)));
 
   // Verbrauch quer über Zählerarten zu addieren ergäbe kWh plus m³ — nur Kosten
   // sind vergleichbar. Statt es zu verstecken, wird die Auswahl gesperrt.
@@ -1362,11 +1392,14 @@ function buildCsv(kind) {
     }
   } else {
     for (const p of periods(histGran, YEARS[0])) {
-      const cells = YEARS.map(y => cellValue(histMeter, {
-        from: { ...p.from, y: p.from.y - (YEARS[0] - y) },
-        to: { ...p.to, y: p.to.y - (YEARS[0] - y) }
-      }));
-      lines.push([p.label, ...cells.map(v => v === null ? "" : csvNum(v, 2)), unit].join(";"));
+      const cells = YEARS.map(y => {
+        const r = { from: { ...p.from, y: p.from.y - (YEARS[0] - y) },
+                    to: { ...p.to, y: p.to.y - (YEARS[0] - y) } };
+        const v = cellValue(histMeter, r);
+        return v === null ? null : (histPerDay ? v / between(r.from, r.to) : v);
+      });
+      lines.push([p.label, ...cells.map(v => v === null ? "" : csvNum(v, 2)),
+        unit + (histPerDay ? " je Tag" : "")].join(";"));
     }
   }
   return lines.join("\n");
@@ -1601,7 +1634,7 @@ function renderAll() {
 
 /* Ereignisse */
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-capture],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-export]");
+  const t = e.target.closest("[data-capture],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export]");
   if (!t) return;
 
   if (t.dataset.capture) return openCapture(t.dataset.capture);
@@ -1650,6 +1683,10 @@ document.addEventListener("click", e => {
   if (t.dataset.metric) {
     if (t.disabled) return;
     histMetric = t.dataset.metric;
+    return renderTable();
+  }
+  if (t.dataset.perday) {
+    histPerDay = t.dataset.perday === "day";
     return renderTable();
   }
   if (t.dataset.export) return openExport(t.dataset.export);
