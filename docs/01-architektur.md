@@ -130,4 +130,4 @@ Der Erfassungs-Zeitstempel (`createdAt`) wird separat als echtes `Date` geführt
 
 1. **Minimales iOS-Ziel:** Empfehlung iOS 18+. Bestätigung nötig, da es SwiftData-Stabilität und verfügbare APIs bestimmt.
 2. **SwiftData vs. GRDB:** Empfehlung SwiftData (ADR-002). Gegenargument, falls du maximale Kontrolle und Migrationssicherheit über Sync-Komfort stellst — dann GRDB ohne Sync in v1 und Sync als spätere, bewusste Investition.
-3. **Entwicklungsumgebung:** Diese Session läuft auf Linux ohne Xcode/Swift-Toolchain. Ich kann Architektur, Datenmodell und Domänenlogik schreiben, aber nichts kompilieren oder im Simulator prüfen. Für alles ab „Umsetzung" brauche ich entweder deine Rückmeldung aus Xcode oder eine Umgebung mit Toolchain.
+3. **Entwicklungsumgebung:** Diese Session läuft auf Linux. Eine Swift-6-Toolchain ist installiert, `PulseCore` wird daher hier tatsächlich kompiliert und getestet — genau der Grund, warum die Domänenschicht keine Apple-Frameworks importiert. Alles mit SwiftUI, SwiftData oder CloudKit (`PulseUI`, `PulseData`, `PulseFeatures`) benötigt Xcode auf einem Mac; das kann ich hier schreiben, aber nicht bauen oder im Simulator prüfen.

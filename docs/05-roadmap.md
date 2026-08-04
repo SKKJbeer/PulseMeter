@@ -98,6 +98,8 @@ Die Reihenfolge ist bewusst nicht „Screens von oben nach unten", sondern nach 
 
 ## Aktueller Stand und nächster Schritt
 
-Dieses Repository enthält bisher ausschließlich die Strategie- und Architekturdokumente. Es wurde bewusst noch keine Zeile Produktcode geschrieben, weil vier Entscheidungen offen sind, die Datenmodell und Umfang unmittelbar bestimmen (siehe Zusammenfassung im Kickoff-Thread bzw. `00`, Abschnitt 8 und `01`, Abschnitt 7).
+Erledigt ist Schritt 1 der Reihenfolge: `Packages/PulseCore` enthält das vollständige Domänenmodell und den Rechenkern, abgesichert durch 50 Unit-Tests. Abgedeckt sind alle Randfälle aus `02`, Abschnitt 3 — Zählerwechsel, Überlauf, unerklärter Rücksprung, Interpolation, Tarifwechsel im Zeitraum, Gas-Umrechnung, Einspeisegutschrift, saisonale Hochrechnung, Abschlagsvergleich.
 
-**Einschränkung der aktuellen Arbeitsumgebung:** Diese Session läuft auf Linux ohne Xcode und ohne Swift-Toolchain. Architektur, Datenmodell und `PulseCore` können hier geschrieben werden; kompiliert, im Simulator geprüft und mit Snapshot-Tests abgesichert werden kann erst in einer Umgebung mit Xcode.
+Nächster Schritt ist `PulseData`: SwiftData-Modelle als Spiegel der Domänentypen, Repository-Protokolle, Migrations- und Backup-Pfad.
+
+**Einschränkung der Arbeitsumgebung:** Die Session läuft auf Linux mit Swift-6-Toolchain. `PulseCore` wird hier gebaut und getestet. `PulseUI`, `PulseData` und `PulseFeatures` hängen an Apple-Frameworks — sie können hier geschrieben, aber erst in Xcode auf einem Mac kompiliert und im Simulator geprüft werden.
