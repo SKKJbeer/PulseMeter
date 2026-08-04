@@ -1,0 +1,61 @@
+name: CI
+
+# Läuft auf einem macOS-Läufer, weil SwiftData, SwiftUI und der Simulator
+# nur dort existieren. Damit lässt sich alles prüfen, was auf einem
+# Linux-Rechner nicht übersetzt werden kann — ohne einen Mac zur Hand zu haben.
+on:
+  push:
+    branches: [main, "claude/**"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Umgebung
+        run: |
+          xcodebuild -version
+          swift --version
+          xcrun simctl list runtimes | grep iOS || true
+
+      # Die Domäne zuerst: schnell, und wenn sie bricht, ist alles andere egal.
+      - name: PulseCore
+        run: swift test --package-path Packages/PulseCore
+
+      # Braucht SwiftData; das macOS-Ziel des Pakets reicht, kein Simulator.
+      - name: PulseData
+        run: swift test --package-path Packages/PulseData
+
+      - name: XcodeGen
+        run: brew install xcodegen
+
+      - name: Xcode-Projekt erzeugen
+        run: xcodegen generate
+
+      - name: App bauen und Oberflächentests
+        run: scripts/test.sh app
+
+      - name: Screenshots
+        if: success()
+        run: |
+          scripts/run.sh light build/screenshot-light.png
+          scripts/run.sh dark  build/screenshot-dark.png
+
+      - name: Ergebnisse sichern
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-und-protokolle
+          path: |
+            build/*.png
+          if-no-files-found: ignore
+          retention-days: 14
