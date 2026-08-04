@@ -31,6 +31,14 @@ am Ende, sondern als anklickbare Zeile ganz oben:
 
 Diese URL bleibt über alle Sitzungen dieselbe.
 
+**Zusätzlich** wird `docs/prototype/index.html` per SendUserFile mitgeliefert.
+Grund: Artifacts sind privat und an den claude.ai-Account gebunden — auf einem
+zweiten Gerät oder im Inkognito-Fenster verlangt der Link eine Anmeldung. Die
+Datei ist in sich geschlossen und läuft ohne Login und ohne Netz.
+
+GitHub Pages wäre die dritte Möglichkeit, scheidet aber vorerst aus: Das Repo
+ist privat, und Pages setzt dafür GitHub Pro voraus.
+
 ## Regel 2 — Der Prototyp rechnet echt
 
 Der Klick-Dummy enthält eine verkürzte Fassung von `PulseCore` in JavaScript.
