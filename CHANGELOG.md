@@ -9,6 +9,24 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.10.1 — 2026-08-04
+
+### Hinzugefügt
+- CI auf einem macOS-Läufer. Sie übersetzt und testet, was auf einem
+  Linux-Rechner nicht übersetzt werden kann: `PulseData`, das App-Target und
+  die Skripte. Screenshots beider Erscheinungsbilder werden abgelegt.
+
+### Behoben
+- `PulseCore` gab keine Mindestversion der Plattform an. SwiftPM nahm auf
+  Apple-Plattformen daraufhin eine sehr alte an, unter der `Identifiable` als
+  nicht verfügbar gilt — das Paket ließ sich auf einem Mac gar nicht
+  übersetzen. Unter Linux gibt es keine Verfügbarkeitsprüfung, deshalb fiel es
+  dort nie auf. Der erste Fund der neuen CI, und ein gutes Argument für sie.
+
+_82 Tests grün._
+
+---
+
 ## 0.10.0 — 2026-08-04
 
 ### Hinzugefügt
