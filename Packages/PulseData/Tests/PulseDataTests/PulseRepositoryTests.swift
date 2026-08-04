@@ -210,23 +210,29 @@ final class PulseRepositoryTests: XCTestCase {
         XCTAssertEqual(try repo.tariffs(for: point.id).count, 1)
     }
 
+    /// Wiederherstellung in einen leeren Bestand.
+    ///
+    /// Der leere Zustand wird durch Löschen hergestellt, nicht durch einen
+    /// zweiten Speicher: SwiftData verträgt keine zwei Speicher im selben
+    /// Prozess. Der Umweg ist ein Gewinn — er belegt zugleich, dass die
+    /// Löschregel die Ablesungen tatsächlich mitnimmt.
     func testRestoreIntoEmptyStore() throws {
         let (point, _) = try makePoint()
         let register = point.registers[0]
         try repo.save(Reading(registerID: register.id, day: day(2026, 1, 1), value: 1000),
                       fractionDigits: 1)
-        let snapshot = try repo.snapshot()
-        let encoded = try snapshot.encoded()
+        let encoded = try repo.snapshot().encoded()
 
-        // Frischer Speicher, als wäre die App neu installiert.
-        let fresh = PulseRepository(
-            container: try PulseStore.container(name: "restore-target", inMemory: true, cloudKit: false)
-        )
-        try fresh.restore(try PulseSnapshot.decode(from: encoded))
+        try repo.deletePermanently(meteringPointID: point.id)
+        XCTAssertTrue(try repo.meteringPoints().isEmpty)
+        XCTAssertTrue(try repo.readings(for: register.id).isEmpty,
+                      "Die Löschregel muss die Ablesungen mitnehmen")
 
-        XCTAssertEqual(try fresh.meteringPoints().count, 1)
-        XCTAssertEqual(try fresh.readings(for: register.id).count, 1)
-        XCTAssertEqual(try fresh.meteringPoint(point.id)?.billingCycle?.anchorMonth, 4)
+        try repo.restore(try PulseSnapshot.decode(from: encoded))
+
+        XCTAssertEqual(try repo.meteringPoints().count, 1)
+        XCTAssertEqual(try repo.readings(for: register.id).count, 1)
+        XCTAssertEqual(try repo.meteringPoint(point.id)?.billingCycle?.anchorMonth, 4)
     }
 
     // MARK: - Zusammenspiel mit dem Rechenkern
