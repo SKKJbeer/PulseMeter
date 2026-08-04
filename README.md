@@ -12,7 +12,7 @@ sobald die offenen Entscheidungen getroffen sind.
 
 ## Klick-Dummy
 
-**[Zuletzt veröffentlichter Entwurf →](https://claude.ai/code/artifact/720b5f91-ac9d-4371-a2ed-2d9da645b28c)**
+**[Zuletzt veröffentlichter Entwurf →](https://claude.ai/code/artifact/660c7876-ea6f-460f-b060-f4a6ef145aa9)**
 
 Jede Produktänderung wird sofort sichtbar gemacht — als **neue** Veröffentlichung
 mit eigener URL, weil erneutes Veröffentlichen auf dieselbe Adresse nicht
