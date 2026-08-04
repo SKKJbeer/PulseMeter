@@ -5,9 +5,21 @@ Die App zur Erfassung, Analyse und Dokumentation von Zählerständen.
 > **Positionierung:** PulseMeter ist das Haushaltsbuch für Verbrauch — du trägst eine Zahl ein,
 > und die App sagt dir, ob alles im Rahmen ist.
 
+## Am Mac loslegen
+
+```bash
+git clone https://github.com/SKKJbeer/PulseMeter.git
+cd PulseMeter && git checkout claude/pulsemeter-kickoff-dns3am
+scripts/setup-mac.sh        # prüft Xcode, erzeugt das Projekt, testet
+scripts/run.sh              # startet die App im Simulator, legt einen Screenshot ab
+```
+
+Voraussetzung ist Xcode aus dem App Store, einmal geöffnet und mit bestätigter
+Lizenz. Alles Weitere richtet das Skript ein.
+
 ## Status
 
-Version **0.9.0**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
+Version **0.10.0**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
 rechnet echt. Die Persistenzschicht wartet auf ihre erste Prüfung in Xcode.
 Siehe [CHANGELOG.md](CHANGELOG.md).
 
@@ -32,6 +44,7 @@ Siehe [CLAUDE.md](CLAUDE.md), Regel 1.
 | [05 – Roadmap](docs/05-roadmap.md) | v1-Scope, Ausschlüsse, Umsetzungsreihenfolge |
 | [CLAUDE.md](CLAUDE.md) | Arbeitsweise, Prüfschritte, Sprachregeln |
 | [CHANGELOG.md](CHANGELOG.md) | Release Notes je Version |
+| [project.yml](project.yml) | Beschreibung des Xcode-Projekts, Quelle für XcodeGen |
 
 ## Grundprinzipien
 

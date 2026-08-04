@@ -66,7 +66,9 @@ umgekehrt. Weichen beide voneinander ab, ist das ein Fehler, kein Zustand.
 
 | Was | Wie |
 |---|---|
+| Vor jeder Runde | `git status` — das Arbeitsverzeichnis muss auf dem committeten Stand sein. Ein zurückgefallener Container sah schon einmal wie verlorene Arbeit aus |
 | `PulseCore` | `cd Packages/PulseCore && swift test` — muss vollständig grün sein |
+| Auf einem Mac | `scripts/test.sh` deckt Pakete und App ab, `scripts/run.sh` liefert Screenshots |
 | Prototyp | Headless in Chromium laden, Hauptflüsse klicken, auf JS-Fehler und horizontalen Überlauf prüfen, in Hell **und** Dunkel |
 | Zahlen im Prototyp | Vor dem Veröffentlichen einmal ausrechnen lassen und auf Plausibilität ansehen |
 
@@ -92,7 +94,16 @@ docs/04-monetarisierung.md    Free / Pro / Vermieter
 docs/05-roadmap.md            v1-Umfang, Ausschlüsse, Reihenfolge
 docs/prototype/index.html     Klick-Dummy, in sich geschlossen
 Packages/PulseCore/           Domäne und Rechenkern, nur Foundation
+Packages/PulseData/           SwiftData und CloudKit, braucht Xcode
+App/                          App-Target, wird vollständig eingelesen
+project.yml                   Beschreibung des Xcode-Projekts (XcodeGen)
+scripts/                      setup-mac, test, run — die Automatisierung
 ```
+
+Auf einem Mac gilt zusätzlich `.claude/skills/xcode-workflow/SKILL.md`:
+Bauen, Testen und Screenshots laufen über `scripts/`, nicht über die
+Xcode-Oberfläche. `PulseMeter.xcodeproj` wird erzeugt und ist deshalb nicht
+eingecheckt — neue Dateien gehören in den Ordner, nie ins Projekt.
 
 ## Produktprinzipien, gegen die jede Änderung geprüft wird
 

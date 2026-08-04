@@ -9,6 +9,36 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.10.0 — 2026-08-04
+
+### Hinzugefügt
+- App-Gerüst: iOS-Target mit Tab-Navigation, das die Übersicht aus dem
+  gespeicherten Bestand lädt und den Verbrauch über den Rechenkern ermittelt.
+  Es belegt, dass App, Persistenz und Domäne zusammenspielen — gestaltet wird
+  später mit `PulseUI`.
+- Das Xcode-Projekt wird aus `project.yml` erzeugt statt eingecheckt. Eine
+  `.xcodeproj` sortiert bei jeder Änderung Zeilen um und macht das
+  Zusammenführen unnötig schwer; die Beschreibung ist lesbar und wiederholbar.
+- Automatisierung in `scripts/`: `setup-mac.sh` richtet die Umgebung ein,
+  `test.sh` prüft Pakete und App im Simulator, `run.sh` startet die App und
+  legt einen Screenshot ab. Damit lässt sich ein Ergebnis auch ohne Blick auf
+  den Bildschirm beurteilen.
+- Zwei Oberflächentests: Startet die App, und erzeugt das Anlegen von
+  Beispieldaten einen berechneten Wert? Ein Übersetzungsfehler fällt beim Bauen
+  auf, ein Absturz beim Start nicht.
+- Skill `xcode-workflow` mit dem Ablauf, den erwartbaren Fehlerbildern und dem
+  Weg, CloudKit später einzuschalten.
+
+### Geändert
+- Die Prüfliste beginnt jetzt mit `git status`. Ein auf einen älteren Stand
+  zurückgefallenes Arbeitsverzeichnis sah schon einmal wie verlorene Arbeit
+  aus, obwohl auf dem Remote alles vollständig war.
+
+_82 Tests in PulseCore, alle grün. App-Gerüst, `PulseData` und die Skripte sind
+unter Linux nicht ausführbar und warten auf den ersten Lauf am Mac._
+
+---
+
 ## 0.9.1 — 2026-08-04
 
 ### Geändert
