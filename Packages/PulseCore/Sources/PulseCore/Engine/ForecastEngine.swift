@@ -56,10 +56,16 @@ public enum ForecastEngine {
         else { return nil }
 
         let actual = ConsumptionEngine.consumption(series: series, in: elapsedRange)
-        guard actual.hasData, actual.coveredDays > 0 else { return nil }
+        guard actual.hasData, let covered = actual.coveredRange, covered.spanInDays > 0 else {
+            return nil
+        }
 
-        let daysElapsed = actual.coveredDays
-        let daysRemaining = Swift.max(0, period.spanInDays - elapsedRange.spanInDays)
+        // Maßgeblich ist der Zeitraum, den die Daten tatsächlich abdecken — nicht
+        // der, den der Nutzer angefragt hat. Liegt die letzte Ablesung zwei Monate
+        // zurück, gehören diese zwei Monate zur Restzeit und nicht zum Gemessenen.
+        // Sonst würde ein veralteter Zählerstand die Prognose systematisch drücken.
+        let daysElapsed = covered.spanInDays
+        let daysRemaining = Swift.max(0, period.spanInDays - daysElapsed)
 
         // Der Zeitraum ist abgeschlossen — nichts hochzurechnen.
         guard daysRemaining > 0 else {
@@ -73,7 +79,7 @@ public enum ForecastEngine {
         }
 
         if let seasonal = seasonalProjection(series: series, period: period,
-                                             elapsedRange: elapsedRange, actual: actual) {
+                                             covered: covered, actual: actual) {
             return Forecast(
                 actual: actual,
                 projected: seasonal,
@@ -103,14 +109,16 @@ public enum ForecastEngine {
     private static func seasonalProjection(
         series: ConsumptionSeries,
         period: DayRange,
-        elapsedRange: DayRange,
+        covered: DayRange,
         actual: ConsumptionResult
     ) -> Quantity? {
 
+        // Das Vorjahresfenster muss denselben Ausschnitt abbilden wie die
+        // vorliegenden Daten, sonst vergleicht man ungleiche Zeiträume.
         guard let priorPeriod = DayRange(start: period.start.oneYearEarlier,
                                          end: period.end.oneYearEarlier),
-              let priorElapsed = DayRange(start: elapsedRange.start.oneYearEarlier,
-                                          end: elapsedRange.end.oneYearEarlier)
+              let priorElapsed = DayRange(start: covered.start.oneYearEarlier,
+                                          end: covered.end.oneYearEarlier)
         else { return nil }
 
         let priorTotal = ConsumptionEngine.consumption(series: series, in: priorPeriod)
@@ -168,9 +176,12 @@ public enum ForecastEngine {
 
         // Der Arbeitspreis skaliert mit dem Verbrauch, der Grundpreis nicht —
         // er fällt für den gesamten Zeitraum an, unabhängig vom Verbrauch.
+        // Hochgerechnet wird er über die abgerechneten Tage, nicht über die
+        // gemessenen: Der Grundpreis läuft auch weiter, wenn niemand abliest.
+        let elapsedDays = Swift.min(today, period.range.end).days(since: period.range.start)
         let fullBase = costSoFar.baseAmount.amount
             * Decimal(period.range.spanInDays)
-            / Decimal(Swift.max(1, forecast.daysElapsed))
+            / Decimal(Swift.max(1, elapsedDays))
         let projectedTotal = costSoFar.energyAmount.amount * scale + fullBase
         let projectedCost = Money(projectedTotal, costSoFar.total.currency)
 

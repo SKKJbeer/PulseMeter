@@ -1,0 +1,1293 @@
+<title>PulseMeter – Klickbarer Entwurf</title>
+<style>
+/* ============================================================
+   TOKENS
+   Neutrale sind warm gebrochen, damit die Zählerfarben tragen.
+   ============================================================ */
+:root {
+  --ground:      #E8E4DC;
+  --frame:       #C4BEB2;
+  --app-bg:      #FBFAF8;
+  --surface:     #FFFFFF;
+  --surface-2:   #F4F1EB;
+  --ink:         #17150F;
+  --ink-2:       #6B6659;
+  --ink-3:       #9A9384;
+  --hairline:    #E7E3DA;
+  --hairline-2:  #D8D2C6;
+  --tint:        #C77A0E;
+  --good:        #2F7F52;
+  --warn-bg:     #FBF0DA;
+  --warn-ink:    #8A5A08;
+  --shadow-card: 0 1px 2px rgba(23,21,15,.05), 0 6px 18px rgba(23,21,15,.05);
+  --shadow-dev:  0 40px 80px -20px rgba(23,21,15,.45), 0 0 0 1px rgba(23,21,15,.08);
+
+  --amber:  #C98410;
+  --green:  #2F8B57;
+  --blue:   #2A6FB8;
+  --orange: #C25C22;
+  --red:    #B03A38;
+  --teal:   #2A7F7A;
+  --on-accent: #FFFFFF;
+
+  --r-card: 18px;
+  --r-sheet: 26px;
+  --fs-hero: 34px;
+  --fs-value: 30px;
+  --fs-title: 20px;
+  --fs-body: 16px;
+  --fs-sub: 14px;
+  --fs-cap: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground:     #0A0908;
+    --frame:      #2A2620;
+    --app-bg:     #100F0D;
+    --surface:    #1B1917;
+    --surface-2:  #262320;
+    --ink:        #F5F2EC;
+    --ink-2:      #A39C8D;
+    --ink-3:      #756F62;
+    --hairline:   #2B2822;
+    --hairline-2: #383430;
+    --tint:       #E0A040;
+    --good:       #5CBF85;
+    --warn-bg:    #33290F;
+    --warn-ink:   #E8C070;
+    --shadow-card: 0 1px 2px rgba(0,0,0,.4);
+    --shadow-dev:  0 40px 80px -20px rgba(0,0,0,.8), 0 0 0 1px rgba(255,255,255,.06);
+    --amber:  #E8A945;
+    --green:  #5CBF85;
+    --blue:   #5C9EE0;
+    --orange: #E08551;
+    --red:    #DC6E6C;
+    --teal:   #63BAB4;
+    --on-accent: #100F0D;
+  }
+}
+:root[data-theme="dark"] {
+  --ground:     #0A0908;  --frame:      #2A2620;  --app-bg:     #100F0D;
+  --surface:    #1B1917;  --surface-2:  #262320;  --ink:        #F5F2EC;
+  --ink-2:      #A39C8D;  --ink-3:      #756F62;  --hairline:   #2B2822;
+  --hairline-2: #383430;  --tint:       #E0A040;  --good:       #5CBF85;
+  --warn-bg:    #33290F;  --warn-ink:   #E8C070;
+  --shadow-card: 0 1px 2px rgba(0,0,0,.4);
+  --shadow-dev:  0 40px 80px -20px rgba(0,0,0,.8), 0 0 0 1px rgba(255,255,255,.06);
+  --amber: #E8A945; --green: #5CBF85; --blue: #5C9EE0; --orange: #E08551; --red: #DC6E6C; --teal: #63BAB4; --on-accent: #100F0D;
+}
+:root[data-theme="light"] {
+  --ground:     #E8E4DC;  --frame:      #C4BEB2;  --app-bg:     #FBFAF8;
+  --surface:    #FFFFFF;  --surface-2:  #F4F1EB;  --ink:        #17150F;
+  --ink-2:      #6B6659;  --ink-3:      #9A9384;  --hairline:   #E7E3DA;
+  --hairline-2: #D8D2C6;  --tint:       #C77A0E;  --good:       #2F7F52;
+  --warn-bg:    #FBF0DA;  --warn-ink:   #8A5A08;
+  --shadow-card: 0 1px 2px rgba(23,21,15,.05), 0 6px 18px rgba(23,21,15,.05);
+  --shadow-dev:  0 40px 80px -20px rgba(23,21,15,.45), 0 0 0 1px rgba(23,21,15,.08);
+  --amber: #C98410; --green: #2F8B57; --blue: #2A6FB8; --orange: #C25C22; --red: #B03A38; --teal: #2A7F7A; --on-accent: #FFFFFF;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  font-size: var(--fs-body);
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: tabular-nums;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  padding: 28px 16px 40px;
+}
+
+/* ---------- Bühne ---------- */
+.stage-head {
+  width: 100%; max-width: 430px;
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+}
+.stage-head h1 {
+  margin: 0; font-size: 15px; font-weight: 640; letter-spacing: -0.01em;
+}
+.stage-head p { margin: 0; font-size: var(--fs-cap); color: var(--ink-2); }
+
+.controls { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.ctl {
+  font: inherit; font-size: 13px; font-weight: 550;
+  color: var(--ink-2); background: var(--surface);
+  border: 1px solid var(--hairline-2); border-radius: 999px;
+  padding: 7px 14px; cursor: pointer;
+  transition: color .15s, border-color .15s;
+}
+.ctl:hover { color: var(--ink); border-color: var(--ink-3); }
+.ctl:focus-visible { outline: 2px solid var(--tint); outline-offset: 2px; }
+
+/* ---------- Gerät ---------- */
+.device {
+  width: min(390px, 100%);
+  height: min(844px, calc(100vh - 190px));
+  min-height: 620px;
+  background: var(--app-bg);
+  border-radius: 44px;
+  box-shadow: var(--shadow-dev);
+  border: 9px solid var(--frame);
+  position: relative;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  isolation: isolate;
+}
+
+/* Statusleiste */
+.statusbar {
+  height: 46px; flex: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 26px 0 30px;
+  font-size: 14px; font-weight: 640; letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.statusbar .glyphs { display: flex; gap: 5px; align-items: center; opacity: .9; }
+
+/* Bildschirmfläche */
+.screen { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
+.screen::-webkit-scrollbar { width: 0; }
+.pane { display: none; padding: 0 18px 26px; animation: paneIn .22s ease both; }
+.pane.on { display: block; }
+@keyframes paneIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+h2.large {
+  font-size: var(--fs-hero); font-weight: 720; letter-spacing: -0.028em;
+  margin: 4px 0 2px; text-wrap: balance;
+}
+.datum { font-size: var(--fs-sub); color: var(--ink-3); margin: 0 0 16px; }
+
+/* ---------- Statuszeile ---------- */
+.status-line {
+  display: flex; align-items: flex-start; gap: 11px;
+  padding: 14px 15px; margin-bottom: 18px;
+  border-radius: 15px;
+  background: var(--surface); box-shadow: var(--shadow-card);
+  font-size: 15px; line-height: 1.35; letter-spacing: -0.01em;
+}
+.status-line.due { background: var(--warn-bg); box-shadow: none; color: var(--warn-ink); }
+.status-line .dot {
+  width: 9px; height: 9px; border-radius: 50%; flex: none; margin-top: 6px;
+  background: var(--good);
+}
+.status-line.due .dot { background: currentColor; }
+.status-line b { font-weight: 640; }
+
+/* ---------- Zählerkarte ---------- */
+.cards { display: flex; flex-direction: column; gap: 12px; }
+.card {
+  background: var(--surface); border-radius: var(--r-card);
+  box-shadow: var(--shadow-card); overflow: hidden;
+  border: 1px solid transparent;
+  transition: border-color .18s;
+}
+.card.flagged { border-color: color-mix(in srgb, var(--c) 45%, transparent); }
+.card-top {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 15px 0;
+}
+.chip-icon {
+  width: 27px; height: 27px; border-radius: 8px; flex: none;
+  display: grid; place-items: center;
+  background: color-mix(in srgb, var(--c) 15%, transparent);
+  color: var(--c);
+}
+.chip-icon svg { width: 15px; height: 15px; }
+.card-name { font-weight: 620; font-size: 16px; letter-spacing: -0.012em; flex: 1; }
+.due-pill {
+  font-size: 11px; font-weight: 660; letter-spacing: .02em; text-transform: uppercase;
+  padding: 4px 8px; border-radius: 999px;
+  background: color-mix(in srgb, var(--c) 16%, transparent); color: var(--c);
+}
+.card-body { padding: 8px 15px 15px; display: flex; align-items: flex-end; gap: 14px; }
+.card-figure { flex: 1; min-width: 0; }
+.value-row { display: flex; align-items: baseline; gap: 5px; }
+.value {
+  font-size: var(--fs-value); font-weight: 700; letter-spacing: -0.032em; line-height: 1.05;
+}
+.unit { font-size: 15px; font-weight: 560; color: var(--ink-2); }
+.sub { font-size: var(--fs-sub); color: var(--ink-2); margin-top: 4px; letter-spacing: -0.005em; }
+.sub .delta { font-weight: 620; }
+.sub .delta.down { color: var(--good); }
+.sub .delta.up { color: var(--red); }
+.spark { flex: none; width: 78px; height: 34px; }
+
+/* Zusatzzeile: zweites Zählwerk / Abschlag */
+.card-extra {
+  border-top: 1px solid var(--hairline);
+  padding: 10px 15px;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  font-size: var(--fs-sub); color: var(--ink-2);
+}
+.card-extra > span:first-child { min-width: 0; }
+.card-extra > :last-child { white-space: nowrap; flex: none; }
+.card-extra strong { color: var(--ink); font-weight: 600; }
+.explain {
+  font: inherit; font-size: var(--fs-sub); color: var(--c);
+  background: none; border: 0; padding: 0; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 4px; font-weight: 560;
+}
+.explain:focus-visible { outline: 2px solid var(--tint); outline-offset: 3px; border-radius: 4px; }
+.card-actions { border-top: 1px solid var(--hairline); display: flex; }
+.card-actions button {
+  flex: 1; font: inherit; font-size: 15px; font-weight: 600; letter-spacing: -0.01em;
+  color: var(--c); background: none; border: 0; padding: 13px 0; cursor: pointer;
+}
+.card-actions button:active { background: var(--surface-2); }
+.card-actions button:focus-visible { outline: 2px solid var(--tint); outline-offset: -3px; }
+
+/* ---------- Tab-Leiste ---------- */
+.tabbar {
+  flex: none; display: flex; padding: 7px 0 20px;
+  border-top: 1px solid var(--hairline);
+  background: color-mix(in srgb, var(--app-bg) 88%, transparent);
+  backdrop-filter: blur(18px);
+}
+.tabbar button {
+  flex: 1; background: none; border: 0; cursor: pointer; font: inherit;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  color: var(--ink-3); font-size: 10.5px; font-weight: 560; letter-spacing: .005em;
+  padding: 3px 0;
+}
+.tabbar button svg { width: 25px; height: 25px; }
+.tabbar button[aria-selected="true"] { color: var(--tint); }
+.tabbar button:focus-visible { outline: 2px solid var(--tint); outline-offset: -4px; border-radius: 8px; }
+
+/* ---------- Bogen (Sheet) ---------- */
+.scrim {
+  position: absolute; inset: 0; z-index: 5;
+  background: rgba(10,9,8,.42);
+  opacity: 0; pointer-events: none; transition: opacity .28s;
+}
+.scrim.on { opacity: 1; pointer-events: auto; }
+.sheet {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 6;
+  background: var(--app-bg);
+  border-radius: var(--r-sheet) var(--r-sheet) 0 0;
+  transform: translateY(102%);
+  transition: transform .34s cubic-bezier(.32,.72,0,1);
+  max-height: 94%; display: flex; flex-direction: column;
+  box-shadow: 0 -14px 40px rgba(0,0,0,.16);
+}
+.sheet.on { transform: none; }
+.grabber {
+  width: 36px; height: 5px; border-radius: 3px; background: var(--hairline-2);
+  margin: 8px auto 0; flex: none;
+}
+.sheet-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px 6px; flex: none;
+}
+.sheet-title { font-size: 17px; font-weight: 660; letter-spacing: -0.015em; }
+.sheet-close {
+  font: inherit; font-size: 15px; font-weight: 560; color: var(--tint);
+  background: none; border: 0; cursor: pointer; padding: 4px;
+}
+.sheet-close:focus-visible { outline: 2px solid var(--tint); outline-offset: 2px; border-radius: 6px; }
+.sheet-body { overflow-y: auto; padding: 0 16px 18px; }
+
+/* ---------- Zählwerk ---------- */
+.capture-meta {
+  text-align: center; font-size: var(--fs-sub); color: var(--ink-2);
+  margin: 2px 0 14px;
+}
+.prefill {
+  font: inherit; font-size: 13px; font-weight: 560;
+  background: var(--surface-2); border: 1px solid var(--hairline-2);
+  color: var(--ink-2); border-radius: 999px; padding: 5px 11px;
+  cursor: pointer; margin-top: 8px;
+}
+.prefill:hover { color: var(--ink); }
+.prefill:focus-visible { outline: 2px solid var(--tint); outline-offset: 2px; }
+
+.counter {
+  display: flex; justify-content: center; gap: 3px;
+  padding: 14px; border-radius: 14px;
+  background: linear-gradient(180deg, #2A2620, #423C33);
+  box-shadow: inset 0 2px 7px rgba(0,0,0,.55);
+  margin-bottom: 4px;
+}
+.drum {
+  width: 30px; height: 46px; border-radius: 3px;
+  display: grid; place-items: center; overflow: hidden;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 27px; font-weight: 600; letter-spacing: -0.02em;
+  background: linear-gradient(180deg,#B8B2A6 0%,#FDFCFA 20%,#FFFFFF 48%,#EFEBE3 74%,#B8B2A6 100%);
+  color: #17150F;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.28);
+}
+.drum.dec {
+  background: linear-gradient(180deg,#7A1B18 0%,#D9352F 20%,#EC4A43 48%,#C22A25 74%,#7A1B18 100%);
+  color: #FFF;
+}
+.drum.sep { width: 8px; background: none; box-shadow: none; }
+.drum span { display: block; }
+.drum.rolled span { animation: roll .22s cubic-bezier(.3,.8,.3,1); }
+@keyframes roll {
+  0%   { transform: translateY(-88%); opacity: .25; }
+  100% { transform: none; opacity: 1; }
+}
+.counter-unit {
+  text-align: center; font-size: var(--fs-cap); font-weight: 620;
+  letter-spacing: .04em; color: var(--ink-3);
+  margin-bottom: 12px;
+}
+
+/* Plausibilitätszeile */
+.verdict {
+  min-height: 62px; border-radius: 13px; padding: 12px 14px;
+  font-size: var(--fs-sub); line-height: 1.4; letter-spacing: -0.005em;
+  display: flex; gap: 10px; align-items: flex-start;
+  background: var(--surface); color: var(--ink-2);
+  transition: background .2s, color .2s;
+}
+.verdict .mark { flex: none; margin-top: 1px; }
+.verdict.warn { background: var(--warn-bg); color: var(--warn-ink); }
+.verdict.idle { background: transparent; color: var(--ink-3); }
+.verdict b { color: var(--ink); font-weight: 620; }
+.verdict.warn b { color: inherit; }
+
+/* Tastenfeld */
+.keys {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px;
+  margin-top: 14px;
+}
+.key {
+  font: inherit; font-size: 26px; font-weight: 440; letter-spacing: -0.02em;
+  height: 52px; border-radius: 12px; cursor: pointer;
+  background: var(--surface); color: var(--ink);
+  border: 1px solid var(--hairline); box-shadow: 0 1px 1px rgba(23,21,15,.05);
+  display: grid; place-items: center;
+}
+.key:active { background: var(--surface-2); transform: translateY(1px); }
+.key:focus-visible { outline: 2px solid var(--tint); outline-offset: 2px; }
+.key.aux { font-size: 13px; font-weight: 560; color: var(--ink-2); background: transparent; border-color: transparent; box-shadow: none; }
+.key.aux svg { width: 21px; height: 21px; }
+
+.save {
+  width: 100%; margin-top: 14px; font: inherit;
+  font-size: 17px; font-weight: 640; letter-spacing: -0.015em;
+  color: var(--on-accent); background: var(--c);
+  border: 0; border-radius: 14px; padding: 15px; cursor: pointer;
+}
+.save[disabled] { opacity: .32; cursor: not-allowed; }
+.save:not([disabled]):active { filter: brightness(.92); }
+.save:focus-visible { outline: 2px solid var(--tint); outline-offset: 3px; }
+.save-note {
+  text-align: center; font-size: var(--fs-cap); color: var(--ink-3);
+  margin-top: 9px;
+}
+
+/* Bestätigung */
+.toast {
+  position: absolute; left: 50%; top: 44%; z-index: 9;
+  transform: translate(-50%,-50%) scale(.86); opacity: 0;
+  background: color-mix(in srgb, var(--ink) 92%, transparent);
+  color: var(--app-bg);
+  padding: 20px 26px; border-radius: 20px; text-align: center;
+  font-size: 15px; font-weight: 600; letter-spacing: -0.01em;
+  pointer-events: none; transition: opacity .2s, transform .28s cubic-bezier(.2,1.3,.4,1);
+}
+.toast.on { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+.toast svg { width: 34px; height: 34px; display: block; margin: 0 auto 8px; }
+
+/* ---------- Verlauf ---------- */
+.segmented {
+  display: flex; gap: 2px; padding: 2px; border-radius: 10px;
+  background: var(--surface-2); margin-bottom: 16px;
+}
+.segmented button {
+  flex: 1; font: inherit; font-size: 13.5px; font-weight: 570; letter-spacing: -0.008em;
+  border: 0; border-radius: 8px; padding: 7px 0; cursor: pointer;
+  background: none; color: var(--ink-2);
+}
+.segmented button[aria-selected="true"] {
+  background: var(--surface); color: var(--ink);
+  box-shadow: 0 1px 3px rgba(23,21,15,.11);
+}
+.segmented button:focus-visible { outline: 2px solid var(--tint); outline-offset: -2px; }
+
+.picker { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 14px; margin-bottom: 2px; }
+.picker::-webkit-scrollbar { height: 0; }
+.pick {
+  font: inherit; font-size: 13.5px; font-weight: 560; white-space: nowrap;
+  border: 1px solid var(--hairline-2); background: var(--surface);
+  color: var(--ink-2); border-radius: 999px; padding: 7px 13px; cursor: pointer;
+}
+.pick[aria-selected="true"] {
+  background: color-mix(in srgb, var(--c) 13%, transparent);
+  border-color: color-mix(in srgb, var(--c) 40%, transparent);
+  color: var(--c);
+}
+.pick:focus-visible { outline: 2px solid var(--tint); outline-offset: 2px; }
+
+.chart-card { background: var(--surface); border-radius: var(--r-card); box-shadow: var(--shadow-card); padding: 16px 14px 12px; }
+.chart-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; padding: 0 2px; }
+.chart-head .big { font-size: 26px; font-weight: 700; letter-spacing: -0.03em; }
+.chart-head .lbl { font-size: var(--fs-cap); color: var(--ink-3); font-weight: 560; }
+.legend { display: flex; gap: 14px; padding: 10px 4px 2px; font-size: var(--fs-cap); color: var(--ink-3); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+
+.list { background: var(--surface); border-radius: var(--r-card); box-shadow: var(--shadow-card); margin-top: 16px; overflow: hidden; }
+.row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 15px; border-bottom: 1px solid var(--hairline);
+  font-size: 15px;
+}
+.row:last-child { border-bottom: 0; }
+.row .rl { flex: 1; min-width: 0; }
+.row .rl small { display: block; font-size: var(--fs-cap); color: var(--ink-3); margin-top: 2px; }
+.row .rv { font-weight: 600; letter-spacing: -0.015em; }
+.row .rv small { display: block; text-align: right; font-weight: 500; font-size: var(--fs-cap); color: var(--ink-3); margin-top: 2px; }
+.tag {
+  font-size: 10.5px; font-weight: 620; letter-spacing: .02em; text-transform: uppercase;
+  padding: 3px 6px; border-radius: 5px; background: var(--surface-2); color: var(--ink-3);
+}
+
+.section-label {
+  font-size: var(--fs-cap); font-weight: 640; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--ink-3);
+  margin: 22px 0 8px 4px;
+}
+
+/* Erklärung */
+.calc { display: flex; flex-direction: column; gap: 0; margin-top: 4px; }
+.calc-row {
+  display: flex; justify-content: space-between; gap: 14px;
+  padding: 12px 0; border-bottom: 1px solid var(--hairline);
+  font-size: 15px;
+}
+.calc-row:last-of-type { border-bottom: 0; }
+.calc-row .k { color: var(--ink-2); }
+.calc-row .v { font-weight: 600; letter-spacing: -0.012em; white-space: nowrap; }
+.calc-row.total { border-top: 1.5px solid var(--ink); margin-top: 4px; padding-top: 13px; }
+.calc-row.total .k, .calc-row.total .v { font-weight: 680; color: var(--ink); }
+.note {
+  font-size: 13px; line-height: 1.5; color: var(--ink-2);
+  background: var(--surface-2); border-radius: 12px; padding: 12px 13px; margin-top: 16px;
+}
+
+.hint {
+  text-align: center; font-size: var(--fs-cap); color: var(--ink-3);
+  max-width: 390px; line-height: 1.5;
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+</style>
+
+<div class="stage-head">
+  <h1>PulseMeter</h1>
+  <p>Klickbarer Entwurf · v1</p>
+</div>
+
+<div class="device">
+  <div class="statusbar">
+    <span>9:41</span>
+    <span class="glyphs">
+      <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+      <svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x=".7" y=".7" width="19" height="9.6" rx="2.6" stroke="currentColor" stroke-opacity=".4" stroke-width="1"/><rect x="2.2" y="2.2" width="14" height="6.6" rx="1.4" fill="currentColor"/><path d="M21.4 4v3a2 2 0 0 0 0-3z" fill="currentColor" fill-opacity=".45"/></svg>
+    </span>
+  </div>
+
+  <div class="screen">
+    <!-- ÜBERSICHT -->
+    <section class="pane on" id="pane-home">
+      <h2 class="large">Übersicht</h2>
+      <p class="datum">Dienstag, 4. August 2026</p>
+      <div id="status"></div>
+      <div class="cards" id="cards"></div>
+    </section>
+
+    <!-- VERLAUF -->
+    <section class="pane" id="pane-history">
+      <h2 class="large">Verlauf</h2>
+      <p class="datum">Ein Zähler, ein Zeitraum</p>
+      <div class="picker" id="picker"></div>
+      <div class="segmented" id="scale">
+        <button type="button" aria-selected="true" data-scale="month">Monat</button>
+        <button type="button" aria-selected="false" data-scale="year">Jahr</button>
+      </div>
+      <div class="chart-card">
+        <div class="chart-head">
+          <div><div class="big" id="chart-total"></div><div class="lbl" id="chart-label"></div></div>
+          <div class="lbl" id="chart-delta"></div>
+        </div>
+        <div id="chart"></div>
+        <div class="legend">
+          <span><i id="lg-now"></i>2026</span>
+          <span><i style="background:var(--hairline-2)"></i>2025</span>
+          <span><i style="background:repeating-linear-gradient(45deg,var(--ink-3) 0 2px,transparent 2px 4px)"></i><span id="lg-hatch">geschätzt</span></span>
+        </div>
+      </div>
+      <div class="section-label">Ablesungen</div>
+      <div class="list" id="readings"></div>
+    </section>
+
+    <!-- ZÄHLER -->
+    <section class="pane" id="pane-meters">
+      <h2 class="large">Zähler</h2>
+      <p class="datum">4 Zähler · Zuhause</p>
+      <div class="list" id="meterlist"></div>
+      <div class="section-label">Erinnerungen</div>
+      <div class="list">
+        <div class="row"><div class="rl">Monatlich am 1.<small>Für Strom, Wasser, Wärmepumpe</small></div><div class="rv" style="color:var(--good)">An</div></div>
+        <div class="row"><div class="rl">Gas<small>Monatlich am 1.</small></div><div class="rv" style="color:var(--good)">An</div></div>
+      </div>
+      <div class="note">Der Entwurf zeigt keine Bezahlschranke. Kosten, Prognose und Belegfotos wären in der fertigen App Pro-Funktionen — die Erfassung selbst bleibt immer frei.</div>
+    </section>
+  </div>
+
+  <nav class="tabbar" id="tabs">
+    <button type="button" aria-selected="true" data-pane="home">
+      <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15.5 14 6l10 9.5"/><path d="M6.5 13.5V22a1 1 0 0 0 1 1h13a1 1 0 0 0 1-1v-8.5"/></svg>
+      Übersicht
+    </button>
+    <button type="button" aria-selected="false" data-pane="history">
+      <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M5 23h18"/><path d="M8 23v-7"/><path d="M13.5 23V9"/><path d="M19 23v-11"/></svg>
+      Verlauf
+    </button>
+    <button type="button" aria-selected="false" data-pane="meters">
+      <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="14" cy="14" r="9.2"/><path d="M14 14 18 9.8"/><path d="M14 4.8v1.8M23.2 14h-1.8M14 23.2v-1.8M4.8 14h1.8"/></svg>
+      Zähler
+    </button>
+  </nav>
+
+  <div class="scrim" id="scrim"></div>
+
+  <!-- Erfassung -->
+  <div class="sheet" id="sheet-capture" role="dialog" aria-modal="true" aria-label="Zählerstand eintragen">
+    <div class="grabber"></div>
+    <div class="sheet-head">
+      <button type="button" class="sheet-close" data-close>Abbrechen</button>
+      <div class="sheet-title" id="cap-title"></div>
+      <button type="button" class="sheet-close" style="visibility:hidden">Abbrechen</button>
+    </div>
+    <div class="sheet-body" id="cap-body">
+      <div class="capture-meta" id="cap-meta"></div>
+      <div class="counter" id="counter"></div>
+      <div class="counter-unit" id="cap-unit"></div>
+      <div class="verdict idle" id="verdict" aria-live="polite">Zählerstand eintippen</div>
+      <div class="keys" id="keys"></div>
+      <button type="button" class="save" id="save" disabled>Sichern</button>
+      <div class="save-note">Datum: heute, 4. August 2026 · antippen zum Ändern</div>
+    </div>
+  </div>
+
+  <!-- Erklärung -->
+  <div class="sheet" id="sheet-explain" role="dialog" aria-modal="true" aria-label="Erklärung">
+    <div class="grabber"></div>
+    <div class="sheet-head">
+      <div class="sheet-title" id="ex-title"></div>
+      <button type="button" class="sheet-close" data-close>Fertig</button>
+    </div>
+    <div class="sheet-body" id="ex-body"></div>
+  </div>
+
+  <div class="toast" id="toast">
+    <svg viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="17" cy="17" r="14.5" stroke-opacity=".3"/><path d="m10.5 17.5 4.5 4.5 9-9"/></svg>
+    <div id="toast-text">Gesichert</div>
+  </div>
+</div>
+
+<div class="controls">
+  <button type="button" class="ctl" id="theme">Dunkel / Hell</button>
+  <button type="button" class="ctl" id="reset">Entwurf zurücksetzen</button>
+</div>
+
+<p class="hint">Der Gaszähler ist überfällig — tippe auf seine Karte, um den Erfassungsfluss zu sehen. Die Plausibilitätsprüfung rechnet echt: Tippe einmal eine Stelle zu viel.</p>
+
+<script>
+"use strict";
+
+/* ============================================================
+   Daten. Aufgebaut wie in PulseCore: Messstelle → Zählwerk →
+   Ablesungen. Verbräuche werden nie gespeichert, immer gerechnet.
+   ============================================================ */
+
+const TODAY = { y: 2026, m: 8, d: 4 };
+const MONTHS = ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
+const MONTHS_LONG = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+
+function serial(y, m, d) {
+  const a = ((14 - m) / 12) | 0, yy = y + 4800 - a, mm = m + 12 * a - 3;
+  return d + (((153 * mm + 2) / 5) | 0) + 365 * yy + ((yy / 4) | 0) - ((yy / 100) | 0) + ((yy / 400) | 0) - 32045;
+}
+const between = (a, b) => serial(b.y, b.m, b.d) - serial(a.y, a.m, a.d);
+
+/* Monatliche Verbräuche eines Eigenheims mit Gasheizung, PV und Wallbox.
+   Saisonale Kurven, wie sie ein echter Haushalt hat. Die 2026er Reihen enden
+   mit dem letzten abgeschlossenen Monat — genau wie echte Daten es täten. */
+const SHAPE = {
+  strom:   { 2025: [312,286,268,241,218,205,198,204,226,258,289,315],
+             2026: [290,266,249,224,203,191,184] },
+  einsp:   { 2025: [ 42, 88,158,236,306,344,338,288,196,108, 48, 28],
+             2026: [ 46, 95,171,255,330,371,364] },
+  wasser:  { 2025: [10.8,9.9,11.2,10.6,12.4,13.1,13.8,13.2,11.6,10.9,10.4,11.1],
+             2026: [11.2,10.4,11.8,11.1,13.0,13.9,14.6] },
+  gas:     { 2025: [418,376,298,178, 92, 41, 36, 39, 84,192,308,402],
+             2026: [402,362,286,171, 88] },
+  wallbox: { 2025: [225,208,196,182,175,168,192,205,190,201,218,232],
+             2026: [238,215,203,188,180,174,198] }
+};
+
+/* Zählwerke bauen: kumulierte Stände am Monatsersten. */
+function buildReadings(startValue, shape, opts) {
+  opts = opts || {};
+  const out = [];
+  let v = startValue;
+  out.push({ y: 2025, m: 1, d: 1, value: round(v, opts.frac), origin: "manual" });
+  for (const year of [2025, 2026]) {
+    const arr = shape[year] || [];
+    for (let i = 0; i < arr.length; i++) {
+      v += arr[i];
+      const nm = i + 2 > 12 ? 1 : i + 2, ny = i + 2 > 12 ? year + 1 : year;
+      if (ny > 2026 || (ny === 2026 && nm > 8)) break;
+      if (year === 2026 && i === arr.length - 1 && opts.partialInto) {
+        out.push({ y: ny, m: opts.partialInto.m, d: opts.partialInto.d, value: round(v, opts.frac), origin: "manual" });
+        break;
+      }
+      out.push({ y: ny, m: nm, d: 1, value: round(v, opts.frac), origin: "manual" });
+    }
+  }
+  if (opts.estimateAt) {
+    const hit = out.find(r => r.y === opts.estimateAt.y && r.m === opts.estimateAt.m);
+    if (hit) hit.origin = "estimated";
+  }
+  return out;
+}
+const round = (n, f) => Math.round(n * 10 ** f) / 10 ** f;
+
+const METERS = [
+  {
+    id: "strom", name: "Strom", color: "var(--amber)",
+    icon: '<path d="M13 2 4 13h6l-1 9 9-11h-6z"/>',
+    interval: 30, unit: "kWh", int: 6, frac: 1,
+    price: 0.34, base: 12.90, prepay: 100, feedInPrice: 0.082,
+    serial: "1ESY1161284302",
+    registers: [
+      { id: "strom-bezug", label: null, unit: "kWh", int: 6, frac: 1,
+        readings: buildReadings(44530.4, SHAPE.strom, { frac: 1 }) },
+      { id: "strom-eins", label: "Einspeisung", unit: "kWh", int: 6, frac: 1, feedIn: true,
+        readings: buildReadings(9184.2, SHAPE.einsp, { frac: 1 }) }
+    ]
+  },
+  {
+    id: "wasser", name: "Wasser", color: "var(--blue)",
+    icon: '<path d="M12 2.5S5.5 10 5.5 14.2a6.5 6.5 0 0 0 13 0C18.5 10 12 2.5 12 2.5z"/>',
+    interval: 30, unit: "m³", int: 5, frac: 3,
+    price: 4.92, base: 9.50, prepay: null,
+    serial: "WZ-88 214 097",
+    registers: [
+      { id: "wasser-r", label: null, unit: "m³", int: 5, frac: 3,
+        readings: buildReadings(1132.418, SHAPE.wasser, { frac: 3, estimateAt: { y: 2025, m: 10 } }) }
+    ]
+  },
+  {
+    id: "gas", name: "Gas", color: "var(--orange)",
+    icon: '<path d="M12 2.5c3 4 1 6 0 6.5C10 7 8 8.5 8 11c0 1.6.8 2.7 1.6 3.4C8 14 6.5 12.6 6.5 10 4.9 12 4 14 4 16a8 8 0 0 0 16 0c0-5.5-4.5-9-8-13.5z"/>',
+    interval: 30, unit: "m³", int: 5, frac: 3,
+    price: 0.112, base: 14.20, prepay: 245, zZahl: 0.9563, brennwert: 11.482,
+    serial: "BK-G4 4471902",
+    registers: [
+      { id: "gas-r", label: null, unit: "m³", int: 5, frac: 3,
+        readings: buildReadings(6284.106, SHAPE.gas, { frac: 3, partialInto: { m: 5, d: 28 } }) }
+    ]
+  },
+  {
+    id: "wallbox", name: "Wallbox", color: "var(--teal)",
+    icon: '<path d="M5 17.5h14v2.2a.8.8 0 0 1-.8.8h-1.4a.8.8 0 0 1-.8-.8v-2.2M5 17.5v2.2a.8.8 0 0 0 .8.8h1.4a.8.8 0 0 0 .8-.8M4.2 12.4l1.6-4.6A2 2 0 0 1 7.7 6.4h8.6a2 2 0 0 1 1.9 1.4l1.6 4.6M4 12.4h16a1 1 0 0 1 1 1v3.1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-3.1a1 1 0 0 1 1-1z"/>',
+    iconStroke: true,
+    interval: 30, unit: "kWh", int: 6, frac: 1,
+    price: 0.29, base: 0, prepay: null,
+    serial: "1ESY1161299844",
+    registers: [
+      { id: "wallbox-r", label: null, unit: "kWh", int: 6, frac: 1,
+        readings: buildReadings(6841.3, SHAPE.wallbox, { frac: 1 }) }
+    ]
+  }
+];
+
+/* ============================================================
+   Rechenkern (verkürzte Fassung von PulseCore)
+   ============================================================ */
+
+function cumulativeAt(reg, day) {
+  const rs = reg.readings;
+  if (!rs.length) return null;
+  const s = serial(day.y, day.m, day.d);
+  const first = serial(rs[0].y, rs[0].m, rs[0].d);
+  const last = serial(rs[rs.length - 1].y, rs[rs.length - 1].m, rs[rs.length - 1].d);
+  if (s < first || s > last) return null;
+  for (let i = 0; i < rs.length; i++) {
+    const si = serial(rs[i].y, rs[i].m, rs[i].d);
+    if (si === s) return { v: rs[i].value, exact: true };
+    if (si > s) {
+      const lo = rs[i - 1], slo = serial(lo.y, lo.m, lo.d);
+      const f = (s - slo) / (si - slo);
+      return { v: lo.value + (rs[i].value - lo.value) * f, exact: false };
+    }
+  }
+  return { v: rs[rs.length - 1].value, exact: true };
+}
+
+function consumption(reg, from, to) {
+  const a = cumulativeAt(reg, from), b = cumulativeAt(reg, to);
+  if (!a || !b) {
+    // Auf den abgedeckten Bereich beschneiden — nie extrapolieren.
+    const rs = reg.readings;
+    if (!rs.length) return null;
+    const f0 = rs[0], l0 = rs[rs.length - 1];
+    const cf = serial(from.y, from.m, from.d) < serial(f0.y, f0.m, f0.d) ? f0 : from;
+    const ct = serial(to.y, to.m, to.d) > serial(l0.y, l0.m, l0.d) ? l0 : to;
+    if (serial(cf.y, cf.m, cf.d) >= serial(ct.y, ct.m, ct.d)) return null;
+    const a2 = cumulativeAt(reg, cf), b2 = cumulativeAt(reg, ct);
+    if (!a2 || !b2) return null;
+    return { value: b2.v - a2.v, days: between(cf, ct), exact: false, complete: false, cfrom: cf, cto: ct };
+  }
+  return { value: b.v - a.v, days: between(from, to), exact: a.exact && b.exact, complete: true, cfrom: from, cto: to };
+}
+const shiftYear = (d, n) => ({ y: d.y + n, m: d.m, d: d.m === 2 && d.d === 29 ? 28 : d.d });
+
+function monthConsumption(reg, y, m) {
+  const nm = m === 12 ? 1 : m + 1, ny = m === 12 ? y + 1 : y;
+  return consumption(reg, { y, m, d: 1 }, { y: ny, m: nm, d: 1 });
+}
+
+function lastReading(meter) {
+  let best = null;
+  for (const reg of meter.registers) {
+    const r = reg.readings[reg.readings.length - 1];
+    if (!best || serial(r.y, r.m, r.d) > serial(best.y, best.m, best.d)) best = r;
+  }
+  return best;
+}
+function daysSinceReading(meter) { return between(lastReading(meter), TODAY); }
+const isDue = m => daysSinceReading(m) >= m.interval;
+
+/* Laufendes Jahr, Vorjahresvergleich, Prognose */
+function yearToDate(reg) {
+  return consumption(reg, { y: 2026, m: 1, d: 1 }, TODAY);
+}
+function priorYearToDate(reg) {
+  return consumption(reg, { y: 2025, m: 1, d: 1 }, { y: 2025, m: TODAY.m, d: TODAY.d });
+}
+function priorYearFull(reg) {
+  return consumption(reg, { y: 2025, m: 1, d: 1 }, { y: 2026, m: 1, d: 1 });
+}
+/* Saisonale Hochrechnung über die Vorjahresform — bei Gas und Heizung
+   deutlich näher dran als die lineare Fortschreibung.
+   Maßgeblich ist der Zeitraum, den die Daten abdecken, nicht der bis heute:
+   Sonst würde ein veralteter Zählerstand die Prognose systematisch drücken. */
+function forecast(reg) {
+  const now = yearToDate(reg);
+  if (!now) return null;
+  const pf = priorYearFull(reg);
+  const ps = consumption(reg, shiftYear(now.cfrom, -1), shiftYear(now.cto, -1));
+  if (pf && ps && ps.complete && ps.value > 0 && pf.value > 0) {
+    const share = ps.value / pf.value;
+    if (share > 0 && share <= 1) return { value: now.value / share, method: "seasonal", now: now };
+  }
+  const perDay = now.value / now.days;
+  const remaining = between(now.cto, { y: 2026, m: 12, d: 31 });
+  return { value: now.value + perDay * remaining, method: "linear", now: now };
+}
+/* Das Vorjahresfenster folgt dem abgedeckten Zeitraum, nicht dem angefragten:
+   Sonst verglichen wir bei einem überfälligen Zähler eine halbe Heizperiode
+   mit einem Vorjahr inklusive Sommer. */
+function yearOverYear(reg) {
+  const a = yearToDate(reg);
+  if (!a) return null;
+  const b = consumption(reg, shiftYear(a.cfrom, -1), shiftYear(a.cto, -1));
+  if (!b || b.value <= 0) return null;
+  return (a.value / a.days - b.value / b.days) / (b.value / b.days);
+}
+/* Gas wird in m³ gemessen und in kWh abgerechnet. */
+function billedUnits(meter, cubicOrKwh) {
+  return meter.zZahl ? cubicOrKwh * meter.zZahl * meter.brennwert : cubicOrKwh;
+}
+const projectedCost = (m, fc) => billedUnits(m, fc.value) * m.price + m.base * 12;
+const balance = (m, fc) => m.prepay * 12 - projectedCost(m, fc);
+
+/* Zählerarten mit gefülltem und mit gezeichnetem Symbol. */
+function icon(m) {
+  return m.iconStroke
+    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${m.icon}</svg>`
+    : `<svg viewBox="0 0 24 24" fill="currentColor">${m.icon}</svg>`;
+}
+
+/* ============================================================
+   Formatierung
+   ============================================================ */
+const nf = (v, f) => v.toLocaleString("de-DE", { minimumFractionDigits: f, maximumFractionDigits: f });
+const money = v => v.toLocaleString("de-DE", { style: "currency", currency: "EUR" });
+const moneyRound = v => Math.round(v).toLocaleString("de-DE", { style: "currency", currency: "EUR", minimumFractionDigits: 0, maximumFractionDigits: 0 });
+const pct = v => (v > 0 ? "+" : "−") + nf(Math.abs(v * 100), 0) + " %";
+const dateLabel = r => `${r.d}. ${MONTHS_LONG[r.m - 1]} ${r.y}`;
+const dateShort = r => `${r.d}. ${MONTHS[r.m - 1]}`;
+
+/* ============================================================
+   Übersicht
+   ============================================================ */
+function renderStatus() {
+  const due = METERS.filter(isDue);
+  const box = document.getElementById("status");
+  if (due.length) {
+    const m = due[0];
+    box.innerHTML = `<div class="status-line due"><span class="dot"></span><div>
+      <b>${m.name} ist seit ${daysSinceReading(m)} Tagen nicht abgelesen.</b>
+      Ohne aktuellen Stand ist die Prognose ungenau.</div></div>`;
+  } else {
+    const reg = METERS[0].registers[0];
+    const yoy = yearOverYear(reg);
+    const txt = yoy !== null && yoy < -0.02
+      ? `<b>Alles im Rahmen.</b> Strom liegt ${pct(yoy)} unter dem Vorjahr.`
+      : `<b>Alles im Rahmen.</b> Alle Zähler sind aktuell.`;
+    box.innerHTML = `<div class="status-line"><span class="dot"></span><div>${txt}</div></div>`;
+  }
+}
+
+/* Letzte zwölf Monate. Monate ohne vollständige Daten werden ausgelassen,
+   nicht als Null gezeichnet — eine Datenlücke ist kein Nullverbrauch. */
+function sparkline(reg, color) {
+  const pts = [];
+  for (let i = 11; i >= 0; i--) {
+    let m = TODAY.m - 1 - i, y = 2026;
+    while (m < 1) { m += 12; y -= 1; }
+    const c = monthConsumption(reg, y, m);
+    if (c && c.complete) pts.push({ i: 11 - i, v: c.value });
+  }
+  if (pts.length < 2) return '<span class="spark"></span>';
+  const vals = pts.map(p => p.v);
+  const max = Math.max(...vals), min = Math.min(...vals);
+  const w = 78, h = 34, pad = 3;
+  const x = i => (i / 11) * (w - 2 * pad) + pad;
+  const y = v => h - pad - ((v - min) / (max - min || 1)) * (h - 2 * pad);
+  const line = pts.map((p, k) => `${k ? "L" : "M"}${x(p.i).toFixed(1)} ${y(p.v).toFixed(1)}`).join(" ");
+  const first = pts[0], last = pts[pts.length - 1];
+  const area = `${line} L${x(last.i).toFixed(1)} ${h} L${x(first.i).toFixed(1)} ${h} Z`;
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" aria-hidden="true">
+    <path d="${area}" fill="${color}" opacity=".11"/>
+    <path d="${line}" fill="none" stroke="${color}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="${x(last.i).toFixed(1)}" cy="${y(last.v).toFixed(1)}" r="2.6" fill="${color}"/></svg>`;
+}
+
+function renderCards() {
+  const host = document.getElementById("cards");
+  host.innerHTML = METERS.map(m => {
+    const reg = m.registers[0];
+    const ytd = yearToDate(reg);
+    const yoy = yearOverYear(reg);
+    const fc = forecast(reg);
+    const due = isDue(m);
+
+    let extra = "";
+    const second = m.registers[1];
+    if (second) {
+      const s = yearToDate(second);
+      extra += `<div class="card-extra"><span>Einspeisung <strong>${nf(s.value, 0)} kWh</strong></span>
+        <span>≈ ${moneyRound(s.value * m.feedInPrice)} vergütet</span></div>`;
+    }
+    if (m.prepay && fc) {
+      const bal = balance(m, fc);
+      extra += `<div class="card-extra"><span>Abschlag ${moneyRound(m.prepay)} monatlich</span>
+        <button class="explain" data-explain="${m.id}">${bal >= 0 ? "≈ " + moneyRound(bal) + " Guthaben" : "≈ " + moneyRound(-bal) + " Nachzahlung"}
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button></div>`;
+    }
+
+    let sub;
+    if (due) {
+      sub = `<span style="color:${m.color};font-weight:600">Seit ${daysSinceReading(m)} Tagen fällig</span>`;
+    } else if (yoy !== null) {
+      const dir = yoy < 0 ? "down" : "up";
+      sub = `<span class="delta ${dir}">${pct(yoy)}</span> gegenüber Vorjahr`;
+    } else {
+      sub = "Noch kein Vergleichswert";
+    }
+
+    return `<article class="card ${due ? "flagged" : ""}" style="--c:${m.color}">
+      <div class="card-top">
+        <span class="chip-icon">${icon(m)}</span>
+        <span class="card-name">${m.name}</span>
+        ${due ? '<span class="due-pill">Fällig</span>' : ""}
+      </div>
+      <div class="card-body">
+        <div class="card-figure">
+          <div class="value-row"><span class="value">${nf(ytd.value, m.frac >= 3 ? 1 : 0)}</span><span class="unit">${m.unit}</span></div>
+          <div class="sub">${sub}</div>
+        </div>
+        ${sparkline(reg, m.color)}
+      </div>
+      ${extra}
+      <div class="card-actions"><button type="button" data-capture="${m.id}">Stand eintragen</button></div>
+    </article>`;
+  }).join("");
+}
+
+/* ============================================================
+   Verlauf
+   ============================================================ */
+let histMeter = "strom", histScale = "month";
+
+function renderPicker() {
+  document.getElementById("picker").innerHTML = METERS.map(m =>
+    `<button type="button" class="pick" style="--c:${m.color}" data-pick="${m.id}"
+      aria-selected="${m.id === histMeter}">${m.name}</button>`).join("");
+}
+
+const readingOn = (reg, y, m, d) => reg.readings.find(r => r.y === y && r.m === m && r.d === d);
+/* Ein Monat gilt als geschätzt, sobald eine seiner Grenzablesungen geschätzt ist. */
+function monthEstimated(reg, y, m) {
+  const nm = m === 12 ? 1 : m + 1, ny = m === 12 ? y + 1 : y;
+  const a = readingOn(reg, y, m, 1), b = readingOn(reg, ny, nm, 1);
+  return (!!a && a.origin === "estimated") || (!!b && b.origin === "estimated");
+}
+
+function svgOpen(w, h, label) {
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;display:block" role="img" aria-label="${label}">
+    <defs><pattern id="hatch" width="4" height="4" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="0" y2="4" stroke="currentColor" stroke-width="2.2" opacity=".5"/></pattern></defs>`;
+}
+
+function renderChart() {
+  const m = METERS.find(x => x.id === histMeter);
+  const reg = m.registers[0];
+  const dp = m.frac >= 3 ? 1 : 0;
+  document.getElementById("lg-now").style.background = m.color;
+  const host = document.getElementById("chart");
+  host.style.color = m.color;
+
+  const ytd = yearToDate(reg), yoy = yearOverYear(reg), fc = forecast(reg);
+  const W = 322, H = 148;
+
+  if (histScale === "month") {
+    const now = [], prev = [], est = [];
+    for (let i = 1; i <= 12; i++) {
+      const c = monthConsumption(reg, 2026, i), p = monthConsumption(reg, 2025, i);
+      now.push(c && c.complete ? c.value : null);
+      prev.push(p && p.complete ? p.value : null);
+      est.push(monthEstimated(reg, 2026, i));
+    }
+    const max = Math.max(...[...now, ...prev].filter(v => v !== null), 1);
+    const bw = W / 12;
+    let svg = svgOpen(W, H + 18, "Monatsverbrauch 2026 im Vergleich zu 2025");
+    for (let g = 0; g <= 2; g++) {
+      const yy = H - (g / 2) * (H - 12);
+      svg += `<line x1="0" y1="${yy}" x2="${W}" y2="${yy}" stroke="var(--hairline)" stroke-width="1"/>`;
+    }
+    for (let i = 0; i < 12; i++) {
+      const cx = i * bw;
+      if (prev[i] !== null) {
+        const h = (prev[i] / max) * (H - 12);
+        svg += `<rect x="${cx + bw * .16}" y="${H - h}" width="${bw * .68}" height="${h}" rx="2.5" fill="var(--hairline-2)" opacity=".85"/>`;
+      }
+      if (now[i] !== null) {
+        const h = (now[i] / max) * (H - 12);
+        svg += `<rect x="${cx + bw * .28}" y="${H - h}" width="${bw * .44}" height="${h}" rx="2.5" fill="${est[i] ? "url(#hatch)" : m.color}"/>`;
+      }
+      svg += `<text x="${cx + bw / 2}" y="${H + 13}" text-anchor="middle" font-size="9" fill="var(--ink-3)" font-family="-apple-system,sans-serif">${MONTHS[i]}</text>`;
+    }
+    host.innerHTML = svg + "</svg>";
+    document.getElementById("chart-total").textContent = nf(ytd.value, dp) + " " + m.unit;
+    document.getElementById("chart-label").textContent = "seit 1. Januar 2026";
+  } else {
+    // Jahresansicht: gemessen fest, hochgerechnet schraffiert — die Prognose
+    // sieht anders aus als eine Messung, weil sie etwas anderes ist.
+    const prevTotal = priorYearFull(reg).value;
+    const measured = ytd.value;
+    const projected = fc ? Math.max(fc.value, measured) : measured;
+    const max = Math.max(prevTotal, projected, 1);
+    const bars = [
+      { label: "2025", solid: prevTotal, extra: 0, color: "var(--hairline-2)" },
+      { label: "2026", solid: measured, extra: projected - measured, color: m.color }
+    ];
+    const bw = W / 2;
+    let svg = svgOpen(W, H + 18, "Jahresverbrauch 2025 und Hochrechnung 2026");
+    bars.forEach((b, i) => {
+      const cx = i * bw, x = cx + bw * .27, w = bw * .46;
+      const hs = (b.solid / max) * (H - 12), he = (b.extra / max) * (H - 12);
+      if (he > 0) svg += `<rect x="${x}" y="${H - hs - he}" width="${w}" height="${he}" rx="2.5" fill="url(#hatch)"/>`;
+      svg += `<rect x="${x}" y="${H - hs}" width="${w}" height="${hs}" rx="2.5" fill="${b.color}"/>`;
+      svg += `<text x="${cx + bw / 2}" y="${H + 13}" text-anchor="middle" font-size="10" fill="var(--ink-3)" font-family="-apple-system,sans-serif">${b.label}</text>`;
+      svg += `<text x="${cx + bw / 2}" y="${H - hs - he - 6}" text-anchor="middle" font-size="11" font-weight="600" fill="var(--ink-2)" font-family="-apple-system,sans-serif">${nf(b.solid + b.extra, dp)}</text>`;
+    });
+    host.innerHTML = svg + "</svg>";
+    document.getElementById("chart-total").textContent = nf(projected, dp) + " " + m.unit;
+    document.getElementById("chart-label").textContent =
+      fc && fc.method === "seasonal" ? "erwartet 2026 · nach Vorjahresverlauf" : "erwartet 2026 · aus dem Tagesschnitt";
+  }
+
+  document.getElementById("lg-hatch").textContent =
+    histScale === "month" ? "geschätzt" : "hochgerechnet";
+
+  const d = document.getElementById("chart-delta");
+  if (yoy !== null) {
+    d.textContent = pct(yoy) + " ggü. Vorjahr";
+    d.style.color = yoy < 0 ? "var(--good)" : "var(--red)";
+  } else { d.textContent = ""; }
+
+  const rows = reg.readings.slice(-8).reverse().map(r => {
+    const idx = reg.readings.indexOf(r);
+    const before = reg.readings[idx - 1];
+    const diff = before ? r.value - before.value : null;
+    const days = before ? between(before, r) : null;
+    return `<div class="row">
+      <div class="rl">${dateLabel(r)}
+        <small>${diff !== null ? nf(diff, m.frac >= 3 ? 1 : 0) + " " + m.unit + " in " + days + " Tagen" : "Erster Stand"}</small></div>
+      ${r.origin === "estimated" ? '<span class="tag">geschätzt</span>' : ""}
+      <div class="rv">${nf(r.value, m.frac)}<small>${m.unit}</small></div>
+    </div>`;
+  }).join("");
+  document.getElementById("readings").innerHTML = rows;
+}
+
+/* ============================================================
+   Zählerliste
+   ============================================================ */
+function renderMeterList() {
+  document.getElementById("meterlist").innerHTML = METERS.map(m => {
+    const last = lastReading(m);
+    const regInfo = m.registers.length > 1
+      ? "Zweirichtungszähler · " + m.serial
+      : "Zählernummer " + m.serial;
+    return `<div class="row">
+      <span class="chip-icon" style="--c:${m.color}">${icon(m)}</span>
+      <div class="rl">${m.name}<small>${regInfo}</small></div>
+      <div class="rv">${nf(last.value, m.frac)}<small>${dateShort(last)}</small></div>
+    </div>`;
+  }).join("");
+}
+
+/* ============================================================
+   Erfassung — der Screen, an dem das Produkt gewinnt
+   ============================================================ */
+let capMeter = null, digits = "";
+
+function openCapture(id) {
+  capMeter = METERS.find(m => m.id === id);
+  digits = "";
+  const reg = capMeter.registers[0];
+  const last = reg.readings[reg.readings.length - 1];
+  document.getElementById("cap-title").textContent = capMeter.name;
+  document.getElementById("cap-meta").innerHTML =
+    `Letzter Stand <strong>${nf(last.value, capMeter.frac)} ${capMeter.unit}</strong> am ${dateLabel(last)}
+     <br><button type="button" class="prefill" id="prefill">Vom letzten Stand übernehmen</button>`;
+  document.getElementById("cap-unit").textContent = capMeter.unit;
+  document.getElementById("save").style.setProperty("--c", capMeter.color);
+  drawCounter(true);
+  judge();
+  openSheet("sheet-capture");
+  document.getElementById("prefill").onclick = () => {
+    digits = String(Math.round(last.value * 10 ** capMeter.frac));
+    drawCounter();
+    judge();
+  };
+}
+
+function drawCounter(silent) {
+  const total = capMeter.int + capMeter.frac;
+  const padded = digits.padStart(total, "0").slice(-total);
+  const prev = window.__prevDigits || "";
+  let html = "";
+  for (let i = 0; i < total; i++) {
+    if (i === capMeter.int) html += '<span class="drum sep"></span>';
+    const changed = !silent && prev[i] !== padded[i];
+    html += `<span class="drum ${i >= capMeter.int ? "dec" : ""} ${changed ? "rolled" : ""}"><span>${padded[i]}</span></span>`;
+  }
+  document.getElementById("counter").innerHTML = html;
+  window.__prevDigits = padded;
+}
+
+function currentValue() {
+  if (!digits) return null;
+  return parseInt(digits, 10) / 10 ** capMeter.frac;
+}
+
+/* Spiegelt ConsumptionEngine.plausibility aus PulseCore. */
+function judge() {
+  const el = document.getElementById("verdict");
+  const save = document.getElementById("save");
+  const v = currentValue();
+  if (v === null) {
+    el.className = "verdict idle";
+    el.textContent = "Zählerstand eintippen";
+    save.disabled = true;
+    return;
+  }
+  const reg = capMeter.registers[0];
+  const last = reg.readings[reg.readings.length - 1];
+  const days = between(last, TODAY);
+  const check = '<svg class="mark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4 10-10"/></svg>';
+  const bang = '<svg class="mark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 7v7"/><path d="M12 17.5v.01"/></svg>';
+
+  if (v < last.value) {
+    el.className = "verdict warn";
+    el.innerHTML = `${bang}<div>Der Stand liegt unter dem letzten Wert von <b>${nf(last.value, capMeter.frac)} ${capMeter.unit}</b>.
+      Wurde der Zähler gewechselt, oder hat sich eine Ziffer verirrt?</div>`;
+    save.disabled = false;
+    return;
+  }
+
+  const delta = v - last.value;
+  const perDay = delta / days;
+  // Referenz ist derselbe Zeitraum im Vorjahr, nicht der Jahresschnitt: Ein
+  // Gaszähler verbraucht im Juli einen Bruchteil des Mittels. Gegen den
+  // Durchschnitt geprüft würde jeder korrekte Sommerstand beanstandet und ein
+  // zehnfach zu hoher durchgewinkt.
+  const prior = consumption(reg, shiftYear(last, -1), shiftYear(TODAY, -1));
+  let usual = prior && prior.complete && prior.value > 0 ? prior.value / prior.days : null;
+  if (usual === null) { const ytd = yearToDate(reg); usual = ytd ? ytd.value / ytd.days : perDay; }
+  const factor = usual > 0 ? perDay / usual : 1;
+
+  if (factor >= 4 || factor <= 0.25) {
+    el.className = "verdict warn";
+    el.innerHTML = `${bang}<div>Das wären <b>${nf(delta, capMeter.frac >= 3 ? 1 : 0)} ${capMeter.unit}</b> in ${days} Tagen —
+      rund ${nf(factor, 1).replace(",0", "")}× dein üblicher Verbrauch. Stimmt die Zahl?</div>`;
+  } else {
+    el.className = "verdict";
+    el.innerHTML = `${check}<div>Entspricht <b>${nf(delta, capMeter.frac >= 3 ? 1 : 0)} ${capMeter.unit}</b> in ${days} Tagen
+      — normal für dich.</div>`;
+  }
+  save.disabled = false;
+}
+
+function saveReading() {
+  const v = currentValue();
+  if (v === null) return;
+  const reg = capMeter.registers[0];
+  reg.readings.push({ y: TODAY.y, m: TODAY.m, d: TODAY.d, value: v, origin: "manual" });
+  const name = capMeter.name;
+  closeSheets();
+  const t = document.getElementById("toast");
+  document.getElementById("toast-text").textContent = name + " gesichert";
+  t.classList.add("on");
+  setTimeout(() => t.classList.remove("on"), 1250);
+  renderAll();
+}
+
+/* ============================================================
+   Erklärung — Prinzip 4: keine Sackgasse
+   ============================================================ */
+function openExplain(id) {
+  const m = METERS.find(x => x.id === id);
+  const reg = m.registers[0];
+  const fc = forecast(reg), ytd = yearToDate(reg);
+  const units = billedUnits(m, fc.value);
+  const work = units * m.price;
+  const base = m.base * 12;
+  const cost = projectedCost(m, fc);
+  const paid = m.prepay * 12;
+  const bal = balance(m, fc);
+
+  document.getElementById("ex-title").textContent = "Wie diese Zahl entsteht";
+  document.getElementById("ex-body").innerHTML = `
+    <div class="calc">
+      <div class="calc-row"><span class="k">Verbrauch bis heute</span><span class="v">${nf(ytd.value, 0)} ${m.unit}</span></div>
+      <div class="calc-row"><span class="k">Hochrechnung aufs Jahr<br><small style="color:var(--ink-3)">${fc.method === "seasonal" ? "nach dem Verlauf des Vorjahres" : "aus dem bisherigen Tagesschnitt"}</small></span><span class="v">${nf(fc.value, 0)} ${m.unit}</span></div>
+      ${m.zZahl ? `<div class="calc-row"><span class="k">Umrechnung in kWh<br><small style="color:var(--ink-3)">× ${nf(m.zZahl, 4)} Zustandszahl × ${nf(m.brennwert, 3)} kWh/m³</small></span><span class="v">${nf(units, 0)} kWh</span></div>` : ""}
+      <div class="calc-row"><span class="k">Arbeitspreis<br><small style="color:var(--ink-3)">${nf(m.price, m.zZahl ? 3 : 2)} € je ${m.zZahl ? "kWh" : m.unit}</small></span><span class="v">${money(work)}</span></div>
+      <div class="calc-row"><span class="k">Grundpreis<br><small style="color:var(--ink-3)">${money(m.base)} × 12 Monate</small></span><span class="v">${money(base)}</span></div>
+      <div class="calc-row total"><span class="k">Erwartete Kosten</span><span class="v">${money(cost)}</span></div>
+      <div class="calc-row"><span class="k">Abschläge ${money(m.prepay)} × 12</span><span class="v">${money(paid)}</span></div>
+      <div class="calc-row total"><span class="k">${bal >= 0 ? "Voraussichtliches Guthaben" : "Voraussichtliche Nachzahlung"}</span>
+        <span class="v" style="color:${bal >= 0 ? "var(--good)" : "var(--red)"}">${money(Math.abs(bal))}</span></div>
+    </div>
+    <div class="note">Eine Hochrechnung ist nie eine gemessene Zahl. Sie wird genauer, je aktueller dein letzter Stand ist —
+    und sie ersetzt die Abrechnung deines Versorgers nicht.</div>`;
+  openSheet("sheet-explain");
+}
+
+/* ============================================================
+   Navigation
+   ============================================================ */
+function openSheet(id) {
+  document.getElementById("scrim").classList.add("on");
+  document.getElementById(id).classList.add("on");
+}
+function closeSheets() {
+  document.getElementById("scrim").classList.remove("on");
+  document.querySelectorAll(".sheet").forEach(s => s.classList.remove("on"));
+}
+
+function renderAll() {
+  renderStatus();
+  renderCards();
+  renderPicker();
+  renderChart();
+  renderMeterList();
+}
+
+/* Tastenfeld aufbauen */
+(function () {
+  const keys = document.getElementById("keys");
+  const photo = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5h3l1.5-2.5h7L17 8.5h3a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.2"/></svg>';
+  const back = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h11a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H9L2.5 12z"/><path d="m11.5 9.5 5 5m0-5-5 5"/></svg>';
+  let html = "";
+  for (let i = 1; i <= 9; i++) html += `<button type="button" class="key" data-key="${i}">${i}</button>`;
+  html += `<button type="button" class="key aux" data-key="photo" aria-label="Belegfoto">${photo}</button>`;
+  html += `<button type="button" class="key" data-key="0">0</button>`;
+  html += `<button type="button" class="key aux" data-key="back" aria-label="Löschen">${back}</button>`;
+  keys.innerHTML = html;
+})();
+
+/* Ereignisse */
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-capture],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close]");
+  if (!t) return;
+
+  if (t.dataset.capture) return openCapture(t.dataset.capture);
+  if (t.dataset.explain) return openExplain(t.dataset.explain);
+  if (t.hasAttribute("data-close")) return closeSheets();
+
+  if (t.dataset.key) {
+    const k = t.dataset.key;
+    if (k === "back") digits = digits.slice(0, -1);
+    else if (k === "photo") { return; }
+    else if (digits.length < capMeter.int + capMeter.frac) digits += k;
+    drawCounter();
+    judge();
+    return;
+  }
+  if (t.dataset.pane) {
+    document.querySelectorAll("#tabs button").forEach(b =>
+      b.setAttribute("aria-selected", String(b === t)));
+    document.querySelectorAll(".pane").forEach(p =>
+      p.classList.toggle("on", p.id === "pane-" + t.dataset.pane));
+    document.querySelector(".screen").scrollTop = 0;
+    return;
+  }
+  if (t.dataset.pick) { histMeter = t.dataset.pick; renderPicker(); renderChart(); return; }
+  if (t.dataset.scale) {
+    histScale = t.dataset.scale;
+    document.querySelectorAll("#scale button").forEach(b =>
+      b.setAttribute("aria-selected", String(b === t)));
+    renderChart();
+  }
+});
+document.getElementById("scrim").addEventListener("click", closeSheets);
+document.getElementById("save").addEventListener("click", saveReading);
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeSheets();
+  if (!document.getElementById("sheet-capture").classList.contains("on")) return;
+  if (/^[0-9]$/.test(e.key) && digits.length < capMeter.int + capMeter.frac) { digits += e.key; drawCounter(); judge(); }
+  if (e.key === "Backspace") { digits = digits.slice(0, -1); drawCounter(); judge(); }
+});
+
+document.getElementById("theme").addEventListener("click", () => {
+  const now = document.documentElement.getAttribute("data-theme");
+  const dark = now ? now === "dark"
+    : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.setAttribute("data-theme", dark ? "light" : "dark");
+  renderChart();
+});
+document.getElementById("reset").addEventListener("click", () => location.reload());
+
+renderAll();
+</script>

@@ -223,6 +223,31 @@ final class ConsumptionEngineTests: XCTestCase {
         XCTAssertEqual(comparison?.isImprovement, true)
     }
 
+    /// Bei einem Zähler mit veraltetem Stand darf nicht eine halbe Heizperiode
+    /// gegen ein Vorjahresfenster inklusive Sommer verglichen werden. Der
+    /// Vorjahreszeitraum folgt dem abgedeckten, nicht dem angefragten Zeitraum.
+    func testYearOverYearComparesEqualWindows() {
+        let register = Fixture.electricityRegister()
+        let readings = [
+            Fixture.reading(register, day(2025, 1, 1), 0),
+            Fixture.reading(register, day(2025, 4, 1), 1200),   // Heizperiode
+            Fixture.reading(register, day(2025, 8, 1), 1500),   // Sommer, flach
+            Fixture.reading(register, day(2026, 1, 1), 3000),
+            Fixture.reading(register, day(2026, 4, 1), 4140)    // 1140 statt 1200
+        ]
+
+        let comparison = ConsumptionEngine.yearOverYear(
+            register: register, readings: readings,
+            in: span(day(2026, 1, 1), day(2026, 8, 1))
+        )
+
+        XCTAssertEqual(comparison?.current.coveredRange, span(day(2026, 1, 1), day(2026, 4, 1)))
+        XCTAssertEqual(comparison?.previous.coveredRange, span(day(2025, 1, 1), day(2025, 4, 1)))
+        XCTAssertEqual(comparison?.previous.quantity.value, 1200)
+        // (1140 − 1200) / 1200 = −5 %. Ohne gleiche Fenster käme hier +79 % heraus.
+        assertClose(comparison?.relativeChange ?? 0, -0.05)
+    }
+
     // MARK: - Plausibilität bei der Eingabe
 
     func testPlausibilityAcceptsOrdinaryValue() {
@@ -262,6 +287,47 @@ final class ConsumptionEngineTests: XCTestCase {
             return XCTFail("Erwartet: unusual, erhalten: \(verdict)")
         }
         XCTAssertGreaterThan(factor, 4)
+    }
+
+    /// Ein Gaszähler verbraucht im Juli einen Bruchteil des Jahresmittels.
+    /// Gegen den Durchschnitt geprüft würde die App jeden korrekten Sommerstand
+    /// beanstanden und einen zehnfach zu hohen durchwinken — der sichere Weg,
+    /// das Vertrauen in die Prüfung zu verlieren.
+    func testPlausibilityUsesSeasonalReference() {
+        let register = Fixture.gasRegister()
+        var readings: [Reading] = []
+        // Jahresverlauf einer Gasheizung, Stände am Monatsersten
+        let monthly: [Decimal] = [418, 376, 298, 178, 92, 41, 36, 39, 84, 192, 308, 402]
+        var value = Decimal(1000)
+        var sequence = 0
+        for year in [2025, 2026] {
+            for month in 1...12 {
+                readings.append(Fixture.reading(register, day(year, month, 1), value, sequence: sequence))
+                value += monthly[month - 1]
+                sequence += 1
+                if year == 2026 && month == 7 { break }
+            }
+        }
+        let last = readings.last!          // 1. Juli 2026
+        let today = day(2026, 8, 1)
+
+        // Ein korrekter Julistand: 36 m³, wie im Vorjahr.
+        let correct = ConsumptionEngine.plausibility(
+            of: last.value + 36, on: today, register: register,
+            readings: readings, today: today
+        )
+        guard case .normal = correct else {
+            return XCTFail("Ein normaler Sommerverbrauch darf nicht beanstandet werden: \(correct)")
+        }
+
+        // Dieselbe Ablesung mit einer Stelle zu viel.
+        let typo = ConsumptionEngine.plausibility(
+            of: last.value + 360, on: today, register: register,
+            readings: readings, today: today
+        )
+        guard case .unusual = typo else {
+            return XCTFail("Der zehnfache Wert muss auffallen: \(typo)")
+        }
     }
 
     func testPlausibilityFlagsValueBelowPrevious() {

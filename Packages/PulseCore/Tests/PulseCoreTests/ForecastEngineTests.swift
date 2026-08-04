@@ -47,6 +47,33 @@ final class ForecastEngineTests: XCTestCase {
         assertClose(forecast?.projected.value ?? 0, 2500, accuracy: 0.01)
     }
 
+    /// Ein veralteter Zählerstand darf die Prognose nicht drücken: Die Tage
+    /// zwischen letzter Ablesung und heute gehören zur Restzeit, nicht zum
+    /// gemessenen Zeitraum. Sonst sagt die App ausgerechnet dem Nutzer, der
+    /// länger nicht abgelesen hat, einen zu niedrigen Verbrauch voraus.
+    func testStaleReadingDoesNotDepressProjection() {
+        let register = Fixture.electricityRegister()
+        let upToDate = [
+            Fixture.reading(register, day(2026, 1, 1), 0),
+            Fixture.reading(register, day(2026, 4, 1), 900)      // 90 Tage, 10 kWh/Tag
+        ]
+        let stale = [
+            Fixture.reading(register, day(2026, 1, 1), 0),
+            Fixture.reading(register, day(2026, 3, 1), 590)      // 59 Tage, 10 kWh/Tag
+        ]
+
+        let fresh = ForecastEngine.forecast(register: register, readings: upToDate,
+                                            period: year2026, today: day(2026, 4, 1))
+        let old = ForecastEngine.forecast(register: register, readings: stale,
+                                          period: year2026, today: day(2026, 4, 1))
+
+        XCTAssertEqual(old?.daysElapsed, 59)
+        XCTAssertEqual(old?.daysRemaining, 305, "Die 31 Tage seit der letzten Ablesung zählen zur Restzeit")
+        assertClose(old?.projected.value ?? 0, 3640)
+        XCTAssertEqual(approx(old?.projected.value ?? 0), approx(fresh?.projected.value ?? 0),
+                       accuracy: 0.01, "Gleicher Tagesverbrauch, gleiche Prognose")
+    }
+
     func testCompletedPeriodIsNotProjected() {
         let register = Fixture.electricityRegister()
         let readings = [

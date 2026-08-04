@@ -75,16 +75,21 @@ public enum ConsumptionEngine {
         readings: [Reading],
         in range: DayRange
     ) -> YearComparison? {
-        guard let previousRange = DayRange(
-            start: range.start.oneYearEarlier,
-            end: range.end.oneYearEarlier
-        ) else { return nil }
-
         guard let series = ConsumptionSeries.build(register: register, readings: readings) else {
             return nil
         }
 
         let current = consumption(series: series, in: range)
+
+        // Das Vorjahresfenster folgt dem *abgedeckten* Zeitraum, nicht dem
+        // angefragten. Reicht die Historie bis August, die aktuellen Daten aber
+        // nur bis Mai, verglichen wir sonst eine halbe Heizperiode mit einem
+        // vollen Jahr inklusive Sommer — eine Zahl, die nichts bedeutet.
+        guard let covered = current.coveredRange,
+              let previousRange = DayRange(start: covered.start.oneYearEarlier,
+                                           end: covered.end.oneYearEarlier)
+        else { return nil }
+
         let previous = consumption(series: series, in: previousRange)
 
         var change: Decimal?
@@ -158,29 +163,50 @@ public enum ConsumptionEngine {
             : register.capacity - previous.value + value
         let quantity = Quantity(delta, register.unit)
 
-        // Gewohnter Tagesverbrauch aus der bisherigen Historie.
-        guard let series = ConsumptionSeries.build(register: register, readings: history),
-              let firstDay = series.firstDay,
-              let range = DayRange(start: firstDay, end: previous.day),
-              range.spanInDays > 0
+        guard let series = ConsumptionSeries.build(register: register, readings: history) else {
+            return .normal(consumption: quantity, days: days)
+        }
+        guard let usualPerDay = referenceRate(series: series, from: previous.day, to: day),
+              usualPerDay > 0
         else {
             return .normal(consumption: quantity, days: days)
         }
-
-        let past = consumption(series: series, in: range)
-        guard past.hasData, past.quantity.value > 0 else {
-            return .normal(consumption: quantity, days: days)
-        }
-
-        let usualPerDay = past.quantity.value / Decimal(past.coveredDays)
         let candidatePerDay = delta / Decimal(days)
-        guard usualPerDay > 0 else { return .normal(consumption: quantity, days: days) }
 
         let factor = candidatePerDay / usualPerDay
         if factor >= unusualFactor || factor <= 1 / unusualFactor {
             return .unusual(consumption: quantity, days: days, factorOfUsual: factor)
         }
         return .normal(consumption: quantity, days: days)
+    }
+
+    /// Der Tagesverbrauch, an dem ein neuer Wert gemessen wird.
+    ///
+    /// Zuerst derselbe Zeitraum im Vorjahr, erst danach der Gesamtdurchschnitt.
+    /// Der Unterschied ist bei Heizung und Gas entscheidend: Im Juli liegt der
+    /// Gasverbrauch weit unter dem Jahresmittel. Gegen den Jahresschnitt geprüft
+    /// würde jede korrekte Sommerablesung als unplausibel gemeldet — und ein um
+    /// eine Stelle zu hoher Wert liefe glatt durch. Genau verkehrt herum.
+    static func referenceRate(
+        series: ConsumptionSeries,
+        from previousDay: CalendarDay,
+        to day: CalendarDay
+    ) -> Decimal? {
+        if let priorRange = DayRange(start: previousDay.oneYearEarlier, end: day.oneYearEarlier) {
+            let prior = consumption(series: series, in: priorRange)
+            if prior.isComplete, prior.coveredDays > 0, prior.quantity.value > 0 {
+                return prior.quantity.value / Decimal(prior.coveredDays)
+            }
+        }
+        // Kein Vorjahr vorhanden — dann der bisherige Durchschnitt.
+        guard let firstDay = series.firstDay,
+              let range = DayRange(start: firstDay, end: previousDay),
+              range.spanInDays > 0
+        else { return nil }
+
+        let past = consumption(series: series, in: range)
+        guard past.hasData, past.quantity.value > 0, past.coveredDays > 0 else { return nil }
+        return past.quantity.value / Decimal(past.coveredDays)
     }
 
     // MARK: - Datenlücken
