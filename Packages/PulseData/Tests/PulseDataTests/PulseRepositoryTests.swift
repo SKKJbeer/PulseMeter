@@ -13,7 +13,7 @@ final class PulseRepositoryTests: XCTestCase {
     private var repo: PulseRepository!
 
     override func setUp() async throws {
-        container = try PulseStore.container(inMemory: true, cloudKit: false)
+        container = try PulseStore.container(name: "primary", inMemory: true, cloudKit: false)
         repo = PulseRepository(container: container)
     }
 
@@ -219,7 +219,9 @@ final class PulseRepositoryTests: XCTestCase {
         let encoded = try snapshot.encoded()
 
         // Frischer Speicher, als wäre die App neu installiert.
-        let fresh = PulseRepository(container: try PulseStore.container(inMemory: true, cloudKit: false))
+        let fresh = PulseRepository(
+            container: try PulseStore.container(name: "restore-target", inMemory: true, cloudKit: false)
+        )
         try fresh.restore(try PulseSnapshot.decode(from: encoded))
 
         XCTAssertEqual(try fresh.meteringPoints().count, 1)

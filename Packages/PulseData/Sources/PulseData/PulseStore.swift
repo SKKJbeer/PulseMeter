@@ -31,11 +31,17 @@ public enum PulseStore {
     ///   des Nutzers. Kostet uns nichts, verlässt die Apple-Sphäre nie und
     ///   verlangt kein Konto — die Voraussetzung dafür, dass ein Einmalkauf
     ///   trägt (ADR-002, docs/04-monetarisierung.md).
+    /// - Parameter name: Unterscheidet mehrere Speicher im selben Prozess.
+    ///   Zwei namenlose Speicher im Arbeitsspeicher beanspruchen denselben Ort
+    ///   und bringen den Prozess zu Fall — das trifft vor allem Tests, die eine
+    ///   frische Installation nachstellen.
     public static func container(
+        name: String? = nil,
         inMemory: Bool = false,
         cloudKit: Bool = true
     ) throws -> ModelContainer {
         let configuration = ModelConfiguration(
+            name,
             schema: schema,
             isStoredInMemoryOnly: inMemory,
             cloudKitDatabase: cloudKit && !inMemory ? .automatic : .none
