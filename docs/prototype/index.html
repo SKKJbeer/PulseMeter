@@ -535,6 +535,16 @@ table.data tr.est td:first-child::after {
 .row .rl small { display: block; font-size: var(--fs-cap); color: var(--ink-3); margin-top: 2px; }
 .row .rv { font-weight: 600; letter-spacing: -0.015em; }
 .row .rv small { display: block; text-align: right; font-weight: 500; font-size: var(--fs-cap); color: var(--ink-3); margin-top: 2px; }
+.rowbtn {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  font: inherit; font-size: 15px; color: var(--ink); text-align: left;
+  background: none; border: 0; padding: 14px 15px; cursor: pointer;
+}
+.rowbtn:active { background: var(--surface-2); }
+.rowbtn:focus-visible { outline: 2px solid var(--tint); outline-offset: -3px; }
+.rowbtn .rl { flex: 1; min-width: 0; font-weight: 560; }
+.rowbtn .rl small { display: block; font-size: var(--fs-cap); font-weight: 400; color: var(--ink-3); margin-top: 2px; }
+.rowbtn .chev { width: 17px; height: 17px; flex: none; color: var(--ink-3); }
 .tag {
   font-size: 10.5px; font-weight: 620; letter-spacing: .02em; text-transform: uppercase;
   padding: 3px 6px; border-radius: 5px; background: var(--surface-2); color: var(--ink-3);
@@ -627,8 +637,12 @@ table.data tr.est td:first-child::after {
           <div class="section-label">Gleicher Monat, andere Jahre</div>
           <div class="chart-card" id="compare"></div>
         </div>
-        <div class="section-label">Ablesungen</div>
-        <div class="list" id="readings"></div>
+        <div class="list" style="margin-top:18px">
+          <button type="button" class="rowbtn" data-open="readings">
+            <div class="rl">Alle Ablesungen<small id="readings-count"></small></div>
+            <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+          </button>
+        </div>
       </div>
 
       <div id="view-table" style="display:none">
@@ -708,6 +722,16 @@ table.data tr.est td:first-child::after {
       <button type="button" class="save" id="save" disabled>Sichern</button>
       <div class="save-note">Datum: heute, 4. August 2026 · antippen zum Ändern</div>
     </div>
+  </div>
+
+  <!-- Ablesungen -->
+  <div class="sheet" id="sheet-readings" role="dialog" aria-modal="true" aria-label="Ablesungen">
+    <div class="grabber"></div>
+    <div class="sheet-head">
+      <div class="sheet-title" id="rd-title">Ablesungen</div>
+      <button type="button" class="sheet-close" data-close>Fertig</button>
+    </div>
+    <div class="sheet-body"><div class="list" id="readings"></div></div>
   </div>
 
   <!-- Export -->
@@ -1261,7 +1285,7 @@ function renderChart() {
     d.style.color = yoy < 0 ? "var(--good)" : "var(--red)";
   } else { d.textContent = ""; }
 
-  const rows = reg.readings.slice(-8).reverse().map(r => {
+  const rows = reg.readings.slice().reverse().map(r => {
     const idx = reg.readings.indexOf(r);
     const before = reg.readings[idx - 1];
     const diff = before ? r.value - before.value : null;
@@ -1274,6 +1298,10 @@ function renderChart() {
     </div>`;
   }).join("");
   document.getElementById("readings").innerHTML = rows;
+  const first = reg.readings[0];
+  document.getElementById("readings-count").textContent =
+    `${reg.readings.length} Einträge seit ${MONTHS_LONG[first.m - 1]} ${first.y}`;
+  document.getElementById("rd-title").textContent = m.name;
 }
 
 /* ============================================================
@@ -1745,7 +1773,7 @@ function renderAll() {
 
 /* Ereignisse */
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-capture],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export],[data-month]");
+  const t = e.target.closest("[data-capture],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export],[data-month],[data-open]");
   if (!t) return;
 
   if (t.dataset.capture) return openCapture(t.dataset.capture);
@@ -1804,6 +1832,7 @@ document.addEventListener("click", e => {
     histPerDay = t.dataset.perday === "day";
     return renderTable();
   }
+  if (t.dataset.open === "readings") return openSheet("sheet-readings");
   if (t.dataset.export) return openExport(t.dataset.export);
 });
 document.getElementById("scrim").addEventListener("click", closeSheets);
