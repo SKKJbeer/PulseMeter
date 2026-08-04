@@ -9,6 +9,11 @@ import PackageDescription
 // Siehe docs/01-architektur.md, ADR-003.
 let package = Package(
     name: "PulseCore",
+    // Ohne diese Angabe nimmt SwiftPM auf Apple-Plattformen eine sehr alte
+    // Mindestversion an, und Sprachmittel wie `Identifiable` gelten dort als
+    // nicht verfügbar. Unter Linux gibt es keine Verfügbarkeitsprüfung — der
+    // Fehler zeigt sich also erst beim Bauen auf einem Mac.
+    platforms: [.iOS(.v18), .macOS(.v15)],
     products: [
         .library(name: "PulseCore", targets: ["PulseCore"])
     ],
