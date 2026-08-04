@@ -9,35 +9,41 @@ Zug aktualisiert und als Artifact neu veröffentlicht.
 **Keine Produktänderung wird nur beschrieben.** Wenn sie nicht anklickbar ist,
 ist sie nicht fertig.
 
-- Veröffentlichen immer über **denselben Artifact-Pfad**, damit die URL stabil
-  bleibt: `/tmp/.../scratchpad/pulsemeter-klickdummy.html`. Der Versionswähler
-  im Artifact hält die Historie.
-- Aus einer neuen Sitzung heraus die URL unten als `url` mitgeben — sonst
-  entsteht ein zweiter Link und die Historie reißt ab.
-- `label` je Veröffentlichung kurz und beschreibend setzen („datenansicht",
-  „erfassung-v2").
+### Jede Veröffentlichung ist ein **neues** Artifact
+
+Vom Nutzer ausdrücklich so gewünscht und zweimal bestätigt: Ein erneutes
+Veröffentlichen auf denselben Pfad ließ sich bei ihm **nicht öffnen** — es kam
+eine Anmeldemaske. Ein frisch erzeugtes Artifact geht dagegen sofort auf.
+
+- **Nie** auf einen bereits benutzten Pfad erneut veröffentlichen und **nie**
+  den `url`-Parameter verwenden.
+- Stattdessen jedes Mal ein neuer Dateiname im Scratchpad:
+  `pulsemeter-klickdummy-<n>.html`, fortlaufend hochzählen.
+- `title` immer identisch setzen: „PulseMeter – Klickbarer Entwurf".
+  `favicon` bleibt ⚡. `label` kurz und beschreibend.
 - Danach dieselbe Datei nach `docs/prototype/index.html` kopieren und
   mitcommitten — der Container wird irgendwann abgeräumt, das Repo nicht.
 
+Der Preis ist bekannt und in Kauf genommen: Es gibt keinen Versionswähler über
+alle Stände hinweg. Ältere Links bleiben gültig und wirken als Momentaufnahmen —
+das ist die Historie.
+
 ## Regel 1a — Der Link steht in jeder Antwort
 
-Die URL des Klick-Dummys gehört **an den Anfang jeder Antwort**, in der sich
-etwas am Produkt geändert hat. Nicht als Verweis auf das Seitenpanel, nicht
-am Ende, sondern als anklickbare Zeile ganz oben:
+Die **neue** URL gehört **an den Anfang jeder Antwort**, in der sich etwas am
+Produkt geändert hat. Nicht als Verweis auf das Seitenpanel, nicht am Ende,
+sondern als anklickbare Zeile ganz oben:
 
 ```
-🔗 Klick-Dummy: https://claude.ai/code/artifact/720b5f91-ac9d-4371-a2ed-2d9da645b28c
+🔗 Klick-Dummy: <URL der soeben erzeugten Veröffentlichung>
 ```
 
-Diese URL bleibt über alle Sitzungen dieselbe.
+Die zuletzt gültige URL steht in der README.
 
-**Zusätzlich** wird `docs/prototype/index.html` per SendUserFile mitgeliefert.
-Grund: Artifacts sind privat und an den claude.ai-Account gebunden — auf einem
-zweiten Gerät oder im Inkognito-Fenster verlangt der Link eine Anmeldung. Die
-Datei ist in sich geschlossen und läuft ohne Login und ohne Netz.
-
-GitHub Pages wäre die dritte Möglichkeit, scheidet aber vorerst aus: Das Repo
-ist privat, und Pages setzt dafür GitHub Pro voraus.
+Die Datei zusätzlich per SendUserFile mitzuliefern ist nicht nötig, aber auf
+Nachfrage sinnvoll: Sie ist in sich geschlossen und läuft ohne Login und ohne
+Netz. GitHub Pages scheidet vorerst aus — das Repo ist privat, und Pages setzt
+dafür GitHub Pro voraus.
 
 ## Regel 2 — Der Prototyp rechnet echt
 
