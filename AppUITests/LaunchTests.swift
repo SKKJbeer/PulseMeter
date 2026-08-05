@@ -32,6 +32,69 @@ final class LaunchTests: XCTestCase {
         return app
     }
 
+    /// Startet die App ohne jeden Bestand.
+    ///
+    /// Der Zustand, in dem jeder neue Nutzer anfängt — und bis 0.16 der
+    /// einzige, den weder ein Test noch ein Bildschirmfoto je gesehen hat.
+    /// Zwei ernste Fehler saßen genau hier: Die Statuszeile meldete „Alles im
+    /// Rahmen" für einen nie abgelesenen Zähler, und der Verlauf zeigte „0"
+    /// als wäre nichts verbraucht worden statt als wäre nichts bekannt.
+    private func launchEmpty() -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchArguments = ["-pulse-empty"]
+        app.launch()
+        return app
+    }
+
+    func testColdStartOffersToCreateAMeter() {
+        let app = launchEmpty()
+
+        XCTAssertTrue(app.staticTexts["Noch kein Zähler"].waitForExistence(timeout: 10),
+                      "Der leere Zustand fehlt")
+        XCTAssertTrue(app.buttons["Ersten Zähler anlegen"].exists,
+                      "Der erste Schritt muss zum eigenen Zähler führen, nicht zu Beispieldaten")
+    }
+
+    /// Der ganze Weg von der Installation bis zum ersten Verbrauch —
+    /// Produktprinzip 1. Ohne diesen Test ist jede andere Prüfung eine
+    /// Aussage über einen Bestand, den ein neuer Nutzer nie hat.
+    func testFirstMeterThenFirstReadingThenConsumption() {
+        let app = launchEmpty()
+
+        // Zähler anlegen
+        XCTAssertTrue(app.buttons["Ersten Zähler anlegen"].waitForExistence(timeout: 10))
+        app.buttons["Ersten Zähler anlegen"].tap()
+
+        let field = app.textFields["Name"]
+        XCTAssertTrue(field.waitForExistence(timeout: 5), "Das Namensfeld fehlt")
+        field.tap()
+        field.typeText("Keller")
+        app.buttons["Sichern"].tap()
+
+        // Die Karte steht und sagt, dass noch nichts abgelesen wurde.
+        XCTAssertTrue(app.staticTexts["Keller"].waitForExistence(timeout: 5),
+                      "Der neue Zähler erscheint nicht auf der Übersicht")
+        let never = app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS 'noch nie abgelesen' OR label CONTAINS 'Noch nie abgelesen'")
+        ).firstMatch
+        XCTAssertTrue(never.waitForExistence(timeout: 5),
+                      "Ein nie abgelesener Zähler muss als solcher gemeldet werden")
+
+        // Erste Ablesung eintippen — es gibt keinen Vorgängerwert zum Übernehmen.
+        app.buttons["Stand eintragen"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["1"].waitForExistence(timeout: 5), "Der Ziffernblock erschien nicht")
+        XCTAssertTrue(app.staticTexts["Erste Ablesung für diesen Zähler"].exists,
+                      "Ohne Vorgänger muss das dastehen")
+        for digit in ["1", "0", "0", "0", "0"] { app.buttons[digit].tap() }
+        app.buttons["Sichern"].tap()
+
+        // Mit genau einer Ablesung steht noch kein Verbrauch fest, und die
+        // Karte sagt warum, statt eine Null zu zeigen.
+        let needsSecond = app.staticTexts["Der Verbrauch ergibt sich aus zwei Ablesungen"]
+        XCTAssertTrue(needsSecond.waitForExistence(timeout: 5),
+                      "Nach der ersten Ablesung muss die Karte den zweiten Schritt nennen")
+    }
+
     func testAppLaunchesAndShowsTabs() {
         let app = XCUIApplication()
         app.launch()

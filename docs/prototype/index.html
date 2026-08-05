@@ -661,7 +661,7 @@ select.field { cursor: pointer; }
 
 <div class="stage-head">
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.16.1</p>
+  <p>Klickbarer Entwurf · v0.17.0</p>
 </div>
 
 <div class="device">
@@ -1201,6 +1201,7 @@ function periodCaption(res) {
 function renderStatus() {
   const due = activeMeters().filter(isDue);
   const box = document.getElementById("status");
+  if (!activeMeters().length) { box.innerHTML = ""; return; }
   if (due.length) {
     const m = due[0];
     const days = daysSinceReading(m);
@@ -1251,6 +1252,23 @@ const activeMeters = () => METERS.filter(m => !m.archived);
 
 function renderCards() {
   const host = document.getElementById("cards");
+
+  // Der Zustand, in dem ein neuer Nutzer anfängt — und in den man hier durch
+  // Löschen aller Zähler gerät. Vorher blieb die Übersicht dann einfach leer.
+  // Eigene Kennung, nicht die der Schaltfläche auf dem Zähler-Schirm: Zwei
+  // Elemente mit derselben id sind ungültig, und `getElementById` träfe dann
+  // je nach Reihenfolge das falsche.
+  if (!activeMeters().length) {
+    host.innerHTML = `<article class="card"><div style="padding:22px;text-align:center">
+      <div style="font-size:17px;font-weight:660;margin-bottom:6px">Noch kein Zähler</div>
+      <div style="font-size:14px;color:var(--ink-2);line-height:1.5;margin-bottom:16px">
+        Leg deinen ersten Zähler an — Name und Art genügen. Danach trägst du den
+        Stand ein, und der Rest ergibt sich.</div>
+      <button type="button" class="save" id="first-meter" style="--c:var(--tint)">Ersten Zähler anlegen</button>
+    </div></article>`;
+    return;
+  }
+
   host.innerHTML = activeMeters().map(m => {
     const reg = m.registers[0];
     const ytd = yearToDate(reg);
@@ -2376,10 +2394,10 @@ function refreshAfterMeterChange() {
 
 /* Ereignisse */
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-capture],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export],[data-month],[data-open],[data-scope],[data-period],[data-meter],#add-meter,#ed-save,#ed-archive,#ed-delete");
+  const t = e.target.closest("[data-capture],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export],[data-month],[data-open],[data-scope],[data-period],[data-meter],#add-meter,#first-meter,#ed-save,#ed-archive,#ed-delete");
   if (!t) return;
 
-  if (t.id === "add-meter") return openMeterEditor(null);
+  if (t.id === "add-meter" || t.id === "first-meter") return openMeterEditor(null);
   if (t.dataset.meter) return openMeterEditor(t.dataset.meter);
   if (t.id === "ed-save") return saveMeter();
   if (t.id === "ed-archive") return archiveMeter();

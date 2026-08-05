@@ -9,6 +9,46 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.17.0 — 2026-08-05
+
+Der kalte Start — die App einmal so durchgegangen, wie ein neuer Nutzer sie
+antrifft: ohne einen einzigen Zähler, ohne eine einzige Ablesung. Bis hierher
+hat diesen Zustand weder ein Test noch ein Bildschirmfoto je gesehen, weil
+jeder Lauf mit zwei Jahren Beispielhistorie begann.
+
+Vier Fehler, alle im ersten Bildschirm, den jemand zu Gesicht bekommt.
+
+### Behoben
+- **Die Statuszeile meldete „Alles im Rahmen. Alle Zähler sind aktuell." für
+  einen Zähler, der noch nie abgelesen wurde.** Die Bedingung fragte nach den
+  Tagen seit der letzten Ablesung; ohne Ablesung gibt es die nicht, und der
+  Fall fiel stillschweigend durch. Jetzt steht dort „… wurde noch nie
+  abgelesen. Trag den ersten Stand ein, dann fängt der Verlauf an."
+- **Auf der Karte stand aus demselben Grund „Noch kein Vergleichswert"**,
+  obwohl „Noch nie abgelesen" gemeint war.
+- **Der Verlauf zeigte „0" für einen Zähler ohne Historie** — eine Zahl, die
+  aussieht wie eine Messung und keine ist. Jetzt steht dort, was fehlt: die
+  erste Ablesung, oder die zweite.
+- **Der leere Zustand bot „Beispieldaten anlegen" als einzige Möglichkeit an.**
+  Entwicklersprache an genau der Stelle, an der ein neuer Nutzer zum ersten
+  Mal etwas tut. Die Hauptsache heißt jetzt „Ersten Zähler anlegen" und führt
+  direkt dorthin; die Beispieldaten bleiben als kleine Nebenzeile.
+
+### Hinzugefügt
+- Mit genau einer Ablesung sagt die Karte, was fehlt: „Der Verbrauch ergibt
+  sich aus zwei Ablesungen." Für den Rechenkern sind null und eine Ablesung
+  derselbe Fall — für den Nutzer nicht.
+- Zwei Oberflächentests, die den ganzen Weg abgehen: leerer Start, Zähler
+  anlegen, erste Ablesung eintippen, und die Karte muss den zweiten Schritt
+  nennen. Das ist Produktprinzip 1 als ausführbare Prüfung.
+- Bildschirmfotos vom leeren Zustand (`-pulse-empty`).
+- Derselbe leere Zustand im Klick-Dummy, erreichbar durch Löschen aller
+  Zähler. Vorher blieb die Übersicht dann einfach leer.
+
+### Geändert
+- Das Zeitlimit der CI steht auf 45 Minuten. Zehn Bildschirmfotos brauchen auf
+  dem Läufer gut 16 Minuten, und mit dem Build wurden die 30 zu knapp.
+
 ## 0.16.1 — 2026-08-05
 
 ### Behoben

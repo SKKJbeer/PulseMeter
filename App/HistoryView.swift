@@ -50,7 +50,9 @@ struct HistoryView: View {
                         meterPicker
                         granularityPicker
                         modePicker
-                        if mode == .chart {
+                        if buckets.isEmpty {
+                            noHistoryYet
+                        } else if mode == .chart {
                             chartCard
                             if let comparison {
                                 comparisonCard(comparison)
@@ -58,7 +60,7 @@ struct HistoryView: View {
                         } else {
                             tableCard
                         }
-                        exportRow
+                        if !buckets.isEmpty { exportRow }
                         readingsRow
                     }
                 }
@@ -87,6 +89,33 @@ struct HistoryView: View {
                     .font(PulseText.cardTitle)
                     .foregroundStyle(PulseColor.ink)
                 Text("Sobald ein Zähler zweimal abgelesen wurde, entsteht hier ein Verlauf.")
+                    .font(PulseText.detail)
+                    .foregroundStyle(PulseColor.inkSecondary)
+                    .multilineTextAlignment(.center)
+            }
+            .padding(22)
+            .frame(maxWidth: .infinity)
+        }
+    }
+
+    /// Ein Zähler mit weniger als zwei Ablesungen hat keinen Verlauf.
+    ///
+    /// Vorher stand hier ein Diagramm ohne Balken und darüber „0 m³" — eine
+    /// Zahl, die aussieht wie eine Messung und keine ist. Der Fall trat bis
+    /// 0.16 nie auf, weil jeder Zähler mit zwei Jahren Historie angelegt
+    /// wurde; für einen neuen Nutzer ist er der Normalfall.
+    private var noHistoryYet: some View {
+        PulseCard {
+            VStack(spacing: 10) {
+                Image(systemName: "chart.bar")
+                    .font(.system(size: 28))
+                    .foregroundStyle(PulseColor.inkTertiary)
+                Text(readings.isEmpty ? "Noch keine Ablesung" : "Erst eine Ablesung")
+                    .font(PulseText.cardTitle)
+                    .foregroundStyle(PulseColor.ink)
+                Text(readings.isEmpty
+                     ? "Trag den ersten Stand ein — auf der Übersicht."
+                     : "Ein Verbrauch ergibt sich aus zwei Ablesungen. Sobald die zweite da ist, steht hier der Verlauf.")
                     .font(PulseText.detail)
                     .foregroundStyle(PulseColor.inkSecondary)
                     .multilineTextAlignment(.center)

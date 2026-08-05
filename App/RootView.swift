@@ -60,6 +60,10 @@ struct MeterRow: Identifiable {
     let colorToken: String
     let lastValue: Decimal?
     let lastDay: CalendarDay?
+    /// Wie viele Ablesungen es gibt. Null und eins sehen für den Rechenkern
+    /// gleich aus — beide ergeben keinen Verbrauch —, für den Nutzer aber
+    /// nicht: Bei eins fehlt nur noch eine.
+    let readingCount: Int
     /// Nachkommastellen des Zählwerks — der Stand wird so geschrieben, wie er
     /// am Gerät abzulesen ist. Sonst steht derselbe Wert auf der Übersicht als
     /// „8.285,1" und im Erfassungsschirm als „8.285,100".
@@ -77,6 +81,7 @@ struct OverviewView: View {
     @State private var rows: [MeterRow] = []
     @State private var points: [MeteringPoint] = []
     @State private var capturing: MeteringPoint?
+    @State private var addingMeter = false
     @State private var problem: String?
 
     private var today: CalendarDay { CalendarDay.containing(Date(), in: .current) }
@@ -111,6 +116,9 @@ struct OverviewView: View {
             .sheet(item: $capturing) { point in
                 CaptureView(meteringPoint: point, onSaved: reload)
             }
+            .sheet(isPresented: $addingMeter) {
+                MeterEditor(draft: MeterDraft(), readingCount: 0, onDone: reload)
+            }
         }
     }
 
@@ -125,18 +133,26 @@ struct OverviewView: View {
                 Text("Noch kein Zähler")
                     .font(PulseText.cardTitle)
                     .foregroundStyle(PulseColor.ink)
-                Text("Lege Beispieldaten an, um Speicher und Rechenkern im Zusammenspiel zu sehen.")
+                Text("Leg deinen ersten Zähler an — Name und Art genügen. Danach trägst du den Stand ein, und der Rest ergibt sich.")
                     .font(PulseText.detail)
                     .foregroundStyle(PulseColor.inkSecondary)
                     .multilineTextAlignment(.center)
-                Button(action: seed) {
-                    Text("Beispieldaten anlegen")
+
+                // Die Hauptsache führt zum eigenen Zähler, nicht zu
+                // Beispieldaten. „Beispieldaten anlegen" stand hier als
+                // einzige Möglichkeit und war Entwicklersprache an der
+                // Stelle, an der ein neuer Nutzer zum ersten Mal etwas tut.
+                Button { addingMeter = true } label: {
+                    Text("Ersten Zähler anlegen")
                         .font(.system(.body, weight: .semibold))
                         .foregroundStyle(PulseColor.onAccent)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 13)
                         .background(PulseColor.tint, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
                 }
+                Button("Stattdessen Beispieldaten anlegen", action: seed)
+                    .font(PulseText.caption)
+                    .foregroundStyle(PulseColor.inkTertiary)
             }
             .padding(20)
         }
@@ -148,7 +164,7 @@ struct OverviewView: View {
             title: row.name,
             symbolName: row.symbolName,
             accent: accent,
-            caption: periodCaption(for: row.yearToDate),
+            caption: periodCaption(for: row),
             value: valueText(for: row.yearToDate),
             isApproximate: isApproximate(row.yearToDate),
             unit: row.unit,
@@ -189,8 +205,11 @@ struct OverviewView: View {
     /// untereinander, die verschiedene Ausschnitte des Jahres meinen und
     /// dieselbe Form haben — der Vergleich, zu dem die Karte einlädt, ist
     /// dann falsch, und niemand kann es sehen.
-    private func periodCaption(for result: ConsumptionResult?) -> String {
-        guard let result else { return "Noch keine Ablesung" }
+    private func periodCaption(for row: MeterRow) -> String {
+        guard let result = row.yearToDate else { return "Noch keine Ablesung" }
+        if case .none = result.coverage {
+            return row.readingCount == 0 ? "Noch keine Ablesung" : "Seit der ersten Ablesung"
+        }
 
         // Ein verkürzter Zeitraum wird als Spanne ausgeschrieben, nicht als
         // „Seit Jahresbeginn" mit angehängtem Vorbehalt. Der Grund ist
@@ -235,11 +254,16 @@ struct OverviewView: View {
     }
 
     private func detailText(for row: MeterRow) -> Text {
-        if row.isDue, let days = row.daysSinceReading {
-            return Text("Seit \(days) Tagen fällig")
+        if row.isDue {
+            return Text(row.daysSinceReading.map { "Seit \($0) Tagen fällig" }
+                        ?? "Noch nie abgelesen")
         }
         guard let change = row.changeVersusLastYear else {
-            return Text("Noch kein Vergleichswert")
+            // Mit genau einer Ablesung steht noch kein Verbrauch fest — das
+            // ist kein Mangel, sondern der zweite Schritt. Die Karte sagt ihn.
+            return Text(row.readingCount == 1
+                        ? "Der Verbrauch ergibt sich aus zwei Ablesungen"
+                        : "Noch kein Vergleichswert")
         }
         let sign = change < 0 ? "−" : "+"
         let percent = number(abs(change) * 100, digits: 0)
@@ -253,10 +277,19 @@ struct OverviewView: View {
     }
 
     private var statusMessage: AttributedString {
-        if let due = rows.first(where: \.isDue), let days = due.daysSinceReading {
-            var text = AttributedString("\(due.name) ist seit \(days) Tagen nicht abgelesen.")
+        // `daysSinceReading` ist `nil`, solange der Zähler nie abgelesen wurde.
+        // Vorher fiel dieser Fall durch die Bedingung hindurch, und die App
+        // meldete „Alles im Rahmen. Alle Zähler sind aktuell." für einen
+        // Zähler, der noch nie einen Stand hatte — also genau im Zustand, in
+        // dem jeder neue Nutzer die App zum ersten Mal öffnet.
+        if let due = rows.first(where: \.isDue) {
+            var text = AttributedString(due.daysSinceReading.map {
+                "\(due.name) ist seit \($0) Tagen nicht abgelesen."
+            } ?? "\(due.name) wurde noch nie abgelesen.")
             text.font = .system(.subheadline, weight: .semibold)
-            var rest = AttributedString(" Ohne aktuellen Stand ist die Vorschau ungenau.")
+            var rest = AttributedString(due.daysSinceReading == nil
+                ? " Trag den ersten Stand ein, dann fängt der Verlauf an."
+                : " Ohne aktuellen Stand ist die Vorschau ungenau.")
             rest.font = .system(.subheadline)
             text.append(rest)
             return text
@@ -281,7 +314,13 @@ struct OverviewView: View {
     /// grüner Lauf sagt nichts über den einzelnen Fall.
     private func start() {
         let arguments = ProcessInfo.processInfo.arguments
-        if arguments.contains("-pulse-reset") {
+        if arguments.contains("-pulse-empty") {
+            // Der Zustand, in dem jeder neue Nutzer anfängt — und der einzige,
+            // den bis 0.16 kein Test und kein Bild je gesehen hat.
+            try? PulseRepository(context: context).deleteEverything()
+            rows = []
+            points = []
+        } else if arguments.contains("-pulse-reset") {
             try? PulseRepository(context: context).deleteEverything()
             rows = []
             points = []
@@ -314,8 +353,8 @@ struct OverviewView: View {
                     return MeterRow(id: point.id, name: point.name, unit: "",
                                     symbolName: point.appearance.symbolName,
                                     colorToken: point.appearance.colorToken,
-                                    lastValue: nil, lastDay: nil, fractionDigits: 0,
-                                    yearToDate: nil,
+                                    lastValue: nil, lastDay: nil, readingCount: 0,
+                                    fractionDigits: 0, yearToDate: nil,
                                     changeVersusLastYear: nil, monthlySeries: [],
                                     daysSinceReading: nil, isDue: false)
                 }
@@ -333,6 +372,7 @@ struct OverviewView: View {
                     colorToken: point.appearance.colorToken,
                     lastValue: last?.value,
                     lastDay: last?.day,
+                    readingCount: readings.count,
                     fractionDigits: register.fractionDigits,
                     yearToDate: result,
                     changeVersusLastYear: comparison?.relativeChange,
