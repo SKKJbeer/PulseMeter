@@ -45,47 +45,71 @@ public struct PeriodBars: View {
     }
 
     public var body: some View {
-        HStack(alignment: .bottom, spacing: 4) {
-            ForEach(columns) { column in
-                bar(for: column)
+        VStack(spacing: 0) {
+            HStack(alignment: .bottom, spacing: 4) {
+                ForEach(columns) { column in
+                    bar(for: column)
+                }
             }
+            .frame(height: 140)
+
+            // Eine durchgehende Grundlinie statt einer Spur je Spalte.
+            //
+            // Vorher stand hinter jedem Abschnitt ein hoher heller Block. Auf
+            // dem Bildschirmfoto las sich das Jahr dadurch als zwölf Balken,
+            // von denen vier farbig waren — obwohl es nur vier Balken gibt und
+            // acht Monate ohne Ablesung. Ein leerer Abschnitt zeigt jetzt
+            // nichts, und das ist die richtige Aussage.
+            Rectangle()
+                .fill(PulseColor.hairlineStrong)
+                .frame(height: 1)
+
+            HStack(spacing: 4) {
+                ForEach(columns) { column in
+                    Text(column.label)
+                        .font(.system(size: 10, weight: selection == column.id ? .semibold : .regular))
+                        .foregroundStyle(selection == column.id ? PulseColor.ink : PulseColor.inkTertiary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                        .frame(maxWidth: .infinity)
+                }
+            }
+            .padding(.top, 6)
         }
-        .frame(height: 168)
     }
 
     private func bar(for column: Column) -> some View {
         let selected = selection == column.id
-        return VStack(spacing: 6) {
-            GeometryReader { geometry in
-                let height = geometry.size.height
-                ZStack(alignment: .bottom) {
+        return GeometryReader { geometry in
+            let height = geometry.size.height
+            ZStack(alignment: .bottom) {
+                // Der ausgewählte Abschnitt bekommt eine blasse Fläche. Ohne
+                // Spur wäre ein Tipp auf einen leeren Monat sonst folgenlos
+                // sichtbar.
+                if selected {
                     RoundedRectangle(cornerRadius: 3, style: .continuous)
-                        .fill(PulseColor.surfaceMuted)
+                        .fill(accent.opacity(0.12))
+                }
 
-                    if let value = column.value {
-                        RoundedRectangle(cornerRadius: 3, style: .continuous)
-                            .fill(accent.opacity(column.isPartial ? 0.4 : 1))
-                            .frame(height: Swift.max(2, height * value / upperBound))
-                    }
+                if let value = column.value {
+                    RoundedRectangle(cornerRadius: 3, style: .continuous)
+                        .fill(accent.opacity(column.isPartial ? 0.4 : 1))
+                        .frame(height: Swift.max(2, height * value / upperBound))
+                }
 
-                    // Vorjahresmarke: liegt auf der Achse des Balkens, nicht
-                    // daneben. Zwei Höhen an einem Ort vergleichen sich von
-                    // selbst; zwei Höhen an zwei Orten muss man messen.
-                    if let reference = column.reference {
-                        Rectangle()
-                            .fill(PulseColor.inkTertiary)
-                            .frame(height: 2)
-                            .offset(y: -(height * reference / upperBound) + 1)
-                            .frame(maxHeight: .infinity, alignment: .bottom)
-                    }
+                // Vorjahresmarke: liegt auf der Achse des Balkens, nicht
+                // daneben. Zwei Höhen an einem Ort vergleichen sich von
+                // selbst; zwei Höhen an zwei Orten muss man messen.
+                if let reference = column.reference {
+                    Rectangle()
+                        .fill(PulseColor.inkTertiary)
+                        .frame(height: 2)
+                        .offset(y: -(height * reference / upperBound) + 1)
+                        .frame(maxHeight: .infinity, alignment: .bottom)
                 }
             }
-            Text(column.label)
-                .font(.system(size: 10, weight: selected ? .semibold : .regular))
-                .foregroundStyle(selected ? PulseColor.ink : PulseColor.inkTertiary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
         }
+        .frame(maxWidth: .infinity)
         .contentShape(Rectangle())
         .onTapGesture { onSelect(column.id) }
         .accessibilityElement(children: .ignore)

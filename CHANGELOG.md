@@ -9,6 +9,23 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.15.1 — 2026-08-05
+
+### Behoben
+- **Das Verlaufsdiagramm zeigte zwölf Balken, wo es vier gibt.** Hinter jedem
+  Monat stand eine hohe helle Spur. Auf dem ersten Bildschirmfoto des Verlaufs
+  las sich das Jahr dadurch als zwölf Balken, von denen vier farbig waren —
+  tatsächlich hat der Gaszähler seit Mai keine Ablesung. Statt der Spuren gibt
+  es jetzt eine durchgehende Grundlinie; ein Abschnitt ohne Ablesung zeigt
+  nichts. Der ausgewählte Abschnitt bekommt eine blasse Fläche, damit ein Tipp
+  auf einen leeren Monat sichtbar bleibt.
+- Die Legende erklärte „unvollständig" auch dann, wenn kein Abschnitt
+  angebrochen war, und nannte in der Jahresansicht ein Vorjahr, das dort als
+  eigener Balken steht.
+
+Wieder ein Fund aus dem Bild, nicht aus einem Test: Die Zahlen waren richtig,
+die Form log.
+
 ## 0.15.0 — 2026-08-05
 
 Alle Zahlen und der Export — die Ansicht, nach der du früh gefragt hattest

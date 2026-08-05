@@ -257,10 +257,18 @@ struct HistoryView: View {
                     recomputeComparison()
                 }
 
+                // Die Legende erklärt nur, was auch zu sehen ist. „2025"
+                // entfällt in der Jahresansicht — dort ist das Vorjahr der
+                // Balken daneben —, und „unvollständig" nur dann, wenn
+                // wirklich ein Abschnitt angebrochen ist.
                 HStack(spacing: 14) {
-                    legendDot(color: accent, text: "\(today.year)")
-                    legendLine(text: "\(today.year - 1)")
-                    legendDot(color: accent.opacity(0.4), text: "unvollständig")
+                    legendDot(color: accent, text: granularity == .year ? "Verbrauch" : "\(today.year)")
+                    if granularity != .year {
+                        legendLine(text: "\(today.year - 1)")
+                    }
+                    if chartColumns.contains(where: \.isPartial) {
+                        legendDot(color: accent.opacity(0.4), text: "unvollständig")
+                    }
                 }
                 .font(PulseText.caption)
                 .foregroundStyle(PulseColor.inkTertiary)
@@ -270,6 +278,7 @@ struct HistoryView: View {
                      : "Noch einmal antippen hebt die Auswahl auf")
                     .font(PulseText.caption)
                     .foregroundStyle(PulseColor.inkTertiary)
+                    .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity, alignment: .center)
             }
             .padding(15)
