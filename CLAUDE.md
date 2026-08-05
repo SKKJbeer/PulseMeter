@@ -95,6 +95,7 @@ docs/05-roadmap.md            v1-Umfang, Ausschlüsse, Reihenfolge
 docs/prototype/index.html     Klick-Dummy, in sich geschlossen
 Packages/PulseCore/           Domäne und Rechenkern, nur Foundation
 Packages/PulseData/           SwiftData und CloudKit, braucht Xcode
+Packages/PulseUI/             Design-System, nur iOS
 App/                          App-Target, wird vollständig eingelesen
 project.yml                   Beschreibung des Xcode-Projekts (XcodeGen)
 scripts/                      setup-mac, test, run — die Automatisierung

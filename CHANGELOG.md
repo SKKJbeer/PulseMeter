@@ -9,6 +9,35 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.11.0 — 2026-08-04
+
+### Hinzugefügt
+- `PulseUI`, das Design-System: Farben, Textstile und die Kernkomponenten aus
+  `03-ux-konzept.md`. Die Palette steht als Code statt in einem Asset-Katalog —
+  sie bleibt damit lesbar, versionierbar und in einer Zeile vergleichbar mit
+  dem Klick-Dummy.
+- Die Übersicht zeigt jetzt Zähler-Karten mit Verlaufslinie, Vorjahresvergleich
+  und Statuszeile in ganzen Sätzen, statt einer Liste aus Textzeilen.
+
+### Geändert
+- Die Neutralen sind warm gebrochen statt kalt-grau. Die Zählerfarben sind die
+  eigentliche Palette und machen die App ohne Text lesbar; ein kaltes Grau
+  konkurriert mit ihnen.
+- Sämtliche Textstile leiten sich von Systemstilen ab und wachsen deshalb mit
+  Dynamic Type. Feste Punktgrößen wären bequemer und zerbrächen bei der
+  größten Stufe — also genau dort, wo Barrierefreiheit anfängt.
+- Die Beispieldaten umfassen gut zwei Jahre statt zweier Ablesungen. Mit zwei
+  Werten sähe die Karte fertig aus und wäre doch leer: keine Verlaufslinie,
+  kein Vorjahresvergleich.
+- Der Oberflächentest prüft jetzt den Vorjahresvergleich statt nur den
+  Jahresverbrauch. Er entsteht nur, wenn Speicher und Rechenkern über zwei
+  Jahre Historie zusammenspielen.
+
+_82 Tests in PulseCore, 10 in PulseData, beide Oberflächentests. Screenshots in
+Hell und Dunkel liegen dem Lauf bei._
+
+---
+
 ## 0.10.2 — 2026-08-04
 
 Die erste Fassung, die auf einer Apple-Plattform tatsächlich gebaut, getestet

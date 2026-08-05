@@ -35,6 +35,8 @@ jobs:
       - name: PulseData
         run: swift test --package-path Packages/PulseData
 
+      # PulseUI ist iOS-only und wird beim App-Build mit übersetzt; ein
+      # eigener Testlauf auf macOS ginge nicht.
       - name: XcodeGen
         run: brew install xcodegen
 

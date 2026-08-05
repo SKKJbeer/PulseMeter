@@ -40,10 +40,12 @@ final class LaunchTests: XCTestCase {
         seedButton.tap()
 
         XCTAssertTrue(app.staticTexts["Strom"].waitForExistence(timeout: 5))
-        let consumption = app.staticTexts.containing(
-            NSPredicate(format: "label CONTAINS 'seit Jahresbeginn'")
+        // Der Vorjahresvergleich entsteht nur, wenn Speicher und Rechenkern
+        // über zwei Jahre Historie zusammenspielen.
+        let comparison = app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS 'gegenüber Vorjahr'")
         ).firstMatch
-        XCTAssertTrue(consumption.waitForExistence(timeout: 5),
-                      "Es wurde kein berechneter Verbrauch angezeigt")
+        XCTAssertTrue(comparison.waitForExistence(timeout: 5),
+                      "Es wurde kein Vorjahresvergleich angezeigt")
     }
 }
