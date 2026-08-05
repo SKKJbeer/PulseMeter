@@ -9,6 +9,22 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.11.1 — 2026-08-05
+
+### Behoben
+- Die Simulator-Auswahl verglich Gerätenamen als Text. Dabei steht
+  „iPhone SE" hinter „iPhone 16 Pro", weil S hinter 1 kommt — acht Läufe lang
+  wurde die App auf dem kleinsten verfügbaren Bildschirm gebaut, getestet und
+  fotografiert. Jetzt wird die Zahl im Namen ausgewertet.
+
+Gefunden hat das kein Test, sondern der Blick auf den Screenshot: 750 × 1334
+Pixel sind kein aktuelles Gerät. Genau dafür steht der Schritt in der
+Prüfliste.
+
+_Keine Änderung am Produkt. Tests unverändert._
+
+---
+
 ## 0.11.0 — 2026-08-04
 
 ### Hinzugefügt
