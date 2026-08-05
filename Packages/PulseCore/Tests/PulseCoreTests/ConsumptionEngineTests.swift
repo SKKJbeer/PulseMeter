@@ -363,6 +363,66 @@ final class ConsumptionEngineTests: XCTestCase {
         XCTAssertEqual(verdict, .noReference)
     }
 
+    // MARK: - Interpolation über große Lücken
+
+    /// Monatlich abgelesen: Der Abstand ist etwas größer als der Monat selbst,
+    /// und das ist der Normalfall — niemand trifft den Monatsersten genau.
+    func testNormalReadingRhythmCountsAsItsOwnData() {
+        let register = Fixture.electricityRegister()
+        let readings = [
+            Fixture.reading(register, day(2026, 1, 3), 1000, sequence: 0),
+            Fixture.reading(register, day(2026, 2, 4), 1300, sequence: 1),
+            Fixture.reading(register, day(2026, 3, 5), 1600, sequence: 2)
+        ]
+
+        let result = ConsumptionEngine.consumption(
+            register: register, readings: readings,
+            in: span(day(2026, 2, 1), day(2026, 3, 1))
+        )
+
+        XCTAssertEqual(result.longestGapInDays, 32)
+        XCTAssertTrue(result.restsOnOwnReadings,
+                      "32 Tage für einen 28-Tage-Monat sind ein üblicher Ableserhythmus")
+    }
+
+    /// Ein Jahr zwischen zwei Ablesungen: Für einen einzelnen Monat daraus
+    /// gibt es keine Aussage, nur einen anteiligen Jahresschnitt.
+    func testYearLongGapDoesNotSupportAMonthlyFigure() {
+        let register = Fixture.electricityRegister()
+        let readings = [
+            Fixture.reading(register, day(2025, 2, 1), 1000, sequence: 0),
+            Fixture.reading(register, day(2026, 2, 1), 4650, sequence: 1)
+        ]
+
+        let result = ConsumptionEngine.consumption(
+            register: register, readings: readings,
+            in: span(day(2025, 2, 1), day(2025, 3, 1))
+        )
+
+        XCTAssertTrue(result.isComplete, "Der Ausschnitt liegt innerhalb der Reihe")
+        XCTAssertEqual(result.longestGapInDays, 365)
+        XCTAssertFalse(result.restsOnOwnReadings,
+                       "Aus einer Geraden über ein Jahr folgt keine Monatsaussage")
+    }
+
+    /// Über das ganze Jahr gerechnet ist dieselbe Lücke unbedenklich — sie ist
+    /// genauso lang wie der Zeitraum, den sie tragen soll.
+    func testTheSameGapIsFineForAYearlyFigure() {
+        let register = Fixture.electricityRegister()
+        let readings = [
+            Fixture.reading(register, day(2025, 2, 1), 1000, sequence: 0),
+            Fixture.reading(register, day(2026, 2, 1), 4650, sequence: 1)
+        ]
+
+        let result = ConsumptionEngine.consumption(
+            register: register, readings: readings,
+            in: span(day(2025, 2, 1), day(2026, 2, 1))
+        )
+
+        XCTAssertTrue(result.restsOnOwnReadings)
+        XCTAssertEqual(result.quantity.value, 3650)
+    }
+
     // MARK: - Abdeckung eines Zeitraums
 
     func testFullCoverageWhenDataSpansTheWholeRange() {

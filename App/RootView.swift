@@ -11,7 +11,7 @@ struct RootView: View {
         TabView {
             OverviewView()
                 .tabItem { Label("Übersicht", systemImage: "house") }
-            PlaceholderView(title: "Verlauf", note: "Folgt als Nächstes.")
+            HistoryView()
                 .tabItem { Label("Verlauf", systemImage: "chart.bar") }
             PlaceholderView(title: "Zähler", note: "Folgt als Nächstes.")
                 .tabItem { Label("Zähler", systemImage: "gauge.medium") }

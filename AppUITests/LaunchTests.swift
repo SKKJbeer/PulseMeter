@@ -84,6 +84,38 @@ final class LaunchTests: XCTestCase {
                       "Die Zahl des überfälligen Zählers nennt ihren Zeitraum nicht")
     }
 
+    /// Der Verlauf steht und zeigt einen Zähler mit Diagramm.
+    func testHistoryShowsAChartForTheSelectedMeter() {
+        let app = launchWithData()
+        app.tabBars.buttons["Verlauf"].tap()
+
+        XCTAssertTrue(app.staticTexts["Verlauf"].waitForExistence(timeout: 5),
+                      "Der Verlauf wurde nicht geöffnet")
+        XCTAssertTrue(app.buttons["Monat"].waitForExistence(timeout: 5),
+                      "Die Zeitraumwahl fehlt")
+        XCTAssertTrue(app.staticTexts["Alle Ablesungen"].exists,
+                      "Der Zugang zu den Ablesungen fehlt")
+    }
+
+    /// Der Vergleich, für den es diese App gibt: derselbe Monat, andere Jahre.
+    ///
+    /// Der Verlauf listet die Monate als Balken; ein Tipp darauf öffnet die
+    /// Gegenüberstellung. Geprüft wird über die Bedienhilfen-Beschriftung,
+    /// weil ein Balken keinen Text trägt.
+    func testTappingAMonthOpensTheYearComparison() {
+        let app = launchWithData()
+        app.tabBars.buttons["Verlauf"].tap()
+        XCTAssertTrue(app.buttons["Monat"].waitForExistence(timeout: 5))
+
+        // „F" ist der Februar — ein abgeschlossener Monat mit Vorjahr daneben.
+        let february = app.buttons["F"].firstMatch
+        XCTAssertTrue(february.waitForExistence(timeout: 5), "Kein Balken für Februar")
+        february.tap()
+
+        XCTAssertTrue(app.staticTexts["Februar"].waitForExistence(timeout: 5),
+                      "Die Gegenüberstellung wurde nicht geöffnet")
+    }
+
     /// Der Fluss, an dem das Produkt hängt: eintragen, Stand übernehmen,
     /// sichern — und der Hinweis auf den überfälligen Zähler ist weg.
     ///

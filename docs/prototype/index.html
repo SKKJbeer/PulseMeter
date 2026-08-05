@@ -650,7 +650,7 @@ table.doc-t td.dim { color: #9A9384; }
 
 <div class="stage-head">
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.13.1</p>
+  <p>Klickbarer Entwurf · v0.14.0</p>
 </div>
 
 <div class="device">
@@ -1012,11 +1012,36 @@ function consumption(reg, from, to) {
     const a2 = cumulativeAt(reg, cf), b2 = cumulativeAt(reg, ct);
     if (!a2 || !b2) return null;
     return { value: b2.v - a2.v, days: between(cf, ct), exact: false, complete: false,
-             cfrom: cf, cto: ct, rfrom: from, rto: to };
+             cfrom: cf, cto: ct, rfrom: from, rto: to, gap: longestGap(reg, cf, ct) };
   }
   return { value: b.v - a.v, days: between(from, to), exact: a.exact && b.exact, complete: true,
-           cfrom: from, cto: to, rfrom: from, rto: to };
+           cfrom: from, cto: to, rfrom: from, rto: to, gap: longestGap(reg, from, to) };
 }
+
+/* Größter Abstand zwischen zwei Ablesungen, den der Zeitraum benutzt.
+
+   Zwischen zwei Ablesungen wird linear interpoliert, und über ein paar Wochen
+   ist das vernünftig. Über ein Jahr hinweg nicht mehr: Wer am 1. Februar 2025
+   und dann erst am 1. Februar 2026 abliest, bekommt für den Februar 2025 eine
+   Zahl, die nur den Jahresschnitt anteilig ausschneidet — sie sieht aber aus
+   wie eine Messung. Spiegelt `ConsumptionSeries.longestGap` aus PulseCore. */
+function longestGap(reg, from, to) {
+  const rs = reg.readings;
+  let longest = 0;
+  for (let i = 1; i < rs.length; i++) {
+    const a = rs[i - 1], b = rs[i];
+    if (serial(b.y, b.m, b.d) <= serial(from.y, from.m, from.d)) continue;
+    if (serial(a.y, a.m, a.d) >= serial(to.y, to.m, to.d)) continue;
+    longest = Math.max(longest, between(a, b));
+  }
+  return longest;
+}
+
+/* Ob die Zahl auf Ablesungen aus diesem Zeitraum beruht statt auf einer
+   Geraden, die weit darüber hinweggelegt wurde. Die Grenze beim Doppelten der
+   Zeitraumlänge ist großzügig: Wer monatlich abliest, trifft den Monatsersten
+   selten genau, und 31 Tage für einen 28-Tage-Monat sind normal. */
+const restsOnOwnReadings = c => c && c.gap <= 2 * Math.max(1, c.days);
 
 /* Wie weit ein Ergebnis den angefragten Zeitraum abdeckt.
    Spiegelt `ConsumptionResult.coverage` aus PulseCore — die Fassungen müssen
@@ -1278,12 +1303,29 @@ function monthDays(y, m) {
 /* Derselbe Monat über alle Jahre — ein Balken je Jahr auf gemeinsamem Maßstab.
    Das ist der Vergleich, der wirklich etwas aussagt: Gleiche Jahreszeit,
    gleiche Länge, gleiches Wetterfenster. */
+/* Derselbe Monat über mehrere Jahre — auf **demselben** Ausschnitt des Jahres.
+
+   Früher hat diese Karte einen laufenden Monat gar nicht verglichen („wird
+   nachgetragen, sobald der Monat abgeschlossen ist"). Das vermied zwar den
+   Fehler, ließ aber genau den Monat leer, der den Nutzer am meisten
+   interessiert. Jetzt wird stattdessen das Vorjahr auf denselben Ausschnitt
+   beschnitten: halber Februar gegen halben Februar, und darunter steht,
+   welcher Ausschnitt gemeint ist. Spiegelt `PeriodEngine.compareAcrossYears`. */
 function renderCompare(m, reg, idx) {
   const month = idx + 1;
-  const rows = YEARS.map(y => {
-    const c = monthConsumption(reg, y, month);
-    return { y, v: c && c.complete ? c.value : null, days: monthDays(y, month) };
+  const probe = monthConsumption(reg, YEARS[0], month);
+  const win = probe ? { from: probe.cfrom, to: probe.cto } : null;
+  const partial = probe ? !probe.complete : false;
+
+  const rows = YEARS.map((y, step) => {
+    if (!win) return { y, v: null, days: monthDays(y, month) };
+    const c = consumption(reg, shiftYear(win.from, -step), shiftYear(win.to, -step));
+    // Nur zählen, wenn das Jahr den Ausschnitt wirklich abdeckt. Ein Jahr mit
+    // halben Daten hätte sonst einen halben Balken und sähe sparsam aus.
+    const usable = c && c.complete && restsOnOwnReadings(c);
+    return { y, v: usable ? c.value : null, days: c ? c.days : monthDays(y, month) };
   });
+
   const max = Math.max(...rows.map(r => r.v ?? 0), 0.0001);
   const dp = m.frac >= 3 ? 1 : 0;
   const cur = rows[0], prev = rows[1];
@@ -1307,11 +1349,19 @@ function renderCompare(m, reg, idx) {
       const c1 = billedUnits(m, cur.v) * m.price, c0 = billedUnits(m, prev.v) * m.price;
       foot += ` Arbeitspreis <b>${money(c1)}</b> gegenüber ${money(c0)}.`;
     }
+    // Der Satz ist der Grund, warum diese Karte richtig rechnet — und er muss
+    // dastehen, sonst hält der Leser die Zahl für einen ganzen Monat.
+    if (partial && win) {
+      foot += ` Verglichen wird <b>${dateMedium(win.from)} bis ${dateMedium(win.to)}</b> —
+        in jedem Jahr derselbe Ausschnitt.`;
+    }
     foot += `</div>`;
   } else if (cur.v === null) {
     foot = `<div class="cmp-foot">Für ${MONTHS_LONG[idx]} ${YEARS[0]} liegt noch keine
-      vollständige Ablesung vor. Der Vergleich wird nachgetragen, sobald der Monat
-      abgeschlossen ist.</div>`;
+      Ablesung vor, aus der sich ein Verbrauch ergibt.</div>`;
+  } else {
+    foot = `<div class="cmp-foot">Für die Vorjahre fehlen in diesem Ausschnitt
+      Ablesungen — es gibt nichts, womit sich vergleichen ließe.</div>`;
   }
 
   document.getElementById("compare").innerHTML =

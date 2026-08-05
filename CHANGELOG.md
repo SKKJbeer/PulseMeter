@@ -9,6 +9,37 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.14.0 — 2026-08-05
+
+Der **Verlauf** ist kein Platzhalter mehr.
+
+### Hinzugefügt
+- Verlauf-Tab in der App: Zählerwahl, Balken je Monat / Quartal / Jahr mit dem
+  Vorjahr als Marke im Balken, und die Liste aller Ablesungen hinter einer
+  Zeile. Ein Tipp auf einen Abschnitt öffnet den Vergleich über drei Jahre.
+- `PeriodEngine` in `PulseCore`: zerlegt eine Zeitreihe in Monate, Quartale
+  und Jahre und vergleicht denselben Abschnitt über mehrere Jahre. 14 neue
+  Prüfungen.
+- Zwei Oberflächentests für den Verlauf.
+
+### Behoben
+- **Ein laufender Monat wurde gar nicht verglichen.** Der Klick-Dummy schrieb
+  „wird nachgetragen, sobald der Monat abgeschlossen ist" — richtig gerechnet,
+  aber genau der Monat, der den Nutzer am meisten interessiert, blieb leer.
+  Jetzt wird das Vorjahr auf denselben Ausschnitt beschnitten: halber Februar
+  gegen halben Februar, und darunter steht, welcher Ausschnitt gemeint ist.
+- **Eine Zahl konnte aus einer Geraden über ein ganzes Jahr stammen und sah
+  aus wie eine Messung.** Wer am 1. Februar 2025 und dann erst am 1. Februar
+  2026 abliest, bekam für den Februar 2025 einen anteilig ausgeschnittenen
+  Jahresschnitt — formal gedeckt, inhaltlich nichts. Ergebnisse führen jetzt
+  den größten benutzten Ableseabstand mit, und ein Abschnitt gilt nur als
+  vergleichbar, wenn er auf Ablesungen aus seiner Nähe beruht. Die Grenze
+  liegt beim Doppelten der Zeitraumlänge — großzügig genug für jeden üblichen
+  Ableserhythmus.
+
+Beides fand derselbe Test, der eigentlich nur prüfen sollte, dass ein Jahr mit
+halben Daten nicht wie ein sparsames Jahr aussieht.
+
 ## 0.13.1 — 2026-08-05
 
 Drei Fehler, alle drei erst auf dem ersten Bildschirmfoto des

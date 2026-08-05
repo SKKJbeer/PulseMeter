@@ -58,19 +58,36 @@ public struct ConsumptionResult: Hashable, Sendable {
     /// Der Teil des Zeitraums, für den Daten vorliegen. `nil`, wenn keine.
     public let coveredRange: DayRange?
     public let warnings: [ConsumptionWarning]
+    /// Größter Abstand zwischen zwei Ablesungen, über den für dieses Ergebnis
+    /// interpoliert wurde.
+    public let longestGapInDays: Int
 
     public init(
         quantity: Quantity,
         confidence: Confidence,
         requestedRange: DayRange,
         coveredRange: DayRange?,
-        warnings: [ConsumptionWarning]
+        warnings: [ConsumptionWarning],
+        longestGapInDays: Int = 0
     ) {
         self.quantity = quantity
         self.confidence = confidence
         self.requestedRange = requestedRange
         self.coveredRange = coveredRange
         self.warnings = warnings
+        self.longestGapInDays = longestGapInDays
+    }
+
+    /// Ob die Zahl auf Ablesungen aus diesem Zeitraum beruht — und nicht auf
+    /// einer Geraden, die weit darüber hinweggelegt wurde.
+    ///
+    /// Die Grenze liegt beim Doppelten der Zeitraumlänge. Sie ist großzügig
+    /// gewählt: Wer monatlich abliest, trifft den Monatsersten selten genau,
+    /// und ein Abstand von 31 Tagen für einen 28-Tage-Monat ist völlig normal.
+    /// Ein Abstand von einem Jahr für einen Monat ist es nicht — dann steht da
+    /// ein anteiliger Jahresschnitt und keine Aussage über den Monat.
+    public var restsOnOwnReadings: Bool {
+        longestGapInDays <= 2 * Swift.max(1, requestedRange.spanInDays)
     }
 
     /// Anzahl der Tage, über die tatsächlich gerechnet werden konnte.

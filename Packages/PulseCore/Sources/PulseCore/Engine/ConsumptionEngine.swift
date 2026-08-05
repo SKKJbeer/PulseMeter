@@ -51,7 +51,8 @@ public enum ConsumptionEngine {
             confidence: confidence,
             requestedRange: range,
             coveredRange: covered,
-            warnings: warnings
+            warnings: warnings,
+            longestGapInDays: series.longestGap(in: covered)
         )
     }
 

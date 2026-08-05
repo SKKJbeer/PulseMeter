@@ -178,6 +178,28 @@ public struct ConsumptionSeries: Sendable {
         return (last.cumulative, true)
     }
 
+    /// Längster Abstand zwischen zwei Ablesungen, den der Zeitraum benutzt.
+    ///
+    /// Zwischen zwei Ablesungen wird linear interpoliert, und das ist über ein
+    /// paar Wochen auch vernünftig. Über ein Jahr hinweg ist es das nicht mehr:
+    /// Wer am 1. Februar 2025 und dann erst am 1. Februar 2026 abliest, bekommt
+    /// für den Februar 2025 eine Zahl, die nichts über den Februar aussagt,
+    /// sondern nur den Jahresschnitt anteilig ausschneidet. Diese Zahl sieht
+    /// aus wie eine Messung. Damit ein Aufrufer sie einordnen kann, führt das
+    /// Ergebnis den größten benutzten Abstand mit.
+    func longestGap(in range: DayRange) -> Int {
+        guard points.count > 1 else { return 0 }
+        var longest = 0
+        for index in 1..<points.count {
+            let from = points[index - 1].day
+            let to = points[index].day
+            // Nur Abschnitte, die den Zeitraum tatsächlich berühren.
+            guard to > range.start, from < range.end else { continue }
+            longest = Swift.max(longest, to.days(since: from))
+        }
+        return longest
+    }
+
     /// Ob im Zeitraum eine als Schätzung markierte Ablesung liegt.
     func containsEstimates(in range: DayRange) -> Bool {
         points.contains { $0.isEstimated && range.contains($0.day) }
