@@ -17,16 +17,18 @@ final class LaunchTests: XCTestCase {
         continueAfterFailure = false
     }
 
-    /// Startet die App und legt bei Bedarf die Beispieldaten an.
+    /// Startet die App mit frisch angelegten Beispieldaten.
+    ///
+    /// Der Reset ist entscheidend: Ohne ihn hängt jeder Test davon ab, was der
+    /// vorherige hinterlassen hat. Genau daran ist dieser Testsatz beim ersten
+    /// Lauf gescheitert — der Erfassungstest trug beim obersten Zähler einen
+    /// Stand ein und räumte damit die Fälligkeit weg, die der nächste erwartete.
     private func launchWithData() -> XCUIApplication {
         let app = XCUIApplication()
+        app.launchArguments = ["-pulse-reset"]
         app.launch()
-        let seedButton = app.buttons["Beispieldaten anlegen"]
-        if seedButton.waitForExistence(timeout: 10) {
-            seedButton.tap()
-        }
-        XCTAssertTrue(app.staticTexts["Strom"].waitForExistence(timeout: 10),
-                      "Nach dem Anlegen fehlt der Stromzähler")
+        XCTAssertTrue(app.staticTexts["Strom"].waitForExistence(timeout: 15),
+                      "Die Beispieldaten wurden nicht angelegt")
         return app
     }
 
@@ -62,24 +64,34 @@ final class LaunchTests: XCTestCase {
                       "Der überfällige Gaszähler wurde nicht gemeldet")
     }
 
-    /// Der Fluss, an dem das Produkt hängt: eintragen, Ziffern tippen, sichern.
-    func testCapturingAReadingReturnsToTheOverview() {
+    /// Der Fluss, an dem das Produkt hängt: eintragen, Stand übernehmen,
+    /// sichern — und der Hinweis auf den überfälligen Zähler ist weg.
+    ///
+    /// Die Zähler stehen alphabetisch, Gas also oben. Das ist genau der
+    /// überfällige, und damit prüft dieser Test den Weg vom Hinweis zur
+    /// erledigten Ablesung.
+    func testCapturingAReadingClearsTheNotice() {
         let app = launchWithData()
 
         app.buttons["Stand eintragen"].firstMatch.tap()
         XCTAssertTrue(app.buttons["7"].waitForExistence(timeout: 5),
                       "Der Ziffernblock erschien nicht")
 
-        // Ein plausibler Folgestand für den Stromzähler.
-        for digit in ["4", "7", "6", "0", "0", "0"] {
-            app.buttons[digit].firstMatch.tap()
-        }
+        // Über die Vorbelegung, weil sie einen garantiert plausiblen Wert
+        // liefert — und damit auch gleich mitgeprüft wird.
+        app.buttons["Vom letzten Stand übernehmen"].tap()
 
         let save = app.buttons["Sichern"]
-        XCTAssertTrue(save.isEnabled, "Sichern blieb gesperrt, obwohl Ziffern eingegeben wurden")
+        XCTAssertTrue(save.isEnabled, "Sichern blieb gesperrt, obwohl ein Wert übernommen wurde")
         save.tap()
 
         XCTAssertTrue(app.staticTexts["Übersicht"].waitForExistence(timeout: 5),
                       "Nach dem Sichern wurde die Übersicht nicht wieder angezeigt")
+
+        let notice = app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS 'nicht abgelesen'")
+        ).firstMatch
+        XCTAssertFalse(notice.exists,
+                       "Der Hinweis blieb stehen, obwohl der Zähler abgelesen wurde")
     }
 }

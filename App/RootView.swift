@@ -88,7 +88,7 @@ struct OverviewView: View {
             }
             .background(PulseColor.ground)
             .navigationTitle("Übersicht")
-            .onAppear(perform: reload)
+            .onAppear(perform: start)
             .sheet(item: $capturing) { point in
                 CaptureView(meteringPoint: point, onSaved: reload)
             }
@@ -197,6 +197,22 @@ struct OverviewView: View {
     }
 
     // MARK: - Daten
+
+    /// Beim Start. Setzt auf Wunsch alles zurück und legt Beispieldaten an.
+    ///
+    /// Die Oberflächentests brauchen einen bekannten Ausgangszustand — sonst
+    /// hängt jeder Test davon ab, was der vorherige hinterlassen hat, und ein
+    /// grüner Lauf sagt nichts über den einzelnen Fall.
+    private func start() {
+        if ProcessInfo.processInfo.arguments.contains("-pulse-reset") {
+            try? PulseRepository(context: context).deleteEverything()
+            rows = []
+            points = []
+            seed()
+            return
+        }
+        reload()
+    }
 
     private func reload() {
         problem = nil

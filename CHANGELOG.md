@@ -28,7 +28,14 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
   überfällig. Nur so lassen sich Fällig-Zustand, Hinweiszeile und der
   Erfassungsfluss überhaupt prüfen.
 - Zwei zusätzliche Oberflächentests: Wird ein überfälliger Zähler gemeldet, und
-  führt der Erfassungsfluss zurück in die Übersicht?
+  räumt eine Ablesung den Hinweis wieder weg?
+- Die Oberflächentests setzen den Bestand beim Start zurück. Ohne das hing
+  jeder Test davon ab, was der vorherige hinterlassen hat — der Erfassungstest
+  trug beim obersten Zähler einen Stand ein und räumte damit genau die
+  Fälligkeit weg, die der nächste erwartete. Ein grüner Lauf hätte dann nichts
+  über den einzelnen Fall ausgesagt.
+- `deleteEverything` im Repository. Wird für den Rücksetzer gebraucht und
+  gehört später ohnehin in die Einstellungen.
 
 Warum dieser Screen vor allen anderen kommt: Der Nutzer steht im Keller, bei
 schlechtem Licht, vielleicht mit einer Lampe in der Hand. Entsteht hier

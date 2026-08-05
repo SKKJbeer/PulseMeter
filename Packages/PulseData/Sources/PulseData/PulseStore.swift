@@ -236,6 +236,27 @@ public final class PulseRepository {
         try context.save()
     }
 
+    /// Löscht alle Daten.
+    ///
+    /// Gehört später in die Einstellungen („Alle Daten löschen") und wird
+    /// heute schon von den Oberflächentests gebraucht, damit jeder Test von
+    /// einem bekannten Stand aus startet statt vom Ergebnis des vorherigen.
+    public func deleteEverything() throws {
+        for record in try context.fetch(FetchDescriptor<MeteringPointRecord>()) {
+            context.delete(record)
+        }
+        for record in try context.fetch(FetchDescriptor<PropertyRecord>()) {
+            context.delete(record)
+        }
+        for record in try context.fetch(FetchDescriptor<TariffRecord>()) {
+            context.delete(record)
+        }
+        for record in try context.fetch(FetchDescriptor<BillingPeriodRecord>()) {
+            context.delete(record)
+        }
+        try context.save()
+    }
+
     // MARK: - Sicherung und Wiederherstellung
 
     /// Vollständiger Abzug für Sicherung und Export.
