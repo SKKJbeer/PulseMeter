@@ -9,6 +9,36 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.15.0 — 2026-08-05
+
+Alle Zahlen und der Export — die Ansicht, nach der du früh gefragt hattest
+(„gesamtzahl pro jahr, monat, quartal und exports").
+
+### Hinzugefügt
+- Umschalter **Diagramm / Alle Zahlen** im Verlauf. Die Tabelle listet jeden
+  Abschnitt mit Verbrauch und Gesamtsumme; unvollständige Abschnitte tragen
+  darunter den Ausschnitt, den sie wirklich abdecken.
+- **Export als CSV**, Ablesungen und Auswertung getrennt, über das Teilen-Blatt
+  des Systems. Semikolon und Dezimalkomma, damit Excel die Datei im
+  deutschsprachigen Raum ohne Importdialog öffnet.
+- `TableExport` in `PulseCore` mit sieben Prüfungen. Nachgestellte Nullen
+  bleiben stehen (`8000,250`), weil ein exportierter Zählerstand ein Beleg ist
+  und die Genauigkeit des Geräts zeigen soll.
+- Bildschirmfotos vom Verlauf, in Hell und Dunkel (`-pulse-verlauf`).
+
+### Behoben
+- **Die Jahresansicht hätte einen einzelnen Balken gezeigt.** Ein Jahr hat
+  genau einen Abschnitt — als Diagramm ist das keine Aussage. „Jahr" stellt
+  jetzt drei Jahre nebeneinander.
+- **Der Export des Klick-Dummys wich von dem der App ab**: andere Spalten,
+  abgekürzte Monatsnamen und eine Kreuztabelle statt einer Zeile je Abschnitt.
+  Jetzt liefern beide dieselbe Datei. Die Kreuztabelle liest sich schöner,
+  kann aber je Zelle nicht sagen, ob ein Abschnitt vollständig ist — und genau
+  daran hing in diesem Projekt bisher jeder Fehler.
+- **„Zählwerk" stand in der Kopfzeile des Exports.** Eine exportierte Datei
+  ist ein Dokument, und für Dokumente gilt dieselbe Wortliste wie für die
+  Oberfläche (CLAUDE.md, Abschnitt „Sprache").
+
 ## 0.14.1 — 2026-08-05
 
 ### Behoben

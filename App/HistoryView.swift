@@ -22,7 +22,15 @@ struct HistoryView: View {
     @State private var comparison: PeriodEngine.SlotComparison?
     @State private var readings: [Reading] = []
     @State private var showingReadings = false
+    @State private var mode: Mode = .chart
     @State private var problem: String?
+
+    /// Diagramm oder alle Zahlen.
+    ///
+    /// Die Tabelle ist ein Ziel, keine Eingangstür: Wer Verbrauch ernsthaft
+    /// verfolgt, will irgendwann alle Zahlen nebeneinander — nur eben nicht
+    /// beim Öffnen der App (docs/03-ux-konzept.md).
+    enum Mode: Hashable { case chart, table }
 
     private var today: CalendarDay { CalendarDay.containing(Date(), in: .current) }
     private var meter: MeteringPoint? { meters.first { $0.id == selectedMeterID } }
@@ -41,10 +49,16 @@ struct HistoryView: View {
                     } else {
                         meterPicker
                         granularityPicker
-                        chartCard
-                        if let comparison {
-                            comparisonCard(comparison)
+                        modePicker
+                        if mode == .chart {
+                            chartCard
+                            if let comparison {
+                                comparisonCard(comparison)
+                            }
+                        } else {
+                            tableCard
                         }
+                        exportRow
                         readingsRow
                     }
                 }
@@ -124,6 +138,103 @@ struct HistoryView: View {
         }
     }
 
+    private var modePicker: some View {
+        Picker("Darstellung", selection: $mode) {
+            Text("Diagramm").tag(Mode.chart)
+            Text("Alle Zahlen").tag(Mode.table)
+        }
+        .pickerStyle(.segmented)
+    }
+
+    private var tableCard: some View {
+        PulseCard {
+            VStack(spacing: 0) {
+                HStack {
+                    Text("Zeitraum")
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Text("Verbrauch")
+                        .frame(width: 108, alignment: .trailing)
+                }
+                .font(PulseText.sectionLabel)
+                .foregroundStyle(PulseColor.inkTertiary)
+                .textCase(.uppercase)
+                .padding(.horizontal, 15)
+                .padding(.top, 14)
+                .padding(.bottom, 8)
+
+                ForEach(buckets) { bucket in
+                    Divider().overlay(PulseColor.hairline)
+                    HStack(alignment: .firstTextBaseline) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(slotName(bucket))
+                                .font(PulseText.detail)
+                                .foregroundStyle(PulseColor.ink)
+                            // Unvollständige Abschnitte werden benannt, nicht
+                            // ausgelassen: Eine Zahl für einen halben Monat
+                            // neben elf ganzen ist sonst nicht zu erkennen.
+                            if bucket.hasData, !bucket.isComplete,
+                               let covered = bucket.result.coveredRange {
+                                Text("nur \(germanDate(covered.start)) bis \(germanDate(covered.end))")
+                                    .font(PulseText.caption)
+                                    .foregroundStyle(PulseColor.noticeInk)
+                            }
+                        }
+                        Spacer(minLength: 8)
+                        Text(bucket.hasData ? number(bucket.value, digits: 0) : "—")
+                            .font(PulseText.detail)
+                            .foregroundStyle(bucket.hasData ? PulseColor.ink : PulseColor.inkTertiary)
+                            .frame(width: 108, alignment: .trailing)
+                    }
+                    .padding(.horizontal, 15)
+                    .padding(.vertical, 10)
+                }
+
+                Divider().overlay(PulseColor.ink)
+                HStack {
+                    Text(totalCaption)
+                        .font(.system(.subheadline, weight: .semibold))
+                        .foregroundStyle(PulseColor.ink)
+                    Spacer(minLength: 8)
+                    Text("\(number(total, digits: 0)) \(unit)")
+                        .font(.system(.subheadline, weight: .bold))
+                        .foregroundStyle(PulseColor.ink)
+                }
+                .padding(.horizontal, 15)
+                .padding(.vertical, 12)
+            }
+        }
+    }
+
+    /// Produktprinzip 5 — Datenfreiheit. Der Export bleibt kostenlos, auch
+    /// wenn später eine Bezahlschranke kommt.
+    private var exportRow: some View {
+        HStack(spacing: 9) {
+            if let readingsFile {
+                ShareLink(item: readingsFile) {
+                    exportLabel("Ablesungen")
+                }
+            }
+            if let breakdownFile {
+                ShareLink(item: breakdownFile) {
+                    exportLabel("Auswertung")
+                }
+            }
+        }
+    }
+
+    private func exportLabel(_ text: String) -> some View {
+        Text(text)
+            .font(.system(.subheadline, weight: .semibold))
+            .foregroundStyle(PulseColor.tint)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .background(PulseColor.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(PulseColor.hairlineStrong, lineWidth: 1)
+            )
+    }
+
     private var chartCard: some View {
         PulseCard {
             VStack(alignment: .leading, spacing: 12) {
@@ -183,7 +294,7 @@ struct HistoryView: View {
         PulseCard {
             VStack(alignment: .leading, spacing: 13) {
                 HStack(alignment: .firstTextBaseline) {
-                    Text(slotName(comparison.slot))
+                    Text(comparisonTitle(comparison))
                         .font(PulseText.cardTitle)
                         .foregroundStyle(PulseColor.ink)
                     Spacer(minLength: 8)
@@ -262,10 +373,22 @@ struct HistoryView: View {
         }
         do {
             readings = try PulseRepository(context: context).readings(for: register.id)
-            buckets = PeriodEngine.buckets(register: register, readings: readings,
-                                           year: today.year, granularity: granularity)
-            previousYear = PeriodEngine.buckets(register: register, readings: readings,
-                                                year: today.year - 1, granularity: granularity)
+            if granularity == .year {
+                // Ein Jahr hat genau einen Abschnitt — als Diagramm wäre das
+                // ein einzelner Balken und damit keine Aussage. Bei „Jahr"
+                // stehen deshalb mehrere Jahre nebeneinander, und die
+                // Vorjahresmarke entfällt: Das Vorjahr ist der Balken daneben.
+                buckets = yearSpan.compactMap { year in
+                    PeriodEngine.buckets(register: register, readings: readings,
+                                         year: year, granularity: .year).first
+                }
+                previousYear = []
+            } else {
+                buckets = PeriodEngine.buckets(register: register, readings: readings,
+                                               year: today.year, granularity: granularity)
+                previousYear = PeriodEngine.buckets(register: register, readings: readings,
+                                                    year: today.year - 1, granularity: granularity)
+            }
             recomputeComparison()
         } catch {
             problem = "Die Ablesungen ließen sich nicht laden: \(error.localizedDescription)"
@@ -273,15 +396,26 @@ struct HistoryView: View {
     }
 
     private func recomputeComparison() {
-        guard let register, let slot = selectedSlot else {
+        guard let register, let selection = selectedSlot else {
             comparison = nil
             return
         }
+        // Bei „Jahr" ist die Auswahl eine Jahreszahl, sonst die Nummer des
+        // Abschnitts im laufenden Jahr.
         comparison = PeriodEngine.compareAcrossYears(
             register: register, readings: readings,
-            slot: slot, granularity: granularity,
-            referenceYear: today.year, yearsBack: 2
+            slot: granularity == .year ? 1 : selection,
+            granularity: granularity,
+            referenceYear: granularity == .year ? selection : today.year,
+            yearsBack: 2
         )
+    }
+
+    /// Die drei Jahre, die die Jahresansicht zeigt.
+    private var yearSpan: [Int] { [today.year - 2, today.year - 1, today.year] }
+
+    private func columnID(_ bucket: PeriodEngine.Bucket) -> Int {
+        granularity == .year ? bucket.year : bucket.slot
     }
 
     // MARK: - Aufbereitung
@@ -290,8 +424,8 @@ struct HistoryView: View {
         buckets.map { bucket in
             let reference = previousYear.first { $0.slot == bucket.slot }
             return PeriodBars.Column(
-                id: bucket.slot,
-                label: shortSlotName(bucket.slot),
+                id: columnID(bucket),
+                label: shortSlotName(bucket),
                 value: bucket.hasData ? double(bucket.value) : nil,
                 reference: (reference?.hasData ?? false) ? double(reference!.value) : nil,
                 isPartial: bucket.hasData && !bucket.isComplete
@@ -314,6 +448,50 @@ struct HistoryView: View {
         }
     }
 
+    // MARK: - Export
+
+    /// Schreibt die Tabelle in eine Datei und gibt deren Ort zurück.
+    ///
+    /// `ShareLink` braucht etwas Übertragbares; eine Datei mit sprechendem
+    /// Namen ist das, was in Mail, Dateien oder einer Tabellenkalkulation
+    /// ankommt — eine nackte Zeichenkette landet als „Text.txt".
+    private func exportFile(named name: String, content: String) -> URL? {
+        let folder = FileManager.default.temporaryDirectory
+        let url = folder.appendingPathComponent(name)
+        do {
+            // Mit Steuerzeichen für Excel: Ohne die Kennung öffnet es eine
+            // UTF-8-Datei mit Umlauten als Buchstabensalat.
+            let withMarker = "\u{FEFF}" + content
+            try withMarker.write(to: url, atomically: true, encoding: .utf8)
+            return url
+        } catch {
+            return nil
+        }
+    }
+
+    private var exportBaseName: String {
+        let name = (meter?.name ?? "Zaehler")
+            .replacingOccurrences(of: " ", with: "-")
+            .replacingOccurrences(of: "/", with: "-")
+        return "PulseMeter-\(name)"
+    }
+
+    private var readingsFile: URL? {
+        guard let register, let meter, !readings.isEmpty else { return nil }
+        return exportFile(
+            named: "\(exportBaseName)-Ablesungen.csv",
+            content: TableExport.readings(readings, register: register, meterName: meter.name)
+        )
+    }
+
+    private var breakdownFile: URL? {
+        guard let register, let meter, !buckets.isEmpty else { return nil }
+        return exportFile(
+            named: "\(exportBaseName)-Auswertung.csv",
+            content: TableExport.breakdown(buckets, unit: register.unit, meterName: meter.name)
+        )
+    }
+
     /// Summe der Abschnitte, die tatsächlich Daten haben.
     private var total: Decimal {
         buckets.filter(\.hasData).reduce(Decimal(0)) { $0 + $1.value }
@@ -323,7 +501,11 @@ struct HistoryView: View {
     /// es ist. Eine Jahressumme, die im Mai endet, sieht sonst aus wie ein Jahr.
     private var totalCaption: String {
         let complete = buckets.filter(\.hasData).allSatisfy(\.isComplete)
-        let base = granularity == .year ? "\(today.year)" : "\(today.year), zusammen"
+        let base: String
+        switch granularity {
+        case .year: base = "\(yearSpan.first ?? today.year) bis \(today.year), zusammen"
+        case .quarter, .month: base = "\(today.year), zusammen"
+        }
         return complete ? base : base + " · unvollständig"
     }
 
@@ -333,19 +515,29 @@ struct HistoryView: View {
     private static let monthsLong = ["Januar", "Februar", "März", "April", "Mai", "Juni",
                                      "Juli", "August", "September", "Oktober", "November", "Dezember"]
 
-    private func shortSlotName(_ slot: Int) -> String {
+    private func shortSlotName(_ bucket: PeriodEngine.Bucket) -> String {
         switch granularity {
-        case .month: return Self.monthsShort[safe: slot - 1] ?? "\(slot)"
-        case .quarter: return "Q\(slot)"
-        case .year: return "\(today.year)"
+        case .month: return Self.monthsShort[safe: bucket.slot - 1] ?? "\(bucket.slot)"
+        case .quarter: return "Q\(bucket.slot)"
+        case .year: return "\(bucket.year)"
         }
     }
 
-    private func slotName(_ slot: Int) -> String {
+    private func slotName(_ bucket: PeriodEngine.Bucket) -> String {
         switch granularity {
-        case .month: return Self.monthsLong[safe: slot - 1] ?? "\(slot)"
-        case .quarter: return "\(slot). Quartal"
-        case .year: return "Gesamtes Jahr"
+        case .month: return Self.monthsLong[safe: bucket.slot - 1] ?? "\(bucket.slot)"
+        case .quarter: return "\(bucket.slot). Quartal"
+        case .year: return "\(bucket.year)"
+        }
+    }
+
+    /// Überschrift der Vergleichskarte. Beim Jahr steht die Jahreszahl schon
+    /// in der Auswahl, sonst der Name des Abschnitts.
+    private func comparisonTitle(_ comparison: PeriodEngine.SlotComparison) -> String {
+        switch comparison.granularity {
+        case .month: return Self.monthsLong[safe: comparison.slot - 1] ?? "\(comparison.slot)"
+        case .quarter: return "\(comparison.slot). Quartal"
+        case .year: return "Jahresvergleich"
         }
     }
 

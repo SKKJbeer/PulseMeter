@@ -650,7 +650,7 @@ table.doc-t td.dim { color: #9A9384; }
 
 <div class="stage-head">
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.14.0</p>
+  <p>Klickbarer Entwurf · v0.15.0</p>
 </div>
 
 <div class="device">
@@ -1692,48 +1692,68 @@ function renderTable() {
    ============================================================ */
 const csvNum = (v, d) => v.toFixed(d).replace(".", ",");
 
+/* Spiegelt `TableExport` aus PulseCore — Spalten, Reihenfolge und Wortwahl
+   müssen übereinstimmen, sonst liefern App und Entwurf verschiedene Dateien.
+
+   Zwei Entscheidungen stecken darin:
+
+   1. Eine Zeile je Abschnitt statt einer Kreuztabelle (Monate als Zeilen,
+      Jahre als Spalten). Die Kreuztabelle liest sich schöner, kann aber pro
+      Zelle nicht sagen, ob der Abschnitt vollständig ist — und genau das ist
+      in diesem Projekt die Information, an der bisher jeder Fehler hing. Wer
+      die Kreuztabelle will, erzeugt sie in der Tabellenkalkulation aus diesen
+      Zeilen; umgekehrt ginge es nicht.
+   2. Kein „Zählwerk" in der Kopfzeile. Eine exportierte Datei ist ein
+      Dokument, und für Dokumente gilt dieselbe Wortliste wie für die
+      Oberfläche (CLAUDE.md, Abschnitt „Sprache"). */
 function buildCsv(kind) {
+  const m = METERS.find(x => x.id === histMeter) || METERS[0];
+  const reg = m.registers[0];
+
   if (kind === "readings") {
-    const lines = ["Zähler;Zählwerk;Datum;Zählerstand;Einheit;Herkunft"];
-    for (const m of targetMeters(histMeter)) {
-      for (const reg of m.registers) {
-        for (const r of reg.readings) {
-          lines.push([m.name, reg.label || "Bezug",
-            `${r.y}-${String(r.m).padStart(2, "0")}-${String(r.d).padStart(2, "0")}`,
-            csvNum(r.value, m.frac), m.unit, r.origin === "estimated" ? "geschätzt" : "abgelesen"
-          ].join(";"));
-        }
-      }
+    const lines = ["Zähler;Datum;Stand;Einheit;Art"];
+    for (const r of reg.readings) {
+      lines.push([csvField(m.name),
+        `${r.y}-${String(r.m).padStart(2, "0")}-${String(r.d).padStart(2, "0")}`,
+        csvNum(r.value, m.frac), m.unit,
+        r.origin === "estimated" ? "geschätzt" : "abgelesen"
+      ].join(";"));
     }
     return lines.join("\n");
   }
-  const unit = unitOf(histMeter);
-  const head = histGran === "year"
-    ? ["Jahr", "Wert", "Einheit", "Tage"]
-    : [histGran === "quarter" ? "Quartal" : "Monat", ...YEARS.map(String), "Einheit"];
-  const lines = [head.join(";")];
-  if (histGran === "year") {
-    for (const y of YEARS.slice().reverse()) {
-      const p = { from: { y, m: 1, d: 1 }, to: { y: y + 1, m: 1, d: 1 } };
-      const end = coveredEnd(histMeter, p.to);
-      const range = { from: p.from, to: end };
-      const v = cellValue(histMeter, range);
-      lines.push([y, v === null ? "" : csvNum(v, 2), unit, between(range.from, range.to)].join(";"));
-    }
-  } else {
-    for (const p of periods(histGran, YEARS[0])) {
-      const cells = YEARS.map(y => {
-        const r = { from: { ...p.from, y: p.from.y - (YEARS[0] - y) },
-                    to: { ...p.to, y: p.to.y - (YEARS[0] - y) } };
-        const v = cellValue(histMeter, r);
-        return v === null ? null : (histPerDay ? v / between(r.from, r.to) : v);
-      });
-      lines.push([p.label, ...cells.map(v => v === null ? "" : csvNum(v, 2)),
-        unit + (histPerDay ? " je Tag" : "")].join(";"));
-    }
+
+  // Beim Jahr eine Zeile je Jahr, sonst je Abschnitt des laufenden Jahres —
+  // wie in der App (`HistoryView.yearSpan`).
+  const rows = histGran === "year"
+    ? YEARS.slice().reverse().map(y => ({
+        label: String(y),
+        from: { y, m: 1, d: 1 },
+        to: { y: y + 1, m: 1, d: 1 }
+      }))
+    // Ausgeschriebene Monatsnamen wie in `TableExport.label` — im Diagramm
+    // ist „Jan" richtig, in einer Datei, die jemand später öffnet, nicht.
+    : periods(histGran, YEARS[0]).map((p, i) => ({
+        ...p,
+        label: `${histGran === "month" ? MONTHS_LONG[i] : p.label} ${YEARS[0]}`
+      }));
+
+  const lines = ["Zähler;Zeitraum;Von;Bis;Verbrauch;Einheit;Tage;Vollständig"];
+  const iso = d => `${d.y}-${String(d.m).padStart(2, "0")}-${String(d.d).padStart(2, "0")}`;
+  for (const p of rows) {
+    const c = consumption(reg, p.from, p.to);
+    lines.push([csvField(m.name), p.label,
+      c ? iso(c.cfrom) : "", c ? iso(c.cto) : "",
+      c ? csvNum(c.value, 0) : "", m.unit,
+      c ? c.days : 0,
+      c ? (c.complete ? "ja" : "nein") : "keine Daten"
+    ].join(";"));
   }
   return lines.join("\n");
 }
+
+/* Felder mit Trennzeichen oder Anführungszeichen werden eingefasst — ein
+   Zählername darf alles enthalten, was jemand eintippt. */
+const csvField = t => /[;"\n\r]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
 
 /* ============================================================
    Verbrauchsbericht — das Dokument, das man dem Versorger,

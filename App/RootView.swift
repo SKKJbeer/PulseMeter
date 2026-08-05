@@ -7,14 +7,24 @@ import PulseUI
 /// Gerüst der Navigation aus docs/03-ux-konzept.md: drei Ziele, keine
 /// Einstellungen als vierter Tab.
 struct RootView: View {
+
+    /// Welcher Tab beim Start offen ist. Nur für die Bildschirmfotos: Ein
+    /// automatischer Lauf kann nicht tippen, und ein Schirm, den niemand
+    /// fotografiert, wird auch von niemandem angesehen — genau daran sind
+    /// zuletzt drei Fehler im Erfassungsschirm monatelang vorbeigelaufen.
+    @State private var tab = ProcessInfo.processInfo.arguments.contains("-pulse-verlauf") ? 1 : 0
+
     var body: some View {
-        TabView {
+        TabView(selection: $tab) {
             OverviewView()
                 .tabItem { Label("Übersicht", systemImage: "house") }
+                .tag(0)
             HistoryView()
                 .tabItem { Label("Verlauf", systemImage: "chart.bar") }
+                .tag(1)
             PlaceholderView(title: "Zähler", note: "Folgt als Nächstes.")
                 .tabItem { Label("Zähler", systemImage: "gauge.medium") }
+                .tag(2)
         }
         .tint(PulseColor.tint)
     }
