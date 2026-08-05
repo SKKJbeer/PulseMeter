@@ -56,6 +56,8 @@ struct OverviewView: View {
 
     @Environment(\.modelContext) private var context
     @State private var rows: [MeterRow] = []
+    @State private var points: [MeteringPoint] = []
+    @State private var capturing: MeteringPoint?
     @State private var problem: String?
 
     private var today: CalendarDay { CalendarDay.containing(Date(), in: .current) }
@@ -87,6 +89,9 @@ struct OverviewView: View {
             .background(PulseColor.ground)
             .navigationTitle("Übersicht")
             .onAppear(perform: reload)
+            .sheet(item: $capturing) { point in
+                CaptureView(meteringPoint: point, onSaved: reload)
+            }
         }
     }
 
@@ -130,12 +135,25 @@ struct OverviewView: View {
             badge: row.isDue ? "Fällig" : nil,
             series: row.monthlySeries
         ) {
-            if let value = row.lastValue, let day = row.lastDay {
-                CardFooterRow("Stand \(number(value, digits: 1)) \(row.unit)") {
-                    Text(germanDate(day))
-                        .font(PulseText.detail)
-                        .foregroundStyle(PulseColor.inkTertiary)
+            VStack(spacing: 0) {
+                if let value = row.lastValue, let day = row.lastDay {
+                    CardFooterRow("Stand \(number(value, digits: 1)) \(row.unit)") {
+                        Text(germanDate(day))
+                            .font(PulseText.detail)
+                            .foregroundStyle(PulseColor.inkTertiary)
+                    }
                 }
+                Divider().overlay(PulseColor.hairline)
+                Button {
+                    capturing = points.first { $0.id == row.id }
+                } label: {
+                    Text("Stand eintragen")
+                        .font(.system(.body, weight: .semibold))
+                        .foregroundStyle(accent)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 13)
+                }
+                .buttonStyle(.plain)
             }
         }
     }
@@ -185,6 +203,7 @@ struct OverviewView: View {
         do {
             let repository = PulseRepository(context: context)
             let points = try repository.meteringPoints()
+            self.points = points
             let today = self.today
             guard let yearStart = CalendarDay(year: today.year, month: 1, day: 1),
                   let yearRange = DayRange(start: yearStart, end: today) else { return }
@@ -247,36 +266,49 @@ struct OverviewView: View {
         return values
     }
 
-    /// Legt einen Stromzähler mit gut zwei Jahren Historie an.
+    /// Legt drei Zähler mit gut zwei Jahren Historie an.
     ///
     /// So viel Vergangenheit braucht es, damit Verlaufslinie und
-    /// Vorjahresvergleich überhaupt etwas zeigen können — mit zwei Ablesungen
-    /// sähe die Karte fertig aus und wäre doch leer.
+    /// Vorjahresvergleich überhaupt etwas zeigen können. Und drei Zähler statt
+    /// einem, weil der Gaszähler bewusst überfällig ist: Nur so lassen sich
+    /// der Fällig-Zustand, die Hinweiszeile und der Erfassungsfluss prüfen.
     private func seed() {
+        // Jahresverläufe: Strom flach mit Winterhügel, Gas stark saisonal,
+        // Wasser fast gleichmäßig.
+        let profiles: [(name: String, kind: ResourceKind, start: Decimal,
+                        monthly: [Decimal], staleMonths: Int)] = [
+            ("Strom", .electricity, 41_230,
+             [312, 286, 268, 241, 218, 205, 198, 204, 226, 258, 289, 315], 0),
+            ("Wasser", .water, 998,
+             [10.8, 9.9, 11.2, 10.6, 12.4, 13.1, 13.8, 13.2, 11.6, 10.9, 10.4, 11.1], 0),
+            ("Gas", .gas, 3_579,
+             [418, 376, 298, 178, 92, 41, 36, 39, 84, 192, 308, 402], 3)
+        ]
+
         do {
             let repository = PulseRepository(context: context)
             let property = try repository.ensureDefaultProperty()
-            let point = MeteringPoint(propertyID: property.id, name: "Strom", kind: .electricity)
-            try repository.save(point)
-            guard let register = point.primaryRegister else { return }
-
-            // Jahresverlauf eines Haushalts: im Winter mehr, im Sommer weniger.
-            let monthly: [Decimal] = [312, 286, 268, 241, 218, 205, 198, 204, 226, 258, 289, 315]
-            var value = Decimal(41_230)
             let today = self.today
 
-            for offset in stride(from: 25, through: 0, by: -1) {
-                var month = today.month - offset
-                var year = today.year
-                while month < 1 { month += 12; year -= 1 }
-                guard let day = CalendarDay(year: year, month: month, day: 1) else { continue }
-                try repository.save(
-                    Reading(registerID: register.id, day: day, value: value),
-                    fractionDigits: register.fractionDigits
-                )
-                // Das laufende Jahr liegt sieben Prozent unter dem Vorjahr.
-                let seasonal = monthly[month - 1]
-                value += year == today.year ? seasonal * Decimal(string: "0.93")! : seasonal
+            for profile in profiles {
+                let point = MeteringPoint(propertyID: property.id, name: profile.name, kind: profile.kind)
+                try repository.save(point)
+                guard let register = point.primaryRegister else { continue }
+
+                var value = profile.start
+                for offset in stride(from: 25, through: profile.staleMonths, by: -1) {
+                    var month = today.month - offset
+                    var year = today.year
+                    while month < 1 { month += 12; year -= 1 }
+                    guard let day = CalendarDay(year: year, month: month, day: 1) else { continue }
+                    try repository.save(
+                        Reading(registerID: register.id, day: day, value: value),
+                        fractionDigits: register.fractionDigits
+                    )
+                    // Das laufende Jahr liegt sieben Prozent unter dem Vorjahr.
+                    let seasonal = profile.monthly[month - 1]
+                    value += year == today.year ? seasonal * Decimal(string: "0.93")! : seasonal
+                }
             }
             reload()
         } catch {

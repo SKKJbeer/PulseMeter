@@ -9,6 +9,34 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.12.0 — 2026-08-05
+
+### Hinzugefügt
+- Der Erfassungsscreen. Zählwerk in Geräteoptik — weiße Vorkomma-, rote
+  Nachkommastellen auf dunklem Grund —, eigener großer Ziffernblock statt
+  Systemtastatur, Datum auf heute vorbelegt.
+- Live-Plausibilisierung während der Eingabe: „Entspricht 312 kWh in 31 Tagen
+  — normal für dich" oder bei einer Stelle zu viel „rund 11× dein üblicher
+  Verbrauch. Stimmt die Zahl?". Ein Hinweis, keine Blockade — ein auffälliger
+  Wert kann richtig sein, und die App weiß es nicht besser als der Mensch vor
+  dem Zähler.
+- „Vom letzten Stand übernehmen", damit sich die unveränderten führenden
+  Ziffern nicht abtippen lassen müssen.
+
+### Geändert
+- Die Beispieldaten umfassen drei Zähler statt einem, davon einer bewusst
+  überfällig. Nur so lassen sich Fällig-Zustand, Hinweiszeile und der
+  Erfassungsfluss überhaupt prüfen.
+- Zwei zusätzliche Oberflächentests: Wird ein überfälliger Zähler gemeldet, und
+  führt der Erfassungsfluss zurück in die Übersicht?
+
+Warum dieser Screen vor allen anderen kommt: Der Nutzer steht im Keller, bei
+schlechtem Licht, vielleicht mit einer Lampe in der Hand. Entsteht hier
+Reibung, hört er nach drei Monaten auf — und alle anderen Funktionen werden
+wertlos.
+
+---
+
 ## 0.11.1 — 2026-08-05
 
 ### Behoben
