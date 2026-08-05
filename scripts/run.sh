@@ -33,11 +33,21 @@ xcrun simctl boot "$DEVICE" 2>/dev/null || true
 xcrun simctl bootstatus "$DEVICE" -b >/dev/null
 xcrun simctl install "$DEVICE" "$APP"
 
-for MODE in light dark; do
-  xcrun simctl ui "$DEVICE" appearance "$MODE" >/dev/null 2>&1 || true
+# Immer mit `-pulse-reset`: Sonst zeigen die Bilder, was die Oberflächentests
+# vorher im Simulator hinterlassen haben — bei einem frisch aufgesetzten Läufer
+# also den leeren Zustand, bei einem wiederverwendeten irgendetwas dazwischen.
+shoot() {
+  local mode="$1" name="$2"
+  shift 2
+  xcrun simctl ui "$DEVICE" appearance "$mode" >/dev/null 2>&1 || true
   xcrun simctl terminate "$DEVICE" com.pulsemeter.app >/dev/null 2>&1 || true
-  xcrun simctl launch "$DEVICE" com.pulsemeter.app >/dev/null
+  xcrun simctl launch "$DEVICE" com.pulsemeter.app -pulse-reset "$@" >/dev/null
   sleep 4
-  xcrun simctl io "$DEVICE" screenshot "$OUTDIR/screenshot-$MODE.png"
-  echo "Screenshot: $OUTDIR/screenshot-$MODE.png"
-done
+  xcrun simctl io "$DEVICE" screenshot "$OUTDIR/$name.png"
+  echo "Screenshot: $OUTDIR/$name.png"
+}
+
+shoot light screenshot-light
+shoot dark  screenshot-dark
+shoot light screenshot-capture-light -pulse-capture
+shoot dark  screenshot-capture-dark  -pulse-capture

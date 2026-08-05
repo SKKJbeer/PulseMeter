@@ -129,7 +129,9 @@ struct OverviewView: View {
             title: row.name,
             symbolName: row.symbolName,
             accent: accent,
-            value: number(row.yearToDate?.quantity.value ?? 0, digits: 0),
+            caption: periodCaption(for: row.yearToDate),
+            value: valueText(for: row.yearToDate),
+            isApproximate: isApproximate(row.yearToDate),
             unit: row.unit,
             detail: detailText(for: row),
             badge: row.isDue ? "Fällig" : nil,
@@ -156,6 +158,61 @@ struct OverviewView: View {
                 .buttonStyle(.plain)
             }
         }
+    }
+
+    /// Beschriftet die große Zahl mit dem Zeitraum, den sie tatsächlich
+    /// abdeckt — nicht mit dem, der angefragt wurde.
+    ///
+    /// Die Unterscheidung ist der Kern der wiederkehrenden Fehlerklasse aus
+    /// CLAUDE.md. Auf dem Schirm sah sie zuletzt so aus: „1.181 m³" beim
+    /// Gaszähler, groß und ohne Zusatz, obwohl die Ablesungen im Mai enden.
+    /// Daneben „1.607 kWh" beim Strom, das bis August reicht. Zwei Zahlen
+    /// untereinander, die verschiedene Ausschnitte des Jahres meinen und
+    /// dieselbe Form haben — der Vergleich, zu dem die Karte einlädt, ist
+    /// dann falsch, und niemand kann es sehen.
+    private func periodCaption(for result: ConsumptionResult?) -> String {
+        guard let result else { return "Noch keine Ablesung" }
+
+        // Ein verkürzter Zeitraum wird als Spanne ausgeschrieben, nicht als
+        // „Seit Jahresbeginn" mit angehängtem Vorbehalt. Der Grund ist
+        // praktisch: Wer den Strom am 1. August abliest, hat am 5. August eine
+        // Zahl, die vier Tage zurückliegt — das ist normal. Beim Gaszähler
+        // sind es drei Monate. Als Vorbehalt gelesen sähen beide gleich
+        // dringlich aus; als Spanne stehen „bis 1. August" und „bis 1. Mai"
+        // nebeneinander, und der Unterschied ist ohne ein Wort zu sehen.
+        let period: String
+        switch result.coverage {
+        case .none:
+            return "Noch keine Ablesung"
+        case .full:
+            period = "Seit Jahresbeginn"
+        case .startsLate(let firstDay):
+            period = "Seit \(shortDate(firstDay))"
+        case .endsEarly(let lastDay):
+            period = "\(shortDate(result.requestedRange.start)) bis \(shortDate(lastDay))"
+        case .partial(let firstDay, let lastDay):
+            period = "\(shortDate(firstDay)) bis \(shortDate(lastDay))"
+        }
+
+        // Nur die stärkere Einstufung bekommt Worte. Ein an der Jahresgrenze
+        // interpolierter Startwert ist bei jedem länger geführten Zähler der
+        // Normalfall; stünde dort jedes Mal ein Hinweis, läse ihn niemand
+        // mehr. Diesen Fall trägt das Zeichen vor der Zahl.
+        return result.confidence == .estimated ? period + " · enthält Schätzungen" : period
+    }
+
+    /// Ein Strich statt einer Null, wenn für den Zeitraum nichts vorliegt:
+    /// Unbekannt ist nicht dasselbe wie null verbraucht.
+    private func valueText(for result: ConsumptionResult?) -> String {
+        guard let result, result.hasData else { return "—" }
+        return number(result.quantity.value, digits: 0)
+    }
+
+    /// Produktprinzip 7: Was nicht ausschließlich auf gemessenen Werten
+    /// beruht, wird als solches gekennzeichnet.
+    private func isApproximate(_ result: ConsumptionResult?) -> Bool {
+        guard let result, result.hasData else { return false }
+        return result.confidence != .measured
     }
 
     private func detailText(for row: MeterRow) -> Text {
@@ -204,14 +261,23 @@ struct OverviewView: View {
     /// hängt jeder Test davon ab, was der vorherige hinterlassen hat, und ein
     /// grüner Lauf sagt nichts über den einzelnen Fall.
     private func start() {
-        if ProcessInfo.processInfo.arguments.contains("-pulse-reset") {
+        let arguments = ProcessInfo.processInfo.arguments
+        if arguments.contains("-pulse-reset") {
             try? PulseRepository(context: context).deleteEverything()
             rows = []
             points = []
             seed()
-            return
+        } else {
+            reload()
         }
-        reload()
+
+        // Öffnet den Erfassungsschirm gleich beim Start. Nur für die
+        // Bildschirmfotos: Es ist der wichtigste Schirm der App und der
+        // einzige, den ein automatischer Lauf sonst nie zu Gesicht bekommt —
+        // `simctl` kann nicht tippen.
+        if arguments.contains("-pulse-capture") {
+            capturing = points.first
+        }
     }
 
     private func reload() {
@@ -347,6 +413,22 @@ struct OverviewView: View {
         calendar.timeZone = .current
         guard let date = calendar.date(from: components) else { return day.description }
         return date.formatted(.dateTime.day().month(.wide).year().locale(Locale(identifier: "de_DE")))
+    }
+
+    /// Tag und Monat ohne Jahr — auf der Übersicht geht es immer um das
+    /// laufende Jahr, und „1. Mai 2026" wäre in einer Beschriftung zu lang.
+    private func shortDate(_ day: CalendarDay) -> String {
+        var components = DateComponents()
+        components.year = day.year
+        components.month = day.month
+        components.day = day.day
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = .current
+        guard let date = calendar.date(from: components) else { return day.description }
+        let format = day.year == today.year
+            ? Date.FormatStyle.dateTime.day().month(.wide)
+            : Date.FormatStyle.dateTime.day().month(.wide).year()
+        return date.formatted(format.locale(Locale(identifier: "de_DE")))
     }
 
     private func number(_ value: Decimal, digits: Int) -> String {

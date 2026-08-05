@@ -19,13 +19,14 @@ Lizenz. Alles Weitere richtet das Skript ein.
 
 ## Status
 
-Version **0.10.0**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
-rechnet echt. Die Persistenzschicht wartet auf ihre erste Prüfung in Xcode.
+Version **0.13.0**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
+rechnet echt. Übersicht und Erfassung laufen als SwiftUI-App im Simulator und
+werden auf jedem Lauf fotografiert; Verlauf und Zähler sind noch Platzhalter.
 Siehe [CHANGELOG.md](CHANGELOG.md).
 
 ## Klick-Dummy
 
-**[Zuletzt veröffentlichter Entwurf →](https://claude.ai/code/artifact/de9698d3-c6b9-4c89-97cd-6f79a14e6c46)**
+**[Zuletzt veröffentlichter Entwurf →](https://claude.ai/code/artifact/c8391989-a1be-432e-9b92-87b98102e2b4)**
 
 Jede Produktänderung wird sofort sichtbar gemacht — als **neue** Veröffentlichung
 mit eigener URL, weil erneutes Veröffentlichen auf dieselbe Adresse nicht

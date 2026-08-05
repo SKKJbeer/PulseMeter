@@ -19,6 +19,13 @@ eine Anmeldemaske. Ein frisch erzeugtes Artifact geht dagegen sofort auf.
   den `url`-Parameter verwenden.
 - Stattdessen jedes Mal ein neuer Dateiname im Scratchpad:
   `pulsemeter-klickdummy-<n>.html`, fortlaufend hochzählen.
+- **Die zurückgegebene URL prüfen.** Ein neuer Dateiname allein genügt nicht:
+  Bei `pulsemeter-klickdummy-7.html` kam die URL des vorherigen Standes
+  zurück, also eine Aktualisierung statt einer Neuanlage — genau das, was beim
+  Nutzer die Anmeldemaske auslöst. Kommt dieselbe URL wie zuletzt zurück, noch
+  einmal unter einem deutlich anderen Dateinamen veröffentlichen
+  (`entwurf-v0130-zeitraum.html` hat eine frische URL erzeugt) und erst diese
+  weitergeben.
 - `title` immer identisch setzen: „PulseMeter – Klickbarer Entwurf".
   `favicon` bleibt ⚡. `label` kurz und beschreibend.
 - Danach dieselbe Datei nach `docs/prototype/index.html` kopieren und

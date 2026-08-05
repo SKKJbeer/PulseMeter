@@ -64,6 +64,26 @@ final class LaunchTests: XCTestCase {
                       "Der überfällige Gaszähler wurde nicht gemeldet")
     }
 
+    /// Die große Zahl auf einer Karte muss sagen, welchen Zeitraum sie
+    /// abdeckt — sonst steht ein Jahreswert da, der im Mai endet.
+    ///
+    /// Genau das war zu sehen: „1.181 m³" beim Gaszähler, in derselben Form
+    /// wie „1.607 kWh" beim Strom, obwohl die eine Zahl vier Monate und die
+    /// andere sieben umfasst. Kein Test hat das gemeldet, weil beide Zahlen
+    /// für sich richtig gerechnet waren.
+    ///
+    /// Der Erwartungswert ist bewusst gegen zwei Fassungen geprüft: Läuft der
+    /// Test im Januar oder Februar, liegt die letzte Gasablesung noch im
+    /// Vorjahr, und für das laufende Jahr gibt es dann gar keine Daten.
+    func testStaleMeterSaysHowFarItsNumberReaches() {
+        let app = launchWithData()
+        let caption = app.staticTexts.containing(
+            NSPredicate(format: "label BEGINSWITH '1. Januar bis' OR label == 'Noch keine Ablesung'")
+        ).firstMatch
+        XCTAssertTrue(caption.waitForExistence(timeout: 5),
+                      "Die Zahl des überfälligen Zählers nennt ihren Zeitraum nicht")
+    }
+
     /// Der Fluss, an dem das Produkt hängt: eintragen, Stand übernehmen,
     /// sichern — und der Hinweis auf den überfälligen Zähler ist weg.
     ///

@@ -363,6 +363,104 @@ final class ConsumptionEngineTests: XCTestCase {
         XCTAssertEqual(verdict, .noReference)
     }
 
+    // MARK: - Abdeckung eines Zeitraums
+
+    func testFullCoverageWhenDataSpansTheWholeRange() {
+        let register = Fixture.electricityRegister()
+        let readings = [
+            Fixture.reading(register, day(2026, 1, 1), 1000),
+            Fixture.reading(register, day(2026, 8, 1), 2000)
+        ]
+
+        let result = ConsumptionEngine.consumption(
+            register: register, readings: readings,
+            in: span(day(2026, 1, 1), day(2026, 8, 1))
+        )
+
+        XCTAssertEqual(result.coverage, .full)
+    }
+
+    /// Der Fall, der auf der Übersicht sichtbar falsch beschriftet war: Der
+    /// Gaszähler wurde zuletzt im Mai abgelesen, die Karte zeigte die Zahl
+    /// trotzdem als Jahreswert. Das Ergebnis muss selbst sagen, wo es endet.
+    func testCoverageReportsWhereStaleDataEnds() {
+        let register = Fixture.gasRegister()
+        let readings = [
+            Fixture.reading(register, day(2026, 1, 1), 3000),
+            Fixture.reading(register, day(2026, 5, 1), 4181)
+        ]
+
+        let result = ConsumptionEngine.consumption(
+            register: register, readings: readings,
+            in: span(day(2026, 1, 1), day(2026, 8, 5))
+        )
+
+        XCTAssertEqual(result.quantity.value, 1181)
+        XCTAssertEqual(result.coverage, .endsEarly(lastDay: day(2026, 5, 1)),
+                       "Die Zahl deckt nur bis zum 1. Mai — das muss sie mitführen")
+    }
+
+    /// Ein Zähler, der erst im Laufe des Jahres eingebaut wurde.
+    func testCoverageReportsALateStart() {
+        let register = Fixture.electricityRegister()
+        let readings = [
+            Fixture.reading(register, day(2026, 3, 12), 0),
+            Fixture.reading(register, day(2026, 8, 1), 900)
+        ]
+
+        let result = ConsumptionEngine.consumption(
+            register: register, readings: readings,
+            in: span(day(2026, 1, 1), day(2026, 8, 1))
+        )
+
+        XCTAssertEqual(result.coverage, .startsLate(firstDay: day(2026, 3, 12)))
+    }
+
+    func testCoverageReportsBothEndsMissing() {
+        let register = Fixture.electricityRegister()
+        let readings = [
+            Fixture.reading(register, day(2026, 3, 12), 0),
+            Fixture.reading(register, day(2026, 5, 1), 400)
+        ]
+
+        let result = ConsumptionEngine.consumption(
+            register: register, readings: readings,
+            in: span(day(2026, 1, 1), day(2026, 8, 1))
+        )
+
+        XCTAssertEqual(result.coverage,
+                       .partial(firstDay: day(2026, 3, 12), lastDay: day(2026, 5, 1)))
+    }
+
+    func testCoverageIsNoneWithoutData() {
+        let register = Fixture.electricityRegister()
+        let readings = [Fixture.reading(register, day(2026, 1, 1), 1000)]
+
+        let result = ConsumptionEngine.consumption(
+            register: register, readings: readings,
+            in: span(day(2026, 1, 1), day(2026, 8, 1))
+        )
+
+        XCTAssertEqual(result.coverage, .none)
+    }
+
+    /// Ein Zeitraum, der genau auf einer einzelnen Ablesung endet, deckt nichts
+    /// ab — sonst stünde eine Null da, als sei nichts verbraucht worden.
+    func testCoverageIsNoneWhenRangeCollapsesToASingleDay() {
+        let register = Fixture.electricityRegister()
+        let readings = [
+            Fixture.reading(register, day(2026, 1, 1), 1000),
+            Fixture.reading(register, day(2026, 2, 1), 1300)
+        ]
+
+        let result = ConsumptionEngine.consumption(
+            register: register, readings: readings,
+            in: span(day(2025, 6, 1), day(2026, 1, 1))
+        )
+
+        XCTAssertEqual(result.coverage, .none)
+    }
+
     // MARK: - Fälligkeit
 
     func testReadingDueAfterInterval() {

@@ -9,6 +9,41 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.13.0 — 2026-08-05
+
+### Behoben
+- **Die große Zahl auf der Übersicht sagte nicht, welchen Zeitraum sie
+  abdeckt.** Beim Gaszähler stand „1.181 m³" — dieselbe Form wie „1.607 kWh"
+  beim Strom, obwohl die eine Zahl bis Anfang Mai reicht und die andere bis
+  August. Wer beide Karten untereinander sieht, vergleicht zwangsläufig, und
+  der Vergleich war falsch. Gefunden wurde das nicht von einem Test, sondern
+  beim Ansehen des Bildschirmfotos: Beide Zahlen waren für sich korrekt
+  gerechnet. Es ist der siebte Fall derselben Fehlerklasse und der erste, der
+  nicht im Rechenkern lag, sondern in der Anzeige.
+- Ohne Daten für das laufende Jahr stand eine „0" da. Jetzt steht ein Strich —
+  unbekannt ist nicht dasselbe wie nichts verbraucht.
+
+### Hinzugefügt
+- Über jeder großen Zahl steht der Zeitraum, den sie tatsächlich abdeckt:
+  „Seit Jahresbeginn", sonst als Spanne wie „1. Januar bis 1. Mai".
+  Ausgeschrieben statt als Vorbehalt, weil vier Tage Rückstand normal sind und
+  drei Monate nicht — als Spanne ist der Unterschied ohne ein Wort zu sehen.
+- Ein „≈" vor Werten, die nicht ausschließlich auf gemessenen Ständen beruhen
+  (Produktprinzip 7). Kleiner und blasser als die Zahl gesetzt: Bei einem
+  länger geführten Zähler ist es fast immer da, weil der Wert zum 1. Januar
+  zwischen zwei Ablesungen liegt.
+- `ConsumptionResult.coverage` in `PulseCore` — als Aufzählung, damit ein
+  vollständiger `switch` die Oberfläche zwingt, den unvollständigen Fall zu
+  beschriften. Ein `if isComplete` ließ sich vergessen, ein fehlender Fall
+  übersetzt nicht. Sechs neue Prüfungen, darunter der Gasfall von oben.
+- Bildschirmfotos zeigen jetzt auch den Erfassungsschirm, in Hell und Dunkel
+  (`-pulse-capture`). Er ist der wichtigste Schirm der App und war auf keinem
+  automatisch erzeugten Bild zu sehen.
+
+### Geändert
+- Die Bildschirmfotos starten die App mit frischen Beispieldaten. Vorher zeigten
+  sie, was die Oberflächentests im Simulator hinterlassen hatten.
+
 ## 0.12.0 — 2026-08-05
 
 ### Hinzugefügt

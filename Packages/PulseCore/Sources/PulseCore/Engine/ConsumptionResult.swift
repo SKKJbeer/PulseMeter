@@ -90,6 +90,43 @@ public struct ConsumptionResult: Hashable, Sendable {
         return Quantity(quantity.value / Decimal(coveredDays), quantity.unit)
     }
 
+    /// Wie weit die Zahl den angefragten Zeitraum tatsächlich abdeckt.
+    ///
+    /// Der Grund für diesen Typ steht in CLAUDE.md unter „Wiederkehrende
+    /// Fehlerklasse": Bisher entstand *jeder* gefundene Rechenfehler daraus,
+    /// dass ein Zeitraum, den die Daten abdecken, wie einer behandelt wurde,
+    /// den sie nicht abdecken. Zuletzt auf der Übersicht selbst — dort stand
+    /// „1.181 m³" für ein Jahr, dessen Daten im Mai enden.
+    ///
+    /// Als Aufzählung statt als Menge von Merkmalen, weil ein vollständiger
+    /// `switch` den Aufrufer zwingt, den unvollständigen Fall zu beschriften.
+    /// Ein `if result.isComplete` lässt sich vergessen, ein fehlender Fall
+    /// nicht — er übersetzt nicht.
+    public enum Coverage: Hashable, Sendable {
+        /// Keine Daten im angefragten Zeitraum.
+        case none
+        /// Deckt den angefragten Zeitraum vollständig ab.
+        case full
+        /// Beginnt erst später — davor gibt es keine Ablesungen.
+        case startsLate(firstDay: CalendarDay)
+        /// Endet früher — der Zähler wurde seitdem nicht abgelesen.
+        case endsEarly(lastDay: CalendarDay)
+        /// An beiden Enden verkürzt.
+        case partial(firstDay: CalendarDay, lastDay: CalendarDay)
+    }
+
+    public var coverage: Coverage {
+        guard let covered = coveredRange, coveredDays > 0 else { return .none }
+        let late = covered.start > requestedRange.start
+        let early = covered.end < requestedRange.end
+        switch (late, early) {
+        case (false, false): return .full
+        case (true, false): return .startsLate(firstDay: covered.start)
+        case (false, true): return .endsEarly(lastDay: covered.end)
+        case (true, true): return .partial(firstDay: covered.start, lastDay: covered.end)
+        }
+    }
+
     static func empty(unit: MeasurementUnit, range: DayRange, warnings: [ConsumptionWarning]) -> ConsumptionResult {
         ConsumptionResult(
             quantity: .zero(unit),

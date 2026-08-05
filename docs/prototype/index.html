@@ -208,6 +208,11 @@ h2.large {
 }
 .card-body { padding: 8px 15px 15px; display: flex; align-items: flex-end; gap: 14px; }
 .card-figure { flex: 1; min-width: 0; }
+/* Über der Zahl, nicht darunter: Der Zeitraum ist die Frage, die Zahl die
+   Antwort. In dieser Reihenfolge gelesen kann die Zahl nicht mehr
+   versprechen, als sie deckt. */
+.card-caption { font-size: var(--fs-cap); color: var(--ink-3); margin-bottom: 3px; letter-spacing: -0.003em; }
+.approx { font-size: .58em; color: var(--ink-3); font-weight: 500; margin-right: 3px; vertical-align: 0.13em; }
 .value-row { display: flex; align-items: baseline; gap: 5px; }
 .value {
   font-size: var(--fs-value); font-weight: 700; letter-spacing: -0.032em; line-height: 1.05;
@@ -639,7 +644,7 @@ table.doc-t td.dim { color: #9A9384; }
 
 <div class="stage-head">
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.9.0</p>
+  <p>Klickbarer Entwurf · v0.13.0</p>
 </div>
 
 <div class="device">
@@ -1000,9 +1005,24 @@ function consumption(reg, from, to) {
     if (serial(cf.y, cf.m, cf.d) >= serial(ct.y, ct.m, ct.d)) return null;
     const a2 = cumulativeAt(reg, cf), b2 = cumulativeAt(reg, ct);
     if (!a2 || !b2) return null;
-    return { value: b2.v - a2.v, days: between(cf, ct), exact: false, complete: false, cfrom: cf, cto: ct };
+    return { value: b2.v - a2.v, days: between(cf, ct), exact: false, complete: false,
+             cfrom: cf, cto: ct, rfrom: from, rto: to };
   }
-  return { value: b.v - a.v, days: between(from, to), exact: a.exact && b.exact, complete: true, cfrom: from, cto: to };
+  return { value: b.v - a.v, days: between(from, to), exact: a.exact && b.exact, complete: true,
+           cfrom: from, cto: to, rfrom: from, rto: to };
+}
+
+/* Wie weit ein Ergebnis den angefragten Zeitraum abdeckt.
+   Spiegelt `ConsumptionResult.coverage` aus PulseCore — die Fassungen müssen
+   dieselbe Antwort geben, sonst ist eine von beiden falsch (CLAUDE.md, Regel 2). */
+function coverage(res) {
+  if (!res) return { kind: "none" };
+  const late = serial(res.cfrom.y, res.cfrom.m, res.cfrom.d) > serial(res.rfrom.y, res.rfrom.m, res.rfrom.d);
+  const early = serial(res.cto.y, res.cto.m, res.cto.d) < serial(res.rto.y, res.rto.m, res.rto.d);
+  if (!late && !early) return { kind: "full" };
+  if (late && !early) return { kind: "startsLate", from: res.cfrom };
+  if (!late && early) return { kind: "endsEarly", to: res.cto };
+  return { kind: "partial", from: res.cfrom, to: res.cto };
 }
 const shiftYear = (d, n) => ({ y: d.y + n, m: d.m, d: d.m === 2 && d.d === 29 ? 28 : d.d });
 
@@ -1082,6 +1102,28 @@ const moneyRound = v => Math.round(v).toLocaleString("de-DE", { style: "currency
 const pct = v => (v > 0 ? "+" : "−") + nf(Math.abs(v * 100), 0) + " %";
 const dateLabel = r => `${r.d}. ${MONTHS_LONG[r.m - 1]} ${r.y}`;
 const dateShort = r => `${r.d}. ${MONTHS[r.m - 1]}`;
+/* Ohne Jahr, solange es das laufende ist — in einer Beschriftung wäre
+   „1. Mai 2026" zu lang, und das Jahr steht ohnehin über dem Schirm. */
+const dateMedium = r => `${r.d}. ${MONTHS_LONG[r.m - 1]}${r.y === TODAY.y ? "" : " " + r.y}`;
+
+/* Beschriftet eine Zahl mit dem Zeitraum, den sie tatsächlich abdeckt.
+
+   Ein verkürzter Zeitraum wird als Spanne ausgeschrieben, nicht als
+   „Seit Jahresbeginn" mit angehängtem Vorbehalt: Wer den Strom am 1. August
+   abliest, hat am 5. August eine Zahl, die vier Tage zurückliegt — das ist
+   normal. Beim Gaszähler sind es drei Monate. Als Vorbehalt gelesen sähen
+   beide gleich dringlich aus; als Spanne stehen „bis 1. August" und
+   „bis 1. Mai" nebeneinander, und der Unterschied ist ohne ein Wort zu sehen. */
+function periodCaption(res) {
+  const c = coverage(res);
+  switch (c.kind) {
+    case "none":       return "Noch keine Ablesung";
+    case "full":       return "Seit Jahresbeginn";
+    case "startsLate": return `Seit ${dateMedium(c.from)}`;
+    case "endsEarly":  return `${dateMedium(res.rfrom)} bis ${dateMedium(c.to)}`;
+    case "partial":    return `${dateMedium(c.from)} bis ${dateMedium(c.to)}`;
+  }
+}
 
 /* ============================================================
    Übersicht
@@ -1152,6 +1194,17 @@ function renderCards() {
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button></div>`;
     }
 
+    // Ein „≈" vor der Zahl, sobald sie nicht ausschließlich auf gemessenen
+    // Werten beruht — und ein Strich statt einer Null, wenn für das laufende
+    // Jahr gar nichts vorliegt: Unbekannt ist nicht dasselbe wie null.
+    // Das Zeichen steht kleiner und blasser vor der Zahl. Es ist bei einem
+    // länger geführten Zähler fast immer da — der Wert zum 1. Januar liegt
+    // zwischen zwei Ablesungen und wird interpoliert. Gerade weil es fast
+    // immer da ist, darf es der Zahl nicht die Aufmerksamkeit nehmen.
+    const figure = !ytd ? "—"
+      : (ytd.exact ? "" : '<span class="approx" title="Zwischen zwei Ablesungen berechnet">≈</span>')
+        + nf(ytd.value, m.frac >= 3 ? 1 : 0);
+
     let sub;
     if (due) {
       sub = `<span style="color:${m.color};font-weight:600">Seit ${daysSinceReading(m)} Tagen fällig</span>`;
@@ -1170,7 +1223,8 @@ function renderCards() {
       </div>
       <div class="card-body">
         <div class="card-figure">
-          <div class="value-row"><span class="value">${nf(ytd.value, m.frac >= 3 ? 1 : 0)}</span><span class="unit">${m.unit}</span></div>
+          <div class="card-caption">${periodCaption(ytd)}</div>
+          <div class="value-row"><span class="value">${figure}</span><span class="unit">${m.unit}</span></div>
           <div class="sub">${sub}</div>
         </div>
         ${sparkline(reg, m.color)}

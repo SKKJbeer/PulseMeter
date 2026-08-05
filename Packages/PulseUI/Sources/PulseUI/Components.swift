@@ -66,18 +66,32 @@ public struct ValueCard<Footer: View>: View {
     private let title: String
     private let symbolName: String
     private let accent: Color
+    private let caption: String
     private let value: String
+    private let isApproximate: Bool
     private let unit: String
     private let detail: Text
     private let badge: String?
     private let series: [Double]
     private let footer: Footer
 
+    /// - Parameter caption: Der Zeitraum, den der Wert abdeckt. Kein
+    ///   Standardwert und nicht optional: Eine große Zahl ohne Zeitraum ist
+    ///   nicht knapp, sondern unvollständig — genau daran ist die Übersicht
+    ///   schon einmal gescheitert. Wer nichts zu sagen hat, muss das hier
+    ///   ausdrücklich tun.
+    /// - Parameter isApproximate: Setzt ein „≈" vor den Wert (Produktprinzip
+    ///   7). Die Komponente zeichnet es kleiner und blasser als die Zahl,
+    ///   statt es in die Zeichenkette zu schreiben: Bei einem länger geführten
+    ///   Zähler ist es fast immer da, und was fast immer da ist, darf der Zahl
+    ///   nicht die Aufmerksamkeit nehmen.
     public init(
         title: String,
         symbolName: String,
         accent: Color,
+        caption: String,
         value: String,
+        isApproximate: Bool = false,
         unit: String,
         detail: Text,
         badge: String? = nil,
@@ -87,7 +101,9 @@ public struct ValueCard<Footer: View>: View {
         self.title = title
         self.symbolName = symbolName
         self.accent = accent
+        self.caption = caption
         self.value = value
+        self.isApproximate = isApproximate
         self.unit = unit
         self.detail = detail
         self.badge = badge
@@ -123,7 +139,23 @@ public struct ValueCard<Footer: View>: View {
 
                 HStack(alignment: .bottom, spacing: 14) {
                     VStack(alignment: .leading, spacing: 4) {
+                        // Über der Zahl, nicht darunter: Der Zeitraum ist die
+                        // Frage, die Zahl die Antwort. In dieser Reihenfolge
+                        // gelesen kann die Zahl nicht mehr versprechen, als
+                        // sie deckt.
+                        if !caption.isEmpty {
+                            Text(caption)
+                                .font(PulseText.caption)
+                                .foregroundStyle(PulseColor.inkTertiary)
+                        }
                         HStack(alignment: .firstTextBaseline, spacing: 5) {
+                            if isApproximate {
+                                Text(verbatim: "≈")
+                                    .font(PulseText.unit)
+                                    .foregroundStyle(PulseColor.inkTertiary)
+                                    .accessibilityLabel("ungefähr")
+                                    .padding(.trailing, -2)
+                            }
                             Text(value)
                                 .font(PulseText.value)
                                 .foregroundStyle(PulseColor.ink)
