@@ -39,6 +39,12 @@ struct CaptureView: View {
             GeometryReader { geometry in
                 ScrollView {
                     VStack(spacing: 0) {
+                        // Zwei Abstandhalter statt einem: Mit nur einem unten
+                        // klebte das Zählwerk oben und dazwischen stand eine
+                        // handbreite Leere. Zwischen zwei gleich starken
+                        // Abstandhaltern schwebt es über dem Ziffernblock —
+                        // wie die Anzeige über den Tasten eines Rechners.
+                        Spacer(minLength: 0)
                         header
                         if let register {
                             CounterDisplay(digits: digits,

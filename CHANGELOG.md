@@ -9,6 +9,19 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.14.1 — 2026-08-05
+
+### Behoben
+- **Im Erfassungsschirm stand eine handbreite Leere zwischen Zählwerk und
+  Ziffernblock.** Die Korrektur aus 0.13.1 hatte den Block nach unten
+  geschoben, das Zählwerk aber oben kleben lassen — ein Fehler gegen einen
+  anderen getauscht. Das Zählwerk schwebt jetzt zwischen zwei Abstandhaltern
+  über dem Block, wie die Anzeige über den Tasten eines Rechners.
+
+Nur die App. Der Klick-Dummy hatte den Fehler nie: Sein Bogen ist so hoch wie
+sein Inhalt, während die App den Schirm ganz füllt und den Platz verteilen
+muss.
+
 ## 0.14.0 — 2026-08-05
 
 Der **Verlauf** ist kein Platzhalter mehr.
