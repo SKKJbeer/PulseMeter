@@ -267,7 +267,7 @@ struct MeterEditor: View {
                 } header: {
                     Text("Name")
                 } footer: {
-                    Text("So heißt der Zähler in der Übersicht — „Strom", „Gas Keller", „Wohnung oben".")
+                    Text("So heißt der Zähler in der Übersicht — „Strom“, „Gas Keller“, „Wohnung oben“.")
                 }
 
                 Section {

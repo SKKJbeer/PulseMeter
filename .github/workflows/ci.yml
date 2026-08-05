@@ -27,6 +27,12 @@ jobs:
           swift --version
           xcrun simctl list runtimes | grep iOS || true
 
+      # Kostet eine Sekunde und fängt einen Fehler ab, der sonst erst nach
+      # zwei Minuten Übersetzung auffällt: ein deutsches Anführungszeichen,
+      # das eine Swift-Zeichenkette an der falschen Stelle beendet.
+      - name: Zeichenketten
+        run: python3 scripts/check-strings.py
+
       # Die Domäne zuerst: schnell, und wenn sie bricht, ist alles andere egal.
       - name: PulseCore
         run: swift test --package-path Packages/PulseCore

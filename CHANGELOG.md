@@ -9,6 +9,25 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.16.1 — 2026-08-05
+
+### Behoben
+- **Ein deutsches Anführungszeichen zerriss eine Swift-Zeichenkette.** In
+  `„Strom"` schließt das gerade Anführungszeichen das Literal — richtig ist
+  das typografische `„Strom“`. Die App ließ sich nicht übersetzen; gefunden
+  hat es der CI-Lauf nach zwei Minuten auf einem gemieteten macOS-Läufer.
+
+### Hinzugefügt
+- `scripts/check-strings.py`, als erster Schritt in der CI. Prüft in einer
+  Sekunde, was sonst einen ganzen Lauf kostet. Die erste Fassung zählte nur
+  Anführungszeichen je Zeile und fand den eigenen Anlassfall nicht — die
+  Zeichen ergänzten sich zufällig zu einer geraden Zahl. Jetzt wird geprüft,
+  was tatsächlich schiefgeht: ein `„` innerhalb einer Zeichenkette, das von
+  einem geraden Anführungszeichen geschlossen wird.
+
+Ohne Compiler für iOS-Code unter Linux ist die CI der einzige Ort, an dem
+solche Fehler auffallen — und der teuerste. Diese Klasse fällt jetzt vorher.
+
 ## 0.16.0 — 2026-08-05
 
 Der **Zähler**-Tab ist kein Platzhalter mehr. Damit ist die App zum ersten Mal
