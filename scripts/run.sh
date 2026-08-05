@@ -53,3 +53,5 @@ shoot light screenshot-capture-light -pulse-capture
 shoot dark  screenshot-capture-dark  -pulse-capture
 shoot light screenshot-verlauf-light -pulse-verlauf
 shoot dark  screenshot-verlauf-dark  -pulse-verlauf
+shoot light screenshot-zaehler-light -pulse-zaehler
+shoot dark  screenshot-zaehler-dark  -pulse-zaehler

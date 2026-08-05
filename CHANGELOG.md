@@ -9,6 +9,37 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.16.0 — 2026-08-05
+
+Der **Zähler**-Tab ist kein Platzhalter mehr. Damit ist die App zum ersten Mal
+ohne Beispieldaten benutzbar — vorher kam man überhaupt nur über
+„Beispieldaten anlegen" zu einem Zähler, und Produktprinzip 1 (60 Sekunden bis
+zur ersten Ablesung) hing an einer Ansicht, die es nicht gab.
+
+### Hinzugefügt
+- Zähler anlegen, umbenennen und einordnen. Name und Art genügen; Einheit,
+  Stellenzahl und Ableserhythmus sind aus der Art vorbelegt.
+- Archivieren und Löschen als getrennte Wege. Archivieren nimmt den Zähler aus
+  der Übersicht und behält alles; Löschen entfernt auch die Ablesungen und
+  fragt vorher nach.
+- Ein Oberflächentest, der einen Zähler anlegt und in der Liste wiederfindet.
+- Bildschirmfotos vom Zähler-Tab (`-pulse-zaehler`).
+
+### Behoben
+- **Der Klick-Dummy stürzte ab, sobald ein Zähler ohne Ablesung existierte.**
+  `lastReading` lief über eine leere Liste und gab `undefined` zurück, woran
+  die nächste Zeile zerbrach. Aufgefallen ist das erst jetzt: Bis eben hatte
+  jeder Zähler im Entwurf zwei Jahre Historie, und den Fall „noch nie
+  abgelesen" gab es schlicht nicht — obwohl er für jeden neuen Nutzer der
+  erste ist.
+
+### Entschieden
+- **Die Art eines Zählers lässt sich nicht mehr ändern, sobald Ablesungen
+  vorliegen.** Sie bestimmt die Einheit, und ein nachträglicher Wechsel würde
+  bestehende Werte stillschweigend umdeuten — aus 8.285 m³ Gas würden 8.285
+  kWh Strom. Die Oberfläche sagt, warum es gesperrt ist, statt es nur zu
+  verbieten.
+
 ## 0.15.1 — 2026-08-05
 
 ### Behoben

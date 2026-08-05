@@ -116,6 +116,28 @@ final class LaunchTests: XCTestCase {
                       "Die Gegenüberstellung wurde nicht geöffnet")
     }
 
+    /// Ein Zähler lässt sich anlegen, ohne dass vorher Beispieldaten nötig
+    /// wären. Erst damit ist die App für einen echten Nutzer brauchbar —
+    /// vorher kam man nur über „Beispieldaten anlegen" zu einem Zähler.
+    func testAddingAMeterFromTheMetersTab() {
+        let app = launchWithData()
+        app.tabBars.buttons["Zähler"].tap()
+
+        let add = app.buttons["Zähler hinzufügen"]
+        XCTAssertTrue(add.waitForExistence(timeout: 5), "Die Schaltfläche zum Anlegen fehlt")
+        add.tap()
+
+        let field = app.textFields["Name"]
+        XCTAssertTrue(field.waitForExistence(timeout: 5), "Das Namensfeld fehlt")
+        field.tap()
+        field.typeText("Gartenwasser")
+
+        app.buttons["Sichern"].tap()
+
+        XCTAssertTrue(app.staticTexts["Gartenwasser"].waitForExistence(timeout: 5),
+                      "Der neue Zähler taucht nicht in der Liste auf")
+    }
+
     /// Der Fluss, an dem das Produkt hängt: eintragen, Stand übernehmen,
     /// sichern — und der Hinweis auf den überfälligen Zähler ist weg.
     ///

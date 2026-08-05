@@ -616,6 +616,17 @@ table.doc-t td.dim { color: #9A9384; }
   padding: 3px 6px; border-radius: 5px; background: var(--surface-2); color: var(--ink-3);
 }
 
+/* Eingabefelder im Zähler-Editor. Sie sehen aus wie der Rest der Liste und
+   nicht wie ein Formular — die Zeile ist das Element, das Feld füllt sie aus. */
+.field {
+  font: inherit; font-size: 15px; color: var(--ink);
+  background: none; border: 0; width: 100%; padding: 0;
+  -webkit-appearance: none; appearance: none;
+}
+.field:focus-visible { outline: 2px solid var(--tint); outline-offset: 4px; border-radius: 4px; }
+.field:disabled { color: var(--ink-3); }
+select.field { cursor: pointer; }
+
 .section-label {
   font-size: var(--fs-cap); font-weight: 640; letter-spacing: .06em;
   text-transform: uppercase; color: var(--ink-3);
@@ -650,7 +661,7 @@ table.doc-t td.dim { color: #9A9384; }
 
 <div class="stage-head">
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.15.0</p>
+  <p>Klickbarer Entwurf · v0.16.0</p>
 </div>
 
 <div class="device">
@@ -745,6 +756,9 @@ table.doc-t td.dim { color: #9A9384; }
       <h2 class="large">Zähler</h2>
       <p class="datum">4 Zähler · Zuhause</p>
       <div class="list" id="meterlist"></div>
+      <button type="button" class="save" id="add-meter" style="--c:var(--tint);margin-top:14px">
+        Zähler hinzufügen
+      </button>
       <div class="section-label">Erinnerungen</div>
       <div class="list">
         <div class="row"><div class="rl">Monatlich am 1.<small>Für Strom, Wasser, Wärmepumpe</small></div><div class="rv" style="color:var(--good)">An</div></div>
@@ -788,6 +802,17 @@ table.doc-t td.dim { color: #9A9384; }
       <button type="button" class="save" id="save" disabled>Sichern</button>
       <div class="save-note">Datum: heute, 4. August 2026 · antippen zum Ändern</div>
     </div>
+  </div>
+
+  <!-- Zähler anlegen und bearbeiten -->
+  <div class="sheet" id="sheet-editor" role="dialog" aria-modal="true" aria-label="Zähler bearbeiten">
+    <div class="grabber"></div>
+    <div class="sheet-head">
+      <button type="button" class="sheet-close" data-close>Abbrechen</button>
+      <div class="sheet-title" id="editor-title">Zähler</div>
+      <button type="button" class="sheet-close" style="visibility:hidden">Abbrechen</button>
+    </div>
+    <div class="sheet-body" id="editor-body"></div>
   </div>
 
   <!-- Bericht einrichten -->
@@ -1062,16 +1087,30 @@ function monthConsumption(reg, y, m) {
   return consumption(reg, { y, m, d: 1 }, { y: ny, m: nm, d: 1 });
 }
 
+/* Gibt `null` zurück, wenn der Zähler noch nie abgelesen wurde.
+
+   Vorher lief die Schleife auf `undefined` und riss beim nächsten Zugriff
+   alles mit. Aufgefallen ist das erst, als sich Zähler anlegen ließen — bis
+   dahin hatte jeder Zähler im Entwurf zwei Jahre Historie, und den Fall „noch
+   nie abgelesen" gab es schlicht nicht. */
 function lastReading(meter) {
   let best = null;
   for (const reg of meter.registers) {
     const r = reg.readings[reg.readings.length - 1];
+    if (!r) continue;
     if (!best || serial(r.y, r.m, r.d) > serial(best.y, best.m, best.d)) best = r;
   }
   return best;
 }
-function daysSinceReading(meter) { return between(lastReading(meter), TODAY); }
-const isDue = m => daysSinceReading(m) >= m.interval;
+function daysSinceReading(meter) {
+  const last = lastReading(meter);
+  return last ? between(last, TODAY) : null;
+}
+/* Ohne jede Ablesung ist immer eine fällig — wie `ConsumptionEngine.isReadingDue`. */
+const isDue = m => {
+  const days = daysSinceReading(m);
+  return days === null || days >= m.interval;
+};
 
 /* Laufendes Jahr, Vorjahresvergleich, Prognose */
 function yearToDate(reg) {
@@ -1160,16 +1199,20 @@ function periodCaption(res) {
    Übersicht
    ============================================================ */
 function renderStatus() {
-  const due = METERS.filter(isDue);
+  const due = activeMeters().filter(isDue);
   const box = document.getElementById("status");
   if (due.length) {
     const m = due[0];
+    const days = daysSinceReading(m);
     box.innerHTML = `<div class="status-line due"><span class="dot"></span><div>
-      <b>${m.name} ist seit ${daysSinceReading(m)} Tagen nicht abgelesen.</b>
+      <b>${days === null
+          ? `${m.name} wurde noch nie abgelesen.`
+          : `${m.name} ist seit ${days} Tagen nicht abgelesen.`}</b>
       Ohne aktuellen Stand ist die Prognose ungenau.</div></div>`;
   } else {
-    const reg = METERS[0].registers[0];
-    const yoy = yearOverYear(reg);
+    const first = activeMeters()[0];
+    const reg = first ? first.registers[0] : null;
+    const yoy = reg ? yearOverYear(reg) : null;
     const txt = yoy !== null && yoy < -0.02
       ? `<b>Alles im Rahmen.</b> Strom liegt ${pct(yoy)} unter dem Vorjahr.`
       : `<b>Alles im Rahmen.</b> Alle Zähler sind aktuell.`;
@@ -1202,9 +1245,13 @@ function sparkline(reg, color) {
     <circle cx="${x(last.i).toFixed(1)}" cy="${y(last.v).toFixed(1)}" r="2.6" fill="${color}"/></svg>`;
 }
 
+/* Archivierte Zähler verschwinden aus der Übersicht, bleiben aber in der
+   Zählerliste erreichbar — wie `meteringPoints(includeArchived:)`. */
+const activeMeters = () => METERS.filter(m => !m.archived);
+
 function renderCards() {
   const host = document.getElementById("cards");
-  host.innerHTML = METERS.map(m => {
+  host.innerHTML = activeMeters().map(m => {
     const reg = m.registers[0];
     const ytd = yearToDate(reg);
     const yoy = yearOverYear(reg);
@@ -1238,7 +1285,10 @@ function renderCards() {
 
     let sub;
     if (due) {
-      sub = `<span style="color:${m.color};font-weight:600">Seit ${daysSinceReading(m)} Tagen fällig</span>`;
+      const days = daysSinceReading(m);
+      sub = days === null
+        ? `<span style="color:${m.color};font-weight:600">Noch nie abgelesen</span>`
+        : `<span style="color:${m.color};font-weight:600">Seit ${days} Tagen fällig</span>`;
     } else if (yoy !== null) {
       const dir = yoy < 0 ? "down" : "up";
       sub = `<span class="delta ${dir}">${pct(yoy)}</span> gegenüber Vorjahr`;
@@ -1273,7 +1323,7 @@ let histMeter = "strom", histScale = "month";
 let histMode = "chart", histGran = "month", histMetric = "usage", histPerDay = false;
 
 function renderPicker() {
-  const items = METERS.map(m => ({ id: m.id, name: m.name, color: m.color }));
+  const items = activeMeters().map(m => ({ id: m.id, name: m.name, color: m.color }));
   // „Alle Zähler" gibt es nur in der Datenansicht — und nur für Kosten:
   // kWh und m³ lassen sich nicht addieren, Euro schon.
   if (histMode === "table") items.push({ id: "all", name: "Alle Zähler", color: "var(--tint)" });
@@ -2008,12 +2058,90 @@ function renderMeterList() {
     const regInfo = m.registers.length > 1
       ? "Zweirichtungszähler · " + m.serial
       : "Zählernummer " + m.serial;
-    return `<div class="row">
+    const value = last
+      ? `${nf(last.value, m.frac)}<small>${dateShort(last)}</small>`
+      : `<small>Noch keine Ablesung</small>`;
+    // Antippbar wie in der App: Jede Zeile führt zum Bearbeiten.
+    return `<button type="button" class="rowbtn" data-meter="${m.id}"
+      style="${m.archived ? "opacity:.55" : ""}">
       <span class="chip-icon" style="--c:${m.color}">${icon(m)}</span>
-      <div class="rl">${m.name}<small>${regInfo}</small></div>
-      <div class="rv">${nf(last.value, m.frac)}<small>${dateShort(last)}</small></div>
-    </div>`;
+      <div class="rl">${m.name}${m.archived ? ' <span class="tag">Archiviert</span>' : ""}<small>${regInfo}</small></div>
+      <div class="rv">${value}</div>
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+    </button>`;
   }).join("");
+}
+
+/* Anlegen und Bearbeiten eines Zählers.
+
+   Bis hierher zeigte der Entwurf nur eine Liste. Ohne diesen Weg kommt ein
+   echter Nutzer überhaupt nicht zu einem Zähler — Produktprinzip 1 (60
+   Sekunden bis zur ersten Ablesung) hing an einer Ansicht, die es nicht gab.
+   Name und Art genügen; alles andere ist passend vorbelegt, wie in `MetersView`. */
+const KINDS = [
+  { id: "electricity", name: "Strom", unit: "kWh", frac: 1, color: "var(--amber)" },
+  { id: "water", name: "Wasser", unit: "m³", frac: 3, color: "var(--blue)" },
+  { id: "hotWater", name: "Warmwasser", unit: "m³", frac: 3, color: "var(--red)" },
+  { id: "gas", name: "Gas", unit: "m³", frac: 3, color: "var(--orange)" },
+  { id: "districtHeating", name: "Fernwärme", unit: "kWh", frac: 1, color: "var(--red)" },
+  { id: "heatingOil", name: "Heizöl", unit: "l", frac: 0, color: "var(--orange)" },
+  { id: "solarProduction", name: "Photovoltaik", unit: "kWh", frac: 1, color: "var(--green)" },
+  { id: "wallbox", name: "Wallbox", unit: "kWh", frac: 1, color: "var(--teal)" },
+  { id: "rainwater", name: "Regenwasser", unit: "m³", frac: 3, color: "var(--blue)" }
+];
+
+let editMeter = null;
+
+function openMeterEditor(id) {
+  editMeter = id ? METERS.find(m => m.id === id) : null;
+  const readingCount = editMeter ? editMeter.registers[0].readings.length : 0;
+  const kindID = editMeter ? (editMeter.kind || "electricity") : "electricity";
+
+  document.getElementById("editor-title").textContent = editMeter ? "Zähler" : "Neuer Zähler";
+  document.getElementById("editor-body").innerHTML = `
+    <div class="section-label">Name</div>
+    <div class="list"><div class="row"><input class="field" id="ed-name" type="text"
+      value="${editMeter ? editMeter.name.replace(/"/g, "&quot;") : ""}"
+      placeholder="Strom, Gas Keller, Wohnung oben"></div></div>
+
+    <div class="section-label">Art</div>
+    <div class="list"><div class="row"><select class="field" id="ed-kind"
+      ${readingCount ? "disabled" : ""}>
+      ${KINDS.map(k => `<option value="${k.id}" ${k.id === kindID ? "selected" : ""}>${k.name}</option>`).join("")}
+    </select></div></div>
+    <div class="note">${readingCount
+      ? `Die Art lässt sich nicht mehr ändern, weil für diesen Zähler schon ${readingCount} Ablesungen vorliegen — sie sind in ${editMeter.unit} erfasst.`
+      : "Legt Einheit und Aussehen fest."}</div>
+
+    <div class="section-label">Wie oft ablesen?</div>
+    <div class="list"><div class="row"><select class="field" id="ed-interval">
+      <option value="7">Wöchentlich</option>
+      <option value="30" selected>Monatlich</option>
+      <option value="91">Vierteljährlich</option>
+      <option value="365">Jährlich</option>
+      <option value="0">Ohne Erinnerung</option>
+    </select></div></div>
+    <div class="note">Daraus ergibt sich, wann die Übersicht einen Zähler als fällig meldet.</div>
+
+    ${editMeter ? `<div class="section-label">Entfernen</div>
+      <div class="list">
+        <button type="button" class="rowbtn" id="ed-archive">
+          <div class="rl">${editMeter.archived ? "Aus dem Archiv holen" : "Archivieren"}</div>
+        </button>
+        <button type="button" class="rowbtn" id="ed-delete">
+          <div class="rl" style="color:var(--red);font-weight:600">Zähler und alle Ablesungen löschen</div>
+        </button>
+      </div>
+      <div class="note">Archivieren nimmt den Zähler aus der Übersicht und behält alles.
+      Löschen entfernt auch die ${readingCount} Ablesungen — das lässt sich nicht
+      rückgängig machen.</div>` : ""}
+
+    <button type="button" class="save" id="ed-save" style="--c:var(--tint)">Sichern</button>`;
+
+  if (editMeter) {
+    document.getElementById("ed-interval").value = String(editMeter.interval || 30);
+  }
+  openSheet("sheet-editor");
 }
 
 /* ============================================================
@@ -2190,10 +2318,72 @@ function renderAll() {
   keys.innerHTML = html;
 })();
 
+/* Übernimmt, was im Editor steht. Im Entwurf bleiben die Daten im Speicher —
+   die App legt sie über `PulseRepository` ab, die Oberfläche ist dieselbe. */
+function saveMeter() {
+  const name = document.getElementById("ed-name").value.trim();
+  if (!name) { document.getElementById("ed-name").focus(); return; }
+  const kind = KINDS.find(k => k.id === document.getElementById("ed-kind").value) || KINDS[0];
+  const interval = Number(document.getElementById("ed-interval").value) || 0;
+
+  if (editMeter) {
+    editMeter.name = name;
+    editMeter.interval = interval || 3650;
+    if (!editMeter.registers[0].readings.length) {
+      editMeter.kind = kind.id; editMeter.unit = kind.unit;
+      editMeter.frac = kind.frac; editMeter.color = kind.color;
+    }
+  } else {
+    METERS.push({
+      id: "m" + Date.now(), name, kind: kind.id, unit: kind.unit,
+      frac: kind.frac, int: 6, color: kind.color, serial: "—",
+      interval: interval || 3650, price: 0, base: 0, prepay: 0,
+      registers: [{ label: "", readings: [] }]
+    });
+  }
+  closeSheets();
+  refreshAfterMeterChange();
+}
+
+/* Archivieren statt löschen ist der normale Weg: Ein gelöschter Zähler nimmt
+   seine gesamte Ablesehistorie mit. Deshalb zwei getrennte Wege — wie
+   `PulseRepository.archive` und `deletePermanently`. */
+function archiveMeter() {
+  if (!editMeter) return;
+  editMeter.archived = !editMeter.archived;
+  closeSheets();
+  refreshAfterMeterChange();
+}
+
+function deleteMeter() {
+  if (!editMeter) return;
+  const count = editMeter.registers[0].readings.length;
+  if (!confirm(`Der Zähler „${editMeter.name}" und seine ${count} Ablesungen werden entfernt.`)) return;
+  // In der Liste selbst entfernen statt sie neu zuzuweisen: Andere Stellen
+  // halten dieselbe Liste in der Hand.
+  METERS.splice(METERS.indexOf(editMeter), 1);
+  if (histMeter === editMeter.id) histMeter = METERS[0] ? METERS[0].id : null;
+  closeSheets();
+  refreshAfterMeterChange();
+}
+
+function refreshAfterMeterChange() {
+  renderMeterList();
+  renderStatus();
+  renderCards();
+  renderPicker();
+}
+
 /* Ereignisse */
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-capture],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export],[data-month],[data-open],[data-scope],[data-period]");
+  const t = e.target.closest("[data-capture],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export],[data-month],[data-open],[data-scope],[data-period],[data-meter],#add-meter,#ed-save,#ed-archive,#ed-delete");
   if (!t) return;
+
+  if (t.id === "add-meter") return openMeterEditor(null);
+  if (t.dataset.meter) return openMeterEditor(t.dataset.meter);
+  if (t.id === "ed-save") return saveMeter();
+  if (t.id === "ed-archive") return archiveMeter();
+  if (t.id === "ed-delete") return deleteMeter();
 
   if (t.dataset.capture) return openCapture(t.dataset.capture);
   if (t.dataset.explain) return openExplain(t.dataset.explain);

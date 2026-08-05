@@ -12,7 +12,12 @@ struct RootView: View {
     /// automatischer Lauf kann nicht tippen, und ein Schirm, den niemand
     /// fotografiert, wird auch von niemandem angesehen — genau daran sind
     /// zuletzt drei Fehler im Erfassungsschirm monatelang vorbeigelaufen.
-    @State private var tab = ProcessInfo.processInfo.arguments.contains("-pulse-verlauf") ? 1 : 0
+    @State private var tab: Int = {
+        let arguments = ProcessInfo.processInfo.arguments
+        if arguments.contains("-pulse-verlauf") { return 1 }
+        if arguments.contains("-pulse-zaehler") { return 2 }
+        return 0
+    }()
 
     var body: some View {
         TabView(selection: $tab) {
@@ -22,7 +27,7 @@ struct RootView: View {
             HistoryView()
                 .tabItem { Label("Verlauf", systemImage: "chart.bar") }
                 .tag(1)
-            PlaceholderView(title: "Zähler", note: "Folgt als Nächstes.")
+            MetersView()
                 .tabItem { Label("Zähler", systemImage: "gauge.medium") }
                 .tag(2)
         }
