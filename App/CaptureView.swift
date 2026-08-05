@@ -31,31 +31,39 @@ struct CaptureView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 0) {
-                    header
-                    if let register {
-                        CounterDisplay(digits: digits,
-                                       integerDigits: register.integerDigits,
-                                       fractionDigits: register.fractionDigits)
-                            .padding(.top, 4)
-                        Text(register.unit.symbol)
+            // Der Ziffernblock gehört an den unteren Rand, nicht an den oberen.
+            // Der Nutzer steht im Keller und hält das Gerät in einer Hand; was
+            // er antippt, muss der Daumen erreichen. Auf hohen Geräten schiebt
+            // der Abstandhalter Block und Schaltfläche nach unten, auf kleinen
+            // greift der Bildlauf.
+            GeometryReader { geometry in
+                ScrollView {
+                    VStack(spacing: 0) {
+                        header
+                        if let register {
+                            CounterDisplay(digits: digits,
+                                           integerDigits: register.integerDigits,
+                                           fractionDigits: register.fractionDigits)
+                                .padding(.top, 4)
+                            Text(register.unit.symbol)
+                                .font(PulseText.caption)
+                                .foregroundStyle(PulseColor.inkTertiary)
+                                .padding(.top, 6)
+                                .padding(.bottom, 12)
+                        }
+                        VerdictBanner(tone: verdictTone, message: verdictMessage)
+                        Spacer(minLength: 18)
+                        NumberPad(onKey: handle)
+                        saveButton
+                        Text("Datum: heute, \(germanDate(today))")
                             .font(PulseText.caption)
                             .foregroundStyle(PulseColor.inkTertiary)
-                            .padding(.top, 6)
-                            .padding(.bottom, 12)
+                            .padding(.top, 9)
                     }
-                    VerdictBanner(tone: verdictTone, message: verdictMessage)
-                    NumberPad(onKey: handle)
-                        .padding(.top, 14)
-                    saveButton
-                    Text("Datum: heute, \(germanDate(today))")
-                        .font(PulseText.caption)
-                        .foregroundStyle(PulseColor.inkTertiary)
-                        .padding(.top, 9)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 20)
+                    .frame(minHeight: geometry.size.height, alignment: .top)
                 }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 20)
             }
             .background(PulseColor.ground)
             .navigationTitle(meteringPoint.name)
@@ -95,17 +103,25 @@ struct CaptureView: View {
         .padding(.bottom, 10)
     }
 
+    /// Der gesperrte Zustand bekommt eigene Farben statt einer durchscheinenden
+    /// Akzentfläche.
+    ///
+    /// Mit `accent.opacity(0.32)` hinter heller Schrift stand im dunklen
+    /// Erscheinungsbild dunkelbraun auf braun — auf dem Bildschirmfoto kaum zu
+    /// lesen. Eine gedämpfte Fläche mit gedämpfter Schrift trägt in beiden
+    /// Erscheinungsbildern und sagt dasselbe: noch nicht so weit.
     private var saveButton: some View {
-        Button(action: save) {
+        let ready = !digits.isEmpty
+        return Button(action: save) {
             Text("Sichern")
                 .font(.system(.headline, weight: .semibold))
-                .foregroundStyle(PulseColor.onAccent)
+                .foregroundStyle(ready ? PulseColor.onAccent : PulseColor.inkTertiary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 15)
-                .background(accent.opacity(digits.isEmpty ? 0.32 : 1),
+                .background(ready ? accent : PulseColor.surfaceMuted,
                             in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
-        .disabled(digits.isEmpty)
+        .disabled(!ready)
         .padding(.top, 14)
     }
 

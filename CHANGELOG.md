@@ -9,6 +9,28 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.13.1 — 2026-08-05
+
+Drei Fehler, alle drei erst auf dem ersten Bildschirmfoto des
+Erfassungsschirms zu sehen — er wurde in 0.13.0 überhaupt zum ersten Mal
+automatisch fotografiert.
+
+### Behoben
+- **„Sichern" war im dunklen Erscheinungsbild kaum zu lesen.** Die gesperrte
+  Schaltfläche legte die Akzentfarbe mit 32 % Deckkraft unter helle Schrift —
+  im Dunkeln ergab das dunkelbraun auf braun. Gesperrt heißt jetzt gedämpfte
+  Fläche mit gedämpfter Schrift, in beiden Erscheinungsbildern lesbar. Im
+  Klick-Dummy steckte derselbe Fehler.
+- **Ziffernblock und „Sichern" standen im oberen Drittel**, darunter ein
+  Drittel leere Fläche. Genau verkehrt herum für einen Schirm, den man
+  einhändig im Keller bedient: Was angetippt wird, gehört in Daumenreichweite.
+  Beides sitzt jetzt am unteren Rand, auf kleinen Geräten greift weiter der
+  Bildlauf.
+- **Derselbe Zählerstand stand in zwei Schreibweisen in der App**: auf der
+  Übersicht „8.285,1 m³", im Erfassungsschirm „8.285,100 m³". Die Übersicht
+  schreibt ihn jetzt mit den Nachkommastellen des Zählwerks — so, wie er am
+  Gerät abzulesen ist. Der Klick-Dummy machte das schon richtig.
+
 ## 0.13.0 — 2026-08-05
 
 ### Behoben

@@ -19,14 +19,14 @@ Lizenz. Alles Weitere richtet das Skript ein.
 
 ## Status
 
-Version **0.13.0**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
+Version **0.13.1**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
 rechnet echt. Übersicht und Erfassung laufen als SwiftUI-App im Simulator und
 werden auf jedem Lauf fotografiert; Verlauf und Zähler sind noch Platzhalter.
 Siehe [CHANGELOG.md](CHANGELOG.md).
 
 ## Klick-Dummy
 
-**[Zuletzt veröffentlichter Entwurf →](https://claude.ai/code/artifact/c8391989-a1be-432e-9b92-87b98102e2b4)**
+**[Zuletzt veröffentlichter Entwurf →](https://claude.ai/code/artifact/4eea90ae-e9b8-4bdf-8eac-34882fb2aa89)**
 
 Jede Produktänderung wird sofort sichtbar gemacht — als **neue** Veröffentlichung
 mit eigener URL, weil erneutes Veröffentlichen auf dieselbe Adresse nicht

@@ -382,7 +382,13 @@ h2.large {
   color: var(--on-accent); background: var(--c);
   border: 0; border-radius: 14px; padding: 15px; cursor: pointer;
 }
-.save[disabled] { opacity: .32; cursor: not-allowed; }
+/* Eigene Farben statt durchscheinender Akzentfläche: Mit `opacity` stand im
+   dunklen Erscheinungsbild dunkelbraun auf braun — auf dem Bildschirmfoto der
+   App kaum zu lesen. Gedämpfte Fläche mit gedämpfter Schrift trägt in beiden. */
+.save[disabled] {
+  background: var(--surface-2); color: var(--ink-3);
+  cursor: not-allowed;
+}
 .save:not([disabled]):active { filter: brightness(.92); }
 .save:focus-visible { outline: 2px solid var(--tint); outline-offset: 3px; }
 .save-note {
@@ -644,7 +650,7 @@ table.doc-t td.dim { color: #9A9384; }
 
 <div class="stage-head">
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.13.0</p>
+  <p>Klickbarer Entwurf · v0.13.1</p>
 </div>
 
 <div class="device">

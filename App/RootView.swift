@@ -45,6 +45,10 @@ struct MeterRow: Identifiable {
     let colorToken: String
     let lastValue: Decimal?
     let lastDay: CalendarDay?
+    /// Nachkommastellen des Zählwerks — der Stand wird so geschrieben, wie er
+    /// am Gerät abzulesen ist. Sonst steht derselbe Wert auf der Übersicht als
+    /// „8.285,1" und im Erfassungsschirm als „8.285,100".
+    let fractionDigits: Int
     let yearToDate: ConsumptionResult?
     let changeVersusLastYear: Decimal?
     let monthlySeries: [Double]
@@ -139,7 +143,7 @@ struct OverviewView: View {
         ) {
             VStack(spacing: 0) {
                 if let value = row.lastValue, let day = row.lastDay {
-                    CardFooterRow("Stand \(number(value, digits: 1)) \(row.unit)") {
+                    CardFooterRow("Stand \(number(value, digits: row.fractionDigits)) \(row.unit)") {
                         Text(germanDate(day))
                             .font(PulseText.detail)
                             .foregroundStyle(PulseColor.inkTertiary)
@@ -295,7 +299,8 @@ struct OverviewView: View {
                     return MeterRow(id: point.id, name: point.name, unit: "",
                                     symbolName: point.appearance.symbolName,
                                     colorToken: point.appearance.colorToken,
-                                    lastValue: nil, lastDay: nil, yearToDate: nil,
+                                    lastValue: nil, lastDay: nil, fractionDigits: 0,
+                                    yearToDate: nil,
                                     changeVersusLastYear: nil, monthlySeries: [],
                                     daysSinceReading: nil, isDue: false)
                 }
@@ -313,6 +318,7 @@ struct OverviewView: View {
                     colorToken: point.appearance.colorToken,
                     lastValue: last?.value,
                     lastDay: last?.day,
+                    fractionDigits: register.fractionDigits,
                     yearToDate: result,
                     changeVersusLastYear: comparison?.relativeChange,
                     monthlySeries: monthlySeries(register: register, readings: readings, today: today),
