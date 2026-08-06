@@ -421,8 +421,29 @@ struct OverviewView: View {
                                      tariffs: tariffs, periods: periods)
                 )
             }
+            // Eine Ablesung verschiebt den nächsten Termin. Ohne dieses
+            // Nachziehen käme die Erinnerung zu einem Zeitpunkt, an dem längst
+            // nichts mehr fällig ist — und der Hinweis verlöre seinen Wert.
+            // Ohne erteilte Erlaubnis tut der Aufruf nichts.
+            Task { await rescheduleReminders() }
         } catch {
             problem = "Die Zähler ließen sich nicht laden: \(error.localizedDescription)"
+        }
+    }
+
+    private func rescheduleReminders() async {
+        guard !points.isEmpty else { return }
+        do {
+            let repository = PulseRepository(context: context)
+            var byMeter: [MeteringPoint.ID: [Reading]] = [:]
+            for point in points {
+                guard let register = point.primaryRegister else { continue }
+                byMeter[point.id] = try repository.readings(for: register.id)
+            }
+            await Reminders.reschedule(meteringPoints: points, readings: byMeter, today: today)
+        } catch {
+            // Erinnerungen sind Beiwerk. Wenn sie sich nicht planen lassen,
+            // darf das die Übersicht nicht mit einer Fehlermeldung belegen.
         }
     }
 

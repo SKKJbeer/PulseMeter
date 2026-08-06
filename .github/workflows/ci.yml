@@ -9,8 +9,14 @@ on:
   pull_request:
   workflow_dispatch:
 
+# Auf den Zweignamen normalisiert, nicht auf `github.ref`: Bei offener
+# Pull-Request liefert ein Push zwei Ereignisse — `push` mit
+# `refs/heads/claude/x` und `pull_request` mit `refs/pull/1/merge`. Als
+# verschiedene Gruppen liefen beide durch und bauten dieselbe App zweimal.
+# Über den Zweignamen landen sie in derselben Gruppe, und der spätere Lauf
+# bricht den früheren ab.
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:

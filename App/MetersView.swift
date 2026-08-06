@@ -20,6 +20,8 @@ struct MetersView: View {
     @State private var archived: [MeteringPoint] = []
     @State private var editing: MeterDraft?
     @State private var showingArchived = false
+    @State private var remindersOn = false
+    @State private var reminderNote: String?
     @State private var problem: String?
 
     var body: some View {
@@ -55,6 +57,8 @@ struct MetersView: View {
                                         in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                     }
                     .buttonStyle(.plain)
+
+                    if !meters.isEmpty { reminderSection }
 
                     if !archived.isEmpty {
                         archivedSection
@@ -136,6 +140,53 @@ struct MetersView: View {
 
 
 
+    /// Erinnerungen — der Grund, warum jemand in drei Monaten noch da ist.
+    ///
+    /// Der Schalter steht auf dem Zähler-Schirm und nicht in Einstellungen:
+    /// Hier denkt der Nutzer ohnehin gerade über Ableserhythmen nach, und die
+    /// Systemfrage nach Erlaubnis wird nur einmal gestellt — sie soll in einem
+    /// Moment kommen, in dem klar ist, wofür.
+    private var reminderSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Erinnerungen")
+                .font(PulseText.sectionLabel)
+                .textCase(.uppercase)
+                .foregroundStyle(PulseColor.inkTertiary)
+                .padding(.top, 6)
+
+            PulseCard {
+                VStack(spacing: 0) {
+                    Toggle(isOn: $remindersOn) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("An fällige Ablesungen erinnern")
+                                .font(.system(.body, weight: .medium))
+                                .foregroundStyle(PulseColor.ink)
+                            Text("Abends um \(Reminders.hour) Uhr, im Rhythmus jedes Zählers")
+                                .font(PulseText.caption)
+                                .foregroundStyle(PulseColor.inkTertiary)
+                        }
+                    }
+                    .tint(PulseColor.tint)
+                    .padding(.horizontal, 15)
+                    .padding(.vertical, 12)
+                    .onChange(of: remindersOn) { _, wanted in
+                        Task { await toggleReminders(wanted) }
+                    }
+
+                    if let reminderNote {
+                        Divider().overlay(PulseColor.hairline)
+                        Text(reminderNote)
+                            .font(PulseText.caption)
+                            .foregroundStyle(PulseColor.inkSecondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 15)
+                            .padding(.vertical, 10)
+                    }
+                }
+            }
+        }
+    }
+
     /// Archivierte Zähler bleiben erreichbar, nur nicht im Weg.
     ///
     /// Sie zu löschen nähme ihre gesamte Ablesehistorie mit — deshalb ist
@@ -189,6 +240,51 @@ struct MetersView: View {
             }
         } catch {
             problem = "Die Zähler ließen sich nicht laden: \(error.localizedDescription)"
+        }
+    }
+
+    // MARK: - Erinnerungen
+
+    private func toggleReminders(_ wanted: Bool) async {
+        guard wanted else {
+            Reminders.cancelAll()
+            reminderNote = nil
+            return
+        }
+
+        let status = await Reminders.authorizationStatus()
+        if status == .notDetermined {
+            guard await Reminders.requestPermission() else {
+                remindersOn = false
+                reminderNote = "Ohne Erlaubnis für Mitteilungen geht das nicht."
+                return
+            }
+        } else if status == .denied {
+            remindersOn = false
+            // Ehrlich benennen, was zu tun ist: iOS fragt kein zweites Mal,
+            // und ein Schalter, der wortlos zurückspringt, sieht kaputt aus.
+            reminderNote = "Mitteilungen sind für PulseMeter ausgeschaltet. Das lässt sich nur in den Einstellungen des Geräts ändern."
+            return
+        }
+
+        await scheduleReminders()
+    }
+
+    private func scheduleReminders() async {
+        do {
+            let repository = PulseRepository(context: context)
+            var byMeter: [MeteringPoint.ID: [Reading]] = [:]
+            for point in meters {
+                guard let register = point.primaryRegister else { continue }
+                byMeter[point.id] = try repository.readings(for: register.id)
+            }
+            await Reminders.reschedule(meteringPoints: meters, readings: byMeter,
+                                       today: CalendarDay.containing(Date(), in: .current))
+            let count = await Reminders.pendingCount()
+            reminderNote = count == 1 ? "Eine Erinnerung steht bereit."
+                                      : "\(count) Erinnerungen stehen bereit."
+        } catch {
+            reminderNote = "Die Erinnerungen ließen sich nicht planen."
         }
     }
 

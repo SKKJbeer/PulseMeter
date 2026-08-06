@@ -218,16 +218,17 @@ public enum ConsumptionEngine {
         readings: [Reading],
         today: CalendarDay
     ) -> Bool {
-        guard let expected = meteringPoint.readingInterval.approximateDays else { return false }
-        guard !meteringPoint.isArchived else { return false }
+        guard !meteringPoint.isArchived,
+              meteringPoint.readingInterval.approximateDays != nil
+        else { return false }
 
-        let relevantIDs = Set(meteringPoint.registers.map(\.id))
-        let last = readings
-            .filter { relevantIDs.contains($0.registerID) }
-            .map(\.day)
-            .max()
-
-        guard let last else { return true }
-        return today.days(since: last) >= expected
+        // Über denselben Fälligkeitstag wie die Erinnerung. Zwei getrennte
+        // Rechnungen für dieselbe Frage laufen früher oder später
+        // auseinander, und dann kommt eine Mitteilung, während auf dem Schirm
+        // nichts fällig ist — beides wird dadurch unglaubwürdig.
+        guard let due = ReminderEngine.dueDay(meteringPoint: meteringPoint, readings: readings) else {
+            return true   // keine Ablesung: immer fällig
+        }
+        return today >= due
     }
 }

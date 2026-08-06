@@ -9,6 +9,106 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.21.2 — 2026-08-06
+
+### Behoben
+- **Die Erinnerungen ließen sich immer noch nicht übersetzen — und meine
+  Diagnose in 0.21.1 war falsch.** Nicht die Rückgabewerte waren das Problem,
+  sondern das `@MainActor` am Typ `Reminders`. Es ordnet `center` dem
+  Hauptakteur zu, und weil die Methoden von `UNUserNotificationCenter` nicht
+  isoliert sind, wird **jeder** Aufruf zum Grenzübertritt — auch der, bei dem
+  nur der Empfänger hinübergereicht wird (`sending 'self.center' risks causing
+  data races`). Die Rückrufe aus 0.21.1 haben ein Symptom kuriert.
+
+### Entschieden
+- **Ein Typ, der nur eine threadsichere Systemschnittstelle umhüllt, bekommt
+  keine Isolation.** `UNUserNotificationCenter` ist selbst threadsicher;
+  `@MainActor` darüberzulegen macht die Sache nicht sicherer, sondern nur
+  unübersetzbar. `Reminders` reicht jetzt ausschließlich `Sendable`-Werte
+  heraus — Status als Aufzählung, Anzahl als Zahl —, und die Oberfläche wartet
+  vom Hauptakteur aus darauf. Die Begründung steht im Kopf der Datei, damit
+  der dritte Anlauf nicht nötig wird.
+
+## 0.21.1 — 2026-08-06
+
+### Behoben
+- **Die Erinnerungen aus 0.21.0 ließen sich nicht übersetzen.**
+  `UNNotificationSettings` und `[UNNotificationRequest]` sind nicht
+  `Sendable`; unter Swift 6 dürfen sie die Isolationsgrenze nicht überqueren,
+  und ein `await` vom Hauptakteur aus scheitert daran. Jetzt läuft beides über
+  den Rückruf, und herüber kommt nur, was unbedenklich ist: der Status als
+  Aufzählung und die Anzahl als Zahl.
+
+Diese Fehlerklasse kann ich unter Linux nicht finden — `UserNotifications`
+gibt es dort nicht, und `PulseCore` allein zu übersetzen sagt darüber nichts.
+Sie fällt erst auf dem macOS-Läufer auf.
+
+## 0.21.0 — 2026-08-06
+
+**Erinnerungen.** Der Retention-Motor: Ohne sie kommt niemand nach drei
+Monaten zurück, und dann laufen alle anderen Funktionen leer — der Verlauf
+bleibt kurz, der Vorjahresvergleich entsteht nie, die Abschlagsvorschau rechnet
+ins Blaue.
+
+### Hinzugefügt
+- `ReminderEngine` in `PulseCore` mit neun Prüfungen. Rechnet aus, wann ein
+  Zähler wieder abgelesen werden sollte.
+- Lokale Mitteilungen, abends um 18 Uhr im Rhythmus jedes Zählers. Ohne Konto,
+  ohne Server, ohne Netz.
+- Ein Schalter auf dem Zähler-Schirm statt in Einstellungen: Dort denkt der
+  Nutzer ohnehin über Ableserhythmen nach, und die Systemfrage nach Erlaubnis
+  wird nur **einmal** gestellt — sie soll in einem Moment kommen, in dem klar
+  ist, wofür.
+- Nach jeder Ablesung werden die Termine neu geplant. Eine stehengebliebene
+  alte Mitteilung käme sonst, wenn längst nichts mehr fällig ist.
+
+### Entschieden
+- **Fälligkeit auf dem Schirm und Erinnerung rechnen jetzt über dieselbe
+  Funktion.** Vorher waren es zwei getrennte Rechnungen für dieselbe Frage;
+  die laufen früher oder später auseinander, und dann kommt eine Mitteilung,
+  während auf dem Schirm nichts fällig ist. Ein Test prüft an sieben Tagen um
+  die Grenze herum, dass beide dieselbe Antwort geben.
+- **Ein überfälliger Zähler wird heute erinnert, nicht rückwirkend.** Eine
+  Mitteilung für einen vergangenen Tag lässt sich nicht zustellen — der Zähler
+  bliebe für immer stumm, und zwar genau der, der die Erinnerung am nötigsten
+  hat.
+- **Höchstens 32 Termine gleichzeitig.** iOS nimmt 64 lokale Mitteilungen an;
+  wer sehr viele Zähler führt, bekäme sonst irgendwann keine mehr, und welche
+  wegfallen, entschiede das System statt der App.
+- **18 Uhr, nicht morgens.** Ein Zählerstand wird abgelesen, wenn jemand zu
+  Hause ist und in den Keller gehen kann.
+
+### Behoben
+- `ReminderEngine.schedule` war als verkettete Ausdrucksfolge geschrieben, an
+  der der Typprüfer über zwei Minuten rechnete und dann aufgab. Mit benannten
+  Zwischenschritten übersetzt dasselbe in Sekunden.
+
+## 0.20.0 — 2026-08-06
+
+### Hinzugefügt
+- **Menge / Kosten** in der Verlaufstabelle. Der Umschalter erscheint nur,
+  wenn für den Zähler ein Tarif hinterlegt ist — ohne Preise gäbe es nichts
+  umzuschalten.
+- Nur in der Tabelle, nicht im Diagramm: Ein Balken, der mal kWh und mal Euro
+  bedeutet, sieht in beiden Fällen gleich aus. In einer Tabelle steht die
+  Einheit in der Kopfzeile, und der Oberflächentest prüft genau das —
+  Euro-Beträge dürfen nicht unter „Verbrauch" stehen.
+- Abschnitte ohne verwertbaren Tarif bleiben in der Kostenspalte leer statt
+  null, und die Summe darunter sagt „unvollständig". Eine Null wäre die
+  Aussage „hat nichts gekostet", die niemand gemacht hat.
+
+### Behoben
+- **Jeder Push löste zwei CI-Läufe aus**, solange eine Pull-Request offen war:
+  einmal `push`, einmal `pull_request`. Beide lagen in verschiedenen
+  Nebenläufigkeitsgruppen und bauten dieselbe App zweimal. Die Gruppe ist
+  jetzt auf den Zweignamen normalisiert.
+
+### Geändert
+- Der Arbeitszweig ist nach dem Zusammenführen frisch von `main` aufgesetzt.
+
+_Am Klick-Dummy ändert sich nichts: Menge und Kosten gibt es dort seit 0.9.
+Diesmal hat die App aufgeholt, nicht der Entwurf._
+
 ## 0.19.1 — 2026-08-06
 
 ### Behoben

@@ -209,6 +209,29 @@ final class LaunchTests: XCTestCase {
                       "Die Zahl des überfälligen Zählers nennt ihren Zeitraum nicht")
     }
 
+    /// In der Tabelle lässt sich von Menge auf Kosten umschalten.
+    ///
+    /// Geprüft wird nicht nur, dass der Umschalter da ist, sondern dass sich
+    /// die Spaltenüberschrift ändert — sonst stünden Euro-Beträge unter
+    /// „Verbrauch".
+    func testHistoryTableSwitchesToCosts() {
+        let app = launchWithData()
+        app.tabBars.buttons["Verlauf"].tap()
+        XCTAssertTrue(app.buttons["Alle Zahlen"].waitForExistence(timeout: 5))
+        app.buttons["Alle Zahlen"].tap()
+
+        XCTAssertTrue(app.staticTexts["VERBRAUCH"].waitForExistence(timeout: 5),
+                      "Die Mengenspalte fehlt")
+
+        let costs = app.buttons["Kosten"]
+        XCTAssertTrue(costs.waitForExistence(timeout: 5),
+                      "Mit hinterlegtem Tarif muss sich auf Kosten umschalten lassen")
+        costs.tap()
+
+        XCTAssertTrue(app.staticTexts["KOSTEN"].waitForExistence(timeout: 5),
+                      "Die Spaltenüberschrift ist nicht mitgewandert")
+    }
+
     /// Der Verlauf steht und zeigt einen Zähler mit Diagramm.
     func testHistoryShowsAChartForTheSelectedMeter() {
         let app = launchWithData()
