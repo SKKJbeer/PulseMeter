@@ -240,6 +240,14 @@ struct MeterEditor: View {
     @State private var integerDigits = 6
     @State private var fractionDigits = 1
     @State private var confirmingDelete = false
+    // Preise. Als Text, nicht als Zahl: Ein leeres Feld ist etwas anderes als
+    // eine Null, und `TextField` mit `Decimal` macht daraus stillschweigend
+    // dasselbe.
+    @State private var pricePerUnit = ""
+    @State private var monthlyBasePrice = ""
+    @State private var stateNumber = ""
+    @State private var calorificValue = ""
+    @State private var existingTariff: Tariff?
     @State private var problem: String?
 
     /// Die Arten, die zur Auswahl stehen. `custom` fehlt bewusst: Ein eigener
@@ -323,6 +331,8 @@ struct MeterEditor: View {
                     Text("So viele Stellen zeigt das Gerät. Die Eingabe sieht dann genauso aus wie der Zähler im Keller.")
                 }
 
+                priceSection
+
                 if let existing = draft.existing {
                     Section {
                         Button(existing.isArchived ? "Aus dem Archiv holen" : "Archivieren") {
@@ -363,6 +373,75 @@ struct MeterEditor: View {
         }
     }
 
+    /// Preise sind freiwillig.
+    ///
+    /// Ohne sie funktioniert die App vollständig — Verbrauch braucht keinen
+    /// Tarif. Wer die Kosten sehen will, trägt zwei Zahlen von seiner Rechnung
+    /// ab. Deshalb steht dieser Abschnitt unten und nicht oben, und deshalb
+    /// blockiert ein leeres Feld nichts.
+    @ViewBuilder
+    private var priceSection: some View {
+        Section {
+            HStack {
+                Text("Arbeitspreis")
+                Spacer(minLength: 10)
+                TextField("0,00", text: $pricePerUnit)
+                    .keyboardType(.decimalPad)
+                    .multilineTextAlignment(.trailing)
+                    .frame(maxWidth: 110)
+                Text("€/\(billingUnitSymbol)")
+                    .foregroundStyle(PulseColor.inkTertiary)
+            }
+            HStack {
+                Text("Grundpreis")
+                Spacer(minLength: 10)
+                TextField("0,00", text: $monthlyBasePrice)
+                    .keyboardType(.decimalPad)
+                    .multilineTextAlignment(.trailing)
+                    .frame(maxWidth: 110)
+                Text("€/Monat")
+                    .foregroundStyle(PulseColor.inkTertiary)
+            }
+
+            // Gas wird in m³ gemessen und in kWh abgerechnet. Ohne diese
+            // beiden Zahlen von der Rechnung lässt sich aus dem Zählerstand
+            // kein Betrag bilden — und die App rät nicht.
+            if needsGasConversion {
+                HStack {
+                    Text("Zustandszahl")
+                    Spacer(minLength: 10)
+                    TextField("0,95", text: $stateNumber)
+                        .keyboardType(.decimalPad)
+                        .multilineTextAlignment(.trailing)
+                        .frame(maxWidth: 110)
+                }
+                HStack {
+                    Text("Brennwert")
+                    Spacer(minLength: 10)
+                    TextField("10,5", text: $calorificValue)
+                        .keyboardType(.decimalPad)
+                        .multilineTextAlignment(.trailing)
+                        .frame(maxWidth: 110)
+                    Text("kWh/m³")
+                        .foregroundStyle(PulseColor.inkTertiary)
+                }
+            }
+        } header: {
+            Text("Preise")
+        } footer: {
+            Text(needsGasConversion
+                 ? "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Zustandszahl und Brennwert stehen auf deiner Gasrechnung; ohne sie lässt sich aus m³ kein Betrag bilden."
+                 : "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Beide Zahlen stehen auf deiner Jahresrechnung.")
+        }
+    }
+
+    /// Zähler, die in m³ messen und in kWh abgerechnet werden.
+    private var needsGasConversion: Bool { kind == .gas }
+
+    private var billingUnitSymbol: String {
+        needsGasConversion ? "kWh" : kind.defaultUnit.symbol
+    }
+
     // MARK: - Daten
 
     private func fill() {
@@ -374,6 +453,65 @@ struct MeterEditor: View {
             integerDigits = register.integerDigits
             fractionDigits = register.fractionDigits
         }
+
+        // Der zuletzt gültige Tarif. Mehrere Tarife über die Zeit kann der
+        // Rechenkern längst; die Oberfläche bearbeitet vorerst nur den
+        // aktuellen — ein Preisverlauf ist eine eigene Ansicht.
+        let tariff = (try? PulseRepository(context: context).tariffs(for: existing.id))?.last
+        existingTariff = tariff
+        guard let tariff else { return }
+        pricePerUnit = decimalText(tariff.pricePerUnit)
+        monthlyBasePrice = decimalText(tariff.monthlyBasePrice)
+        if let conversion = tariff.gasConversion {
+            stateNumber = decimalText(conversion.stateNumber)
+            calorificValue = decimalText(conversion.calorificValue)
+        }
+    }
+
+    /// Zahl als Text, mit Komma — so, wie sie eingetippt wird.
+    private func decimalText(_ value: Decimal) -> String {
+        value == 0 ? "" : "\(value)".replacingOccurrences(of: ".", with: ",")
+    }
+
+    /// Text als Zahl. Komma und Punkt gelten beide: Auf einer deutschen
+    /// Tastatur kommt das Komma, auf mancher Zehnertastatur der Punkt.
+    private func decimalValue(_ text: String) -> Decimal? {
+        let cleaned = text.replacingOccurrences(of: " ", with: "")
+                          .replacingOccurrences(of: ",", with: ".")
+        guard !cleaned.isEmpty else { return nil }
+        return Decimal(string: cleaned)
+    }
+
+    /// Legt den Tarif an oder ändert ihn — oder entfernt ihn, wenn der Nutzer
+    /// die Preise wieder löscht.
+    private func saveTariff(for point: MeteringPoint, in repository: PulseRepository) throws {
+        let price = decimalValue(pricePerUnit)
+        let base = decimalValue(monthlyBasePrice)
+        guard price != nil || base != nil else { return }
+
+        let conversion: GasConversion? = needsGasConversion
+            ? GasConversion(
+                stateNumber: decimalValue(stateNumber) ?? GasConversion.typical.stateNumber,
+                calorificValue: decimalValue(calorificValue) ?? GasConversion.typical.calorificValue)
+            : nil
+
+        // Gültig ab dem ersten Tag des laufenden Jahres, damit die Kosten des
+        // laufenden Jahres sofort einen Tarif haben. Preisänderungen mit
+        // eigenem Startdatum folgen mit der Preisverlauf-Ansicht.
+        let from = existingTariff?.validFrom
+            ?? CalendarDay(year: CalendarDay.containing(Date(), in: .current).year, month: 1, day: 1)
+            ?? CalendarDay.containing(Date(), in: .current)
+
+        let tariff = Tariff(
+            id: existingTariff?.id ?? UUID(),
+            meteringPointID: point.id,
+            validFrom: from,
+            pricePerUnit: price ?? 0,
+            monthlyBasePrice: base ?? 0,
+            billingUnit: needsGasConversion ? .kilowattHour : kind.defaultUnit,
+            gasConversion: conversion
+        )
+        try repository.save(tariff)
     }
 
     private func save() {
@@ -399,6 +537,7 @@ struct MeterEditor: View {
                     existing.registers[0] = register
                 }
                 try repository.save(existing)
+                try saveTariff(for: existing, in: repository)
             } else {
                 var register = Register.standard(for: kind)
                 register.integerDigits = integerDigits
@@ -411,6 +550,7 @@ struct MeterEditor: View {
                     readingInterval: interval
                 )
                 try repository.save(point)
+                try saveTariff(for: point, in: repository)
             }
             onDone()
             dismiss()

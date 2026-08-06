@@ -127,6 +127,46 @@ final class LaunchTests: XCTestCase {
                       "Der überfällige Gaszähler wurde nicht gemeldet")
     }
 
+    /// Mit hinterlegtem Preis steht der Betrag auf der Karte.
+    ///
+    /// Prüft die ganze Kette: Tarif im Speicher, `CostEngine`, Anzeige. Beim
+    /// Gaszähler zusätzlich die Umrechnung von m³ in kWh — ohne
+    /// Zustandszahl und Brennwert verweigert der Rechenkern die Auskunft,
+    /// und zwar zu Recht.
+    func testCostAppearsWhenAPriceIsStored() {
+        let app = launchWithData()
+        let costs = app.staticTexts["Kosten seit Jahresbeginn"]
+        XCTAssertTrue(costs.waitForExistence(timeout: 5),
+                      "Mit hinterlegtem Tarif müssen Kosten auf der Karte stehen")
+
+        // Ein Betrag in Euro, nicht bloß die Beschriftung.
+        let amount = app.staticTexts.containing(NSPredicate(format: "label CONTAINS '€'")).firstMatch
+        XCTAssertTrue(amount.exists, "Es steht keine Zahl mit Währung auf der Karte")
+    }
+
+    /// Ein Preis lässt sich eintragen, ohne dass man vorher irgendetwas über
+    /// Tarife wissen müsste — zwei Zahlen von der Jahresrechnung.
+    func testEnteringAPriceOnANewMeter() {
+        let app = launchEmpty()
+
+        XCTAssertTrue(app.buttons["Ersten Zähler anlegen"].waitForExistence(timeout: 10))
+        app.buttons["Ersten Zähler anlegen"].tap()
+
+        let field = app.textFields["Name"]
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        field.tap()
+        field.typeText("Strom")
+
+        let price = app.textFields["0,00"].firstMatch
+        XCTAssertTrue(price.exists, "Das Feld für den Arbeitspreis fehlt")
+        price.tap()
+        price.typeText("0,34")
+
+        app.buttons["Sichern"].tap()
+        XCTAssertTrue(app.staticTexts["Strom"].waitForExistence(timeout: 5),
+                      "Der Zähler wurde nicht gesichert")
+    }
+
     /// Die große Zahl auf einer Karte muss sagen, welchen Zeitraum sie
     /// abdeckt — sonst steht ein Jahreswert da, der im Mai endet.
     ///

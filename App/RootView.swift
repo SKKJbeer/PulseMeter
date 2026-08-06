@@ -73,6 +73,12 @@ struct MeterRow: Identifiable {
     let monthlySeries: [Double]
     let daysSinceReading: Int?
     let isDue: Bool
+    /// Kosten des laufenden Jahres, `nil` ohne hinterlegten Tarif.
+    let cost: Money?
+    /// Warum keine Kosten dastehen, wenn ein Tarif zwar da ist, aber nicht
+    /// reicht — bei Gas ohne Zustandszahl und Brennwert etwa. Ein leeres Feld
+    /// erklärt sich nicht; ein Satz schon.
+    let costProblem: String?
 }
 
 struct OverviewView: View {
@@ -179,6 +185,15 @@ struct OverviewView: View {
                             .font(PulseText.detail)
                             .foregroundStyle(PulseColor.inkTertiary)
                     }
+                }
+                if let cost = row.cost {
+                    CardFooterRow("Kosten seit Jahresbeginn") {
+                        Text(money(cost))
+                            .font(.system(.subheadline, weight: .semibold))
+                            .foregroundStyle(PulseColor.ink)
+                    }
+                } else if let costProblem = row.costProblem {
+                    CardFooterRow(costProblem) { EmptyView() }
                 }
                 Divider().overlay(PulseColor.hairline)
                 Button {
@@ -356,10 +371,14 @@ struct OverviewView: View {
                                     lastValue: nil, lastDay: nil, readingCount: 0,
                                     fractionDigits: 0, yearToDate: nil,
                                     changeVersusLastYear: nil, monthlySeries: [],
-                                    daysSinceReading: nil, isDue: false)
+                                    daysSinceReading: nil, isDue: false,
+                                    cost: nil, costProblem: nil)
                 }
                 let readings = try repository.readings(for: register.id)
                 let last = readings.last
+                let costs = cost(register: register, readings: readings,
+                                 tariffs: try repository.tariffs(for: point.id),
+                                 in: yearRange)
                 let result = ConsumptionEngine.consumption(register: register,
                                                            readings: readings, in: yearRange)
                 let comparison = ConsumptionEngine.yearOverYear(register: register,
@@ -379,11 +398,35 @@ struct OverviewView: View {
                     monthlySeries: monthlySeries(register: register, readings: readings, today: today),
                     daysSinceReading: last.map { today.days(since: $0.day) },
                     isDue: ConsumptionEngine.isReadingDue(meteringPoint: point,
-                                                          readings: readings, today: today)
+                                                          readings: readings, today: today),
+                    cost: costs.value,
+                    costProblem: costs.problem
                 )
             }
         } catch {
             problem = "Die Zähler ließen sich nicht laden: \(error.localizedDescription)"
+        }
+    }
+
+    /// Kosten des Zeitraums — oder der Grund, warum es keine gibt.
+    ///
+    /// Ohne Tarif ist beides `nil`: Das ist kein Fehler, sondern der
+    /// Normalfall, solange niemand Preise eingetragen hat. Ein hinterlegter
+    /// Tarif, der nicht reicht, ist dagegen etwas, das der Nutzer beheben kann
+    /// — und dann muss dastehen, was fehlt.
+    private func cost(register: Register, readings: [Reading], tariffs: [Tariff],
+                      in range: DayRange) -> (value: Money?, problem: String?) {
+        guard !tariffs.isEmpty else { return (nil, nil) }
+        do {
+            let result = try CostEngine.cost(register: register, readings: readings,
+                                             tariffs: tariffs, in: range)
+            return (result.total, nil)
+        } catch CostEngine.CostError.missingConversion {
+            return (nil, "Für die Kosten fehlen Zustandszahl und Brennwert von deiner Rechnung.")
+        } catch CostEngine.CostError.noTariff {
+            return (nil, nil)
+        } catch {
+            return (nil, "Die Kosten ließen sich nicht berechnen.")
         }
     }
 
@@ -418,14 +461,21 @@ struct OverviewView: View {
     private func seed() {
         // Jahresverläufe: Strom flach mit Winterhügel, Gas stark saisonal,
         // Wasser fast gleichmäßig.
+        // Preise nach den Größenordnungen einer deutschen Jahresrechnung 2026.
+        // Gas rechnet in kWh ab, obwohl der Zähler m³ misst — deshalb dort die
+        // Umrechnung, ohne die der Rechenkern zu Recht keinen Betrag bildet.
         let profiles: [(name: String, kind: ResourceKind, start: Decimal,
-                        monthly: [Decimal], staleMonths: Int)] = [
+                        monthly: [Decimal], staleMonths: Int,
+                        price: Decimal, base: Decimal, gas: Bool)] = [
             ("Strom", .electricity, 41_230,
-             [312, 286, 268, 241, 218, 205, 198, 204, 226, 258, 289, 315], 0),
+             [312, 286, 268, 241, 218, 205, 198, 204, 226, 258, 289, 315], 0,
+             Decimal(string: "0.34")!, Decimal(string: "12.90")!, false),
             ("Wasser", .water, 998,
-             [10.8, 9.9, 11.2, 10.6, 12.4, 13.1, 13.8, 13.2, 11.6, 10.9, 10.4, 11.1], 0),
+             [10.8, 9.9, 11.2, 10.6, 12.4, 13.1, 13.8, 13.2, 11.6, 10.9, 10.4, 11.1], 0,
+             Decimal(string: "2.15")!, Decimal(string: "8.40")!, false),
             ("Gas", .gas, 3_579,
-             [418, 376, 298, 178, 92, 41, 36, 39, 84, 192, 308, 402], 3)
+             [418, 376, 298, 178, 92, 41, 36, 39, 84, 192, 308, 402], 3,
+             Decimal(string: "0.11")!, Decimal(string: "14.50")!, true)
         ]
 
         do {
@@ -452,6 +502,16 @@ struct OverviewView: View {
                     let seasonal = profile.monthly[month - 1]
                     value += year == today.year ? seasonal * Decimal(string: "0.93")! : seasonal
                 }
+
+                guard let yearStart = CalendarDay(year: today.year - 2, month: 1, day: 1) else { continue }
+                try repository.save(Tariff(
+                    meteringPointID: point.id,
+                    validFrom: yearStart,
+                    pricePerUnit: profile.price,
+                    monthlyBasePrice: profile.base,
+                    billingUnit: profile.gas ? .kilowattHour : profile.kind.defaultUnit,
+                    gasConversion: profile.gas ? .typical : nil
+                ))
             }
             reload()
         } catch {
@@ -490,6 +550,13 @@ struct OverviewView: View {
             ? Date.FormatStyle.dateTime.day().month(.wide)
             : Date.FormatStyle.dateTime.day().month(.wide).year()
         return date.formatted(format.locale(Locale(identifier: "de_DE")))
+    }
+
+    /// Beträge immer mit zwei Nachkommastellen und Währungszeichen — eine
+    /// Zahl ohne Einheit wäre auf einer Karte voller kWh und m³ mehrdeutig.
+    private func money(_ money: Money) -> String {
+        money.amount.formatted(.currency(code: money.currency.code)
+            .locale(Locale(identifier: "de_DE")))
     }
 
     private func number(_ value: Decimal, digits: Int) -> String {

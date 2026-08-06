@@ -661,7 +661,7 @@ select.field { cursor: pointer; }
 
 <div class="stage-head">
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.17.0</p>
+  <p>Klickbarer Entwurf · v0.18.0</p>
 </div>
 
 <div class="device">
@@ -949,7 +949,7 @@ const round = (n, f) => Math.round(n * 10 ** f) / 10 ** f;
 
 const METERS = [
   {
-    id: "strom", name: "Strom", color: "var(--amber)",
+    id: "strom", kind: "electricity", name: "Strom", color: "var(--amber)",
     icon: '<path d="M13 2 4 13h6l-1 9 9-11h-6z"/>',
     interval: 30, unit: "kWh", int: 6, frac: 1,
     price: 0.34, base: 12.90, prepay: 100, feedInPrice: 0.082,
@@ -964,7 +964,7 @@ const METERS = [
     ]
   },
   {
-    id: "wasser", name: "Wasser", color: "var(--blue)",
+    id: "wasser", kind: "water", name: "Wasser", color: "var(--blue)",
     icon: '<path d="M12 2.5S5.5 10 5.5 14.2a6.5 6.5 0 0 0 13 0C18.5 10 12 2.5 12 2.5z"/>',
     interval: 30, unit: "m³", int: 5, frac: 3,
     price: 4.92, base: 9.50, prepay: null,
@@ -975,7 +975,7 @@ const METERS = [
     ]
   },
   {
-    id: "gas", name: "Gas", color: "var(--orange)",
+    id: "gas", kind: "gas", name: "Gas", color: "var(--orange)",
     icon: '<path d="M12 2.5c3 4 1 6 0 6.5C10 7 8 8.5 8 11c0 1.6.8 2.7 1.6 3.4C8 14 6.5 12.6 6.5 10 4.9 12 4 14 4 16a8 8 0 0 0 16 0c0-5.5-4.5-9-8-13.5z"/>',
     interval: 30, unit: "m³", int: 5, frac: 3,
     price: 0.112, base: 14.20, prepay: 245, zZahl: 0.9563, brennwert: 11.482,
@@ -988,7 +988,7 @@ const METERS = [
     ]
   },
   {
-    id: "wallbox", name: "Wallbox", color: "var(--teal)",
+    id: "wallbox", kind: "wallbox", name: "Wallbox", color: "var(--teal)",
     icon: '<path d="M5 17.5h14v2.2a.8.8 0 0 1-.8.8h-1.4a.8.8 0 0 1-.8-.8v-2.2M5 17.5v2.2a.8.8 0 0 0 .8.8h1.4a.8.8 0 0 0 .8-.8M4.2 12.4l1.6-4.6A2 2 0 0 1 7.7 6.4h8.6a2 2 0 0 1 1.9 1.4l1.6 4.6M4 12.4h16a1 1 0 0 1 1 1v3.1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-3.1a1 1 0 0 1 1-1z"/>',
     iconStroke: true,
     interval: 30, unit: "kWh", int: 6, frac: 1,
@@ -2131,6 +2131,33 @@ function openMeterEditor(id) {
       ? `Die Art lässt sich nicht mehr ändern, weil für diesen Zähler schon ${readingCount} Ablesungen vorliegen — sie sind in ${editMeter.unit} erfasst.`
       : "Legt Einheit und Aussehen fest."}</div>
 
+    <div class="section-label">Preise</div>
+    <div class="list">
+      <div class="row"><div class="rl">Arbeitspreis</div>
+        <div class="rv"><input class="field" id="ed-price" type="text" inputmode="decimal"
+          style="text-align:right;width:90px" placeholder="0,00"
+          value="${editMeter && editMeter.price ? String(editMeter.price).replace(".", ",") : ""}">
+          <small>€/${editMeter && editMeter.zZahl ? "kWh" : (editMeter ? editMeter.unit : "kWh")}</small></div></div>
+      <div class="row"><div class="rl">Grundpreis</div>
+        <div class="rv"><input class="field" id="ed-base" type="text" inputmode="decimal"
+          style="text-align:right;width:90px" placeholder="0,00"
+          value="${editMeter && editMeter.base ? String(editMeter.base).replace(".", ",") : ""}">
+          <small>€/Monat</small></div></div>
+      ${kindID === "gas" ? `
+      <div class="row"><div class="rl">Zustandszahl</div>
+        <div class="rv"><input class="field" id="ed-z" type="text" inputmode="decimal"
+          style="text-align:right;width:90px" placeholder="0,95"
+          value="${editMeter && editMeter.zZahl ? String(editMeter.zZahl).replace(".", ",") : ""}"></div></div>
+      <div class="row"><div class="rl">Brennwert</div>
+        <div class="rv"><input class="field" id="ed-bw" type="text" inputmode="decimal"
+          style="text-align:right;width:90px" placeholder="10,5"
+          value="${editMeter && editMeter.brennwert ? String(editMeter.brennwert).replace(".", ",") : ""}">
+          <small>kWh/m³</small></div></div>` : ""}
+    </div>
+    <div class="note">${kindID === "gas"
+      ? "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Zustandszahl und Brennwert stehen auf deiner Gasrechnung; ohne sie lässt sich aus m³ kein Betrag bilden."
+      : "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Beide Zahlen stehen auf deiner Jahresrechnung."}</div>
+
     <div class="section-label">Wie oft ablesen?</div>
     <div class="list"><div class="row"><select class="field" id="ed-interval">
       <option value="7">Wöchentlich</option>
@@ -2343,10 +2370,23 @@ function saveMeter() {
   if (!name) { document.getElementById("ed-name").focus(); return; }
   const kind = KINDS.find(k => k.id === document.getElementById("ed-kind").value) || KINDS[0];
   const interval = Number(document.getElementById("ed-interval").value) || 0;
+  // Komma und Punkt gelten beide — auf einer deutschen Tastatur kommt das
+  // Komma, auf mancher Zehnertastatur der Punkt.
+  const num = id => {
+    const el = document.getElementById(id);
+    if (!el) return 0;
+    const v = parseFloat(el.value.replace(",", "."));
+    return Number.isFinite(v) ? v : 0;
+  };
+  const price = num("ed-price"), base = num("ed-base");
+  const zZahl = num("ed-z"), brennwert = num("ed-bw");
 
   if (editMeter) {
     editMeter.name = name;
     editMeter.interval = interval || 3650;
+    editMeter.price = price;
+    editMeter.base = base;
+    if (zZahl && brennwert) { editMeter.zZahl = zZahl; editMeter.brennwert = brennwert; }
     if (!editMeter.registers[0].readings.length) {
       editMeter.kind = kind.id; editMeter.unit = kind.unit;
       editMeter.frac = kind.frac; editMeter.color = kind.color;
@@ -2355,7 +2395,8 @@ function saveMeter() {
     METERS.push({
       id: "m" + Date.now(), name, kind: kind.id, unit: kind.unit,
       frac: kind.frac, int: 6, color: kind.color, serial: "—",
-      interval: interval || 3650, price: 0, base: 0, prepay: 0,
+      interval: interval || 3650, price, base, prepay: 0,
+      zZahl: zZahl || undefined, brennwert: brennwert || undefined,
       registers: [{ label: "", readings: [] }]
     });
   }

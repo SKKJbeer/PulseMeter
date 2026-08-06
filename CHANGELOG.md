@@ -9,6 +9,33 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.18.0 — 2026-08-05
+
+Preise und Kosten. Der Rechenkern (`CostEngine`) stand seit 0.4 und war
+getestet — es fehlte der Weg, ihm überhaupt einen Preis mitzuteilen.
+
+### Hinzugefügt
+- **Arbeitspreis und Grundpreis im Zähler-Editor.** Zwei Zahlen von der
+  Jahresrechnung, freiwillig: Ohne sie funktioniert die App vollständig, nur
+  ohne Beträge. Deshalb steht der Abschnitt unten und blockiert nichts.
+- **Zustandszahl und Brennwert bei Gas.** Gas wird in m³ gemessen und in kWh
+  abgerechnet; ohne diese beiden Zahlen lässt sich aus einem Zählerstand kein
+  Betrag bilden. Der Rechenkern verweigert die Auskunft — die Oberfläche sagt
+  jetzt, was fehlt, statt ein leeres Feld zu zeigen.
+- **Kosten seit Jahresbeginn** auf jeder Übersichtskarte, sobald ein Preis
+  hinterlegt ist.
+- Die Beispieldaten haben Preise in der Größenordnung einer deutschen
+  Jahresrechnung, damit die Kosten auf den Bildschirmfotos auch zu sehen sind.
+- Zwei Oberflächentests: Steht mit hinterlegtem Tarif ein Betrag auf der
+  Karte, und lässt sich beim neuen Zähler ein Preis eintragen?
+
+### Behoben
+- **Der Klick-Dummy konnte die Art eines Zählers nicht erkennen.** Sie stand
+  nur implizit in der Kennung, nicht als Feld. Der neue Editor fiel deshalb
+  bei jedem Zähler auf „Strom" zurück und zeigte beim Gaszähler weder
+  Zustandszahl noch Brennwert. Jeder Beispielzähler trägt seine Art jetzt
+  ausdrücklich.
+
 ## 0.17.0 — 2026-08-05
 
 Der kalte Start — die App einmal so durchgegangen, wie ein neuer Nutzer sie
