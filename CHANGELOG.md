@@ -9,6 +9,25 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.27.1 — 2026-08-06
+
+### Behoben
+- **Ein Test zählte Elemente statt Aussagen.** Seit dem Zusammenfassen der
+  Fußzeile für VoiceOver sieht XCUITest zwei Einträge je Zeile — das
+  zusammengefasste Element und seinen Text — und kam auf vier statt zwei.
+  Geprüft wird jetzt über die Menge der **verschiedenen** Beschriftungen: Die
+  Aussage lautet „genau zwei Zähler zeigen eine Vorschau", nicht „vier
+  Elemente". So bleibt sie richtig, unabhängig davon, wie die Oberfläche innen
+  aufgebaut ist.
+- Der Test schreibt die gefundenen Beschriftungen ins Protokoll. Beim
+  Fehlschlag stand nur „4 ist nicht 2" da, und ob VoiceOver die Zeile nun
+  doppelt vorliest oder bloß der Test zu genau hinsieht, ließ sich ohne
+  Simulator nicht entscheiden. Beim nächsten Mal steht die Antwort da.
+
+### Stand
+- 17 der 18 Oberflächenprüfungen liefen bereits; dieser eine war der
+  Unterschied. Die Startzeit-Messung ist dabei zum ersten Mal gelaufen.
+
 ## 0.27.0 — 2026-08-06
 
 **Barrierefreiheit und Startzeit** — der erste Schritt an einer Zusage, die in

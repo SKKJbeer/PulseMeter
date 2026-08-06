@@ -188,11 +188,30 @@ final class LaunchTests: XCTestCase {
 
         // Der Wasserzähler hat bewusst keinen Abschlag — dort darf nichts
         // stehen, statt einer Null.
+        //
+        // **Über die verschiedenen Beschriftungen, nicht über die Anzahl der
+        // Elemente.** Seit 0.27.0 fasst die Fußzeile Text und Betrag für
+        // VoiceOver zu einem Element zusammen; XCUITest sieht daraufhin beides
+        // — das zusammengefasste Element und seinen Text — und zählte vier
+        // statt zwei. Die Aussage, um die es geht, ist aber nicht „vier
+        // Elemente", sondern „genau zwei Zähler zeigen eine Vorschau". Über
+        // die Menge der Beschriftungen gezählt bleibt sie richtig, egal wie
+        // die Oberfläche innen aufgebaut ist.
         let prepayLabels = app.staticTexts.containing(
             NSPredicate(format: "label BEGINSWITH 'Abschlag'")
         )
-        XCTAssertEqual(prepayLabels.count, 2,
-                       "Genau die zwei Zähler mit Abschlag dürfen eine Vorschau zeigen")
+        var seen = Set<String>()
+        for index in 0..<prepayLabels.count {
+            let label = prepayLabels.element(boundBy: index).label
+            // Der zusammengefasste Text beginnt mit dem der Zeile; als Schlüssel
+            // dient deshalb der Anfang bis zum Betrag der Vorschau.
+            seen.insert(String(label.prefix(30)))
+        }
+        // Damit der nächste Lauf nicht wieder raten lässt, was gefunden wurde.
+        print("ABSCHLAG-BESCHRIFTUNGEN: \(seen.sorted())")
+
+        XCTAssertEqual(seen.count, 2,
+                       "Genau die zwei Zähler mit Abschlag dürfen eine Vorschau zeigen — gefunden: \(seen.sorted())")
     }
 
     /// Ein Preis lässt sich eintragen, ohne dass man vorher irgendetwas über
