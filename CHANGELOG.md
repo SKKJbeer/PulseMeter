@@ -9,6 +9,29 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.26.0 — 2026-08-06
+
+**Der Entwurf erfasst beide Zählwerke.** Die zweistufige Erfassung gibt es in
+der App seit 0.22.0 — im Klick-Dummy nicht. Er schrieb ausschließlich nach
+`registers[0]`, und die Einspeisung des PV-Zählers ließ sich dort gar nicht
+eintragen. Eine Abweichung, die niemandem auffiel, weil man sie nur beim
+Durchklicken bemerkt.
+
+### Geändert
+- Erfassung läuft über alle Zählwerke nacheinander: Zählwerkname, „Zählwerk 1
+  von 2", Knopf „Weiter" statt „Sichern". Gesichert wird erst am Ende und dann
+  alles zusammen — ein Abbruch nach dem ersten darf keine halbe Ablesung
+  hinterlassen.
+- **Stellen und Einheit kommen jetzt vom Zählwerk, nicht vom Zähler.** Vorher
+  nahm der Ziffernblock `capMeter.int`/`capMeter.frac`; bei einem Zähler,
+  dessen Zählwerke sich darin unterscheiden, hätte er die falsche Maske
+  gezeigt. Aufgefallen beim Umbau, nicht im Betrieb.
+
+### Geprüft
+- Beide Zählwerke einmal wirklich durchgeklickt: „Bezug / Zählwerk 1 von 2 /
+  Weiter", dann „Einspeisung / Zählwerk 2 von 2 / Sichern". Beide Reihen
+  wachsen um genau eine Ablesung, kein Überlauf, keine JS-Fehler.
+
 ## 0.25.0 — 2026-08-06
 
 **Widget für Sperr- und Startbildschirm.** Der zweite Hebel für Wiederkehr:
