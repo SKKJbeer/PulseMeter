@@ -9,6 +9,27 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.22.4 — 2026-08-06
+
+### Behoben
+- **Ein abgebrochener Lauf hinterließ keine Spur.** Die Korrektur aus 0.21.5
+  leitete die gesamte Ausgabe in eine Datei und gab die Begründungen nur im
+  **Fehlerzweig** aus. Ein Lauf, der abgebrochen wird statt fehlzuschlagen,
+  erreicht diesen Zweig nie — auf der Konsole stand dann nichts, und ohne
+  Zugriff auf die Artefakte war nicht einmal zu sehen, wie weit er gekommen
+  war. Eine Blindstelle gegen eine andere getauscht.
+
+  Jetzt über `tee`: Die Datei bleibt vollständig, und auf der Konsole läuft
+  mit, welche Prüfung gerade lief. Der Exitcode kommt über `PIPESTATUS`
+  durch — gegengeprüft mit einem Versuchsaufbau, der 65 zurückgibt.
+
+### Bemerkenswert
+- Drei Läufe hintereinander sind an GitHubs Infrastruktur gescheitert, nicht
+  am Code: „Failed to resolve action download info. Service Unavailable",
+  zweimal noch vor `actions/checkout`, einmal als Abbruch mitten in den
+  Oberflächentests. Der letzte inhaltlich vollständige Lauf ist 39 auf
+  0.22.1 — grün.
+
 ## 0.22.3 — 2026-08-06
 
 ### Behoben

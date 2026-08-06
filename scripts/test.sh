@@ -24,27 +24,40 @@ if [ "$SCOPE" = "all" ] || [ "$SCOPE" = "app" ]; then
   DEVICE=$(scripts/sim.sh)
   # Dasselbe Ableseverzeichnis wie run.sh, damit die Screenshots den bereits
   # gebauten Stand verwenden und nicht ein zweites Mal übersetzen.
-  # Ohne `-quiet` und in eine Datei: Mit `-quiet` nennt xcodebuild zwar die
-  # Namen der gefallenen Prüfungen, aber nicht den Grund. Ein Lauf, der sagt
-  # „testX ist gefallen" und verschweigt warum, kostet eine ganze Runde von
-  # zwanzig Minuten fürs Raten — und genau das ist einmal passiert.
+  # Ohne `-quiet`, vollständig in eine Datei **und** gefiltert auf die
+  # Konsole. Zwei Blindstellen sind daran schuld:
+  #
+  # 1. Mit `-quiet` nennt xcodebuild die Namen der gefallenen Prüfungen, aber
+  #    nicht den Grund. Ein Lauf, der „testX ist gefallen" sagt und schweigt,
+  #    kostet zwanzig Minuten fürs Raten.
+  # 2. Leitet man stattdessen alles in eine Datei und gibt die Begründungen
+  #    nur im Fehlerzweig aus, sieht man bei einem **abgebrochenen** Lauf gar
+  #    nichts — der Zweig wird nie erreicht. Genau so ging ein Lauf verloren.
+  #
+  # Deshalb `tee`: Die Datei bleibt vollständig, und auf der Konsole läuft
+  # mit, wie weit die Prüfungen gekommen sind. Wo ein Lauf abbricht, ist dann
+  # ohne Artefakt zu sehen.
   mkdir -p build
   LOG="build/xcodebuild-test.log"
-  if xcodebuild test \
+  set +e
+  xcodebuild test \
       -project PulseMeter.xcodeproj \
       -scheme PulseMeter \
       -destination "id=$DEVICE" \
       -derivedDataPath "${PULSE_DERIVED_DATA:-build/DerivedData}" \
-      CODE_SIGNING_ALLOWED=NO > "$LOG" 2>&1; then
-    grep -E "Executed [0-9]+ test" "$LOG" | tail -3
-  else
-    status=$?
+      CODE_SIGNING_ALLOWED=NO 2>&1 \
+    | tee "$LOG" \
+    | grep --line-buffered -E "Test Case .*(started|passed|failed)|Test Suite .*(passed|failed)|Executed [0-9]+ test|error:|Assertion Failure|\*\* TEST"
+  status=${PIPESTATUS[0]}
+  set -e
+
+  if [ "$status" -ne 0 ]; then
     echo
     echo "--- Gefallene Prüfungen, mit Begründung ---"
     grep -E "error:|Assertion Failure|XCTAssert|Failing tests:|^[[:space:]]+[A-Za-z]+Tests\." "$LOG" \
       | tail -80
     echo "--- Ende ---"
-    exit $status
+    exit "$status"
   fi
 fi
 
