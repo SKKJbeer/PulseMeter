@@ -200,14 +200,25 @@ final class LaunchTests: XCTestCase {
         let prepayLabels = app.staticTexts.containing(
             NSPredicate(format: "label BEGINSWITH 'Abschlag'")
         )
+        // Gezählt wird über den **Abschlagsbetrag**, nicht über den Anfang der
+        // Beschriftung. Das Protokoll des vorigen Laufs hat gezeigt, warum:
+        //
+        //   ["Abschlag 1.200,00 € im Jahr", "Abschlag 1.200,00 € im Jahr, ≈",
+        //    "Abschlag 2.760,00 € im Jahr", "Abschlag 2.760,00 € im Jahr, ≈"]
+        //
+        // Je Zeile stehen zwei Einträge: der reine Text und das zusammengefasste
+        // Element, das ihn enthält. Das Zusammenfassen wirkt also wie gewollt —
+        // XCUITest zeigt zusätzlich die darunterliegende Ansicht, VoiceOver
+        // benutzt den Zugänglichkeitsbaum. Der Jahresbetrag ist das, was eine
+        // Abschlagszeile ausmacht; über ihn gezählt fallen die beiden
+        // Erscheinungsformen derselben Zeile zusammen.
         var seen = Set<String>()
         for index in 0..<prepayLabels.count {
             let label = prepayLabels.element(boundBy: index).label
-            // Der zusammengefasste Text beginnt mit dem der Zeile; als Schlüssel
-            // dient deshalb der Anfang bis zum Betrag der Vorschau.
-            seen.insert(String(label.prefix(30)))
+            let key = label.range(of: " im Jahr").map { String(label[..<$0.lowerBound]) } ?? label
+            seen.insert(key)
         }
-        // Damit der nächste Lauf nicht wieder raten lässt, was gefunden wurde.
+        // Damit ein Fehlschlag nicht wieder raten lässt, was gefunden wurde.
         print("ABSCHLAG-BESCHRIFTUNGEN: \(seen.sorted())")
 
         XCTAssertEqual(seen.count, 2,

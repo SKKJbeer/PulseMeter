@@ -9,6 +9,19 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.27.2 — 2026-08-06
+
+### Behoben
+- **Der Abschlagstest zählt jetzt über den Jahresbetrag.** Das Protokoll aus
+  0.27.1 hat die offene Frage beantwortet: Je Zeile stehen zwei Einträge — der
+  reine Text und das zusammengefasste Element, das ihn enthält. Das
+  Zusammenfassen wirkt also wie gewollt; XCUITest zeigt zusätzlich die
+  darunterliegende Ansicht, VoiceOver benutzt den Zugänglichkeitsbaum. Es war
+  die harmlose der beiden Deutungen — aber jetzt belegt statt vermutet.
+- Meine Kürzung auf 30 Zeichen aus 0.27.1 schnitt genau dort, wo sich die
+  beiden Erscheinungsformen unterscheiden. Der Jahresbetrag ist das, was eine
+  Abschlagszeile ausmacht; über ihn gezählt fallen sie zusammen.
+
 ## 0.27.1 — 2026-08-06
 
 ### Behoben
