@@ -9,6 +9,28 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.22.2 — 2026-08-06
+
+Der zweistufige Erfassungsschirm aus 0.22.0 war weder fotografiert noch
+geprüft. `-pulse-capture` öffnet den ersten Zähler, und das ist Gas mit einem
+einzigen Zählwerk — der neue Ablauf kam auf keinem der zehn Bilder vor.
+
+Das ist dieselbe Lücke wie beim Zähler-Schirm in 0.21.4, nur eine Ebene
+tiefer: Ein Ablauf, den niemand ansieht, ist einer, in dem sich ein Fehler
+beliebig lange hält. Heute haben Bildschirmfotos vier Fehler gefunden, drei
+davon in derselben Stunde.
+
+### Hinzugefügt
+- `-pulse-capture-pv` öffnet die Erfassung beim Zweirichtungszähler. Zwei
+  weitere Bilder je Lauf, hell und dunkel — damit sind es zwölf.
+- Zwei Oberflächenprüfungen: der Weg über beide Zählwerke („Bezug", „Weiter",
+  „Einspeisung", „Sichern") und die Einspeisezeile auf der Karte.
+
+### Behoben
+- Über `testCostIsLabelledWithThePeriodItCovers` standen seit 0.21.5 zwei
+  Dokumentationskommentare übereinander — beim Ersetzen der Funktion war der
+  alte stehengeblieben.
+
 ## 0.22.1 — 2026-08-06
 
 Zwei Fehler aus 0.22.0, beide vom ersten Bildschirmfoto gefunden, das den

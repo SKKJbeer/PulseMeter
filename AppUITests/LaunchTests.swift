@@ -127,14 +127,12 @@ final class LaunchTests: XCTestCase {
                       "Der überfällige Gaszähler wurde nicht gemeldet")
     }
 
-    /// Mit hinterlegtem Preis steht der Betrag auf der Karte.
-    ///
-    /// Prüft die ganze Kette: Tarif im Speicher, `CostEngine`, Anzeige. Beim
-    /// Gaszähler zusätzlich die Umrechnung von m³ in kWh — ohne
-    /// Zustandszahl und Brennwert verweigert der Rechenkern die Auskunft,
-    /// und zwar zu Recht.
     /// Kosten stehen auf der Karte — und die Beschriftung nennt den Zeitraum,
     /// den der Betrag abdeckt.
+    ///
+    /// Prüft die ganze Kette: Tarif im Speicher, `CostEngine`, Anzeige. Beim
+    /// Gaszähler zusätzlich die Umrechnung von m³ in kWh — ohne Zustandszahl
+    /// und Brennwert verweigert der Rechenkern die Auskunft, und zwar zu Recht.
     ///
     /// Der Test stand vorher auf dem festen Wort „Kosten seit Jahresbeginn"
     /// und hat damit in 0.21.4 zu Recht angeschlagen: Genau diese Formulierung
@@ -368,5 +366,63 @@ final class LaunchTests: XCTestCase {
             XCTAssertTrue(app.staticTexts[name].waitForExistence(timeout: 5),
                           "\(name) fehlt im Zähler-Schirm — der Ausgangszustand kam nicht an")
         }
+    }
+
+    /// Der Zweirichtungszähler wird in einem Vorgang abgelesen — erst Bezug,
+    /// dann Einspeisung.
+    ///
+    /// Bis 0.22.2 gab es für diesen Ablauf weder eine Prüfung noch ein Bild:
+    /// `-pulse-capture` öffnet den ersten Zähler, und das ist Gas mit einem
+    /// einzigen Zählwerk. Ein Ablauf, den niemand ansieht, ist ein Ablauf, in
+    /// dem sich ein Fehler beliebig lange hält.
+    func testCapturingBothDirectionsInOneGo() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-pulse-reset", "-pulse-capture-pv"]
+        app.launch()
+
+        XCTAssertTrue(app.staticTexts["Bezug"].waitForExistence(timeout: 15),
+                      "Der Erfassungsschirm nennt das erste Zählwerk nicht")
+        XCTAssertTrue(app.staticTexts["Zählwerk 1 von 2"].exists,
+                      "Ohne den Fortschritt weiß niemand, dass noch etwas kommt")
+
+        // „Weiter", nicht „Sichern": Es fehlt noch eine Zahl, und ein Knopf,
+        // der etwas anderes tut als er sagt, ist schlimmer als ein Umweg.
+        let next = app.buttons["Weiter"]
+        XCTAssertTrue(next.exists, "Beim ersten von zwei Zählwerken muss „Weiter“ dastehen")
+
+        app.buttons["Vom letzten Stand übernehmen"].tap()
+        next.tap()
+
+        XCTAssertTrue(app.staticTexts["Einspeisung"].waitForExistence(timeout: 5),
+                      "Nach dem Bezug muss die Einspeisung drankommen")
+        XCTAssertTrue(app.staticTexts["Zählwerk 2 von 2"].exists)
+
+        let save = app.buttons["Sichern"]
+        XCTAssertTrue(save.exists, "Beim letzten Zählwerk muss „Sichern“ dastehen")
+        app.buttons["Vom letzten Stand übernehmen"].tap()
+        save.tap()
+
+        XCTAssertTrue(app.staticTexts["Übersicht"].waitForExistence(timeout: 5),
+                      "Nach dem Sichern wurde die Übersicht nicht wieder angezeigt")
+    }
+
+    /// Die Einspeisung steht auf der Karte, und zwar über den Kosten.
+    ///
+    /// Der Betrag darunter ist bereits netto. Stünde die Gutschrift hinterher,
+    /// zöge sie jeder Leser ein zweites Mal ab.
+    func testFeedInAppearsOnTheCard() {
+        let app = launchWithData()
+
+        let feedIn = app.staticTexts.containing(
+            NSPredicate(format: "label BEGINSWITH 'Einspeisung'")
+        ).firstMatch
+        XCTAssertTrue(feedIn.waitForExistence(timeout: 10),
+                      "Beim Zweirichtungszähler muss die Einspeisung auf der Karte stehen")
+
+        let credit = app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS 'vergütet'")
+        ).firstMatch
+        XCTAssertTrue(credit.exists,
+                      "Mit hinterlegter Vergütung muss ein Betrag dabeistehen")
     }
 }

@@ -51,6 +51,8 @@ shoot light screenshot-light
 shoot dark  screenshot-dark
 shoot light screenshot-capture-light -pulse-capture
 shoot dark  screenshot-capture-dark  -pulse-capture
+shoot light screenshot-pv-light -pulse-capture-pv
+shoot dark  screenshot-pv-dark  -pulse-capture-pv
 shoot light screenshot-verlauf-light -pulse-verlauf
 shoot dark  screenshot-verlauf-dark  -pulse-verlauf
 shoot light screenshot-leer-light -pulse-empty

@@ -408,7 +408,14 @@ struct OverviewView: View {
         // Bildschirmfotos: Es ist der wichtigste Schirm der App und der
         // einzige, den ein automatischer Lauf sonst nie zu Gesicht bekommt —
         // `simctl` kann nicht tippen.
-        if ProcessInfo.processInfo.arguments.contains("-pulse-capture") {
+        let arguments = ProcessInfo.processInfo.arguments
+        if arguments.contains("-pulse-capture-pv") {
+            // Eigener Schalter für den Zweirichtungszähler: `-pulse-capture`
+            // nimmt den ersten Zähler, und das ist Gas mit einem einzigen
+            // Zählwerk. Der zweistufige Ablauf — erst Bezug, dann Einspeisung —
+            // kam dadurch auf keinem Bild vor, obwohl er neu ist.
+            capturing = points.first { $0.registers.count > 1 } ?? points.first
+        } else if arguments.contains("-pulse-capture") {
             capturing = points.first
         }
     }

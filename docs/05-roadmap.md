@@ -96,7 +96,7 @@ Die Reihenfolge ist bewusst nicht „Screens von oben nach unten", sondern nach 
 
 ---
 
-## Aktueller Stand — Version 0.22.1
+## Aktueller Stand — Version 0.22.2
 
 | Schritt | Stand |
 |---|---|
