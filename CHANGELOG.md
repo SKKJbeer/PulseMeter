@@ -9,6 +9,46 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.21.0 — 2026-08-06
+
+**Erinnerungen.** Der Retention-Motor: Ohne sie kommt niemand nach drei
+Monaten zurück, und dann laufen alle anderen Funktionen leer — der Verlauf
+bleibt kurz, der Vorjahresvergleich entsteht nie, die Abschlagsvorschau rechnet
+ins Blaue.
+
+### Hinzugefügt
+- `ReminderEngine` in `PulseCore` mit neun Prüfungen. Rechnet aus, wann ein
+  Zähler wieder abgelesen werden sollte.
+- Lokale Mitteilungen, abends um 18 Uhr im Rhythmus jedes Zählers. Ohne Konto,
+  ohne Server, ohne Netz.
+- Ein Schalter auf dem Zähler-Schirm statt in Einstellungen: Dort denkt der
+  Nutzer ohnehin über Ableserhythmen nach, und die Systemfrage nach Erlaubnis
+  wird nur **einmal** gestellt — sie soll in einem Moment kommen, in dem klar
+  ist, wofür.
+- Nach jeder Ablesung werden die Termine neu geplant. Eine stehengebliebene
+  alte Mitteilung käme sonst, wenn längst nichts mehr fällig ist.
+
+### Entschieden
+- **Fälligkeit auf dem Schirm und Erinnerung rechnen jetzt über dieselbe
+  Funktion.** Vorher waren es zwei getrennte Rechnungen für dieselbe Frage;
+  die laufen früher oder später auseinander, und dann kommt eine Mitteilung,
+  während auf dem Schirm nichts fällig ist. Ein Test prüft an sieben Tagen um
+  die Grenze herum, dass beide dieselbe Antwort geben.
+- **Ein überfälliger Zähler wird heute erinnert, nicht rückwirkend.** Eine
+  Mitteilung für einen vergangenen Tag lässt sich nicht zustellen — der Zähler
+  bliebe für immer stumm, und zwar genau der, der die Erinnerung am nötigsten
+  hat.
+- **Höchstens 32 Termine gleichzeitig.** iOS nimmt 64 lokale Mitteilungen an;
+  wer sehr viele Zähler führt, bekäme sonst irgendwann keine mehr, und welche
+  wegfallen, entschiede das System statt der App.
+- **18 Uhr, nicht morgens.** Ein Zählerstand wird abgelesen, wenn jemand zu
+  Hause ist und in den Keller gehen kann.
+
+### Behoben
+- `ReminderEngine.schedule` war als verkettete Ausdrucksfolge geschrieben, an
+  der der Typprüfer über zwei Minuten rechnete und dann aufgab. Mit benannten
+  Zwischenschritten übersetzt dasselbe in Sekunden.
+
 ## 0.20.0 — 2026-08-06
 
 ### Hinzugefügt

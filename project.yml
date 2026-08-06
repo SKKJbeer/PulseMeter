@@ -43,7 +43,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.pulsemeter.app
         PRODUCT_NAME: PulseMeter
-        MARKETING_VERSION: "0.20.0"
+        MARKETING_VERSION: "0.21.0"
         CURRENT_PROJECT_VERSION: "1"
         TARGETED_DEVICE_FAMILY: "1,2"
         GENERATE_INFOPLIST_FILE: NO
