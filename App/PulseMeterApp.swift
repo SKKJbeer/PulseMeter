@@ -21,6 +21,11 @@ struct PulseMeterApp: App {
         } else {
             fatalError("Der Datenspeicher ließ sich nicht anlegen.")
         }
+
+        // Vor der ersten Ansicht, nicht in einer davon: Welcher Tab beim Start
+        // sichtbar ist, darf nicht darüber entscheiden, welche Daten da sind.
+        // Ohne Startschalter tut das gar nichts.
+        LaunchFixture.apply(to: container)
     }
 
     var body: some Scene {

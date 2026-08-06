@@ -190,7 +190,7 @@ struct OverviewView: View {
                     }
                 }
                 if let cost = row.cost {
-                    CardFooterRow("Kosten seit Jahresbeginn") {
+                    CardFooterRow(costCaption(for: row)) {
                         Text(money(cost))
                             .font(.system(.subheadline, weight: .semibold))
                             .foregroundStyle(PulseColor.ink)
@@ -269,6 +269,34 @@ struct OverviewView: View {
         return result.confidence == .estimated ? period + " · enthält Schätzungen" : period
     }
 
+    /// Beschriftet den Betrag mit dem Zeitraum, den er abdeckt.
+    ///
+    /// Vorher stand dort fest „Kosten seit Jahresbeginn". Auf dem Bild vom
+    /// 6. August sah das so aus: Der Gaszähler war seit dem 1. Mai nicht
+    /// abgelesen, die Karte sagte das auch — und zwei Zeilen tiefer standen
+    /// 1.399,41 € „seit Jahresbeginn". Drei Monate, die der Betrag nicht
+    /// enthält. Es ist die wiederkehrende Fehlerklasse aus CLAUDE.md, diesmal
+    /// nicht in der Rechnung, sondern in ihrer Beschriftung: Die Zahl war
+    /// richtig, der Satz darüber nicht.
+    ///
+    /// Der Zeitraum kommt aus derselben Quelle wie die Kopfzeile der Karte,
+    /// damit beide nicht auseinanderlaufen können.
+    private func costCaption(for row: MeterRow) -> String {
+        guard let result = row.yearToDate else { return "Kosten" }
+        switch result.coverage {
+        case .none:
+            return "Kosten"
+        case .full:
+            return "Kosten seit Jahresbeginn"
+        case .startsLate(let firstDay):
+            return "Kosten seit \(shortDate(firstDay))"
+        case .endsEarly(let lastDay):
+            return "Kosten bis \(shortDate(lastDay))"
+        case .partial(let firstDay, let lastDay):
+            return "Kosten \(shortDate(firstDay)) bis \(shortDate(lastDay))"
+        }
+    }
+
     /// Ein Strich statt einer Null, wenn für den Zeitraum nichts vorliegt:
     /// Unbekannt ist nicht dasselbe wie null verbraucht.
     private func valueText(for result: ConsumptionResult?) -> String {
@@ -337,33 +365,20 @@ struct OverviewView: View {
 
     // MARK: - Daten
 
-    /// Beim Start. Setzt auf Wunsch alles zurück und legt Beispieldaten an.
+    /// Beim Start. Liest, was da ist.
     ///
-    /// Die Oberflächentests brauchen einen bekannten Ausgangszustand — sonst
-    /// hängt jeder Test davon ab, was der vorherige hinterlassen hat, und ein
-    /// grüner Lauf sagt nichts über den einzelnen Fall.
+    /// Zurückgesetzt und mit Beispielen befüllt wird nicht mehr hier, sondern
+    /// beim Start der App in ``LaunchFixture``. Der Grund steht dort: Ein Lauf,
+    /// der in einem anderen Tab beginnt, erreichte diese Stelle nie, und die
+    /// Bildschirmfotos hingen dadurch voneinander ab.
     private func start() {
-        let arguments = ProcessInfo.processInfo.arguments
-        if arguments.contains("-pulse-empty") {
-            // Der Zustand, in dem jeder neue Nutzer anfängt — und der einzige,
-            // den bis 0.16 kein Test und kein Bild je gesehen hat.
-            try? PulseRepository(context: context).deleteEverything()
-            rows = []
-            points = []
-        } else if arguments.contains("-pulse-reset") {
-            try? PulseRepository(context: context).deleteEverything()
-            rows = []
-            points = []
-            seed()
-        } else {
-            reload()
-        }
+        reload()
 
         // Öffnet den Erfassungsschirm gleich beim Start. Nur für die
         // Bildschirmfotos: Es ist der wichtigste Schirm der App und der
         // einzige, den ein automatischer Lauf sonst nie zu Gesicht bekommt —
         // `simctl` kann nicht tippen.
-        if arguments.contains("-pulse-capture") {
+        if ProcessInfo.processInfo.arguments.contains("-pulse-capture") {
             capturing = points.first
         }
     }
@@ -506,85 +521,11 @@ struct OverviewView: View {
         }
         return values
     }
-
-    /// Legt drei Zähler mit gut zwei Jahren Historie an.
-    ///
-    /// So viel Vergangenheit braucht es, damit Verlaufslinie und
-    /// Vorjahresvergleich überhaupt etwas zeigen können. Und drei Zähler statt
-    /// einem, weil der Gaszähler bewusst überfällig ist: Nur so lassen sich
-    /// der Fällig-Zustand, die Hinweiszeile und der Erfassungsfluss prüfen.
+    /// Beispieldaten auf Wunsch — aus derselben Quelle wie der Ausgangszustand
+    /// der Bildschirmfotos, damit beide dasselbe zeigen.
     private func seed() {
-        // Jahresverläufe: Strom flach mit Winterhügel, Gas stark saisonal,
-        // Wasser fast gleichmäßig.
-        // Preise nach den Größenordnungen einer deutschen Jahresrechnung 2026.
-        // Gas rechnet in kWh ab, obwohl der Zähler m³ misst — deshalb dort die
-        // Umrechnung, ohne die der Rechenkern zu Recht keinen Betrag bildet.
-        let profiles: [(name: String, kind: ResourceKind, start: Decimal,
-                        monthly: [Decimal], staleMonths: Int,
-                        price: Decimal, base: Decimal, gas: Bool,
-                        prepay: Decimal?)] = [
-            ("Strom", .electricity, 41_230,
-             [312, 286, 268, 241, 218, 205, 198, 204, 226, 258, 289, 315], 0,
-             Decimal(string: "0.34")!, Decimal(string: "12.90")!, false, 100),
-            ("Wasser", .water, 998,
-             [10.8, 9.9, 11.2, 10.6, 12.4, 13.1, 13.8, 13.2, 11.6, 10.9, 10.4, 11.1], 0,
-             Decimal(string: "2.15")!, Decimal(string: "8.40")!, false, nil),
-            ("Gas", .gas, 3_579,
-             [418, 376, 298, 178, 92, 41, 36, 39, 84, 192, 308, 402], 3,
-             Decimal(string: "0.11")!, Decimal(string: "14.50")!, true, 230)
-        ]
-
         do {
-            let repository = PulseRepository(context: context)
-            let property = try repository.ensureDefaultProperty()
-            let today = self.today
-
-            for profile in profiles {
-                // Nur Zähler mit Abschlag bekommen einen Abrechnungsrhythmus —
-                // sonst entstünden Zeiträume, gegen die es nichts zu rechnen
-                // gibt. Wasser läuft hier bewusst ohne, damit auf den Bildern
-                // beide Fälle nebeneinander stehen.
-                let point = MeteringPoint(
-                    propertyID: property.id, name: profile.name, kind: profile.kind,
-                    billingCycle: profile.prepay == nil ? nil : BillingCycle(anchorMonth: 1, anchorDay: 1)
-                )
-                try repository.save(point)
-                guard let register = point.primaryRegister else { continue }
-
-                var value = profile.start
-                for offset in stride(from: 25, through: profile.staleMonths, by: -1) {
-                    var month = today.month - offset
-                    var year = today.year
-                    while month < 1 { month += 12; year -= 1 }
-                    guard let day = CalendarDay(year: year, month: month, day: 1) else { continue }
-                    try repository.save(
-                        Reading(registerID: register.id, day: day, value: value),
-                        fractionDigits: register.fractionDigits
-                    )
-                    // Das laufende Jahr liegt sieben Prozent unter dem Vorjahr.
-                    let seasonal = profile.monthly[month - 1]
-                    value += year == today.year ? seasonal * Decimal(string: "0.93")! : seasonal
-                }
-
-                guard let yearStart = CalendarDay(year: today.year - 2, month: 1, day: 1) else { continue }
-                try repository.save(Tariff(
-                    meteringPointID: point.id,
-                    validFrom: yearStart,
-                    pricePerUnit: profile.price,
-                    monthlyBasePrice: profile.base,
-                    billingUnit: profile.gas ? .kilowattHour : profile.kind.defaultUnit,
-                    gasConversion: profile.gas ? .typical : nil
-                ))
-
-                if let prepay = profile.prepay,
-                   let running = point.currentBillingPeriod(on: today) {
-                    try repository.save(BillingPeriod(
-                        meteringPointID: point.id,
-                        range: running,
-                        monthlyPrepayment: prepay
-                    ))
-                }
-            }
+            try LaunchFixture.seedSamples(into: PulseRepository(context: context), today: today)
             reload()
         } catch {
             problem = "Die Beispieldaten ließen sich nicht anlegen: \(error.localizedDescription)"

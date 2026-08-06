@@ -661,7 +661,7 @@ select.field { cursor: pointer; }
 
 <div class="stage-head">
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.19.0</p>
+  <p>Klickbarer Entwurf · v0.21.4</p>
 </div>
 
 <div class="device">
@@ -1195,6 +1195,24 @@ function periodCaption(res) {
   }
 }
 
+/* Dieselbe Beschriftung für den Betrag.
+
+   Vorher stand in der App fest „Kosten seit Jahresbeginn". Am 6. August sah
+   das so aus: Der Gaszähler war seit dem 1. Mai nicht abgelesen, die Karte
+   sagte das in der Kopfzeile auch — und zwei Zeilen tiefer standen 1.399,41 €
+   „seit Jahresbeginn". Drei Monate, die der Betrag nicht enthält. Die Zahl war
+   richtig, der Satz darüber nicht. */
+function costCaption(res) {
+  const c = coverage(res);
+  switch (c.kind) {
+    case "none":       return "Kosten";
+    case "full":       return "Kosten seit Jahresbeginn";
+    case "startsLate": return `Kosten seit ${dateMedium(c.from)}`;
+    case "endsEarly":  return `Kosten bis ${dateMedium(c.to)}`;
+    case "partial":    return `Kosten ${dateMedium(c.from)} bis ${dateMedium(c.to)}`;
+  }
+}
+
 /* ============================================================
    Übersicht
    ============================================================ */
@@ -1209,7 +1227,7 @@ function renderStatus() {
       <b>${days === null
           ? `${m.name} wurde noch nie abgelesen.`
           : `${m.name} ist seit ${days} Tagen nicht abgelesen.`}</b>
-      Ohne aktuellen Stand ist die Prognose ungenau.</div></div>`;
+      Ohne aktuellen Stand ist die Vorschau ungenau.</div></div>`;
   } else {
     const first = activeMeters()[0];
     const reg = first ? first.registers[0] : null;
@@ -1277,11 +1295,30 @@ function renderCards() {
     const due = isDue(m);
 
     let extra = "";
+
+    // Stand und Kosten standen bisher nur in der App auf der Karte, nicht im
+    // Entwurf. Zwei Zeilen Auseinanderlauf — und genau die zwei, an denen der
+    // Beschriftungsfehler saß, den hier niemand hätte sehen können.
+    const lastR = lastReading(m);
+    if (lastR) {
+      extra += `<div class="card-extra"><span>Stand <strong>${nf(lastR.value, m.frac)} ${m.unit}</strong></span>
+        <span>${dateMedium(lastR)}</span></div>`;
+    }
+    // Einspeisung **vor** den Kosten, nicht danach: Der Betrag ist bereits
+    // netto — die Vergütung ist abgezogen. Stünde sie darunter, zöge sie jeder
+    // Leser ein zweites Mal ab. So liest sich die Karte als Rechnung von oben
+    // nach unten: Stand, Gutschrift, was am Ende zu zahlen ist.
     const second = m.registers[1];
     if (second) {
       const s = yearToDate(second);
       extra += `<div class="card-extra"><span>Einspeisung <strong>${nf(s.value, 0)} kWh</strong></span>
         <span>≈ ${moneyRound(s.value * m.feedInPrice)} vergütet</span></div>`;
+    }
+
+    const ytdCost = costYearToDate(m);
+    if (ytdCost !== null) {
+      extra += `<div class="card-extra"><span>${costCaption(ytd)}</span>
+        <strong>${money(ytdCost)}</strong></div>`;
     }
     if (m.prepay && fc) {
       const bal = balance(m, fc);
@@ -1596,6 +1633,16 @@ function costFor(m, p) {
   }
   return v + m.base * 12 / 365 * between(p.from, p.to);
 }
+/* Kosten des laufenden Jahres für die Übersichtskarte.
+   Über den Zeitraum, den die Ablesungen **abdecken**, nicht über den bis
+   heute: Sonst stünde beim Gaszähler gar kein Betrag, obwohl bis zum 1. Mai
+   alles bekannt ist. Die Beschriftung nennt den Ausschnitt dann auch. */
+function costYearToDate(m) {
+  const ytd = yearToDate(m.registers[0]);
+  if (!ytd) return null;
+  return costFor(m, { from: ytd.cfrom, to: ytd.cto });
+}
+
 function cellValue(target, p) {
   if (target === "all") {
     let sum = 0;

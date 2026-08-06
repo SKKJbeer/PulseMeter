@@ -9,6 +9,45 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.21.4 — 2026-08-06
+
+Die erste Runde, in der die zurückgeholten Screenshots wieder Fehler gefunden
+haben — beide in derselben Stunde, in der sie wieder sichtbar wurden.
+
+### Behoben
+- **„Kosten seit Jahresbeginn" stimmte nicht.** Auf der Karte des Gaszählers
+  stand am 6. August der Zeitraum „1. Januar bis 1. Mai" — richtig, denn seit
+  dem 1. Mai gab es keine Ablesung. Zwei Zeilen tiefer standen 1.399,41 €
+  „seit Jahresbeginn". Drei Monate, die der Betrag nicht enthält. Die Zahl war
+  richtig, der Satz darüber nicht; es ist die wiederkehrende Fehlerklasse aus
+  CLAUDE.md, diesmal in der Beschriftung statt in der Rechnung. Die Zeile
+  nennt jetzt denselben Ausschnitt wie die Kopfzeile der Karte.
+- **Die Bildschirmfotos hingen voneinander ab.** `-pulse-reset` wurde in
+  `OverviewView` ausgewertet, und SwiftUI baut einen Tab erst, wenn er
+  sichtbar wird. Ein Lauf, der direkt im Zähler-Schirm begann, erreichte diese
+  Stelle nie und zeigte, was der vorherige Start hinterlassen hatte — nach
+  `-pulse-empty` also „Noch kein Zähler", während die Übersicht drei Zähler
+  führte. Der Verlauf-Schirm war nur durch die Reihenfolge zufällig richtig.
+  Der Ausgangszustand entsteht jetzt in `LaunchFixture` beim Start der App.
+
+### Entschieden
+- **Ein fehlgeschlagener Ausgangszustand bricht ab, statt weiterzulaufen.**
+  Stillschweigend leer weiterzumachen sähe auf dem Bild aus wie der Kaltstart
+  — also wie ein gültiger Zustand. Genau daran wäre der Fehler wieder
+  unsichtbar. Erreichbar ist die Stelle nur über einen Startschalter, den kein
+  Nutzer setzt.
+
+### Geändert
+- Der Klick-Dummy zeigt jetzt ebenfalls Stand und Kosten auf der Karte. Beide
+  Zeilen gab es bisher nur in der App — und es waren ausgerechnet die zwei,
+  an denen der Beschriftungsfehler saß. Im Entwurf hätte ihn niemand sehen
+  können, weil es sie dort nicht gab.
+- Die Einspeisung steht im Entwurf **über** den Kosten, nicht darunter: Der
+  Betrag ist bereits netto. Darunter zöge jeder Leser die Vergütung ein
+  zweites Mal ab.
+- Der Hinweis über der Übersicht sagt im Entwurf „Vorschau" statt „Prognose",
+  wie in der App.
+
 ## 0.21.3 — 2026-08-06
 
 Keine Produktänderung — eine Prüfung, die verlorengegangen war, ist wieder da.

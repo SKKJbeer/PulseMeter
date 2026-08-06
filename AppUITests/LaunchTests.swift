@@ -316,4 +316,35 @@ final class LaunchTests: XCTestCase {
         XCTAssertFalse(notice.exists,
                        "Der Hinweis blieb stehen, obwohl der Zähler abgelesen wurde")
     }
+
+    /// Der Ausgangszustand gilt unabhängig davon, welcher Schirm zuerst
+    /// erscheint.
+    ///
+    /// Bis 0.21.3 wertete `OverviewView` die Startschalter aus, und SwiftUI
+    /// baut einen Tab erst, wenn er sichtbar wird: Ein Start direkt im
+    /// Zähler-Schirm erreichte diese Stelle nie. Übrig blieb, was der
+    /// vorherige Start hinterlassen hatte — nach einem leeren Lauf also nichts.
+    /// Aufgefallen ist es an einem Bildschirmfoto, das „Noch kein Zähler"
+    /// zeigte, während die Übersicht drei Zähler führte. Kein Test hätte das
+    /// gesehen, weil jeder von ihnen in der Übersicht beginnt.
+    func testFixtureAppliesRegardlessOfTheOpeningScreen() {
+        let empty = XCUIApplication()
+        empty.launchArguments = ["-pulse-empty"]
+        empty.launch()
+        XCTAssertTrue(empty.staticTexts["Noch kein Zähler"].waitForExistence(timeout: 15))
+        empty.terminate()
+
+        // Derselbe Simulator, direkt in den Zähler-Schirm. Ohne die Verlagerung
+        // in `LaunchFixture` stünde hier der leere Bestand des Laufs davor.
+        let app = XCUIApplication()
+        app.launchArguments = ["-pulse-reset", "-pulse-zaehler"]
+        app.launch()
+
+        XCTAssertTrue(app.staticTexts["Zähler"].waitForExistence(timeout: 15),
+                      "Der Zähler-Schirm wurde nicht geöffnet")
+        for name in ["Strom", "Wasser", "Gas"] {
+            XCTAssertTrue(app.staticTexts[name].waitForExistence(timeout: 5),
+                          "\(name) fehlt im Zähler-Schirm — der Ausgangszustand kam nicht an")
+        }
+    }
 }
