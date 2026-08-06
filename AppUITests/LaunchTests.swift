@@ -90,7 +90,16 @@ final class LaunchTests: XCTestCase {
 
         // Mit genau einer Ablesung steht noch kein Verbrauch fest, und die
         // Karte sagt warum, statt eine Null zu zeigen.
-        let needsSecond = app.staticTexts["Der Verbrauch ergibt sich aus zwei Ablesungen"]
+        //
+        // Über `CONTAINS` statt über den genauen Text: Seit 0.27.0 fasst die
+        // Karte Zeitraum, Zahl und Erläuterung für VoiceOver zu **einem**
+        // Element zusammen, damit sie als ein Satz vorgelesen werden. Der
+        // Einzeltext existiert dann nicht mehr als eigenes Element. Geprüft
+        // wird die Aussage, nicht die Bauform — sonst hält der Test wieder
+        // eine Struktur fest statt einer Zusage.
+        let needsSecond = app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS 'ergibt sich aus zwei Ablesungen'")
+        ).firstMatch
         XCTAssertTrue(needsSecond.waitForExistence(timeout: 5),
                       "Nach der ersten Ablesung muss die Karte den zweiten Schritt nennen")
     }
@@ -424,5 +433,37 @@ final class LaunchTests: XCTestCase {
         ).firstMatch
         XCTAssertTrue(credit.exists,
                       "Mit hinterlegter Vergütung muss ein Betrag dabeistehen")
+    }
+
+    /// Wie lange es vom Start bis zur ersten lesbaren Zahl dauert.
+    ///
+    /// **Was diese Messung nicht kann.** In `00-produktstrategie.md` steht
+    /// „Kaltstart bis interaktiv unter 800 ms" — auf einem Gerät. Hier läuft
+    /// ein Simulator auf einem geteilten Läufer; die Zahl schwankt um ein
+    /// Vielfaches und taugt nicht, um eine Gerätezusage zu prüfen. Wer sie
+    /// dafür hielte, hätte eine grüne Prüfung und keine Gewissheit.
+    ///
+    /// Wofür sie taugt: Sie schreibt die Zeit ins Protokoll, sodass ein
+    /// Verlauf entsteht, und sie schlägt an, wenn der Start *hängt* statt
+    /// langsam zu sein. Die Grenze ist deshalb bewusst weit — sie fängt einen
+    /// Zusammenbruch, keine Verschlechterung um Millisekunden.
+    ///
+    /// Die eigentliche Messung gehört auf ein Gerät und ist offen.
+    func testLaunchReachesTheFirstFigureQuickly() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-pulse-reset"]
+
+        let started = Date()
+        app.launch()
+        let card = app.staticTexts["Strom"]
+        XCTAssertTrue(card.waitForExistence(timeout: 20),
+                      "Die Übersicht kam nicht hoch")
+        let elapsed = Date().timeIntervalSince(started)
+
+        // Landet im Protokoll und damit im Artefakt — daraus wird ein Verlauf.
+        print("STARTZEIT bis zur ersten Zahl: \(String(format: "%.2f", elapsed)) s")
+
+        XCTAssertLessThan(elapsed, 15,
+                          "Der Start hängt. Gemessen: \(elapsed) s")
     }
 }

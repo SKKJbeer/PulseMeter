@@ -9,6 +9,43 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.27.0 — 2026-08-06
+
+**Barrierefreiheit und Startzeit** — der erste Schritt an einer Zusage, die in
+`00-produktstrategie.md` als „nicht verhandelbar" steht und bis heute nie
+geprüft wurde.
+
+### Geändert
+- **Die Übersichtskarte liest sich als ein Satz.** Zeitraum, Zahl, Einheit und
+  Erläuterung waren vier eigene Elemente; VoiceOver las vier Fetzen vor —
+  „1. Januar bis 1. Mai", „ungefähr", „1.181", „m³" —, und der Zusammenhang,
+  auf den es hier ankommt, ging genau dabei verloren.
+- **Jede Fußzeile ebenfalls.** „Kosten bis 1. Mai" und „1.399,41 €" gehören
+  zusammen. Getrennt gelesen stünde der Betrag ohne seinen Zeitraum da — das
+  ist die wiederkehrende Fehlerklasse dieses Projekts, nur mit den Ohren statt
+  mit den Augen.
+
+### Hinzugefügt
+- **Zwei Bilder bei der größten Schriftgröße**, die iOS anbietet. „Dynamic Type
+  bis zur größten Stufe" stand als Zusage da, ohne dass je jemand hingesehen
+  hätte. Ein Bild kostet zwei Sekunden und zeigt sofort, was abgeschnitten
+  wird. Der Simulator wird danach zurückgestellt, damit nicht alle künftigen
+  Bilder verfälscht sind.
+- **Eine Messung der Startzeit** bis zur ersten lesbaren Zahl, die ins
+  Protokoll geht.
+
+### Ehrlich gesagt
+- **Die Startzeit-Messung prüft die 800-ms-Zusage nicht.** Die gilt für ein
+  Gerät; hier läuft ein Simulator auf einem geteilten Läufer, und die Zahl
+  schwankt um ein Vielfaches. Wer sie dafür hielte, hätte eine grüne Prüfung
+  und keine Gewissheit. Sie taugt für einen Verlauf und dafür, einen
+  *hängenden* Start zu fangen — die Grenze ist deshalb bewusst weit gesetzt.
+  Die eigentliche Messung gehört auf ein Gerät und bleibt offen.
+- Ein Oberflächentest prüfte den Kartentext über den **genauen** Wortlaut und
+  wäre am Zusammenfassen zerbrochen. Er prüft jetzt über `CONTAINS` — die
+  Aussage statt der Bauform. Vorher bemerkt statt vom Lauf gemeldet; dieselbe
+  Lehre wie bei „Kosten seit Jahresbeginn" in 0.21.5.
+
 ## 0.26.2 — 2026-08-06
 
 ### Behoben
