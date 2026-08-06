@@ -9,6 +9,26 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.21.2 — 2026-08-06
+
+### Behoben
+- **Die Erinnerungen ließen sich immer noch nicht übersetzen — und meine
+  Diagnose in 0.21.1 war falsch.** Nicht die Rückgabewerte waren das Problem,
+  sondern das `@MainActor` am Typ `Reminders`. Es ordnet `center` dem
+  Hauptakteur zu, und weil die Methoden von `UNUserNotificationCenter` nicht
+  isoliert sind, wird **jeder** Aufruf zum Grenzübertritt — auch der, bei dem
+  nur der Empfänger hinübergereicht wird (`sending 'self.center' risks causing
+  data races`). Die Rückrufe aus 0.21.1 haben ein Symptom kuriert.
+
+### Entschieden
+- **Ein Typ, der nur eine threadsichere Systemschnittstelle umhüllt, bekommt
+  keine Isolation.** `UNUserNotificationCenter` ist selbst threadsicher;
+  `@MainActor` darüberzulegen macht die Sache nicht sicherer, sondern nur
+  unübersetzbar. `Reminders` reicht jetzt ausschließlich `Sendable`-Werte
+  heraus — Status als Aufzählung, Anzahl als Zahl —, und die Oberfläche wartet
+  vom Hauptakteur aus darauf. Die Begründung steht im Kopf der Datei, damit
+  der dritte Anlauf nicht nötig wird.
+
 ## 0.21.1 — 2026-08-06
 
 ### Behoben

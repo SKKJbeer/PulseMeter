@@ -8,9 +8,17 @@ import PulseCore
 /// dem Gerät. Das passt zu ADR-002 — was die App kann, soll sie ohne fremde
 /// Hilfe können.
 ///
-/// Am Hauptakteur, weil die Planung aus der Oberfläche angestoßen wird und die
-/// Ergebnisse dorthin zurückfließen.
-@MainActor
+/// **Bewusst nicht am Hauptakteur.** Zwei Läufe sind daran gescheitert:
+/// `UNUserNotificationCenter` ist selbst threadsicher, und seine Methoden sind
+/// nicht isoliert. Steht `@MainActor` am Typ, wird `center` dem Hauptakteur
+/// zugeordnet, und **jeder** Aufruf einer Systemmethode ist dann ein
+/// Grenzübertritt, den Swift 6 zu Recht verweigert — beim Rückgabewert wie
+/// beim Empfänger selbst.
+///
+/// Die Regel, die daraus folgt: Ein Typ, der nur eine threadsichere
+/// Systemschnittstelle umhüllt, bekommt keine Isolation. Er reicht nur
+/// `Sendable`-Werte heraus, und die Oberfläche wartet vom Hauptakteur aus
+/// darauf.
 enum Reminders {
 
     /// Um wie viel Uhr erinnert wird.
@@ -20,16 +28,15 @@ enum Reminders {
     /// sieben Uhr früh wird weggewischt und nie nachgeholt.
     static let hour = 18
 
-    static var center: UNUserNotificationCenter { .current() }
-
     /// Fragt nach Erlaubnis — und zwar erst, wenn der Nutzer weiß, wofür.
     ///
     /// Nicht beim ersten Start: Eine Systemfrage, bevor irgendetwas erklärt
     /// wurde, wird verneint, und ein zweites Mal fragt iOS nicht. Deshalb
-    /// hängt sie hier am Schalter, den jemand bewusst umlegt.
+    /// hängt sie am Schalter, den jemand bewusst umlegt.
     static func requestPermission() async -> Bool {
         do {
-            return try await center.requestAuthorization(options: [.alert, .sound, .badge])
+            return try await UNUserNotificationCenter.current()
+                .requestAuthorization(options: [.alert, .sound, .badge])
         } catch {
             return false
         }
@@ -37,13 +44,11 @@ enum Reminders {
 
     /// Über den Rückruf statt über `await notificationSettings()`.
     ///
-    /// `UNNotificationSettings` ist nicht `Sendable` und darf unter Swift 6
-    /// die Isolationsgrenze nicht überqueren — `await` vom Hauptakteur aus
-    /// übersetzt deshalb nicht. Im Rückruf wird nur der Status herausgezogen,
-    /// und der ist eine Aufzählung und damit unbedenklich.
+    /// `UNNotificationSettings` ist nicht `Sendable`. Im Rückruf wird nur der
+    /// Status herausgezogen — eine Aufzählung und damit unbedenklich.
     static func authorizationStatus() async -> UNAuthorizationStatus {
         await withCheckedContinuation { continuation in
-            center.getNotificationSettings { settings in
+            UNUserNotificationCenter.current().getNotificationSettings { settings in
                 continuation.resume(returning: settings.authorizationStatus)
             }
         }
@@ -58,6 +63,7 @@ enum Reminders {
     static func reschedule(meteringPoints: [MeteringPoint],
                            readings: [MeteringPoint.ID: [Reading]],
                            today: CalendarDay) async {
+        let center = UNUserNotificationCenter.current()
         center.removeAllPendingNotificationRequests()
 
         guard await authorizationStatus() == .authorized else { return }
@@ -86,16 +92,17 @@ enum Reminders {
     }
 
     static func cancelAll() {
-        center.removeAllPendingNotificationRequests()
+        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
     }
 
     /// Wie viele Mitteilungen tatsächlich in der Warteschlange stehen.
-    /// Für die Anzeige — und damit ein Oberflächentest es prüfen kann.
+    /// Für die Anzeige — und damit sich überhaupt prüfen lässt, dass geplant
+    /// wurde.
     static func pendingCount() async -> Int {
-        // Dieselbe Regel wie oben: `[UNNotificationRequest]` bleibt drüben,
-        // herüber kommt nur die Anzahl.
+        // Dieselbe Regel wie beim Status: `[UNNotificationRequest]` bleibt
+        // drüben, herüber kommt nur die Anzahl.
         await withCheckedContinuation { continuation in
-            center.getPendingNotificationRequests { requests in
+            UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
                 continuation.resume(returning: requests.count)
             }
         }
