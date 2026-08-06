@@ -25,6 +25,28 @@ permissions:
   contents: write
 
 jobs:
+  # Eigener Auftrag auf Linux: Der Entwurf braucht keinen macOS-Läufer, und
+  # die sind knapp. So läuft diese Prüfung auch dann, wenn der App-Build
+  # stundenlang in der Warteschlange hängt — und sie läuft in einer Minute.
+  #
+  # Es gab sie bisher nicht, und das hat gekostet: Ein frisch angelegter
+  # Zähler ließ sich im Entwurf nicht ablesen. Gefunden hat es der Gründer
+  # beim Ausprobieren.
+  prototype:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Chromium
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+      - name: Klick-Dummy prüfen
+        run: node scripts/check-prototype.mjs
+
   build-and-test:
     runs-on: macos-15
     timeout-minutes: 45

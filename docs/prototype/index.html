@@ -667,7 +667,7 @@ select.field { cursor: pointer; }
 
 <div class="stage-head">
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.26.0</p>
+  <p>Klickbarer Entwurf · v0.26.1</p>
 </div>
 
 <div class="device">
@@ -2434,8 +2434,21 @@ function judge() {
   const check = '<svg class="mark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4 10-10"/></svg>';
   const bang = '<svg class="mark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 7v7"/><path d="M12 17.5v.01"/></svg>';
 
+  // **Ohne Vorgänger gibt es nichts zu prüfen.** Diese Abfrage fehlte, und
+  // damit lief `last.value` bei einem frisch angelegten Zähler ins Leere: Die
+  // Prüfung stürzte still ab, „Sichern" blieb gesperrt, und der erste
+  // Zählerstand ließ sich nicht eintragen — der allererste Schritt eines neuen
+  // Nutzers. Gefunden hat das der Gründer beim Ausprobieren, nicht ich beim
+  // Testen: Jeder Zähler im Entwurf hatte zwei Jahre Historie, den Fall
+  // „noch nie abgelesen" gab es in der Erfassung schlicht nicht.
+  if (!last) {
+    el.className = "verdict";
+    el.innerHTML = `${check}<div>Erste Ablesung — es gibt noch nichts zu vergleichen.</div>`;
+    save.disabled = false;
+    return;
+  }
+
   if (v < last.value) {
-    el.className = "verdict warn";
     // Die Frage bekommt eine Antwortmöglichkeit. Bis 0.24.0 stand sie hier —
     // wie in der App bis 0.23.0 — und ließ sich nur mit „Ziffer verirrt"
     // beantworten, nämlich durch Korrigieren. Eine Frage ohne Antwort ist eine
@@ -2642,6 +2655,15 @@ function saveMeter() {
     if (!editMeter.registers[0].readings.length) {
       editMeter.kind = kind.id; editMeter.unit = kind.unit;
       editMeter.frac = kind.frac; editMeter.color = kind.color;
+      // Auch hier: Was am Zähler geändert wird, muss am Zählwerk ankommen.
+      // Sonst zeigt der Ziffernblock die Stellen der alten Art.
+      for (const r of editMeter.registers) {
+        if (!r.readings.length) { r.unit = kind.unit; r.frac = kind.frac; }
+        if (r.int === undefined) r.int = 6;
+        if (r.frac === undefined) r.frac = kind.frac;
+        if (r.unit === undefined) r.unit = kind.unit;
+        if (r.id === undefined) r.id = "r" + Date.now() + Math.random().toString(36).slice(2, 6);
+      }
     }
   } else {
     METERS.push({
@@ -2649,7 +2671,19 @@ function saveMeter() {
       frac: kind.frac, int: 6, color: kind.color, serial: "—",
       interval: interval || 3650, price, base, prepay,
       zZahl: zZahl || undefined, brennwert: brennwert || undefined,
-      registers: [{ label: "", readings: [] }]
+      // **Vollständig, nicht halb.** Hier stand `{ label: "", readings: [] }` —
+      // ein Zählwerk ohne Einheit, ohne Stellen, ohne Kennung. Solange der
+      // Ziffernblock diese Werte beim *Zähler* holte, fiel das nicht auf. Seit
+      // 0.26.0 holt er sie beim *Zählwerk*, und dann war `int + frac`
+      // undefiniert: Die Eingabe nahm keine Ziffer mehr an, und ein frisch
+      // angelegter Zähler ließ sich nicht ablesen — der erste Schritt, den ein
+      // neuer Nutzer überhaupt macht.
+      //
+      // Die Lehre steckt nicht im Tippfehler, sondern im halb gefüllten
+      // Gebilde: Ein Zählwerk, dem Felder fehlen, die jedes andere hat, ist
+      // eine Falle, die auf ihre Gelegenheit wartet.
+      registers: [{ id: "r" + Date.now(), label: null, unit: kind.unit,
+                    int: 6, frac: kind.frac, readings: [] }]
     });
   }
   closeSheets();

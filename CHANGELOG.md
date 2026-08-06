@@ -9,6 +9,46 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.26.1 — 2026-08-06
+
+**Ein frisch angelegter Zähler ließ sich nicht ablesen.** Gemeldet vom
+Gründer beim Ausprobieren — nicht von mir beim Testen. Der erste Schritt, den
+ein neuer Nutzer überhaupt macht, und er führte ins Leere.
+
+Es waren zwei Fehler übereinander:
+
+### Behoben
+- **`judge()` griff auf `last.value` zu, ohne zu prüfen, ob es eine vorherige
+  Ablesung gibt.** Bei einem neuen Zähler stürzte die Plausibilitätsprüfung
+  still ab, und „Sichern" blieb gesperrt. Der ältere der beiden Fehler, und
+  der, den der Gründer gesehen hat.
+- **Der Editor legte ein halbes Zählwerk an** — `{ label: "", readings: [] }`,
+  ohne Einheit, ohne Stellen, ohne Kennung. Solange der Ziffernblock diese
+  Werte beim *Zähler* holte, fiel das nicht auf; seit 0.26.0 holt er sie beim
+  *Zählwerk*, und dann nahm die Eingabe keine Ziffer mehr an. Dieser Fehler
+  ist meiner, aus der Runde davor.
+
+  Die Lehre steckt nicht im Tippfehler, sondern im halb gefüllten Gebilde: Ein
+  Zählwerk, dem Felder fehlen, die jedes andere hat, ist eine Falle, die auf
+  ihre Gelegenheit wartet. Beim Ändern der Zählerart ziehen die Felder jetzt
+  ebenfalls mit.
+
+### Hinzugefügt
+- **`scripts/check-prototype.mjs` und ein eigener CI-Auftrag auf Linux.** Der
+  Entwurf ist der produktivste Fehlerfinder dieses Projekts und wurde bisher
+  nur geprüft, wenn ich daran dachte. Vierzehn Prüfungen je Erscheinungsbild,
+  darunter genau dieser Weg: Zähler anlegen, ersten Stand eintippen, sichern.
+- Der Auftrag läuft auf `ubuntu-latest` und braucht keinen macOS-Läufer. Er
+  ist in einer Minute durch, auch wenn der App-Build stundenlang in der
+  Warteschlange hängt — was heute mehrfach der Fall war.
+
+### Warum es niemandem auffiel
+Jeder Zähler im Entwurf hatte zwei Jahre Historie. Den Fall „noch nie
+abgelesen" gab es in der Erfassung schlicht nicht — dieselbe Ursache wie bei
+dem Absturz in `lastReading`, der vor ein paar Fassungen an derselben Stelle
+saß. Ein Ausgangszustand, der nur den eingeschwungenen Fall zeigt, versteckt
+den Anfang.
+
 ## 0.26.0 — 2026-08-06
 
 **Der Entwurf erfasst beide Zählwerke.** Die zweistufige Erfassung gibt es in
