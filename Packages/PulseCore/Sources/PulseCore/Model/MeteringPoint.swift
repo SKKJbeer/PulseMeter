@@ -193,6 +193,21 @@ public struct MeteringPoint: Identifiable, Hashable, Codable, Sendable {
         billingCycle?.runningPeriod(on: day)
     }
 
+    /// Der **ganze** Abrechnungszeitraum, in den dieser Tag fällt — vom
+    /// Stichtag bis zum nächsten.
+    ///
+    /// Nicht zu verwechseln mit ``runningBillingPeriod(on:)``, das am
+    /// angegebenen Tag abschneidet. Beides wird gebraucht, und die Verwechslung
+    /// ist teuer: Ein Abschlag über den *verstrichenen* Teil, verglichen mit
+    /// den hochgerechneten Kosten des *ganzen* Jahres, ergibt eine Nachzahlung,
+    /// die es nicht gibt. Genau das stand nach 0.19.0 auf der Karte —
+    /// „Abschlag 1.146,74 € im Jahr" bei 160 € im Monat, also sieben Zwölftel
+    /// davon. Es ist die wiederkehrende Fehlerklasse aus CLAUDE.md in neuem
+    /// Gewand: Eine Aussage über einen Zeitraum, den die Zahl nicht abdeckt.
+    public func currentBillingPeriod(on day: CalendarDay) -> DayRange? {
+        billingCycle?.period(containing: day)
+    }
+
     /// Der zuletzt abgeschlossene Abrechnungszeitraum — der Zeitraum, zu dem
     /// die Jahresabrechnung des Versorgers vorliegt und den ein Bericht prüfen soll.
     public func lastCompletedBillingPeriod(before day: CalendarDay) -> DayRange? {

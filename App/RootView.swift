@@ -456,7 +456,7 @@ struct OverviewView: View {
     private func outlook(point: MeteringPoint, readings: [Reading],
                          tariffs: [Tariff], periods: [BillingPeriod])
     -> ForecastEngine.PrepaymentOutlook? {
-        guard let running = point.runningBillingPeriod(on: today),
+        guard let running = point.currentBillingPeriod(on: today),
               let period = periods.first(where: { $0.range == running })
         else { return nil }
         return try? ForecastEngine.prepaymentOutlook(
@@ -510,7 +510,7 @@ struct OverviewView: View {
              Decimal(string: "2.15")!, Decimal(string: "8.40")!, false, nil),
             ("Gas", .gas, 3_579,
              [418, 376, 298, 178, 92, 41, 36, 39, 84, 192, 308, 402], 3,
-             Decimal(string: "0.11")!, Decimal(string: "14.50")!, true, 160)
+             Decimal(string: "0.11")!, Decimal(string: "14.50")!, true, 230)
         ]
 
         do {
@@ -556,7 +556,7 @@ struct OverviewView: View {
                 ))
 
                 if let prepay = profile.prepay,
-                   let running = point.runningBillingPeriod(on: today) {
+                   let running = point.currentBillingPeriod(on: today) {
                     try repository.save(BillingPeriod(
                         meteringPointID: point.id,
                         range: running,

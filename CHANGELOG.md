@@ -9,6 +9,40 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.19.1 — 2026-08-06
+
+### Behoben
+- **Der Abschlag auf der Karte war zu klein.** Bei 160 € im Monat stand dort
+  „Abschlag 1.146,74 € im Jahr" — sieben Zwölftel. Ich hatte
+  `runningBillingPeriod` verwendet, das den Zeitraum **am heutigen Tag
+  abschneidet**, wo der ganze Abrechnungszeitraum gemeint war. Die Folge war
+  nicht nur eine falsche Beschriftung: Hochgerechnete Jahreskosten wurden
+  gegen sieben Monate Abschlag gestellt, und aus einem Guthaben wurde eine
+  Nachzahlung. Es ist die wiederkehrende Fehlerklasse aus CLAUDE.md in neuem
+  Gewand — eine Aussage über einen Zeitraum, den die Zahl nicht abdeckt.
+  `MeteringPoint.currentBillingPeriod(on:)` liefert jetzt den ganzen Zeitraum,
+  und der Unterschied zu `runningBillingPeriod` ist in beiden Dokumentationen
+  benannt.
+- **Ein volles Jahr ergab 12,03 Monate.** `lengthInMonths` zählte über
+  `dayCount` und damit beide Grenztage. Ein Abrechnungszeitraum ist aber
+  halboffen — der nächste Stichtag gehört zum Folgejahr, so wie
+  `BillingCycle.period(containing:)` ihn auch liefert. Aus zwölf Abschlägen zu
+  160 € wurden dadurch 1.925,26 € statt 1.920 €. Auf einer Karte, die Geld
+  anzeigt, ist das der Unterschied zwischen „stimmt" und „stimmt fast".
+
+### Geändert
+- Die Testvorrichtung für Abrechnungsjahre lief bisher vom 1. Januar bis zum
+  **31. Dezember** und damit über 364 Tage. Jetzt bis zum 1. Januar, wie jede
+  Verbrauchsrechnung im Projekt einen Zeitraum versteht. Neun Erwartungswerte
+  haben sich dadurch um einen Tag verschoben; alle neun sind nachgerechnet:
+  365 Tage × 10 kWh = 3.650, davon 30 % = 1.095 €, gegen 1.200 € Abschlag
+  ergibt 105 € Guthaben.
+- Der Gas-Abschlag in den Beispieldaten steht auf 230 € statt 160 € — bei
+  diesem Verbrauch war der alte Wert unrealistisch niedrig und erzeugte eine
+  Nachzahlung, die nur aus der Vorrichtung stammte.
+
+Zwei neue Prüfungen halten die Unterscheidung fest, damit sie nicht wiederkommt.
+
 ## 0.19.0 — 2026-08-06
 
 Der Abschlag — und damit die Frage, für die Verbrauchszahlen überhaupt

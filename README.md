@@ -19,7 +19,7 @@ Lizenz. Alles Weitere richtet das Skript ein.
 
 ## Status
 
-Version **0.19.0**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
+Version **0.19.1**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
 rechnet echt. Übersicht und Erfassung laufen als SwiftUI-App im Simulator und
 werden auf jedem Lauf fotografiert; Verlauf und Zähler sind noch Platzhalter.
 Siehe [CHANGELOG.md](CHANGELOG.md).

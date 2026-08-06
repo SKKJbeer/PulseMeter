@@ -59,6 +59,35 @@ final class BillingCycleTests: XCTestCase {
         XCTAssertEqual(running?.spanInDays, 307)
     }
 
+    /// Der laufende und der ganze Zeitraum sind zwei verschiedene Dinge, und
+    /// ihre Verwechslung kostet Geld.
+    ///
+    /// Nach 0.19.0 stand auf der Übersichtskarte „Abschlag 1.146,74 € im Jahr"
+    /// bei 160 € im Monat — sieben Zwölftel, weil der *verstrichene* Teil
+    /// genommen wurde. Verglichen mit den hochgerechneten Kosten des *ganzen*
+    /// Jahres ergab das eine Nachzahlung, die es nicht gibt.
+    func testCurrentPeriodCoversTheWholeYearWhileRunningPeriodStopsToday() {
+        let today = day(2026, 8, 4)
+
+        let running = gas.runningPeriod(on: today)
+        XCTAssertEqual(running?.end, today, "Der laufende Teil endet heute")
+
+        let whole = gas.period(containing: today)
+        XCTAssertEqual(whole.start, day(2025, 10, 1))
+        XCTAssertEqual(whole.end, day(2026, 10, 1), "Der ganze Zeitraum reicht bis zum nächsten Stichtag")
+        XCTAssertEqual(whole.spanInDays, 365)
+    }
+
+    /// Ein Abschlag über den ganzen Zeitraum ist die Zahl, die auf der
+    /// Jahresrechnung steht — zwölf Monatsraten, nicht sieben.
+    func testTotalPrepaymentOverAFullYearIsTwelveMonthlyRates() {
+        let whole = gas.period(containing: day(2026, 8, 4))
+        let period = BillingPeriod(meteringPointID: UUID(), range: whole, monthlyPrepayment: 160)
+
+        assertClose(period.totalPrepayment?.amount ?? 0, 1920, accuracy: 1,
+                    "Zwölf Raten zu 160 €")
+    }
+
     func testRunningPeriodIsEmptyOnTheAnchorItself() {
         XCTAssertNil(gas.runningPeriod(on: day(2026, 10, 1)),
                      "Am Stichtag ist noch kein Tag des neuen Zeitraums vergangen")

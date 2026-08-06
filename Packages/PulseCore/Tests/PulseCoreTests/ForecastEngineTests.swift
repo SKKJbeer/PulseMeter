@@ -3,7 +3,10 @@ import XCTest
 
 final class ForecastEngineTests: XCTestCase {
 
-    private let year2026 = span(day(2026, 1, 1), day(2026, 12, 31))
+    // Halboffen bis zum 1. Januar des Folgejahres — so, wie `BillingCycle`
+    // einen Abrechnungszeitraum liefert und wie jede Verbrauchsrechnung im
+    // Projekt einen Zeitraum versteht.
+    private let year2026 = span(day(2026, 1, 1), day(2027, 1, 1))
 
     func testLinearProjectionWithoutHistory() {
         let register = Fixture.electricityRegister()
@@ -19,8 +22,8 @@ final class ForecastEngineTests: XCTestCase {
 
         XCTAssertEqual(forecast?.method, .linear)
         XCTAssertEqual(forecast?.daysElapsed, 90)
-        XCTAssertEqual(forecast?.daysRemaining, 274)
-        assertClose(forecast?.projected.value ?? 0, 3640)
+        XCTAssertEqual(forecast?.daysRemaining, 275)
+        assertClose(forecast?.projected.value ?? 0, 3650)   // 365 Tage × 10 kWh
         XCTAssertEqual(forecast?.confidence, .estimated, "Eine Hochrechnung ist nie gemessen")
     }
 
@@ -68,8 +71,8 @@ final class ForecastEngineTests: XCTestCase {
                                           period: year2026, today: day(2026, 4, 1))
 
         XCTAssertEqual(old?.daysElapsed, 59)
-        XCTAssertEqual(old?.daysRemaining, 305, "Die 31 Tage seit der letzten Ablesung zählen zur Restzeit")
-        assertClose(old?.projected.value ?? 0, 3640)
+        XCTAssertEqual(old?.daysRemaining, 306, "Die 31 Tage seit der letzten Ablesung zählen zur Restzeit")
+        assertClose(old?.projected.value ?? 0, 3650)   // 365 Tage × 10 kWh
         XCTAssertEqual(approx(old?.projected.value ?? 0), approx(fresh?.projected.value ?? 0),
                        accuracy: 0.01, "Gleicher Tagesverbrauch, gleiche Prognose")
     }
@@ -78,7 +81,10 @@ final class ForecastEngineTests: XCTestCase {
         let register = Fixture.electricityRegister()
         let readings = [
             Fixture.reading(register, day(2026, 1, 1), 0),
-            Fixture.reading(register, day(2026, 12, 31), 3000)
+            // Auf der Grenze, nicht einen Tag davor: Die Jahresablesung
+            // gehört auf den Stichtag, sonst bleibt ein Tag ungedeckt und die
+            // Reihe rechnet ihn zu Recht hoch.
+            Fixture.reading(register, day(2027, 1, 1), 3000)
         ]
 
         let forecast = ForecastEngine.forecast(
@@ -117,10 +123,10 @@ final class ForecastEngineTests: XCTestCase {
         )
 
         XCTAssertNotNil(outlook)
-        // Hochrechnung 3640 kWh × 0,30 € = 1092 €, Abschläge 12 × 100 € = 1200 €
+        // Hochrechnung 3650 kWh × 0,30 € = 1095 €, Abschläge 12 × 100 € = 1200 €
         assertClose(outlook?.totalPrepayment.amount ?? 0, 1200, accuracy: 0.01)
-        assertClose(outlook?.projectedCost.amount ?? 0, 1092, accuracy: 0.01)
-        assertClose(outlook?.balance.amount ?? 0, 108, accuracy: 0.01)
+        assertClose(outlook?.projectedCost.amount ?? 0, 1095, accuracy: 0.01)
+        assertClose(outlook?.balance.amount ?? 0, 105, accuracy: 0.01)
         XCTAssertEqual(outlook?.expectsRefund, true)
     }
 
@@ -142,7 +148,7 @@ final class ForecastEngineTests: XCTestCase {
         )
 
         XCTAssertEqual(outlook?.expectsRefund, false)
-        assertClose(outlook?.balance.amount ?? 0, -984, accuracy: 0.01)
+        assertClose(outlook?.balance.amount ?? 0, -990, accuracy: 0.01)   // 2 × 3650 × 0,30 = 2190
     }
 
     func testNoOutlookWithoutPrepayment() throws {
@@ -165,7 +171,7 @@ final class ForecastEngineTests: XCTestCase {
 
         let half = BillingPeriod(
             meteringPointID: point.id,
-            range: span(day(2026, 1, 1), day(2026, 6, 30))
+            range: span(day(2026, 1, 1), day(2026, 7, 1))
         )
         assertClose(half.lengthInMonths, 5.95, accuracy: 0.05)
     }

@@ -199,9 +199,17 @@ public struct BillingPeriod: Identifiable, Hashable, Codable, Sendable {
     /// Länge des Zeitraums in Monaten, tagesgenau anteilig.
     ///
     /// Bewusst nicht „Anzahl angefangener Monate": Ein Zeitraum vom 15.01. bis
-    /// 14.01. umfasst zwölf Monate, nicht dreizehn.
+    /// 15.01. umfasst zwölf Monate, nicht dreizehn.
+    ///
+    /// Über ``DayRange/spanInDays`` und nicht über ``DayRange/dayCount``:
+    /// Ein Abrechnungszeitraum ist halboffen — der nächste Stichtag gehört
+    /// schon zum Folgezeitraum, so wie ``BillingCycle/period(containing:)``
+    /// ihn auch liefert. Mit `dayCount` ergab ein volles Jahr 12,03 Monate,
+    /// und aus zwölf Abschlägen zu 160 € wurden 1.925,26 € statt 1.920 €.
+    /// Auf einer Karte, die Geld anzeigt, ist das der Unterschied zwischen
+    /// „stimmt" und „stimmt fast".
     public var lengthInMonths: Decimal {
-        let days = Decimal(range.dayCount)
+        let days = Decimal(range.spanInDays)
         let daysPerMonth = Decimal(CalendarDay.daysInYear(range.start.year)) / 12
         return days / daysPerMonth
     }

@@ -502,7 +502,7 @@ struct MeterEditor: View {
     private func fillBilling(_ existing: MeteringPoint) {
         billingMonth = existing.billingCycle?.anchorMonth ?? 1
         let today = CalendarDay.containing(Date(), in: .current)
-        guard let running = existing.runningBillingPeriod(on: today),
+        guard let running = existing.currentBillingPeriod(on: today),
               let periods = try? PulseRepository(context: context).billingPeriods(for: existing.id)
         else { return }
         let period = periods.first { $0.range == running }
@@ -520,7 +520,7 @@ struct MeterEditor: View {
     private func saveBilling(for point: MeteringPoint, in repository: PulseRepository) throws {
         guard let amount = decimalValue(prepayment), amount > 0 else { return }
         let today = CalendarDay.containing(Date(), in: .current)
-        guard let running = point.runningBillingPeriod(on: today) else { return }
+        guard let running = point.currentBillingPeriod(on: today) else { return }
 
         try repository.save(BillingPeriod(
             id: existingPeriod?.id ?? UUID(),
