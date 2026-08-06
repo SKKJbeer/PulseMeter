@@ -23,7 +23,18 @@ struct HistoryView: View {
     @State private var readings: [Reading] = []
     @State private var showingReadings = false
     @State private var mode: Mode = .chart
+    @State private var metric: Metric = .quantity
+    @State private var tariffs: [Tariff] = []
+    /// Kosten je Abschnitt, nach ``PeriodEngine/Bucket/id``.
+    @State private var costs: [String: Money] = [:]
     @State private var problem: String?
+
+    /// Menge oder Geld.
+    ///
+    /// Nur in der Tabelle, nicht im Diagramm: Ein Balken, der mal kWh und mal
+    /// Euro bedeutet, sieht in beiden Fällen gleich aus — die Verwechslung
+    /// wäre eingebaut. In einer Tabelle steht die Einheit in der Kopfzeile.
+    enum Metric: Hashable { case quantity, cost }
 
     /// Diagramm oder alle Zahlen.
     ///
@@ -58,6 +69,7 @@ struct HistoryView: View {
                                 comparisonCard(comparison)
                             }
                         } else {
+                            if !tariffs.isEmpty { metricPicker }
                             tableCard
                         }
                         if !buckets.isEmpty { exportRow }
@@ -175,13 +187,21 @@ struct HistoryView: View {
         .pickerStyle(.segmented)
     }
 
+    private var metricPicker: some View {
+        Picker("Einheit", selection: $metric) {
+            Text("Menge").tag(Metric.quantity)
+            Text("Kosten").tag(Metric.cost)
+        }
+        .pickerStyle(.segmented)
+    }
+
     private var tableCard: some View {
         PulseCard {
             VStack(spacing: 0) {
                 HStack {
                     Text("Zeitraum")
                         .frame(maxWidth: .infinity, alignment: .leading)
-                    Text("Verbrauch")
+                    Text(metric == .cost ? "Kosten" : "Verbrauch")
                         .frame(width: 108, alignment: .trailing)
                 }
                 .font(PulseText.sectionLabel)
@@ -209,7 +229,7 @@ struct HistoryView: View {
                             }
                         }
                         Spacer(minLength: 8)
-                        Text(bucket.hasData ? number(bucket.value, digits: 0) : "—")
+                        Text(cellText(for: bucket))
                             .font(PulseText.detail)
                             .foregroundStyle(bucket.hasData ? PulseColor.ink : PulseColor.inkTertiary)
                             .frame(width: 108, alignment: .trailing)
@@ -224,7 +244,7 @@ struct HistoryView: View {
                         .font(.system(.subheadline, weight: .semibold))
                         .foregroundStyle(PulseColor.ink)
                     Spacer(minLength: 8)
-                    Text("\(number(total, digits: 0)) \(unit)")
+                    Text(totalText)
                         .font(.system(.subheadline, weight: .bold))
                         .foregroundStyle(PulseColor.ink)
                 }
@@ -410,7 +430,9 @@ struct HistoryView: View {
             return
         }
         do {
-            readings = try PulseRepository(context: context).readings(for: register.id)
+            let repository = PulseRepository(context: context)
+            readings = try repository.readings(for: register.id)
+            tariffs = try repository.tariffs(for: meter?.id ?? UUID())
             if granularity == .year {
                 // Ein Jahr hat genau einen Abschnitt — als Diagramm wäre das
                 // ein einzelner Balken und damit keine Aussage. Bei „Jahr"
@@ -427,6 +449,7 @@ struct HistoryView: View {
                 previousYear = PeriodEngine.buckets(register: register, readings: readings,
                                                     year: today.year - 1, granularity: granularity)
             }
+            recomputeCosts(register: register)
             recomputeComparison()
         } catch {
             problem = "Die Ablesungen ließen sich nicht laden: \(error.localizedDescription)"
@@ -447,6 +470,23 @@ struct HistoryView: View {
             referenceYear: granularity == .year ? selection : today.year,
             yearsBack: 2
         )
+    }
+
+    /// Kosten je Abschnitt.
+    ///
+    /// Abschnitte ohne Tarif oder ohne verwertbaren Tarif — Gas ohne
+    /// Umrechnung etwa — bleiben leer statt null. Eine Null wäre die Aussage
+    /// „hat nichts gekostet", und die hat niemand gemacht.
+    private func recomputeCosts(register: Register) {
+        costs = [:]
+        guard !tariffs.isEmpty else { return }
+        for bucket in buckets where bucket.hasData {
+            guard let covered = bucket.result.coveredRange else { continue }
+            if let result = try? CostEngine.cost(register: register, readings: readings,
+                                                 tariffs: tariffs, in: covered) {
+                costs[bucket.id] = result.total
+            }
+        }
     }
 
     /// Die drei Jahre, die die Jahresansicht zeigt.
@@ -530,6 +570,33 @@ struct HistoryView: View {
         )
     }
 
+    private func cellText(for bucket: PeriodEngine.Bucket) -> String {
+        guard bucket.hasData else { return "—" }
+        if metric == .cost {
+            return costs[bucket.id].map(money) ?? "—"
+        }
+        return number(bucket.value, digits: 0)
+    }
+
+    /// Die Summe zählt nur, was auch in der Spalte steht.
+    ///
+    /// Bei Kosten heißt das: Abschnitte ohne Tarif fehlen in der Summe, und
+    /// die Beschriftung sagt es. Eine Summe über eine Spalte mit Lücken, die
+    /// so aussieht wie eine Summe über eine volle, ist die wiederkehrende
+    /// Fehlerklasse dieses Projekts.
+    private var totalText: String {
+        guard metric == .cost else { return "\(number(total, digits: 0)) \(unit)" }
+        let amounts = buckets.compactMap { costs[$0.id] }
+        guard let first = amounts.first else { return "—" }
+        let sum = amounts.reduce(Decimal(0)) { $0 + $1.amount }
+        return money(Money(sum, first.currency))
+    }
+
+    private func money(_ money: Money) -> String {
+        money.amount.formatted(.currency(code: money.currency.code)
+            .locale(Locale(identifier: "de_DE")))
+    }
+
     /// Summe der Abschnitte, die tatsächlich Daten haben.
     private var total: Decimal {
         buckets.filter(\.hasData).reduce(Decimal(0)) { $0 + $1.value }
@@ -538,7 +605,11 @@ struct HistoryView: View {
     /// Sagt, was die Summe umfasst — und wenn sie unvollständig ist, dass sie
     /// es ist. Eine Jahressumme, die im Mai endet, sieht sonst aus wie ein Jahr.
     private var totalCaption: String {
-        let complete = buckets.filter(\.hasData).allSatisfy(\.isComplete)
+        var complete = buckets.filter(\.hasData).allSatisfy(\.isComplete)
+        // Bei Kosten kommt eine zweite Lücke dazu: Abschnitte ohne Tarif.
+        if metric == .cost {
+            complete = complete && buckets.filter(\.hasData).allSatisfy { costs[$0.id] != nil }
+        }
         let base: String
         switch granularity {
         case .year: base = "\(yearSpan.first ?? today.year) bis \(today.year), zusammen"

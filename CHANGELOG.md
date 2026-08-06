@@ -9,6 +9,32 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.20.0 — 2026-08-06
+
+### Hinzugefügt
+- **Menge / Kosten** in der Verlaufstabelle. Der Umschalter erscheint nur,
+  wenn für den Zähler ein Tarif hinterlegt ist — ohne Preise gäbe es nichts
+  umzuschalten.
+- Nur in der Tabelle, nicht im Diagramm: Ein Balken, der mal kWh und mal Euro
+  bedeutet, sieht in beiden Fällen gleich aus. In einer Tabelle steht die
+  Einheit in der Kopfzeile, und der Oberflächentest prüft genau das —
+  Euro-Beträge dürfen nicht unter „Verbrauch" stehen.
+- Abschnitte ohne verwertbaren Tarif bleiben in der Kostenspalte leer statt
+  null, und die Summe darunter sagt „unvollständig". Eine Null wäre die
+  Aussage „hat nichts gekostet", die niemand gemacht hat.
+
+### Behoben
+- **Jeder Push löste zwei CI-Läufe aus**, solange eine Pull-Request offen war:
+  einmal `push`, einmal `pull_request`. Beide lagen in verschiedenen
+  Nebenläufigkeitsgruppen und bauten dieselbe App zweimal. Die Gruppe ist
+  jetzt auf den Zweignamen normalisiert.
+
+### Geändert
+- Der Arbeitszweig ist nach dem Zusammenführen frisch von `main` aufgesetzt.
+
+_Am Klick-Dummy ändert sich nichts: Menge und Kosten gibt es dort seit 0.9.
+Diesmal hat die App aufgeholt, nicht der Entwurf._
+
 ## 0.19.1 — 2026-08-06
 
 ### Behoben
