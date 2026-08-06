@@ -82,6 +82,22 @@ struct MeterRow: Identifiable {
     /// Vorschau auf das Ende des Abrechnungszeitraums, wenn ein Abschlag
     /// hinterlegt ist.
     let outlook: ForecastEngine.PrepaymentOutlook?
+    /// Eingespeiste Menge und Vergütung — nur bei einem Zweirichtungszähler.
+    ///
+    /// Getrennt von ``cost``, weil der Betrag dort bereits **netto** ist: Der
+    /// Rechenkern zieht die Vergütung ab. Stünde die Gutschrift unter den
+    /// Kosten, zöge jeder Leser sie ein zweites Mal ab — deshalb steht sie auf
+    /// der Karte darüber.
+    let feedIn: FeedIn?
+
+    struct FeedIn {
+        let quantity: Decimal
+        let unit: String
+        /// `nil`, solange kein Einspeisepreis hinterlegt ist. Dann steht die
+        /// Menge allein da — eine Null wäre eine Behauptung über Geld, die
+        /// niemand aufgestellt hat.
+        let credit: Money?
+    }
 }
 
 struct OverviewView: View {
@@ -189,8 +205,22 @@ struct OverviewView: View {
                             .foregroundStyle(PulseColor.inkTertiary)
                     }
                 }
+                // Vor den Kosten, nicht danach: Der Betrag darunter ist
+                // bereits netto — die Vergütung ist abgezogen. Stünde sie
+                // hinterher, zöge sie jeder Leser ein zweites Mal ab.
+                if let feed = row.feedIn {
+                    CardFooterRow("Einspeisung \(number(feed.quantity, digits: 0)) \(feed.unit)") {
+                        if let credit = feed.credit {
+                            Text("≈ \(money(credit)) vergütet")
+                                .font(PulseText.detail)
+                                .foregroundStyle(PulseColor.favourable)
+                        } else {
+                            EmptyView()
+                        }
+                    }
+                }
                 if let cost = row.cost {
-                    CardFooterRow("Kosten seit Jahresbeginn") {
+                    CardFooterRow(costCaption(for: row)) {
                         Text(money(cost))
                             .font(.system(.subheadline, weight: .semibold))
                             .foregroundStyle(PulseColor.ink)
@@ -240,6 +270,21 @@ struct OverviewView: View {
         if case .none = result.coverage {
             return row.readingCount == 0 ? "Noch keine Ablesung" : "Seit der ersten Ablesung"
         }
+        return periodText(for: result)
+    }
+
+    /// Derselbe Satz, gebildet allein aus dem Ergebnis.
+    ///
+    /// Herausgelöst, weil das Widget ihn ebenfalls braucht und eine zweite
+    /// Fassung früher oder später eine andere Beschriftung zeigte als der
+    /// Bildschirm daneben.
+    ///
+    /// Eigener Name statt einer Überladung: Zwei Funktionen `periodCaption(for:)`
+    /// mit `MeterRow` und `ConsumptionResult?` wären in einem Abschluss eine
+    /// Einladung an den Typprüfer, die falsche zu wählen — und ich baue hier
+    /// gerade ohne Compiler zur Hand.
+    private func periodText(for result: ConsumptionResult?) -> String {
+        guard let result else { return "Noch keine Ablesung" }
 
         // Ein verkürzter Zeitraum wird als Spanne ausgeschrieben, nicht als
         // „Seit Jahresbeginn" mit angehängtem Vorbehalt. Der Grund ist
@@ -267,6 +312,34 @@ struct OverviewView: View {
         // Normalfall; stünde dort jedes Mal ein Hinweis, läse ihn niemand
         // mehr. Diesen Fall trägt das Zeichen vor der Zahl.
         return result.confidence == .estimated ? period + " · enthält Schätzungen" : period
+    }
+
+    /// Beschriftet den Betrag mit dem Zeitraum, den er abdeckt.
+    ///
+    /// Vorher stand dort fest „Kosten seit Jahresbeginn". Auf dem Bild vom
+    /// 6. August sah das so aus: Der Gaszähler war seit dem 1. Mai nicht
+    /// abgelesen, die Karte sagte das auch — und zwei Zeilen tiefer standen
+    /// 1.399,41 € „seit Jahresbeginn". Drei Monate, die der Betrag nicht
+    /// enthält. Es ist die wiederkehrende Fehlerklasse aus CLAUDE.md, diesmal
+    /// nicht in der Rechnung, sondern in ihrer Beschriftung: Die Zahl war
+    /// richtig, der Satz darüber nicht.
+    ///
+    /// Der Zeitraum kommt aus derselben Quelle wie die Kopfzeile der Karte,
+    /// damit beide nicht auseinanderlaufen können.
+    private func costCaption(for row: MeterRow) -> String {
+        guard let result = row.yearToDate else { return "Kosten" }
+        switch result.coverage {
+        case .none:
+            return "Kosten"
+        case .full:
+            return "Kosten seit Jahresbeginn"
+        case .startsLate(let firstDay):
+            return "Kosten seit \(shortDate(firstDay))"
+        case .endsEarly(let lastDay):
+            return "Kosten bis \(shortDate(lastDay))"
+        case .partial(let firstDay, let lastDay):
+            return "Kosten \(shortDate(firstDay)) bis \(shortDate(lastDay))"
+        }
     }
 
     /// Ein Strich statt einer Null, wenn für den Zeitraum nichts vorliegt:
@@ -337,33 +410,27 @@ struct OverviewView: View {
 
     // MARK: - Daten
 
-    /// Beim Start. Setzt auf Wunsch alles zurück und legt Beispieldaten an.
+    /// Beim Start. Liest, was da ist.
     ///
-    /// Die Oberflächentests brauchen einen bekannten Ausgangszustand — sonst
-    /// hängt jeder Test davon ab, was der vorherige hinterlassen hat, und ein
-    /// grüner Lauf sagt nichts über den einzelnen Fall.
+    /// Zurückgesetzt und mit Beispielen befüllt wird nicht mehr hier, sondern
+    /// beim Start der App in ``LaunchFixture``. Der Grund steht dort: Ein Lauf,
+    /// der in einem anderen Tab beginnt, erreichte diese Stelle nie, und die
+    /// Bildschirmfotos hingen dadurch voneinander ab.
     private func start() {
-        let arguments = ProcessInfo.processInfo.arguments
-        if arguments.contains("-pulse-empty") {
-            // Der Zustand, in dem jeder neue Nutzer anfängt — und der einzige,
-            // den bis 0.16 kein Test und kein Bild je gesehen hat.
-            try? PulseRepository(context: context).deleteEverything()
-            rows = []
-            points = []
-        } else if arguments.contains("-pulse-reset") {
-            try? PulseRepository(context: context).deleteEverything()
-            rows = []
-            points = []
-            seed()
-        } else {
-            reload()
-        }
+        reload()
 
         // Öffnet den Erfassungsschirm gleich beim Start. Nur für die
         // Bildschirmfotos: Es ist der wichtigste Schirm der App und der
         // einzige, den ein automatischer Lauf sonst nie zu Gesicht bekommt —
         // `simctl` kann nicht tippen.
-        if arguments.contains("-pulse-capture") {
+        let arguments = ProcessInfo.processInfo.arguments
+        if arguments.contains("-pulse-capture-pv") {
+            // Eigener Schalter für den Zweirichtungszähler: `-pulse-capture`
+            // nimmt den ersten Zähler, und das ist Gas mit einem einzigen
+            // Zählwerk. Der zweistufige Ablauf — erst Bezug, dann Einspeisung —
+            // kam dadurch auf keinem Bild vor, obwohl er neu ist.
+            capturing = points.first { $0.registers.count > 1 } ?? points.first
+        } else if arguments.contains("-pulse-capture") {
             capturing = points.first
         }
     }
@@ -387,18 +454,35 @@ struct OverviewView: View {
                                     fractionDigits: 0, yearToDate: nil,
                                     changeVersusLastYear: nil, monthlySeries: [],
                                     daysSinceReading: nil, isDue: false,
-                                    cost: nil, costProblem: nil, outlook: nil)
+                                    cost: nil, costProblem: nil, outlook: nil, feedIn: nil)
                 }
-                let readings = try repository.readings(for: register.id)
-                let last = readings.last
+                // **Zwei Listen, und die Namen sagen welche.**
+                //
+                // `primary` sind die Ablesungen des Bezugs, `everything` die
+                // aller Zählwerke. Beide hießen einmal `readings`, und beim
+                // Umstellen auf den Zweirichtungszähler bekam die
+                // Abschlagsvorschau die falsche: Sie rechnete dann, als gäbe
+                // es die Anlage nicht, und zeigte auf den Cent denselben Wert
+                // wie vorher. Ein Name, der die Verwechslung nicht bemerkbar
+                // macht, ist ein Fehler, der auf seine Gelegenheit wartet.
+                //
+                // Menge, Stand und Vorjahresvergleich gehören zum **Bezug** —
+                // sonst stünde bei einem PV-Zähler der Einspeisestand auf der
+                // Karte. Kosten, Vorschau und Einspeisezeile gehören zur
+                // **Messstelle**, weil die Vergütung dort gegengerechnet wird.
+                let primary = try repository.readings(for: register.id)
+                let everything = point.registers.count > 1
+                    ? try repository.readings(for: point)
+                    : primary
+                let last = primary.last
                 let tariffs = try repository.tariffs(for: point.id)
                 let periods = try repository.billingPeriods(for: point.id)
-                let costs = cost(register: register, readings: readings,
+                let costs = cost(point: point, readings: everything,
                                  tariffs: tariffs, in: yearRange)
                 let result = ConsumptionEngine.consumption(register: register,
-                                                           readings: readings, in: yearRange)
+                                                           readings: primary, in: yearRange)
                 let comparison = ConsumptionEngine.yearOverYear(register: register,
-                                                               readings: readings, in: yearRange)
+                                                               readings: primary, in: yearRange)
                 return MeterRow(
                     id: point.id,
                     name: point.name,
@@ -407,20 +491,35 @@ struct OverviewView: View {
                     colorToken: point.appearance.colorToken,
                     lastValue: last?.value,
                     lastDay: last?.day,
-                    readingCount: readings.count,
+                    readingCount: primary.count,
                     fractionDigits: register.fractionDigits,
                     yearToDate: result,
                     changeVersusLastYear: comparison?.relativeChange,
-                    monthlySeries: monthlySeries(register: register, readings: readings, today: today),
+                    monthlySeries: monthlySeries(register: register, readings: primary, today: today),
                     daysSinceReading: last.map { today.days(since: $0.day) },
                     isDue: ConsumptionEngine.isReadingDue(meteringPoint: point,
-                                                          readings: readings, today: today),
+                                                          readings: primary, today: today),
                     cost: costs.value,
                     costProblem: costs.problem,
-                    outlook: outlook(point: point, readings: readings,
-                                     tariffs: tariffs, periods: periods)
+                    outlook: outlook(point: point, readings: everything,
+                                     tariffs: tariffs, periods: periods),
+                    feedIn: feedIn(point: point, readings: everything,
+                                   tariffs: tariffs, in: yearRange)
                 )
             }
+            // Das Widget bekommt dieselbe Rechnung wie dieser Schirm, nur
+            // kleiner. Gebaut wird sie in `PulseCore`, damit die beiden nicht
+            // auseinanderlaufen können — ein Widget, das eine andere Zahl
+            // zeigt als der Bildschirm daneben, ist schlimmer als keines.
+            WidgetBridge.write(WidgetSummary.build(
+                meteringPoints: points,
+                readings: Dictionary(uniqueKeysWithValues: try points.map { point in
+                    (point.id, try repository.readings(for: point))
+                }),
+                range: yearRange,
+                today: today,
+                caption: { result in periodText(for: result) }))
+
             // Eine Ablesung verschiebt den nächsten Termin. Ohne dieses
             // Nachziehen käme die Erinnerung zu einem Zeitpunkt, an dem längst
             // nichts mehr fällig ist — und der Hinweis verlöre seinen Wert.
@@ -453,12 +552,13 @@ struct OverviewView: View {
     /// Normalfall, solange niemand Preise eingetragen hat. Ein hinterlegter
     /// Tarif, der nicht reicht, ist dagegen etwas, das der Nutzer beheben kann
     /// — und dann muss dastehen, was fehlt.
-    private func cost(register: Register, readings: [Reading], tariffs: [Tariff],
+    private func cost(point: MeteringPoint, readings: [Reading], tariffs: [Tariff],
                       in range: DayRange) -> (value: Money?, problem: String?) {
         guard !tariffs.isEmpty else { return (nil, nil) }
         do {
-            let result = try CostEngine.cost(register: register, readings: readings,
-                                             tariffs: tariffs, in: range)
+            guard let result = try CostEngine.cost(meteringPoint: point, readings: readings,
+                                                   tariffs: tariffs, in: range)
+            else { return (nil, nil) }
             return (result.total, nil)
         } catch CostEngine.CostError.missingConversion {
             return (nil, "Für die Kosten fehlen Zustandszahl und Brennwert von deiner Rechnung.")
@@ -467,6 +567,39 @@ struct OverviewView: View {
         } catch {
             return (nil, "Die Kosten ließen sich nicht berechnen.")
         }
+    }
+
+    /// Was ins Netz zurückgegangen ist — und was es eingebracht hat.
+    ///
+    /// Nur die Menge, wenn kein Einspeisepreis hinterlegt ist. Eine Null wäre
+    /// dort eine Aussage über Geld, die niemand gemacht hat (Produktprinzip 7).
+    private func feedIn(point: MeteringPoint, readings: [Reading], tariffs: [Tariff],
+                        in range: DayRange) -> MeterRow.FeedIn? {
+        guard let register = point.registers.first(where: { $0.direction == .feedIn })
+        else { return nil }
+
+        let result = ConsumptionEngine.consumption(register: register,
+                                                   readings: readings, in: range)
+        guard result.hasData else { return nil }
+
+        // Der Arbeitspreisanteil, **nicht** der Gesamtbetrag: In `total` steckt
+        // auch der Grundpreis, und der gehört zum Anschluss, nicht zu einer
+        // Richtung. Mit `total` stand auf dem Bildschirmfoto „≈ 79,02 €
+        // vergütet", wo 171 € richtig gewesen wären — der Grundpreisanteil war
+        // von der Gutschrift abgezogen.
+        //
+        // Der Rechenkern gibt die Einspeisung als negativen Betrag zurück.
+        // Auf der Karte steht sie als positive Zahl mit dem Wort „vergütet";
+        // ein Minuszeichen neben „Einspeisung" läse sich wie ein Fehler.
+        var credit: Money?
+        if let money = try? CostEngine.cost(register: register, readings: readings,
+                                            tariffs: tariffs, in: range).energyAmount,
+           money.amount < 0 {
+            credit = Money(-money.amount, money.currency)
+        }
+        return MeterRow.FeedIn(quantity: result.quantity.value,
+                               unit: register.unit.symbol,
+                               credit: credit)
     }
 
     /// Hochrechnung auf das Ende des Abrechnungszeitraums gegen die
@@ -506,85 +639,11 @@ struct OverviewView: View {
         }
         return values
     }
-
-    /// Legt drei Zähler mit gut zwei Jahren Historie an.
-    ///
-    /// So viel Vergangenheit braucht es, damit Verlaufslinie und
-    /// Vorjahresvergleich überhaupt etwas zeigen können. Und drei Zähler statt
-    /// einem, weil der Gaszähler bewusst überfällig ist: Nur so lassen sich
-    /// der Fällig-Zustand, die Hinweiszeile und der Erfassungsfluss prüfen.
+    /// Beispieldaten auf Wunsch — aus derselben Quelle wie der Ausgangszustand
+    /// der Bildschirmfotos, damit beide dasselbe zeigen.
     private func seed() {
-        // Jahresverläufe: Strom flach mit Winterhügel, Gas stark saisonal,
-        // Wasser fast gleichmäßig.
-        // Preise nach den Größenordnungen einer deutschen Jahresrechnung 2026.
-        // Gas rechnet in kWh ab, obwohl der Zähler m³ misst — deshalb dort die
-        // Umrechnung, ohne die der Rechenkern zu Recht keinen Betrag bildet.
-        let profiles: [(name: String, kind: ResourceKind, start: Decimal,
-                        monthly: [Decimal], staleMonths: Int,
-                        price: Decimal, base: Decimal, gas: Bool,
-                        prepay: Decimal?)] = [
-            ("Strom", .electricity, 41_230,
-             [312, 286, 268, 241, 218, 205, 198, 204, 226, 258, 289, 315], 0,
-             Decimal(string: "0.34")!, Decimal(string: "12.90")!, false, 100),
-            ("Wasser", .water, 998,
-             [10.8, 9.9, 11.2, 10.6, 12.4, 13.1, 13.8, 13.2, 11.6, 10.9, 10.4, 11.1], 0,
-             Decimal(string: "2.15")!, Decimal(string: "8.40")!, false, nil),
-            ("Gas", .gas, 3_579,
-             [418, 376, 298, 178, 92, 41, 36, 39, 84, 192, 308, 402], 3,
-             Decimal(string: "0.11")!, Decimal(string: "14.50")!, true, 230)
-        ]
-
         do {
-            let repository = PulseRepository(context: context)
-            let property = try repository.ensureDefaultProperty()
-            let today = self.today
-
-            for profile in profiles {
-                // Nur Zähler mit Abschlag bekommen einen Abrechnungsrhythmus —
-                // sonst entstünden Zeiträume, gegen die es nichts zu rechnen
-                // gibt. Wasser läuft hier bewusst ohne, damit auf den Bildern
-                // beide Fälle nebeneinander stehen.
-                let point = MeteringPoint(
-                    propertyID: property.id, name: profile.name, kind: profile.kind,
-                    billingCycle: profile.prepay == nil ? nil : BillingCycle(anchorMonth: 1, anchorDay: 1)
-                )
-                try repository.save(point)
-                guard let register = point.primaryRegister else { continue }
-
-                var value = profile.start
-                for offset in stride(from: 25, through: profile.staleMonths, by: -1) {
-                    var month = today.month - offset
-                    var year = today.year
-                    while month < 1 { month += 12; year -= 1 }
-                    guard let day = CalendarDay(year: year, month: month, day: 1) else { continue }
-                    try repository.save(
-                        Reading(registerID: register.id, day: day, value: value),
-                        fractionDigits: register.fractionDigits
-                    )
-                    // Das laufende Jahr liegt sieben Prozent unter dem Vorjahr.
-                    let seasonal = profile.monthly[month - 1]
-                    value += year == today.year ? seasonal * Decimal(string: "0.93")! : seasonal
-                }
-
-                guard let yearStart = CalendarDay(year: today.year - 2, month: 1, day: 1) else { continue }
-                try repository.save(Tariff(
-                    meteringPointID: point.id,
-                    validFrom: yearStart,
-                    pricePerUnit: profile.price,
-                    monthlyBasePrice: profile.base,
-                    billingUnit: profile.gas ? .kilowattHour : profile.kind.defaultUnit,
-                    gasConversion: profile.gas ? .typical : nil
-                ))
-
-                if let prepay = profile.prepay,
-                   let running = point.currentBillingPeriod(on: today) {
-                    try repository.save(BillingPeriod(
-                        meteringPointID: point.id,
-                        range: running,
-                        monthlyPrepayment: prepay
-                    ))
-                }
-            }
+            try LaunchFixture.seedSamples(into: PulseRepository(context: context), today: today)
             reload()
         } catch {
             problem = "Die Beispieldaten ließen sich nicht anlegen: \(error.localizedDescription)"

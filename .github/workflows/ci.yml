@@ -15,11 +15,49 @@ on:
 # verschiedene Gruppen liefen beide durch und bauten dieselbe App zweimal.
 # Über den Zweignamen landen sie in derselben Gruppe, und der spätere Lauf
 # bricht den früheren ab.
+# Das `-2` am Ende ist kein Schmuck: Ein Lauf blieb in einem Zustand hängen,
+# den GitHub weder startet noch abbrechen lässt („Cannot cancel a workflow
+# re-run that has not yet queued"). Solange er in der Gruppe steht, entstehen
+# für neue Pushes gar keine Läufe mehr — drei Pushes hintereinander blieben
+# unbemerkt liegen. Ein neuer Gruppenname lässt den Blockierer zurück.
+#
+# Zweiter Befund desselben Tages, hier festgehalten statt behoben:
+# `cancel-in-progress` bewertet „neu" nach **Startzeit**, nicht nach
+# Commit-Reihenfolge. Wartet ein Lauf lange auf einen Läufer, kann er dadurch
+# einen jüngeren erschlagen. Das ist selten und kostet einen Lauf; die Regel
+# bleibt, weil sie im Normalfall genau das Richtige tut.
 concurrency:
-  group: ci-${{ github.event.pull_request.head.ref || github.ref_name }}
+  group: ci-${{ github.event.pull_request.head.ref || github.ref_name }}-2
   cancel-in-progress: true
 
+# Schreibrecht nur, weil der Lauf die Screenshots in einen eigenen Zweig legt.
+# Sonst bliebe es beim Lesen.
+permissions:
+  contents: write
+
 jobs:
+  # Eigener Auftrag auf Linux: Der Entwurf braucht keinen macOS-Läufer, und
+  # die sind knapp. So läuft diese Prüfung auch dann, wenn der App-Build
+  # stundenlang in der Warteschlange hängt — und sie läuft in einer Minute.
+  #
+  # Es gab sie bisher nicht, und das hat gekostet: Ein frisch angelegter
+  # Zähler ließ sich im Entwurf nicht ablesen. Gefunden hat es der Gründer
+  # beim Ausprobieren.
+  prototype:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Chromium
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+      - name: Klick-Dummy prüfen
+        run: node scripts/check-prototype.mjs
+
   build-and-test:
     runs-on: macos-15
     timeout-minutes: 45
@@ -64,6 +102,16 @@ jobs:
         if: success()
         run: scripts/run.sh build
 
+      # Die Bilder zusätzlich in einen Zweig, nicht nur ins Artefakt: An ein
+      # Artefakt komme ich aus der Entwicklungsumgebung heraus nicht heran —
+      # der Weg zur GitHub-API ist dort gesperrt, git aber nicht. Und ohne die
+      # Bilder fehlt die produktivste Prüfung, die dieses Projekt hat.
+      - name: Screenshots in den Zweig
+        if: success()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: scripts/publish-shots.sh build
+
       - name: Ergebnisse sichern
         if: always()
         uses: actions/upload-artifact@v4
@@ -71,5 +119,6 @@ jobs:
           name: screenshots-und-protokolle
           path: |
             build/*.png
+            build/*.log
           if-no-files-found: ignore
           retention-days: 14

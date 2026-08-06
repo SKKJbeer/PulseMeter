@@ -234,6 +234,12 @@ h2.large {
 .card-extra > span:first-child { min-width: 0; }
 .card-extra > :last-child { white-space: nowrap; flex: none; }
 .card-extra strong { color: var(--ink); font-weight: 600; }
+/* Textknopf innerhalb eines Hinweises — sieht aus wie ein Satzteil, ist aber
+   der Ausweg aus der Sackgasse. */
+.reg-name { display: block; font-weight: 600; font-size: 14px; }
+.reg-step { display: block; font-size: 11px; color: var(--ink-3); margin-bottom: 4px; }
+.linklike { display: block; margin-top: 7px; background: none; border: 0; padding: 0;
+  font: inherit; font-weight: 600; color: var(--tint); cursor: pointer; text-align: left; }
 .explain {
   font: inherit; font-size: var(--fs-sub); color: var(--c);
   background: none; border: 0; padding: 0; cursor: pointer;
@@ -661,7 +667,7 @@ select.field { cursor: pointer; }
 
 <div class="stage-head">
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.19.0</p>
+  <p>Klickbarer Entwurf · v0.26.1</p>
 </div>
 
 <div class="device">
@@ -1005,7 +1011,81 @@ const METERS = [
    Rechenkern (verkürzte Fassung von PulseCore)
    ============================================================ */
 
+/* Der Schritt zwischen zwei Ablesungen — spiegelt `ConsumptionSeries.step`.
+
+   Bis 0.24.0 rechnete der Entwurf Verbrauch als Differenz zweier **roher**
+   Zählerstände. Das trägt genau so lange, wie der Zähler nur steigt. Ein
+   Gerätewechsel oder ein Überlauf machte jeden Verbrauch negativ — und weil
+   der Entwurf beides nicht kannte, konnte er Fehler darin auch nicht finden.
+   Genau dafür gibt es ihn aber. */
+function step(prev, cur, capacity) {
+  // Gerätewechsel: Der Rücksprung ist erklärt. Zwischen Endstand des alten
+  // und Anfangsstand des neuen Geräts vergeht kein Verbrauch — beide
+  // Ablesungen beschreiben denselben Moment.
+  if (prev.dev && cur.dev && prev.dev !== cur.dev) return 0;
+  if (cur.value >= prev.value) return cur.value - prev.value;
+  // Rücksprung ohne Gerätewechsel: Überlauf oder Fehleingabe. Nur nahe der
+  // Kapazität ist der Überlauf plausibel.
+  if (capacity > 0 && prev.value >= capacity * 0.9) {
+    return capacity - prev.value + cur.value;
+  }
+  // Nicht raten. Der Abschnitt zählt als null.
+  return 0;
+}
+
+/* Aufsummierte Reihe statt roher Stände — wie `ConsumptionSeries` in
+   PulseCore. Der Wert des ersten Punktes ist null; jeder weitere trägt den
+   bis dahin aufgelaufenen Verbrauch.
+
+   Bewusst ohne Zwischenspeicher: Die Reihen sind ein paar Dutzend Punkte
+   lang, und ein Zwischenspeicher, der nach dem Eintragen einer Ablesung
+   veraltet, kostet mehr als er spart. */
+function series(reg) {
+  const rs = reg.readings;
+  if (!rs.length) return [];
+  const capacity = Math.pow(10, reg.int || 6);
+  const points = [{ y: rs[0].y, m: rs[0].m, d: rs[0].d, cum: 0 }];
+  let running = 0;
+  for (let i = 1; i < rs.length; i++) {
+    running += step(rs[i - 1], rs[i], capacity);
+    points.push({ y: rs[i].y, m: rs[i].m, d: rs[i].d, cum: running });
+  }
+  return points;
+}
+
+/* Aufgelaufener Verbrauch an einem Tag. Zwischen zwei Ablesungen linear
+   interpoliert, außerhalb des abgedeckten Bereichs **nicht** extrapoliert. */
 function cumulativeAt(reg, day) {
+  const ps = series(reg);
+  if (!ps.length) return null;
+  const s = serial(day.y, day.m, day.d);
+  const first = serial(ps[0].y, ps[0].m, ps[0].d);
+  const last = serial(ps[ps.length - 1].y, ps[ps.length - 1].m, ps[ps.length - 1].d);
+  if (s < first || s > last) return null;
+  for (let i = 0; i < ps.length; i++) {
+    const si = serial(ps[i].y, ps[i].m, ps[i].d);
+    // Bei mehreren Ablesungen am selben Tag — Wechseltag — zählt die letzte:
+    // Endstand und Anfangsstand tragen denselben aufgelaufenen Wert, und der
+    // Tag ist erst danach abgeschlossen.
+    if (si === s) {
+      let j = i;
+      while (j + 1 < ps.length && serial(ps[j + 1].y, ps[j + 1].m, ps[j + 1].d) === s) j++;
+      return { v: ps[j].cum, exact: true };
+    }
+    if (si > s) {
+      const lo = ps[i - 1], slo = serial(lo.y, lo.m, lo.d);
+      const f = (s - slo) / (si - slo);
+      return { v: lo.cum + (ps[i].cum - lo.cum) * f, exact: false };
+    }
+  }
+  return { v: ps[ps.length - 1].cum, exact: true };
+}
+
+/* Der **rohe** Zählerstand an einem Tag — die Zahl, die auf dem Gerät steht.
+   Für Anfangs- und Endstand im Bericht; für Verbrauch ist `cumulativeAt`
+   zuständig. Die beiden zu verwechseln hieße, nach einem Wechsel den Stand
+   des neuen Geräts als Verbrauch auszuweisen. */
+function readingAt(reg, day) {
   const rs = reg.readings;
   if (!rs.length) return null;
   const s = serial(day.y, day.m, day.d);
@@ -1014,7 +1094,11 @@ function cumulativeAt(reg, day) {
   if (s < first || s > last) return null;
   for (let i = 0; i < rs.length; i++) {
     const si = serial(rs[i].y, rs[i].m, rs[i].d);
-    if (si === s) return { v: rs[i].value, exact: true };
+    if (si === s) {
+      let j = i;
+      while (j + 1 < rs.length && serial(rs[j + 1].y, rs[j + 1].m, rs[j + 1].d) === s) j++;
+      return { v: rs[j].value, exact: true };
+    }
     if (si > s) {
       const lo = rs[i - 1], slo = serial(lo.y, lo.m, lo.d);
       const f = (s - slo) / (si - slo);
@@ -1153,7 +1237,24 @@ function yearOverYear(reg) {
 function billedUnits(meter, cubicOrKwh) {
   return meter.zZahl ? cubicOrKwh * meter.zZahl * meter.brennwert : cubicOrKwh;
 }
-const projectedCost = (m, fc) => billedUnits(m, fc.value) * m.price + m.base * 12;
+/* Jedes Zählwerk mit seiner eigenen Jahresform — wie `ForecastEngine`.
+
+   Vorher blieb die Einspeisung hier ganz außen vor: Die Kostenzeile derselben
+   Karte war netto, die Abschlagsvorschau brutto. Zwei Zahlen nebeneinander,
+   die sich widersprechen.
+
+   Und nicht etwa den Nettobetrag mit dem Faktor des Bezugs hochrechnen: Bezug
+   und Einspeisung laufen gegenläufig durchs Jahr. Im August ist der Bezug fast
+   durch, die Einspeisung noch lange nicht. */
+function projectedCost(m, fc) {
+  let energy = billedUnits(m, fc.value) * m.price;
+  const second = m.registers[1];
+  if (second && m.feedInPrice) {
+    const f = forecast(second);
+    if (f) energy -= f.value * m.feedInPrice;
+  }
+  return energy + m.base * 12;
+}
 const balance = (m, fc) => m.prepay * 12 - projectedCost(m, fc);
 
 /* Zählerarten mit gefülltem und mit gezeichnetem Symbol. */
@@ -1195,6 +1296,24 @@ function periodCaption(res) {
   }
 }
 
+/* Dieselbe Beschriftung für den Betrag.
+
+   Vorher stand in der App fest „Kosten seit Jahresbeginn". Am 6. August sah
+   das so aus: Der Gaszähler war seit dem 1. Mai nicht abgelesen, die Karte
+   sagte das in der Kopfzeile auch — und zwei Zeilen tiefer standen 1.399,41 €
+   „seit Jahresbeginn". Drei Monate, die der Betrag nicht enthält. Die Zahl war
+   richtig, der Satz darüber nicht. */
+function costCaption(res) {
+  const c = coverage(res);
+  switch (c.kind) {
+    case "none":       return "Kosten";
+    case "full":       return "Kosten seit Jahresbeginn";
+    case "startsLate": return `Kosten seit ${dateMedium(c.from)}`;
+    case "endsEarly":  return `Kosten bis ${dateMedium(c.to)}`;
+    case "partial":    return `Kosten ${dateMedium(c.from)} bis ${dateMedium(c.to)}`;
+  }
+}
+
 /* ============================================================
    Übersicht
    ============================================================ */
@@ -1209,7 +1328,7 @@ function renderStatus() {
       <b>${days === null
           ? `${m.name} wurde noch nie abgelesen.`
           : `${m.name} ist seit ${days} Tagen nicht abgelesen.`}</b>
-      Ohne aktuellen Stand ist die Prognose ungenau.</div></div>`;
+      Ohne aktuellen Stand ist die Vorschau ungenau.</div></div>`;
   } else {
     const first = activeMeters()[0];
     const reg = first ? first.registers[0] : null;
@@ -1277,11 +1396,30 @@ function renderCards() {
     const due = isDue(m);
 
     let extra = "";
+
+    // Stand und Kosten standen bisher nur in der App auf der Karte, nicht im
+    // Entwurf. Zwei Zeilen Auseinanderlauf — und genau die zwei, an denen der
+    // Beschriftungsfehler saß, den hier niemand hätte sehen können.
+    const lastR = lastReading(m);
+    if (lastR) {
+      extra += `<div class="card-extra"><span>Stand <strong>${nf(lastR.value, m.frac)} ${m.unit}</strong></span>
+        <span>${dateMedium(lastR)}</span></div>`;
+    }
+    // Einspeisung **vor** den Kosten, nicht danach: Der Betrag ist bereits
+    // netto — die Vergütung ist abgezogen. Stünde sie darunter, zöge sie jeder
+    // Leser ein zweites Mal ab. So liest sich die Karte als Rechnung von oben
+    // nach unten: Stand, Gutschrift, was am Ende zu zahlen ist.
     const second = m.registers[1];
     if (second) {
       const s = yearToDate(second);
       extra += `<div class="card-extra"><span>Einspeisung <strong>${nf(s.value, 0)} kWh</strong></span>
         <span>≈ ${moneyRound(s.value * m.feedInPrice)} vergütet</span></div>`;
+    }
+
+    const ytdCost = costYearToDate(m);
+    if (ytdCost !== null) {
+      extra += `<div class="card-extra"><span>${costCaption(ytd)}</span>
+        <strong>${money(ytdCost)}</strong></div>`;
     }
     if (m.prepay && fc) {
       const bal = balance(m, fc);
@@ -1596,6 +1734,16 @@ function costFor(m, p) {
   }
   return v + m.base * 12 / 365 * between(p.from, p.to);
 }
+/* Kosten des laufenden Jahres für die Übersichtskarte.
+   Über den Zeitraum, den die Ablesungen **abdecken**, nicht über den bis
+   heute: Sonst stünde beim Gaszähler gar kein Betrag, obwohl bis zum 1. Mai
+   alles bekannt ist. Die Beschriftung nennt den Ausschnitt dann auch. */
+function costYearToDate(m) {
+  const ytd = yearToDate(m.registers[0]);
+  if (!ytd) return null;
+  return costFor(m, { from: ytd.cfrom, to: ytd.cto });
+}
+
 function cellValue(target, p) {
   if (target === "all") {
     let sum = 0;
@@ -1905,7 +2053,9 @@ function reportRows(meters, from, to) {
     return {
       m, reg, c, prev, delta, work, feed, base, months,
       cost: work - feed + base,
-      start: cumulativeAt(reg, c.cfrom), end: cumulativeAt(reg, c.cto)
+      // Roher Stand, nicht aufgelaufener Verbrauch: Im Bericht steht die
+      // Zahl, die am Tag auf dem Gerät stand.
+      start: readingAt(reg, c.cfrom), end: readingAt(reg, c.cto)
     };
   }).filter(Boolean);
 }
@@ -2199,36 +2349,64 @@ function openMeterEditor(id) {
    ============================================================ */
 let capMeter = null, digits = "";
 
+/* Welches Zählwerk gerade dran ist, und was schon eingetippt wurde.
+
+   Nacheinander statt zur Auswahl — wie `CaptureView` in der App seit 0.22.0.
+   Ein Zweirichtungszähler zeigt beide Zahlen auf demselben Gerät; wer davor
+   steht, liest sie in einem Zug ab. Bis 0.26.0 kannte der Entwurf nur
+   `registers[0]`, und die Einspeisung ließ sich hier gar nicht eintragen. */
+let capIndex = 0, capEntered = {};
+
+function capRegister() { return capMeter.registers[capIndex]; }
+function capIsLast() { return capIndex >= capMeter.registers.length - 1; }
+
 function openCapture(id) {
   capMeter = METERS.find(m => m.id === id);
+  capIndex = 0;
+  capEntered = {};
+  showCaptureStep();
+  openSheet("sheet-capture");
+}
+
+function showCaptureStep() {
   digits = "";
-  const reg = capMeter.registers[0];
+  const reg = capRegister();
   const last = reg.readings[reg.readings.length - 1];
+  const many = capMeter.registers.length > 1;
   document.getElementById("cap-title").textContent = capMeter.name;
-  document.getElementById("cap-meta").innerHTML =
-    `Letzter Stand <strong>${nf(last.value, capMeter.frac)} ${capMeter.unit}</strong> am ${dateLabel(last)}
-     <br><button type="button" class="prefill" id="prefill">Vom letzten Stand übernehmen</button>`;
-  document.getElementById("cap-unit").textContent = capMeter.unit;
+
+  // Der Name des Zählwerks steht nur da, wenn es mehr als eines gibt. Bei
+  // einem einzelnen wäre „Bezug" ein Wort, das der Nutzer nie gebraucht hat.
+  const head = many
+    ? `<span class="reg-name" style="color:${capMeter.color}">${reg.label || "Bezug"}</span>
+       <span class="reg-step">Zählwerk ${capIndex + 1} von ${capMeter.registers.length}</span><br>`
+    : "";
+  document.getElementById("cap-meta").innerHTML = head + (last
+    ? `Letzter Stand <strong>${nf(last.value, reg.frac)} ${reg.unit}</strong> am ${dateLabel(last)}
+       <br><button type="button" class="prefill" id="prefill">Vom letzten Stand übernehmen</button>`
+    : "Erste Ablesung für dieses Zählwerk");
+  document.getElementById("cap-unit").textContent = reg.unit;
+  document.getElementById("save").textContent = capIsLast() ? "Sichern" : "Weiter";
   document.getElementById("save").style.setProperty("--c", capMeter.color);
   drawCounter(true);
   judge();
-  openSheet("sheet-capture");
-  document.getElementById("prefill").onclick = () => {
-    digits = String(Math.round(last.value * 10 ** capMeter.frac));
+  const prefill = document.getElementById("prefill");
+  if (prefill) prefill.onclick = () => {
+    digits = String(Math.round(last.value * 10 ** reg.frac));
     drawCounter();
     judge();
   };
 }
 
 function drawCounter(silent) {
-  const total = capMeter.int + capMeter.frac;
+  const total = capRegister().int + capRegister().frac;
   const padded = digits.padStart(total, "0").slice(-total);
   const prev = window.__prevDigits || "";
   let html = "";
   for (let i = 0; i < total; i++) {
-    if (i === capMeter.int) html += '<span class="drum sep"></span>';
+    if (i === capRegister().int) html += '<span class="drum sep"></span>';
     const changed = !silent && prev[i] !== padded[i];
-    html += `<span class="drum ${i >= capMeter.int ? "dec" : ""} ${changed ? "rolled" : ""}"><span>${padded[i]}</span></span>`;
+    html += `<span class="drum ${i >= capRegister().int ? "dec" : ""} ${changed ? "rolled" : ""}"><span>${padded[i]}</span></span>`;
   }
   document.getElementById("counter").innerHTML = html;
   window.__prevDigits = padded;
@@ -2236,7 +2414,7 @@ function drawCounter(silent) {
 
 function currentValue() {
   if (!digits) return null;
-  return parseInt(digits, 10) / 10 ** capMeter.frac;
+  return parseInt(digits, 10) / 10 ** capRegister().frac;
 }
 
 /* Spiegelt ConsumptionEngine.plausibility aus PulseCore. */
@@ -2250,16 +2428,35 @@ function judge() {
     save.disabled = true;
     return;
   }
-  const reg = capMeter.registers[0];
+  const reg = capRegister();
   const last = reg.readings[reg.readings.length - 1];
-  const days = between(last, TODAY);
+  const days = last ? between(last, TODAY) : 0;
   const check = '<svg class="mark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4 10-10"/></svg>';
   const bang = '<svg class="mark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 7v7"/><path d="M12 17.5v.01"/></svg>';
 
+  // **Ohne Vorgänger gibt es nichts zu prüfen.** Diese Abfrage fehlte, und
+  // damit lief `last.value` bei einem frisch angelegten Zähler ins Leere: Die
+  // Prüfung stürzte still ab, „Sichern" blieb gesperrt, und der erste
+  // Zählerstand ließ sich nicht eintragen — der allererste Schritt eines neuen
+  // Nutzers. Gefunden hat das der Gründer beim Ausprobieren, nicht ich beim
+  // Testen: Jeder Zähler im Entwurf hatte zwei Jahre Historie, den Fall
+  // „noch nie abgelesen" gab es in der Erfassung schlicht nicht.
+  if (!last) {
+    el.className = "verdict";
+    el.innerHTML = `${check}<div>Erste Ablesung — es gibt noch nichts zu vergleichen.</div>`;
+    save.disabled = false;
+    return;
+  }
+
   if (v < last.value) {
+    // Die Frage bekommt eine Antwortmöglichkeit. Bis 0.24.0 stand sie hier —
+    // wie in der App bis 0.23.0 — und ließ sich nur mit „Ziffer verirrt"
+    // beantworten, nämlich durch Korrigieren. Eine Frage ohne Antwort ist eine
+    // Sackgasse (Produktprinzip 4).
     el.className = "verdict warn";
-    el.innerHTML = `${bang}<div>Der Stand liegt unter dem letzten Wert von <b>${nf(last.value, capMeter.frac)} ${capMeter.unit}</b>.
-      Wurde der Zähler gewechselt, oder hat sich eine Ziffer verirrt?</div>`;
+    el.innerHTML = `${bang}<div>Der Stand liegt unter dem letzten Wert von <b>${nf(last.value, capRegister().frac)} ${capRegister().unit}</b>.
+      Wurde der Zähler gewechselt, oder hat sich eine Ziffer verirrt?
+      <button type="button" class="linklike" data-meterchange="1">Der Zähler wurde gewechselt</button></div>`;
     save.disabled = false;
     return;
   }
@@ -2277,21 +2474,83 @@ function judge() {
 
   if (factor >= 4 || factor <= 0.25) {
     el.className = "verdict warn";
-    el.innerHTML = `${bang}<div>Das wären <b>${nf(delta, capMeter.frac >= 3 ? 1 : 0)} ${capMeter.unit}</b> in ${days} Tagen —
+    el.innerHTML = `${bang}<div>Das wären <b>${nf(delta, capRegister().frac >= 3 ? 1 : 0)} ${capRegister().unit}</b> in ${days} Tagen —
       rund ${nf(factor, 1).replace(",0", "")}× dein üblicher Verbrauch. Stimmt die Zahl?</div>`;
   } else {
     el.className = "verdict";
-    el.innerHTML = `${check}<div>Entspricht <b>${nf(delta, capMeter.frac >= 3 ? 1 : 0)} ${capMeter.unit}</b> in ${days} Tagen
+    el.innerHTML = `${check}<div>Entspricht <b>${nf(delta, capRegister().frac >= 3 ? 1 : 0)} ${capRegister().unit}</b> in ${days} Tagen
       — normal für dich.</div>`;
   }
   save.disabled = false;
 }
 
-function saveReading() {
+/* Zählerwechsel — spiegelt `MeterChangeView` in der App.
+
+   Zwei Stände, nicht einer: Der alte Zähler hat einen Endstand, der neue
+   einen Anfangsstand, und beide beschreiben denselben Moment. Nur mit beiden
+   bleibt der Verbrauch bis zum Wechseltag erhalten. Die Gerätekennung an
+   beiden macht den Rücksprung für die Reihe erklärbar — ohne sie zählte der
+   Abschnitt als null und der Verbrauch bis zum Wechsel wäre verloren.
+
+   Im Entwurf ohne eigenen Schirm: Der Endstand ist der zuletzt bekannte, der
+   Anfangsstand die eingetippte Zahl. In der App werden beide erfragt, weil
+   dort echte Daten entstehen. */
+function recordMeterChange() {
   const v = currentValue();
   if (v === null) return;
   const reg = capMeter.registers[0];
-  reg.readings.push({ y: TODAY.y, m: TODAY.m, d: TODAY.d, value: v, origin: "manual" });
+  const rs = reg.readings;
+  if (!rs.length) return;
+  const last = rs[rs.length - 1];
+
+  const outgoing = last.dev || ("alt-" + Date.now());
+  const incoming = "neu-" + Date.now();
+  // Der zuletzt bekannte Stand wird als Endstand des alten Geräts
+  // festgehalten, bevor das neue anfängt.
+  rs.push({ y: TODAY.y, m: TODAY.m, d: TODAY.d, value: last.value,
+            dev: outgoing, origin: "manual" });
+  rs.push({ y: TODAY.y, m: TODAY.m, d: TODAY.d, value: v,
+            dev: incoming, origin: "manual" });
+
+  const name = capMeter.name;
+  closeSheets();
+  const t = document.getElementById("toast");
+  document.getElementById("toast-text").textContent = name + " — Zählerwechsel gesichert";
+  t.classList.add("on");
+  setTimeout(() => t.classList.remove("on"), 1600);
+  renderAll();
+}
+
+/* Weiter zum nächsten Zählwerk — oder sichern, wenn es das letzte war.
+
+   Gesichert wird erst am Ende und dann alles zusammen: Ein Abbruch nach dem
+   ersten Zählwerk darf keine halbe Ablesung hinterlassen, aus der später ein
+   Verbrauch entsteht, den es nie gab. Dieselbe Regel wie in der App. */
+function saveReading() {
+  const v = currentValue();
+  if (v === null) return;
+  capEntered[capRegister().id] = v;
+
+  if (!capIsLast()) {
+    capIndex += 1;
+    showCaptureStep();
+    return;
+  }
+  commitReadings();
+}
+
+function commitReadings() {
+  const reg = capMeter.registers[0];
+    // Die Kennung des zuletzt verbauten Geräts wandert mit: Ohne sie stünde
+  // nach einem Wechsel eine Ablesung ohne Kennung neben einer mit, und der
+  // nächste Rücksprung wäre wieder unerklärt.
+  const prev = reg.readings[reg.readings.length - 1];
+  const dev = prev ? prev.dev : undefined;
+  for (const r of capMeter.registers) {
+    const value = capEntered[r.id];
+    if (value === undefined) continue;
+    r.readings.push({ y: TODAY.y, m: TODAY.m, d: TODAY.d, value, dev, origin: "manual" });
+  }
   const name = capMeter.name;
   closeSheets();
   const t = document.getElementById("toast");
@@ -2396,6 +2655,15 @@ function saveMeter() {
     if (!editMeter.registers[0].readings.length) {
       editMeter.kind = kind.id; editMeter.unit = kind.unit;
       editMeter.frac = kind.frac; editMeter.color = kind.color;
+      // Auch hier: Was am Zähler geändert wird, muss am Zählwerk ankommen.
+      // Sonst zeigt der Ziffernblock die Stellen der alten Art.
+      for (const r of editMeter.registers) {
+        if (!r.readings.length) { r.unit = kind.unit; r.frac = kind.frac; }
+        if (r.int === undefined) r.int = 6;
+        if (r.frac === undefined) r.frac = kind.frac;
+        if (r.unit === undefined) r.unit = kind.unit;
+        if (r.id === undefined) r.id = "r" + Date.now() + Math.random().toString(36).slice(2, 6);
+      }
     }
   } else {
     METERS.push({
@@ -2403,7 +2671,19 @@ function saveMeter() {
       frac: kind.frac, int: 6, color: kind.color, serial: "—",
       interval: interval || 3650, price, base, prepay,
       zZahl: zZahl || undefined, brennwert: brennwert || undefined,
-      registers: [{ label: "", readings: [] }]
+      // **Vollständig, nicht halb.** Hier stand `{ label: "", readings: [] }` —
+      // ein Zählwerk ohne Einheit, ohne Stellen, ohne Kennung. Solange der
+      // Ziffernblock diese Werte beim *Zähler* holte, fiel das nicht auf. Seit
+      // 0.26.0 holt er sie beim *Zählwerk*, und dann war `int + frac`
+      // undefiniert: Die Eingabe nahm keine Ziffer mehr an, und ein frisch
+      // angelegter Zähler ließ sich nicht ablesen — der erste Schritt, den ein
+      // neuer Nutzer überhaupt macht.
+      //
+      // Die Lehre steckt nicht im Tippfehler, sondern im halb gefüllten
+      // Gebilde: Ein Zählwerk, dem Felder fehlen, die jedes andere hat, ist
+      // eine Falle, die auf ihre Gelegenheit wartet.
+      registers: [{ id: "r" + Date.now(), label: null, unit: kind.unit,
+                    int: 6, frac: kind.frac, readings: [] }]
     });
   }
   closeSheets();
@@ -2441,7 +2721,7 @@ function refreshAfterMeterChange() {
 
 /* Ereignisse */
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-capture],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export],[data-month],[data-open],[data-scope],[data-period],[data-meter],#add-meter,#first-meter,#ed-save,#ed-archive,#ed-delete");
+  const t = e.target.closest("[data-capture],[data-meterchange],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export],[data-month],[data-open],[data-scope],[data-period],[data-meter],#add-meter,#first-meter,#ed-save,#ed-archive,#ed-delete");
   if (!t) return;
 
   if (t.id === "add-meter" || t.id === "first-meter") return openMeterEditor(null);
@@ -2451,6 +2731,7 @@ document.addEventListener("click", e => {
   if (t.id === "ed-delete") return deleteMeter();
 
   if (t.dataset.capture) return openCapture(t.dataset.capture);
+  if (t.dataset.meterchange) return recordMeterChange();
   if (t.dataset.explain) return openExplain(t.dataset.explain);
   if (t.hasAttribute("data-close")) return closeSheets();
 
@@ -2458,7 +2739,7 @@ document.addEventListener("click", e => {
     const k = t.dataset.key;
     if (k === "back") digits = digits.slice(0, -1);
     else if (k === "photo") { return; }
-    else if (digits.length < capMeter.int + capMeter.frac) digits += k;
+    else if (digits.length < capRegister().int + capRegister().frac) digits += k;
     drawCounter();
     judge();
     return;
@@ -2518,7 +2799,7 @@ document.getElementById("save").addEventListener("click", saveReading);
 document.addEventListener("keydown", e => {
   if (e.key === "Escape") closeSheets();
   if (!document.getElementById("sheet-capture").classList.contains("on")) return;
-  if (/^[0-9]$/.test(e.key) && digits.length < capMeter.int + capMeter.frac) { digits += e.key; drawCounter(); judge(); }
+  if (/^[0-9]$/.test(e.key) && digits.length < capRegister().int + capRegister().frac) { digits += e.key; drawCounter(); judge(); }
   if (e.key === "Backspace") { digits = digits.slice(0, -1); drawCounter(); judge(); }
 });
 

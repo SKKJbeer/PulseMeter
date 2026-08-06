@@ -127,21 +127,41 @@ final class LaunchTests: XCTestCase {
                       "Der überfällige Gaszähler wurde nicht gemeldet")
     }
 
-    /// Mit hinterlegtem Preis steht der Betrag auf der Karte.
+    /// Kosten stehen auf der Karte — und die Beschriftung nennt den Zeitraum,
+    /// den der Betrag abdeckt.
     ///
     /// Prüft die ganze Kette: Tarif im Speicher, `CostEngine`, Anzeige. Beim
-    /// Gaszähler zusätzlich die Umrechnung von m³ in kWh — ohne
-    /// Zustandszahl und Brennwert verweigert der Rechenkern die Auskunft,
-    /// und zwar zu Recht.
-    func testCostAppearsWhenAPriceIsStored() {
+    /// Gaszähler zusätzlich die Umrechnung von m³ in kWh — ohne Zustandszahl
+    /// und Brennwert verweigert der Rechenkern die Auskunft, und zwar zu Recht.
+    ///
+    /// Der Test stand vorher auf dem festen Wort „Kosten seit Jahresbeginn"
+    /// und hat damit in 0.21.4 zu Recht angeschlagen: Genau diese Formulierung
+    /// war beim überfälligen Gaszähler falsch, weil die Ablesungen im Mai
+    /// enden und drei Monate fehlen. Er prüft jetzt die Eigenschaft statt der
+    /// Formulierung — sonst hält er wieder den Wortlaut fest statt der Aussage.
+    func testCostIsLabelledWithThePeriodItCovers() {
         let app = launchWithData()
-        let costs = app.staticTexts["Kosten seit Jahresbeginn"]
-        XCTAssertTrue(costs.waitForExistence(timeout: 5),
-                      "Mit hinterlegtem Tarif müssen Kosten auf der Karte stehen")
+
+        let costs = app.staticTexts.containing(
+            NSPredicate(format: "label BEGINSWITH 'Kosten'")
+        )
+        XCTAssertGreaterThan(costs.count, 0,
+                             "Mit hinterlegtem Tarif müssen Kosten auf der Karte stehen")
 
         // Ein Betrag in Euro, nicht bloß die Beschriftung.
         let amount = app.staticTexts.containing(NSPredicate(format: "label CONTAINS '€'")).firstMatch
         XCTAssertTrue(amount.exists, "Es steht keine Zahl mit Währung auf der Karte")
+
+        // Der Gaszähler ist im Ausgangszustand bewusst drei Monate überfällig,
+        // seine Kostenzeile muss also ein Enddatum nennen. Bewusst als
+        // vorhandene Aussage geprüft und nicht als fehlende: Am Ersten eines
+        // Monats ist der Stromzähler taggenau vollständig, und dort wäre
+        // „seit Jahresbeginn" dann richtig. Eine Verneinung hinge am Kalender.
+        let bounded = app.staticTexts.containing(
+            NSPredicate(format: "label BEGINSWITH 'Kosten bis '")
+        )
+        XCTAssertGreaterThan(bounded.count, 0,
+                             "Beim überfälligen Zähler muss die Kostenzeile ihr Enddatum nennen")
     }
 
     /// Mit Abschlag steht die Vorschau auf dem Jahresende auf der Karte.
@@ -315,5 +335,94 @@ final class LaunchTests: XCTestCase {
         ).firstMatch
         XCTAssertFalse(notice.exists,
                        "Der Hinweis blieb stehen, obwohl der Zähler abgelesen wurde")
+    }
+
+    /// Der Ausgangszustand gilt unabhängig davon, welcher Schirm zuerst
+    /// erscheint.
+    ///
+    /// Bis 0.21.3 wertete `OverviewView` die Startschalter aus, und SwiftUI
+    /// baut einen Tab erst, wenn er sichtbar wird: Ein Start direkt im
+    /// Zähler-Schirm erreichte diese Stelle nie. Übrig blieb, was der
+    /// vorherige Start hinterlassen hatte — nach einem leeren Lauf also nichts.
+    /// Aufgefallen ist es an einem Bildschirmfoto, das „Noch kein Zähler"
+    /// zeigte, während die Übersicht drei Zähler führte. Kein Test hätte das
+    /// gesehen, weil jeder von ihnen in der Übersicht beginnt.
+    func testFixtureAppliesRegardlessOfTheOpeningScreen() {
+        let empty = XCUIApplication()
+        empty.launchArguments = ["-pulse-empty"]
+        empty.launch()
+        XCTAssertTrue(empty.staticTexts["Noch kein Zähler"].waitForExistence(timeout: 15))
+        empty.terminate()
+
+        // Derselbe Simulator, direkt in den Zähler-Schirm. Ohne die Verlagerung
+        // in `LaunchFixture` stünde hier der leere Bestand des Laufs davor.
+        let app = XCUIApplication()
+        app.launchArguments = ["-pulse-reset", "-pulse-zaehler"]
+        app.launch()
+
+        XCTAssertTrue(app.staticTexts["Zähler"].waitForExistence(timeout: 15),
+                      "Der Zähler-Schirm wurde nicht geöffnet")
+        for name in ["Strom", "Wasser", "Gas"] {
+            XCTAssertTrue(app.staticTexts[name].waitForExistence(timeout: 5),
+                          "\(name) fehlt im Zähler-Schirm — der Ausgangszustand kam nicht an")
+        }
+    }
+
+    /// Der Zweirichtungszähler wird in einem Vorgang abgelesen — erst Bezug,
+    /// dann Einspeisung.
+    ///
+    /// Bis 0.22.2 gab es für diesen Ablauf weder eine Prüfung noch ein Bild:
+    /// `-pulse-capture` öffnet den ersten Zähler, und das ist Gas mit einem
+    /// einzigen Zählwerk. Ein Ablauf, den niemand ansieht, ist ein Ablauf, in
+    /// dem sich ein Fehler beliebig lange hält.
+    func testCapturingBothDirectionsInOneGo() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-pulse-reset", "-pulse-capture-pv"]
+        app.launch()
+
+        XCTAssertTrue(app.staticTexts["Bezug"].waitForExistence(timeout: 15),
+                      "Der Erfassungsschirm nennt das erste Zählwerk nicht")
+        XCTAssertTrue(app.staticTexts["Zählwerk 1 von 2"].exists,
+                      "Ohne den Fortschritt weiß niemand, dass noch etwas kommt")
+
+        // „Weiter", nicht „Sichern": Es fehlt noch eine Zahl, und ein Knopf,
+        // der etwas anderes tut als er sagt, ist schlimmer als ein Umweg.
+        let next = app.buttons["Weiter"]
+        XCTAssertTrue(next.exists, "Beim ersten von zwei Zählwerken muss „Weiter“ dastehen")
+
+        app.buttons["Vom letzten Stand übernehmen"].tap()
+        next.tap()
+
+        XCTAssertTrue(app.staticTexts["Einspeisung"].waitForExistence(timeout: 5),
+                      "Nach dem Bezug muss die Einspeisung drankommen")
+        XCTAssertTrue(app.staticTexts["Zählwerk 2 von 2"].exists)
+
+        let save = app.buttons["Sichern"]
+        XCTAssertTrue(save.exists, "Beim letzten Zählwerk muss „Sichern“ dastehen")
+        app.buttons["Vom letzten Stand übernehmen"].tap()
+        save.tap()
+
+        XCTAssertTrue(app.staticTexts["Übersicht"].waitForExistence(timeout: 5),
+                      "Nach dem Sichern wurde die Übersicht nicht wieder angezeigt")
+    }
+
+    /// Die Einspeisung steht auf der Karte, und zwar über den Kosten.
+    ///
+    /// Der Betrag darunter ist bereits netto. Stünde die Gutschrift hinterher,
+    /// zöge sie jeder Leser ein zweites Mal ab.
+    func testFeedInAppearsOnTheCard() {
+        let app = launchWithData()
+
+        let feedIn = app.staticTexts.containing(
+            NSPredicate(format: "label BEGINSWITH 'Einspeisung'")
+        ).firstMatch
+        XCTAssertTrue(feedIn.waitForExistence(timeout: 10),
+                      "Beim Zweirichtungszähler muss die Einspeisung auf der Karte stehen")
+
+        let credit = app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS 'vergütet'")
+        ).firstMatch
+        XCTAssertTrue(credit.exists,
+                      "Mit hinterlegter Vergütung muss ein Betrag dabeistehen")
     }
 }

@@ -9,6 +9,481 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.26.2 — 2026-08-06
+
+### Behoben
+- **Der Wechselschirm ließ sich nicht übersetzen.** `guard let register`
+  packte den Wert oben aus, drei Zeilen später band ich ihn noch einmal:
+  „initializer for conditional binding must have Optional type, not
+  'Register'". Ein Fehler, den ein Compiler in einer Sekunde findet — und der
+  hier vier Fassungen lang unentdeckt blieb, weil kein Lauf durchkam.
+
+### Bemerkenswert
+- **Die Protokollkorrektur aus 0.22.4 hat sich sofort ausgezahlt.** Der Lauf
+  nannte Datei, Zeile, Spalte und Grund. Vorher hätte dort „TEST FAILED"
+  gestanden und sonst nichts.
+- **Der neue Linux-Auftrag für den Entwurf war in 59 Sekunden grün** — beim
+  allerersten Lauf, und während der macOS-Auftrag noch baute.
+- Vier Fassungen ohne Bestätigung übereinander, und der Rückstau bestand aus
+  **genau einer** falschen Zeile. Das ist ein besserer Ausgang als erwartet,
+  ändert aber nichts am Befund: So lange ohne Übersetzer weiterzubauen war
+  riskant, und dass es gutging, war zum Teil Glück.
+
+## 0.26.1 — 2026-08-06
+
+**Ein frisch angelegter Zähler ließ sich nicht ablesen.** Gemeldet vom
+Gründer beim Ausprobieren — nicht von mir beim Testen. Der erste Schritt, den
+ein neuer Nutzer überhaupt macht, und er führte ins Leere.
+
+Es waren zwei Fehler übereinander:
+
+### Behoben
+- **`judge()` griff auf `last.value` zu, ohne zu prüfen, ob es eine vorherige
+  Ablesung gibt.** Bei einem neuen Zähler stürzte die Plausibilitätsprüfung
+  still ab, und „Sichern" blieb gesperrt. Der ältere der beiden Fehler, und
+  der, den der Gründer gesehen hat.
+- **Der Editor legte ein halbes Zählwerk an** — `{ label: "", readings: [] }`,
+  ohne Einheit, ohne Stellen, ohne Kennung. Solange der Ziffernblock diese
+  Werte beim *Zähler* holte, fiel das nicht auf; seit 0.26.0 holt er sie beim
+  *Zählwerk*, und dann nahm die Eingabe keine Ziffer mehr an. Dieser Fehler
+  ist meiner, aus der Runde davor.
+
+  Die Lehre steckt nicht im Tippfehler, sondern im halb gefüllten Gebilde: Ein
+  Zählwerk, dem Felder fehlen, die jedes andere hat, ist eine Falle, die auf
+  ihre Gelegenheit wartet. Beim Ändern der Zählerart ziehen die Felder jetzt
+  ebenfalls mit.
+
+### Hinzugefügt
+- **`scripts/check-prototype.mjs` und ein eigener CI-Auftrag auf Linux.** Der
+  Entwurf ist der produktivste Fehlerfinder dieses Projekts und wurde bisher
+  nur geprüft, wenn ich daran dachte. Vierzehn Prüfungen je Erscheinungsbild,
+  darunter genau dieser Weg: Zähler anlegen, ersten Stand eintippen, sichern.
+- Der Auftrag läuft auf `ubuntu-latest` und braucht keinen macOS-Läufer. Er
+  ist in einer Minute durch, auch wenn der App-Build stundenlang in der
+  Warteschlange hängt — was heute mehrfach der Fall war.
+
+### Warum es niemandem auffiel
+Jeder Zähler im Entwurf hatte zwei Jahre Historie. Den Fall „noch nie
+abgelesen" gab es in der Erfassung schlicht nicht — dieselbe Ursache wie bei
+dem Absturz in `lastReading`, der vor ein paar Fassungen an derselben Stelle
+saß. Ein Ausgangszustand, der nur den eingeschwungenen Fall zeigt, versteckt
+den Anfang.
+
+## 0.26.0 — 2026-08-06
+
+**Der Entwurf erfasst beide Zählwerke.** Die zweistufige Erfassung gibt es in
+der App seit 0.22.0 — im Klick-Dummy nicht. Er schrieb ausschließlich nach
+`registers[0]`, und die Einspeisung des PV-Zählers ließ sich dort gar nicht
+eintragen. Eine Abweichung, die niemandem auffiel, weil man sie nur beim
+Durchklicken bemerkt.
+
+### Geändert
+- Erfassung läuft über alle Zählwerke nacheinander: Zählwerkname, „Zählwerk 1
+  von 2", Knopf „Weiter" statt „Sichern". Gesichert wird erst am Ende und dann
+  alles zusammen — ein Abbruch nach dem ersten darf keine halbe Ablesung
+  hinterlassen.
+- **Stellen und Einheit kommen jetzt vom Zählwerk, nicht vom Zähler.** Vorher
+  nahm der Ziffernblock `capMeter.int`/`capMeter.frac`; bei einem Zähler,
+  dessen Zählwerke sich darin unterscheiden, hätte er die falsche Maske
+  gezeigt. Aufgefallen beim Umbau, nicht im Betrieb.
+
+### Geprüft
+- Beide Zählwerke einmal wirklich durchgeklickt: „Bezug / Zählwerk 1 von 2 /
+  Weiter", dann „Einspeisung / Zählwerk 2 von 2 / Sichern". Beide Reihen
+  wachsen um genau eine Ablesung, kein Überlauf, keine JS-Fehler.
+
+## 0.25.0 — 2026-08-06
+
+**Widget für Sperr- und Startbildschirm.** Der zweite Hebel für Wiederkehr:
+Erinnerungen holen jemanden zurück, der die App vergessen hat — ein Widget
+sorgt dafür, dass er sie gar nicht erst vergisst.
+
+### Hinzugefügt
+- `WidgetSummary` in `PulseCore` mit sechs Prüfungen: eine kleine, für sich
+  lesbare Zusammenfassung mit Menge, Zeitraum, Fälligkeit und Symbol.
+- `WidgetBridge` schreibt sie nach jeder Änderung als Datei in die App-Gruppe;
+  das Widget liest sie und rechnet nichts.
+- Zwei Größen. Die kleine zeigt den dringendsten Zähler, die mittlere bis zu
+  drei.
+
+### Entschieden
+- **Das Widget bekommt keinen Zugriff auf den Speicher.** Eine Erweiterung ist
+  ein eigener Prozess mit knappem Speicher und wenigen Millisekunden Zeit.
+  Zöge sie SwiftData samt CloudKit auf, um drei Zahlen anzuzeigen, wäre sie
+  das langsamste und fehleranfälligste Stück der App — und der häufigste Grund
+  für ein leeres Widget ist genau das.
+- **Die Zusammenfassung entsteht in `PulseCore`, nicht in der App.** Würde sie
+  in der Erweiterung noch einmal formuliert, liefen die beiden auseinander,
+  und das Widget zeigte eine andere Zahl als der Bildschirm daneben. Aus
+  demselben Grund ist `periodCaption` aus der Übersicht herausgelöst und wird
+  nun von beiden benutzt.
+- **Fälligkeit hat Vorrang vor dem Zeitraum.** Wer im Vorbeigehen liest, liest
+  eine Zeile. Stünde dort der Zeitraum, während ein Zähler seit drei Monaten
+  überfällig ist, hätte das Widget die falsche Zeile gewählt.
+- **Ohne Daten sagt es, was zu tun ist**, statt leer zu bleiben. Ein leeres
+  Widget wird entfernt.
+- **Ein Schreibfehler bleibt folgenlos.** Ohne App-Gruppe — etwa in der CI,
+  wo ohne Signatur gebaut wird — landet die Datei im eigenen Ordner der App.
+  Das Widget sieht sie dann nicht, aber die App läuft. Ein Absturz an dieser
+  Stelle wäre absurd: Niemand verliert etwas, wenn ein Widget leer bleibt.
+- **Die Datei trägt eine Fassungsnummer**, und eine neuere wird nicht geraten.
+  Ein Widget läuft weiter, während die App schon aktualisiert ist — dann
+  lieber der leere Zustand als eine Zahl, deren Bedeutung sich verschoben hat.
+- Geschrieben wird **atomar**: Läse das Widget genau während des Schreibens,
+  bekäme es sonst eine halbe Datei.
+
+### Vorsichtsmaßnahmen ohne Compiler
+Das Widget ist das erste Ziel, das ohne lokalen Übersetzer entsteht. Zwei
+Stellen habe ich deshalb entschärft, bevor der Lauf sie findet:
+- Ein Helfer mit `@ViewBuilder` an einem `some View`-Parameter ist gültiges
+  Swift, aber die ausgefallenste Konstruktion der Datei. Ein `if let` kostet
+  drei Zeilen mehr und kann nicht überraschen.
+- `periodCaption(for:)` gab es nach dem Herauslösen zweimal — mit `MeterRow`
+  und mit `ConsumptionResult?`. In einem Abschluss wäre das eine Einladung an
+  den Typprüfer, die falsche zu wählen. Die zweite heißt jetzt `periodText`.
+
+### Offen
+- Die App-Gruppe braucht ein Entwicklerkonto, um auf einem Gerät zu greifen.
+  Im Simulator und in der CI läuft der Ersatzpfad. Das Widget ist damit
+  gebaut und übersetzt, aber erst mit dem Apple Developer Program wirklich
+  gefüllt.
+
+`PulseCore` steht bei 135 Prüfungen.
+
+## 0.24.0 — 2026-08-06
+
+**Der Entwurf rechnet wie der Rechenkern.** Die offene Abweichung aus 0.23.0
+ist geschlossen — und zwar an der Wurzel, nicht durch Nachbauen der Oberfläche.
+
+### Geändert
+- **Der Klick-Dummy bildet jetzt eine aufsummierte Reihe**, wie
+  `ConsumptionSeries` in `PulseCore`. Vorher rechnete er Verbrauch als
+  Differenz zweier **roher** Zählerstände. Das trägt genau so lange, wie der
+  Zähler nur steigt; ein Gerätewechsel oder ein Überlauf machte jeden
+  Verbrauch negativ. Und weil der Entwurf beides nicht kannte, konnte er
+  Fehler darin auch nicht finden — genau dafür gibt es ihn aber.
+- `step` spiegelt die Regeln eins zu eins: erklärter Rücksprung bei
+  Gerätewechsel, Überlauf ab 90 % der Kapazität, sonst null statt Raten.
+  Schwelle und Kapazität sind gegen `PulseCore` abgeglichen.
+- Getrennt in `cumulativeAt` (aufgelaufener Verbrauch) und `readingAt`
+  (roher Stand). Der Bericht braucht den Stand, alles andere den Verbrauch.
+  Die beiden zu verwechseln hieße, nach einem Wechsel den Stand des neuen
+  Geräts als Verbrauch auszuweisen.
+
+### Hinzugefügt
+- **Der Zählerwechsel ist im Entwurf anklickbar.** Dieselbe Sackgasse wie in
+  der App bis 0.23.0: Die Frage „Wurde der Zähler gewechselt?" stand da und
+  ließ sich nur mit „Ziffer verirrt" beantworten. Jetzt steht ein Ausweg
+  darunter.
+- Neue Ablesungen übernehmen die Gerätekennung der vorherigen — sonst risse
+  die Kette beim nächsten Rücksprung wieder.
+
+### Geprüft
+- Alle Zahlen der Übersicht sind vor und nach dem Umbau **identisch**. Das war
+  die Anforderung: Ohne Wechsel und ohne Überlauf muss die Reihe genau
+  dasselbe liefern.
+- Vier Fälle einzeln durchgerechnet — ohne Wechsel 600, mit Wechsel 800,
+  unerklärter Rücksprung 800, Überlauf 550. Bei zweien wich das Ergebnis von
+  meiner Erwartung ab, und **beide Male lag die Erwartung falsch**, nicht der
+  Code: Nach einem unerklärten Rücksprung zählt `PulseCore` weiter, statt zu
+  verwerfen, und beim Überlauf hatte ich schlicht falsch addiert.
+- Der Wechsel einmal wirklich durchgeklickt, hell und dunkel: Verbrauch bleibt
+  bei 1.607 kWh, der Stand springt von 49.157,4 auf 42. Zwischen Endstand und
+  Anfangsstand vergeht kein Verbrauch — richtig so.
+
+## 0.23.0 — 2026-08-06
+
+**Zählerwechsel.** Der Erfassungsschirm fragte seit jeher „Wurde der Zähler
+gewechselt, oder hat sich eine Ziffer verirrt?" — und nahm die Antwort nicht
+entgegen. Eine Frage ohne Antwortmöglichkeit ist eine Sackgasse, und die sind
+in diesem Produkt ausgeschlossen (Produktprinzip 4). `MeterDevice`,
+`Reading.deviceID` und `MeteringPoint.device(on:)` lagen im Rechenkern seit
+dem ersten Tag bereit; die App benutzte davon nichts.
+
+Ein Wechsel ist kein Randfall: Netzbetreiber tauschen turnusmäßig, und beim
+Einbau eines digitalen Zählers fängt der Stand wieder bei null an.
+
+### Hinzugefügt
+- **Ein Wechselschirm mit zwei Zahlen** — Endstand des alten Geräts,
+  Anfangsstand des neuen, dazu die Gerätenummer. Zwei und nicht eine: Ein
+  Wechsel ist kein Nullsetzen. Beide Stände beschreiben denselben Moment, und
+  nur mit beiden bleibt der Verbrauch bis zum Wechseltag erhalten.
+- **Zwei Einstiege.** Im Erfassungsschirm erscheint „Der Zähler wurde
+  gewechselt", sobald der neue Stand unter dem alten liegt — genau dort, wo
+  die Frage steht. Und im Zählereditor, für den, der es einträgt, während der
+  Monteur noch da ist.
+- Jede neue Ablesung trägt jetzt die Kennung des verbauten Geräts. Ohne sie
+  risse die Kette nach dem Wechsel wieder: Der Rechenkern erkennt den
+  erklärten Rücksprung nur, wenn **beide** benachbarten Ablesungen wissen, auf
+  welchem Gerät sie entstanden sind.
+
+### Entschieden
+- **Die Zeitstempel der beiden Stände werden von Hand gesetzt.** Beide liegen
+  am selben Tag, und dann entscheidet `createdAt` über die Reihenfolge.
+  Zweimal `Date()` kann denselben Augenblick liefern, und Swifts `sorted` ist
+  **nicht stabil** — die Reihenfolge wäre undefiniert gewesen. Stünde der
+  Anfangsstand vor dem Endstand, sähe der Rechenkern einen Absturz von 50.600
+  auf 0. Eine Prüfung hält fest, dass die umgekehrte Reihenfolge tatsächlich
+  ein anderes Ergebnis liefert — sonst prüfte der Zeitstempel nichts.
+- **Vor dem ersten Wechsel wird das ausgebaute Gerät nachgetragen**, mit der
+  ersten Ablesung als Einbaudatum. Alte Ablesungen behalten ihre leere
+  Kennung; der Übergang von leer auf gesetzt ist ein normaler Zuwachs. Eine
+  Prüfung deckt genau diese Kette ab — die bestehende setzte eine Historie
+  voraus, in der jede Ablesung schon ein Gerät kennt, und so sieht kein
+  gewachsener Bestand aus.
+
+### Offen und benannt
+- **Der Entwurf bildet den Wechsel noch nicht ab.** Er interpoliert direkt auf
+  den Zählerständen, während `PulseCore` über eine aufsummierte Reihe rechnet.
+  Ein Rücksprung machte dort jeden Verbrauch negativ. Nachzuziehen heißt, im
+  Entwurf zuerst dieselbe kumulative Reihe einzuführen — ein Umbau seines
+  Kerns, kein Zusatz, und deshalb nicht nebenbei am Ende einer Runde. Es ist
+  der nächste Schritt am Entwurf, bevor eine weitere Fähigkeit dazukommt.
+
+`PulseCore` steht bei 129 Prüfungen.
+
+## 0.22.4 — 2026-08-06
+
+### Behoben
+- **Ein abgebrochener Lauf hinterließ keine Spur.** Die Korrektur aus 0.21.5
+  leitete die gesamte Ausgabe in eine Datei und gab die Begründungen nur im
+  **Fehlerzweig** aus. Ein Lauf, der abgebrochen wird statt fehlzuschlagen,
+  erreicht diesen Zweig nie — auf der Konsole stand dann nichts, und ohne
+  Zugriff auf die Artefakte war nicht einmal zu sehen, wie weit er gekommen
+  war. Eine Blindstelle gegen eine andere getauscht.
+
+  Jetzt über `tee`: Die Datei bleibt vollständig, und auf der Konsole läuft
+  mit, welche Prüfung gerade lief. Der Exitcode kommt über `PIPESTATUS`
+  durch — gegengeprüft mit einem Versuchsaufbau, der 65 zurückgibt.
+
+### Bemerkenswert
+- Drei Läufe hintereinander sind an GitHubs Infrastruktur gescheitert, nicht
+  am Code: „Failed to resolve action download info. Service Unavailable",
+  zweimal noch vor `actions/checkout`, einmal als Abbruch mitten in den
+  Oberflächentests. Der letzte inhaltlich vollständige Lauf ist 39 auf
+  0.22.1 — grün.
+
+## 0.22.3 — 2026-08-06
+
+### Behoben
+- **Die Abschlagsvorschau rechnete beim PV-Zähler, als gäbe es die Anlage
+  nicht.** Sie bekam nur die Ablesungen des Bezugs; die Einspeisung fiel
+  stillschweigend weg. Aufgefallen ist es daran, dass auf der Karte **auf den
+  Cent** derselbe Wert stand wie vor der Einrichtung — 90,30 € Guthaben —
+  während der Entwurf an derselben Stelle 283 € zeigte. Ohne den Abgleich mit
+  dem Klick-Dummy wäre die Zahl plausibel durchgegangen.
+
+### Entschieden
+- **Die beiden Ablesungslisten heißen jetzt `primary` und `everything`.**
+  Beide hießen `readings`, und beim Umstellen auf den Zweirichtungszähler habe
+  ich an einer von vier Stellen die falsche stehenlassen. Ein Name, der die
+  Verwechslung nicht bemerkbar macht, ist ein Fehler, der auf seine
+  Gelegenheit wartet. Menge, Stand und Vorjahresvergleich gehören zum Bezug —
+  sonst stünde bei einem PV-Zähler der Einspeisestand auf der Karte. Kosten,
+  Vorschau und Einspeisezeile gehören zur Messstelle.
+
+### Bemerkenswert
+- Der Grundpreis läuft über den Zeitraum **bis heute**, der Arbeitspreis nur
+  über den abgelesenen. Beim Stromzähler sind das fünf Tage und 2,12 € — die
+  Kostenzeile heißt „bis 1. August" und enthält Grundpreis bis zum 6. Der
+  Unterschied ist gewollt: Der Grundpreis läuft auch weiter, wenn niemand
+  abliest. Hier festgehalten, damit ihn niemand später als Fehler „korrigiert".
+
+## 0.22.2 — 2026-08-06
+
+Der zweistufige Erfassungsschirm aus 0.22.0 war weder fotografiert noch
+geprüft. `-pulse-capture` öffnet den ersten Zähler, und das ist Gas mit einem
+einzigen Zählwerk — der neue Ablauf kam auf keinem der zehn Bilder vor.
+
+Das ist dieselbe Lücke wie beim Zähler-Schirm in 0.21.4, nur eine Ebene
+tiefer: Ein Ablauf, den niemand ansieht, ist einer, in dem sich ein Fehler
+beliebig lange hält. Heute haben Bildschirmfotos vier Fehler gefunden, drei
+davon in derselben Stunde.
+
+### Hinzugefügt
+- `-pulse-capture-pv` öffnet die Erfassung beim Zweirichtungszähler. Zwei
+  weitere Bilder je Lauf, hell und dunkel — damit sind es zwölf.
+- Zwei Oberflächenprüfungen: der Weg über beide Zählwerke („Bezug", „Weiter",
+  „Einspeisung", „Sichern") und die Einspeisezeile auf der Karte.
+
+### Behoben
+- Über `testCostIsLabelledWithThePeriodItCovers` standen seit 0.21.5 zwei
+  Dokumentationskommentare übereinander — beim Ersetzen der Funktion war der
+  alte stehengeblieben.
+
+## 0.22.1 — 2026-08-06
+
+Zwei Fehler aus 0.22.0, beide vom ersten Bildschirmfoto gefunden, das den
+neuen Zähler zeigte. Auf der Stromkarte stand „Einspeisung 2.086 kWh ≈ 79,02 €
+vergütet" — bei 8,2 ct hätten es 171 € sein müssen. Die Differenz war beide
+Male derselbe Betrag: ein Grundpreisanteil von 89,90 €.
+
+### Behoben
+- **Ein Zweirichtungszähler zahlte den Grundpreis zweimal.** Die Rechnung über
+  eine ganze Messstelle summierte die Grundpreise ihrer Zählwerke. Der
+  Grundpreis gehört aber zum Anschluss, nicht zum Zählwerk — ein Gerät bekommt
+  eine Rechnung. Gezählt wird jetzt je Tarifabschnitt: dieselbe Tarifkennung
+  im selben Zeitraum ist derselbe Grundpreis. Zwei Zählwerke mit **eigenen**
+  Tarifen behalten dagegen jeder seinen; eine zweite Prüfung hält das fest,
+  damit die Korrektur nicht ins Gegenteil überschießt.
+- **Die Einspeisevergütung auf der Karte nahm den Gesamtbetrag statt des
+  Arbeitspreisanteils.** In `total` steckt auch der Grundpreis, und der wurde
+  dadurch von der Gutschrift abgezogen.
+
+### Bemerkenswert
+- **Der Entwurf hatte hier recht und der Rechenkern unrecht.** Der Klick-Dummy
+  rechnet den Grundpreis seit jeher einmal je Zähler. Bisher lief die Prüfung
+  meist andersherum — das ist das erste Mal, dass die kürzere Fassung die
+  gründlichere geschlagen hat.
+- Beide neuen Prüfungen schlagen auf der alten Fassung fehl: 240 € statt 120 €
+  Grundpreis, 500 € statt 380 € gesamt. Ein Test, der auch vorher grün gewesen
+  wäre, hätte nichts bewiesen.
+
+## 0.22.0 — 2026-08-06
+
+**Photovoltaik.** Der Rechenkern konnte Zweirichtungszähler seit dem ersten
+Tag, der Entwurf zeigte sie — nur die App kannte sie nicht. Wer eine PV-Anlage
+hat, konnte seinen Zähler damit gar nicht abbilden, und in Deutschland ist das
+längst keine Randgruppe mehr.
+
+### Hinzugefügt
+- **Ein Schalter „Einspeisung ins Netz"** im Zählereditor, sichtbar nur bei
+  Strom. Dazu ein Feld für die Einspeisevergütung.
+- **Der Erfassungsschirm fragt nacheinander nach beiden Zahlen** — erst Bezug,
+  dann Einspeisung, mit „Weiter" statt „Sichern" dazwischen. Keine Auswahl
+  davor: Wer vor dem Zähler steht, liest beide Zahlen in einem Zug ab; eine
+  Auswahl hieße erst entscheiden, dann tippen, dann noch einmal öffnen.
+- **Die Übersichtskarte zeigt die Einspeisung** mit Menge und Vergütung, und
+  zwar **über** den Kosten: Der Betrag darunter ist bereits netto.
+- Der Ausgangszustand enthält jetzt einen Stromzähler mit PV — sonst sähe
+  weder ein Bildschirmfoto noch ein Test den Fall je.
+
+### Behoben
+- **Die Abschlagsvorschau rechnete bei PV systematisch falsch.** Sie nahm die
+  Nettokosten der ganzen Messstelle — Bezug minus Vergütung — und skalierte
+  sie mit dem Hochrechnungsfaktor des **Bezugs**. Das stimmt nur, wenn beide
+  Zählwerke denselben Ausschnitt abdecken; Bezug und Einspeisung laufen aber
+  gegenläufig durchs Jahr. Im August ist der Bezug fast durch, die Einspeisung
+  noch lange nicht. Es ist die wiederkehrende Fehlerklasse aus CLAUDE.md, zum
+  neunten Mal: eine Aussage über einen Zeitraum, den die Zahl nicht abdeckt.
+  Jedes Zählwerk bekommt jetzt seine eigene Hochrechnung.
+
+  Zwei Prüfungen halten das fest; die eine schlägt auf der alten Fassung mit
+  483,98 € gegen erwartete 422,81 € fehl. Nachgerechnet von Hand — und die
+  erste Handrechnung war falsch, nicht der Rechenkern.
+- **Der Entwurf rechnete die Abschlagsvorschau brutto**, während die
+  Kostenzeile derselben Karte netto war. Zwei Zahlen nebeneinander, die sich
+  widersprachen. Beim Stromzähler springt das Guthaben dadurch von 90 € auf
+  283 € — 193 € hochgerechnete Jahresvergütung, von denen bis zum 1. August
+  134 € aufgelaufen sind. 69 % des Jahresertrags bis Ende Juli, für eine
+  PV-Anlage die richtige Größenordnung.
+- **Zwei Ablesungen desselben Geräts werden zusammen festgeschrieben.** Bisher
+  sicherte der Speicher jeden Wert einzeln; ein Fehler beim zweiten Zählwerk
+  hätte den ersten allein stehen lassen. Er sähe aus wie eine vollständige
+  Ablesung, und der Rechenkern bildete daraus einen Verbrauch für einen
+  Zeitraum, in dem die Gegenrichtung fehlt.
+
+### Entschieden
+- **Die Einspeisung lässt sich nicht mehr abschalten, sobald Werte dafür
+  vorliegen.** Der Schalter ist dann gesperrt, mit Begründung. Ein Zählwerk zu
+  entfernen, an dem Ablesungen hängen, hieße Daten zu verlieren, die der
+  Nutzer selbst eingetragen hat.
+- **Kein Wort über Zählwerke in der Oberfläche.** Der Nutzer sieht ein Gerät
+  mit zwei Zahlen darauf, und genau so steht es da: „Für Zähler, die in beide
+  Richtungen zählen." Beim Zweirichtungszähler heißt das erste Zählwerk
+  „Bezug" — allein wäre das Wort nichtssagend, neben „Einspeisung" sagt es
+  alles.
+
+## 0.21.5 — 2026-08-06
+
+### Behoben
+- **Ein Oberflächentest hielt die falsche Formulierung fest.** Er prüfte auf
+  den Wortlaut „Kosten seit Jahresbeginn" und ist deshalb an der Korrektur aus
+  0.21.4 zerbrochen — zu Recht. Er prüft jetzt die Eigenschaft statt des
+  Satzes: dass eine Kostenzeile da ist, dass ein Betrag dabeisteht, und dass
+  beim überfälligen Zähler ein Enddatum genannt wird. Bewusst als vorhandene
+  Aussage und nicht als fehlende: Am Ersten eines Monats wäre „seit
+  Jahresbeginn" beim Stromzähler richtig, und eine Verneinung hinge am
+  Kalender.
+- **Die CI verschwieg, warum eine Prüfung gefallen ist.** `-quiet` nennt die
+  Namen der gefallenen Tests, aber keine Begründung. Ein Lauf, der „testX ist
+  gefallen" sagt und den Grund für sich behält, kostet zwanzig Minuten fürs
+  Raten — genau das ist heute einmal passiert. Das Protokoll geht jetzt
+  vollständig in eine Datei, und bei einem Fehlschlag stehen die Begründungen
+  auf der Konsole. Die Datei liegt zusätzlich im Artefakt.
+
+### Geändert
+- Die Roadmap stand auf 0.9.0 und behauptete, `PulseUI` und der
+  Erfassungsschirm seien offen. Sie führt jetzt den tatsächlichen Stand — und
+  eine Tabelle, die nebeneinanderstellt, was der Rechenkern kann und was die
+  App davon anbietet. Dieser Abstand ist der gefährlichste Zustand im Projekt:
+  Er sieht in den Tests grün aus und ist trotzdem nicht da. Am größten ist er
+  beim Zweirichtungszähler — `PulseCore` rechnet die Einspeisung seit dem
+  ersten Tag, der Entwurf zeigt sie, die App kennt sie nicht.
+
+## 0.21.4 — 2026-08-06
+
+Die erste Runde, in der die zurückgeholten Screenshots wieder Fehler gefunden
+haben — beide in derselben Stunde, in der sie wieder sichtbar wurden.
+
+### Behoben
+- **„Kosten seit Jahresbeginn" stimmte nicht.** Auf der Karte des Gaszählers
+  stand am 6. August der Zeitraum „1. Januar bis 1. Mai" — richtig, denn seit
+  dem 1. Mai gab es keine Ablesung. Zwei Zeilen tiefer standen 1.399,41 €
+  „seit Jahresbeginn". Drei Monate, die der Betrag nicht enthält. Die Zahl war
+  richtig, der Satz darüber nicht; es ist die wiederkehrende Fehlerklasse aus
+  CLAUDE.md, diesmal in der Beschriftung statt in der Rechnung. Die Zeile
+  nennt jetzt denselben Ausschnitt wie die Kopfzeile der Karte.
+- **Die Bildschirmfotos hingen voneinander ab.** `-pulse-reset` wurde in
+  `OverviewView` ausgewertet, und SwiftUI baut einen Tab erst, wenn er
+  sichtbar wird. Ein Lauf, der direkt im Zähler-Schirm begann, erreichte diese
+  Stelle nie und zeigte, was der vorherige Start hinterlassen hatte — nach
+  `-pulse-empty` also „Noch kein Zähler", während die Übersicht drei Zähler
+  führte. Der Verlauf-Schirm war nur durch die Reihenfolge zufällig richtig.
+  Der Ausgangszustand entsteht jetzt in `LaunchFixture` beim Start der App.
+
+### Entschieden
+- **Ein fehlgeschlagener Ausgangszustand bricht ab, statt weiterzulaufen.**
+  Stillschweigend leer weiterzumachen sähe auf dem Bild aus wie der Kaltstart
+  — also wie ein gültiger Zustand. Genau daran wäre der Fehler wieder
+  unsichtbar. Erreichbar ist die Stelle nur über einen Startschalter, den kein
+  Nutzer setzt.
+
+### Geändert
+- Der Klick-Dummy zeigt jetzt ebenfalls Stand und Kosten auf der Karte. Beide
+  Zeilen gab es bisher nur in der App — und es waren ausgerechnet die zwei,
+  an denen der Beschriftungsfehler saß. Im Entwurf hätte ihn niemand sehen
+  können, weil es sie dort nicht gab.
+- Die Einspeisung steht im Entwurf **über** den Kosten, nicht darunter: Der
+  Betrag ist bereits netto. Darunter zöge jeder Leser die Vergütung ein
+  zweites Mal ab.
+- Der Hinweis über der Übersicht sagt im Entwurf „Vorschau" statt „Prognose",
+  wie in der App.
+
+## 0.21.3 — 2026-08-06
+
+Keine Produktänderung — eine Prüfung, die verlorengegangen war, ist wieder da.
+
+### Hinzugefügt
+- **Die Screenshots jedes Laufs liegen jetzt im Zweig `screenshots`.** Bisher
+  gab es sie nur als Artefakt, und an ein Artefakt komme ich aus der
+  Entwicklungsumgebung heraus nicht heran: Der Weg zur GitHub-API ist dort
+  gesperrt, git dagegen läuft. Damit war die produktivste Prüfung dieses
+  Projekts stillschweigend ausgefallen — sieben der bisher gefundenen
+  Darstellungsfehler hat kein Test gefunden, sondern der Blick auf ein Bild.
+- `scripts/publish-shots.sh` verkleinert die zehn Bilder auf 1000 Pixel Höhe
+  und legt sie als JPEG ab. Aus über drei Megabyte werden rund dreihundert
+  Kilobyte; für Anordnung, Kontrast und Zahlen reicht das bei weitem.
+
+### Entschieden
+- **Der Zweig trägt immer nur einen Stand.** Ein frisch angelegtes Repository
+  wird mit `--force` geschoben, damit weder Historie noch Objektlager wachsen.
+  Wer einen älteren Stand braucht, findet ihn im Artefakt des jeweiligen Laufs.
+
+### Behoben
+- Die README behauptete, Verlauf und Zähler seien Platzhalter. Das stimmt seit
+  0.18.0 nicht mehr — beide sind vollwertige Bildschirme.
+
 ## 0.21.2 — 2026-08-06
 
 ### Behoben

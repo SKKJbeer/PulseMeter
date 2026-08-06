@@ -164,15 +164,45 @@ public enum ForecastEngine {
     ) throws -> PrepaymentOutlook? {
 
         guard let prepayment = period.totalPrepayment else { return nil }
-        guard let register = meteringPoint.primaryRegister else { return nil }
-        guard let forecast = forecast(register: register, readings: readings,
-                                      period: period.range, today: today) else { return nil }
         guard let costSoFar = try cost(meteringPoint: meteringPoint, readings: readings,
                                        tariffs: tariffs, upTo: today, in: period.range)
         else { return nil }
+        guard let elapsedRange = DayRange(start: period.range.start,
+                                          end: Swift.min(today, period.range.end))
+        else { return nil }
 
-        let measured = forecast.actual.quantity.value
-        let scale: Decimal = measured > 0 ? forecast.projected.value / measured : 1
+        // **Jedes Zählwerk mit seiner eigenen Jahresform.**
+        //
+        // Vorher wurde der Arbeitspreis der ganzen Messstelle mit dem
+        // Hochrechnungsfaktor des ersten Zählwerks skaliert. Bei einem
+        // Zweirichtungszähler ist das falsch, und zwar systematisch: Bezug und
+        // Einspeisung laufen gegenläufig durchs Jahr. Im August ist der Bezug
+        // fast durch, die Einspeisung noch lange nicht — einen Betrag, in dem
+        // beides steckt, mit der Form nur eines der beiden fortzuschreiben,
+        // ist die wiederkehrende Fehlerklasse aus CLAUDE.md.
+        let relevant = tariffs.filter { $0.meteringPointID == meteringPoint.id }
+        var projectedEnergy = Decimal(0)
+        var sawRegister = false
+
+        for register in meteringPoint.registers {
+            guard let partial = try? CostEngine.cost(register: register, readings: readings,
+                                                     tariffs: relevant, in: elapsedRange)
+            else { continue }
+            sawRegister = true
+            let energy = partial.energyAmount.amount
+            guard let forecast = forecast(register: register, readings: readings,
+                                          period: period.range, today: today) else {
+                // Ohne Hochrechnung bleibt der gemessene Betrag stehen. Ihn
+                // wegzulassen wäre schlimmer: Der Wert wäre dann kleiner als
+                // das, was schon feststeht.
+                projectedEnergy += energy
+                continue
+            }
+            let measured = forecast.actual.quantity.value
+            let scale: Decimal = measured > 0 ? forecast.projected.value / measured : 1
+            projectedEnergy += energy * scale
+        }
+        guard sawRegister else { return nil }
 
         // Der Arbeitspreis skaliert mit dem Verbrauch, der Grundpreis nicht —
         // er fällt für den gesamten Zeitraum an, unabhängig vom Verbrauch.
@@ -182,7 +212,7 @@ public enum ForecastEngine {
         let fullBase = costSoFar.baseAmount.amount
             * Decimal(period.range.spanInDays)
             / Decimal(Swift.max(1, elapsedDays))
-        let projectedTotal = costSoFar.energyAmount.amount * scale + fullBase
+        let projectedTotal = projectedEnergy + fullBase
         let projectedCost = Money(projectedTotal, costSoFar.total.currency)
 
         return PrepaymentOutlook(
