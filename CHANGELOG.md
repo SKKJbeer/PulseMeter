@@ -49,6 +49,16 @@ sorgt dafür, dass er sie gar nicht erst vergisst.
 - Geschrieben wird **atomar**: Läse das Widget genau während des Schreibens,
   bekäme es sonst eine halbe Datei.
 
+### Vorsichtsmaßnahmen ohne Compiler
+Das Widget ist das erste Ziel, das ohne lokalen Übersetzer entsteht. Zwei
+Stellen habe ich deshalb entschärft, bevor der Lauf sie findet:
+- Ein Helfer mit `@ViewBuilder` an einem `some View`-Parameter ist gültiges
+  Swift, aber die ausgefallenste Konstruktion der Datei. Ein `if let` kostet
+  drei Zeilen mehr und kann nicht überraschen.
+- `periodCaption(for:)` gab es nach dem Herauslösen zweimal — mit `MeterRow`
+  und mit `ConsumptionResult?`. In einem Abschluss wäre das eine Einladung an
+  den Typprüfer, die falsche zu wählen. Die zweite heißt jetzt `periodText`.
+
 ### Offen
 - Die App-Gruppe braucht ein Entwicklerkonto, um auf einem Gerät zu greifen.
   Im Simulator und in der CI läuft der Ersatzpfad. Das Widget ist damit

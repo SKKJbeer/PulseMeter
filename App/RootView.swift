@@ -270,7 +270,7 @@ struct OverviewView: View {
         if case .none = result.coverage {
             return row.readingCount == 0 ? "Noch keine Ablesung" : "Seit der ersten Ablesung"
         }
-        return periodCaption(for: result)
+        return periodText(for: result)
     }
 
     /// Derselbe Satz, gebildet allein aus dem Ergebnis.
@@ -278,7 +278,12 @@ struct OverviewView: View {
     /// Herausgelöst, weil das Widget ihn ebenfalls braucht und eine zweite
     /// Fassung früher oder später eine andere Beschriftung zeigte als der
     /// Bildschirm daneben.
-    private func periodCaption(for result: ConsumptionResult?) -> String {
+    ///
+    /// Eigener Name statt einer Überladung: Zwei Funktionen `periodCaption(for:)`
+    /// mit `MeterRow` und `ConsumptionResult?` wären in einem Abschluss eine
+    /// Einladung an den Typprüfer, die falsche zu wählen — und ich baue hier
+    /// gerade ohne Compiler zur Hand.
+    private func periodText(for result: ConsumptionResult?) -> String {
         guard let result else { return "Noch keine Ablesung" }
 
         // Ein verkürzter Zeitraum wird als Spanne ausgeschrieben, nicht als
@@ -513,9 +518,7 @@ struct OverviewView: View {
                 }),
                 range: yearRange,
                 today: today,
-                caption: { result in
-                    periodCaption(for: result)
-                }))
+                caption: { result in periodText(for: result) }))
 
             // Eine Ablesung verschiebt den nächsten Termin. Ohne dieses
             // Nachziehen käme die Erinnerung zu einem Zeitpunkt, an dem längst

@@ -57,7 +57,12 @@ struct PulseWidgetView: View {
 
     private var small: some View {
         VStack(alignment: .leading, spacing: 4) {
-            guardedContent { meter in
+            // Bewusst schlicht: Hier stand ein Helfer mit `@ViewBuilder` an
+            // einem `some View`-Parameter. Das ist gültiges Swift, aber die
+            // ausgefallenste Konstruktion der Datei — und ich baue dieses Ziel
+            // ohne Compiler zur Hand. Ein `if let` kostet drei Zeilen mehr und
+            // kann nicht überraschen.
+            if let meter = entry.summary?.headline {
                 Label(meter.name, systemImage: meter.symbolName)
                     .font(.system(.caption, weight: .semibold))
                     .foregroundStyle(PulseColor.resource(meter.colorToken))
@@ -80,6 +85,8 @@ struct PulseWidgetView: View {
                     .font(.system(.caption2))
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
+            } else {
+                emptyState
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
@@ -130,17 +137,6 @@ struct PulseWidgetView: View {
             Text("Öffne die App und trag deinen ersten Stand ein.")
                 .font(.system(.caption2))
                 .foregroundStyle(.secondary)
-        }
-    }
-
-    @ViewBuilder
-    private func guardedContent(
-        @ViewBuilder _ content: (WidgetSummary.Meter) -> some View
-    ) -> some View {
-        if let meter = entry.summary?.headline {
-            content(meter)
-        } else {
-            emptyState
         }
     }
 
