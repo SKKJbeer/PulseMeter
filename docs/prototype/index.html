@@ -234,6 +234,10 @@ h2.large {
 .card-extra > span:first-child { min-width: 0; }
 .card-extra > :last-child { white-space: nowrap; flex: none; }
 .card-extra strong { color: var(--ink); font-weight: 600; }
+/* Textknopf innerhalb eines Hinweises — sieht aus wie ein Satzteil, ist aber
+   der Ausweg aus der Sackgasse. */
+.linklike { display: block; margin-top: 7px; background: none; border: 0; padding: 0;
+  font: inherit; font-weight: 600; color: var(--tint); cursor: pointer; text-align: left; }
 .explain {
   font: inherit; font-size: var(--fs-sub); color: var(--c);
   background: none; border: 0; padding: 0; cursor: pointer;
@@ -661,7 +665,7 @@ select.field { cursor: pointer; }
 
 <div class="stage-head">
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.22.1</p>
+  <p>Klickbarer Entwurf · v0.24.0</p>
 </div>
 
 <div class="device">
@@ -1005,7 +1009,81 @@ const METERS = [
    Rechenkern (verkürzte Fassung von PulseCore)
    ============================================================ */
 
+/* Der Schritt zwischen zwei Ablesungen — spiegelt `ConsumptionSeries.step`.
+
+   Bis 0.24.0 rechnete der Entwurf Verbrauch als Differenz zweier **roher**
+   Zählerstände. Das trägt genau so lange, wie der Zähler nur steigt. Ein
+   Gerätewechsel oder ein Überlauf machte jeden Verbrauch negativ — und weil
+   der Entwurf beides nicht kannte, konnte er Fehler darin auch nicht finden.
+   Genau dafür gibt es ihn aber. */
+function step(prev, cur, capacity) {
+  // Gerätewechsel: Der Rücksprung ist erklärt. Zwischen Endstand des alten
+  // und Anfangsstand des neuen Geräts vergeht kein Verbrauch — beide
+  // Ablesungen beschreiben denselben Moment.
+  if (prev.dev && cur.dev && prev.dev !== cur.dev) return 0;
+  if (cur.value >= prev.value) return cur.value - prev.value;
+  // Rücksprung ohne Gerätewechsel: Überlauf oder Fehleingabe. Nur nahe der
+  // Kapazität ist der Überlauf plausibel.
+  if (capacity > 0 && prev.value >= capacity * 0.9) {
+    return capacity - prev.value + cur.value;
+  }
+  // Nicht raten. Der Abschnitt zählt als null.
+  return 0;
+}
+
+/* Aufsummierte Reihe statt roher Stände — wie `ConsumptionSeries` in
+   PulseCore. Der Wert des ersten Punktes ist null; jeder weitere trägt den
+   bis dahin aufgelaufenen Verbrauch.
+
+   Bewusst ohne Zwischenspeicher: Die Reihen sind ein paar Dutzend Punkte
+   lang, und ein Zwischenspeicher, der nach dem Eintragen einer Ablesung
+   veraltet, kostet mehr als er spart. */
+function series(reg) {
+  const rs = reg.readings;
+  if (!rs.length) return [];
+  const capacity = Math.pow(10, reg.int || 6);
+  const points = [{ y: rs[0].y, m: rs[0].m, d: rs[0].d, cum: 0 }];
+  let running = 0;
+  for (let i = 1; i < rs.length; i++) {
+    running += step(rs[i - 1], rs[i], capacity);
+    points.push({ y: rs[i].y, m: rs[i].m, d: rs[i].d, cum: running });
+  }
+  return points;
+}
+
+/* Aufgelaufener Verbrauch an einem Tag. Zwischen zwei Ablesungen linear
+   interpoliert, außerhalb des abgedeckten Bereichs **nicht** extrapoliert. */
 function cumulativeAt(reg, day) {
+  const ps = series(reg);
+  if (!ps.length) return null;
+  const s = serial(day.y, day.m, day.d);
+  const first = serial(ps[0].y, ps[0].m, ps[0].d);
+  const last = serial(ps[ps.length - 1].y, ps[ps.length - 1].m, ps[ps.length - 1].d);
+  if (s < first || s > last) return null;
+  for (let i = 0; i < ps.length; i++) {
+    const si = serial(ps[i].y, ps[i].m, ps[i].d);
+    // Bei mehreren Ablesungen am selben Tag — Wechseltag — zählt die letzte:
+    // Endstand und Anfangsstand tragen denselben aufgelaufenen Wert, und der
+    // Tag ist erst danach abgeschlossen.
+    if (si === s) {
+      let j = i;
+      while (j + 1 < ps.length && serial(ps[j + 1].y, ps[j + 1].m, ps[j + 1].d) === s) j++;
+      return { v: ps[j].cum, exact: true };
+    }
+    if (si > s) {
+      const lo = ps[i - 1], slo = serial(lo.y, lo.m, lo.d);
+      const f = (s - slo) / (si - slo);
+      return { v: lo.cum + (ps[i].cum - lo.cum) * f, exact: false };
+    }
+  }
+  return { v: ps[ps.length - 1].cum, exact: true };
+}
+
+/* Der **rohe** Zählerstand an einem Tag — die Zahl, die auf dem Gerät steht.
+   Für Anfangs- und Endstand im Bericht; für Verbrauch ist `cumulativeAt`
+   zuständig. Die beiden zu verwechseln hieße, nach einem Wechsel den Stand
+   des neuen Geräts als Verbrauch auszuweisen. */
+function readingAt(reg, day) {
   const rs = reg.readings;
   if (!rs.length) return null;
   const s = serial(day.y, day.m, day.d);
@@ -1014,7 +1092,11 @@ function cumulativeAt(reg, day) {
   if (s < first || s > last) return null;
   for (let i = 0; i < rs.length; i++) {
     const si = serial(rs[i].y, rs[i].m, rs[i].d);
-    if (si === s) return { v: rs[i].value, exact: true };
+    if (si === s) {
+      let j = i;
+      while (j + 1 < rs.length && serial(rs[j + 1].y, rs[j + 1].m, rs[j + 1].d) === s) j++;
+      return { v: rs[j].value, exact: true };
+    }
     if (si > s) {
       const lo = rs[i - 1], slo = serial(lo.y, lo.m, lo.d);
       const f = (s - slo) / (si - slo);
@@ -1969,7 +2051,9 @@ function reportRows(meters, from, to) {
     return {
       m, reg, c, prev, delta, work, feed, base, months,
       cost: work - feed + base,
-      start: cumulativeAt(reg, c.cfrom), end: cumulativeAt(reg, c.cto)
+      // Roher Stand, nicht aufgelaufener Verbrauch: Im Bericht steht die
+      // Zahl, die am Tag auf dem Gerät stand.
+      start: readingAt(reg, c.cfrom), end: readingAt(reg, c.cto)
     };
   }).filter(Boolean);
 }
@@ -2322,8 +2406,14 @@ function judge() {
 
   if (v < last.value) {
     el.className = "verdict warn";
+    // Die Frage bekommt eine Antwortmöglichkeit. Bis 0.24.0 stand sie hier —
+    // wie in der App bis 0.23.0 — und ließ sich nur mit „Ziffer verirrt"
+    // beantworten, nämlich durch Korrigieren. Eine Frage ohne Antwort ist eine
+    // Sackgasse (Produktprinzip 4).
+    el.className = "verdict warn";
     el.innerHTML = `${bang}<div>Der Stand liegt unter dem letzten Wert von <b>${nf(last.value, capMeter.frac)} ${capMeter.unit}</b>.
-      Wurde der Zähler gewechselt, oder hat sich eine Ziffer verirrt?</div>`;
+      Wurde der Zähler gewechselt, oder hat sich eine Ziffer verirrt?
+      <button type="button" class="linklike" data-meterchange="1">Der Zähler wurde gewechselt</button></div>`;
     save.disabled = false;
     return;
   }
@@ -2351,11 +2441,53 @@ function judge() {
   save.disabled = false;
 }
 
+/* Zählerwechsel — spiegelt `MeterChangeView` in der App.
+
+   Zwei Stände, nicht einer: Der alte Zähler hat einen Endstand, der neue
+   einen Anfangsstand, und beide beschreiben denselben Moment. Nur mit beiden
+   bleibt der Verbrauch bis zum Wechseltag erhalten. Die Gerätekennung an
+   beiden macht den Rücksprung für die Reihe erklärbar — ohne sie zählte der
+   Abschnitt als null und der Verbrauch bis zum Wechsel wäre verloren.
+
+   Im Entwurf ohne eigenen Schirm: Der Endstand ist der zuletzt bekannte, der
+   Anfangsstand die eingetippte Zahl. In der App werden beide erfragt, weil
+   dort echte Daten entstehen. */
+function recordMeterChange() {
+  const v = currentValue();
+  if (v === null) return;
+  const reg = capMeter.registers[0];
+  const rs = reg.readings;
+  if (!rs.length) return;
+  const last = rs[rs.length - 1];
+
+  const outgoing = last.dev || ("alt-" + Date.now());
+  const incoming = "neu-" + Date.now();
+  // Der zuletzt bekannte Stand wird als Endstand des alten Geräts
+  // festgehalten, bevor das neue anfängt.
+  rs.push({ y: TODAY.y, m: TODAY.m, d: TODAY.d, value: last.value,
+            dev: outgoing, origin: "manual" });
+  rs.push({ y: TODAY.y, m: TODAY.m, d: TODAY.d, value: v,
+            dev: incoming, origin: "manual" });
+
+  const name = capMeter.name;
+  closeSheets();
+  const t = document.getElementById("toast");
+  document.getElementById("toast-text").textContent = name + " — Zählerwechsel gesichert";
+  t.classList.add("on");
+  setTimeout(() => t.classList.remove("on"), 1600);
+  renderAll();
+}
+
 function saveReading() {
   const v = currentValue();
   if (v === null) return;
   const reg = capMeter.registers[0];
-  reg.readings.push({ y: TODAY.y, m: TODAY.m, d: TODAY.d, value: v, origin: "manual" });
+    // Die Kennung des zuletzt verbauten Geräts wandert mit: Ohne sie stünde
+  // nach einem Wechsel eine Ablesung ohne Kennung neben einer mit, und der
+  // nächste Rücksprung wäre wieder unerklärt.
+  const prev = reg.readings[reg.readings.length - 1];
+  reg.readings.push({ y: TODAY.y, m: TODAY.m, d: TODAY.d, value: v,
+                      dev: prev ? prev.dev : undefined, origin: "manual" });
   const name = capMeter.name;
   closeSheets();
   const t = document.getElementById("toast");
@@ -2505,7 +2637,7 @@ function refreshAfterMeterChange() {
 
 /* Ereignisse */
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-capture],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export],[data-month],[data-open],[data-scope],[data-period],[data-meter],#add-meter,#first-meter,#ed-save,#ed-archive,#ed-delete");
+  const t = e.target.closest("[data-capture],[data-meterchange],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export],[data-month],[data-open],[data-scope],[data-period],[data-meter],#add-meter,#first-meter,#ed-save,#ed-archive,#ed-delete");
   if (!t) return;
 
   if (t.id === "add-meter" || t.id === "first-meter") return openMeterEditor(null);
@@ -2515,6 +2647,7 @@ document.addEventListener("click", e => {
   if (t.id === "ed-delete") return deleteMeter();
 
   if (t.dataset.capture) return openCapture(t.dataset.capture);
+  if (t.dataset.meterchange) return recordMeterChange();
   if (t.dataset.explain) return openExplain(t.dataset.explain);
   if (t.hasAttribute("data-close")) return closeSheets();
 

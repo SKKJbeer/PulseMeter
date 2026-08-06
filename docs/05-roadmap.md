@@ -96,7 +96,7 @@ Die Reihenfolge ist bewusst nicht „Screens von oben nach unten", sondern nach 
 
 ---
 
-## Aktueller Stand — Version 0.23.0
+## Aktueller Stand — Version 0.24.0
 
 | Schritt | Stand |
 |---|---|
@@ -120,21 +120,20 @@ der Oberfläche fehlt, sieht in den Tests grün aus und ist trotzdem nicht da.
 |---|---|---|---|
 | Zweirichtungszähler (PV-Einspeisung) | ja | ja | ja |
 | Doppeltarif (HT/NT) | ja | **nein** | nein |
-| Zählerwechsel | ja | ja | **nein** |
+| Zählerwechsel | ja | ja | ja |
 | PDF-Bericht | — | **nein** | ja |
 | Foto-Belege | — | nein | nein |
 
 Der Zweirichtungszähler ist mit 0.22.0 geschlossen, der Zählerwechsel mit
 0.23.0 — dort allerdings **nur in der App**.
 
-**Offene Abweichung: der Zählerwechsel fehlt im Entwurf.** Und zwar nicht aus
-Bequemlichkeit: Der Entwurf interpoliert direkt auf den Zählerständen, während
-`PulseCore` über eine aufsummierte Reihe rechnet (`ConsumptionSeries`). Ein
-Rücksprung macht dort jeden Verbrauch negativ. Den Wechsel nachzuziehen heißt
-also, im Entwurf zuerst dieselbe kumulative Reihe einzuführen — ein Umbau
-seines Kerns, kein Zusatz. Das ist der nächste Schritt am Entwurf, bevor eine
-weitere Fähigkeit dazukommt: Ein Entwurf, der eine Struktur nicht teilt, kann
-Fehler in ihr auch nicht mehr finden — und genau dafür gibt es ihn.
+Mit 0.24.0 ist auch der Entwurf nachgezogen: Er rechnet jetzt über dieselbe
+aufsummierte Reihe wie `PulseCore`, mit Gerätewechsel und Zählerüberlauf, und
+der Wechsel lässt sich anklicken. Damit gilt Regel 2 wieder ohne Einschränkung.
+
+Offen bleibt der **Doppeltarifzähler**, und dort fehlt er auf beiden Seiten —
+in der App und im Entwurf. Der Entwurf sollte zuerst drankommen: Ein Fehler
+fällt dort schneller auf und kostet weniger.
 
 Zusätzlich entstanden, weil der Prototyp es nötig machte: Datenansicht mit
 Monats-, Quartals- und Jahresvergleich, Verbrauchsbericht mit Zeitraumwahl,
@@ -147,14 +146,10 @@ Mac beurteilen.
 
 ### Die nächsten drei Schritte
 
-1. **0.24.0 — Kumulative Reihe im Entwurf.** Erst danach darf dort eine
-   weitere Fähigkeit dazukommen. Solange der Entwurf auf rohen Ständen
-   interpoliert, kann er Fehler in der Reihenbildung nicht mehr finden — und
-   genau dafür gibt es ihn.
-2. **0.25.0 — Widget für Sperr- und Startbildschirm.** Der zweite Hebel für
+1. **0.25.0 — Widget für Sperr- und Startbildschirm.** Der zweite Hebel für
    Wiederkehr nach den Erinnerungen: Der Stand ist sichtbar, ohne die App zu
    öffnen.
-3. **0.26.0 — Barrierefreiheit und Startzeit.** VoiceOver in allen
+2. **0.26.0 — Barrierefreiheit und Startzeit.** VoiceOver in allen
    Hauptflüssen, Dynamic Type bis zur größten Stufe, Kaltstart unter 800 ms.
    In `00-produktstrategie.md` steht „nicht verhandelbar" — geprüft wurde es
    bis heute nie.

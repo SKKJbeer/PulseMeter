@@ -9,6 +9,47 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.24.0 — 2026-08-06
+
+**Der Entwurf rechnet wie der Rechenkern.** Die offene Abweichung aus 0.23.0
+ist geschlossen — und zwar an der Wurzel, nicht durch Nachbauen der Oberfläche.
+
+### Geändert
+- **Der Klick-Dummy bildet jetzt eine aufsummierte Reihe**, wie
+  `ConsumptionSeries` in `PulseCore`. Vorher rechnete er Verbrauch als
+  Differenz zweier **roher** Zählerstände. Das trägt genau so lange, wie der
+  Zähler nur steigt; ein Gerätewechsel oder ein Überlauf machte jeden
+  Verbrauch negativ. Und weil der Entwurf beides nicht kannte, konnte er
+  Fehler darin auch nicht finden — genau dafür gibt es ihn aber.
+- `step` spiegelt die Regeln eins zu eins: erklärter Rücksprung bei
+  Gerätewechsel, Überlauf ab 90 % der Kapazität, sonst null statt Raten.
+  Schwelle und Kapazität sind gegen `PulseCore` abgeglichen.
+- Getrennt in `cumulativeAt` (aufgelaufener Verbrauch) und `readingAt`
+  (roher Stand). Der Bericht braucht den Stand, alles andere den Verbrauch.
+  Die beiden zu verwechseln hieße, nach einem Wechsel den Stand des neuen
+  Geräts als Verbrauch auszuweisen.
+
+### Hinzugefügt
+- **Der Zählerwechsel ist im Entwurf anklickbar.** Dieselbe Sackgasse wie in
+  der App bis 0.23.0: Die Frage „Wurde der Zähler gewechselt?" stand da und
+  ließ sich nur mit „Ziffer verirrt" beantworten. Jetzt steht ein Ausweg
+  darunter.
+- Neue Ablesungen übernehmen die Gerätekennung der vorherigen — sonst risse
+  die Kette beim nächsten Rücksprung wieder.
+
+### Geprüft
+- Alle Zahlen der Übersicht sind vor und nach dem Umbau **identisch**. Das war
+  die Anforderung: Ohne Wechsel und ohne Überlauf muss die Reihe genau
+  dasselbe liefern.
+- Vier Fälle einzeln durchgerechnet — ohne Wechsel 600, mit Wechsel 800,
+  unerklärter Rücksprung 800, Überlauf 550. Bei zweien wich das Ergebnis von
+  meiner Erwartung ab, und **beide Male lag die Erwartung falsch**, nicht der
+  Code: Nach einem unerklärten Rücksprung zählt `PulseCore` weiter, statt zu
+  verwerfen, und beim Überlauf hatte ich schlicht falsch addiert.
+- Der Wechsel einmal wirklich durchgeklickt, hell und dunkel: Verbrauch bleibt
+  bei 1.607 kWh, der Stand springt von 49.157,4 auf 42. Zwischen Endstand und
+  Anfangsstand vergeht kein Verbrauch — richtig so.
+
 ## 0.23.0 — 2026-08-06
 
 **Zählerwechsel.** Der Erfassungsschirm fragte seit jeher „Wurde der Zähler
