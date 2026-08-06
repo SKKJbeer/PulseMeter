@@ -79,6 +79,9 @@ struct MeterRow: Identifiable {
     /// reicht — bei Gas ohne Zustandszahl und Brennwert etwa. Ein leeres Feld
     /// erklärt sich nicht; ein Satz schon.
     let costProblem: String?
+    /// Vorschau auf das Ende des Abrechnungszeitraums, wenn ein Abschlag
+    /// hinterlegt ist.
+    let outlook: ForecastEngine.PrepaymentOutlook?
 }
 
 struct OverviewView: View {
@@ -194,6 +197,18 @@ struct OverviewView: View {
                     }
                 } else if let costProblem = row.costProblem {
                     CardFooterRow(costProblem) { EmptyView() }
+                }
+                if let outlook = row.outlook {
+                    // „Voraussichtlich" ist kein Füllwort: Die Zahl beruht auf
+                    // einer Hochrechnung des restlichen Zeitraums, nicht auf
+                    // gemessenem Verbrauch (Produktprinzip 7).
+                    CardFooterRow("Abschlag \(money(outlook.totalPrepayment)) im Jahr") {
+                        Text(outlook.expectsRefund
+                             ? "≈ \(money(outlook.balance)) Guthaben"
+                             : "≈ \(money(Money(-outlook.balance.amount, outlook.balance.currency))) Nachzahlung")
+                            .font(.system(.subheadline, weight: .semibold))
+                            .foregroundStyle(outlook.expectsRefund ? PulseColor.favourable : PulseColor.adverse)
+                    }
                 }
                 Divider().overlay(PulseColor.hairline)
                 Button {
@@ -372,13 +387,14 @@ struct OverviewView: View {
                                     fractionDigits: 0, yearToDate: nil,
                                     changeVersusLastYear: nil, monthlySeries: [],
                                     daysSinceReading: nil, isDue: false,
-                                    cost: nil, costProblem: nil)
+                                    cost: nil, costProblem: nil, outlook: nil)
                 }
                 let readings = try repository.readings(for: register.id)
                 let last = readings.last
+                let tariffs = try repository.tariffs(for: point.id)
+                let periods = try repository.billingPeriods(for: point.id)
                 let costs = cost(register: register, readings: readings,
-                                 tariffs: try repository.tariffs(for: point.id),
-                                 in: yearRange)
+                                 tariffs: tariffs, in: yearRange)
                 let result = ConsumptionEngine.consumption(register: register,
                                                            readings: readings, in: yearRange)
                 let comparison = ConsumptionEngine.yearOverYear(register: register,
@@ -400,7 +416,9 @@ struct OverviewView: View {
                     isDue: ConsumptionEngine.isReadingDue(meteringPoint: point,
                                                           readings: readings, today: today),
                     cost: costs.value,
-                    costProblem: costs.problem
+                    costProblem: costs.problem,
+                    outlook: outlook(point: point, readings: readings,
+                                     tariffs: tariffs, periods: periods)
                 )
             }
         } catch {
@@ -428,6 +446,22 @@ struct OverviewView: View {
         } catch {
             return (nil, "Die Kosten ließen sich nicht berechnen.")
         }
+    }
+
+    /// Hochrechnung auf das Ende des Abrechnungszeitraums gegen die
+    /// Abschläge.
+    ///
+    /// Nur für den *laufenden* Zeitraum: Ein abgeschlossener Zeitraum braucht
+    /// keine Vorschau, sondern eine Abrechnung — und die ist etwas anderes.
+    private func outlook(point: MeteringPoint, readings: [Reading],
+                         tariffs: [Tariff], periods: [BillingPeriod])
+    -> ForecastEngine.PrepaymentOutlook? {
+        guard let running = point.runningBillingPeriod(on: today),
+              let period = periods.first(where: { $0.range == running })
+        else { return nil }
+        return try? ForecastEngine.prepaymentOutlook(
+            meteringPoint: point, readings: readings, tariffs: tariffs,
+            period: period, today: today)
     }
 
     /// Die letzten zwölf abgeschlossenen Monate.
@@ -466,16 +500,17 @@ struct OverviewView: View {
         // Umrechnung, ohne die der Rechenkern zu Recht keinen Betrag bildet.
         let profiles: [(name: String, kind: ResourceKind, start: Decimal,
                         monthly: [Decimal], staleMonths: Int,
-                        price: Decimal, base: Decimal, gas: Bool)] = [
+                        price: Decimal, base: Decimal, gas: Bool,
+                        prepay: Decimal?)] = [
             ("Strom", .electricity, 41_230,
              [312, 286, 268, 241, 218, 205, 198, 204, 226, 258, 289, 315], 0,
-             Decimal(string: "0.34")!, Decimal(string: "12.90")!, false),
+             Decimal(string: "0.34")!, Decimal(string: "12.90")!, false, 100),
             ("Wasser", .water, 998,
              [10.8, 9.9, 11.2, 10.6, 12.4, 13.1, 13.8, 13.2, 11.6, 10.9, 10.4, 11.1], 0,
-             Decimal(string: "2.15")!, Decimal(string: "8.40")!, false),
+             Decimal(string: "2.15")!, Decimal(string: "8.40")!, false, nil),
             ("Gas", .gas, 3_579,
              [418, 376, 298, 178, 92, 41, 36, 39, 84, 192, 308, 402], 3,
-             Decimal(string: "0.11")!, Decimal(string: "14.50")!, true)
+             Decimal(string: "0.11")!, Decimal(string: "14.50")!, true, 160)
         ]
 
         do {
@@ -484,7 +519,14 @@ struct OverviewView: View {
             let today = self.today
 
             for profile in profiles {
-                let point = MeteringPoint(propertyID: property.id, name: profile.name, kind: profile.kind)
+                // Nur Zähler mit Abschlag bekommen einen Abrechnungsrhythmus —
+                // sonst entstünden Zeiträume, gegen die es nichts zu rechnen
+                // gibt. Wasser läuft hier bewusst ohne, damit auf den Bildern
+                // beide Fälle nebeneinander stehen.
+                let point = MeteringPoint(
+                    propertyID: property.id, name: profile.name, kind: profile.kind,
+                    billingCycle: profile.prepay == nil ? nil : BillingCycle(anchorMonth: 1, anchorDay: 1)
+                )
                 try repository.save(point)
                 guard let register = point.primaryRegister else { continue }
 
@@ -512,6 +554,15 @@ struct OverviewView: View {
                     billingUnit: profile.gas ? .kilowattHour : profile.kind.defaultUnit,
                     gasConversion: profile.gas ? .typical : nil
                 ))
+
+                if let prepay = profile.prepay,
+                   let running = point.runningBillingPeriod(on: today) {
+                    try repository.save(BillingPeriod(
+                        meteringPointID: point.id,
+                        range: running,
+                        monthlyPrepayment: prepay
+                    ))
+                }
             }
             reload()
         } catch {

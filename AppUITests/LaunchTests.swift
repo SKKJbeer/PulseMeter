@@ -144,6 +144,28 @@ final class LaunchTests: XCTestCase {
         XCTAssertTrue(amount.exists, "Es steht keine Zahl mit Währung auf der Karte")
     }
 
+    /// Mit Abschlag steht die Vorschau auf dem Jahresende auf der Karte.
+    ///
+    /// Die Kette dahinter ist die längste der App: Ablesungen → Hochrechnung
+    /// des restlichen Zeitraums → Kosten je Abschnitt → gegen die Abschläge.
+    /// Ein Fehler an irgendeiner Stelle fällt hier als falsches Vorzeichen auf.
+    func testPrepaymentOutlookAppearsOnTheCard() {
+        let app = launchWithData()
+        let outlook = app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS 'Guthaben' OR label CONTAINS 'Nachzahlung'")
+        ).firstMatch
+        XCTAssertTrue(outlook.waitForExistence(timeout: 5),
+                      "Mit hinterlegtem Abschlag muss eine Vorschau dastehen")
+
+        // Der Wasserzähler hat bewusst keinen Abschlag — dort darf nichts
+        // stehen, statt einer Null.
+        let prepayLabels = app.staticTexts.containing(
+            NSPredicate(format: "label BEGINSWITH 'Abschlag'")
+        )
+        XCTAssertEqual(prepayLabels.count, 2,
+                       "Genau die zwei Zähler mit Abschlag dürfen eine Vorschau zeigen")
+    }
+
     /// Ein Preis lässt sich eintragen, ohne dass man vorher irgendetwas über
     /// Tarife wissen müsste — zwei Zahlen von der Jahresrechnung.
     func testEnteringAPriceOnANewMeter() {

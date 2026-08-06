@@ -9,6 +9,31 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.19.0 — 2026-08-06
+
+Der Abschlag — und damit die Frage, für die Verbrauchszahlen überhaupt
+interessieren: Kommt am Jahresende Geld zurück oder muss ich nachzahlen?
+
+### Hinzugefügt
+- **Abschlag und Abrechnungsjahr im Zähler-Editor.** Der Monat, in dem das
+  Abrechnungsjahr des Versorgers beginnt, ist wählbar — bei vielen ist es
+  nicht der Januar.
+- **„≈ 168 € Nachzahlung" auf der Karte**, sobald ein Abschlag hinterlegt ist.
+  Das „≈" steht dort, weil die Zahl den restlichen Zeitraum hochrechnet und
+  nicht misst (Produktprinzip 7).
+- Ein Oberflächentest, der die längste Kette der App abgeht: Ablesungen →
+  Hochrechnung → Kosten je Tarifabschnitt → gegen die Abschläge. Er prüft
+  zusätzlich, dass der Wasserzähler **ohne** Abschlag auch keine Vorschau
+  zeigt — eine Null wäre dort eine Aussage, die niemand gemacht hat.
+- Der Abschlag lässt sich auch im Klick-Dummy eintragen. Gegengerechnet: 60 €
+  mehr im Monat ergeben 720 € mehr im Jahr, und aus 90 € Guthaben werden 810 €.
+
+### Entschieden
+- **Ohne Abschlag bekommt ein Zähler keinen Abrechnungsrhythmus.** Sonst
+  entstünden Zeiträume, gegen die es nichts zu rechnen gibt. Bei den
+  Beispieldaten läuft Wasser deshalb bewusst ohne — so stehen beide Fälle auf
+  demselben Bildschirmfoto nebeneinander.
+
 ## 0.18.0 — 2026-08-05
 
 Preise und Kosten. Der Rechenkern (`CostEngine`) stand seit 0.4 und war

@@ -248,6 +248,9 @@ struct MeterEditor: View {
     @State private var stateNumber = ""
     @State private var calorificValue = ""
     @State private var existingTariff: Tariff?
+    @State private var prepayment = ""
+    @State private var billingMonth = 1
+    @State private var existingPeriod: BillingPeriod?
     @State private var problem: String?
 
     /// Die Arten, die zur Auswahl stehen. `custom` fehlt bewusst: Ein eigener
@@ -426,13 +429,39 @@ struct MeterEditor: View {
                         .foregroundStyle(PulseColor.inkTertiary)
                 }
             }
+            HStack {
+                Text("Abschlag")
+                Spacer(minLength: 10)
+                TextField("0,00", text: $prepayment)
+                    .keyboardType(.decimalPad)
+                    .multilineTextAlignment(.trailing)
+                    .frame(maxWidth: 110)
+                Text("€/Monat")
+                    .foregroundStyle(PulseColor.inkTertiary)
+            }
+            if !prepayment.isEmpty {
+                Picker("Abrechnungsjahr ab", selection: $billingMonth) {
+                    ForEach(1...12, id: \.self) { month in
+                        Text(Self.monthNames[month - 1]).tag(month)
+                    }
+                }
+            }
         } header: {
             Text("Preise")
         } footer: {
             Text(needsGasConversion
-                 ? "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Zustandszahl und Brennwert stehen auf deiner Gasrechnung; ohne sie lässt sich aus m³ kein Betrag bilden."
-                 : "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Beide Zahlen stehen auf deiner Jahresrechnung.")
+                 ? "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Zustandszahl und Brennwert stehen auf deiner Gasrechnung; ohne sie lässt sich aus m³ kein Betrag bilden. Mit dem Abschlag rechnet die App aus, ob am Jahresende ein Guthaben oder eine Nachzahlung zu erwarten ist."
+                 : "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Alle Zahlen stehen auf deiner Jahresrechnung. Mit dem Abschlag rechnet die App aus, ob am Jahresende ein Guthaben oder eine Nachzahlung zu erwarten ist.")
         }
+    }
+
+    /// Der Abrechnungsrhythmus aus der Auswahl — nur, wenn ein Abschlag
+    /// hinterlegt ist. Ohne Abschlag gibt es nichts gegenzurechnen, und ein
+    /// gesetzter Rhythmus würde in der Übersicht Zeiträume erzeugen, die
+    /// niemand angefordert hat.
+    private var billingCycleFromInput: BillingCycle? {
+        guard decimalValue(prepayment) != nil else { return nil }
+        return BillingCycle(anchorMonth: billingMonth, anchorDay: 1)
     }
 
     /// Zähler, die in m³ messen und in kWh abgerechnet werden.
@@ -453,6 +482,7 @@ struct MeterEditor: View {
             integerDigits = register.integerDigits
             fractionDigits = register.fractionDigits
         }
+        fillBilling(existing)
 
         // Der zuletzt gültige Tarif. Mehrere Tarife über die Zeit kann der
         // Rechenkern längst; die Oberfläche bearbeitet vorerst nur den
@@ -466,6 +496,38 @@ struct MeterEditor: View {
             stateNumber = decimalText(conversion.stateNumber)
             calorificValue = decimalText(conversion.calorificValue)
         }
+    }
+
+    /// Der laufende Abrechnungszeitraum mit seinem Abschlag.
+    private func fillBilling(_ existing: MeteringPoint) {
+        billingMonth = existing.billingCycle?.anchorMonth ?? 1
+        let today = CalendarDay.containing(Date(), in: .current)
+        guard let running = existing.runningBillingPeriod(on: today),
+              let periods = try? PulseRepository(context: context).billingPeriods(for: existing.id)
+        else { return }
+        let period = periods.first { $0.range == running }
+        existingPeriod = period
+        if let amount = period?.monthlyPrepayment {
+            prepayment = decimalText(amount)
+        }
+    }
+
+    /// Legt den laufenden Abrechnungszeitraum an oder ändert ihn.
+    ///
+    /// Der Zeitraum ergibt sich aus dem Abrechnungsrhythmus des Zählers — der
+    /// muss deshalb zuerst gesetzt sein. Ohne Abschlag wird gar keiner
+    /// angelegt: Ein Zeitraum ohne Zahl sagt nichts und stünde nur im Weg.
+    private func saveBilling(for point: MeteringPoint, in repository: PulseRepository) throws {
+        guard let amount = decimalValue(prepayment), amount > 0 else { return }
+        let today = CalendarDay.containing(Date(), in: .current)
+        guard let running = point.runningBillingPeriod(on: today) else { return }
+
+        try repository.save(BillingPeriod(
+            id: existingPeriod?.id ?? UUID(),
+            meteringPointID: point.id,
+            range: running,
+            monthlyPrepayment: amount
+        ))
     }
 
     /// Zahl als Text, mit Komma — so, wie sie eingetippt wird.
@@ -524,6 +586,7 @@ struct MeterEditor: View {
             if var existing = draft.existing {
                 existing.name = trimmed
                 existing.readingInterval = interval
+                existing.billingCycle = billingCycleFromInput
                 if canChangeKind {
                     existing.kind = kind
                     existing.appearance = .standard(for: kind)
@@ -538,6 +601,7 @@ struct MeterEditor: View {
                 }
                 try repository.save(existing)
                 try saveTariff(for: existing, in: repository)
+                try saveBilling(for: existing, in: repository)
             } else {
                 var register = Register.standard(for: kind)
                 register.integerDigits = integerDigits
@@ -547,10 +611,12 @@ struct MeterEditor: View {
                     name: trimmed,
                     kind: kind,
                     registers: [register],
-                    readingInterval: interval
+                    readingInterval: interval,
+                    billingCycle: billingCycleFromInput
                 )
                 try repository.save(point)
                 try saveTariff(for: point, in: repository)
+                try saveBilling(for: point, in: repository)
             }
             onDone()
             dismiss()
@@ -591,6 +657,9 @@ struct MeterEditor: View {
 
     /// Deutsche Namen der Arten. Sie stehen hier und nicht in `PulseCore`,
     /// weil der Rechenkern keine Oberflächensprache kennt.
+    static let monthNames = ["Januar", "Februar", "März", "April", "Mai", "Juni",
+                             "Juli", "August", "September", "Oktober", "November", "Dezember"]
+
     static func kindName(_ kind: ResourceKind) -> String {
         switch kind {
         case .electricity:      return "Strom"

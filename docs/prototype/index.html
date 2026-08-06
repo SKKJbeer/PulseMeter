@@ -661,7 +661,7 @@ select.field { cursor: pointer; }
 
 <div class="stage-head">
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.18.0</p>
+  <p>Klickbarer Entwurf · v0.19.0</p>
 </div>
 
 <div class="device">
@@ -2143,6 +2143,11 @@ function openMeterEditor(id) {
           style="text-align:right;width:90px" placeholder="0,00"
           value="${editMeter && editMeter.base ? String(editMeter.base).replace(".", ",") : ""}">
           <small>€/Monat</small></div></div>
+      <div class="row"><div class="rl">Abschlag</div>
+        <div class="rv"><input class="field" id="ed-prepay" type="text" inputmode="decimal"
+          style="text-align:right;width:90px" placeholder="0,00"
+          value="${editMeter && editMeter.prepay ? String(editMeter.prepay).replace(".", ",") : ""}">
+          <small>€/Monat</small></div></div>
       ${kindID === "gas" ? `
       <div class="row"><div class="rl">Zustandszahl</div>
         <div class="rv"><input class="field" id="ed-z" type="text" inputmode="decimal"
@@ -2155,8 +2160,8 @@ function openMeterEditor(id) {
           <small>kWh/m³</small></div></div>` : ""}
     </div>
     <div class="note">${kindID === "gas"
-      ? "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Zustandszahl und Brennwert stehen auf deiner Gasrechnung; ohne sie lässt sich aus m³ kein Betrag bilden."
-      : "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Beide Zahlen stehen auf deiner Jahresrechnung."}</div>
+      ? "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Zustandszahl und Brennwert stehen auf deiner Gasrechnung; ohne sie lässt sich aus m³ kein Betrag bilden. Mit dem Abschlag rechnet die App aus, ob am Jahresende ein Guthaben oder eine Nachzahlung zu erwarten ist."
+      : "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Alle Zahlen stehen auf deiner Jahresrechnung. Mit dem Abschlag rechnet die App aus, ob am Jahresende ein Guthaben oder eine Nachzahlung zu erwarten ist."}</div>
 
     <div class="section-label">Wie oft ablesen?</div>
     <div class="list"><div class="row"><select class="field" id="ed-interval">
@@ -2378,7 +2383,7 @@ function saveMeter() {
     const v = parseFloat(el.value.replace(",", "."));
     return Number.isFinite(v) ? v : 0;
   };
-  const price = num("ed-price"), base = num("ed-base");
+  const price = num("ed-price"), base = num("ed-base"), prepay = num("ed-prepay");
   const zZahl = num("ed-z"), brennwert = num("ed-bw");
 
   if (editMeter) {
@@ -2386,6 +2391,7 @@ function saveMeter() {
     editMeter.interval = interval || 3650;
     editMeter.price = price;
     editMeter.base = base;
+    editMeter.prepay = prepay;
     if (zZahl && brennwert) { editMeter.zZahl = zZahl; editMeter.brennwert = brennwert; }
     if (!editMeter.registers[0].readings.length) {
       editMeter.kind = kind.id; editMeter.unit = kind.unit;
@@ -2395,7 +2401,7 @@ function saveMeter() {
     METERS.push({
       id: "m" + Date.now(), name, kind: kind.id, unit: kind.unit,
       frac: kind.frac, int: 6, color: kind.color, serial: "—",
-      interval: interval || 3650, price, base, prepay: 0,
+      interval: interval || 3650, price, base, prepay,
       zZahl: zZahl || undefined, brennwert: brennwert || undefined,
       registers: [{ label: "", readings: [] }]
     });
