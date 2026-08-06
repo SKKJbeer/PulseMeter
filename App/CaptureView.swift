@@ -24,6 +24,7 @@ struct CaptureView: View {
     @State private var previous: Reading?
     @State private var verdict: ConsumptionEngine.Plausibility = .noReference
     @State private var problem: String?
+    @State private var changingMeter = false
 
     /// Welches Zählwerk gerade dran ist.
     ///
@@ -76,6 +77,17 @@ struct CaptureView: View {
                                 .padding(.bottom, 12)
                         }
                         VerdictBanner(tone: verdictTone, message: verdictMessage)
+                        // Die Rückfrage stand hier seit jeher — „Wurde der
+                        // Zähler gewechselt, oder hat sich eine Ziffer
+                        // verirrt?" —, und bis 0.23.0 gab es keine
+                        // Möglichkeit, die erste Hälfte zu bejahen. Eine
+                        // Frage ohne Antwort ist eine Sackgasse.
+                        if case .belowPrevious = verdict {
+                            Button("Der Zähler wurde gewechselt") { changingMeter = true }
+                                .font(.system(.subheadline, weight: .semibold))
+                                .foregroundStyle(accent)
+                                .padding(.top, 10)
+                        }
                         Spacer(minLength: 18)
                         NumberPad(onKey: handle)
                         saveButton
@@ -98,6 +110,15 @@ struct CaptureView: View {
                 }
             }
             .onAppear(perform: loadPrevious)
+            .sheet(isPresented: $changingMeter) {
+                MeterChangeView(meteringPoint: meteringPoint) {
+                    // Nach dem Wechsel ist der eingetippte Wert gegenstandslos:
+                    // Er gehörte zum neuen Gerät und ist dort bereits als
+                    // Anfangsstand erfasst.
+                    onSaved()
+                    dismiss()
+                }
+            }
         }
     }
 
@@ -281,10 +302,18 @@ struct CaptureView: View {
     /// vollständige Ablesung — und der Rechenkern bildete daraus einen
     /// Verbrauch für einen Zeitraum, in dem die Einspeisung fehlt.
     private func save() {
+        // Die Kennung des verbauten Geräts gehört an jede Ablesung. Ohne sie
+        // reißt die Kette nach einem Wechsel wieder: Der Rechenkern erkennt
+        // den erklärten Rücksprung nur, wenn **beide** benachbarten Ablesungen
+        // wissen, auf welchem Gerät sie entstanden sind. Vor dem ersten
+        // Wechsel ist sie `nil`, und das ist richtig so.
+        let deviceID = meteringPoint.device(on: today)?.id
+
         var batch: [(reading: Reading, fractionDigits: Int)] = []
         for register in registers {
             guard let value = entered[register.id] else { continue }
-            batch.append((Reading(registerID: register.id, day: today, value: value),
+            batch.append((Reading(registerID: register.id, deviceID: deviceID,
+                                  day: today, value: value),
                           register.fractionDigits))
         }
         do {

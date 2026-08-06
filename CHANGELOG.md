@@ -9,6 +9,57 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.23.0 — 2026-08-06
+
+**Zählerwechsel.** Der Erfassungsschirm fragte seit jeher „Wurde der Zähler
+gewechselt, oder hat sich eine Ziffer verirrt?" — und nahm die Antwort nicht
+entgegen. Eine Frage ohne Antwortmöglichkeit ist eine Sackgasse, und die sind
+in diesem Produkt ausgeschlossen (Produktprinzip 4). `MeterDevice`,
+`Reading.deviceID` und `MeteringPoint.device(on:)` lagen im Rechenkern seit
+dem ersten Tag bereit; die App benutzte davon nichts.
+
+Ein Wechsel ist kein Randfall: Netzbetreiber tauschen turnusmäßig, und beim
+Einbau eines digitalen Zählers fängt der Stand wieder bei null an.
+
+### Hinzugefügt
+- **Ein Wechselschirm mit zwei Zahlen** — Endstand des alten Geräts,
+  Anfangsstand des neuen, dazu die Gerätenummer. Zwei und nicht eine: Ein
+  Wechsel ist kein Nullsetzen. Beide Stände beschreiben denselben Moment, und
+  nur mit beiden bleibt der Verbrauch bis zum Wechseltag erhalten.
+- **Zwei Einstiege.** Im Erfassungsschirm erscheint „Der Zähler wurde
+  gewechselt", sobald der neue Stand unter dem alten liegt — genau dort, wo
+  die Frage steht. Und im Zählereditor, für den, der es einträgt, während der
+  Monteur noch da ist.
+- Jede neue Ablesung trägt jetzt die Kennung des verbauten Geräts. Ohne sie
+  risse die Kette nach dem Wechsel wieder: Der Rechenkern erkennt den
+  erklärten Rücksprung nur, wenn **beide** benachbarten Ablesungen wissen, auf
+  welchem Gerät sie entstanden sind.
+
+### Entschieden
+- **Die Zeitstempel der beiden Stände werden von Hand gesetzt.** Beide liegen
+  am selben Tag, und dann entscheidet `createdAt` über die Reihenfolge.
+  Zweimal `Date()` kann denselben Augenblick liefern, und Swifts `sorted` ist
+  **nicht stabil** — die Reihenfolge wäre undefiniert gewesen. Stünde der
+  Anfangsstand vor dem Endstand, sähe der Rechenkern einen Absturz von 50.600
+  auf 0. Eine Prüfung hält fest, dass die umgekehrte Reihenfolge tatsächlich
+  ein anderes Ergebnis liefert — sonst prüfte der Zeitstempel nichts.
+- **Vor dem ersten Wechsel wird das ausgebaute Gerät nachgetragen**, mit der
+  ersten Ablesung als Einbaudatum. Alte Ablesungen behalten ihre leere
+  Kennung; der Übergang von leer auf gesetzt ist ein normaler Zuwachs. Eine
+  Prüfung deckt genau diese Kette ab — die bestehende setzte eine Historie
+  voraus, in der jede Ablesung schon ein Gerät kennt, und so sieht kein
+  gewachsener Bestand aus.
+
+### Offen und benannt
+- **Der Entwurf bildet den Wechsel noch nicht ab.** Er interpoliert direkt auf
+  den Zählerständen, während `PulseCore` über eine aufsummierte Reihe rechnet.
+  Ein Rücksprung machte dort jeden Verbrauch negativ. Nachzuziehen heißt, im
+  Entwurf zuerst dieselbe kumulative Reihe einzuführen — ein Umbau seines
+  Kerns, kein Zusatz, und deshalb nicht nebenbei am Ende einer Runde. Es ist
+  der nächste Schritt am Entwurf, bevor eine weitere Fähigkeit dazukommt.
+
+`PulseCore` steht bei 129 Prüfungen.
+
 ## 0.22.4 — 2026-08-06
 
 ### Behoben

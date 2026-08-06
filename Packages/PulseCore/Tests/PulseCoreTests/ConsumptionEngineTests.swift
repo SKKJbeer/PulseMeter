@@ -536,4 +536,84 @@ final class ConsumptionEngineTests: XCTestCase {
             meteringPoint: point, readings: [], today: day(2026, 6, 20)),
             "Ohne jede Ablesung ist immer eine fällig")
     }
+
+    /// Der Wechsel, wie ihn die Oberfläche tatsächlich schreibt.
+    ///
+    /// Die vorherige Prüfung setzt eine Historie voraus, in der **jede**
+    /// Ablesung schon eine Gerätekennung trägt. So sieht kein gewachsener
+    /// Bestand aus: Vor dem ersten Wechsel gab es kein Gerät, und alle alten
+    /// Ablesungen haben `deviceID == nil`. Erst der Wechselschirm schreibt
+    /// Endstand und Anfangsstand mit Kennung.
+    ///
+    /// Genau dieser Übergang muss tragen — sonst wäre die Prüfung grün und
+    /// das Produkt kaputt:
+    /// - `nil` → `nil`: normaler Zuwachs
+    /// - `nil` → altes Gerät: ebenfalls normal, die Werte steigen
+    /// - altes → neues Gerät: erklärter Rücksprung, null Verbrauch
+    /// - neues → neues: normaler Zuwachs
+    func testDeviceChangeOnAHistoryThatNeverHadDevices() {
+        let register = Fixture.electricityRegister()
+        let outgoing = MeterDevice(installedOn: day(2026, 1, 1), removedOn: day(2026, 3, 1))
+        let incoming = MeterDevice(serialNumber: "NEU-2", installedOn: day(2026, 3, 1))
+
+        let readings = [
+            Fixture.reading(register, day(2026, 1, 1), 50_000, sequence: 1),
+            Fixture.reading(register, day(2026, 2, 1), 50_300, sequence: 2),
+            Fixture.reading(register, day(2026, 3, 1), 50_600, device: outgoing, sequence: 3),
+            Fixture.reading(register, day(2026, 3, 1), 0, device: incoming, sequence: 4),
+            Fixture.reading(register, day(2026, 4, 1), 200, device: incoming, sequence: 5)
+        ]
+
+        let result = ConsumptionEngine.consumption(
+            register: register, readings: readings,
+            in: span(day(2026, 1, 1), day(2026, 4, 1))
+        )
+
+        XCTAssertEqual(result.quantity.value, 800,
+                       "300 + 300 am alten Gerät, 200 am neuen")
+        XCTAssertFalse(result.quantity.isNegative)
+        XCTAssertTrue(result.warnings.contains(.deviceChange(on: day(2026, 3, 1))))
+        XCTAssertFalse(result.warnings.contains(where: { warning in
+            if case .unexplainedDecrease = warning { return true }
+            return false
+        }), "Der Rücksprung ist erklärt und darf nicht als unerklärt gelten")
+    }
+
+    /// Die Reihenfolge am Wechseltag entscheidet über das Ergebnis.
+    ///
+    /// Stünde der Anfangsstand vor dem Endstand, sähe der Rechenkern einen
+    /// Absturz von 50.600 auf 0 und danach einen Sprung zurück nach oben.
+    /// Sortiert wird über `createdAt`, und `sorted` ist in Swift **nicht
+    /// stabil** — deshalb setzt der Wechselschirm die Zeitstempel von Hand.
+    /// Diese Prüfung hält fest, was davon abhängt.
+    func testSameDayOrderDecidesTheOutcome() {
+        let register = Fixture.electricityRegister()
+        let outgoing = MeterDevice(installedOn: day(2026, 1, 1), removedOn: day(2026, 3, 1))
+        let incoming = MeterDevice(installedOn: day(2026, 3, 1))
+        let base = Date(timeIntervalSince1970: 1_800_000_000)
+
+        func consumption(finalFirst: Bool) -> Decimal {
+            let endReading = Reading(registerID: register.id, deviceID: outgoing.id,
+                                     day: day(2026, 3, 1), value: 50_600,
+                                     createdAt: finalFirst ? base : base.addingTimeInterval(1))
+            let startReading = Reading(registerID: register.id, deviceID: incoming.id,
+                                       day: day(2026, 3, 1), value: 0,
+                                       createdAt: finalFirst ? base.addingTimeInterval(1) : base)
+            let readings = [
+                Fixture.reading(register, day(2026, 1, 1), 50_000, sequence: 1),
+                endReading,
+                startReading,
+                Fixture.reading(register, day(2026, 4, 1), 200, device: incoming, sequence: 5)
+            ]
+            return ConsumptionEngine.consumption(
+                register: register, readings: readings,
+                in: span(day(2026, 1, 1), day(2026, 4, 1))
+            ).quantity.value
+        }
+
+        XCTAssertEqual(consumption(finalFirst: true), 800,
+                       "Endstand vor Anfangsstand: 600 am alten Gerät, 200 am neuen")
+        XCTAssertNotEqual(consumption(finalFirst: false), 800,
+                          "Falsche Reihenfolge muss ein anderes Ergebnis liefern — sonst prüft der Zeitstempel nichts")
+    }
 }

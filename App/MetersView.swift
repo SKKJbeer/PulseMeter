@@ -336,6 +336,7 @@ struct MeterEditor: View {
     @State private var integerDigits = 6
     @State private var fractionDigits = 1
     @State private var confirmingDelete = false
+    @State private var changingMeter = false
     // Preise. Als Text, nicht als Zahl: Ein leeres Feld ist etwas anderes als
     // eine Null, und `TextField` mit `Decimal` macht daraus stillschweigend
     // dasselbe.
@@ -460,6 +461,27 @@ struct MeterEditor: View {
 
                 priceSection
 
+                // Zweiter Einstieg zum Wechsel: Der erste sitzt im
+                // Erfassungsschirm und erscheint erst, wenn der neue Stand
+                // unter dem alten liegt. Wer den Wechsel vorher eintragen
+                // will — etwa weil der Monteur gerade da war —, findet ihn
+                // sonst nirgends.
+                if let existing = draft.existing, readingCount > 0 {
+                    Section {
+                        Button("Zähler wurde gewechselt") { changingMeter = true }
+                        if let device = existing.devices.first(where: \.isActive),
+                           let serial = device.serialNumber {
+                            HStack {
+                                Text("Gerätenummer")
+                                Spacer()
+                                Text(serial).foregroundStyle(PulseColor.inkSecondary)
+                            }
+                        }
+                    } footer: {
+                        Text("Beim Wechsel werden Endstand und Anfangsstand erfasst. Der Verbrauch bis zum Wechseltag bleibt erhalten, und der Rücksprung gilt als erklärt.")
+                    }
+                }
+
                 if let existing = draft.existing {
                     Section {
                         Button(existing.isArchived ? "Aus dem Archiv holen" : "Archivieren") {
@@ -488,6 +510,14 @@ struct MeterEditor: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Sichern", action: save)
                         .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+            }
+            .sheet(isPresented: $changingMeter) {
+                if let existing = draft.existing {
+                    MeterChangeView(meteringPoint: existing) {
+                        onDone()
+                        dismiss()
+                    }
                 }
             }
             .confirmationDialog("Wirklich löschen?", isPresented: $confirmingDelete, titleVisibility: .visible) {
