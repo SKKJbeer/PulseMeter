@@ -9,6 +9,26 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.26.2 — 2026-08-06
+
+### Behoben
+- **Der Wechselschirm ließ sich nicht übersetzen.** `guard let register`
+  packte den Wert oben aus, drei Zeilen später band ich ihn noch einmal:
+  „initializer for conditional binding must have Optional type, not
+  'Register'". Ein Fehler, den ein Compiler in einer Sekunde findet — und der
+  hier vier Fassungen lang unentdeckt blieb, weil kein Lauf durchkam.
+
+### Bemerkenswert
+- **Die Protokollkorrektur aus 0.22.4 hat sich sofort ausgezahlt.** Der Lauf
+  nannte Datei, Zeile, Spalte und Grund. Vorher hätte dort „TEST FAILED"
+  gestanden und sonst nichts.
+- **Der neue Linux-Auftrag für den Entwurf war in 59 Sekunden grün** — beim
+  allerersten Lauf, und während der macOS-Auftrag noch baute.
+- Vier Fassungen ohne Bestätigung übereinander, und der Rückstau bestand aus
+  **genau einer** falschen Zeile. Das ist ein besserer Ausgang als erwartet,
+  ändert aber nichts am Befund: So lange ohne Übersetzer weiterzubauen war
+  riskant, und dass es gutging, war zum Teil Glück.
+
 ## 0.26.1 — 2026-08-06
 
 **Ein frisch angelegter Zähler ließ sich nicht ablesen.** Gemeldet vom

@@ -121,7 +121,11 @@ struct MeterChangeView: View {
         // Der letzte bekannte Stand als Vorschlag: Wer den Zähler am Wechseltag
         // nicht mehr ablesen konnte, hat wenigstens diesen — und sieht sofort,
         // dass er ihn prüfen soll.
-        if let previous, let register {
+        //
+        // Nur `previous` wird hier gebunden: `register` ist durch das `guard`
+        // oben längst ausgepackt. Es noch einmal zu binden war der einzige
+        // Übersetzungsfehler dieser Runde.
+        if let previous {
             finalValue = decimalText(previous.value, digits: register.fractionDigits)
         }
     }
