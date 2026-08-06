@@ -9,6 +9,32 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.22.3 — 2026-08-06
+
+### Behoben
+- **Die Abschlagsvorschau rechnete beim PV-Zähler, als gäbe es die Anlage
+  nicht.** Sie bekam nur die Ablesungen des Bezugs; die Einspeisung fiel
+  stillschweigend weg. Aufgefallen ist es daran, dass auf der Karte **auf den
+  Cent** derselbe Wert stand wie vor der Einrichtung — 90,30 € Guthaben —
+  während der Entwurf an derselben Stelle 283 € zeigte. Ohne den Abgleich mit
+  dem Klick-Dummy wäre die Zahl plausibel durchgegangen.
+
+### Entschieden
+- **Die beiden Ablesungslisten heißen jetzt `primary` und `everything`.**
+  Beide hießen `readings`, und beim Umstellen auf den Zweirichtungszähler habe
+  ich an einer von vier Stellen die falsche stehenlassen. Ein Name, der die
+  Verwechslung nicht bemerkbar macht, ist ein Fehler, der auf seine
+  Gelegenheit wartet. Menge, Stand und Vorjahresvergleich gehören zum Bezug —
+  sonst stünde bei einem PV-Zähler der Einspeisestand auf der Karte. Kosten,
+  Vorschau und Einspeisezeile gehören zur Messstelle.
+
+### Bemerkenswert
+- Der Grundpreis läuft über den Zeitraum **bis heute**, der Arbeitspreis nur
+  über den abgelesenen. Beim Stromzähler sind das fünf Tage und 2,12 € — die
+  Kostenzeile heißt „bis 1. August" und enthält Grundpreis bis zum 6. Der
+  Unterschied ist gewollt: Der Grundpreis läuft auch weiter, wenn niemand
+  abliest. Hier festgehalten, damit ihn niemand später als Fehler „korrigiert".
+
 ## 0.22.2 — 2026-08-06
 
 Der zweistufige Erfassungsschirm aus 0.22.0 war weder fotografiert noch

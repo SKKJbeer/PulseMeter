@@ -441,23 +441,33 @@ struct OverviewView: View {
                                     daysSinceReading: nil, isDue: false,
                                     cost: nil, costProblem: nil, outlook: nil, feedIn: nil)
                 }
-                let readings = try repository.readings(for: register.id)
-                let last = readings.last
+                // **Zwei Listen, und die Namen sagen welche.**
+                //
+                // `primary` sind die Ablesungen des Bezugs, `everything` die
+                // aller Zählwerke. Beide hießen einmal `readings`, und beim
+                // Umstellen auf den Zweirichtungszähler bekam die
+                // Abschlagsvorschau die falsche: Sie rechnete dann, als gäbe
+                // es die Anlage nicht, und zeigte auf den Cent denselben Wert
+                // wie vorher. Ein Name, der die Verwechslung nicht bemerkbar
+                // macht, ist ein Fehler, der auf seine Gelegenheit wartet.
+                //
+                // Menge, Stand und Vorjahresvergleich gehören zum **Bezug** —
+                // sonst stünde bei einem PV-Zähler der Einspeisestand auf der
+                // Karte. Kosten, Vorschau und Einspeisezeile gehören zur
+                // **Messstelle**, weil die Vergütung dort gegengerechnet wird.
+                let primary = try repository.readings(for: register.id)
+                let everything = point.registers.count > 1
+                    ? try repository.readings(for: point)
+                    : primary
+                let last = primary.last
                 let tariffs = try repository.tariffs(for: point.id)
                 let periods = try repository.billingPeriods(for: point.id)
-                // Über die ganze Messstelle, nicht über das erste Zählwerk:
-                // Bei einem Zweirichtungszähler ist die Einspeisung eine
-                // Gutschrift, und der Betrag auf der Karte soll der sein, der
-                // am Jahresende zu zahlen ist.
-                let all = point.registers.count > 1
-                    ? try repository.readings(for: point)
-                    : readings
-                let costs = cost(point: point, readings: all,
+                let costs = cost(point: point, readings: everything,
                                  tariffs: tariffs, in: yearRange)
                 let result = ConsumptionEngine.consumption(register: register,
-                                                           readings: readings, in: yearRange)
+                                                           readings: primary, in: yearRange)
                 let comparison = ConsumptionEngine.yearOverYear(register: register,
-                                                               readings: readings, in: yearRange)
+                                                               readings: primary, in: yearRange)
                 return MeterRow(
                     id: point.id,
                     name: point.name,
@@ -466,19 +476,19 @@ struct OverviewView: View {
                     colorToken: point.appearance.colorToken,
                     lastValue: last?.value,
                     lastDay: last?.day,
-                    readingCount: readings.count,
+                    readingCount: primary.count,
                     fractionDigits: register.fractionDigits,
                     yearToDate: result,
                     changeVersusLastYear: comparison?.relativeChange,
-                    monthlySeries: monthlySeries(register: register, readings: readings, today: today),
+                    monthlySeries: monthlySeries(register: register, readings: primary, today: today),
                     daysSinceReading: last.map { today.days(since: $0.day) },
                     isDue: ConsumptionEngine.isReadingDue(meteringPoint: point,
-                                                          readings: readings, today: today),
+                                                          readings: primary, today: today),
                     cost: costs.value,
                     costProblem: costs.problem,
-                    outlook: outlook(point: point, readings: readings,
+                    outlook: outlook(point: point, readings: everything,
                                      tariffs: tariffs, periods: periods),
-                    feedIn: feedIn(point: point, readings: all,
+                    feedIn: feedIn(point: point, readings: everything,
                                    tariffs: tariffs, in: yearRange)
                 )
             }
