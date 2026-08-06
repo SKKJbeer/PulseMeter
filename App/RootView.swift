@@ -270,6 +270,16 @@ struct OverviewView: View {
         if case .none = result.coverage {
             return row.readingCount == 0 ? "Noch keine Ablesung" : "Seit der ersten Ablesung"
         }
+        return periodCaption(for: result)
+    }
+
+    /// Derselbe Satz, gebildet allein aus dem Ergebnis.
+    ///
+    /// Herausgelöst, weil das Widget ihn ebenfalls braucht und eine zweite
+    /// Fassung früher oder später eine andere Beschriftung zeigte als der
+    /// Bildschirm daneben.
+    private func periodCaption(for result: ConsumptionResult?) -> String {
+        guard let result else { return "Noch keine Ablesung" }
 
         // Ein verkürzter Zeitraum wird als Spanne ausgeschrieben, nicht als
         // „Seit Jahresbeginn" mit angehängtem Vorbehalt. Der Grund ist
@@ -492,6 +502,21 @@ struct OverviewView: View {
                                    tariffs: tariffs, in: yearRange)
                 )
             }
+            // Das Widget bekommt dieselbe Rechnung wie dieser Schirm, nur
+            // kleiner. Gebaut wird sie in `PulseCore`, damit die beiden nicht
+            // auseinanderlaufen können — ein Widget, das eine andere Zahl
+            // zeigt als der Bildschirm daneben, ist schlimmer als keines.
+            WidgetBridge.write(WidgetSummary.build(
+                meteringPoints: points,
+                readings: Dictionary(uniqueKeysWithValues: try points.map { point in
+                    (point.id, try repository.readings(for: point))
+                }),
+                range: yearRange,
+                today: today,
+                caption: { result in
+                    periodCaption(for: result)
+                }))
+
             // Eine Ablesung verschiebt den nächsten Termin. Ohne dieses
             // Nachziehen käme die Erinnerung zu einem Zeitpunkt, an dem längst
             // nichts mehr fällig ist — und der Hinweis verlöre seinen Wert.

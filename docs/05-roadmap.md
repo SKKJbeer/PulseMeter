@@ -96,18 +96,18 @@ Die Reihenfolge ist bewusst nicht „Screens von oben nach unten", sondern nach 
 
 ---
 
-## Aktueller Stand — Version 0.24.0
+## Aktueller Stand — Version 0.25.0
 
 | Schritt | Stand |
 |---|---|
-| 1. `PulseCore` + Tests | **fertig** — 129 Prüfungen, alle Randfälle aus `02`, Abschnitt 3 |
+| 1. `PulseCore` + Tests | **fertig** — 135 Prüfungen, alle Randfälle aus `02`, Abschnitt 3 |
 | 2. `PulseData` + Repositories | **fertig** — auf macOS geprüft |
 | 3. `PulseUI` Design-System | **fertig** — Hell und Dunkel, auf jedem Lauf fotografiert |
 | 4. Erfassungsfluss | **fertig** — Zählwerk-Optik, Plausibilisierung, Vorbelegung |
 | 5. Übersicht | **fertig** — Statuszeile, Karten, Kosten, Abschlagsvorschau |
 | 6. Verlauf und Zählerverwaltung | **fertig** — Monat/Quartal/Jahr, Diagramm und Tabelle, Menge oder Kosten, CSV-Export; Zählerverwaltung mit Preisen, Abschlag, Archiv |
 | 7. Tarife, Kosten, Prognose | **fertig** — saisonale Hochrechnung, Abschlagsvergleich |
-| 8. Widgets, Kurzbefehle, Erinnerungen | Erinnerungen **fertig**; Widget und Siri offen |
+| 8. Widgets, Kurzbefehle, Erinnerungen | Erinnerungen und Widget **fertig**; Siri offen |
 | 9. Paywall und StoreKit | offen — braucht das Apple Developer Program |
 | 10. Politur | offen — VoiceOver, Dynamic Type und die Startzeit sind nie gemessen worden |
 
@@ -146,15 +146,17 @@ Mac beurteilen.
 
 ### Die nächsten drei Schritte
 
-1. **0.25.0 — Widget für Sperr- und Startbildschirm.** Der zweite Hebel für
-   Wiederkehr nach den Erinnerungen: Der Stand ist sichtbar, ohne die App zu
-   öffnen.
-2. **0.26.0 — Barrierefreiheit und Startzeit.** VoiceOver in allen
+1. **0.26.0 — Barrierefreiheit und Startzeit.** VoiceOver in allen
    Hauptflüssen, Dynamic Type bis zur größten Stufe, Kaltstart unter 800 ms.
    In `00-produktstrategie.md` steht „nicht verhandelbar" — geprüft wurde es
    bis heute nie.
 
-Danach Paywall und StoreKit, sobald das Apple Developer Program vorliegt.
+2. **0.27.0 — Doppeltarif (HT/NT).** Fehlt auf beiden Seiten; der Entwurf
+   sollte zuerst drankommen, weil ein Fehler dort schneller auffällt.
+
+Danach Paywall und StoreKit, sobald das Apple Developer Program vorliegt. Das
+Widget wartet ebenfalls darauf: Die App-Gruppe greift ohne Entwicklerkonto
+nicht, im Simulator läuft der Ersatzpfad.
 
 ### Wo gearbeitet wird
 

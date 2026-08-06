@@ -9,6 +9,54 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.25.0 — 2026-08-06
+
+**Widget für Sperr- und Startbildschirm.** Der zweite Hebel für Wiederkehr:
+Erinnerungen holen jemanden zurück, der die App vergessen hat — ein Widget
+sorgt dafür, dass er sie gar nicht erst vergisst.
+
+### Hinzugefügt
+- `WidgetSummary` in `PulseCore` mit sechs Prüfungen: eine kleine, für sich
+  lesbare Zusammenfassung mit Menge, Zeitraum, Fälligkeit und Symbol.
+- `WidgetBridge` schreibt sie nach jeder Änderung als Datei in die App-Gruppe;
+  das Widget liest sie und rechnet nichts.
+- Zwei Größen. Die kleine zeigt den dringendsten Zähler, die mittlere bis zu
+  drei.
+
+### Entschieden
+- **Das Widget bekommt keinen Zugriff auf den Speicher.** Eine Erweiterung ist
+  ein eigener Prozess mit knappem Speicher und wenigen Millisekunden Zeit.
+  Zöge sie SwiftData samt CloudKit auf, um drei Zahlen anzuzeigen, wäre sie
+  das langsamste und fehleranfälligste Stück der App — und der häufigste Grund
+  für ein leeres Widget ist genau das.
+- **Die Zusammenfassung entsteht in `PulseCore`, nicht in der App.** Würde sie
+  in der Erweiterung noch einmal formuliert, liefen die beiden auseinander,
+  und das Widget zeigte eine andere Zahl als der Bildschirm daneben. Aus
+  demselben Grund ist `periodCaption` aus der Übersicht herausgelöst und wird
+  nun von beiden benutzt.
+- **Fälligkeit hat Vorrang vor dem Zeitraum.** Wer im Vorbeigehen liest, liest
+  eine Zeile. Stünde dort der Zeitraum, während ein Zähler seit drei Monaten
+  überfällig ist, hätte das Widget die falsche Zeile gewählt.
+- **Ohne Daten sagt es, was zu tun ist**, statt leer zu bleiben. Ein leeres
+  Widget wird entfernt.
+- **Ein Schreibfehler bleibt folgenlos.** Ohne App-Gruppe — etwa in der CI,
+  wo ohne Signatur gebaut wird — landet die Datei im eigenen Ordner der App.
+  Das Widget sieht sie dann nicht, aber die App läuft. Ein Absturz an dieser
+  Stelle wäre absurd: Niemand verliert etwas, wenn ein Widget leer bleibt.
+- **Die Datei trägt eine Fassungsnummer**, und eine neuere wird nicht geraten.
+  Ein Widget läuft weiter, während die App schon aktualisiert ist — dann
+  lieber der leere Zustand als eine Zahl, deren Bedeutung sich verschoben hat.
+- Geschrieben wird **atomar**: Läse das Widget genau während des Schreibens,
+  bekäme es sonst eine halbe Datei.
+
+### Offen
+- Die App-Gruppe braucht ein Entwicklerkonto, um auf einem Gerät zu greifen.
+  Im Simulator und in der CI läuft der Ersatzpfad. Das Widget ist damit
+  gebaut und übersetzt, aber erst mit dem Apple Developer Program wirklich
+  gefüllt.
+
+`PulseCore` steht bei 135 Prüfungen.
+
 ## 0.24.0 — 2026-08-06
 
 **Der Entwurf rechnet wie der Rechenkern.** Die offene Abweichung aus 0.23.0

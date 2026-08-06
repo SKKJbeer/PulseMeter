@@ -35,15 +35,20 @@ targets:
     platform: iOS
     sources:
       - path: App
+      # Die Brücke zum Widget liegt in Shared, weil beide Ziele sie brauchen.
+      # Zweimal übersetzt statt zweimal geschrieben: Eine zweite Fassung
+      # zeigte früher oder später eine andere Zahl als die erste.
+      - path: Shared
     dependencies:
       - package: PulseCore
       - package: PulseData
       - package: PulseUI
+      - target: PulseWidgetExtension
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.pulsemeter.app
         PRODUCT_NAME: PulseMeter
-        MARKETING_VERSION: "0.24.0"
+        MARKETING_VERSION: "0.25.0"
         CURRENT_PROJECT_VERSION: "1"
         TARGETED_DEVICE_FAMILY: "1,2"
         GENERATE_INFOPLIST_FILE: NO
@@ -51,6 +56,26 @@ targets:
         CODE_SIGN_STYLE: Automatic
         # Signieren ist für den Simulator nicht nötig. Auf einem echten Gerät
         # trägt Xcode das Team ein; dann gehört es hierher.
+        CODE_SIGNING_ALLOWED: NO
+
+  PulseWidgetExtension:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Widget
+      - path: Shared
+    dependencies:
+      - package: PulseCore
+      - package: PulseUI
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.pulsemeter.app.widget
+        PRODUCT_NAME: PulseWidget
+        MARKETING_VERSION: "0.25.0"
+        CURRENT_PROJECT_VERSION: "1"
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: Widget/Info.plist
+        SKIP_INSTALL: YES
         CODE_SIGNING_ALLOWED: NO
 
   PulseMeterUITests:
@@ -70,6 +95,7 @@ schemes:
     build:
       targets:
         PulseMeter: all
+        PulseWidgetExtension: all
         PulseMeterUITests: [test]
     run:
       config: Debug
