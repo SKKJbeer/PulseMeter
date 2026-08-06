@@ -1,0 +1,10 @@
+.build/
+.swiftpm/
+*.xcuserstate
+xcuserdata/
+.DS_Store
+PulseMeter.xcodeproj/
+DerivedData/
+build/
+*.xcuserstate
+xcuserdata/

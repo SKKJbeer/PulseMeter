@@ -1,0 +1,69 @@
+name: CI
+
+# Läuft auf einem macOS-Läufer, weil SwiftData, SwiftUI und der Simulator
+# nur dort existieren. Damit lässt sich alles prüfen, was auf einem
+# Linux-Rechner nicht übersetzt werden kann — ohne einen Mac zur Hand zu haben.
+on:
+  push:
+    branches: [main, "claude/**"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: macos-15
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Umgebung
+        run: |
+          xcodebuild -version
+          swift --version
+          xcrun simctl list runtimes | grep iOS || true
+
+      # Kostet eine Sekunde und fängt einen Fehler ab, der sonst erst nach
+      # zwei Minuten Übersetzung auffällt: ein deutsches Anführungszeichen,
+      # das eine Swift-Zeichenkette an der falschen Stelle beendet.
+      - name: Zeichenketten
+        run: python3 scripts/check-strings.py
+
+      # Die Domäne zuerst: schnell, und wenn sie bricht, ist alles andere egal.
+      - name: PulseCore
+        run: swift test --package-path Packages/PulseCore
+
+      # Braucht SwiftData; das macOS-Ziel des Pakets reicht, kein Simulator.
+      - name: PulseData
+        run: swift test --package-path Packages/PulseData
+
+      # PulseUI ist iOS-only und wird beim App-Build mit übersetzt; ein
+      # eigener Testlauf auf macOS ginge nicht.
+      - name: XcodeGen
+        run: brew install xcodegen
+
+      - name: Xcode-Projekt erzeugen
+        run: xcodegen generate
+
+      - name: App bauen und Oberflächentests
+        run: scripts/test.sh app
+
+      # Verwendet den Build aus dem Testschritt weiter — ein zweiter
+      # vollständiger Build kostet auf einem macOS-Läufer mehrere Minuten.
+      - name: Screenshots
+        if: success()
+        run: scripts/run.sh build
+
+      - name: Ergebnisse sichern
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-und-protokolle
+          path: |
+            build/*.png
+          if-no-files-found: ignore
+          retention-days: 14

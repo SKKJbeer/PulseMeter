@@ -1,0 +1,80 @@
+# Beschreibung des Xcode-Projekts für XcodeGen.
+#
+# Warum generiert statt eingecheckt: Eine .xcodeproj-Datei ist ein
+# unübersichtliches Gebilde, das bei jeder Änderung Zeilen umsortiert und
+# Zusammenführungen unnötig schwer macht. Diese Datei ist die Wahrheit; das
+# Projekt entsteht daraus mit `scripts/setup-mac.sh` oder `xcodegen generate`.
+#
+# Folge: PulseMeter.xcodeproj gehört nicht ins Repository (siehe .gitignore).
+
+name: PulseMeter
+options:
+  bundleIdPrefix: com.pulsemeter
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+packages:
+  PulseCore:
+    path: Packages/PulseCore
+  PulseData:
+    path: Packages/PulseData
+  PulseUI:
+    path: Packages/PulseUI
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+
+targets:
+  PulseMeter:
+    type: application
+    platform: iOS
+    sources:
+      - path: App
+    dependencies:
+      - package: PulseCore
+      - package: PulseData
+      - package: PulseUI
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.pulsemeter.app
+        PRODUCT_NAME: PulseMeter
+        MARKETING_VERSION: "0.19.1"
+        CURRENT_PROJECT_VERSION: "1"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: App/Info.plist
+        CODE_SIGN_STYLE: Automatic
+        # Signieren ist für den Simulator nicht nötig. Auf einem echten Gerät
+        # trägt Xcode das Team ein; dann gehört es hierher.
+        CODE_SIGNING_ALLOWED: NO
+
+  PulseMeterUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: AppUITests
+    dependencies:
+      - target: PulseMeter
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.pulsemeter.app.uitests
+        CODE_SIGNING_ALLOWED: NO
+
+schemes:
+  PulseMeter:
+    build:
+      targets:
+        PulseMeter: all
+        PulseMeterUITests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: true
+      targets:
+        - PulseMeterUITests

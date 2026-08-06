@@ -1,0 +1,2535 @@
+<title>PulseMeter – Klickbarer Entwurf</title>
+<style>
+/* ============================================================
+   TOKENS
+   Neutrale sind warm gebrochen, damit die Zählerfarben tragen.
+   ============================================================ */
+:root {
+  --ground:      #E8E4DC;
+  --frame:       #C4BEB2;
+  --app-bg:      #FBFAF8;
+  --surface:     #FFFFFF;
+  --surface-2:   #F4F1EB;
+  --ink:         #17150F;
+  --ink-2:       #6B6659;
+  --ink-3:       #9A9384;
+  --hairline:    #E7E3DA;
+  --hairline-2:  #D8D2C6;
+  --tint:        #C77A0E;
+  --good:        #2F7F52;
+  --warn-bg:     #FBF0DA;
+  --warn-ink:    #8A5A08;
+  --shadow-card: 0 1px 2px rgba(23,21,15,.05), 0 6px 18px rgba(23,21,15,.05);
+  --shadow-dev:  0 40px 80px -20px rgba(23,21,15,.45), 0 0 0 1px rgba(23,21,15,.08);
+
+  --amber:  #C98410;
+  --green:  #2F8B57;
+  --blue:   #2A6FB8;
+  --orange: #C25C22;
+  --red:    #B03A38;
+  --teal:   #2A7F7A;
+  --on-accent: #FFFFFF;
+
+  --r-card: 18px;
+  --r-sheet: 26px;
+  --fs-hero: 34px;
+  --fs-value: 30px;
+  --fs-title: 20px;
+  --fs-body: 16px;
+  --fs-sub: 14px;
+  --fs-cap: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground:     #0A0908;
+    --frame:      #2A2620;
+    --app-bg:     #100F0D;
+    --surface:    #1B1917;
+    --surface-2:  #262320;
+    --ink:        #F5F2EC;
+    --ink-2:      #A39C8D;
+    --ink-3:      #756F62;
+    --hairline:   #2B2822;
+    --hairline-2: #383430;
+    --tint:       #E0A040;
+    --good:       #5CBF85;
+    --warn-bg:    #33290F;
+    --warn-ink:   #E8C070;
+    --shadow-card: 0 1px 2px rgba(0,0,0,.4);
+    --shadow-dev:  0 40px 80px -20px rgba(0,0,0,.8), 0 0 0 1px rgba(255,255,255,.06);
+    --amber:  #E8A945;
+    --green:  #5CBF85;
+    --blue:   #5C9EE0;
+    --orange: #E08551;
+    --red:    #DC6E6C;
+    --teal:   #63BAB4;
+    --on-accent: #100F0D;
+  }
+}
+:root[data-theme="dark"] {
+  --ground:     #0A0908;  --frame:      #2A2620;  --app-bg:     #100F0D;
+  --surface:    #1B1917;  --surface-2:  #262320;  --ink:        #F5F2EC;
+  --ink-2:      #A39C8D;  --ink-3:      #756F62;  --hairline:   #2B2822;
+  --hairline-2: #383430;  --tint:       #E0A040;  --good:       #5CBF85;
+  --warn-bg:    #33290F;  --warn-ink:   #E8C070;
+  --shadow-card: 0 1px 2px rgba(0,0,0,.4);
+  --shadow-dev:  0 40px 80px -20px rgba(0,0,0,.8), 0 0 0 1px rgba(255,255,255,.06);
+  --amber: #E8A945; --green: #5CBF85; --blue: #5C9EE0; --orange: #E08551; --red: #DC6E6C; --teal: #63BAB4; --on-accent: #100F0D;
+}
+:root[data-theme="light"] {
+  --ground:     #E8E4DC;  --frame:      #C4BEB2;  --app-bg:     #FBFAF8;
+  --surface:    #FFFFFF;  --surface-2:  #F4F1EB;  --ink:        #17150F;
+  --ink-2:      #6B6659;  --ink-3:      #9A9384;  --hairline:   #E7E3DA;
+  --hairline-2: #D8D2C6;  --tint:       #C77A0E;  --good:       #2F7F52;
+  --warn-bg:    #FBF0DA;  --warn-ink:   #8A5A08;
+  --shadow-card: 0 1px 2px rgba(23,21,15,.05), 0 6px 18px rgba(23,21,15,.05);
+  --shadow-dev:  0 40px 80px -20px rgba(23,21,15,.45), 0 0 0 1px rgba(23,21,15,.08);
+  --amber: #C98410; --green: #2F8B57; --blue: #2A6FB8; --orange: #C25C22; --red: #B03A38; --teal: #2A7F7A; --on-accent: #FFFFFF;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  font-size: var(--fs-body);
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: tabular-nums;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  padding: 28px 16px 40px;
+}
+
+/* ---------- Bühne ---------- */
+.stage-head {
+  width: 100%; max-width: 430px;
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+}
+.stage-head h1 {
+  margin: 0; font-size: 15px; font-weight: 640; letter-spacing: -0.01em;
+}
+.stage-head p { margin: 0; font-size: var(--fs-cap); color: var(--ink-2); }
+
+.controls { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.ctl {
+  font: inherit; font-size: 13px; font-weight: 550;
+  color: var(--ink-2); background: var(--surface);
+  border: 1px solid var(--hairline-2); border-radius: 999px;
+  padding: 7px 14px; cursor: pointer;
+  transition: color .15s, border-color .15s;
+}
+.ctl:hover { color: var(--ink); border-color: var(--ink-3); }
+.ctl:focus-visible { outline: 2px solid var(--tint); outline-offset: 2px; }
+
+/* ---------- Gerät ---------- */
+.device {
+  width: min(390px, 100%);
+  height: min(844px, calc(100vh - 190px));
+  min-height: 620px;
+  background: var(--app-bg);
+  border-radius: 44px;
+  box-shadow: var(--shadow-dev);
+  border: 9px solid var(--frame);
+  position: relative;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  isolation: isolate;
+}
+
+/* Statusleiste */
+.statusbar {
+  height: 46px; flex: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 26px 0 30px;
+  font-size: 14px; font-weight: 640; letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.statusbar .glyphs { display: flex; gap: 5px; align-items: center; opacity: .9; }
+
+/* Bildschirmfläche */
+.screen { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
+.screen::-webkit-scrollbar { width: 0; }
+.pane { display: none; padding: 0 18px 26px; animation: paneIn .22s ease both; }
+.pane.on { display: block; }
+@keyframes paneIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+h2.large {
+  font-size: var(--fs-hero); font-weight: 720; letter-spacing: -0.028em;
+  margin: 4px 0 2px; text-wrap: balance;
+}
+.datum { font-size: var(--fs-sub); color: var(--ink-3); margin: 0 0 16px; }
+
+/* ---------- Statuszeile ---------- */
+.status-line {
+  display: flex; align-items: flex-start; gap: 11px;
+  padding: 14px 15px; margin-bottom: 18px;
+  border-radius: 15px;
+  background: var(--surface); box-shadow: var(--shadow-card);
+  font-size: 15px; line-height: 1.35; letter-spacing: -0.01em;
+}
+.status-line.due { background: var(--warn-bg); box-shadow: none; color: var(--warn-ink); }
+.status-line .dot {
+  width: 9px; height: 9px; border-radius: 50%; flex: none; margin-top: 6px;
+  background: var(--good);
+}
+.status-line.due .dot { background: currentColor; }
+.status-line b { font-weight: 640; }
+
+/* ---------- Zählerkarte ---------- */
+.cards { display: flex; flex-direction: column; gap: 12px; }
+.card {
+  background: var(--surface); border-radius: var(--r-card);
+  box-shadow: var(--shadow-card); overflow: hidden;
+  border: 1px solid transparent;
+  transition: border-color .18s;
+}
+.card.flagged { border-color: color-mix(in srgb, var(--c) 45%, transparent); }
+.card-top {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 15px 0;
+}
+.chip-icon {
+  width: 27px; height: 27px; border-radius: 8px; flex: none;
+  display: grid; place-items: center;
+  background: color-mix(in srgb, var(--c) 15%, transparent);
+  color: var(--c);
+}
+.chip-icon svg { width: 15px; height: 15px; }
+.card-name { font-weight: 620; font-size: 16px; letter-spacing: -0.012em; flex: 1; }
+.due-pill {
+  font-size: 11px; font-weight: 660; letter-spacing: .02em; text-transform: uppercase;
+  padding: 4px 8px; border-radius: 999px;
+  background: color-mix(in srgb, var(--c) 16%, transparent); color: var(--c);
+}
+.card-body { padding: 8px 15px 15px; display: flex; align-items: flex-end; gap: 14px; }
+.card-figure { flex: 1; min-width: 0; }
+/* Über der Zahl, nicht darunter: Der Zeitraum ist die Frage, die Zahl die
+   Antwort. In dieser Reihenfolge gelesen kann die Zahl nicht mehr
+   versprechen, als sie deckt. */
+.card-caption { font-size: var(--fs-cap); color: var(--ink-3); margin-bottom: 3px; letter-spacing: -0.003em; }
+.approx { font-size: .58em; color: var(--ink-3); font-weight: 500; margin-right: 3px; vertical-align: 0.13em; }
+.value-row { display: flex; align-items: baseline; gap: 5px; }
+.value {
+  font-size: var(--fs-value); font-weight: 700; letter-spacing: -0.032em; line-height: 1.05;
+}
+.unit { font-size: 15px; font-weight: 560; color: var(--ink-2); }
+.sub { font-size: var(--fs-sub); color: var(--ink-2); margin-top: 4px; letter-spacing: -0.005em; }
+.sub .delta { font-weight: 620; }
+.sub .delta.down { color: var(--good); }
+.sub .delta.up { color: var(--red); }
+.spark { flex: none; width: 78px; height: 34px; }
+
+/* Zusatzzeile: zweites Zählwerk / Abschlag */
+.card-extra {
+  border-top: 1px solid var(--hairline);
+  padding: 10px 15px;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  font-size: var(--fs-sub); color: var(--ink-2);
+}
+.card-extra > span:first-child { min-width: 0; }
+.card-extra > :last-child { white-space: nowrap; flex: none; }
+.card-extra strong { color: var(--ink); font-weight: 600; }
+.explain {
+  font: inherit; font-size: var(--fs-sub); color: var(--c);
+  background: none; border: 0; padding: 0; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 4px; font-weight: 560;
+}
+.explain:focus-visible { outline: 2px solid var(--tint); outline-offset: 3px; border-radius: 4px; }
+.card-actions { border-top: 1px solid var(--hairline); display: flex; }
+.card-actions button {
+  flex: 1; font: inherit; font-size: 15px; font-weight: 600; letter-spacing: -0.01em;
+  color: var(--c); background: none; border: 0; padding: 13px 0; cursor: pointer;
+}
+.card-actions button:active { background: var(--surface-2); }
+.card-actions button:focus-visible { outline: 2px solid var(--tint); outline-offset: -3px; }
+
+/* ---------- Tab-Leiste ---------- */
+.tabbar {
+  flex: none; display: flex; padding: 7px 0 20px;
+  border-top: 1px solid var(--hairline);
+  background: color-mix(in srgb, var(--app-bg) 88%, transparent);
+  backdrop-filter: blur(18px);
+}
+.tabbar button {
+  flex: 1; background: none; border: 0; cursor: pointer; font: inherit;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  color: var(--ink-3); font-size: 10.5px; font-weight: 560; letter-spacing: .005em;
+  padding: 3px 0;
+}
+.tabbar button svg { width: 25px; height: 25px; }
+.tabbar button[aria-selected="true"] { color: var(--tint); }
+.tabbar button:focus-visible { outline: 2px solid var(--tint); outline-offset: -4px; border-radius: 8px; }
+
+/* ---------- Bogen (Sheet) ---------- */
+.scrim {
+  position: absolute; inset: 0; z-index: 5;
+  background: rgba(10,9,8,.42);
+  opacity: 0; pointer-events: none; transition: opacity .28s;
+}
+.scrim.on { opacity: 1; pointer-events: auto; }
+.sheet {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 6;
+  background: var(--app-bg);
+  border-radius: var(--r-sheet) var(--r-sheet) 0 0;
+  transform: translateY(102%);
+  transition: transform .34s cubic-bezier(.32,.72,0,1);
+  max-height: 94%; display: flex; flex-direction: column;
+  box-shadow: 0 -14px 40px rgba(0,0,0,.16);
+}
+.sheet.on { transform: none; }
+.grabber {
+  width: 36px; height: 5px; border-radius: 3px; background: var(--hairline-2);
+  margin: 8px auto 0; flex: none;
+}
+.sheet-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px 6px; flex: none;
+}
+.sheet-title { font-size: 17px; font-weight: 660; letter-spacing: -0.015em; }
+.sheet-close {
+  font: inherit; font-size: 15px; font-weight: 560; color: var(--tint);
+  background: none; border: 0; cursor: pointer; padding: 4px;
+}
+.sheet-close:focus-visible { outline: 2px solid var(--tint); outline-offset: 2px; border-radius: 6px; }
+.sheet-body { overflow-y: auto; padding: 0 16px 18px; }
+
+/* ---------- Zählwerk ---------- */
+.capture-meta {
+  text-align: center; font-size: var(--fs-sub); color: var(--ink-2);
+  margin: 2px 0 14px;
+}
+.prefill {
+  font: inherit; font-size: 13px; font-weight: 560;
+  background: var(--surface-2); border: 1px solid var(--hairline-2);
+  color: var(--ink-2); border-radius: 999px; padding: 5px 11px;
+  cursor: pointer; margin-top: 8px;
+}
+.prefill:hover { color: var(--ink); }
+.prefill:focus-visible { outline: 2px solid var(--tint); outline-offset: 2px; }
+
+.counter {
+  display: flex; justify-content: center; gap: 3px;
+  padding: 14px; border-radius: 14px;
+  background: linear-gradient(180deg, #2A2620, #423C33);
+  box-shadow: inset 0 2px 7px rgba(0,0,0,.55);
+  margin-bottom: 4px;
+}
+.drum {
+  width: 30px; height: 46px; border-radius: 3px;
+  display: grid; place-items: center; overflow: hidden;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 27px; font-weight: 600; letter-spacing: -0.02em;
+  background: linear-gradient(180deg,#B8B2A6 0%,#FDFCFA 20%,#FFFFFF 48%,#EFEBE3 74%,#B8B2A6 100%);
+  color: #17150F;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.28);
+}
+.drum.dec {
+  background: linear-gradient(180deg,#7A1B18 0%,#D9352F 20%,#EC4A43 48%,#C22A25 74%,#7A1B18 100%);
+  color: #FFF;
+}
+.drum.sep { width: 8px; background: none; box-shadow: none; }
+.drum span { display: block; }
+.drum.rolled span { animation: roll .22s cubic-bezier(.3,.8,.3,1); }
+@keyframes roll {
+  0%   { transform: translateY(-88%); opacity: .25; }
+  100% { transform: none; opacity: 1; }
+}
+.counter-unit {
+  text-align: center; font-size: var(--fs-cap); font-weight: 620;
+  letter-spacing: .04em; color: var(--ink-3);
+  margin-bottom: 12px;
+}
+
+/* Plausibilitätszeile */
+.verdict {
+  min-height: 62px; border-radius: 13px; padding: 12px 14px;
+  font-size: var(--fs-sub); line-height: 1.4; letter-spacing: -0.005em;
+  display: flex; gap: 10px; align-items: flex-start;
+  background: var(--surface); color: var(--ink-2);
+  transition: background .2s, color .2s;
+}
+.verdict .mark { flex: none; margin-top: 1px; }
+.verdict.warn { background: var(--warn-bg); color: var(--warn-ink); }
+.verdict.idle { background: transparent; color: var(--ink-3); }
+.verdict b { color: var(--ink); font-weight: 620; }
+.verdict.warn b { color: inherit; }
+
+/* Tastenfeld */
+.keys {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px;
+  margin-top: 14px;
+}
+.key {
+  font: inherit; font-size: 26px; font-weight: 440; letter-spacing: -0.02em;
+  height: 52px; border-radius: 12px; cursor: pointer;
+  background: var(--surface); color: var(--ink);
+  border: 1px solid var(--hairline); box-shadow: 0 1px 1px rgba(23,21,15,.05);
+  display: grid; place-items: center;
+}
+.key:active { background: var(--surface-2); transform: translateY(1px); }
+.key:focus-visible { outline: 2px solid var(--tint); outline-offset: 2px; }
+.key.aux { font-size: 13px; font-weight: 560; color: var(--ink-2); background: transparent; border-color: transparent; box-shadow: none; }
+.key.aux svg { width: 21px; height: 21px; }
+
+.save {
+  width: 100%; margin-top: 14px; font: inherit;
+  font-size: 17px; font-weight: 640; letter-spacing: -0.015em;
+  color: var(--on-accent); background: var(--c);
+  border: 0; border-radius: 14px; padding: 15px; cursor: pointer;
+}
+/* Eigene Farben statt durchscheinender Akzentfläche: Mit `opacity` stand im
+   dunklen Erscheinungsbild dunkelbraun auf braun — auf dem Bildschirmfoto der
+   App kaum zu lesen. Gedämpfte Fläche mit gedämpfter Schrift trägt in beiden. */
+.save[disabled] {
+  background: var(--surface-2); color: var(--ink-3);
+  cursor: not-allowed;
+}
+.save:not([disabled]):active { filter: brightness(.92); }
+.save:focus-visible { outline: 2px solid var(--tint); outline-offset: 3px; }
+.save-note {
+  text-align: center; font-size: var(--fs-cap); color: var(--ink-3);
+  margin-top: 9px;
+}
+
+/* Bestätigung */
+.toast {
+  position: absolute; left: 50%; top: 44%; z-index: 9;
+  transform: translate(-50%,-50%) scale(.86); opacity: 0;
+  background: color-mix(in srgb, var(--ink) 92%, transparent);
+  color: var(--app-bg);
+  padding: 20px 26px; border-radius: 20px; text-align: center;
+  font-size: 15px; font-weight: 600; letter-spacing: -0.01em;
+  pointer-events: none; transition: opacity .2s, transform .28s cubic-bezier(.2,1.3,.4,1);
+}
+.toast.on { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+.toast svg { width: 34px; height: 34px; display: block; margin: 0 auto 8px; }
+
+/* ---------- Verlauf ---------- */
+.segmented {
+  display: flex; gap: 2px; padding: 2px; border-radius: 10px;
+  background: var(--surface-2); margin-bottom: 16px;
+}
+.segmented button {
+  flex: 1; font: inherit; font-size: 13.5px; font-weight: 570; letter-spacing: -0.008em;
+  border: 0; border-radius: 8px; padding: 7px 0; cursor: pointer;
+  background: none; color: var(--ink-2);
+}
+.segmented button[aria-selected="true"] {
+  background: var(--surface); color: var(--ink);
+  box-shadow: 0 1px 3px rgba(23,21,15,.11);
+}
+.segmented button:focus-visible { outline: 2px solid var(--tint); outline-offset: -2px; }
+
+.picker { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 14px; margin-bottom: 2px; }
+.picker::-webkit-scrollbar { height: 0; }
+.pick {
+  font: inherit; font-size: 13.5px; font-weight: 560; white-space: nowrap;
+  border: 1px solid var(--hairline-2); background: var(--surface);
+  color: var(--ink-2); border-radius: 999px; padding: 7px 13px; cursor: pointer;
+}
+.pick[aria-selected="true"] {
+  background: color-mix(in srgb, var(--c) 13%, transparent);
+  border-color: color-mix(in srgb, var(--c) 40%, transparent);
+  color: var(--c);
+}
+.pick:focus-visible { outline: 2px solid var(--tint); outline-offset: 2px; }
+
+.chart-card { background: var(--surface); border-radius: var(--r-card); box-shadow: var(--shadow-card); padding: 16px 14px 12px; }
+.chart-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; padding: 0 2px; }
+.chart-head .big { font-size: 26px; font-weight: 700; letter-spacing: -0.03em; }
+.chart-head .lbl { font-size: var(--fs-cap); color: var(--ink-3); font-weight: 560; }
+.legend { display: flex; gap: 14px; padding: 10px 4px 2px; font-size: var(--fs-cap); color: var(--ink-3); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+
+/* ---------- Datenansicht ----------
+   Dicht, tabellarisch, zum Vergleichen. Bewusst ein Ziel und keine
+   Eingangstür: Wer Verbrauch ernsthaft verfolgt, will irgendwann alle
+   Zahlen nebeneinander — nur eben nicht beim Öffnen der App. */
+.tablecard { background: var(--surface); border-radius: var(--r-card); box-shadow: var(--shadow-card); padding: 14px 14px 6px; }
+.tablewrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -14px; padding: 0 14px; }
+table.data { width: 100%; border-collapse: collapse; font-size: 13.5px; white-space: nowrap; }
+table.data th {
+  font-size: 10.5px; font-weight: 660; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--ink-3); text-align: right; padding: 0 0 9px 12px; vertical-align: bottom;
+}
+table.data th:first-child { text-align: left; padding-left: 0; }
+table.data td {
+  padding: 9px 0 9px 12px; border-top: 1px solid var(--hairline);
+  text-align: right; font-variant-numeric: tabular-nums; letter-spacing: -0.01em;
+}
+table.data td:first-child { text-align: left; padding-left: 0; color: var(--ink-2); }
+table.data td.now { font-weight: 640; color: var(--ink); }
+table.data td.na { color: var(--ink-3); }
+table.data td.delta.down { color: var(--good); font-weight: 600; }
+table.data td.delta.up { color: var(--red); font-weight: 600; }
+table.data tr.sum td { border-top: 1.5px solid var(--ink); font-weight: 700; color: var(--ink); padding-top: 11px; }
+table.data tr.sum td:first-child { color: var(--ink); }
+table.data tr.partial td:first-child::after {
+  content: "teilweise"; display: inline-block; margin-left: 7px;
+  font-size: 9.5px; font-weight: 620; letter-spacing: .03em; text-transform: uppercase;
+  color: var(--ink-3); background: var(--surface-2); padding: 2px 5px; border-radius: 4px;
+}
+table.data tr.est td:first-child::after {
+  content: "geschätzt"; display: inline-block; margin-left: 7px;
+  font-size: 9.5px; font-weight: 620; letter-spacing: .03em; text-transform: uppercase;
+  color: var(--warn-ink); background: var(--warn-bg); padding: 2px 5px; border-radius: 4px;
+}
+.controlrow { display: flex; gap: 8px; margin-bottom: 14px; }
+.tabletop { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+.segmented.tiny { width: 172px; margin-bottom: 0; }
+.segmented.tiny button { font-size: 12.5px; padding: 6px 0; }
+.controlrow .segmented { margin-bottom: 0; }
+.segmented button[disabled] { cursor: not-allowed; }
+.footnote { font-size: var(--fs-cap); color: var(--ink-3); line-height: 1.5; padding: 12px 2px 8px; }
+.exportbar { display: flex; gap: 9px; margin-top: 14px; }
+.exportbar button {
+  flex: 1; font: inherit; font-size: 14.5px; font-weight: 600; letter-spacing: -0.01em;
+  padding: 12px; border-radius: 12px; cursor: pointer;
+  background: var(--surface); color: var(--tint); border: 1px solid var(--hairline-2);
+}
+.exportbar button:active { background: var(--surface-2); }
+.exportbar button:focus-visible { outline: 2px solid var(--tint); outline-offset: 2px; }
+.preview {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px; line-height: 1.55;
+  background: var(--surface-2); border-radius: 12px; padding: 12px;
+  white-space: pre; overflow-x: auto; color: var(--ink-2); margin-top: 12px;
+  max-height: 190px; overflow-y: auto;
+}
+.freebadge {
+  display: inline-block; font-size: 10.5px; font-weight: 660; letter-spacing: .03em;
+  text-transform: uppercase; color: var(--good); background: color-mix(in srgb, var(--good) 14%, transparent);
+  padding: 3px 7px; border-radius: 5px; margin-left: 7px;
+}
+.pro { color: var(--tint); background: color-mix(in srgb, var(--tint) 14%, transparent); }
+
+/* ---------- Vergleich desselben Monats über die Jahre ----------
+   Die eigentlich interessante Frage: Februar 2026 gegen Februar 2025.
+   Ein Balken je Jahr, gleiche Grundlinie, gleicher Maßstab. */
+.cmp-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+.cmp-title { font-size: 19px; font-weight: 680; letter-spacing: -0.02em; }
+.cmp-delta { font-size: var(--fs-sub); font-weight: 640; }
+.cmp-delta.down { color: var(--good); }
+.cmp-delta.up { color: var(--red); }
+.cmp-delta.none { color: var(--ink-3); font-weight: 500; }
+.cmp-rows { display: flex; flex-direction: column; gap: 9px; }
+.cmp-row { display: flex; align-items: center; gap: 11px; font-size: var(--fs-sub); }
+.cmp-row .yr { width: 34px; flex: none; color: var(--ink-2); font-weight: 560; }
+.cmp-row.current .yr { color: var(--ink); font-weight: 680; }
+.cmp-row .track { flex: 1; height: 22px; border-radius: 5px; background: var(--surface-2); overflow: hidden; }
+.cmp-row .track i {
+  display: block; height: 100%; border-radius: 5px; background: var(--hairline-2);
+  transform-origin: left; animation: grow .42s cubic-bezier(.2,.8,.3,1) both;
+}
+.cmp-row.current .track i { background: var(--c); }
+.cmp-row .num { width: 86px; flex: none; text-align: right; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.cmp-row.current .num { font-weight: 680; }
+@keyframes grow { from { transform: scaleX(0); } to { transform: none; } }
+.cmp-foot { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--hairline);
+  font-size: var(--fs-cap); color: var(--ink-2); line-height: 1.5; }
+.cmp-foot b { color: var(--ink); font-weight: 620; }
+.chart-hint { text-align: center; font-size: var(--fs-cap); color: var(--ink-3); margin-top: 10px; }
+#chart rect[data-month] { cursor: pointer; }
+
+/* ---------- Bericht ----------
+   Ein Dokument, kein Bildschirm. Papier bleibt Papier: Die Farben sind
+   festgelegt und folgen nicht dem Erscheinungsbild des Geräts, weil das
+   Blatt am Ende gedruckt oder als PDF weitergegeben wird. */
+.doc {
+  background: #FFFFFF; color: #17150F;
+  border-radius: 4px; padding: 26px 22px 22px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.16), 0 0 0 1px rgba(0,0,0,.07);
+  font-size: 11.5px; line-height: 1.5;
+}
+.doc-head { border-bottom: 2px solid #17150F; padding-bottom: 12px; margin-bottom: 16px; }
+.doc-head h1 { font-size: 21px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 3px; }
+.doc-head .meta { font-size: 11px; color: #6B6659; }
+.doc h2 {
+  font-size: 10px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase;
+  color: #6B6659; margin: 20px 0 8px; padding-bottom: 5px; border-bottom: 1px solid #E7E3DA;
+}
+.doc h2:first-of-type { margin-top: 0; }
+.doc-sum { display: flex; flex-direction: column; gap: 6px; }
+.doc-sum div { display: flex; justify-content: space-between; gap: 12px; }
+.doc-sum .k { color: #6B6659; }
+.doc-sum .v { font-variant-numeric: tabular-nums; font-weight: 620; white-space: nowrap; }
+.doc-sum .big { border-top: 1.5px solid #17150F; padding-top: 7px; margin-top: 3px; font-size: 13px; }
+.doc-sum .big .k, .doc-sum .big .v { font-weight: 700; }
+.doc-meter { margin-bottom: 4px; }
+.doc-meter .name { font-size: 14px; font-weight: 680; letter-spacing: -0.01em; }
+.doc-meter .serial { font-size: 10px; color: #9A9384; margin-bottom: 7px; }
+table.doc-t { width: 100%; border-collapse: collapse; font-size: 10.5px; font-variant-numeric: tabular-nums; }
+table.doc-t th {
+  text-align: right; font-size: 9px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; color: #9A9384; padding: 0 0 4px 8px; border-bottom: 1px solid #E7E3DA;
+}
+table.doc-t th:first-child, table.doc-t td:first-child { text-align: left; padding-left: 0; }
+table.doc-t td { text-align: right; padding: 3.5px 0 3.5px 8px; }
+table.doc-t tr.t td { border-top: 1px solid #17150F; font-weight: 700; padding-top: 5px; }
+table.doc-t td.neg { color: #1F6B42; }
+table.doc-t td.pos { color: #A8322F; }
+table.doc-t td.dim { color: #9A9384; }
+.doc-note {
+  margin-top: 18px; padding-top: 10px; border-top: 1px solid #E7E3DA;
+  font-size: 9.5px; line-height: 1.55; color: #6B6659;
+}
+.doc-note b { color: #17150F; }
+
+@media print {
+  body { background: #fff; padding: 0; display: block; }
+  .stage-head, .controls, .hint, .scrim, .tabbar, .statusbar, .screen { display: none !important; }
+  .sheet:not(#sheet-report) { display: none !important; }
+  .device { border: 0; box-shadow: none; border-radius: 0; height: auto; width: 100%; overflow: visible; }
+  #sheet-report { position: static; transform: none; max-height: none; box-shadow: none; background: #fff; }
+  #sheet-report .grabber, #sheet-report .sheet-head, #sheet-report .save { display: none !important; }
+  #sheet-report .sheet-body { overflow: visible; padding: 0; }
+  .doc { box-shadow: none; border-radius: 0; padding: 0; font-size: 10.5pt; }
+}
+
+.list { background: var(--surface); border-radius: var(--r-card); box-shadow: var(--shadow-card); margin-top: 16px; overflow: hidden; }
+.row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 15px; border-bottom: 1px solid var(--hairline);
+  font-size: 15px;
+}
+.row:last-child { border-bottom: 0; }
+.row .rl { flex: 1; min-width: 0; }
+.row .rl small { display: block; font-size: var(--fs-cap); color: var(--ink-3); margin-top: 2px; }
+.row .rv { font-weight: 600; letter-spacing: -0.015em; }
+.row .rv small { display: block; text-align: right; font-weight: 500; font-size: var(--fs-cap); color: var(--ink-3); margin-top: 2px; }
+.rowbtn {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  font: inherit; font-size: 15px; color: var(--ink); text-align: left;
+  background: none; border: 0; padding: 14px 15px; cursor: pointer;
+}
+.rowbtn:active { background: var(--surface-2); }
+.rowbtn:focus-visible { outline: 2px solid var(--tint); outline-offset: -3px; }
+.rowbtn .rl { flex: 1; min-width: 0; font-weight: 560; }
+.rowbtn .rl small { display: block; font-size: var(--fs-cap); font-weight: 400; color: var(--ink-3); margin-top: 2px; }
+.rowbtn .chev { width: 17px; height: 17px; flex: none; color: var(--ink-3); }
+.tag {
+  font-size: 10.5px; font-weight: 620; letter-spacing: .02em; text-transform: uppercase;
+  padding: 3px 6px; border-radius: 5px; background: var(--surface-2); color: var(--ink-3);
+}
+
+/* Eingabefelder im Zähler-Editor. Sie sehen aus wie der Rest der Liste und
+   nicht wie ein Formular — die Zeile ist das Element, das Feld füllt sie aus. */
+.field {
+  font: inherit; font-size: 15px; color: var(--ink);
+  background: none; border: 0; width: 100%; padding: 0;
+  -webkit-appearance: none; appearance: none;
+}
+.field:focus-visible { outline: 2px solid var(--tint); outline-offset: 4px; border-radius: 4px; }
+.field:disabled { color: var(--ink-3); }
+select.field { cursor: pointer; }
+
+.section-label {
+  font-size: var(--fs-cap); font-weight: 640; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--ink-3);
+  margin: 22px 0 8px 4px;
+}
+
+/* Erklärung */
+.calc { display: flex; flex-direction: column; gap: 0; margin-top: 4px; }
+.calc-row {
+  display: flex; justify-content: space-between; gap: 14px;
+  padding: 12px 0; border-bottom: 1px solid var(--hairline);
+  font-size: 15px;
+}
+.calc-row:last-of-type { border-bottom: 0; }
+.calc-row .k { color: var(--ink-2); }
+.calc-row .v { font-weight: 600; letter-spacing: -0.012em; white-space: nowrap; }
+.calc-row.total { border-top: 1.5px solid var(--ink); margin-top: 4px; padding-top: 13px; }
+.calc-row.total .k, .calc-row.total .v { font-weight: 680; color: var(--ink); }
+.note {
+  font-size: 13px; line-height: 1.5; color: var(--ink-2);
+  background: var(--surface-2); border-radius: 12px; padding: 12px 13px; margin-top: 16px;
+}
+
+.hint {
+  text-align: center; font-size: var(--fs-cap); color: var(--ink-3);
+  max-width: 390px; line-height: 1.5;
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+</style>
+
+<div class="stage-head">
+  <h1>PulseMeter</h1>
+  <p>Klickbarer Entwurf · v0.19.0</p>
+</div>
+
+<div class="device">
+  <div class="statusbar">
+    <span>9:41</span>
+    <span class="glyphs">
+      <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+      <svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x=".7" y=".7" width="19" height="9.6" rx="2.6" stroke="currentColor" stroke-opacity=".4" stroke-width="1"/><rect x="2.2" y="2.2" width="14" height="6.6" rx="1.4" fill="currentColor"/><path d="M21.4 4v3a2 2 0 0 0 0-3z" fill="currentColor" fill-opacity=".45"/></svg>
+    </span>
+  </div>
+
+  <div class="screen">
+    <!-- ÜBERSICHT -->
+    <section class="pane on" id="pane-home">
+      <h2 class="large">Übersicht</h2>
+      <p class="datum">Dienstag, 4. August 2026</p>
+      <div id="status"></div>
+      <div class="cards" id="cards"></div>
+    </section>
+
+    <!-- VERLAUF -->
+    <section class="pane" id="pane-history">
+      <h2 class="large">Verlauf</h2>
+      <p class="datum">Ein Zähler, ein Zeitraum</p>
+      <div class="picker" id="picker"></div>
+      <div class="segmented" id="mode">
+        <button type="button" aria-selected="true" data-mode="chart">Diagramm</button>
+        <button type="button" aria-selected="false" data-mode="table">Alle Zahlen</button>
+      </div>
+
+      <div id="view-chart">
+        <div class="segmented" id="scale">
+          <button type="button" aria-selected="true" data-scale="month">Monat</button>
+          <button type="button" aria-selected="false" data-scale="year">Jahr</button>
+        </div>
+        <div class="chart-card">
+          <div class="chart-head">
+            <div><div class="big" id="chart-total"></div><div class="lbl" id="chart-label"></div></div>
+            <div class="lbl" id="chart-delta"></div>
+          </div>
+          <div id="chart"></div>
+          <div class="legend">
+            <span><i id="lg-now"></i>2026</span>
+            <span><i style="background:var(--hairline-2)"></i>2025</span>
+            <span><i style="background:repeating-linear-gradient(45deg,var(--ink-3) 0 2px,transparent 2px 4px)"></i><span id="lg-hatch">geschätzt</span></span>
+          </div>
+          <div class="chart-hint" id="chart-hint">Tippe einen Monat an, um ihn mit den Vorjahren zu vergleichen</div>
+        </div>
+        <div id="compare-block">
+          <div class="section-label">Gleicher Monat, andere Jahre</div>
+          <div class="chart-card" id="compare"></div>
+        </div>
+        <div class="list" style="margin-top:18px">
+          <button type="button" class="rowbtn" data-open="readings">
+            <div class="rl">Alle Ablesungen<small id="readings-count"></small></div>
+            <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div id="view-table" style="display:none">
+        <div class="controlrow">
+          <div class="segmented" id="gran" style="flex:3">
+            <button type="button" aria-selected="true" data-gran="month">Monat</button>
+            <button type="button" aria-selected="false" data-gran="quarter">Quartal</button>
+            <button type="button" aria-selected="false" data-gran="year">Jahr</button>
+          </div>
+          <div class="segmented" id="metric" style="flex:2">
+            <button type="button" aria-selected="true" data-metric="usage">Menge</button>
+            <button type="button" aria-selected="false" data-metric="cost">Kosten</button>
+          </div>
+        </div>
+        <div class="tablecard">
+          <div class="tabletop" id="tabletop">
+            <div class="segmented tiny" id="perday">
+              <button type="button" aria-selected="true" data-perday="total">Summe</button>
+              <button type="button" aria-selected="false" data-perday="day">Ø je Tag</button>
+            </div>
+          </div>
+          <div class="tablewrap" id="table"></div>
+          <div class="footnote" id="tablenote"></div>
+        </div>
+        <div class="exportbar">
+          <button type="button" data-export="readings">Ablesungen</button>
+          <button type="button" data-export="analysis">Auswertung</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ZÄHLER -->
+    <section class="pane" id="pane-meters">
+      <h2 class="large">Zähler</h2>
+      <p class="datum">4 Zähler · Zuhause</p>
+      <div class="list" id="meterlist"></div>
+      <button type="button" class="save" id="add-meter" style="--c:var(--tint);margin-top:14px">
+        Zähler hinzufügen
+      </button>
+      <div class="section-label">Erinnerungen</div>
+      <div class="list">
+        <div class="row"><div class="rl">Monatlich am 1.<small>Für Strom, Wasser, Wärmepumpe</small></div><div class="rv" style="color:var(--good)">An</div></div>
+        <div class="row"><div class="rl">Gas<small>Monatlich am 1.</small></div><div class="rv" style="color:var(--good)">An</div></div>
+      </div>
+      <div class="note">Der Entwurf zeigt keine Bezahlschranke. Kosten, Prognose und Belegfotos wären in der fertigen App Pro-Funktionen — die Erfassung selbst bleibt immer frei.</div>
+    </section>
+  </div>
+
+  <nav class="tabbar" id="tabs">
+    <button type="button" aria-selected="true" data-pane="home">
+      <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15.5 14 6l10 9.5"/><path d="M6.5 13.5V22a1 1 0 0 0 1 1h13a1 1 0 0 0 1-1v-8.5"/></svg>
+      Übersicht
+    </button>
+    <button type="button" aria-selected="false" data-pane="history">
+      <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M5 23h18"/><path d="M8 23v-7"/><path d="M13.5 23V9"/><path d="M19 23v-11"/></svg>
+      Verlauf
+    </button>
+    <button type="button" aria-selected="false" data-pane="meters">
+      <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="14" cy="14" r="9.2"/><path d="M14 14 18 9.8"/><path d="M14 4.8v1.8M23.2 14h-1.8M14 23.2v-1.8M4.8 14h1.8"/></svg>
+      Zähler
+    </button>
+  </nav>
+
+  <div class="scrim" id="scrim"></div>
+
+  <!-- Erfassung -->
+  <div class="sheet" id="sheet-capture" role="dialog" aria-modal="true" aria-label="Zählerstand eintragen">
+    <div class="grabber"></div>
+    <div class="sheet-head">
+      <button type="button" class="sheet-close" data-close>Abbrechen</button>
+      <div class="sheet-title" id="cap-title"></div>
+      <button type="button" class="sheet-close" style="visibility:hidden">Abbrechen</button>
+    </div>
+    <div class="sheet-body" id="cap-body">
+      <div class="capture-meta" id="cap-meta"></div>
+      <div class="counter" id="counter"></div>
+      <div class="counter-unit" id="cap-unit"></div>
+      <div class="verdict idle" id="verdict" aria-live="polite">Zählerstand eintippen</div>
+      <div class="keys" id="keys"></div>
+      <button type="button" class="save" id="save" disabled>Sichern</button>
+      <div class="save-note">Datum: heute, 4. August 2026 · antippen zum Ändern</div>
+    </div>
+  </div>
+
+  <!-- Zähler anlegen und bearbeiten -->
+  <div class="sheet" id="sheet-editor" role="dialog" aria-modal="true" aria-label="Zähler bearbeiten">
+    <div class="grabber"></div>
+    <div class="sheet-head">
+      <button type="button" class="sheet-close" data-close>Abbrechen</button>
+      <div class="sheet-title" id="editor-title">Zähler</div>
+      <button type="button" class="sheet-close" style="visibility:hidden">Abbrechen</button>
+    </div>
+    <div class="sheet-body" id="editor-body"></div>
+  </div>
+
+  <!-- Bericht einrichten -->
+  <div class="sheet" id="sheet-repcfg" role="dialog" aria-modal="true" aria-label="Bericht einrichten">
+    <div class="grabber"></div>
+    <div class="sheet-head">
+      <button type="button" class="sheet-close" data-close>Abbrechen</button>
+      <div class="sheet-title">Bericht</div>
+      <button type="button" class="sheet-close" style="visibility:hidden">Abbrechen</button>
+    </div>
+    <div class="sheet-body" id="repcfg-body"></div>
+  </div>
+
+  <!-- Bericht -->
+  <div class="sheet" id="sheet-report" role="dialog" aria-modal="true" aria-label="Verbrauchsbericht">
+    <div class="grabber"></div>
+    <div class="sheet-head">
+      <button type="button" class="sheet-close" data-close>Schließen</button>
+      <div class="sheet-title">Bericht</div>
+      <button type="button" class="sheet-close" id="print">Drucken</button>
+    </div>
+    <div class="sheet-body"><div class="doc" id="doc"></div></div>
+  </div>
+
+  <!-- Ablesungen -->
+  <div class="sheet" id="sheet-readings" role="dialog" aria-modal="true" aria-label="Ablesungen">
+    <div class="grabber"></div>
+    <div class="sheet-head">
+      <div class="sheet-title" id="rd-title">Ablesungen</div>
+      <button type="button" class="sheet-close" data-close>Fertig</button>
+    </div>
+    <div class="sheet-body"><div class="list" id="readings"></div></div>
+  </div>
+
+  <!-- Export -->
+  <div class="sheet" id="sheet-export" role="dialog" aria-modal="true" aria-label="Export">
+    <div class="grabber"></div>
+    <div class="sheet-head">
+      <div class="sheet-title" id="ex2-title">Export</div>
+      <button type="button" class="sheet-close" data-close>Fertig</button>
+    </div>
+    <div class="sheet-body" id="ex2-body"></div>
+  </div>
+
+  <!-- Erklärung -->
+  <div class="sheet" id="sheet-explain" role="dialog" aria-modal="true" aria-label="Erklärung">
+    <div class="grabber"></div>
+    <div class="sheet-head">
+      <div class="sheet-title" id="ex-title"></div>
+      <button type="button" class="sheet-close" data-close>Fertig</button>
+    </div>
+    <div class="sheet-body" id="ex-body"></div>
+  </div>
+
+  <div class="toast" id="toast">
+    <svg viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="17" cy="17" r="14.5" stroke-opacity=".3"/><path d="m10.5 17.5 4.5 4.5 9-9"/></svg>
+    <div id="toast-text">Gesichert</div>
+  </div>
+</div>
+
+<div class="controls">
+  <button type="button" class="ctl" id="theme">Dunkel / Hell</button>
+  <button type="button" class="ctl" id="reset">Entwurf zurücksetzen</button>
+</div>
+
+<p class="hint">Der Gaszähler ist überfällig — tippe auf seine Karte, um den Erfassungsfluss zu sehen. Die Plausibilitätsprüfung rechnet echt: Tippe einmal eine Stelle zu viel.</p>
+
+<script>
+"use strict";
+
+/* ============================================================
+   Daten. Aufgebaut wie in PulseCore: Messstelle → Zählwerk →
+   Ablesungen. Verbräuche werden nie gespeichert, immer gerechnet.
+   ============================================================ */
+
+const TODAY = { y: 2026, m: 8, d: 4 };
+const MONTHS = ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
+const MONTHS_LONG = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+
+function serial(y, m, d) {
+  const a = ((14 - m) / 12) | 0, yy = y + 4800 - a, mm = m + 12 * a - 3;
+  return d + (((153 * mm + 2) / 5) | 0) + 365 * yy + ((yy / 4) | 0) - ((yy / 100) | 0) + ((yy / 400) | 0) - 32045;
+}
+const between = (a, b) => serial(b.y, b.m, b.d) - serial(a.y, a.m, a.d);
+
+/* Monatliche Verbräuche eines Eigenheims mit Gasheizung, PV und Wallbox.
+   Saisonale Kurven, wie sie ein echter Haushalt hat. Die 2026er Reihen enden
+   mit dem letzten abgeschlossenen Monat — genau wie echte Daten es täten. */
+const SHAPE = {
+  strom:   { 2024: [341,318,294,262,238,224,216,222,247,281,314,342],
+             2025: [312,286,268,241,218,205,198,204,226,258,289,315],
+             2026: [290,266,249,224,203,191,184] },
+  einsp:   { 2024: [ 38, 81,146,219,284,318,312,266,181, 99, 44, 26],
+             2025: [ 42, 88,158,236,306,344,338,288,196,108, 48, 28],
+             2026: [ 46, 95,171,255,330,371,364] },
+  wasser:  { 2024: [10.4,9.6,10.8,10.2,11.9,12.6,13.1,12.7,11.2,10.5,10.1,10.7],
+             2025: [10.8,9.9,11.2,10.6,12.4,13.1,13.8,13.2,11.6,10.9,10.4,11.1],
+             2026: [11.2,10.4,11.8,11.1,13.0,13.9,14.6] },
+  gas:     { 2024: [462,411,326,197,101, 45, 39, 42, 92,211,338,441],
+             2025: [418,376,298,178, 92, 41, 36, 39, 84,192,308,402],
+             2026: [402,362,286,171, 88] },
+  wallbox: { 2024: [ 96,104,112,118,126,131,148,162,151,168,181,196],
+             2025: [225,208,196,182,175,168,192,205,190,201,218,232],
+             2026: [238,215,203,188,180,174,198] }
+};
+const YEARS = [2026, 2025, 2024];
+
+/* Zählwerke bauen: kumulierte Stände am Monatsersten. */
+function buildReadings(startValue, shape, opts) {
+  opts = opts || {};
+  const out = [];
+  let v = startValue;
+  out.push({ y: 2024, m: 1, d: 1, value: round(v, opts.frac), origin: "manual" });
+  for (const year of [2024, 2025, 2026]) {
+    const arr = shape[year] || [];
+    for (let i = 0; i < arr.length; i++) {
+      v += arr[i];
+      const nm = i + 2 > 12 ? 1 : i + 2, ny = i + 2 > 12 ? year + 1 : year;
+      if (ny > 2026 || (ny === 2026 && nm > 8)) break;
+      if (year === 2026 && i === arr.length - 1 && opts.partialInto) {
+        out.push({ y: ny, m: opts.partialInto.m, d: opts.partialInto.d, value: round(v, opts.frac), origin: "manual" });
+        break;
+      }
+      out.push({ y: ny, m: nm, d: 1, value: round(v, opts.frac), origin: "manual" });
+    }
+  }
+  if (opts.estimateAt) {
+    const hit = out.find(r => r.y === opts.estimateAt.y && r.m === opts.estimateAt.m);
+    if (hit) hit.origin = "estimated";
+  }
+  return out;
+}
+const round = (n, f) => Math.round(n * 10 ** f) / 10 ** f;
+
+const METERS = [
+  {
+    id: "strom", kind: "electricity", name: "Strom", color: "var(--amber)",
+    icon: '<path d="M13 2 4 13h6l-1 9 9-11h-6z"/>',
+    interval: 30, unit: "kWh", int: 6, frac: 1,
+    price: 0.34, base: 12.90, prepay: 100, feedInPrice: 0.082,
+    billing: { m: 4, d: 1 },   // Abrechnungsjahr des Versorgers: 1. April
+
+    serial: "1ESY1161284302",
+    registers: [
+      { id: "strom-bezug", label: null, unit: "kWh", int: 6, frac: 1,
+        readings: buildReadings(41231.4, SHAPE.strom, { frac: 1 }) },
+      { id: "strom-eins", label: "Einspeisung", unit: "kWh", int: 6, frac: 1, feedIn: true,
+        readings: buildReadings(7170.2, SHAPE.einsp, { frac: 1 }) }
+    ]
+  },
+  {
+    id: "wasser", kind: "water", name: "Wasser", color: "var(--blue)",
+    icon: '<path d="M12 2.5S5.5 10 5.5 14.2a6.5 6.5 0 0 0 13 0C18.5 10 12 2.5 12 2.5z"/>',
+    interval: 30, unit: "m³", int: 5, frac: 3,
+    price: 4.92, base: 9.50, prepay: null,
+    serial: "WZ-88 214 097",
+    registers: [
+      { id: "wasser-r", label: null, unit: "m³", int: 5, frac: 3,
+        readings: buildReadings(998.618, SHAPE.wasser, { frac: 3, estimateAt: { y: 2025, m: 10 } }) }
+    ]
+  },
+  {
+    id: "gas", kind: "gas", name: "Gas", color: "var(--orange)",
+    icon: '<path d="M12 2.5c3 4 1 6 0 6.5C10 7 8 8.5 8 11c0 1.6.8 2.7 1.6 3.4C8 14 6.5 12.6 6.5 10 4.9 12 4 14 4 16a8 8 0 0 0 16 0c0-5.5-4.5-9-8-13.5z"/>',
+    interval: 30, unit: "m³", int: 5, frac: 3,
+    price: 0.112, base: 14.20, prepay: 245, zZahl: 0.9563, brennwert: 11.482,
+    billing: { m: 10, d: 1 },  // Abrechnungsjahr des Versorgers: 1. Oktober
+
+    serial: "BK-G4 4471902",
+    registers: [
+      { id: "gas-r", label: null, unit: "m³", int: 5, frac: 3,
+        readings: buildReadings(3579.106, SHAPE.gas, { frac: 3, partialInto: { m: 5, d: 28 } }) }
+    ]
+  },
+  {
+    id: "wallbox", kind: "wallbox", name: "Wallbox", color: "var(--teal)",
+    icon: '<path d="M5 17.5h14v2.2a.8.8 0 0 1-.8.8h-1.4a.8.8 0 0 1-.8-.8v-2.2M5 17.5v2.2a.8.8 0 0 0 .8.8h1.4a.8.8 0 0 0 .8-.8M4.2 12.4l1.6-4.6A2 2 0 0 1 7.7 6.4h8.6a2 2 0 0 1 1.9 1.4l1.6 4.6M4 12.4h16a1 1 0 0 1 1 1v3.1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-3.1a1 1 0 0 1 1-1z"/>',
+    iconStroke: true,
+    interval: 30, unit: "kWh", int: 6, frac: 1,
+    price: 0.29, base: 0, prepay: null,
+    serial: "1ESY1161299844",
+    registers: [
+      { id: "wallbox-r", label: null, unit: "kWh", int: 6, frac: 1,
+        readings: buildReadings(5148.3, SHAPE.wallbox, { frac: 1 }) }
+    ]
+  }
+];
+
+/* ============================================================
+   Rechenkern (verkürzte Fassung von PulseCore)
+   ============================================================ */
+
+function cumulativeAt(reg, day) {
+  const rs = reg.readings;
+  if (!rs.length) return null;
+  const s = serial(day.y, day.m, day.d);
+  const first = serial(rs[0].y, rs[0].m, rs[0].d);
+  const last = serial(rs[rs.length - 1].y, rs[rs.length - 1].m, rs[rs.length - 1].d);
+  if (s < first || s > last) return null;
+  for (let i = 0; i < rs.length; i++) {
+    const si = serial(rs[i].y, rs[i].m, rs[i].d);
+    if (si === s) return { v: rs[i].value, exact: true };
+    if (si > s) {
+      const lo = rs[i - 1], slo = serial(lo.y, lo.m, lo.d);
+      const f = (s - slo) / (si - slo);
+      return { v: lo.value + (rs[i].value - lo.value) * f, exact: false };
+    }
+  }
+  return { v: rs[rs.length - 1].value, exact: true };
+}
+
+function consumption(reg, from, to) {
+  const a = cumulativeAt(reg, from), b = cumulativeAt(reg, to);
+  if (!a || !b) {
+    // Auf den abgedeckten Bereich beschneiden — nie extrapolieren.
+    const rs = reg.readings;
+    if (!rs.length) return null;
+    const f0 = rs[0], l0 = rs[rs.length - 1];
+    const cf = serial(from.y, from.m, from.d) < serial(f0.y, f0.m, f0.d) ? f0 : from;
+    const ct = serial(to.y, to.m, to.d) > serial(l0.y, l0.m, l0.d) ? l0 : to;
+    if (serial(cf.y, cf.m, cf.d) >= serial(ct.y, ct.m, ct.d)) return null;
+    const a2 = cumulativeAt(reg, cf), b2 = cumulativeAt(reg, ct);
+    if (!a2 || !b2) return null;
+    return { value: b2.v - a2.v, days: between(cf, ct), exact: false, complete: false,
+             cfrom: cf, cto: ct, rfrom: from, rto: to, gap: longestGap(reg, cf, ct) };
+  }
+  return { value: b.v - a.v, days: between(from, to), exact: a.exact && b.exact, complete: true,
+           cfrom: from, cto: to, rfrom: from, rto: to, gap: longestGap(reg, from, to) };
+}
+
+/* Größter Abstand zwischen zwei Ablesungen, den der Zeitraum benutzt.
+
+   Zwischen zwei Ablesungen wird linear interpoliert, und über ein paar Wochen
+   ist das vernünftig. Über ein Jahr hinweg nicht mehr: Wer am 1. Februar 2025
+   und dann erst am 1. Februar 2026 abliest, bekommt für den Februar 2025 eine
+   Zahl, die nur den Jahresschnitt anteilig ausschneidet — sie sieht aber aus
+   wie eine Messung. Spiegelt `ConsumptionSeries.longestGap` aus PulseCore. */
+function longestGap(reg, from, to) {
+  const rs = reg.readings;
+  let longest = 0;
+  for (let i = 1; i < rs.length; i++) {
+    const a = rs[i - 1], b = rs[i];
+    if (serial(b.y, b.m, b.d) <= serial(from.y, from.m, from.d)) continue;
+    if (serial(a.y, a.m, a.d) >= serial(to.y, to.m, to.d)) continue;
+    longest = Math.max(longest, between(a, b));
+  }
+  return longest;
+}
+
+/* Ob die Zahl auf Ablesungen aus diesem Zeitraum beruht statt auf einer
+   Geraden, die weit darüber hinweggelegt wurde. Die Grenze beim Doppelten der
+   Zeitraumlänge ist großzügig: Wer monatlich abliest, trifft den Monatsersten
+   selten genau, und 31 Tage für einen 28-Tage-Monat sind normal. */
+const restsOnOwnReadings = c => c && c.gap <= 2 * Math.max(1, c.days);
+
+/* Wie weit ein Ergebnis den angefragten Zeitraum abdeckt.
+   Spiegelt `ConsumptionResult.coverage` aus PulseCore — die Fassungen müssen
+   dieselbe Antwort geben, sonst ist eine von beiden falsch (CLAUDE.md, Regel 2). */
+function coverage(res) {
+  if (!res) return { kind: "none" };
+  const late = serial(res.cfrom.y, res.cfrom.m, res.cfrom.d) > serial(res.rfrom.y, res.rfrom.m, res.rfrom.d);
+  const early = serial(res.cto.y, res.cto.m, res.cto.d) < serial(res.rto.y, res.rto.m, res.rto.d);
+  if (!late && !early) return { kind: "full" };
+  if (late && !early) return { kind: "startsLate", from: res.cfrom };
+  if (!late && early) return { kind: "endsEarly", to: res.cto };
+  return { kind: "partial", from: res.cfrom, to: res.cto };
+}
+const shiftYear = (d, n) => ({ y: d.y + n, m: d.m, d: d.m === 2 && d.d === 29 ? 28 : d.d });
+
+function monthConsumption(reg, y, m) {
+  const nm = m === 12 ? 1 : m + 1, ny = m === 12 ? y + 1 : y;
+  return consumption(reg, { y, m, d: 1 }, { y: ny, m: nm, d: 1 });
+}
+
+/* Gibt `null` zurück, wenn der Zähler noch nie abgelesen wurde.
+
+   Vorher lief die Schleife auf `undefined` und riss beim nächsten Zugriff
+   alles mit. Aufgefallen ist das erst, als sich Zähler anlegen ließen — bis
+   dahin hatte jeder Zähler im Entwurf zwei Jahre Historie, und den Fall „noch
+   nie abgelesen" gab es schlicht nicht. */
+function lastReading(meter) {
+  let best = null;
+  for (const reg of meter.registers) {
+    const r = reg.readings[reg.readings.length - 1];
+    if (!r) continue;
+    if (!best || serial(r.y, r.m, r.d) > serial(best.y, best.m, best.d)) best = r;
+  }
+  return best;
+}
+function daysSinceReading(meter) {
+  const last = lastReading(meter);
+  return last ? between(last, TODAY) : null;
+}
+/* Ohne jede Ablesung ist immer eine fällig — wie `ConsumptionEngine.isReadingDue`. */
+const isDue = m => {
+  const days = daysSinceReading(m);
+  return days === null || days >= m.interval;
+};
+
+/* Laufendes Jahr, Vorjahresvergleich, Prognose */
+function yearToDate(reg) {
+  return consumption(reg, { y: 2026, m: 1, d: 1 }, TODAY);
+}
+function priorYearToDate(reg) {
+  return consumption(reg, { y: 2025, m: 1, d: 1 }, { y: 2025, m: TODAY.m, d: TODAY.d });
+}
+function priorYearFull(reg) {
+  return consumption(reg, { y: 2025, m: 1, d: 1 }, { y: 2026, m: 1, d: 1 });
+}
+/* Saisonale Hochrechnung über die Vorjahresform — bei Gas und Heizung
+   deutlich näher dran als die lineare Fortschreibung.
+   Maßgeblich ist der Zeitraum, den die Daten abdecken, nicht der bis heute:
+   Sonst würde ein veralteter Zählerstand die Prognose systematisch drücken. */
+function forecast(reg) {
+  const now = yearToDate(reg);
+  if (!now) return null;
+  const pf = priorYearFull(reg);
+  const ps = consumption(reg, shiftYear(now.cfrom, -1), shiftYear(now.cto, -1));
+  if (pf && ps && ps.complete && ps.value > 0 && pf.value > 0) {
+    const share = ps.value / pf.value;
+    if (share > 0 && share <= 1) return { value: now.value / share, method: "seasonal", now: now };
+  }
+  const perDay = now.value / now.days;
+  const remaining = between(now.cto, { y: 2026, m: 12, d: 31 });
+  return { value: now.value + perDay * remaining, method: "linear", now: now };
+}
+/* Das Vorjahresfenster folgt dem abgedeckten Zeitraum, nicht dem angefragten:
+   Sonst verglichen wir bei einem überfälligen Zähler eine halbe Heizperiode
+   mit einem Vorjahr inklusive Sommer. */
+function yearOverYear(reg) {
+  const a = yearToDate(reg);
+  if (!a) return null;
+  const b = consumption(reg, shiftYear(a.cfrom, -1), shiftYear(a.cto, -1));
+  if (!b || b.value <= 0) return null;
+  return (a.value / a.days - b.value / b.days) / (b.value / b.days);
+}
+/* Gas wird in m³ gemessen und in kWh abgerechnet. */
+function billedUnits(meter, cubicOrKwh) {
+  return meter.zZahl ? cubicOrKwh * meter.zZahl * meter.brennwert : cubicOrKwh;
+}
+const projectedCost = (m, fc) => billedUnits(m, fc.value) * m.price + m.base * 12;
+const balance = (m, fc) => m.prepay * 12 - projectedCost(m, fc);
+
+/* Zählerarten mit gefülltem und mit gezeichnetem Symbol. */
+function icon(m) {
+  return m.iconStroke
+    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${m.icon}</svg>`
+    : `<svg viewBox="0 0 24 24" fill="currentColor">${m.icon}</svg>`;
+}
+
+/* ============================================================
+   Formatierung
+   ============================================================ */
+const nf = (v, f) => v.toLocaleString("de-DE", { minimumFractionDigits: f, maximumFractionDigits: f });
+const money = v => v.toLocaleString("de-DE", { style: "currency", currency: "EUR" });
+const moneyRound = v => Math.round(v).toLocaleString("de-DE", { style: "currency", currency: "EUR", minimumFractionDigits: 0, maximumFractionDigits: 0 });
+const pct = v => (v > 0 ? "+" : "−") + nf(Math.abs(v * 100), 0) + " %";
+const dateLabel = r => `${r.d}. ${MONTHS_LONG[r.m - 1]} ${r.y}`;
+const dateShort = r => `${r.d}. ${MONTHS[r.m - 1]}`;
+/* Ohne Jahr, solange es das laufende ist — in einer Beschriftung wäre
+   „1. Mai 2026" zu lang, und das Jahr steht ohnehin über dem Schirm. */
+const dateMedium = r => `${r.d}. ${MONTHS_LONG[r.m - 1]}${r.y === TODAY.y ? "" : " " + r.y}`;
+
+/* Beschriftet eine Zahl mit dem Zeitraum, den sie tatsächlich abdeckt.
+
+   Ein verkürzter Zeitraum wird als Spanne ausgeschrieben, nicht als
+   „Seit Jahresbeginn" mit angehängtem Vorbehalt: Wer den Strom am 1. August
+   abliest, hat am 5. August eine Zahl, die vier Tage zurückliegt — das ist
+   normal. Beim Gaszähler sind es drei Monate. Als Vorbehalt gelesen sähen
+   beide gleich dringlich aus; als Spanne stehen „bis 1. August" und
+   „bis 1. Mai" nebeneinander, und der Unterschied ist ohne ein Wort zu sehen. */
+function periodCaption(res) {
+  const c = coverage(res);
+  switch (c.kind) {
+    case "none":       return "Noch keine Ablesung";
+    case "full":       return "Seit Jahresbeginn";
+    case "startsLate": return `Seit ${dateMedium(c.from)}`;
+    case "endsEarly":  return `${dateMedium(res.rfrom)} bis ${dateMedium(c.to)}`;
+    case "partial":    return `${dateMedium(c.from)} bis ${dateMedium(c.to)}`;
+  }
+}
+
+/* ============================================================
+   Übersicht
+   ============================================================ */
+function renderStatus() {
+  const due = activeMeters().filter(isDue);
+  const box = document.getElementById("status");
+  if (!activeMeters().length) { box.innerHTML = ""; return; }
+  if (due.length) {
+    const m = due[0];
+    const days = daysSinceReading(m);
+    box.innerHTML = `<div class="status-line due"><span class="dot"></span><div>
+      <b>${days === null
+          ? `${m.name} wurde noch nie abgelesen.`
+          : `${m.name} ist seit ${days} Tagen nicht abgelesen.`}</b>
+      Ohne aktuellen Stand ist die Prognose ungenau.</div></div>`;
+  } else {
+    const first = activeMeters()[0];
+    const reg = first ? first.registers[0] : null;
+    const yoy = reg ? yearOverYear(reg) : null;
+    const txt = yoy !== null && yoy < -0.02
+      ? `<b>Alles im Rahmen.</b> Strom liegt ${pct(yoy)} unter dem Vorjahr.`
+      : `<b>Alles im Rahmen.</b> Alle Zähler sind aktuell.`;
+    box.innerHTML = `<div class="status-line"><span class="dot"></span><div>${txt}</div></div>`;
+  }
+}
+
+/* Letzte zwölf Monate. Monate ohne vollständige Daten werden ausgelassen,
+   nicht als Null gezeichnet — eine Datenlücke ist kein Nullverbrauch. */
+function sparkline(reg, color) {
+  const pts = [];
+  for (let i = 11; i >= 0; i--) {
+    let m = TODAY.m - 1 - i, y = 2026;
+    while (m < 1) { m += 12; y -= 1; }
+    const c = monthConsumption(reg, y, m);
+    if (c && c.complete) pts.push({ i: 11 - i, v: c.value });
+  }
+  if (pts.length < 2) return '<span class="spark"></span>';
+  const vals = pts.map(p => p.v);
+  const max = Math.max(...vals), min = Math.min(...vals);
+  const w = 78, h = 34, pad = 3;
+  const x = i => (i / 11) * (w - 2 * pad) + pad;
+  const y = v => h - pad - ((v - min) / (max - min || 1)) * (h - 2 * pad);
+  const line = pts.map((p, k) => `${k ? "L" : "M"}${x(p.i).toFixed(1)} ${y(p.v).toFixed(1)}`).join(" ");
+  const first = pts[0], last = pts[pts.length - 1];
+  const area = `${line} L${x(last.i).toFixed(1)} ${h} L${x(first.i).toFixed(1)} ${h} Z`;
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" aria-hidden="true">
+    <path d="${area}" fill="${color}" opacity=".11"/>
+    <path d="${line}" fill="none" stroke="${color}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="${x(last.i).toFixed(1)}" cy="${y(last.v).toFixed(1)}" r="2.6" fill="${color}"/></svg>`;
+}
+
+/* Archivierte Zähler verschwinden aus der Übersicht, bleiben aber in der
+   Zählerliste erreichbar — wie `meteringPoints(includeArchived:)`. */
+const activeMeters = () => METERS.filter(m => !m.archived);
+
+function renderCards() {
+  const host = document.getElementById("cards");
+
+  // Der Zustand, in dem ein neuer Nutzer anfängt — und in den man hier durch
+  // Löschen aller Zähler gerät. Vorher blieb die Übersicht dann einfach leer.
+  // Eigene Kennung, nicht die der Schaltfläche auf dem Zähler-Schirm: Zwei
+  // Elemente mit derselben id sind ungültig, und `getElementById` träfe dann
+  // je nach Reihenfolge das falsche.
+  if (!activeMeters().length) {
+    host.innerHTML = `<article class="card"><div style="padding:22px;text-align:center">
+      <div style="font-size:17px;font-weight:660;margin-bottom:6px">Noch kein Zähler</div>
+      <div style="font-size:14px;color:var(--ink-2);line-height:1.5;margin-bottom:16px">
+        Leg deinen ersten Zähler an — Name und Art genügen. Danach trägst du den
+        Stand ein, und der Rest ergibt sich.</div>
+      <button type="button" class="save" id="first-meter" style="--c:var(--tint)">Ersten Zähler anlegen</button>
+    </div></article>`;
+    return;
+  }
+
+  host.innerHTML = activeMeters().map(m => {
+    const reg = m.registers[0];
+    const ytd = yearToDate(reg);
+    const yoy = yearOverYear(reg);
+    const fc = forecast(reg);
+    const due = isDue(m);
+
+    let extra = "";
+    const second = m.registers[1];
+    if (second) {
+      const s = yearToDate(second);
+      extra += `<div class="card-extra"><span>Einspeisung <strong>${nf(s.value, 0)} kWh</strong></span>
+        <span>≈ ${moneyRound(s.value * m.feedInPrice)} vergütet</span></div>`;
+    }
+    if (m.prepay && fc) {
+      const bal = balance(m, fc);
+      extra += `<div class="card-extra"><span>Abschlag ${moneyRound(m.prepay)} monatlich</span>
+        <button class="explain" data-explain="${m.id}">${bal >= 0 ? "≈ " + moneyRound(bal) + " Guthaben" : "≈ " + moneyRound(-bal) + " Nachzahlung"}
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button></div>`;
+    }
+
+    // Ein „≈" vor der Zahl, sobald sie nicht ausschließlich auf gemessenen
+    // Werten beruht — und ein Strich statt einer Null, wenn für das laufende
+    // Jahr gar nichts vorliegt: Unbekannt ist nicht dasselbe wie null.
+    // Das Zeichen steht kleiner und blasser vor der Zahl. Es ist bei einem
+    // länger geführten Zähler fast immer da — der Wert zum 1. Januar liegt
+    // zwischen zwei Ablesungen und wird interpoliert. Gerade weil es fast
+    // immer da ist, darf es der Zahl nicht die Aufmerksamkeit nehmen.
+    const figure = !ytd ? "—"
+      : (ytd.exact ? "" : '<span class="approx" title="Zwischen zwei Ablesungen berechnet">≈</span>')
+        + nf(ytd.value, m.frac >= 3 ? 1 : 0);
+
+    let sub;
+    if (due) {
+      const days = daysSinceReading(m);
+      sub = days === null
+        ? `<span style="color:${m.color};font-weight:600">Noch nie abgelesen</span>`
+        : `<span style="color:${m.color};font-weight:600">Seit ${days} Tagen fällig</span>`;
+    } else if (yoy !== null) {
+      const dir = yoy < 0 ? "down" : "up";
+      sub = `<span class="delta ${dir}">${pct(yoy)}</span> gegenüber Vorjahr`;
+    } else {
+      sub = "Noch kein Vergleichswert";
+    }
+
+    return `<article class="card ${due ? "flagged" : ""}" style="--c:${m.color}">
+      <div class="card-top">
+        <span class="chip-icon">${icon(m)}</span>
+        <span class="card-name">${m.name}</span>
+        ${due ? '<span class="due-pill">Fällig</span>' : ""}
+      </div>
+      <div class="card-body">
+        <div class="card-figure">
+          <div class="card-caption">${periodCaption(ytd)}</div>
+          <div class="value-row"><span class="value">${figure}</span><span class="unit">${m.unit}</span></div>
+          <div class="sub">${sub}</div>
+        </div>
+        ${sparkline(reg, m.color)}
+      </div>
+      ${extra}
+      <div class="card-actions"><button type="button" data-capture="${m.id}">Stand eintragen</button></div>
+    </article>`;
+  }).join("");
+}
+
+/* ============================================================
+   Verlauf
+   ============================================================ */
+let histMeter = "strom", histScale = "month";
+let histMode = "chart", histGran = "month", histMetric = "usage", histPerDay = false;
+
+function renderPicker() {
+  const items = activeMeters().map(m => ({ id: m.id, name: m.name, color: m.color }));
+  // „Alle Zähler" gibt es nur in der Datenansicht — und nur für Kosten:
+  // kWh und m³ lassen sich nicht addieren, Euro schon.
+  if (histMode === "table") items.push({ id: "all", name: "Alle Zähler", color: "var(--tint)" });
+  document.getElementById("picker").innerHTML = items.map(m =>
+    `<button type="button" class="pick" style="--c:${m.color}" data-pick="${m.id}"
+      aria-selected="${m.id === histMeter}">${m.name}</button>`).join("");
+}
+
+/* Vom Nutzer gewählter Monat, `null` bis zur ersten Auswahl. */
+let selMonth = null;
+
+/* Ohne eigene Wahl der zuletzt vollständig erfasste Monat — die Zahl, die
+   den Nutzer beim Öffnen am ehesten interessiert. */
+function activeMonth(reg) {
+  if (selMonth !== null) return selMonth;
+  for (let i = 11; i >= 0; i--) {
+    const c = monthConsumption(reg, YEARS[0], i + 1);
+    if (c && c.complete) return i;
+  }
+  return 0;
+}
+
+function monthDays(y, m) {
+  return between({ y, m, d: 1 }, m === 12 ? { y: y + 1, m: 1, d: 1 } : { y, m: m + 1, d: 1 });
+}
+
+/* Derselbe Monat über alle Jahre — ein Balken je Jahr auf gemeinsamem Maßstab.
+   Das ist der Vergleich, der wirklich etwas aussagt: Gleiche Jahreszeit,
+   gleiche Länge, gleiches Wetterfenster. */
+/* Derselbe Monat über mehrere Jahre — auf **demselben** Ausschnitt des Jahres.
+
+   Früher hat diese Karte einen laufenden Monat gar nicht verglichen („wird
+   nachgetragen, sobald der Monat abgeschlossen ist"). Das vermied zwar den
+   Fehler, ließ aber genau den Monat leer, der den Nutzer am meisten
+   interessiert. Jetzt wird stattdessen das Vorjahr auf denselben Ausschnitt
+   beschnitten: halber Februar gegen halben Februar, und darunter steht,
+   welcher Ausschnitt gemeint ist. Spiegelt `PeriodEngine.compareAcrossYears`. */
+function renderCompare(m, reg, idx) {
+  const month = idx + 1;
+  const probe = monthConsumption(reg, YEARS[0], month);
+  const win = probe ? { from: probe.cfrom, to: probe.cto } : null;
+  const partial = probe ? !probe.complete : false;
+
+  const rows = YEARS.map((y, step) => {
+    if (!win) return { y, v: null, days: monthDays(y, month) };
+    const c = consumption(reg, shiftYear(win.from, -step), shiftYear(win.to, -step));
+    // Nur zählen, wenn das Jahr den Ausschnitt wirklich abdeckt. Ein Jahr mit
+    // halben Daten hätte sonst einen halben Balken und sähe sparsam aus.
+    const usable = c && c.complete && restsOnOwnReadings(c);
+    return { y, v: usable ? c.value : null, days: c ? c.days : monthDays(y, month) };
+  });
+
+  const max = Math.max(...rows.map(r => r.v ?? 0), 0.0001);
+  const dp = m.frac >= 3 ? 1 : 0;
+  const cur = rows[0], prev = rows[1];
+  const delta = cur.v !== null && prev.v !== null && prev.v !== 0 ? (cur.v - prev.v) / prev.v : null;
+
+  const head = delta !== null
+    ? `<div class="cmp-delta ${delta < 0 ? "down" : "up"}">${pct(delta)} ggü. ${prev.y}</div>`
+    : `<div class="cmp-delta none">${cur.v === null ? "noch keine Ablesung" : "kein Vorjahreswert"}</div>`;
+
+  const body = rows.map(r => `<div class="cmp-row ${r.y === YEARS[0] ? "current" : ""}">
+      <span class="yr">${r.y}</span>
+      <div class="track">${r.v === null ? "" : `<i style="width:${Math.max(2, r.v / max * 100)}%"></i>`}</div>
+      <span class="num">${r.v === null ? "—" : nf(r.v, dp) + " " + m.unit}</span>
+    </div>`).join("");
+
+  let foot = "";
+  if (cur.v !== null && prev.v !== null) {
+    foot = `<div class="cmp-foot">Pro Tag <b>${nf(cur.v / cur.days, 2)} ${m.unit}</b>
+      gegenüber ${nf(prev.v / prev.days, 2)} ${m.unit} im Vorjahr.`;
+    if (m.price) {
+      const c1 = billedUnits(m, cur.v) * m.price, c0 = billedUnits(m, prev.v) * m.price;
+      foot += ` Arbeitspreis <b>${money(c1)}</b> gegenüber ${money(c0)}.`;
+    }
+    // Der Satz ist der Grund, warum diese Karte richtig rechnet — und er muss
+    // dastehen, sonst hält der Leser die Zahl für einen ganzen Monat.
+    if (partial && win) {
+      foot += ` Verglichen wird <b>${dateMedium(win.from)} bis ${dateMedium(win.to)}</b> —
+        in jedem Jahr derselbe Ausschnitt.`;
+    }
+    foot += `</div>`;
+  } else if (cur.v === null) {
+    foot = `<div class="cmp-foot">Für ${MONTHS_LONG[idx]} ${YEARS[0]} liegt noch keine
+      Ablesung vor, aus der sich ein Verbrauch ergibt.</div>`;
+  } else {
+    foot = `<div class="cmp-foot">Für die Vorjahre fehlen in diesem Ausschnitt
+      Ablesungen — es gibt nichts, womit sich vergleichen ließe.</div>`;
+  }
+
+  document.getElementById("compare").innerHTML =
+    `<div class="cmp-head"><div class="cmp-title">${MONTHS_LONG[idx]}</div>${head}</div>
+     <div class="cmp-rows" style="--c:${m.color}">${body}</div>${foot}`;
+}
+
+const readingOn = (reg, y, m, d) => reg.readings.find(r => r.y === y && r.m === m && r.d === d);
+/* Ein Monat gilt als geschätzt, sobald eine seiner Grenzablesungen geschätzt ist. */
+function monthEstimated(reg, y, m) {
+  const nm = m === 12 ? 1 : m + 1, ny = m === 12 ? y + 1 : y;
+  const a = readingOn(reg, y, m, 1), b = readingOn(reg, ny, nm, 1);
+  return (!!a && a.origin === "estimated") || (!!b && b.origin === "estimated");
+}
+
+function svgOpen(w, h, label) {
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;display:block" role="img" aria-label="${label}">
+    <defs><pattern id="hatch" width="4" height="4" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="0" y2="4" stroke="currentColor" stroke-width="2.2" opacity=".5"/></pattern></defs>`;
+}
+
+function renderChart() {
+  const m = METERS.find(x => x.id === histMeter);
+  const reg = m.registers[0];
+  const dp = m.frac >= 3 ? 1 : 0;
+  document.getElementById("lg-now").style.background = m.color;
+  const host = document.getElementById("chart");
+  host.style.color = m.color;
+
+  const ytd = yearToDate(reg), yoy = yearOverYear(reg), fc = forecast(reg);
+  const W = 322, H = 148;
+
+  if (histScale === "month") {
+    const now = [], prev = [], est = [];
+    for (let i = 1; i <= 12; i++) {
+      const c = monthConsumption(reg, 2026, i), p = monthConsumption(reg, 2025, i);
+      now.push(c && c.complete ? c.value : null);
+      prev.push(p && p.complete ? p.value : null);
+      est.push(monthEstimated(reg, 2026, i));
+    }
+    const max = Math.max(...[...now, ...prev].filter(v => v !== null), 1);
+    const bw = W / 12;
+    let svg = svgOpen(W, H + 18, "Monatsverbrauch 2026 im Vergleich zu 2025");
+    for (let g = 0; g <= 2; g++) {
+      const yy = H - (g / 2) * (H - 12);
+      svg += `<line x1="0" y1="${yy}" x2="${W}" y2="${yy}" stroke="var(--hairline)" stroke-width="1"/>`;
+    }
+    for (let i = 0; i < 12; i++) {
+      const cx = i * bw;
+      if (i === selMonth) {
+        svg += `<rect x="${cx + 1}" y="0" width="${bw - 2}" height="${H}" rx="4"
+          fill="var(--ink)" opacity=".055"/>`;
+      }
+      if (prev[i] !== null) {
+        const h = (prev[i] / max) * (H - 12);
+        svg += `<rect x="${cx + bw * .16}" y="${H - h}" width="${bw * .68}" height="${h}" rx="2.5" fill="var(--hairline-2)" opacity=".85"/>`;
+      }
+      if (now[i] !== null) {
+        const h = (now[i] / max) * (H - 12);
+        svg += `<rect x="${cx + bw * .28}" y="${H - h}" width="${bw * .44}" height="${h}" rx="2.5" fill="${est[i] ? "url(#hatch)" : m.color}"/>`;
+      }
+      svg += `<text x="${cx + bw / 2}" y="${H + 13}" text-anchor="middle" font-size="9"
+        fill="${i === selMonth ? "var(--ink)" : "var(--ink-3)"}"
+        font-weight="${i === selMonth ? 660 : 400}"
+        font-family="-apple-system,sans-serif">${MONTHS[i]}</text>`;
+      // Ganze Spalte als Trefferfläche — ein 14 Punkt breiter Balken ist mit
+      // dem Daumen nicht zuverlässig zu treffen.
+      svg += `<rect x="${cx}" y="0" width="${bw}" height="${H + 16}" fill="transparent" data-month="${i}"/>`;
+    }
+    host.innerHTML = svg + "</svg>";
+    document.getElementById("chart-total").textContent = nf(ytd.value, dp) + " " + m.unit;
+    document.getElementById("chart-label").textContent = "seit 1. Januar 2026";
+  } else {
+    // Jahresansicht: gemessen fest, hochgerechnet schraffiert — die Prognose
+    // sieht anders aus als eine Messung, weil sie etwas anderes ist.
+    const prevTotal = priorYearFull(reg).value;
+    const measured = ytd.value;
+    const projected = fc ? Math.max(fc.value, measured) : measured;
+    const max = Math.max(prevTotal, projected, 1);
+    const bars = [
+      { label: "2025", solid: prevTotal, extra: 0, color: "var(--hairline-2)" },
+      { label: "2026", solid: measured, extra: projected - measured, color: m.color }
+    ];
+    const bw = W / 2;
+    let svg = svgOpen(W, H + 18, "Jahresverbrauch 2025 und Hochrechnung 2026");
+    bars.forEach((b, i) => {
+      const cx = i * bw, x = cx + bw * .27, w = bw * .46;
+      const hs = (b.solid / max) * (H - 12), he = (b.extra / max) * (H - 12);
+      if (he > 0) svg += `<rect x="${x}" y="${H - hs - he}" width="${w}" height="${he}" rx="2.5" fill="url(#hatch)"/>`;
+      svg += `<rect x="${x}" y="${H - hs}" width="${w}" height="${hs}" rx="2.5" fill="${b.color}"/>`;
+      svg += `<text x="${cx + bw / 2}" y="${H + 13}" text-anchor="middle" font-size="10" fill="var(--ink-3)" font-family="-apple-system,sans-serif">${b.label}</text>`;
+      svg += `<text x="${cx + bw / 2}" y="${H - hs - he - 6}" text-anchor="middle" font-size="11" font-weight="600" fill="var(--ink-2)" font-family="-apple-system,sans-serif">${nf(b.solid + b.extra, dp)}</text>`;
+    });
+    host.innerHTML = svg + "</svg>";
+    document.getElementById("chart-total").textContent = nf(projected, dp) + " " + m.unit;
+    document.getElementById("chart-label").textContent =
+      fc && fc.method === "seasonal" ? "erwartet 2026 · nach Vorjahresverlauf" : "erwartet 2026 · aus dem Tagesschnitt";
+  }
+
+  document.getElementById("lg-hatch").textContent =
+    histScale === "month" ? "geschätzt" : "hochgerechnet";
+
+  // Der Monatsvergleich hat im Jahresmaßstab keine Entsprechung.
+  const inMonth = histScale === "month";
+  document.getElementById("compare-block").style.display = inMonth ? "" : "none";
+  document.getElementById("chart-hint").style.display = inMonth ? "" : "none";
+  if (inMonth) renderCompare(m, reg, activeMonth(reg));
+
+  const d = document.getElementById("chart-delta");
+  if (yoy !== null) {
+    d.textContent = pct(yoy) + " ggü. Vorjahr";
+    d.style.color = yoy < 0 ? "var(--good)" : "var(--red)";
+  } else { d.textContent = ""; }
+
+  const rows = reg.readings.slice().reverse().map(r => {
+    const idx = reg.readings.indexOf(r);
+    const before = reg.readings[idx - 1];
+    const diff = before ? r.value - before.value : null;
+    const days = before ? between(before, r) : null;
+    return `<div class="row">
+      <div class="rl">${dateLabel(r)}
+        <small>${diff !== null ? nf(diff, m.frac >= 3 ? 1 : 0) + " " + m.unit + " in " + days + " Tagen" : "Erster Stand"}</small></div>
+      ${r.origin === "estimated" ? '<span class="tag">geschätzt</span>' : ""}
+      <div class="rv">${nf(r.value, m.frac)}<small>${m.unit}</small></div>
+    </div>`;
+  }).join("");
+  document.getElementById("readings").innerHTML = rows;
+  const first = reg.readings[0];
+  document.getElementById("readings-count").textContent =
+    `${reg.readings.length} Einträge seit ${MONTHS_LONG[first.m - 1]} ${first.y}`;
+  document.getElementById("rd-title").textContent = m.name;
+}
+
+/* ============================================================
+   Datenansicht — Vergleiche über Monat, Quartal und Jahr
+   ============================================================ */
+
+function periods(gran, year) {
+  if (gran === "quarter") return [0, 1, 2, 3].map(q => ({
+    label: "Q" + (q + 1),
+    from: { y: year, m: q * 3 + 1, d: 1 },
+    to: q === 3 ? { y: year + 1, m: 1, d: 1 } : { y: year, m: q * 3 + 4, d: 1 }
+  }));
+  return MONTHS.map((n, i) => ({
+    label: n,
+    from: { y: year, m: i + 1, d: 1 },
+    to: i === 11 ? { y: year + 1, m: 1, d: 1 } : { y: year, m: i + 2, d: 1 }
+  }));
+}
+
+function usageFor(m, p) {
+  const c = consumption(m.registers[0], p.from, p.to);
+  return c && c.complete ? c.value : null;
+}
+/* Kosten einer Messstelle im Zeitraum: Arbeitspreis, Einspeisung als
+   Gutschrift, Grundpreis tagesgenau — wie CostEngine in PulseCore. */
+function costFor(m, p) {
+  const c = consumption(m.registers[0], p.from, p.to);
+  if (!c || !c.complete) return null;
+  let v = billedUnits(m, c.value) * m.price;
+  if (m.registers[1] && m.feedInPrice) {
+    const f = consumption(m.registers[1], p.from, p.to);
+    if (f && f.complete) v -= f.value * m.feedInPrice;
+  }
+  return v + m.base * 12 / 365 * between(p.from, p.to);
+}
+function cellValue(target, p) {
+  if (target === "all") {
+    let sum = 0;
+    for (const m of METERS) { const v = costFor(m, p); if (v === null) return null; sum += v; }
+    return sum;
+  }
+  const m = METERS.find(x => x.id === target);
+  return histMetric === "cost" ? costFor(m, p) : usageFor(m, p);
+}
+function targetMeters(target) {
+  return target === "all" ? METERS : [METERS.find(x => x.id === target)];
+}
+/* Letzter Tag, bis zu dem für alle beteiligten Zähler Daten vorliegen. */
+function coveredEnd(target, limit) {
+  let end = limit;
+  for (const m of targetMeters(target)) {
+    const last = m.registers[0].readings[m.registers[0].readings.length - 1];
+    if (serial(last.y, last.m, last.d) < serial(end.y, end.m, end.d)) end = { y: last.y, m: last.m, d: last.d };
+  }
+  return end;
+}
+function periodEstimated(target, p) {
+  for (const m of targetMeters(target)) {
+    let d = { ...p.from };
+    while (serial(d.y, d.m, d.d) < serial(p.to.y, p.to.m, p.to.d)) {
+      if (monthEstimated(m.registers[0], d.y, d.m)) return true;
+      d = d.m === 12 ? { y: d.y + 1, m: 1, d: 1 } : { y: d.y, m: d.m + 1, d: 1 };
+    }
+  }
+  return false;
+}
+
+function unitOf(target) {
+  if (target === "all" || histMetric === "cost") return "€";
+  return METERS.find(x => x.id === target).unit;
+}
+function fmtCell(target, v) {
+  if (v === null) return null;
+  // Ein Tagesmittel von 9 kWh wäre auf ganze Zahlen gerundet wertlos.
+  if (histPerDay) return nf(v, 2);
+  if (target === "all" || histMetric === "cost") return nf(v, 2);
+  const m = METERS.find(x => x.id === target);
+  return nf(v, m.frac >= 3 ? 1 : 0);
+}
+const deltaCell = d => d === null ? '<td class="na">—</td>'
+  : `<td class="delta ${d < 0 ? "down" : "up"}">${pct(d)}</td>`;
+
+function renderTable() {
+  const target = histMeter;
+  const host = document.getElementById("table");
+  const unit = unitOf(target);
+  let html, note;
+
+  if (histGran === "year") {
+    // Jahresvergleich. Das laufende Jahr ist unvollständig — deshalb wird die
+    // Veränderung immer gegen denselben Zeitausschnitt des Vorjahres gerechnet,
+    // nie gegen ein volles Jahr.
+    const rows = YEARS.slice().reverse().map(y => {
+      const p = { label: String(y), from: { y, m: 1, d: 1 }, to: { y: y + 1, m: 1, d: 1 } };
+      const end = coveredEnd(target, p.to);
+      const partial = serial(end.y, end.m, end.d) < serial(p.to.y, p.to.m, p.to.d);
+      const range = { from: p.from, to: partial ? end : p.to };
+      const value = cellValue(target, range);
+      const days = between(range.from, range.to);
+      const prev = cellValue(target, { from: shiftYear(range.from, -1), to: shiftYear(range.to, -1) });
+      const delta = value !== null && prev !== null && prev !== 0 ? (value - prev) / prev : null;
+      return { year: y, value, days, partial, delta, est: periodEstimated(target, range) };
+    });
+    html = `<table class="data"><thead><tr>
+        <th>Jahr</th><th>${histMetric === "cost" || target === "all" ? "Kosten" : "Verbrauch"}</th>
+        <th>Ø je Tag</th><th>Δ</th></tr></thead><tbody>` +
+      rows.map(r => `<tr class="${r.partial ? "partial" : r.est ? "est" : ""}">
+        <td>${r.year}</td>
+        <td class="now">${r.value === null ? "—" : fmtCell(target, r.value) + " " + unit}</td>
+        <td>${r.value === null ? "—" : nf(r.value / r.days, 2) + " " + unit}</td>
+        ${deltaCell(r.delta)}</tr>`).join("") + `</tbody></table>`;
+    note = "Δ ist die Veränderung gegenüber dem Vorjahr. Das laufende Jahr ist unvollständig — verglichen wird deshalb immer derselbe Zeitausschnitt beider Jahre, nie ein Teiljahr mit einem vollen.";
+
+  } else {
+    const rows = periods(histGran, YEARS[0]).map((p, i) => {
+      const cells = YEARS.map(y => {
+        const shifted = { from: { ...p.from, y: p.from.y - (YEARS[0] - y) },
+                          to: { ...p.to, y: p.to.y - (YEARS[0] - y) } };
+        const raw = cellValue(target, shifted);
+        const days = between(shifted.from, shifted.to);
+        // Je Tag normalisiert: Nur so lassen sich Januar und Februar
+        // nebeneinander lesen — 31 gegen 28 Tage sind sonst ein Drittel
+        // Unterschied, der nichts über den Verbrauch aussagt.
+        return { y, days, raw, v: raw === null ? null : (histPerDay ? raw / days : raw),
+                 est: periodEstimated(target, shifted) };
+      });
+      const a = cells[0].v, b = cells[1].v;
+      return { label: p.label, cells, delta: a !== null && b !== null && b !== 0 ? (a - b) / b : null };
+    });
+
+    const sums = YEARS.map((y, k) => {
+      const present = rows.map(r => r.cells[k]).filter(c => c.raw !== null);
+      if (!present.length) return null;
+      const total = present.reduce((s, c) => s + c.raw, 0);
+      return histPerDay ? total / present.reduce((s, c) => s + c.days, 0) : total;
+    });
+    // Zeiträume, die in allen drei Jahren vorliegen — nur diese sind vergleichbar.
+    const paired = rows.filter(r => r.cells.every(c => c.v !== null));
+    const pairedSums = YEARS.map((y, k) => {
+      if (!paired.length) return null;
+      const total = paired.reduce((s, r) => s + r.cells[k].raw, 0);
+      return histPerDay ? total / paired.reduce((s, r) => s + r.cells[k].days, 0) : total;
+    });
+    const pairedDelta = paired.length && pairedSums[1] !== 0
+      ? (pairedSums[0] - pairedSums[1]) / pairedSums[1] : null;
+    const window = paired.length
+      ? (paired.length === rows.length ? "Gesamt" : `${paired[0].label}–${paired[paired.length - 1].label}`)
+      : "—";
+
+    html = `<table class="data"><thead><tr><th>${histGran === "quarter" ? "Quartal" : "Monat"}</th>` +
+      YEARS.map(y => `<th>${y}</th>`).join("") + `<th>Δ</th></tr></thead><tbody>` +
+      rows.map(r => `<tr class="${r.cells[0].est ? "est" : ""}"><td>${r.label}</td>` +
+        r.cells.map((c, k) => c.v === null
+          ? '<td class="na">—</td>'
+          : `<td class="${k === 0 ? "now" : ""}">${fmtCell(target, c.v)}</td>`).join("") +
+        deltaCell(r.delta) + `</tr>`).join("") +
+      // Erst die rohen Summen je Spalte, dann die einzige Zeile, die man
+      // wirklich nebeneinander lesen darf: derselbe Ausschnitt in allen Jahren.
+      `<tr class="sum"><td>${histPerDay ? "Ø je Tag" : "Summe"}</td>` +
+        sums.map((s, k) => s === null ? '<td class="na">—</td>'
+          : `<td class="${k === 0 && paired.length < rows.length ? "na" : ""}">${fmtCell(target, s)}</td>`).join("") +
+        `<td class="na">—</td></tr>` +
+      (paired.length && paired.length < rows.length
+        ? `<tr class="sum"><td>${window}</td>` +
+          pairedSums.map(s => `<td>${fmtCell(target, s)}</td>`).join("") +
+          deltaCell(pairedDelta) + `</tr>`
+        : "") +
+      `</tbody></table>`;
+    const unitNote = `Alle Werte in ${unit}${histPerDay ? " je Tag" : ""}.`;
+    const perDayNote = histPerDay
+      ? " Durch die Tageszahl geteilt, damit sich unterschiedlich lange Zeiträume vergleichen lassen."
+      : ` Monate haben unterschiedlich viele Tage — für den Vergleich untereinander ist „Ø je Tag“ die ehrlichere Größe.`;
+    note = (paired.length < rows.length
+      ? `${unitNote} Die Summenzeile ${histPerDay ? "mittelt" : "addiert"} je Spalte, was vorliegt — für ${YEARS[0]} sind das nur ${paired.length} von ${rows.length} Zeiträumen. Nebeneinander lesen lässt sich nur die Zeile „${window}“: derselbe Ausschnitt in allen drei Jahren.`
+      : `${unitNote} Zeiträume ohne vollständige Daten bleiben leer, statt geschätzt zu werden.`) + perDayNote;
+  }
+
+  host.innerHTML = html;
+  document.getElementById("tablenote").textContent = note;
+  // In der Jahresansicht gibt es „Ø je Tag“ bereits als eigene Spalte.
+  document.getElementById("tabletop").style.display = histGran === "year" ? "none" : "";
+  document.querySelectorAll("#perday button").forEach(b =>
+    b.setAttribute("aria-selected", String((b.dataset.perday === "day") === histPerDay)));
+
+  // Verbrauch quer über Zählerarten zu addieren ergäbe kWh plus m³ — nur Kosten
+  // sind vergleichbar. Statt es zu verstecken, wird die Auswahl gesperrt.
+  document.querySelectorAll("#metric button").forEach(b => {
+    const forced = target === "all";
+    b.disabled = forced;
+    b.style.opacity = forced && b.dataset.metric === "usage" ? ".4" : "1";
+    b.setAttribute("aria-selected", String(forced ? b.dataset.metric === "cost" : b.dataset.metric === histMetric));
+  });
+}
+
+/* ============================================================
+   Export — dauerhaft frei, in einem offenen Format
+   ============================================================ */
+const csvNum = (v, d) => v.toFixed(d).replace(".", ",");
+
+/* Spiegelt `TableExport` aus PulseCore — Spalten, Reihenfolge und Wortwahl
+   müssen übereinstimmen, sonst liefern App und Entwurf verschiedene Dateien.
+
+   Zwei Entscheidungen stecken darin:
+
+   1. Eine Zeile je Abschnitt statt einer Kreuztabelle (Monate als Zeilen,
+      Jahre als Spalten). Die Kreuztabelle liest sich schöner, kann aber pro
+      Zelle nicht sagen, ob der Abschnitt vollständig ist — und genau das ist
+      in diesem Projekt die Information, an der bisher jeder Fehler hing. Wer
+      die Kreuztabelle will, erzeugt sie in der Tabellenkalkulation aus diesen
+      Zeilen; umgekehrt ginge es nicht.
+   2. Kein „Zählwerk" in der Kopfzeile. Eine exportierte Datei ist ein
+      Dokument, und für Dokumente gilt dieselbe Wortliste wie für die
+      Oberfläche (CLAUDE.md, Abschnitt „Sprache"). */
+function buildCsv(kind) {
+  const m = METERS.find(x => x.id === histMeter) || METERS[0];
+  const reg = m.registers[0];
+
+  if (kind === "readings") {
+    const lines = ["Zähler;Datum;Stand;Einheit;Art"];
+    for (const r of reg.readings) {
+      lines.push([csvField(m.name),
+        `${r.y}-${String(r.m).padStart(2, "0")}-${String(r.d).padStart(2, "0")}`,
+        csvNum(r.value, m.frac), m.unit,
+        r.origin === "estimated" ? "geschätzt" : "abgelesen"
+      ].join(";"));
+    }
+    return lines.join("\n");
+  }
+
+  // Beim Jahr eine Zeile je Jahr, sonst je Abschnitt des laufenden Jahres —
+  // wie in der App (`HistoryView.yearSpan`).
+  const rows = histGran === "year"
+    ? YEARS.slice().reverse().map(y => ({
+        label: String(y),
+        from: { y, m: 1, d: 1 },
+        to: { y: y + 1, m: 1, d: 1 }
+      }))
+    // Ausgeschriebene Monatsnamen wie in `TableExport.label` — im Diagramm
+    // ist „Jan" richtig, in einer Datei, die jemand später öffnet, nicht.
+    : periods(histGran, YEARS[0]).map((p, i) => ({
+        ...p,
+        label: `${histGran === "month" ? MONTHS_LONG[i] : p.label} ${YEARS[0]}`
+      }));
+
+  const lines = ["Zähler;Zeitraum;Von;Bis;Verbrauch;Einheit;Tage;Vollständig"];
+  const iso = d => `${d.y}-${String(d.m).padStart(2, "0")}-${String(d.d).padStart(2, "0")}`;
+  for (const p of rows) {
+    const c = consumption(reg, p.from, p.to);
+    lines.push([csvField(m.name), p.label,
+      c ? iso(c.cfrom) : "", c ? iso(c.cto) : "",
+      c ? csvNum(c.value, 0) : "", m.unit,
+      c ? c.days : 0,
+      c ? (c.complete ? "ja" : "nein") : "keine Daten"
+    ].join(";"));
+  }
+  return lines.join("\n");
+}
+
+/* Felder mit Trennzeichen oder Anführungszeichen werden eingefasst — ein
+   Zählername darf alles enthalten, was jemand eintippt. */
+const csvField = t => /[;"\n\r]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+
+/* ============================================================
+   Verbrauchsbericht — das Dokument, das man dem Versorger,
+   dem Vermieter oder dem eigenen Ordner gibt
+   ============================================================ */
+
+let repScope = "all", repPeriod = "ytd";
+
+const dayBefore = d => { const s = serial(d.y, d.m, d.d) - 1;
+  const a = s + 32044, b2 = ((4*a+3)/146097|0), c = a - (146097*b2/4|0), d2 = ((4*c+3)/1461|0),
+        e = c - (1461*d2/4|0), mm = ((5*e+2)/153|0);
+  return { y: 100*b2 + d2 - 4800 + (mm/10|0), m: mm + 3 - 12*(mm/10|0), d: e - ((153*mm+2)/5|0) + 1 }; };
+/* Bei abgeschlossenen Zeiträumen ist `to` der Stichtag danach — angezeigt wird
+   der letzte enthaltene Tag. Bei laufenden Zeiträumen ist `to` heute und wird
+   selbst angezeigt, weil „bis 3. August" am 4. August schlicht verwirrt. */
+const rangeLabel = (f, t, openEnd) => {
+  const e = openEnd ? t : dayBefore(t);
+  return `${f.d}. ${MONTHS_LONG[f.m-1]} ${f.y} bis ${e.d}. ${MONTHS_LONG[e.m-1]} ${e.y}`;
+};
+
+/* Zeiträume, die der Bericht abdecken kann.
+   Der Abrechnungszeitraum des Versorgers beginnt selten am 1. Januar — genau
+   deshalb ist er als eigene Auswahl nötig und nicht als Kalenderjahr getarnt. */
+function reportPeriods() {
+  const list = [
+    { key: "ytd", label: "Laufendes Jahr", from: { y: 2026, m: 1, d: 1 }, to: TODAY, openEnd: true },
+    { key: "last12", label: "Letzte 12 Monate", from: shiftYear(TODAY, -1), to: TODAY, openEnd: true },
+    { key: "y2025", label: "Kalenderjahr 2025", from: { y: 2025, m: 1, d: 1 }, to: { y: 2026, m: 1, d: 1 } },
+    { key: "y2024", label: "Kalenderjahr 2024", from: { y: 2024, m: 1, d: 1 }, to: { y: 2025, m: 1, d: 1 } }
+  ];
+  const m = repScope === "all" ? null : METERS.find(x => x.id === repScope);
+  if (m && m.billing) {
+    // Beginn des laufenden Abrechnungsjahres: der letzte Stichtag vor heute.
+    const thisYear = { y: TODAY.y, m: m.billing.m, d: m.billing.d };
+    const start = serial(thisYear.y, thisYear.m, thisYear.d) <= serial(TODAY.y, TODAY.m, TODAY.d)
+      ? thisYear : { ...thisYear, y: TODAY.y - 1 };
+    const prevStart = { ...start, y: start.y - 1 };
+    const yy = n => String(n).slice(-2);
+    list.unshift(
+      { key: "billCurrent", label: `Laufendes Abrechnungsjahr ${start.y}/${yy(start.y + 1)}`,
+        from: start, to: TODAY, openEnd: true },
+      { key: "billLast", label: `Abrechnungsjahr ${prevStart.y}/${yy(start.y)} · abgeschlossen`,
+        from: prevStart, to: start }
+    );
+  }
+  return list;
+}
+function activePeriod() {
+  const list = reportPeriods();
+  return list.find(p => p.key === repPeriod) || list[0];
+}
+function reportMeters() {
+  return repScope === "all" ? METERS : [METERS.find(x => x.id === repScope)];
+}
+
+function reportRows(meters, from, to) {
+  return meters.map(m => {
+    const reg = m.registers[0];
+    const c = consumption(reg, from, to);
+    if (!c) return null;
+    const prev = consumption(reg, shiftYear(c.cfrom, -1), shiftYear(c.cto, -1));
+    const delta = prev && prev.complete && prev.value ? (c.value - prev.value) / prev.value : null;
+    const work = billedUnits(m, c.value) * m.price;
+    // Einspeisung mindert die Kosten — beim Zweirichtungszähler gehört sie
+    // in dieselbe Zeile wie der Bezug, sonst stimmt die Summe nicht.
+    let feed = 0;
+    if (m.registers[1] && m.feedInPrice) {
+      const f = consumption(m.registers[1], c.cfrom, c.cto);
+      if (f) feed = f.value * m.feedInPrice;
+    }
+    const base = m.base * 12 / 365 * c.days;
+    // Monate des gewählten Zeitraums, jeder gegen denselben Monat des Vorjahres.
+    const months = [];
+    let cur = { y: c.cfrom.y, m: c.cfrom.m, d: 1 };
+    while (serial(cur.y, cur.m, 1) < serial(c.cto.y, c.cto.m, c.cto.d)) {
+      const a = monthConsumption(reg, cur.y, cur.m);
+      const b = monthConsumption(reg, cur.y - 1, cur.m);
+      if (a && a.complete) months.push({ y: cur.y, i: cur.m, a: a.value, b: b && b.complete ? b.value : null });
+      cur = cur.m === 12 ? { y: cur.y + 1, m: 1, d: 1 } : { y: cur.y, m: cur.m + 1, d: 1 };
+    }
+    return {
+      m, reg, c, prev, delta, work, feed, base, months,
+      cost: work - feed + base,
+      start: cumulativeAt(reg, c.cfrom), end: cumulativeAt(reg, c.cto)
+    };
+  }).filter(Boolean);
+}
+
+function openReportConfig() {
+  const scopes = [{ id: "all", name: "Alle Zähler" }].concat(METERS.map(m => ({ id: m.id, name: m.name })));
+  // Nach einem Zählerwechsel kann der zuvor gewählte Zeitraum wegfallen —
+  // etwa das Abrechnungsjahr, das es nur beim Einzelzähler gibt.
+  if (!reportPeriods().some(p => p.key === repPeriod)) repPeriod = "ytd";
+
+  const check = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4 10-10"/></svg>';
+  document.getElementById("repcfg-body").innerHTML = `
+    <div class="section-label" style="margin-top:4px">Umfang</div>
+    <div class="picker" style="padding-bottom:4px">${scopes.map(x =>
+      `<button type="button" class="pick" style="--c:var(--tint)" data-scope="${x.id}"
+        aria-selected="${x.id === repScope}">${x.name}</button>`).join("")}</div>
+    <div class="section-label">Zeitraum</div>
+    <div class="list" style="margin-top:0">${reportPeriods().map(p =>
+      `<button type="button" class="rowbtn" data-period="${p.key}">
+        <div class="rl">${p.label}<small>${rangeLabel(p.from, p.to, p.openEnd)}</small></div>
+        <span style="color:var(--tint);${p.key === repPeriod ? "" : "visibility:hidden"}">${check}</span>
+      </button>`).join("")}</div>
+    ${repScope === "all"
+      ? `<div class="note">Der Abrechnungszeitraum des Versorgers beginnt bei Strom im April, bei Gas im Oktober. Für einen gemeinsamen Bericht gibt es deshalb keinen. Wähle einen einzelnen Zähler, um nach seinem Abrechnungsjahr zu berichten.</div>`
+      : ""}
+    <button type="button" class="save" id="makereport" style="--c:var(--tint)">Bericht erstellen</button>`;
+  openSheet("sheet-repcfg");
+  document.getElementById("makereport").onclick = () => { renderReport(); openSheet("sheet-report"); };
+}
+
+function renderReport() {
+  const period = activePeriod();
+  const rows = reportRows(reportMeters(), period.from, period.to);
+  if (!rows.length) {
+    document.getElementById("doc").innerHTML =
+      `<div class="doc-head"><h1>Kein Bericht möglich</h1>
+       <div class="meta">Für ${period.label.toLowerCase()} liegen keine Ablesungen vor.</div></div>`;
+    return;
+  }
+  const days = between(period.from, period.to);
+  const months = days / 365 * 12;
+  const cost = rows.reduce((s, r) => s + r.cost, 0);
+  // Nur Zähler mit hinterlegtem Abschlag dürfen in den Saldo. Würde man die
+  // Gesamtkosten gegen die Abschläge von zwei Zählern stellen, entstünde eine
+  // erfundene Nachzahlung in Höhe der übrigen Zähler.
+  const onAccount = rows.filter(r => r.m.prepay);
+  const costOnAccount = onAccount.reduce((s, r) => s + r.cost, 0);
+  const prepaid = onAccount.reduce((s, r) => s + r.m.prepay * months, 0);
+  const balance = prepaid - costOnAccount;
+  const namesOnAccount = onAccount.map(r => r.m.name).join(" und ");
+  const dp = q => q >= 3 ? 1 : 0;
+  const anyEstimated = rows.some(r => r.reg.readings.some(x => x.origin === "estimated"
+    && serial(x.y, x.m, x.d) >= serial(period.from.y, period.from.m, period.from.d)
+    && serial(x.y, x.m, x.d) <= serial(period.to.y, period.to.m, period.to.d)));
+  const anyPartial = rows.some(r => !r.c.complete);
+
+  const head = `<div class="doc-head">
+      <h1>Verbrauchsbericht</h1>
+      <div class="meta">${period.label} · ${rangeLabel(period.from, period.to, period.openEnd)}<br>
+        Zuhause · ${repScope === "all" ? rows.length + " Zähler" : rows[0].m.name} · erstellt am ${dateLabel(TODAY)}</div>
+    </div>`;
+
+  const summary = `<h2>Zusammenfassung</h2>
+    <div class="doc-sum">
+      <div><span class="k">Kosten im Zeitraum · ${rows.length} Zähler</span><span class="v">${money(cost)}</span></div>
+      ${onAccount.length ? `
+      <div><span class="k">davon über Abschlag abgerechnet · ${namesOnAccount}</span><span class="v">${money(costOnAccount)}</span></div>
+      <div><span class="k">Gezahlte Abschläge · ${nf(months, 1)} Monate</span><span class="v">${money(prepaid)}</span></div>
+      <div class="big"><span class="k">${balance >= 0 ? "Guthaben" : "Nachzahlung"} bei ${namesOnAccount}</span><span class="v">${money(Math.abs(balance))}</span></div>`
+      : ""}
+    </div>`;
+
+  const sections = rows.map(r => {
+    const m = r.m, d = dp(m.frac);
+    const deltaTxt = r.delta === null ? "—" : pct(r.delta);
+    const deltaCls = r.delta === null ? "dim" : (r.delta < 0 ? "neg" : "pos");
+    const monthRows = r.months.map(x => `<tr>
+        <td>${MONTHS[x.i - 1]} ${String(x.y).slice(-2)}</td>
+        <td>${nf(x.a, d)}</td>
+        <td class="dim">${x.b === null ? "—" : nf(x.b, d)}</td>
+        <td class="${x.b === null ? "dim" : (x.a < x.b ? "neg" : "pos")}">${x.b === null || x.b === 0 ? "—" : pct((x.a - x.b) / x.b)}</td>
+      </tr>`).join("");
+
+    return `<h2>${m.name}</h2>
+      <div class="doc-meter">
+        <div class="name">${nf(r.c.value, d)} ${m.unit}
+          <span style="font-weight:500;color:#6B6659;font-size:11.5px">im Zeitraum</span></div>
+        <div class="serial">Zählernummer ${m.serial} · Stand ${nf(r.start.v, m.frac)} am ${dateShort(r.c.cfrom)}
+          bis ${nf(r.end.v, m.frac)} am ${dateShort(r.c.cto)}${r.c.complete ? "" : " (letzte vorliegende Ablesung)"}</div>
+      </div>
+      <table class="doc-t">
+        <thead><tr><th>Monat</th><th>Wert</th><th>Vorjahr</th><th>Δ</th></tr></thead>
+        <tbody>${monthRows}
+          <tr class="t"><td>Zeitraum</td><td>${nf(r.c.value, d)}</td>
+            <td>${r.prev && r.prev.complete ? nf(r.prev.value, d) : "—"}</td>
+            <td class="${deltaCls}">${deltaTxt}</td></tr>
+        </tbody>
+      </table>
+      <div class="doc-sum" style="margin-top:9px">
+        <div><span class="k">Arbeitspreis${m.zZahl ? ` · ${nf(billedUnits(m, r.c.value), 0)} kWh × ${nf(m.price, 3)} €` : ` · ${nf(m.price, 2)} € je ${m.unit}`}</span><span class="v">${money(r.work)}</span></div>
+        ${r.feed ? `<div><span class="k">Einspeisevergütung</span><span class="v">− ${money(r.feed)}</span></div>` : ""}
+        ${m.base ? `<div><span class="k">Grundpreis · ${r.c.days} Tage</span><span class="v">${money(r.base)}</span></div>` : ""}
+        <div class="big"><span class="k">Kosten ${m.name}</span><span class="v">${money(r.cost)}</span></div>
+      </div>`;
+  }).join("");
+
+  const note = `<div class="doc-note">
+      <b>Wie diese Zahlen entstehen.</b> Verbräuche sind die Differenz abgelesener Zählerstände.
+      ${anyPartial ? "Wo die letzte Ablesung vor dem Stichtag liegt, endet der Zeitraum dort — es wird nicht hochgerechnet. " : ""}
+      ${anyEstimated ? "Als geschätzt erfasste Ablesungen sind im Verlauf gekennzeichnet und fließen hier mit ein. " : ""}
+      Gas wird in m³ gemessen und mit Zustandszahl und Brennwert in kWh umgerechnet; beide Werte stammen
+      aus deiner Jahresrechnung. Vergleiche mit dem Vorjahr verwenden immer denselben Zeitausschnitt.
+      In den Saldo fließen nur Zähler mit hinterlegtem Abschlag; alle übrigen sind in den Gesamtkosten
+      enthalten, werden aber getrennt bezahlt.
+      <br><br>
+      <b>Dieser Bericht ersetzt keine Abrechnung.</b> Er dient dazu, die Abrechnung deines Versorgers
+      nachzuvollziehen und zu prüfen. Maßgeblich bleibt die Rechnung des Versorgers.
+    </div>`;
+
+  document.getElementById("doc").innerHTML = head + summary + sections + note;
+}
+
+function openExport(kind) {
+  const csv = buildCsv(kind);
+  const name = kind === "readings" ? "Ablesungen" : "Auswertung";
+  const rows = csv.split("\n").length - 1;
+  const scope = histMeter === "all" ? "Alle Zähler" : METERS.find(x => x.id === histMeter).name;
+  document.getElementById("ex2-title").textContent = name + " exportieren";
+  document.getElementById("ex2-body").innerHTML = `
+    <div class="capture-meta" style="margin-bottom:10px">${scope} · 2024 bis 2026</div>
+    <div class="row" style="padding-left:0;padding-right:0">
+      <div class="rl">CSV, Semikolon getrennt<small>${rows} Zeilen · öffnet sich in Excel und Numbers</small></div>
+      <span class="freebadge">frei</span>
+    </div>
+    <button type="button" class="rowbtn" data-open="report" style="padding-left:0;padding-right:0">
+      <div class="rl">Verbrauchsbericht<small>Gestaltetes Dokument zum Prüfen der Jahresabrechnung</small></div>
+      <span class="freebadge pro">Pro</span>
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+    </button>
+    <div class="preview">${csv.split("\n").slice(0, 14).join("\n")
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;")}${rows > 13 ? "\n…" : ""}</div>
+    <button type="button" class="save" id="dl" style="--c:var(--tint)">CSV sichern</button>
+    <div class="note">Der Datenexport bleibt dauerhaft kostenlos. Deine Ablesungen sind deine Daten —
+    sie sind kein Druckmittel, mit dem wir dich in der App halten.</div>`;
+  openSheet("sheet-export");
+  document.getElementById("dl").onclick = () => {
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `PulseMeter-${name}-2026-08-04.csv`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  };
+}
+
+function renderHistory() {
+  document.getElementById("view-chart").style.display = histMode === "chart" ? "" : "none";
+  document.getElementById("view-table").style.display = histMode === "table" ? "" : "none";
+  if (histMode === "chart") renderChart(); else renderTable();
+}
+
+/* ============================================================
+   Zählerliste
+   ============================================================ */
+function renderMeterList() {
+  document.getElementById("meterlist").innerHTML = METERS.map(m => {
+    const last = lastReading(m);
+    const regInfo = m.registers.length > 1
+      ? "Zweirichtungszähler · " + m.serial
+      : "Zählernummer " + m.serial;
+    const value = last
+      ? `${nf(last.value, m.frac)}<small>${dateShort(last)}</small>`
+      : `<small>Noch keine Ablesung</small>`;
+    // Antippbar wie in der App: Jede Zeile führt zum Bearbeiten.
+    return `<button type="button" class="rowbtn" data-meter="${m.id}"
+      style="${m.archived ? "opacity:.55" : ""}">
+      <span class="chip-icon" style="--c:${m.color}">${icon(m)}</span>
+      <div class="rl">${m.name}${m.archived ? ' <span class="tag">Archiviert</span>' : ""}<small>${regInfo}</small></div>
+      <div class="rv">${value}</div>
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+    </button>`;
+  }).join("");
+}
+
+/* Anlegen und Bearbeiten eines Zählers.
+
+   Bis hierher zeigte der Entwurf nur eine Liste. Ohne diesen Weg kommt ein
+   echter Nutzer überhaupt nicht zu einem Zähler — Produktprinzip 1 (60
+   Sekunden bis zur ersten Ablesung) hing an einer Ansicht, die es nicht gab.
+   Name und Art genügen; alles andere ist passend vorbelegt, wie in `MetersView`. */
+const KINDS = [
+  { id: "electricity", name: "Strom", unit: "kWh", frac: 1, color: "var(--amber)" },
+  { id: "water", name: "Wasser", unit: "m³", frac: 3, color: "var(--blue)" },
+  { id: "hotWater", name: "Warmwasser", unit: "m³", frac: 3, color: "var(--red)" },
+  { id: "gas", name: "Gas", unit: "m³", frac: 3, color: "var(--orange)" },
+  { id: "districtHeating", name: "Fernwärme", unit: "kWh", frac: 1, color: "var(--red)" },
+  { id: "heatingOil", name: "Heizöl", unit: "l", frac: 0, color: "var(--orange)" },
+  { id: "solarProduction", name: "Photovoltaik", unit: "kWh", frac: 1, color: "var(--green)" },
+  { id: "wallbox", name: "Wallbox", unit: "kWh", frac: 1, color: "var(--teal)" },
+  { id: "rainwater", name: "Regenwasser", unit: "m³", frac: 3, color: "var(--blue)" }
+];
+
+let editMeter = null;
+
+function openMeterEditor(id) {
+  editMeter = id ? METERS.find(m => m.id === id) : null;
+  const readingCount = editMeter ? editMeter.registers[0].readings.length : 0;
+  const kindID = editMeter ? (editMeter.kind || "electricity") : "electricity";
+
+  document.getElementById("editor-title").textContent = editMeter ? "Zähler" : "Neuer Zähler";
+  document.getElementById("editor-body").innerHTML = `
+    <div class="section-label">Name</div>
+    <div class="list"><div class="row"><input class="field" id="ed-name" type="text"
+      value="${editMeter ? editMeter.name.replace(/"/g, "&quot;") : ""}"
+      placeholder="Strom, Gas Keller, Wohnung oben"></div></div>
+
+    <div class="section-label">Art</div>
+    <div class="list"><div class="row"><select class="field" id="ed-kind"
+      ${readingCount ? "disabled" : ""}>
+      ${KINDS.map(k => `<option value="${k.id}" ${k.id === kindID ? "selected" : ""}>${k.name}</option>`).join("")}
+    </select></div></div>
+    <div class="note">${readingCount
+      ? `Die Art lässt sich nicht mehr ändern, weil für diesen Zähler schon ${readingCount} Ablesungen vorliegen — sie sind in ${editMeter.unit} erfasst.`
+      : "Legt Einheit und Aussehen fest."}</div>
+
+    <div class="section-label">Preise</div>
+    <div class="list">
+      <div class="row"><div class="rl">Arbeitspreis</div>
+        <div class="rv"><input class="field" id="ed-price" type="text" inputmode="decimal"
+          style="text-align:right;width:90px" placeholder="0,00"
+          value="${editMeter && editMeter.price ? String(editMeter.price).replace(".", ",") : ""}">
+          <small>€/${editMeter && editMeter.zZahl ? "kWh" : (editMeter ? editMeter.unit : "kWh")}</small></div></div>
+      <div class="row"><div class="rl">Grundpreis</div>
+        <div class="rv"><input class="field" id="ed-base" type="text" inputmode="decimal"
+          style="text-align:right;width:90px" placeholder="0,00"
+          value="${editMeter && editMeter.base ? String(editMeter.base).replace(".", ",") : ""}">
+          <small>€/Monat</small></div></div>
+      <div class="row"><div class="rl">Abschlag</div>
+        <div class="rv"><input class="field" id="ed-prepay" type="text" inputmode="decimal"
+          style="text-align:right;width:90px" placeholder="0,00"
+          value="${editMeter && editMeter.prepay ? String(editMeter.prepay).replace(".", ",") : ""}">
+          <small>€/Monat</small></div></div>
+      ${kindID === "gas" ? `
+      <div class="row"><div class="rl">Zustandszahl</div>
+        <div class="rv"><input class="field" id="ed-z" type="text" inputmode="decimal"
+          style="text-align:right;width:90px" placeholder="0,95"
+          value="${editMeter && editMeter.zZahl ? String(editMeter.zZahl).replace(".", ",") : ""}"></div></div>
+      <div class="row"><div class="rl">Brennwert</div>
+        <div class="rv"><input class="field" id="ed-bw" type="text" inputmode="decimal"
+          style="text-align:right;width:90px" placeholder="10,5"
+          value="${editMeter && editMeter.brennwert ? String(editMeter.brennwert).replace(".", ",") : ""}">
+          <small>kWh/m³</small></div></div>` : ""}
+    </div>
+    <div class="note">${kindID === "gas"
+      ? "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Zustandszahl und Brennwert stehen auf deiner Gasrechnung; ohne sie lässt sich aus m³ kein Betrag bilden. Mit dem Abschlag rechnet die App aus, ob am Jahresende ein Guthaben oder eine Nachzahlung zu erwarten ist."
+      : "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Alle Zahlen stehen auf deiner Jahresrechnung. Mit dem Abschlag rechnet die App aus, ob am Jahresende ein Guthaben oder eine Nachzahlung zu erwarten ist."}</div>
+
+    <div class="section-label">Wie oft ablesen?</div>
+    <div class="list"><div class="row"><select class="field" id="ed-interval">
+      <option value="7">Wöchentlich</option>
+      <option value="30" selected>Monatlich</option>
+      <option value="91">Vierteljährlich</option>
+      <option value="365">Jährlich</option>
+      <option value="0">Ohne Erinnerung</option>
+    </select></div></div>
+    <div class="note">Daraus ergibt sich, wann die Übersicht einen Zähler als fällig meldet.</div>
+
+    ${editMeter ? `<div class="section-label">Entfernen</div>
+      <div class="list">
+        <button type="button" class="rowbtn" id="ed-archive">
+          <div class="rl">${editMeter.archived ? "Aus dem Archiv holen" : "Archivieren"}</div>
+        </button>
+        <button type="button" class="rowbtn" id="ed-delete">
+          <div class="rl" style="color:var(--red);font-weight:600">Zähler und alle Ablesungen löschen</div>
+        </button>
+      </div>
+      <div class="note">Archivieren nimmt den Zähler aus der Übersicht und behält alles.
+      Löschen entfernt auch die ${readingCount} Ablesungen — das lässt sich nicht
+      rückgängig machen.</div>` : ""}
+
+    <button type="button" class="save" id="ed-save" style="--c:var(--tint)">Sichern</button>`;
+
+  if (editMeter) {
+    document.getElementById("ed-interval").value = String(editMeter.interval || 30);
+  }
+  openSheet("sheet-editor");
+}
+
+/* ============================================================
+   Erfassung — der Screen, an dem das Produkt gewinnt
+   ============================================================ */
+let capMeter = null, digits = "";
+
+function openCapture(id) {
+  capMeter = METERS.find(m => m.id === id);
+  digits = "";
+  const reg = capMeter.registers[0];
+  const last = reg.readings[reg.readings.length - 1];
+  document.getElementById("cap-title").textContent = capMeter.name;
+  document.getElementById("cap-meta").innerHTML =
+    `Letzter Stand <strong>${nf(last.value, capMeter.frac)} ${capMeter.unit}</strong> am ${dateLabel(last)}
+     <br><button type="button" class="prefill" id="prefill">Vom letzten Stand übernehmen</button>`;
+  document.getElementById("cap-unit").textContent = capMeter.unit;
+  document.getElementById("save").style.setProperty("--c", capMeter.color);
+  drawCounter(true);
+  judge();
+  openSheet("sheet-capture");
+  document.getElementById("prefill").onclick = () => {
+    digits = String(Math.round(last.value * 10 ** capMeter.frac));
+    drawCounter();
+    judge();
+  };
+}
+
+function drawCounter(silent) {
+  const total = capMeter.int + capMeter.frac;
+  const padded = digits.padStart(total, "0").slice(-total);
+  const prev = window.__prevDigits || "";
+  let html = "";
+  for (let i = 0; i < total; i++) {
+    if (i === capMeter.int) html += '<span class="drum sep"></span>';
+    const changed = !silent && prev[i] !== padded[i];
+    html += `<span class="drum ${i >= capMeter.int ? "dec" : ""} ${changed ? "rolled" : ""}"><span>${padded[i]}</span></span>`;
+  }
+  document.getElementById("counter").innerHTML = html;
+  window.__prevDigits = padded;
+}
+
+function currentValue() {
+  if (!digits) return null;
+  return parseInt(digits, 10) / 10 ** capMeter.frac;
+}
+
+/* Spiegelt ConsumptionEngine.plausibility aus PulseCore. */
+function judge() {
+  const el = document.getElementById("verdict");
+  const save = document.getElementById("save");
+  const v = currentValue();
+  if (v === null) {
+    el.className = "verdict idle";
+    el.textContent = "Zählerstand eintippen";
+    save.disabled = true;
+    return;
+  }
+  const reg = capMeter.registers[0];
+  const last = reg.readings[reg.readings.length - 1];
+  const days = between(last, TODAY);
+  const check = '<svg class="mark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4 10-10"/></svg>';
+  const bang = '<svg class="mark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 7v7"/><path d="M12 17.5v.01"/></svg>';
+
+  if (v < last.value) {
+    el.className = "verdict warn";
+    el.innerHTML = `${bang}<div>Der Stand liegt unter dem letzten Wert von <b>${nf(last.value, capMeter.frac)} ${capMeter.unit}</b>.
+      Wurde der Zähler gewechselt, oder hat sich eine Ziffer verirrt?</div>`;
+    save.disabled = false;
+    return;
+  }
+
+  const delta = v - last.value;
+  const perDay = delta / days;
+  // Referenz ist derselbe Zeitraum im Vorjahr, nicht der Jahresschnitt: Ein
+  // Gaszähler verbraucht im Juli einen Bruchteil des Mittels. Gegen den
+  // Durchschnitt geprüft würde jeder korrekte Sommerstand beanstandet und ein
+  // zehnfach zu hoher durchgewinkt.
+  const prior = consumption(reg, shiftYear(last, -1), shiftYear(TODAY, -1));
+  let usual = prior && prior.complete && prior.value > 0 ? prior.value / prior.days : null;
+  if (usual === null) { const ytd = yearToDate(reg); usual = ytd ? ytd.value / ytd.days : perDay; }
+  const factor = usual > 0 ? perDay / usual : 1;
+
+  if (factor >= 4 || factor <= 0.25) {
+    el.className = "verdict warn";
+    el.innerHTML = `${bang}<div>Das wären <b>${nf(delta, capMeter.frac >= 3 ? 1 : 0)} ${capMeter.unit}</b> in ${days} Tagen —
+      rund ${nf(factor, 1).replace(",0", "")}× dein üblicher Verbrauch. Stimmt die Zahl?</div>`;
+  } else {
+    el.className = "verdict";
+    el.innerHTML = `${check}<div>Entspricht <b>${nf(delta, capMeter.frac >= 3 ? 1 : 0)} ${capMeter.unit}</b> in ${days} Tagen
+      — normal für dich.</div>`;
+  }
+  save.disabled = false;
+}
+
+function saveReading() {
+  const v = currentValue();
+  if (v === null) return;
+  const reg = capMeter.registers[0];
+  reg.readings.push({ y: TODAY.y, m: TODAY.m, d: TODAY.d, value: v, origin: "manual" });
+  const name = capMeter.name;
+  closeSheets();
+  const t = document.getElementById("toast");
+  document.getElementById("toast-text").textContent = name + " gesichert";
+  t.classList.add("on");
+  setTimeout(() => t.classList.remove("on"), 1250);
+  renderAll();
+}
+
+/* ============================================================
+   Erklärung — Prinzip 4: keine Sackgasse
+   ============================================================ */
+function openExplain(id) {
+  const m = METERS.find(x => x.id === id);
+  const reg = m.registers[0];
+  const fc = forecast(reg), ytd = yearToDate(reg);
+  const units = billedUnits(m, fc.value);
+  const work = units * m.price;
+  const base = m.base * 12;
+  const cost = projectedCost(m, fc);
+  const paid = m.prepay * 12;
+  const bal = balance(m, fc);
+
+  document.getElementById("ex-title").textContent = "Wie diese Zahl entsteht";
+  document.getElementById("ex-body").innerHTML = `
+    <div class="calc">
+      <div class="calc-row"><span class="k">Verbrauch bis heute</span><span class="v">${nf(ytd.value, 0)} ${m.unit}</span></div>
+      <div class="calc-row"><span class="k">Hochrechnung aufs Jahr<br><small style="color:var(--ink-3)">${fc.method === "seasonal" ? "nach dem Verlauf des Vorjahres" : "aus dem bisherigen Tagesschnitt"}</small></span><span class="v">${nf(fc.value, 0)} ${m.unit}</span></div>
+      ${m.zZahl ? `<div class="calc-row"><span class="k">Umrechnung in kWh<br><small style="color:var(--ink-3)">× ${nf(m.zZahl, 4)} Zustandszahl × ${nf(m.brennwert, 3)} kWh/m³</small></span><span class="v">${nf(units, 0)} kWh</span></div>` : ""}
+      <div class="calc-row"><span class="k">Arbeitspreis<br><small style="color:var(--ink-3)">${nf(m.price, m.zZahl ? 3 : 2)} € je ${m.zZahl ? "kWh" : m.unit}</small></span><span class="v">${money(work)}</span></div>
+      <div class="calc-row"><span class="k">Grundpreis<br><small style="color:var(--ink-3)">${money(m.base)} × 12 Monate</small></span><span class="v">${money(base)}</span></div>
+      <div class="calc-row total"><span class="k">Erwartete Kosten</span><span class="v">${money(cost)}</span></div>
+      <div class="calc-row"><span class="k">Abschläge ${money(m.prepay)} × 12</span><span class="v">${money(paid)}</span></div>
+      <div class="calc-row total"><span class="k">${bal >= 0 ? "Voraussichtliches Guthaben" : "Voraussichtliche Nachzahlung"}</span>
+        <span class="v" style="color:${bal >= 0 ? "var(--good)" : "var(--red)"}">${money(Math.abs(bal))}</span></div>
+    </div>
+    <div class="note">Eine Hochrechnung ist nie eine gemessene Zahl. Sie wird genauer, je aktueller dein letzter Stand ist —
+    und sie ersetzt die Abrechnung deines Versorgers nicht.</div>`;
+  openSheet("sheet-explain");
+}
+
+/* ============================================================
+   Navigation
+   ============================================================ */
+function openSheet(id) {
+  // Bögen stapeln sich nicht: Der neue ersetzt den vorherigen, sonst schiebt
+  // sich der Export vor den Bericht, den er gerade geöffnet hat.
+  document.querySelectorAll(".sheet").forEach(x => x.classList.toggle("on", x.id === id));
+  document.getElementById("scrim").classList.add("on");
+}
+function closeSheets() {
+  document.getElementById("scrim").classList.remove("on");
+  document.querySelectorAll(".sheet").forEach(s => s.classList.remove("on"));
+}
+
+function renderAll() {
+  renderStatus();
+  renderCards();
+  renderPicker();
+  renderHistory();
+  renderMeterList();
+}
+
+/* Tastenfeld aufbauen */
+(function () {
+  const keys = document.getElementById("keys");
+  const photo = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5h3l1.5-2.5h7L17 8.5h3a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.2"/></svg>';
+  const back = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h11a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H9L2.5 12z"/><path d="m11.5 9.5 5 5m0-5-5 5"/></svg>';
+  let html = "";
+  for (let i = 1; i <= 9; i++) html += `<button type="button" class="key" data-key="${i}">${i}</button>`;
+  html += `<button type="button" class="key aux" data-key="photo" aria-label="Belegfoto">${photo}</button>`;
+  html += `<button type="button" class="key" data-key="0">0</button>`;
+  html += `<button type="button" class="key aux" data-key="back" aria-label="Löschen">${back}</button>`;
+  keys.innerHTML = html;
+})();
+
+/* Übernimmt, was im Editor steht. Im Entwurf bleiben die Daten im Speicher —
+   die App legt sie über `PulseRepository` ab, die Oberfläche ist dieselbe. */
+function saveMeter() {
+  const name = document.getElementById("ed-name").value.trim();
+  if (!name) { document.getElementById("ed-name").focus(); return; }
+  const kind = KINDS.find(k => k.id === document.getElementById("ed-kind").value) || KINDS[0];
+  const interval = Number(document.getElementById("ed-interval").value) || 0;
+  // Komma und Punkt gelten beide — auf einer deutschen Tastatur kommt das
+  // Komma, auf mancher Zehnertastatur der Punkt.
+  const num = id => {
+    const el = document.getElementById(id);
+    if (!el) return 0;
+    const v = parseFloat(el.value.replace(",", "."));
+    return Number.isFinite(v) ? v : 0;
+  };
+  const price = num("ed-price"), base = num("ed-base"), prepay = num("ed-prepay");
+  const zZahl = num("ed-z"), brennwert = num("ed-bw");
+
+  if (editMeter) {
+    editMeter.name = name;
+    editMeter.interval = interval || 3650;
+    editMeter.price = price;
+    editMeter.base = base;
+    editMeter.prepay = prepay;
+    if (zZahl && brennwert) { editMeter.zZahl = zZahl; editMeter.brennwert = brennwert; }
+    if (!editMeter.registers[0].readings.length) {
+      editMeter.kind = kind.id; editMeter.unit = kind.unit;
+      editMeter.frac = kind.frac; editMeter.color = kind.color;
+    }
+  } else {
+    METERS.push({
+      id: "m" + Date.now(), name, kind: kind.id, unit: kind.unit,
+      frac: kind.frac, int: 6, color: kind.color, serial: "—",
+      interval: interval || 3650, price, base, prepay,
+      zZahl: zZahl || undefined, brennwert: brennwert || undefined,
+      registers: [{ label: "", readings: [] }]
+    });
+  }
+  closeSheets();
+  refreshAfterMeterChange();
+}
+
+/* Archivieren statt löschen ist der normale Weg: Ein gelöschter Zähler nimmt
+   seine gesamte Ablesehistorie mit. Deshalb zwei getrennte Wege — wie
+   `PulseRepository.archive` und `deletePermanently`. */
+function archiveMeter() {
+  if (!editMeter) return;
+  editMeter.archived = !editMeter.archived;
+  closeSheets();
+  refreshAfterMeterChange();
+}
+
+function deleteMeter() {
+  if (!editMeter) return;
+  const count = editMeter.registers[0].readings.length;
+  if (!confirm(`Der Zähler „${editMeter.name}" und seine ${count} Ablesungen werden entfernt.`)) return;
+  // In der Liste selbst entfernen statt sie neu zuzuweisen: Andere Stellen
+  // halten dieselbe Liste in der Hand.
+  METERS.splice(METERS.indexOf(editMeter), 1);
+  if (histMeter === editMeter.id) histMeter = METERS[0] ? METERS[0].id : null;
+  closeSheets();
+  refreshAfterMeterChange();
+}
+
+function refreshAfterMeterChange() {
+  renderMeterList();
+  renderStatus();
+  renderCards();
+  renderPicker();
+}
+
+/* Ereignisse */
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-capture],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export],[data-month],[data-open],[data-scope],[data-period],[data-meter],#add-meter,#first-meter,#ed-save,#ed-archive,#ed-delete");
+  if (!t) return;
+
+  if (t.id === "add-meter" || t.id === "first-meter") return openMeterEditor(null);
+  if (t.dataset.meter) return openMeterEditor(t.dataset.meter);
+  if (t.id === "ed-save") return saveMeter();
+  if (t.id === "ed-archive") return archiveMeter();
+  if (t.id === "ed-delete") return deleteMeter();
+
+  if (t.dataset.capture) return openCapture(t.dataset.capture);
+  if (t.dataset.explain) return openExplain(t.dataset.explain);
+  if (t.hasAttribute("data-close")) return closeSheets();
+
+  if (t.dataset.key) {
+    const k = t.dataset.key;
+    if (k === "back") digits = digits.slice(0, -1);
+    else if (k === "photo") { return; }
+    else if (digits.length < capMeter.int + capMeter.frac) digits += k;
+    drawCounter();
+    judge();
+    return;
+  }
+  if (t.dataset.pane) {
+    document.querySelectorAll("#tabs button").forEach(b =>
+      b.setAttribute("aria-selected", String(b === t)));
+    document.querySelectorAll(".pane").forEach(p =>
+      p.classList.toggle("on", p.id === "pane-" + t.dataset.pane));
+    document.querySelector(".screen").scrollTop = 0;
+    return;
+  }
+  if (t.dataset.pick) { histMeter = t.dataset.pick; renderPicker(); renderHistory(); return; }
+  if (t.dataset.scale) {
+    histScale = t.dataset.scale;
+    document.querySelectorAll("#scale button").forEach(b =>
+      b.setAttribute("aria-selected", String(b === t)));
+    return renderChart();
+  }
+  if (t.dataset.mode) {
+    histMode = t.dataset.mode;
+    // „Alle Zähler" gibt es im Diagramm nicht — dort wäre die Summe sinnlos.
+    if (histMode === "chart" && histMeter === "all") histMeter = METERS[0].id;
+    document.querySelectorAll("#mode button").forEach(b =>
+      b.setAttribute("aria-selected", String(b === t)));
+    renderPicker();
+    return renderHistory();
+  }
+  if (t.dataset.gran) {
+    histGran = t.dataset.gran;
+    document.querySelectorAll("#gran button").forEach(b =>
+      b.setAttribute("aria-selected", String(b === t)));
+    return renderTable();
+  }
+  if (t.dataset.metric) {
+    if (t.disabled) return;
+    histMetric = t.dataset.metric;
+    return renderTable();
+  }
+  if (t.dataset.month !== undefined) {
+    selMonth = Number(t.dataset.month);
+    return renderChart();
+  }
+  if (t.dataset.perday) {
+    histPerDay = t.dataset.perday === "day";
+    return renderTable();
+  }
+  if (t.dataset.open === "readings") return openSheet("sheet-readings");
+  if (t.dataset.open === "report") return openReportConfig();
+  if (t.dataset.scope) { repScope = t.dataset.scope; return openReportConfig(); }
+  if (t.dataset.period) { repPeriod = t.dataset.period; return openReportConfig(); }
+  if (t.dataset.export) return openExport(t.dataset.export);
+});
+document.getElementById("print").addEventListener("click", () => window.print());
+document.getElementById("scrim").addEventListener("click", closeSheets);
+document.getElementById("save").addEventListener("click", saveReading);
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeSheets();
+  if (!document.getElementById("sheet-capture").classList.contains("on")) return;
+  if (/^[0-9]$/.test(e.key) && digits.length < capMeter.int + capMeter.frac) { digits += e.key; drawCounter(); judge(); }
+  if (e.key === "Backspace") { digits = digits.slice(0, -1); drawCounter(); judge(); }
+});
+
+document.getElementById("theme").addEventListener("click", () => {
+  const now = document.documentElement.getAttribute("data-theme");
+  const dark = now ? now === "dark"
+    : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.setAttribute("data-theme", dark ? "light" : "dark");
+  renderHistory();
+});
+document.getElementById("reset").addEventListener("click", () => location.reload());
+
+renderAll();
+</script>
