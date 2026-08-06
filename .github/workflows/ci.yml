@@ -15,8 +15,19 @@ on:
 # verschiedene Gruppen liefen beide durch und bauten dieselbe App zweimal.
 # Über den Zweignamen landen sie in derselben Gruppe, und der spätere Lauf
 # bricht den früheren ab.
+# Das `-2` am Ende ist kein Schmuck: Ein Lauf blieb in einem Zustand hängen,
+# den GitHub weder startet noch abbrechen lässt („Cannot cancel a workflow
+# re-run that has not yet queued"). Solange er in der Gruppe steht, entstehen
+# für neue Pushes gar keine Läufe mehr — drei Pushes hintereinander blieben
+# unbemerkt liegen. Ein neuer Gruppenname lässt den Blockierer zurück.
+#
+# Zweiter Befund desselben Tages, hier festgehalten statt behoben:
+# `cancel-in-progress` bewertet „neu" nach **Startzeit**, nicht nach
+# Commit-Reihenfolge. Wartet ein Lauf lange auf einen Läufer, kann er dadurch
+# einen jüngeren erschlagen. Das ist selten und kostet einen Lauf; die Regel
+# bleibt, weil sie im Normalfall genau das Richtige tut.
 concurrency:
-  group: ci-${{ github.event.pull_request.head.ref || github.ref_name }}
+  group: ci-${{ github.event.pull_request.head.ref || github.ref_name }}-2
   cancel-in-progress: true
 
 # Schreibrecht nur, weil der Lauf die Screenshots in einen eigenen Zweig legt.
