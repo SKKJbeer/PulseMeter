@@ -9,6 +9,30 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.21.3 — 2026-08-06
+
+Keine Produktänderung — eine Prüfung, die verlorengegangen war, ist wieder da.
+
+### Hinzugefügt
+- **Die Screenshots jedes Laufs liegen jetzt im Zweig `screenshots`.** Bisher
+  gab es sie nur als Artefakt, und an ein Artefakt komme ich aus der
+  Entwicklungsumgebung heraus nicht heran: Der Weg zur GitHub-API ist dort
+  gesperrt, git dagegen läuft. Damit war die produktivste Prüfung dieses
+  Projekts stillschweigend ausgefallen — sieben der bisher gefundenen
+  Darstellungsfehler hat kein Test gefunden, sondern der Blick auf ein Bild.
+- `scripts/publish-shots.sh` verkleinert die zehn Bilder auf 1000 Pixel Höhe
+  und legt sie als JPEG ab. Aus über drei Megabyte werden rund dreihundert
+  Kilobyte; für Anordnung, Kontrast und Zahlen reicht das bei weitem.
+
+### Entschieden
+- **Der Zweig trägt immer nur einen Stand.** Ein frisch angelegtes Repository
+  wird mit `--force` geschoben, damit weder Historie noch Objektlager wachsen.
+  Wer einen älteren Stand braucht, findet ihn im Artefakt des jeweiligen Laufs.
+
+### Behoben
+- Die README behauptete, Verlauf und Zähler seien Platzhalter. Das stimmt seit
+  0.18.0 nicht mehr — beide sind vollwertige Bildschirme.
+
 ## 0.21.2 — 2026-08-06
 
 ### Behoben

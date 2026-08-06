@@ -19,6 +19,11 @@ concurrency:
   group: ci-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 
+# Schreibrecht nur, weil der Lauf die Screenshots in einen eigenen Zweig legt.
+# Sonst bliebe es beim Lesen.
+permissions:
+  contents: write
+
 jobs:
   build-and-test:
     runs-on: macos-15
@@ -63,6 +68,16 @@ jobs:
       - name: Screenshots
         if: success()
         run: scripts/run.sh build
+
+      # Die Bilder zusätzlich in einen Zweig, nicht nur ins Artefakt: An ein
+      # Artefakt komme ich aus der Entwicklungsumgebung heraus nicht heran —
+      # der Weg zur GitHub-API ist dort gesperrt, git aber nicht. Und ohne die
+      # Bilder fehlt die produktivste Prüfung, die dieses Projekt hat.
+      - name: Screenshots in den Zweig
+        if: success()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: scripts/publish-shots.sh build
 
       - name: Ergebnisse sichern
         if: always()

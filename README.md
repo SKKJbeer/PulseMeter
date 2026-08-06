@@ -19,10 +19,14 @@ Lizenz. Alles Weitere richtet das Skript ein.
 
 ## Status
 
-Version **0.21.2**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
-rechnet echt. Übersicht und Erfassung laufen als SwiftUI-App im Simulator und
-werden auf jedem Lauf fotografiert; Verlauf und Zähler sind noch Platzhalter.
-Siehe [CHANGELOG.md](CHANGELOG.md).
+Version **0.21.3**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
+rechnet echt. Alle vier Bildschirme — Übersicht, Erfassung, Verlauf und Zähler —
+laufen als SwiftUI-App im Simulator und werden auf jedem Lauf fotografiert,
+hell und dunkel. Siehe [CHANGELOG.md](CHANGELOG.md).
+
+Die Bilder des jeweils letzten Laufs liegen im Zweig
+[`screenshots`](../../tree/screenshots). Er wird bei jedem Lauf überschrieben
+und ist keine Historie, sondern der aktuelle Blick auf die Oberfläche.
 
 ## Klick-Dummy
 
