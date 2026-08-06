@@ -35,8 +35,18 @@ enum Reminders {
         }
     }
 
+    /// Über den Rückruf statt über `await notificationSettings()`.
+    ///
+    /// `UNNotificationSettings` ist nicht `Sendable` und darf unter Swift 6
+    /// die Isolationsgrenze nicht überqueren — `await` vom Hauptakteur aus
+    /// übersetzt deshalb nicht. Im Rückruf wird nur der Status herausgezogen,
+    /// und der ist eine Aufzählung und damit unbedenklich.
     static func authorizationStatus() async -> UNAuthorizationStatus {
-        await center.notificationSettings().authorizationStatus
+        await withCheckedContinuation { continuation in
+            center.getNotificationSettings { settings in
+                continuation.resume(returning: settings.authorizationStatus)
+            }
+        }
     }
 
     /// Plant die Erinnerungen neu.
@@ -82,6 +92,12 @@ enum Reminders {
     /// Wie viele Mitteilungen tatsächlich in der Warteschlange stehen.
     /// Für die Anzeige — und damit ein Oberflächentest es prüfen kann.
     static func pendingCount() async -> Int {
-        await center.pendingNotificationRequests().count
+        // Dieselbe Regel wie oben: `[UNNotificationRequest]` bleibt drüben,
+        // herüber kommt nur die Anzahl.
+        await withCheckedContinuation { continuation in
+            center.getPendingNotificationRequests { requests in
+                continuation.resume(returning: requests.count)
+            }
+        }
     }
 }

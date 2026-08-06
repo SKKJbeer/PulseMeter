@@ -9,6 +9,20 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.21.1 — 2026-08-06
+
+### Behoben
+- **Die Erinnerungen aus 0.21.0 ließen sich nicht übersetzen.**
+  `UNNotificationSettings` und `[UNNotificationRequest]` sind nicht
+  `Sendable`; unter Swift 6 dürfen sie die Isolationsgrenze nicht überqueren,
+  und ein `await` vom Hauptakteur aus scheitert daran. Jetzt läuft beides über
+  den Rückruf, und herüber kommt nur, was unbedenklich ist: der Status als
+  Aufzählung und die Anzahl als Zahl.
+
+Diese Fehlerklasse kann ich unter Linux nicht finden — `UserNotifications`
+gibt es dort nicht, und `PulseCore` allein zu übersetzen sagt darüber nichts.
+Sie fällt erst auf dem macOS-Läufer auf.
+
 ## 0.21.0 — 2026-08-06
 
 **Erinnerungen.** Der Retention-Motor: Ohne sie kommt niemand nach drei
