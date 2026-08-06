@@ -65,19 +65,45 @@ enum LaunchFixture {
         // Preise nach den Größenordnungen einer deutschen Jahresrechnung 2026.
         // Gas rechnet in kWh ab, obwohl der Zähler m³ misst — deshalb dort die
         // Umrechnung, ohne die der Rechenkern zu Recht keinen Betrag bildet.
-        let profiles: [(name: String, kind: ResourceKind, start: Decimal,
-                        monthly: [Decimal], staleMonths: Int,
-                        price: Decimal, base: Decimal, gas: Bool,
-                        prepay: Decimal?)] = [
-            ("Strom", .electricity, 41_230,
-             [312, 286, 268, 241, 218, 205, 198, 204, 226, 258, 289, 315], 0,
-             Decimal(string: "0.34")!, Decimal(string: "12.90")!, false, 100),
-            ("Wasser", .water, 998,
-             [10.8, 9.9, 11.2, 10.6, 12.4, 13.1, 13.8, 13.2, 11.6, 10.9, 10.4, 11.1], 0,
-             Decimal(string: "2.15")!, Decimal(string: "8.40")!, false, nil),
-            ("Gas", .gas, 3_579,
-             [418, 376, 298, 178, 92, 41, 36, 39, 84, 192, 308, 402], 3,
-             Decimal(string: "0.11")!, Decimal(string: "14.50")!, true, 230)
+        // Ein benannter Typ statt eines langen Tupels: Mit dem neunten Feld
+        // war beim Lesen nicht mehr zu erkennen, welche Zahl wofür steht.
+        struct Profile {
+            let name: String
+            let kind: ResourceKind
+            let start: Decimal
+            let monthly: [Decimal]
+            let staleMonths: Int
+            let price: Decimal
+            let base: Decimal
+            let gas: Bool
+            let prepay: Decimal?
+            /// Jahresform der Einspeisung. Gesetzt heißt: Zweirichtungszähler.
+            var feedIn: (start: Decimal, monthly: [Decimal], price: Decimal)?
+        }
+
+        let profiles: [Profile] = [
+            // Strom mit Photovoltaik: der Fall, an dem ein Modell mit einer
+            // Zahl pro Zähler scheitern würde — und in Deutschland längst
+            // keine Randgruppe mehr. Die Einspeisung ist gegenläufig zum
+            // Verbrauch: hoch im Sommer, fast nichts im Winter.
+            Profile(name: "Strom", kind: .electricity, start: 41_230,
+                    monthly: [312, 286, 268, 241, 218, 205, 198, 204, 226, 258, 289, 315],
+                    staleMonths: 0,
+                    price: Decimal(string: "0.34")!, base: Decimal(string: "12.90")!,
+                    gas: false, prepay: 100,
+                    feedIn: (start: 6_480,
+                             monthly: [58, 112, 224, 331, 428, 461, 472, 409, 298, 168, 71, 44],
+                             price: Decimal(string: "0.082")!)),
+            Profile(name: "Wasser", kind: .water, start: 998,
+                    monthly: [10.8, 9.9, 11.2, 10.6, 12.4, 13.1, 13.8, 13.2, 11.6, 10.9, 10.4, 11.1],
+                    staleMonths: 0,
+                    price: Decimal(string: "2.15")!, base: Decimal(string: "8.40")!,
+                    gas: false, prepay: nil, feedIn: nil),
+            Profile(name: "Gas", kind: .gas, start: 3_579,
+                    monthly: [418, 376, 298, 178, 92, 41, 36, 39, 84, 192, 308, 402],
+                    staleMonths: 3,
+                    price: Decimal(string: "0.11")!, base: Decimal(string: "14.50")!,
+                    gas: true, prepay: 230, feedIn: nil)
         ]
 
         let property = try repository.ensureDefaultProperty()
@@ -87,14 +113,25 @@ enum LaunchFixture {
             // sonst entstünden Zeiträume, gegen die es nichts zu rechnen
             // gibt. Wasser läuft hier bewusst ohne, damit auf den Bildern
             // beide Fälle nebeneinander stehen.
-            let point = MeteringPoint(
+            var point = MeteringPoint(
                 propertyID: property.id, name: profile.name, kind: profile.kind,
                 billingCycle: profile.prepay == nil ? nil : BillingCycle(anchorMonth: 1, anchorDay: 1)
             )
+            if profile.feedIn != nil, var first = point.registers.first {
+                first.label = "Bezug"
+                point.registers[0] = first
+                point.registers.append(
+                    Register(label: "Einspeisung", unit: .kilowattHour, direction: .feedIn,
+                             integerDigits: first.integerDigits,
+                             fractionDigits: first.fractionDigits, obisCode: "2.8.0")
+                )
+            }
             try repository.save(point)
             guard let register = point.primaryRegister else { continue }
 
             var value = profile.start
+            var feedValue = profile.feedIn?.start ?? 0
+            let feedRegister = point.registers.first { $0.direction == .feedIn }
             for offset in stride(from: 25, through: profile.staleMonths, by: -1) {
                 var month = today.month - offset
                 var year = today.year
@@ -104,6 +141,16 @@ enum LaunchFixture {
                     Reading(registerID: register.id, day: day, value: value),
                     fractionDigits: register.fractionDigits
                 )
+                // Beide Zählwerke am selben Tag: Es ist dasselbe Gerät, und
+                // Ablesungen an verschiedenen Tagen ergäben Zeiträume, die
+                // sich nicht gegenüberstellen lassen.
+                if let feedRegister, let feed = profile.feedIn {
+                    try repository.save(
+                        Reading(registerID: feedRegister.id, day: day, value: feedValue),
+                        fractionDigits: feedRegister.fractionDigits
+                    )
+                    feedValue += feed.monthly[month - 1]
+                }
                 // Das laufende Jahr liegt sieben Prozent unter dem Vorjahr.
                 let seasonal = profile.monthly[month - 1]
                 value += year == today.year ? seasonal * Decimal(string: "0.93")! : seasonal
@@ -116,7 +163,8 @@ enum LaunchFixture {
                 pricePerUnit: profile.price,
                 monthlyBasePrice: profile.base,
                 billingUnit: profile.gas ? .kilowattHour : profile.kind.defaultUnit,
-                gasConversion: profile.gas ? .typical : nil
+                gasConversion: profile.gas ? .typical : nil,
+                feedInPricePerUnit: profile.feedIn?.price
             ))
 
             if let prepay = profile.prepay,

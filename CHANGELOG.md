@@ -9,6 +9,61 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.22.0 — 2026-08-06
+
+**Photovoltaik.** Der Rechenkern konnte Zweirichtungszähler seit dem ersten
+Tag, der Entwurf zeigte sie — nur die App kannte sie nicht. Wer eine PV-Anlage
+hat, konnte seinen Zähler damit gar nicht abbilden, und in Deutschland ist das
+längst keine Randgruppe mehr.
+
+### Hinzugefügt
+- **Ein Schalter „Einspeisung ins Netz"** im Zählereditor, sichtbar nur bei
+  Strom. Dazu ein Feld für die Einspeisevergütung.
+- **Der Erfassungsschirm fragt nacheinander nach beiden Zahlen** — erst Bezug,
+  dann Einspeisung, mit „Weiter" statt „Sichern" dazwischen. Keine Auswahl
+  davor: Wer vor dem Zähler steht, liest beide Zahlen in einem Zug ab; eine
+  Auswahl hieße erst entscheiden, dann tippen, dann noch einmal öffnen.
+- **Die Übersichtskarte zeigt die Einspeisung** mit Menge und Vergütung, und
+  zwar **über** den Kosten: Der Betrag darunter ist bereits netto.
+- Der Ausgangszustand enthält jetzt einen Stromzähler mit PV — sonst sähe
+  weder ein Bildschirmfoto noch ein Test den Fall je.
+
+### Behoben
+- **Die Abschlagsvorschau rechnete bei PV systematisch falsch.** Sie nahm die
+  Nettokosten der ganzen Messstelle — Bezug minus Vergütung — und skalierte
+  sie mit dem Hochrechnungsfaktor des **Bezugs**. Das stimmt nur, wenn beide
+  Zählwerke denselben Ausschnitt abdecken; Bezug und Einspeisung laufen aber
+  gegenläufig durchs Jahr. Im August ist der Bezug fast durch, die Einspeisung
+  noch lange nicht. Es ist die wiederkehrende Fehlerklasse aus CLAUDE.md, zum
+  neunten Mal: eine Aussage über einen Zeitraum, den die Zahl nicht abdeckt.
+  Jedes Zählwerk bekommt jetzt seine eigene Hochrechnung.
+
+  Zwei Prüfungen halten das fest; die eine schlägt auf der alten Fassung mit
+  483,98 € gegen erwartete 422,81 € fehl. Nachgerechnet von Hand — und die
+  erste Handrechnung war falsch, nicht der Rechenkern.
+- **Der Entwurf rechnete die Abschlagsvorschau brutto**, während die
+  Kostenzeile derselben Karte netto war. Zwei Zahlen nebeneinander, die sich
+  widersprachen. Beim Stromzähler springt das Guthaben dadurch von 90 € auf
+  283 € — 193 € hochgerechnete Jahresvergütung, von denen bis zum 1. August
+  134 € aufgelaufen sind. 69 % des Jahresertrags bis Ende Juli, für eine
+  PV-Anlage die richtige Größenordnung.
+- **Zwei Ablesungen desselben Geräts werden zusammen festgeschrieben.** Bisher
+  sicherte der Speicher jeden Wert einzeln; ein Fehler beim zweiten Zählwerk
+  hätte den ersten allein stehen lassen. Er sähe aus wie eine vollständige
+  Ablesung, und der Rechenkern bildete daraus einen Verbrauch für einen
+  Zeitraum, in dem die Gegenrichtung fehlt.
+
+### Entschieden
+- **Die Einspeisung lässt sich nicht mehr abschalten, sobald Werte dafür
+  vorliegen.** Der Schalter ist dann gesperrt, mit Begründung. Ein Zählwerk zu
+  entfernen, an dem Ablesungen hängen, hieße Daten zu verlieren, die der
+  Nutzer selbst eingetragen hat.
+- **Kein Wort über Zählwerke in der Oberfläche.** Der Nutzer sieht ein Gerät
+  mit zwei Zahlen darauf, und genau so steht es da: „Für Zähler, die in beide
+  Richtungen zählen." Beim Zweirichtungszähler heißt das erste Zählwerk
+  „Bezug" — allein wäre das Wort nichtssagend, neben „Einspeisung" sagt es
+  alles.
+
 ## 0.21.5 — 2026-08-06
 
 ### Behoben

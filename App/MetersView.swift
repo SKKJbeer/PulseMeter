@@ -344,6 +344,18 @@ struct MeterEditor: View {
     @State private var stateNumber = ""
     @State private var calorificValue = ""
     @State private var existingTariff: Tariff?
+    /// Ob der Zähler auch in die andere Richtung zählt.
+    ///
+    /// Nur bei Strom sichtbar. Der Rechenkern kann Zweirichtungszähler seit
+    /// dem ersten Tag — bis 0.22.0 gab es nur keine Möglichkeit, einen
+    /// anzulegen, und ein Haushalt mit Photovoltaik konnte seinen Zähler
+    /// deshalb gar nicht abbilden.
+    @State private var hasFeedIn = false
+    /// Ob für die Einspeisung schon Werte vorliegen. Dann darf sie nicht mehr
+    /// abgeschaltet werden — die Ablesungen hingen sonst an einem Zählwerk,
+    /// das es nicht mehr gibt.
+    @State private var feedInHasReadings = false
+    @State private var feedInPrice = ""
     @State private var prepayment = ""
     @State private var billingMonth = 1
     @State private var existingPeriod: BillingPeriod?
@@ -430,6 +442,22 @@ struct MeterEditor: View {
                     Text("So viele Stellen zeigt das Gerät. Die Eingabe sieht dann genauso aus wie der Zähler im Keller.")
                 }
 
+                if kind == .electricity {
+                    Section {
+                        Toggle("Einspeisung ins Netz", isOn: $hasFeedIn)
+                            .disabled(hasFeedIn && feedInHasReadings)
+                    } header: {
+                        Text("Photovoltaik")
+                    } footer: {
+                        // Kein Wort über Zählwerke: Der Nutzer sieht ein Gerät
+                        // mit zwei Zahlen darauf, und genau so wird es
+                        // beschrieben (Produktprinzip 6).
+                        Text(hasFeedIn && feedInHasReadings
+                             ? "Für die Einspeisung liegen bereits Ablesungen vor. Sie lässt sich deshalb nicht mehr abschalten — die Werte gingen sonst verloren."
+                             : "Für Zähler, die in beide Richtungen zählen. Beim Eintragen fragt die App dann nach beiden Zahlen — erst Bezug, dann Einspeisung.")
+                    }
+                }
+
                 priceSection
 
                 if let existing = draft.existing {
@@ -500,6 +528,19 @@ struct MeterEditor: View {
                     .frame(maxWidth: 110)
                 Text("€/Monat")
                     .foregroundStyle(PulseColor.inkTertiary)
+            }
+
+            if hasFeedIn && kind == .electricity {
+                HStack {
+                    Text("Einspeisevergütung")
+                    Spacer(minLength: 10)
+                    TextField("0,00", text: $feedInPrice)
+                        .keyboardType(.decimalPad)
+                        .multilineTextAlignment(.trailing)
+                        .frame(maxWidth: 110)
+                    Text("€/kWh")
+                        .foregroundStyle(PulseColor.inkTertiary)
+                }
             }
 
             // Gas wird in m³ gemessen und in kWh abgerechnet. Ohne diese
@@ -578,6 +619,11 @@ struct MeterEditor: View {
             integerDigits = register.integerDigits
             fractionDigits = register.fractionDigits
         }
+        if let feed = existing.registers.first(where: { $0.direction == .feedIn }) {
+            hasFeedIn = true
+            let count = (try? PulseRepository(context: context).readings(for: feed.id))?.count ?? 0
+            feedInHasReadings = count > 0
+        }
         fillBilling(existing)
 
         // Der zuletzt gültige Tarif. Mehrere Tarife über die Zeit kann der
@@ -640,6 +686,36 @@ struct MeterEditor: View {
         return Decimal(string: cleaned)
     }
 
+    /// Das Zählwerk für die Einspeisung, so wie es die Vorlage in `PulseCore`
+    /// anlegt — dieselben Stellen wie der Bezug, weil es dasselbe Gerät ist.
+    private var feedInRegister: Register {
+        Register(label: "Einspeisung", unit: .kilowattHour, direction: .feedIn,
+                 integerDigits: integerDigits, fractionDigits: fractionDigits,
+                 obisCode: "2.8.0")
+    }
+
+    /// Nimmt die Einspeisung dazu oder wieder weg.
+    ///
+    /// Weggenommen wird nur, wenn dafür keine Ablesungen vorliegen — der
+    /// Schalter ist dann gesperrt, und diese Prüfung ist die zweite Reihe.
+    /// Ein Zählwerk zu entfernen, an dem Werte hängen, hieße Daten zu
+    /// verlieren, die der Nutzer selbst eingetragen hat.
+    private func applyFeedIn(to point: inout MeteringPoint) {
+        guard kind == .electricity else { return }
+        let existingFeed = point.registers.firstIndex { $0.direction == .feedIn }
+
+        if hasFeedIn {
+            guard existingFeed == nil else { return }
+            if point.registers.indices.contains(0), point.registers[0].label == nil {
+                point.registers[0].label = "Bezug"
+            }
+            point.registers.append(feedInRegister)
+        } else if let index = existingFeed, !feedInHasReadings {
+            point.registers.remove(at: index)
+            if point.registers.count == 1 { point.registers[0].label = nil }
+        }
+    }
+
     /// Legt den Tarif an oder ändert ihn — oder entfernt ihn, wenn der Nutzer
     /// die Preise wieder löscht.
     private func saveTariff(for point: MeteringPoint, in repository: PulseRepository) throws {
@@ -667,7 +743,8 @@ struct MeterEditor: View {
             pricePerUnit: price ?? 0,
             monthlyBasePrice: base ?? 0,
             billingUnit: needsGasConversion ? .kilowattHour : kind.defaultUnit,
-            gasConversion: conversion
+            gasConversion: conversion,
+            feedInPricePerUnit: hasFeedIn ? decimalValue(feedInPrice) : nil
         )
         try repository.save(tariff)
     }
@@ -695,6 +772,7 @@ struct MeterEditor: View {
                     if canChangeKind { register.unit = kind.defaultUnit }
                     existing.registers[0] = register
                 }
+                applyFeedIn(to: &existing)
                 try repository.save(existing)
                 try saveTariff(for: existing, in: repository)
                 try saveBilling(for: existing, in: repository)
@@ -702,11 +780,19 @@ struct MeterEditor: View {
                 var register = Register.standard(for: kind)
                 register.integerDigits = integerDigits
                 register.fractionDigits = fractionDigits
+                // Beim Zweirichtungszähler bekommt auch das erste Zählwerk
+                // einen Namen. „Bezug" allein wäre nichtssagend, „Bezug" neben
+                // „Einspeisung" sagt alles.
+                if hasFeedIn && kind == .electricity { register.label = "Bezug" }
+                var registers = [register]
+                if hasFeedIn && kind == .electricity {
+                    registers.append(feedInRegister)
+                }
                 let point = MeteringPoint(
                     propertyID: property.id,
                     name: trimmed,
                     kind: kind,
-                    registers: [register],
+                    registers: registers,
                     readingInterval: interval,
                     billingCycle: billingCycleFromInput
                 )

@@ -25,7 +25,25 @@ struct CaptureView: View {
     @State private var verdict: ConsumptionEngine.Plausibility = .noReference
     @State private var problem: String?
 
-    private var register: Register? { meteringPoint.primaryRegister }
+    /// Welches Zählwerk gerade dran ist.
+    ///
+    /// **Nacheinander statt zur Auswahl.** Ein Zweirichtungszähler zeigt beide
+    /// Zahlen auf demselben Gerät; wer davorsteht, liest sie in einem Zug ab.
+    /// Eine Auswahl davor hieße: erst entscheiden, dann tippen, dann noch
+    /// einmal öffnen — drei Berührungen mehr für einen Vorgang, der einer ist.
+    @State private var index = 0
+
+    /// Was in dieser Sitzung schon eingetippt wurde. Gesichert wird erst am
+    /// Ende und dann alles zusammen: Ein Abbruch nach dem ersten Zählwerk darf
+    /// keine halbe Ablesung hinterlassen, aus der der Rechenkern später einen
+    /// Verbrauch bildet, den es nie gab.
+    @State private var entered: [Register.ID: Decimal] = [:]
+
+    private var registers: [Register] { meteringPoint.registers }
+    private var register: Register? {
+        registers.indices.contains(index) ? registers[index] : meteringPoint.primaryRegister
+    }
+    private var isLastRegister: Bool { index >= registers.count - 1 }
     private var accent: Color { PulseColor.resource(meteringPoint.appearance.colorToken) }
     private var today: CalendarDay { CalendarDay.containing(Date(), in: .current) }
 
@@ -87,6 +105,17 @@ struct CaptureView: View {
 
     private var header: some View {
         VStack(spacing: 8) {
+            // Der Name des Zählwerks steht nur da, wenn es mehr als eines
+            // gibt. Bei einem einzelnen wäre „Bezug" ein Wort, das der Nutzer
+            // nie gebraucht hat und nun deuten müsste.
+            if registers.count > 1, let label = register?.label {
+                Text(label)
+                    .font(.system(.subheadline, weight: .semibold))
+                    .foregroundStyle(accent)
+                Text("Zählwerk \(index + 1) von \(registers.count)")
+                    .font(PulseText.caption)
+                    .foregroundStyle(PulseColor.inkTertiary)
+            }
             if let previous, let register {
                 Text("Letzter Stand \(number(previous.value, digits: register.fractionDigits)) \(register.unit.symbol) am \(germanDate(previous.day))")
                     .font(PulseText.detail)
@@ -118,8 +147,8 @@ struct CaptureView: View {
     /// Erscheinungsbildern und sagt dasselbe: noch nicht so weit.
     private var saveButton: some View {
         let ready = !digits.isEmpty
-        return Button(action: save) {
-            Text("Sichern")
+        return Button(action: advance) {
+            Text(isLastRegister ? "Sichern" : "Weiter")
                 .font(.system(.headline, weight: .semibold))
                 .foregroundStyle(ready ? PulseColor.onAccent : PulseColor.inkTertiary)
                 .frame(maxWidth: .infinity)
@@ -229,13 +258,37 @@ struct CaptureView: View {
         previous = try? PulseRepository(context: context).lastReading(for: register.id)
     }
 
-    private func save() {
+    /// Merkt sich den Wert und geht weiter — oder sichert, wenn es das letzte
+    /// Zählwerk war.
+    private func advance() {
         guard let register, let value = currentValue else { return }
+        entered[register.id] = value
+
+        guard isLastRegister else {
+            index += 1
+            digits = ""
+            verdict = .noReference
+            loadPrevious()
+            return
+        }
+        save()
+    }
+
+    /// Alle Zählwerke in einem Vorgang.
+    ///
+    /// Und alle oder keines: Schlägt das zweite fehl, bliebe sonst ein
+    /// einzelner Wert stehen. Beim Bezug allein sähe das aus wie eine
+    /// vollständige Ablesung — und der Rechenkern bildete daraus einen
+    /// Verbrauch für einen Zeitraum, in dem die Einspeisung fehlt.
+    private func save() {
+        var batch: [(reading: Reading, fractionDigits: Int)] = []
+        for register in registers {
+            guard let value = entered[register.id] else { continue }
+            batch.append((Reading(registerID: register.id, day: today, value: value),
+                          register.fractionDigits))
+        }
         do {
-            try PulseRepository(context: context).save(
-                Reading(registerID: register.id, day: today, value: value),
-                fractionDigits: register.fractionDigits
-            )
+            try PulseRepository(context: context).save(batch)
             onSaved()
             dismiss()
         } catch {

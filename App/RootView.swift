@@ -82,6 +82,22 @@ struct MeterRow: Identifiable {
     /// Vorschau auf das Ende des Abrechnungszeitraums, wenn ein Abschlag
     /// hinterlegt ist.
     let outlook: ForecastEngine.PrepaymentOutlook?
+    /// Eingespeiste Menge und Vergütung — nur bei einem Zweirichtungszähler.
+    ///
+    /// Getrennt von ``cost``, weil der Betrag dort bereits **netto** ist: Der
+    /// Rechenkern zieht die Vergütung ab. Stünde die Gutschrift unter den
+    /// Kosten, zöge jeder Leser sie ein zweites Mal ab — deshalb steht sie auf
+    /// der Karte darüber.
+    let feedIn: FeedIn?
+
+    struct FeedIn {
+        let quantity: Decimal
+        let unit: String
+        /// `nil`, solange kein Einspeisepreis hinterlegt ist. Dann steht die
+        /// Menge allein da — eine Null wäre eine Behauptung über Geld, die
+        /// niemand aufgestellt hat.
+        let credit: Money?
+    }
 }
 
 struct OverviewView: View {
@@ -187,6 +203,20 @@ struct OverviewView: View {
                         Text(germanDate(day))
                             .font(PulseText.detail)
                             .foregroundStyle(PulseColor.inkTertiary)
+                    }
+                }
+                // Vor den Kosten, nicht danach: Der Betrag darunter ist
+                // bereits netto — die Vergütung ist abgezogen. Stünde sie
+                // hinterher, zöge sie jeder Leser ein zweites Mal ab.
+                if let feed = row.feedIn {
+                    CardFooterRow("Einspeisung \(number(feed.quantity, digits: 0)) \(feed.unit)") {
+                        if let credit = feed.credit {
+                            Text("≈ \(money(credit)) vergütet")
+                                .font(PulseText.detail)
+                                .foregroundStyle(PulseColor.favourable)
+                        } else {
+                            EmptyView()
+                        }
                     }
                 }
                 if let cost = row.cost {
@@ -402,13 +432,20 @@ struct OverviewView: View {
                                     fractionDigits: 0, yearToDate: nil,
                                     changeVersusLastYear: nil, monthlySeries: [],
                                     daysSinceReading: nil, isDue: false,
-                                    cost: nil, costProblem: nil, outlook: nil)
+                                    cost: nil, costProblem: nil, outlook: nil, feedIn: nil)
                 }
                 let readings = try repository.readings(for: register.id)
                 let last = readings.last
                 let tariffs = try repository.tariffs(for: point.id)
                 let periods = try repository.billingPeriods(for: point.id)
-                let costs = cost(register: register, readings: readings,
+                // Über die ganze Messstelle, nicht über das erste Zählwerk:
+                // Bei einem Zweirichtungszähler ist die Einspeisung eine
+                // Gutschrift, und der Betrag auf der Karte soll der sein, der
+                // am Jahresende zu zahlen ist.
+                let all = point.registers.count > 1
+                    ? try repository.readings(for: point)
+                    : readings
+                let costs = cost(point: point, readings: all,
                                  tariffs: tariffs, in: yearRange)
                 let result = ConsumptionEngine.consumption(register: register,
                                                            readings: readings, in: yearRange)
@@ -433,7 +470,9 @@ struct OverviewView: View {
                     cost: costs.value,
                     costProblem: costs.problem,
                     outlook: outlook(point: point, readings: readings,
-                                     tariffs: tariffs, periods: periods)
+                                     tariffs: tariffs, periods: periods),
+                    feedIn: feedIn(point: point, readings: all,
+                                   tariffs: tariffs, in: yearRange)
                 )
             }
             // Eine Ablesung verschiebt den nächsten Termin. Ohne dieses
@@ -468,12 +507,13 @@ struct OverviewView: View {
     /// Normalfall, solange niemand Preise eingetragen hat. Ein hinterlegter
     /// Tarif, der nicht reicht, ist dagegen etwas, das der Nutzer beheben kann
     /// — und dann muss dastehen, was fehlt.
-    private func cost(register: Register, readings: [Reading], tariffs: [Tariff],
+    private func cost(point: MeteringPoint, readings: [Reading], tariffs: [Tariff],
                       in range: DayRange) -> (value: Money?, problem: String?) {
         guard !tariffs.isEmpty else { return (nil, nil) }
         do {
-            let result = try CostEngine.cost(register: register, readings: readings,
-                                             tariffs: tariffs, in: range)
+            guard let result = try CostEngine.cost(meteringPoint: point, readings: readings,
+                                                   tariffs: tariffs, in: range)
+            else { return (nil, nil) }
             return (result.total, nil)
         } catch CostEngine.CostError.missingConversion {
             return (nil, "Für die Kosten fehlen Zustandszahl und Brennwert von deiner Rechnung.")
@@ -482,6 +522,34 @@ struct OverviewView: View {
         } catch {
             return (nil, "Die Kosten ließen sich nicht berechnen.")
         }
+    }
+
+    /// Was ins Netz zurückgegangen ist — und was es eingebracht hat.
+    ///
+    /// Nur die Menge, wenn kein Einspeisepreis hinterlegt ist. Eine Null wäre
+    /// dort eine Aussage über Geld, die niemand gemacht hat (Produktprinzip 7).
+    private func feedIn(point: MeteringPoint, readings: [Reading], tariffs: [Tariff],
+                        in range: DayRange) -> MeterRow.FeedIn? {
+        guard let register = point.registers.first(where: { $0.direction == .feedIn })
+        else { return nil }
+
+        let result = ConsumptionEngine.consumption(register: register,
+                                                   readings: readings, in: range)
+        guard result.hasData else { return nil }
+
+        // Der Rechenkern gibt die Einspeisung als negativen Betrag zurück —
+        // eine Gutschrift. Auf der Karte steht sie als positive Zahl mit dem
+        // Wort „vergütet"; ein Minuszeichen neben „Einspeisung" läse sich wie
+        // ein Fehler.
+        var credit: Money?
+        if let money = try? CostEngine.cost(register: register, readings: readings,
+                                            tariffs: tariffs, in: range).total,
+           money.amount < 0 {
+            credit = Money(-money.amount, money.currency)
+        }
+        return MeterRow.FeedIn(quantity: result.quantity.value,
+                               unit: register.unit.symbol,
+                               credit: credit)
     }
 
     /// Hochrechnung auf das Ende des Abrechnungszeitraums gegen die

@@ -188,6 +188,38 @@ public final class PulseRepository {
         try context.save()
     }
 
+    /// Mehrere Ablesungen in einem Vorgang — alle oder keine.
+    ///
+    /// Ein Zweirichtungszähler zeigt Bezug und Einspeisung auf demselben
+    /// Gerät und wird in einem Zug abgelesen. Würde jeder Wert einzeln
+    /// festgeschrieben, bliebe nach einem Fehler beim zweiten Zählwerk der
+    /// erste allein stehen — und sähe aus wie eine vollständige Ablesung. Der
+    /// Rechenkern bildete daraus einen Verbrauch für einen Zeitraum, in dem
+    /// die Gegenrichtung fehlt. Das ist die wiederkehrende Fehlerklasse aus
+    /// CLAUDE.md, hier auf der Ebene des Speichers.
+    public func save(_ readings: [(reading: Reading, fractionDigits: Int)]) throws {
+        guard !readings.isEmpty else { return }
+        do {
+            for entry in readings {
+                let record = try findReading(entry.reading.id) ?? {
+                    let fresh = ReadingRecord(id: entry.reading.id)
+                    context.insert(fresh)
+                    return fresh
+                }()
+                record.apply(entry.reading, scale: entry.fractionDigits)
+                record.register = try findRegister(entry.reading.registerID)
+            }
+            try context.save()
+        } catch {
+            // Ohne Rücknahme blieben die eingefügten Sätze im Kontext stehen
+            // und gingen beim nächsten Sichern irgendeiner anderen Stelle
+            // stillschweigend mit — also genau das, was hier verhindert
+            // werden soll, nur später und unauffindbar.
+            context.rollback()
+            throw error
+        }
+    }
+
     public func delete(readingID: Reading.ID) throws {
         guard let record = try findReading(readingID) else { return }
         context.delete(record)

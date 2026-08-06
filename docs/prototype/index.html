@@ -661,7 +661,7 @@ select.field { cursor: pointer; }
 
 <div class="stage-head">
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.21.4</p>
+  <p>Klickbarer Entwurf · v0.22.0</p>
 </div>
 
 <div class="device">
@@ -1153,7 +1153,24 @@ function yearOverYear(reg) {
 function billedUnits(meter, cubicOrKwh) {
   return meter.zZahl ? cubicOrKwh * meter.zZahl * meter.brennwert : cubicOrKwh;
 }
-const projectedCost = (m, fc) => billedUnits(m, fc.value) * m.price + m.base * 12;
+/* Jedes Zählwerk mit seiner eigenen Jahresform — wie `ForecastEngine`.
+
+   Vorher blieb die Einspeisung hier ganz außen vor: Die Kostenzeile derselben
+   Karte war netto, die Abschlagsvorschau brutto. Zwei Zahlen nebeneinander,
+   die sich widersprechen.
+
+   Und nicht etwa den Nettobetrag mit dem Faktor des Bezugs hochrechnen: Bezug
+   und Einspeisung laufen gegenläufig durchs Jahr. Im August ist der Bezug fast
+   durch, die Einspeisung noch lange nicht. */
+function projectedCost(m, fc) {
+  let energy = billedUnits(m, fc.value) * m.price;
+  const second = m.registers[1];
+  if (second && m.feedInPrice) {
+    const f = forecast(second);
+    if (f) energy -= f.value * m.feedInPrice;
+  }
+  return energy + m.base * 12;
+}
 const balance = (m, fc) => m.prepay * 12 - projectedCost(m, fc);
 
 /* Zählerarten mit gefülltem und mit gezeichnetem Symbol. */

@@ -175,4 +175,88 @@ final class ForecastEngineTests: XCTestCase {
         )
         assertClose(half.lengthInMonths, 5.95, accuracy: 0.05)
     }
+
+    /// Bei einem Zweirichtungszähler bekommt jedes Zählwerk seine eigene
+    /// Hochrechnung.
+    ///
+    /// Der Fall, der die Fehlerklasse aus CLAUDE.md in neuem Gewand zeigt:
+    /// Vorher wurde der Arbeitspreis der ganzen Messstelle — Bezug **minus**
+    /// Einspeisevergütung — mit dem Faktor des ersten Zählwerks skaliert. Das
+    /// ist nur richtig, wenn beide Zählwerke denselben Ausschnitt abdecken.
+    ///
+    /// Hier reicht der Bezug bis zum 1. Juli, die Einspeisung nur bis zum
+    /// 1. April — jemand hat die zweite Zahl einmal vergessen. Der Bezug
+    /// rechnet sich also mit 365/181 hoch, die Einspeisung mit 365/90.
+    ///
+    /// - Bezug: 900 kWh in 181 Tagen → 1814,92 kWh im Jahr × 0,30 € = 544,48 €
+    /// - Einspeisung: 300 kWh in 90 Tagen → 1216,67 kWh im Jahr × 0,10 € = 121,67 €
+    /// - Erwartet: 544,48 − 121,67 = **422,81 €**
+    ///
+    /// Die alte Rechnung kam auf 483,98 € — sie nahm die 240 € Nettokosten
+    /// bis Juli und multiplizierte sie mit dem Faktor des Bezugs. Einundsechzig
+    /// Euro daneben, und im Winter wäre der Abstand größer: Dann steht die
+    /// Einspeisung des ganzen Sommers noch aus.
+    func testOutlookProjectsEachRegisterWithItsOwnShape() throws {
+        let draw = Fixture.electricityRegister()
+        let feedIn = Register(label: "Einspeisung", unit: .kilowattHour,
+                              direction: .feedIn, integerDigits: 6, fractionDigits: 1)
+        let point = Fixture.meteringPoint(registers: [draw, feedIn])
+        let readings = [
+            Fixture.reading(draw, day(2026, 1, 1), 0),
+            Fixture.reading(draw, day(2026, 7, 1), 900),
+            Fixture.reading(feedIn, day(2026, 1, 1), 0),
+            Fixture.reading(feedIn, day(2026, 4, 1), 300)
+        ]
+        let tariff = Tariff(meteringPointID: point.id, validFrom: day(2026, 1, 1),
+                            pricePerUnit: dec("0.30"), billingUnit: .kilowattHour,
+                            feedInPricePerUnit: dec("0.10"))
+        let period = BillingPeriod(meteringPointID: point.id, range: year2026,
+                                   monthlyPrepayment: 50)
+
+        let outlook = try ForecastEngine.prepaymentOutlook(
+            meteringPoint: point, readings: readings, tariffs: [tariff],
+            period: period, today: day(2026, 7, 1)
+        )
+
+        assertClose(outlook?.projectedCost.amount ?? 0, 422.81, accuracy: 0.02)
+        assertClose(outlook?.totalPrepayment.amount ?? 0, 600, accuracy: 0.01)
+        assertClose(outlook?.balance.amount ?? 0, 177.19, accuracy: 0.02)
+        XCTAssertEqual(outlook?.expectsRefund, true)
+    }
+
+    /// Die Einspeisung mindert die Vorschau tatsächlich.
+    ///
+    /// Ohne diese Prüfung könnte die Gegenrichtung stillschweigend wegfallen —
+    /// die Zahl sähe plausibel aus und wäre um die ganze Vergütung zu hoch.
+    func testFeedInLowersTheOutlook() throws {
+        let draw = Fixture.electricityRegister()
+        let feedIn = Register(label: "Einspeisung", unit: .kilowattHour,
+                              direction: .feedIn, integerDigits: 6, fractionDigits: 1)
+        let readings = [
+            Fixture.reading(draw, day(2026, 1, 1), 0),
+            Fixture.reading(draw, day(2026, 7, 1), 900),
+            Fixture.reading(feedIn, day(2026, 1, 1), 0),
+            Fixture.reading(feedIn, day(2026, 7, 1), 600)
+        ]
+
+        func projected(_ registers: [Register], feedInPrice: Decimal?) throws -> Decimal {
+            let point = Fixture.meteringPoint(registers: registers)
+            let tariff = Tariff(meteringPointID: point.id, validFrom: day(2026, 1, 1),
+                                pricePerUnit: dec("0.30"), billingUnit: .kilowattHour,
+                                feedInPricePerUnit: feedInPrice)
+            let period = BillingPeriod(meteringPointID: point.id, range: year2026,
+                                       monthlyPrepayment: 50)
+            let outlook = try ForecastEngine.prepaymentOutlook(
+                meteringPoint: point, readings: readings, tariffs: [tariff],
+                period: period, today: day(2026, 7, 1))
+            return outlook?.projectedCost.amount ?? 0
+        }
+
+        let withoutFeedIn = try projected([draw], feedInPrice: nil)
+        let withFeedIn = try projected([draw, feedIn], feedInPrice: dec("0.10"))
+        XCTAssertLessThan(withFeedIn, withoutFeedIn,
+                          "Die Einspeisung muss die erwarteten Kosten senken")
+        // 600 kWh in 181 Tagen → 1209,94 kWh × 0,10 € = 120,99 € Gutschrift.
+        assertClose(withoutFeedIn - withFeedIn, 120.99, accuracy: 0.02)
+    }
 }

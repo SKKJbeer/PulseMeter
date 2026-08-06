@@ -96,11 +96,11 @@ Die Reihenfolge ist bewusst nicht „Screens von oben nach unten", sondern nach 
 
 ---
 
-## Aktueller Stand — Version 0.21.5
+## Aktueller Stand — Version 0.22.0
 
 | Schritt | Stand |
 |---|---|
-| 1. `PulseCore` + Tests | **fertig** — 123 Prüfungen, alle Randfälle aus `02`, Abschnitt 3 |
+| 1. `PulseCore` + Tests | **fertig** — 125 Prüfungen, alle Randfälle aus `02`, Abschnitt 3 |
 | 2. `PulseData` + Repositories | **fertig** — auf macOS geprüft |
 | 3. `PulseUI` Design-System | **fertig** — Hell und Dunkel, auf jedem Lauf fotografiert |
 | 4. Erfassungsfluss | **fertig** — Zählwerk-Optik, Plausibilisierung, Vorbelegung |
@@ -118,15 +118,15 @@ der Oberfläche fehlt, sieht in den Tests grün aus und ist trotzdem nicht da.
 
 | Fähigkeit | Rechenkern | App | Entwurf |
 |---|---|---|---|
-| Zweirichtungszähler (PV-Einspeisung) | ja | **nein** | ja |
+| Zweirichtungszähler (PV-Einspeisung) | ja | ja | ja |
 | Doppeltarif (HT/NT) | ja | **nein** | nein |
 | Zählerwechsel | ja | **nein** | nein |
 | PDF-Bericht | — | **nein** | ja |
 | Foto-Belege | — | nein | nein |
 
-Die App liest überall nur `primaryRegister`. Ein Haushalt mit
-Photovoltaik — in Deutschland inzwischen keine Randgruppe — kann seinen
-Zähler damit gar nicht abbilden.
+Der Zweirichtungszähler ist mit 0.22.0 geschlossen. Die übrigen Zeilen sind
+offen — und der Doppeltarifzähler fehlt zusätzlich im Entwurf, wo ein Fehler
+sonst zuerst auffiele.
 
 Zusätzlich entstanden, weil der Prototyp es nötig machte: Datenansicht mit
 Monats-, Quartals- und Jahresvergleich, Verbrauchsbericht mit Zeitraumwahl,
@@ -139,14 +139,10 @@ Mac beurteilen.
 
 ### Die nächsten drei Schritte
 
-1. **0.22.0 — Zweirichtungszähler in der Oberfläche.** Der Rechenkern kann es
-   seit dem ersten Tag, die App nicht. Zuerst, weil es das Datenmodell berührt
-   und weil ein Haushalt mit Photovoltaik seinen Zähler sonst gar nicht
-   abbilden kann.
-2. **0.23.0 — Widget für Sperr- und Startbildschirm.** Der zweite Hebel für
+1. **0.23.0 — Widget für Sperr- und Startbildschirm.** Der zweite Hebel für
    Wiederkehr nach den Erinnerungen: Der Stand ist sichtbar, ohne die App zu
    öffnen.
-3. **0.24.0 — Barrierefreiheit und Startzeit.** VoiceOver in allen
+2. **0.24.0 — Barrierefreiheit und Startzeit.** VoiceOver in allen
    Hauptflüssen, Dynamic Type bis zur größten Stufe, Kaltstart unter 800 ms.
    In `00-produktstrategie.md` steht „nicht verhandelbar" — geprüft wurde es
    bis heute nie.
