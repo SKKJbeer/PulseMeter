@@ -140,10 +140,35 @@ public enum CostEngine {
             throw CostError.mixedCurrencies
         }
 
+        // **Der Grundpreis gehört zum Anschluss, nicht zum Zählwerk.**
+        //
+        // Vorher wurden die Grundpreise der Zählwerke summiert. Bei einem
+        // Zweirichtungszähler zahlte der Nutzer ihn dadurch doppelt — für ein
+        // Gerät, das eine Rechnung bekommt. Auf dem Bildschirmfoto stand
+        // deshalb ein Betrag, der neunzig Euro zu hoch war, und die
+        // Einspeisevergütung sah um denselben Betrag zu klein aus.
+        //
+        // Gezählt wird je Tarifabschnitt: Dieselbe Kennung im selben Zeitraum
+        // ist derselbe Grundpreis. Zwei Zählwerke mit *eigenen* Tarifen
+        // behalten dagegen jeder seinen — dann sind es zwei Anschlüsse.
+        struct BaseKey: Hashable {
+            let tariffID: Tariff.ID
+            let range: DayRange
+        }
+        var counted: Set<BaseKey> = []
+        var baseTotal = Decimal(0)
+        for segment in results.flatMap(\.segments) {
+            guard counted.insert(BaseKey(tariffID: segment.tariffID,
+                                         range: segment.range)).inserted else { continue }
+            baseTotal += segment.baseAmount.amount
+        }
+
+        let energyTotal = results.reduce(Decimal(0)) { $0 + $1.energyAmount.amount }
+
         return CostResult(
-            total: Money(results.reduce(Decimal(0)) { $0 + $1.total.amount }, currency),
-            energyAmount: Money(results.reduce(Decimal(0)) { $0 + $1.energyAmount.amount }, currency),
-            baseAmount: Money(results.reduce(Decimal(0)) { $0 + $1.baseAmount.amount }, currency),
+            total: Money(energyTotal + baseTotal, currency),
+            energyAmount: Money(energyTotal, currency),
+            baseAmount: Money(baseTotal, currency),
             confidence: results.map(\.confidence).max() ?? .measured,
             segments: results.flatMap(\.segments),
             warnings: results.flatMap(\.warnings)

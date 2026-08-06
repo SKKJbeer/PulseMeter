@@ -96,11 +96,11 @@ Die Reihenfolge ist bewusst nicht „Screens von oben nach unten", sondern nach 
 
 ---
 
-## Aktueller Stand — Version 0.22.0
+## Aktueller Stand — Version 0.22.1
 
 | Schritt | Stand |
 |---|---|
-| 1. `PulseCore` + Tests | **fertig** — 125 Prüfungen, alle Randfälle aus `02`, Abschnitt 3 |
+| 1. `PulseCore` + Tests | **fertig** — 127 Prüfungen, alle Randfälle aus `02`, Abschnitt 3 |
 | 2. `PulseData` + Repositories | **fertig** — auf macOS geprüft |
 | 3. `PulseUI` Design-System | **fertig** — Hell und Dunkel, auf jedem Lauf fotografiert |
 | 4. Erfassungsfluss | **fertig** — Zählwerk-Optik, Plausibilisierung, Vorbelegung |

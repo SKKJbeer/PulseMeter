@@ -537,13 +537,18 @@ struct OverviewView: View {
                                                    readings: readings, in: range)
         guard result.hasData else { return nil }
 
-        // Der Rechenkern gibt die Einspeisung als negativen Betrag zurück —
-        // eine Gutschrift. Auf der Karte steht sie als positive Zahl mit dem
-        // Wort „vergütet"; ein Minuszeichen neben „Einspeisung" läse sich wie
-        // ein Fehler.
+        // Der Arbeitspreisanteil, **nicht** der Gesamtbetrag: In `total` steckt
+        // auch der Grundpreis, und der gehört zum Anschluss, nicht zu einer
+        // Richtung. Mit `total` stand auf dem Bildschirmfoto „≈ 79,02 €
+        // vergütet", wo 171 € richtig gewesen wären — der Grundpreisanteil war
+        // von der Gutschrift abgezogen.
+        //
+        // Der Rechenkern gibt die Einspeisung als negativen Betrag zurück.
+        // Auf der Karte steht sie als positive Zahl mit dem Wort „vergütet";
+        // ein Minuszeichen neben „Einspeisung" läse sich wie ein Fehler.
         var credit: Money?
         if let money = try? CostEngine.cost(register: register, readings: readings,
-                                            tariffs: tariffs, in: range).total,
+                                            tariffs: tariffs, in: range).energyAmount,
            money.amount < 0 {
             credit = Money(-money.amount, money.currency)
         }

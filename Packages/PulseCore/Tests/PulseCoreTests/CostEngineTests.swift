@@ -3,6 +3,8 @@ import XCTest
 
 final class CostEngineTests: XCTestCase {
 
+    private let year2026 = span(day(2026, 1, 1), day(2027, 1, 1))
+
     func testEnergyAndBasePrice() throws {
         let register = Fixture.electricityRegister()
         let point = Fixture.meteringPoint(registers: [register])
@@ -207,5 +209,72 @@ final class CostEngineTests: XCTestCase {
             register: register, readings: [], tariffs: [],
             in: span(day(2026, 1, 1), day(2026, 2, 1))
         ))
+    }
+
+    /// Der Grundpreis wird einmal berechnet, nicht je Zählwerk.
+    ///
+    /// Ein Zweirichtungszähler ist **ein** Anschluss mit **einer** Rechnung.
+    /// Vorher summierte die Messstellen-Rechnung die Grundpreise beider
+    /// Zählwerke; auf dem Bildschirmfoto vom 6. August stand deshalb ein
+    /// Betrag, der neunzig Euro zu hoch war — und die Einspeisevergütung sah
+    /// um denselben Betrag zu klein aus, weil dort derselbe Grundpreis noch
+    /// einmal abgezogen wurde.
+    ///
+    /// - Bezug 1000 kWh × 0,30 € = 300 €
+    /// - Einspeisung 400 kWh × 0,10 € = 40 € Gutschrift
+    /// - Grundpreis 10 €/Monat über das Jahr 2026 = 120 €
+    /// - Erwartet: 300 − 40 + 120 = **380 €**, nicht 500 €
+    func testBasePriceIsChargedOncePerConnectionNotPerRegister() throws {
+        let draw = Fixture.electricityRegister()
+        let feedIn = Register(label: "Einspeisung", unit: .kilowattHour,
+                              direction: .feedIn, integerDigits: 6, fractionDigits: 1)
+        let point = Fixture.meteringPoint(registers: [draw, feedIn])
+        let readings = [
+            Fixture.reading(draw, day(2026, 1, 1), 0),
+            Fixture.reading(draw, day(2027, 1, 1), 1000),
+            Fixture.reading(feedIn, day(2026, 1, 1), 0),
+            Fixture.reading(feedIn, day(2027, 1, 1), 400)
+        ]
+        let tariff = Tariff(meteringPointID: point.id, validFrom: day(2026, 1, 1),
+                            pricePerUnit: dec("0.30"), monthlyBasePrice: 10,
+                            billingUnit: .kilowattHour,
+                            feedInPricePerUnit: dec("0.10"))
+
+        let result = try CostEngine.cost(meteringPoint: point, readings: readings,
+                                         tariffs: [tariff], in: year2026)
+
+        assertClose(result?.baseAmount.amount ?? 0, 120, accuracy: 0.01)
+        assertClose(result?.energyAmount.amount ?? 0, 260, accuracy: 0.01)
+        assertClose(result?.total.amount ?? 0, 380, accuracy: 0.01)
+    }
+
+    /// Zwei Zählwerke mit eigenen Tarifen behalten jeder seinen Grundpreis.
+    ///
+    /// Die Gegenprobe zur vorigen Prüfung: Wer den Grundpreis pauschal nur
+    /// einmal zählte, würde hier zu wenig berechnen. Zwei eigene Tarife heißen
+    /// zwei Anschlüsse.
+    func testSeparateTariffsKeepTheirOwnBasePrice() throws {
+        let first = Fixture.electricityRegister()
+        let second = Register(label: "Wärmepumpe", unit: .kilowattHour,
+                              direction: .consumption, integerDigits: 6, fractionDigits: 1)
+        let point = Fixture.meteringPoint(registers: [first, second])
+        let readings = [
+            Fixture.reading(first, day(2026, 1, 1), 0),
+            Fixture.reading(first, day(2027, 1, 1), 1000),
+            Fixture.reading(second, day(2026, 1, 1), 0),
+            Fixture.reading(second, day(2027, 1, 1), 1000)
+        ]
+        let tariffs = [
+            Tariff(meteringPointID: point.id, registerID: first.id, validFrom: day(2026, 1, 1),
+                   pricePerUnit: dec("0.30"), monthlyBasePrice: 10, billingUnit: .kilowattHour),
+            Tariff(meteringPointID: point.id, registerID: second.id, validFrom: day(2026, 1, 1),
+                   pricePerUnit: dec("0.20"), monthlyBasePrice: 8, billingUnit: .kilowattHour)
+        ]
+
+        let result = try CostEngine.cost(meteringPoint: point, readings: readings,
+                                         tariffs: tariffs, in: year2026)
+
+        assertClose(result?.baseAmount.amount ?? 0, 216, accuracy: 0.01)   // 120 + 96
+        assertClose(result?.energyAmount.amount ?? 0, 500, accuracy: 0.01) // 300 + 200
     }
 }

@@ -9,6 +9,34 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.22.1 — 2026-08-06
+
+Zwei Fehler aus 0.22.0, beide vom ersten Bildschirmfoto gefunden, das den
+neuen Zähler zeigte. Auf der Stromkarte stand „Einspeisung 2.086 kWh ≈ 79,02 €
+vergütet" — bei 8,2 ct hätten es 171 € sein müssen. Die Differenz war beide
+Male derselbe Betrag: ein Grundpreisanteil von 89,90 €.
+
+### Behoben
+- **Ein Zweirichtungszähler zahlte den Grundpreis zweimal.** Die Rechnung über
+  eine ganze Messstelle summierte die Grundpreise ihrer Zählwerke. Der
+  Grundpreis gehört aber zum Anschluss, nicht zum Zählwerk — ein Gerät bekommt
+  eine Rechnung. Gezählt wird jetzt je Tarifabschnitt: dieselbe Tarifkennung
+  im selben Zeitraum ist derselbe Grundpreis. Zwei Zählwerke mit **eigenen**
+  Tarifen behalten dagegen jeder seinen; eine zweite Prüfung hält das fest,
+  damit die Korrektur nicht ins Gegenteil überschießt.
+- **Die Einspeisevergütung auf der Karte nahm den Gesamtbetrag statt des
+  Arbeitspreisanteils.** In `total` steckt auch der Grundpreis, und der wurde
+  dadurch von der Gutschrift abgezogen.
+
+### Bemerkenswert
+- **Der Entwurf hatte hier recht und der Rechenkern unrecht.** Der Klick-Dummy
+  rechnet den Grundpreis seit jeher einmal je Zähler. Bisher lief die Prüfung
+  meist andersherum — das ist das erste Mal, dass die kürzere Fassung die
+  gründlichere geschlagen hat.
+- Beide neuen Prüfungen schlagen auf der alten Fassung fehl: 240 € statt 120 €
+  Grundpreis, 500 € statt 380 € gesamt. Ein Test, der auch vorher grün gewesen
+  wäre, hätte nichts bewiesen.
+
 ## 0.22.0 — 2026-08-06
 
 **Photovoltaik.** Der Rechenkern konnte Zweirichtungszähler seit dem ersten
