@@ -1,7 +1,7 @@
 # 05 – Roadmap und v1-Scope
 
-Status: Entwurf zur Entscheidung
-Letzte Änderung: 2026-08-04
+Status: laufend gepflegt
+Letzte Änderung: 2026-08-06
 
 ---
 
@@ -96,16 +96,37 @@ Die Reihenfolge ist bewusst nicht „Screens von oben nach unten", sondern nach 
 
 ---
 
-## Aktueller Stand — Version 0.9.0
+## Aktueller Stand — Version 0.21.5
 
 | Schritt | Stand |
 |---|---|
-| 1. `PulseCore` + Tests | **fertig** — 82 Tests, alle Randfälle aus `02`, Abschnitt 3 |
-| 2. `PulseData` + Repositories | **fertig** — 10 Tests, auf macOS geprüft |
-| 3. `PulseUI` Design-System | offen |
-| 4. Erfassungsfluss | im Prototyp entworfen, nicht in SwiftUI |
-| 5. Übersicht | im Prototyp entworfen, nicht in SwiftUI |
-| 6.–10. | offen |
+| 1. `PulseCore` + Tests | **fertig** — 123 Prüfungen, alle Randfälle aus `02`, Abschnitt 3 |
+| 2. `PulseData` + Repositories | **fertig** — auf macOS geprüft |
+| 3. `PulseUI` Design-System | **fertig** — Hell und Dunkel, auf jedem Lauf fotografiert |
+| 4. Erfassungsfluss | **fertig** — Zählwerk-Optik, Plausibilisierung, Vorbelegung |
+| 5. Übersicht | **fertig** — Statuszeile, Karten, Kosten, Abschlagsvorschau |
+| 6. Verlauf und Zählerverwaltung | **fertig** — Monat/Quartal/Jahr, Diagramm und Tabelle, Menge oder Kosten, CSV-Export; Zählerverwaltung mit Preisen, Abschlag, Archiv |
+| 7. Tarife, Kosten, Prognose | **fertig** — saisonale Hochrechnung, Abschlagsvergleich |
+| 8. Widgets, Kurzbefehle, Erinnerungen | Erinnerungen **fertig**; Widget und Siri offen |
+| 9. Paywall und StoreKit | offen — braucht das Apple Developer Program |
+| 10. Politur | offen — VoiceOver, Dynamic Type und die Startzeit sind nie gemessen worden |
+
+### Was die App noch nicht kann, obwohl der Rechenkern es kann
+
+Diese Liste ist wichtiger als sie aussieht: Was in `PulseCore` steht und in
+der Oberfläche fehlt, sieht in den Tests grün aus und ist trotzdem nicht da.
+
+| Fähigkeit | Rechenkern | App | Entwurf |
+|---|---|---|---|
+| Zweirichtungszähler (PV-Einspeisung) | ja | **nein** | ja |
+| Doppeltarif (HT/NT) | ja | **nein** | nein |
+| Zählerwechsel | ja | **nein** | nein |
+| PDF-Bericht | — | **nein** | ja |
+| Foto-Belege | — | nein | nein |
+
+Die App liest überall nur `primaryRegister`. Ein Haushalt mit
+Photovoltaik — in Deutschland inzwischen keine Randgruppe — kann seinen
+Zähler damit gar nicht abbilden.
 
 Zusätzlich entstanden, weil der Prototyp es nötig machte: Datenansicht mit
 Monats-, Quartals- und Jahresvergleich, Verbrauchsbericht mit Zeitraumwahl,
@@ -118,13 +139,19 @@ Mac beurteilen.
 
 ### Die nächsten drei Schritte
 
-1. **0.11.0 — `PulseUI`.** Farben, Typografie und die Kernkomponenten aus
-   `03-ux-konzept.md`. Vor den Features, sonst müssen sie hinterher
-   vereinheitlicht werden.
-2. **0.12.0 — Erfassungsscreen in SwiftUI.** Bewusst vor der Übersicht: der
-   Screen, an dem das Produkt gewinnt oder verliert. Die Vorlage steht im
-   Klick-Dummy, inklusive Zählwerk-Optik und Live-Plausibilisierung.
-3. **0.13.0 — Übersicht.** Erst danach Verlauf, Zähler und Tarife.
+1. **0.22.0 — Zweirichtungszähler in der Oberfläche.** Der Rechenkern kann es
+   seit dem ersten Tag, die App nicht. Zuerst, weil es das Datenmodell berührt
+   und weil ein Haushalt mit Photovoltaik seinen Zähler sonst gar nicht
+   abbilden kann.
+2. **0.23.0 — Widget für Sperr- und Startbildschirm.** Der zweite Hebel für
+   Wiederkehr nach den Erinnerungen: Der Stand ist sichtbar, ohne die App zu
+   öffnen.
+3. **0.24.0 — Barrierefreiheit und Startzeit.** VoiceOver in allen
+   Hauptflüssen, Dynamic Type bis zur größten Stufe, Kaltstart unter 800 ms.
+   In `00-produktstrategie.md` steht „nicht verhandelbar" — geprüft wurde es
+   bis heute nie.
+
+Danach Paywall und StoreKit, sobald das Apple Developer Program vorliegt.
 
 ### Wo gearbeitet wird
 

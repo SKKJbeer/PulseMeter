@@ -133,15 +133,37 @@ final class LaunchTests: XCTestCase {
     /// Gaszähler zusätzlich die Umrechnung von m³ in kWh — ohne
     /// Zustandszahl und Brennwert verweigert der Rechenkern die Auskunft,
     /// und zwar zu Recht.
-    func testCostAppearsWhenAPriceIsStored() {
+    /// Kosten stehen auf der Karte — und die Beschriftung nennt den Zeitraum,
+    /// den der Betrag abdeckt.
+    ///
+    /// Der Test stand vorher auf dem festen Wort „Kosten seit Jahresbeginn"
+    /// und hat damit in 0.21.4 zu Recht angeschlagen: Genau diese Formulierung
+    /// war beim überfälligen Gaszähler falsch, weil die Ablesungen im Mai
+    /// enden und drei Monate fehlen. Er prüft jetzt die Eigenschaft statt der
+    /// Formulierung — sonst hält er wieder den Wortlaut fest statt der Aussage.
+    func testCostIsLabelledWithThePeriodItCovers() {
         let app = launchWithData()
-        let costs = app.staticTexts["Kosten seit Jahresbeginn"]
-        XCTAssertTrue(costs.waitForExistence(timeout: 5),
-                      "Mit hinterlegtem Tarif müssen Kosten auf der Karte stehen")
+
+        let costs = app.staticTexts.containing(
+            NSPredicate(format: "label BEGINSWITH 'Kosten'")
+        )
+        XCTAssertGreaterThan(costs.count, 0,
+                             "Mit hinterlegtem Tarif müssen Kosten auf der Karte stehen")
 
         // Ein Betrag in Euro, nicht bloß die Beschriftung.
         let amount = app.staticTexts.containing(NSPredicate(format: "label CONTAINS '€'")).firstMatch
         XCTAssertTrue(amount.exists, "Es steht keine Zahl mit Währung auf der Karte")
+
+        // Der Gaszähler ist im Ausgangszustand bewusst drei Monate überfällig,
+        // seine Kostenzeile muss also ein Enddatum nennen. Bewusst als
+        // vorhandene Aussage geprüft und nicht als fehlende: Am Ersten eines
+        // Monats ist der Stromzähler taggenau vollständig, und dort wäre
+        // „seit Jahresbeginn" dann richtig. Eine Verneinung hinge am Kalender.
+        let bounded = app.staticTexts.containing(
+            NSPredicate(format: "label BEGINSWITH 'Kosten bis '")
+        )
+        XCTAssertGreaterThan(bounded.count, 0,
+                             "Beim überfälligen Zähler muss die Kostenzeile ihr Enddatum nennen")
     }
 
     /// Mit Abschlag steht die Vorschau auf dem Jahresende auf der Karte.

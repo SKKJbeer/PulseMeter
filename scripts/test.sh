@@ -24,13 +24,28 @@ if [ "$SCOPE" = "all" ] || [ "$SCOPE" = "app" ]; then
   DEVICE=$(scripts/sim.sh)
   # Dasselbe Ableseverzeichnis wie run.sh, damit die Screenshots den bereits
   # gebauten Stand verwenden und nicht ein zweites Mal übersetzen.
-  xcodebuild test \
-    -project PulseMeter.xcodeproj \
-    -scheme PulseMeter \
-    -destination "id=$DEVICE" \
-    -derivedDataPath "${PULSE_DERIVED_DATA:-build/DerivedData}" \
-    -quiet \
-    CODE_SIGNING_ALLOWED=NO
+  # Ohne `-quiet` und in eine Datei: Mit `-quiet` nennt xcodebuild zwar die
+  # Namen der gefallenen Prüfungen, aber nicht den Grund. Ein Lauf, der sagt
+  # „testX ist gefallen" und verschweigt warum, kostet eine ganze Runde von
+  # zwanzig Minuten fürs Raten — und genau das ist einmal passiert.
+  mkdir -p build
+  LOG="build/xcodebuild-test.log"
+  if xcodebuild test \
+      -project PulseMeter.xcodeproj \
+      -scheme PulseMeter \
+      -destination "id=$DEVICE" \
+      -derivedDataPath "${PULSE_DERIVED_DATA:-build/DerivedData}" \
+      CODE_SIGNING_ALLOWED=NO > "$LOG" 2>&1; then
+    grep -E "Executed [0-9]+ test" "$LOG" | tail -3
+  else
+    status=$?
+    echo
+    echo "--- Gefallene Prüfungen, mit Begründung ---"
+    grep -E "error:|Assertion Failure|XCTAssert|Failing tests:|^[[:space:]]+[A-Za-z]+Tests\." "$LOG" \
+      | tail -80
+    echo "--- Ende ---"
+    exit $status
+  fi
 fi
 
 printf "\n\033[32mAlles durchgelaufen.\033[0m\n"

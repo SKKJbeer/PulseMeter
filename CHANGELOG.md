@@ -9,6 +9,33 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.21.5 — 2026-08-06
+
+### Behoben
+- **Ein Oberflächentest hielt die falsche Formulierung fest.** Er prüfte auf
+  den Wortlaut „Kosten seit Jahresbeginn" und ist deshalb an der Korrektur aus
+  0.21.4 zerbrochen — zu Recht. Er prüft jetzt die Eigenschaft statt des
+  Satzes: dass eine Kostenzeile da ist, dass ein Betrag dabeisteht, und dass
+  beim überfälligen Zähler ein Enddatum genannt wird. Bewusst als vorhandene
+  Aussage und nicht als fehlende: Am Ersten eines Monats wäre „seit
+  Jahresbeginn" beim Stromzähler richtig, und eine Verneinung hinge am
+  Kalender.
+- **Die CI verschwieg, warum eine Prüfung gefallen ist.** `-quiet` nennt die
+  Namen der gefallenen Tests, aber keine Begründung. Ein Lauf, der „testX ist
+  gefallen" sagt und den Grund für sich behält, kostet zwanzig Minuten fürs
+  Raten — genau das ist heute einmal passiert. Das Protokoll geht jetzt
+  vollständig in eine Datei, und bei einem Fehlschlag stehen die Begründungen
+  auf der Konsole. Die Datei liegt zusätzlich im Artefakt.
+
+### Geändert
+- Die Roadmap stand auf 0.9.0 und behauptete, `PulseUI` und der
+  Erfassungsschirm seien offen. Sie führt jetzt den tatsächlichen Stand — und
+  eine Tabelle, die nebeneinanderstellt, was der Rechenkern kann und was die
+  App davon anbietet. Dieser Abstand ist der gefährlichste Zustand im Projekt:
+  Er sieht in den Tests grün aus und ist trotzdem nicht da. Am größten ist er
+  beim Zweirichtungszähler — `PulseCore` rechnet die Einspeisung seit dem
+  ersten Tag, der Entwurf zeigt sie, die App kennt sie nicht.
+
 ## 0.21.4 — 2026-08-06
 
 Die erste Runde, in der die zurückgeholten Screenshots wieder Fehler gefunden
