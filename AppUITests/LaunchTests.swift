@@ -432,10 +432,16 @@ final class LaunchTests: XCTestCase {
         app.launchArguments = ["-pulse-reset", "-pulse-capture-pv"]
         app.launch()
 
-        XCTAssertTrue(app.staticTexts["Bezug"].waitForExistence(timeout: 15),
+        // Über den Anfang der Beschriftung: Seit 0.29.0 stehen Zählwerkname und
+        // Fortschritt für VoiceOver als ein Satz da — „Bezug, Zählwerk 1 von 2".
+        // Geprüft wird, dass beides gesagt wird, nicht in wie vielen Elementen.
+        let schritt = app.staticTexts.containing(
+            NSPredicate(format: "label BEGINSWITH 'Bezug'")
+        ).firstMatch
+        XCTAssertTrue(schritt.waitForExistence(timeout: 15),
                       "Der Erfassungsschirm nennt das erste Zählwerk nicht")
-        XCTAssertTrue(app.staticTexts["Zählwerk 1 von 2"].exists,
-                      "Ohne den Fortschritt weiß niemand, dass noch etwas kommt")
+        XCTAssertTrue(schritt.label.contains("Zählwerk 1 von 2"),
+                      "Ohne den Fortschritt weiß niemand, dass noch etwas kommt — gelesen: \(schritt.label)")
 
         // „Weiter", nicht „Sichern": Es fehlt noch eine Zahl, und ein Knopf,
         // der etwas anderes tut als er sagt, ist schlimmer als ein Umweg.
@@ -445,9 +451,13 @@ final class LaunchTests: XCTestCase {
         app.buttons["Vom letzten Stand übernehmen"].tap()
         next.tap()
 
-        XCTAssertTrue(app.staticTexts["Einspeisung"].waitForExistence(timeout: 5),
+        let zweiter = app.staticTexts.containing(
+            NSPredicate(format: "label BEGINSWITH 'Einspeisung'")
+        ).firstMatch
+        XCTAssertTrue(zweiter.waitForExistence(timeout: 5),
                       "Nach dem Bezug muss die Einspeisung drankommen")
-        XCTAssertTrue(app.staticTexts["Zählwerk 2 von 2"].exists)
+        XCTAssertTrue(zweiter.label.contains("Zählwerk 2 von 2"),
+                      "gelesen: \(zweiter.label)")
 
         let save = app.buttons["Sichern"]
         XCTAssertTrue(save.exists, "Beim letzten Zählwerk muss „Sichern“ dastehen")
