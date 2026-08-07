@@ -341,7 +341,15 @@ final class LaunchTests: XCTestCase {
 
         app.buttons["Sichern"].tap()
 
-        XCTAssertTrue(app.staticTexts["Gartenwasser"].waitForExistence(timeout: 5),
+        // Über den Anfang der Beschriftung: Seit 0.28.0 liest sich eine
+        // Zeile im Zähler-Schirm für VoiceOver als ein Satz — „Gartenwasser,
+        // noch keine Ablesung" —, und der Name allein ist kein eigenes
+        // Element mehr. Geprüft wird, dass der Zähler in der Liste steht,
+        // nicht wie die Liste innen gebaut ist.
+        let neu = app.descendants(matching: .any).containing(
+            NSPredicate(format: "label BEGINSWITH 'Gartenwasser'")
+        ).firstMatch
+        XCTAssertTrue(neu.waitForExistence(timeout: 5),
                       "Der neue Zähler taucht nicht in der Liste auf")
     }
 
@@ -402,7 +410,12 @@ final class LaunchTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Zähler"].waitForExistence(timeout: 15),
                       "Der Zähler-Schirm wurde nicht geöffnet")
         for name in ["Strom", "Wasser", "Gas"] {
-            XCTAssertTrue(app.staticTexts[name].waitForExistence(timeout: 5),
+            // Ebenfalls über den Anfang: Die Zeile trägt seit 0.28.0 eine
+            // zusammengesetzte Beschriftung.
+            let zeile = app.descendants(matching: .any).containing(
+                NSPredicate(format: "label BEGINSWITH %@", name)
+            ).firstMatch
+            XCTAssertTrue(zeile.waitForExistence(timeout: 5),
                           "\(name) fehlt im Zähler-Schirm — der Ausgangszustand kam nicht an")
         }
     }

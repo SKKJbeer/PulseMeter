@@ -130,6 +130,12 @@ struct MetersView: View {
             .padding(.vertical, 12)
         }
         .buttonStyle(.plain)
+        // Name und letzter Stand als ein Satz; die beiden Symbole tragen
+        // nichts bei, was der Text nicht schon sagt.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(point.name), \(subtitle(for: point))")
+        .accessibilityHint("Öffnet die Einstellungen dieses Zählers")
+        .accessibilityAddTraits(.isButton)
     }
 
     private func subtitle(for point: MeteringPoint) -> String {
