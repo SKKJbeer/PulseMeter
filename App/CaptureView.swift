@@ -130,12 +130,19 @@ struct CaptureView: View {
             // gibt. Bei einem einzelnen wäre „Bezug" ein Wort, das der Nutzer
             // nie gebraucht hat und nun deuten müsste.
             if registers.count > 1, let label = register?.label {
-                Text(label)
-                    .font(.system(.subheadline, weight: .semibold))
-                    .foregroundStyle(accent)
-                Text("Zählwerk \(index + 1) von \(registers.count)")
-                    .font(PulseText.caption)
-                    .foregroundStyle(PulseColor.inkTertiary)
+                // Als ein Satz: „Einspeisung, Zählwerk 2 von 2". Getrennt
+                // vorgelesen käme der Fortschritt als eigener Brocken nach dem
+                // Namen — und wer nicht sieht, wie die beiden zusammenhängen,
+                // hört zwei Angaben statt einer Ortsbestimmung.
+                VStack(spacing: 2) {
+                    Text(label)
+                        .font(.system(.subheadline, weight: .semibold))
+                        .foregroundStyle(accent)
+                    Text("Zählwerk \(index + 1) von \(registers.count)")
+                        .font(PulseText.caption)
+                        .foregroundStyle(PulseColor.inkTertiary)
+                }
+                .accessibilityElement(children: .combine)
             }
             if let previous, let register {
                 Text("Letzter Stand \(number(previous.value, digits: register.fractionDigits)) \(register.unit.symbol) am \(germanDate(previous.day))")

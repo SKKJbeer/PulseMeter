@@ -9,6 +9,32 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.29.0 — 2026-08-07
+
+**Barrierefreiheit, dritter Durchgang: der Erfassungsschirm.** Damit ist der
+Bildschirm versorgt, an dem das Produkt gewinnt oder verliert.
+
+### Behoben
+- **Das Zeichen im Prüf-Banner wuchs nicht mit der Schrift** — feste 13 Punkt
+  neben einer Zeile, die auf die dreifache Höhe wachsen kann. Derselbe Fehler
+  wie beim Punkt der Statuszeile in 0.28.0, gefunden beim gezielten Suchen
+  danach. Das ist der Wert einer benannten Fehlerklasse: Der zweite Fund
+  kostet Minuten statt einer Runde.
+
+### Geändert
+- Das Zeichen wird nicht mehr vorgelesen. Der Text sagt bereits, ob der Wert
+  plausibel ist; vorgelesen wäre es eine Unterbrechung mitten im Satz.
+- **Zählwerkname und Fortschritt lesen sich als ein Satz** — „Einspeisung,
+  Zählwerk 2 von 2". Getrennt käme der Fortschritt als eigener Brocken nach
+  dem Namen, und wer nicht sieht, wie die beiden zusammenhängen, hört zwei
+  Angaben statt einer Ortsbestimmung.
+
+### Vorher bemerkt
+- Die zwei Prüfungen des zweistufigen Erfassungsflusses suchten „Bezug" und
+  „Zählwerk 1 von 2" als getrennte Elemente. Sie prüfen jetzt, dass **beides
+  gesagt wird**, nicht in wie vielen Elementen. Vierte Wiederholung dieser
+  Lehre, zweite Mal vorher gezogen.
+
 ## 0.28.1 — 2026-08-07
 
 ### Behoben

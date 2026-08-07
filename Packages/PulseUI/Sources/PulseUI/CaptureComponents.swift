@@ -98,6 +98,12 @@ public struct VerdictBanner: View {
     private let tone: Tone
     private let message: AttributedString
 
+    /// Wächst mit der Schrift — dieselbe Sache wie beim Punkt der
+    /// ``StatusBanner``, und beim Suchen nach ihr hier ein zweites Mal
+    /// gefunden. Feste 13 Punkt neben einer Zeile, die auf die dreifache Höhe
+    /// wachsen kann, sind kein Hinweis mehr, sondern ein Fleck.
+    @ScaledMetric(relativeTo: .subheadline) private var markOffset: CGFloat = 2
+
     public init(tone: Tone, message: AttributedString) {
         self.tone = tone
         self.message = message
@@ -107,8 +113,12 @@ public struct VerdictBanner: View {
         HStack(alignment: .top, spacing: 10) {
             if tone != .neutral {
                 Image(systemName: tone == .confirmed ? "checkmark" : "exclamationmark")
-                    .font(.system(size: 13, weight: .bold))
-                    .padding(.top, 2)
+                    .font(.system(.subheadline, weight: .bold))
+                    .padding(.top, markOffset)
+                    // Trägt keine eigene Aussage: Der Text sagt bereits, ob
+                    // der Wert plausibel ist. Vorgelesen wäre das Zeichen eine
+                    // Unterbrechung mitten im Satz.
+                    .accessibilityHidden(true)
             }
             Text(message)
                 .font(.system(.subheadline))
