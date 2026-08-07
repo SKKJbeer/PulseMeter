@@ -9,6 +9,28 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.28.1 — 2026-08-07
+
+### Behoben
+- **Die Startzeit-Prüfung flatterte, und der Fehler war meiner.** Sie fiel mit
+  15,57 s gegen eine Grenze von 15 s. Im Kommentar derselben Prüfung stand,
+  die Zahl schwanke auf einem geteilten Läufer um ein Vielfaches — und dann
+  habe ich die Schranke mitten ins Rauschband gelegt.
+
+  Die Korrektur ist nicht, die Zahl zu erhöhen. Der Denkfehler war die zweite
+  Schranke: Ein hängender Start heißt, dass die Übersicht **nie** kommt, und
+  das prüft `waitForExistence` bereits mit verständlicher Meldung. Eine zweite
+  Prüfung derselben Bedingung fügt nichts hinzu außer Flattern.
+
+  Was bleibt, ist die Zahl im Protokoll. Sie ergibt einen Verlauf, und ein
+  Verlauf zeigt Verschlechterungen, die keine einzelne Schranke je zuverlässig
+  gefunden hätte.
+
+### Stand
+- 17 von 18 Oberflächenprüfungen liefen; die eine war diese. Die
+  Barrierefreiheits-Änderungen aus 0.28.0 sind damit alle durchgelaufen,
+  einschließlich der beiden Tests, die ich vorher angepasst hatte.
+
 ## 0.28.0 — 2026-08-06
 
 **Barrierefreiheit, zweiter Durchgang** — und der erste Befund, den die

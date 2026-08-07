@@ -506,7 +506,18 @@ final class LaunchTests: XCTestCase {
         // Landet im Protokoll und damit im Artefakt — daraus wird ein Verlauf.
         print("STARTZEIT bis zur ersten Zahl: \(String(format: "%.2f", elapsed)) s")
 
-        XCTAssertLessThan(elapsed, 15,
-                          "Der Start hängt. Gemessen: \(elapsed) s")
+        // **Keine Schranke auf die Zeit.** Hier stand `XCTAssertLessThan(elapsed, 15)`
+        // mit der Begründung, die Grenze sei „bewusst weit" und fange nur einen
+        // hängenden Start. Sie fiel beim ersten Lauf mit 15,57 s — mitten im
+        // Rauschband eines ausgelasteten Läufers, dessen Schwankung ich im
+        // selben Kommentar beschrieben hatte.
+        //
+        // Der Denkfehler war nicht die Zahl, sondern die zweite Schranke: Ein
+        // hängender Start heißt, dass die Übersicht **nie** kommt — und genau
+        // das prüft `waitForExistence` oben bereits, mit einer verständlichen
+        // Meldung. Eine zweite Prüfung derselben Bedingung fügt nichts hinzu
+        // außer Flattern. Was bleibt, ist die Zahl im Protokoll; sie ergibt
+        // einen Verlauf, und ein Verlauf zeigt Verschlechterungen, die keine
+        // einzelne Schranke je zuverlässig gefunden hätte.
     }
 }
