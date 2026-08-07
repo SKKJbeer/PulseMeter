@@ -36,6 +36,17 @@ public struct StatusBanner: View {
     private let tone: Tone
     private let message: AttributedString
 
+    /// Punktgröße und Abstand wachsen mit der Schrift.
+    ///
+    /// Vorher standen dort feste 9 und 6 Punkt. Auf dem Bild bei der größten
+    /// Schriftgröße blieb der Punkt winzig und schwebte oben neben einem
+    /// Absatz, dessen erste Zeile dreimal so hoch war — er gehört an diese
+    /// Zeile, nicht an den oberen Rand. Aufgefallen ist das erst, als es die
+    /// Bilder bei größter Schrift gab; vier Fassungen lang stand die Zusage
+    /// „Dynamic Type bis zur größten Stufe" ungeprüft im Dokument.
+    @ScaledMetric(relativeTo: .subheadline) private var dotSize: CGFloat = 9
+    @ScaledMetric(relativeTo: .subheadline) private var dotOffset: CGFloat = 6
+
     public init(tone: Tone, message: AttributedString) {
         self.tone = tone
         self.message = message
@@ -45,8 +56,11 @@ public struct StatusBanner: View {
         HStack(alignment: .top, spacing: 11) {
             Circle()
                 .fill(tone == .calm ? PulseColor.favourable : PulseColor.noticeInk)
-                .frame(width: 9, height: 9)
-                .padding(.top, 6)
+                .frame(width: dotSize, height: dotSize)
+                .padding(.top, dotOffset)
+                // Der Punkt trägt keine Aussage — er wiederholt farblich, was
+                // der Text sagt. Vorgelesen wäre er eine Unterbrechung.
+                .accessibilityHidden(true)
             Text(message)
                 .font(.system(.subheadline))
                 .foregroundStyle(tone == .calm ? PulseColor.ink : PulseColor.noticeInk)

@@ -9,6 +9,63 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.28.1 — 2026-08-07
+
+### Behoben
+- **Die Startzeit-Prüfung flatterte, und der Fehler war meiner.** Sie fiel mit
+  15,57 s gegen eine Grenze von 15 s. Im Kommentar derselben Prüfung stand,
+  die Zahl schwanke auf einem geteilten Läufer um ein Vielfaches — und dann
+  habe ich die Schranke mitten ins Rauschband gelegt.
+
+  Die Korrektur ist nicht, die Zahl zu erhöhen. Der Denkfehler war die zweite
+  Schranke: Ein hängender Start heißt, dass die Übersicht **nie** kommt, und
+  das prüft `waitForExistence` bereits mit verständlicher Meldung. Eine zweite
+  Prüfung derselben Bedingung fügt nichts hinzu außer Flattern.
+
+  Was bleibt, ist die Zahl im Protokoll. Sie ergibt einen Verlauf, und ein
+  Verlauf zeigt Verschlechterungen, die keine einzelne Schranke je zuverlässig
+  gefunden hätte.
+
+### Stand
+- 17 von 18 Oberflächenprüfungen liefen; die eine war diese. Die
+  Barrierefreiheits-Änderungen aus 0.28.0 sind damit alle durchgelaufen,
+  einschließlich der beiden Tests, die ich vorher angepasst hatte.
+
+## 0.28.0 — 2026-08-06
+
+**Barrierefreiheit, zweiter Durchgang** — und der erste Befund, den die
+Großschrift-Bilder aus 0.27.2 geliefert haben.
+
+### Behoben
+- **Der Punkt vor der Statuszeile wuchs nicht mit der Schrift.** Neun Punkt
+  Größe und sechs Punkt Abstand standen fest im Code. Bei der größten Stufe
+  blieb er winzig und schwebte oben neben einem Absatz, dessen erste Zeile
+  dreimal so hoch war — er gehört an diese Zeile, nicht an den oberen Rand.
+  Beides skaliert jetzt mit `@ScaledMetric`.
+
+  Bemerkenswert daran ist nicht der Fehler, sondern wie lange er unsichtbar
+  war: Die Zusage „Dynamic Type bis zur größten Stufe" stand seit dem ersten
+  Entwurf im Dokument, und niemand hat je hingesehen. Ein Bild hat gereicht.
+
+### Geändert
+- **Der Punkt wird nicht mehr vorgelesen.** Er wiederholt farblich, was der
+  Text sagt; vorgelesen wäre er eine Unterbrechung.
+- **Eine Zeile im Zähler-Schirm liest sich als ein Satz** — „Gas, 8.285,100 m³
+  am 1. Mai 2026" — mit dem Hinweis, was ein Tippen bewirkt. Die beiden
+  Symbole tragen nichts bei, was der Text nicht schon sagt.
+
+### Vorher bemerkt statt vom Lauf gemeldet
+- Zwei Oberflächenprüfungen suchten den Zählernamen als eigenes Element und
+  wären an der zusammengefassten Zeile zerbrochen. Sie prüfen jetzt über den
+  Anfang der Beschriftung — dass der Zähler in der Liste steht, nicht wie die
+  Liste innen gebaut ist. Das dritte Mal dieselbe Lehre in dieser Sitzung, und
+  das erste Mal, dass sie vor dem Lauf gezogen wurde.
+
+### Weiterhin offen
+- Erfassungsschirm und Verlauf sind noch nicht durchgegangen. Der Ziffernblock
+  und die Diagrammspalten waren bereits versorgt — geprüft, nicht vermutet.
+- Die 800 ms auf einem **Gerät**.
+
 ## 0.27.2 — 2026-08-06
 
 ### Behoben

@@ -341,7 +341,15 @@ final class LaunchTests: XCTestCase {
 
         app.buttons["Sichern"].tap()
 
-        XCTAssertTrue(app.staticTexts["Gartenwasser"].waitForExistence(timeout: 5),
+        // Über den Anfang der Beschriftung: Seit 0.28.0 liest sich eine
+        // Zeile im Zähler-Schirm für VoiceOver als ein Satz — „Gartenwasser,
+        // noch keine Ablesung" —, und der Name allein ist kein eigenes
+        // Element mehr. Geprüft wird, dass der Zähler in der Liste steht,
+        // nicht wie die Liste innen gebaut ist.
+        let neu = app.descendants(matching: .any).containing(
+            NSPredicate(format: "label BEGINSWITH 'Gartenwasser'")
+        ).firstMatch
+        XCTAssertTrue(neu.waitForExistence(timeout: 5),
                       "Der neue Zähler taucht nicht in der Liste auf")
     }
 
@@ -402,7 +410,12 @@ final class LaunchTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Zähler"].waitForExistence(timeout: 15),
                       "Der Zähler-Schirm wurde nicht geöffnet")
         for name in ["Strom", "Wasser", "Gas"] {
-            XCTAssertTrue(app.staticTexts[name].waitForExistence(timeout: 5),
+            // Ebenfalls über den Anfang: Die Zeile trägt seit 0.28.0 eine
+            // zusammengesetzte Beschriftung.
+            let zeile = app.descendants(matching: .any).containing(
+                NSPredicate(format: "label BEGINSWITH %@", name)
+            ).firstMatch
+            XCTAssertTrue(zeile.waitForExistence(timeout: 5),
                           "\(name) fehlt im Zähler-Schirm — der Ausgangszustand kam nicht an")
         }
     }
@@ -493,7 +506,18 @@ final class LaunchTests: XCTestCase {
         // Landet im Protokoll und damit im Artefakt — daraus wird ein Verlauf.
         print("STARTZEIT bis zur ersten Zahl: \(String(format: "%.2f", elapsed)) s")
 
-        XCTAssertLessThan(elapsed, 15,
-                          "Der Start hängt. Gemessen: \(elapsed) s")
+        // **Keine Schranke auf die Zeit.** Hier stand `XCTAssertLessThan(elapsed, 15)`
+        // mit der Begründung, die Grenze sei „bewusst weit" und fange nur einen
+        // hängenden Start. Sie fiel beim ersten Lauf mit 15,57 s — mitten im
+        // Rauschband eines ausgelasteten Läufers, dessen Schwankung ich im
+        // selben Kommentar beschrieben hatte.
+        //
+        // Der Denkfehler war nicht die Zahl, sondern die zweite Schranke: Ein
+        // hängender Start heißt, dass die Übersicht **nie** kommt — und genau
+        // das prüft `waitForExistence` oben bereits, mit einer verständlichen
+        // Meldung. Eine zweite Prüfung derselben Bedingung fügt nichts hinzu
+        // außer Flattern. Was bleibt, ist die Zahl im Protokoll; sie ergibt
+        // einen Verlauf, und ein Verlauf zeigt Verschlechterungen, die keine
+        // einzelne Schranke je zuverlässig gefunden hätte.
     }
 }
