@@ -59,3 +59,16 @@ shoot light screenshot-leer-light -pulse-empty
 shoot dark  screenshot-leer-dark  -pulse-empty
 shoot light screenshot-zaehler-light -pulse-zaehler
 shoot dark  screenshot-zaehler-dark  -pulse-zaehler
+
+# Größte Schriftgröße, die iOS anbietet.
+#
+# In `00-produktstrategie.md` steht „Dynamic Type bis zur größten Stufe" als
+# nicht verhandelbar — geprüft wurde es bis 0.27.0 nie. Ein Bild davon kostet
+# zwei Sekunden und zeigt sofort, was abgeschnitten wird oder aus der Karte
+# läuft. Ohne Bild ist die Zusage eine Behauptung.
+xcrun simctl ui "$DEVICE" content_size accessibility-extra-extra-extra-large >/dev/null 2>&1 || true
+shoot light screenshot-grossschrift-light
+shoot dark  screenshot-grossschrift-dark
+# Zurückstellen, damit ein wiederverwendeter Simulator nicht dauerhaft auf der
+# größten Stufe steht und alle künftigen Bilder verfälscht.
+xcrun simctl ui "$DEVICE" content_size medium >/dev/null 2>&1 || true

@@ -96,7 +96,7 @@ Die Reihenfolge ist bewusst nicht „Screens von oben nach unten", sondern nach 
 
 ---
 
-## Aktueller Stand — Version 0.26.2
+## Aktueller Stand — Version 0.27.2
 
 | Schritt | Stand |
 |---|---|
@@ -109,7 +109,7 @@ Die Reihenfolge ist bewusst nicht „Screens von oben nach unten", sondern nach 
 | 7. Tarife, Kosten, Prognose | **fertig** — saisonale Hochrechnung, Abschlagsvergleich |
 | 8. Widgets, Kurzbefehle, Erinnerungen | Erinnerungen und Widget **fertig**; Siri offen |
 | 9. Paywall und StoreKit | offen — braucht das Apple Developer Program |
-| 10. Politur | offen — VoiceOver, Dynamic Type und die Startzeit sind nie gemessen worden |
+| 10. Politur | **angefangen** (0.27.0) — Karte und Fußzeilen lesen sich für VoiceOver als ein Satz, Bilder bei größter Schrift, Startzeit im Protokoll. Die 800 ms auf einem **Gerät** sind weiter offen |
 
 ### Was die App noch nicht kann, obwohl der Rechenkern es kann
 
@@ -146,13 +146,13 @@ Mac beurteilen.
 
 ### Die nächsten drei Schritte
 
-1. **0.26.0 — Barrierefreiheit und Startzeit.** VoiceOver in allen
-   Hauptflüssen, Dynamic Type bis zur größten Stufe, Kaltstart unter 800 ms.
-   In `00-produktstrategie.md` steht „nicht verhandelbar" — geprüft wurde es
-   bis heute nie.
+1. **Barrierefreiheit weiterführen.** Mit 0.27.0 ist der Anfang gemacht;
+   Erfassungsschirm, Verlauf und Zählerverwaltung sind noch nicht durchgegangen.
+   Die Bilder bei größter Schrift zeigen, wo es klemmt — sie werden ab dem
+   nächsten Lauf mitgeliefert.
 
-2. **0.27.0 — Doppeltarif (HT/NT).** Fehlt auf beiden Seiten; der Entwurf
-   sollte zuerst drankommen, weil ein Fehler dort schneller auffällt.
+2. **Doppeltarif (HT/NT).** Fehlt auf beiden Seiten; der Entwurf sollte zuerst
+   drankommen, weil ein Fehler dort schneller auffällt.
 
 Danach Paywall und StoreKit, sobald das Apple Developer Program vorliegt. Das
 Widget wartet ebenfalls darauf: Die App-Gruppe greift ohne Entwicklerkonto

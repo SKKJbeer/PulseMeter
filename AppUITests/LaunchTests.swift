@@ -90,7 +90,16 @@ final class LaunchTests: XCTestCase {
 
         // Mit genau einer Ablesung steht noch kein Verbrauch fest, und die
         // Karte sagt warum, statt eine Null zu zeigen.
-        let needsSecond = app.staticTexts["Der Verbrauch ergibt sich aus zwei Ablesungen"]
+        //
+        // Über `CONTAINS` statt über den genauen Text: Seit 0.27.0 fasst die
+        // Karte Zeitraum, Zahl und Erläuterung für VoiceOver zu **einem**
+        // Element zusammen, damit sie als ein Satz vorgelesen werden. Der
+        // Einzeltext existiert dann nicht mehr als eigenes Element. Geprüft
+        // wird die Aussage, nicht die Bauform — sonst hält der Test wieder
+        // eine Struktur fest statt einer Zusage.
+        let needsSecond = app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS 'ergibt sich aus zwei Ablesungen'")
+        ).firstMatch
         XCTAssertTrue(needsSecond.waitForExistence(timeout: 5),
                       "Nach der ersten Ablesung muss die Karte den zweiten Schritt nennen")
     }
@@ -179,11 +188,41 @@ final class LaunchTests: XCTestCase {
 
         // Der Wasserzähler hat bewusst keinen Abschlag — dort darf nichts
         // stehen, statt einer Null.
+        //
+        // **Über die verschiedenen Beschriftungen, nicht über die Anzahl der
+        // Elemente.** Seit 0.27.0 fasst die Fußzeile Text und Betrag für
+        // VoiceOver zu einem Element zusammen; XCUITest sieht daraufhin beides
+        // — das zusammengefasste Element und seinen Text — und zählte vier
+        // statt zwei. Die Aussage, um die es geht, ist aber nicht „vier
+        // Elemente", sondern „genau zwei Zähler zeigen eine Vorschau". Über
+        // die Menge der Beschriftungen gezählt bleibt sie richtig, egal wie
+        // die Oberfläche innen aufgebaut ist.
         let prepayLabels = app.staticTexts.containing(
             NSPredicate(format: "label BEGINSWITH 'Abschlag'")
         )
-        XCTAssertEqual(prepayLabels.count, 2,
-                       "Genau die zwei Zähler mit Abschlag dürfen eine Vorschau zeigen")
+        // Gezählt wird über den **Abschlagsbetrag**, nicht über den Anfang der
+        // Beschriftung. Das Protokoll des vorigen Laufs hat gezeigt, warum:
+        //
+        //   ["Abschlag 1.200,00 € im Jahr", "Abschlag 1.200,00 € im Jahr, ≈",
+        //    "Abschlag 2.760,00 € im Jahr", "Abschlag 2.760,00 € im Jahr, ≈"]
+        //
+        // Je Zeile stehen zwei Einträge: der reine Text und das zusammengefasste
+        // Element, das ihn enthält. Das Zusammenfassen wirkt also wie gewollt —
+        // XCUITest zeigt zusätzlich die darunterliegende Ansicht, VoiceOver
+        // benutzt den Zugänglichkeitsbaum. Der Jahresbetrag ist das, was eine
+        // Abschlagszeile ausmacht; über ihn gezählt fallen die beiden
+        // Erscheinungsformen derselben Zeile zusammen.
+        var seen = Set<String>()
+        for index in 0..<prepayLabels.count {
+            let label = prepayLabels.element(boundBy: index).label
+            let key = label.range(of: " im Jahr").map { String(label[..<$0.lowerBound]) } ?? label
+            seen.insert(key)
+        }
+        // Damit ein Fehlschlag nicht wieder raten lässt, was gefunden wurde.
+        print("ABSCHLAG-BESCHRIFTUNGEN: \(seen.sorted())")
+
+        XCTAssertEqual(seen.count, 2,
+                       "Genau die zwei Zähler mit Abschlag dürfen eine Vorschau zeigen — gefunden: \(seen.sorted())")
     }
 
     /// Ein Preis lässt sich eintragen, ohne dass man vorher irgendetwas über
@@ -424,5 +463,37 @@ final class LaunchTests: XCTestCase {
         ).firstMatch
         XCTAssertTrue(credit.exists,
                       "Mit hinterlegter Vergütung muss ein Betrag dabeistehen")
+    }
+
+    /// Wie lange es vom Start bis zur ersten lesbaren Zahl dauert.
+    ///
+    /// **Was diese Messung nicht kann.** In `00-produktstrategie.md` steht
+    /// „Kaltstart bis interaktiv unter 800 ms" — auf einem Gerät. Hier läuft
+    /// ein Simulator auf einem geteilten Läufer; die Zahl schwankt um ein
+    /// Vielfaches und taugt nicht, um eine Gerätezusage zu prüfen. Wer sie
+    /// dafür hielte, hätte eine grüne Prüfung und keine Gewissheit.
+    ///
+    /// Wofür sie taugt: Sie schreibt die Zeit ins Protokoll, sodass ein
+    /// Verlauf entsteht, und sie schlägt an, wenn der Start *hängt* statt
+    /// langsam zu sein. Die Grenze ist deshalb bewusst weit — sie fängt einen
+    /// Zusammenbruch, keine Verschlechterung um Millisekunden.
+    ///
+    /// Die eigentliche Messung gehört auf ein Gerät und ist offen.
+    func testLaunchReachesTheFirstFigureQuickly() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-pulse-reset"]
+
+        let started = Date()
+        app.launch()
+        let card = app.staticTexts["Strom"]
+        XCTAssertTrue(card.waitForExistence(timeout: 20),
+                      "Die Übersicht kam nicht hoch")
+        let elapsed = Date().timeIntervalSince(started)
+
+        // Landet im Protokoll und damit im Artefakt — daraus wird ein Verlauf.
+        print("STARTZEIT bis zur ersten Zahl: \(String(format: "%.2f", elapsed)) s")
+
+        XCTAssertLessThan(elapsed, 15,
+                          "Der Start hängt. Gemessen: \(elapsed) s")
     }
 }

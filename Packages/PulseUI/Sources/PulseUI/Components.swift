@@ -167,6 +167,12 @@ public struct ValueCard<Footer: View>: View {
                             .font(PulseText.detail)
                             .foregroundStyle(PulseColor.inkSecondary)
                     }
+                    // Zeitraum, Zahl, Einheit und Erläuterung sind ein Satz,
+                    // kein Stapel. Einzeln vorgelesen kämen vier Fetzen —
+                    // „1. Januar bis 1. Mai", „ungefähr", „1.181", „m³" —,
+                    // und der Zusammenhang, auf den es hier ankommt, ginge
+                    // genau dabei verloren.
+                    .accessibilityElement(children: .combine)
                     Spacer(minLength: 0)
                     if series.count > 1 {
                         Sparkline(values: series, accent: accent)
@@ -261,6 +267,11 @@ public struct CardFooterRow<Trailing: View>: View {
             }
             .padding(.horizontal, 15)
             .padding(.vertical, 10)
+            // „Kosten bis 1. Mai" und „1.399,41 €" gehören zusammen. Getrennt
+            // gelesen stünde der Betrag ohne seinen Zeitraum da — und das ist
+            // die wiederkehrende Fehlerklasse dieses Projekts, nur mit den
+            // Ohren statt mit den Augen.
+            .accessibilityElement(children: .combine)
         }
     }
 }
