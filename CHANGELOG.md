@@ -9,6 +9,46 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.30.0 — 2026-08-07
+
+**Doppeltarif (HT/NT) im Entwurf.** Ein Gerät, zwei Arbeitspreise — der
+klassische Nachtspeicher- und Wärmepumpentarif. Der Rechenkern kann es seit
+dem ersten Tag; hier kommt der Entwurf zuerst, weil ein Fehler darin in einer
+Minute auffällt statt in zwanzig.
+
+### Geändert
+- **Der Arbeitspreis hängt jetzt am Zählwerk, nicht am Zähler.** Bisher gab es
+  einen Preis je Zähler plus einen Sonderfall für die Einspeisung. Ein zweiter
+  Sonderfall hätte die Stelle unlesbar gemacht; ein Preis je Zählwerk deckt
+  beides ab — wie `CostEngine.price(for:tariff:)`.
+- **Der Verbrauch eines Zählers ist die Summe seiner Bezugs-Zählwerke.** Bei
+  HT/NT ist beides Bezug, und die Karte zeigt, was verbraucht wurde.
+
+### Die Fehlerklasse, zum zehnten Mal
+- **Beide Zählwerke müssen denselben Ausschnitt beschreiben.** Im
+  Ausgangszustand reicht der Hochtarif bis August, der Niedertarif bis Juni.
+  Sie einfach zu addieren ergäbe 2.916 kWh — eine Zahl, in der ein Teil drei
+  Monate weiter reicht als der andere. Beschnitten auf den gemeinsamen
+  Ausschnitt sind es 2.541 kWh für Januar bis Juni.
+
+  Bemerkenswert: **Meine eigene Nachrechnung war die falsche Seite.** Ich hatte
+  2.916 erwartet und musste feststellen, dass ich damit genau den Fehler
+  reproduziert hatte, gegen den der Code gebaut ist.
+- **Und dabei fiel ein echter Fehler auf, den ich selbst eingebaut hatte:** Die
+  Kosten nahmen weiter den Ausschnitt des ersten Zählwerks. Auf einer Karte
+  stand damit eine Menge für Januar bis Juni neben einem Betrag für Januar bis
+  August. Aufgefallen beim Nachrechnen, nicht in einer Prüfung — 560,20 € statt
+  700,99 €.
+
+### Geprüft
+- 28 Prüfungen des Entwurfs grün, hell und dunkel.
+- Kosten von Hand nachgerechnet, auf dem gemeinsamen Ausschnitt: 700,99 €
+  berechnet, 700,99 € erwartet.
+
+### Offen
+- In der **App** fehlt der Doppeltarif noch. Der Entwurf zeigt jetzt, wie es
+  aussieht und wo die Fallen liegen — genau dafür gibt es ihn.
+
 ## 0.29.0 — 2026-08-07
 
 **Barrierefreiheit, dritter Durchgang: der Erfassungsschirm.** Damit ist der

@@ -96,7 +96,7 @@ Die Reihenfolge ist bewusst nicht „Screens von oben nach unten", sondern nach 
 
 ---
 
-## Aktueller Stand — Version 0.29.0
+## Aktueller Stand — Version 0.30.0
 
 | Schritt | Stand |
 |---|---|
@@ -119,7 +119,7 @@ der Oberfläche fehlt, sieht in den Tests grün aus und ist trotzdem nicht da.
 | Fähigkeit | Rechenkern | App | Entwurf |
 |---|---|---|---|
 | Zweirichtungszähler (PV-Einspeisung) | ja | ja | ja |
-| Doppeltarif (HT/NT) | ja | **nein** | nein |
+| Doppeltarif (HT/NT) | ja | **nein** | ja |
 | Zählerwechsel | ja | ja | ja |
 | PDF-Bericht | — | **nein** | ja |
 | Foto-Belege | — | nein | nein |
