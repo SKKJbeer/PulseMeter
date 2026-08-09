@@ -9,6 +9,45 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.32.1 — 2026-08-09
+
+**Ein Befehl statt fünfzehn Minuten Warten.** Vom Gründer angestoßen, kaum
+dass er am Mac saß: Warum auf die CI warten, wenn der Rechner hier steht?
+
+### Neu
+- **`scripts/pruefen.sh`** — alles, was die CI prüft, in einem Befehl:
+  Zeichenketten, Syntax der iOS-Quellen, `PulseCore`, `PulseData`, App-Bau,
+  Oberflächentests, Screenshots und der Klick-Dummy. Auf einem Mac ein bis zwei
+  Minuten statt zwölf bis fünfzehn, weil das Ableseverzeichnis liegen bleibt
+  und Xcode nur das Geänderte übersetzt.
+  - `schnell` lässt den App-Bau weg und braucht Sekunden.
+  - `--nur zurueck` läuft eine einzelne Oberflächenprüfung statt einundzwanzig.
+  - Der Klick-Dummy läuft **nebenher**, während Xcode baut — er kostet dadurch
+    keine Zeit.
+  - Oberflächentests laufen auf drei geklonten Simulatoren parallel. Erlaubt
+    ist das, weil jede Prüfung ihren Ausgangszustand selbst setzt; `--seriell`
+    schaltet es ab.
+  - Ein gefallener Schritt bricht nicht ab. Wer drei Dinge kaputt gemacht hat,
+    will alle drei sehen und nicht dreimal starten.
+- **Dasselbe Skript läuft unter Linux**, macht dort was ohne Xcode geht und
+  **benennt**, was es überspringt. Zwei getrennte Abläufe würden auseinander-
+  laufen, und dann prüft der eine etwas anderes als der andere.
+- **Haken vor dem Push**: `scripts/setup-mac.sh` richtet ihn ein, die schnellen
+  Prüfungen laufen vor jedem `git push`. Einmalig überspringen mit
+  `--no-verify`.
+- **`swiftc -parse` auf den iOS-Quellen**, in der CI und lokal. Ohne SDK, ohne
+  Typprüfung, in drei Sekunden — und trotzdem eine ganze Fehlerklasse: ein
+  Block, der in der falschen Struktur gelandet ist.
+
+### Behoben
+- **0.32.0 ist auf der CI nicht übersetzt.** Beim Barrierefreiheits-Durchgang
+  landete `spokenValue(for:)` in `YearBars` statt in `PeriodBars` — die
+  Textersetzung traf das zweite `upperBound` im selben File. Genau der Fall,
+  den die neue Syntaxprüfung in drei Sekunden meldet statt nach fünfzehn
+  Minuten.
+
+---
+
 ## 0.32.0 — 2026-08-09
 
 **Der PDF-Bericht — und ein Durchgang durch Verlauf und Zählerverwaltung.**

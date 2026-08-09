@@ -20,14 +20,33 @@ Prüft Xcode und Swift, installiert bei Bedarf XcodeGen, erzeugt
 
 ## Der tägliche Ablauf
 
-```bash
-scripts/test.sh              # alles: PulseCore, PulseData, App im Simulator
-scripts/test.sh core         # nur die Domäne, wenige Sekunden
-scripts/test.sh data         # nur die Persistenz
-scripts/test.sh app          # nur die App-Tests im Simulator
+**Ein Befehl, und er deckt ab, was auch die CI prüft:**
 
-scripts/run.sh               # bauen, starten, Screenshot nach build/screenshot-light.png
-scripts/run.sh dark          # dasselbe im Dunkelmodus
+```bash
+scripts/pruefen.sh                 # alles — 1 bis 2 Minuten
+scripts/pruefen.sh schnell         # ohne App-Build — Sekunden
+scripts/pruefen.sh app             # nur App-Build und Oberflächentests
+scripts/pruefen.sh --nur zurueck   # eine einzelne Oberflächenprüfung
+scripts/pruefen.sh --sauber        # Ableseverzeichnis leeren, wie die CI
+```
+
+**Vor dem Pushen laufen lassen, nicht danach.** Ein CI-Lauf braucht zwölf bis
+fünfzehn Minuten und baut jedes Mal von null; lokal bleibt das
+Ableseverzeichnis liegen und Xcode übersetzt nur das Geänderte. Ein Fehler,
+der hier in zwanzig Sekunden auffällt, kostet dort das Zwanzigfache — und
+blockiert nebenbei einen gemieteten Läufer. Die CI bleibt die Gegenprobe auf
+einem frischen Rechner, nicht der erste Durchgang.
+
+`scripts/setup-mac.sh` richtet dafür einen Haken ein: Vor jedem `git push`
+laufen die schnellen Prüfungen. Einmalig überspringen mit `git push
+--no-verify`.
+
+Die feineren Werkzeuge gibt es weiterhin:
+
+```bash
+scripts/test.sh core         # nur die Domäne
+scripts/test.sh data         # nur die Persistenz
+scripts/run.sh               # bauen, starten, Screenshots ablegen
 ```
 
 Den Screenshot danach **ansehen**. Ein grüner Build sagt nichts über Layout,
@@ -54,6 +73,8 @@ eine Datei hinzufügt, verliert sie beim nächsten Erzeugen.
 | `No such module 'PulseCore'` | Projekt veraltet → `xcodegen generate` |
 | Signierfehler beim Simulator | `CODE_SIGNING_ALLOWED=NO` fehlt; die Skripte setzen es bereits |
 | Kein Simulator gefunden | Xcode → Settings → Components → iOS Simulator installieren. Ein bestimmtes Gerät erzwingen: `PULSE_SIMULATOR=<udid> scripts/run.sh` |
+| Oberflächentests wackeln beim parallelen Lauf | `scripts/pruefen.sh --seriell` — dann läuft alles auf einem Simulator statt auf drei geklonten |
+| Der Push-Haken stört gerade | `git push --no-verify`; dauerhaft aus mit `git config --unset core.hooksPath` |
 | `ModelContainer` schlägt beim Start fehl | CloudKit ist eingeschaltet, aber die iCloud-Berechtigung fehlt. Entweder Capability eintragen oder `cloudKit: false` lassen. |
 
 ## CloudKit einschalten

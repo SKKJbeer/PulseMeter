@@ -77,6 +77,12 @@ jobs:
       - name: Zeichenketten
         run: python3 scripts/check-strings.py
 
+      # Reines Parsen der iOS-Quellen, ohne SDK. Kostet Sekunden und fängt
+      # einen Block ab, der in der falschen Struktur gelandet ist — 0.32.0 ging
+      # genau daran zu Bruch, und zwar erst nach dem Paketbau.
+      - name: Syntax der iOS-Quellen
+        run: swiftc -parse App/*.swift Packages/PulseUI/Sources/PulseUI/*.swift Widget/*.swift
+
       # Die Domäne zuerst: schnell, und wenn sie bricht, ist alles andere egal.
       - name: PulseCore
         run: swift test --package-path Packages/PulseCore

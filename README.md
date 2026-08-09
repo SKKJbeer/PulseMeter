@@ -10,16 +10,30 @@ Die App zur Erfassung, Analyse und Dokumentation von Zählerständen.
 ```bash
 git clone https://github.com/SKKJbeer/PulseMeter.git
 cd PulseMeter && git checkout claude/pulsemeter-kickoff-dns3am
-scripts/setup-mac.sh        # prüft Xcode, erzeugt das Projekt, testet
-scripts/run.sh              # startet die App im Simulator, legt einen Screenshot ab
+scripts/setup-mac.sh        # prüft Xcode, erzeugt das Projekt, richtet den Push-Haken ein
+scripts/pruefen.sh          # alles, was auch die CI prüft — in ein bis zwei Minuten
 ```
+
+`scripts/pruefen.sh` ist der eine Befehl für alles: Zeichenketten, `PulseCore`,
+`PulseData`, App-Build, Oberflächentests, Screenshots und der Klick-Dummy. Die
+CI macht dasselbe auf einem frischen Rechner und braucht dafür zwölf bis
+fünfzehn Minuten — lokal bleibt das Ableseverzeichnis liegen, und Xcode baut
+nur das Geänderte.
+
+| Aufruf | Was er tut | Ungefähr |
+|---|---|---|
+| `scripts/pruefen.sh` | alles | 1–2 min |
+| `scripts/pruefen.sh schnell` | ohne App-Build | 20 s |
+| `scripts/pruefen.sh app` | nur App-Build und Oberflächentests | 1 min |
+| `scripts/pruefen.sh --nur zurueck` | eine einzelne Oberflächenprüfung | 20 s |
+| `scripts/run.sh` | App im Simulator starten, Screenshots ablegen | 40 s |
 
 Voraussetzung ist Xcode aus dem App Store, einmal geöffnet und mit bestätigter
 Lizenz. Alles Weitere richtet das Skript ein.
 
 ## Status
 
-Version **0.32.0**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
+Version **0.32.1**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
 rechnet echt. Alle vier Bildschirme — Übersicht, Erfassung, Verlauf und Zähler —
 laufen als SwiftUI-App im Simulator und werden auf jedem Lauf fotografiert,
 hell und dunkel. Siehe [CHANGELOG.md](CHANGELOG.md).
@@ -30,7 +44,7 @@ und ist keine Historie, sondern der aktuelle Blick auf die Oberfläche.
 
 ## Klick-Dummy
 
-**[Zuletzt veröffentlichter Entwurf →](https://claude.ai/code/artifact/ec995f39-6d98-4b5f-934a-360e9be9d708)**
+**[Zuletzt veröffentlichter Entwurf →](https://claude.ai/code/artifact/4fceea88-8d26-4e50-a395-9638646dba10)**
 
 Jede Produktänderung wird sofort sichtbar gemacht — als **neue** Veröffentlichung
 mit eigener URL, weil erneutes Veröffentlichen auf dieselbe Adresse nicht

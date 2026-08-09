@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Prüft vor jedem Push das, was in Sekunden prüfbar ist.
+#
+# **Warum vor dem Push und nicht davor oder danach.** Ein Commit soll nichts
+# blockieren — wer zwischendurch sichert, will sichern. Ein Push dagegen
+# startet einen CI-Lauf von zwölf Minuten, und ein Fehler, der hier in zwanzig
+# Sekunden auffällt, kostet dort das Zwanzigfache und blockiert nebenbei einen
+# gemieteten Läufer.
+#
+# Bewusst nur die schnellen Prüfungen: Rechenkern, Zeichenketten, Klick-Dummy.
+# Der App-Build gehört nicht in einen Haken — wer eine Zeile Dokumentation
+# ändert, soll nicht zwei Minuten auf den Simulator warten.
+#
+# Einmal überspringen:  git push --no-verify
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+printf "\033[2mVor dem Push: schnelle Prüfungen (überspringen mit --no-verify)\033[0m\n"
+exec scripts/pruefen.sh schnell --ohne-bilder

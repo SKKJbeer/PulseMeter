@@ -71,13 +71,31 @@ umgekehrt. Weichen beide voneinander ab, ist das ein Fehler, kein Zustand.
 
 ## Regel 3 — Nichts gilt als fertig ohne Prüfung
 
+**Ein Befehl deckt alles ab, was auch die CI prüft:**
+
+```bash
+scripts/pruefen.sh            # alles — auf einem Mac in ein bis zwei Minuten
+scripts/pruefen.sh schnell    # ohne App-Build, in Sekunden
+scripts/pruefen.sh --nur zurueck   # eine einzelne Oberflächenprüfung
+```
+
+Das Skript läuft an beiden Orten. Auf einem Mac macht es alles; unter Linux
+macht es, was ohne Xcode geht, und **benennt**, was es überspringt. Es ist
+absichtlich dasselbe Skript wie in der CI-Beschreibung — zwei Abläufe würden
+auseinanderlaufen, und dann prüft der eine etwas anderes als der andere.
+
+Auf einem Mac läuft `scripts/pruefen.sh schnell` zusätzlich als Haken vor
+jedem Push (`scripts/setup-mac.sh` richtet ihn ein, `git push --no-verify`
+überspringt ihn einmalig).
+
 | Was | Wie |
 |---|---|
 | Vor jeder Runde | `git status` — das Arbeitsverzeichnis muss auf dem committeten Stand sein. Ein zurückgefallener Container sah schon einmal wie verlorene Arbeit aus |
-| `PulseCore` | `cd Packages/PulseCore && swift test` — muss vollständig grün sein |
-| Auf einem Mac | `scripts/test.sh` deckt Pakete und App ab, `scripts/run.sh` liefert Screenshots |
-| Prototyp | Headless in Chromium laden, Hauptflüsse klicken, auf JS-Fehler und horizontalen Überlauf prüfen, in Hell **und** Dunkel |
+| Alles auf einmal | `scripts/pruefen.sh` — Zeichenketten, `PulseCore`, `PulseData`, App-Build, Oberflächentests, Screenshots, Klick-Dummy |
+| `PulseCore` allein | `swift test --package-path Packages/PulseCore` — muss vollständig grün sein |
+| Prototyp allein | `node scripts/check-prototype.mjs` — Hauptflüsse, JS-Fehler, horizontaler Überlauf, in Hell **und** Dunkel |
 | Zahlen im Prototyp | Vor dem Veröffentlichen einmal ausrechnen lassen und auf Plausibilität ansehen |
+| Erst wenn das grün ist | pushen. Die CI ist die Gegenprobe auf einem frischen Rechner, nicht der erste Durchgang |
 
 Swift-Toolchain unter Linux: `/opt/swift/usr/bin` (Swift 6.0.3).
 Chromium für Playwright: `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`.

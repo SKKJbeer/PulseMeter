@@ -173,23 +173,6 @@ public struct YearBars: View {
         self.accent = accent
     }
 
-    /// Was ein Balken sagt, wenn man ihn nicht sehen kann.
-    ///
-    /// Mit Einheit, mit dem Vorjahreswert und mit dem Hinweis auf einen
-    /// unvollständigen Abschnitt: Genau diese drei Angaben stecken im Bild —
-    /// Höhe, Marke und blasse Färbung —, und ohne sie bleibt von der Auskunft
-    /// eine nackte Zahl übrig.
-    private func spokenValue(for column: Column) -> String {
-        guard let value = column.value else { return "keine Ablesung" }
-        var text = unit.isEmpty ? "\(Int(value.rounded()))" : "\(Int(value.rounded())) \(unit)"
-        if column.isPartial { text += ", unvollständiger Abschnitt" }
-        if let reference = column.reference {
-            text += unit.isEmpty ? ", Vorjahr \(Int(reference.rounded()))"
-                                 : ", Vorjahr \(Int(reference.rounded())) \(unit)"
-        }
-        return text
-    }
-
     private var upperBound: Double {
         Swift.max(rows.compactMap(\.value).max() ?? 1, 0.0001)
     }
