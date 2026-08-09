@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Read",
+      "Edit",
+      "Write",
+      "Bash(scripts/*)",
+      "Bash(./scripts/*)",
+      "Bash(bash scripts/*)",
+      "Bash(node scripts/*)",
+      "Bash(python3 scripts/*)",
+      "Bash(swift *)",
+      "Bash(xcodebuild *)",
+      "Bash(xcodegen *)",
+      "Bash(xcrun *)",
+      "Bash(xcode-select -p)",
+      "Bash(open PulseMeter.xcodeproj)",
+      "Bash(git *)",
+      "Bash(npm install --no-save playwright*)",
+      "Bash(npx playwright install*)",
+      "Bash(ls *)",
+      "Bash(find *)",
+      "Bash(sips *)"
+    ],
+    "deny": [
+      "Bash(sudo *)"
+    ]
+  }
+}

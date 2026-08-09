@@ -9,3 +9,7 @@ build/
 *.xcuserstate
 xcuserdata/
 node_modules/
+
+# Persönliche Claude-Code-Einstellungen. Die gemeinsamen stehen in
+# .claude/settings.json und sind eingecheckt.
+.claude/settings.local.json

@@ -49,6 +49,35 @@ Die Bilder des jeweils letzten Laufs liegen im Zweig
 [`screenshots`](../../tree/screenshots). Er wird bei jedem Lauf überschrieben
 und ist keine Historie, sondern der aktuelle Blick auf die Oberfläche.
 
+## Mit Claude Code am Mac arbeiten
+
+Das Gegenstück zu Copilot in VS Code: Claude Code läuft **lokal** auf deinem
+Rechner und hat dort Zugriff auf Dateien und Terminal. Eine Sitzung in der Cloud
+(claude.ai/code) kann das nicht — sie läuft in einem Container ohne Xcode und
+ohne Verbindung zu deiner Maschine.
+
+```bash
+npm install -g @anthropic-ai/claude-code   # einmalig
+cd PulseMeter
+claude                                     # und los
+```
+
+Alternativ die Desktop-App oder die Erweiterung für VS Code bzw. JetBrains —
+alle drei greifen auf dasselbe Projekt zu.
+
+Das Repository ist darauf vorbereitet:
+
+| Datei | Was sie bewirkt |
+|---|---|
+| `CLAUDE.md` | Arbeitsweise, Prüfschritte, Sprachregeln — wird automatisch gelesen |
+| `.claude/settings.json` | Die Befehle dieses Projekts laufen ohne Rückfrage: `scripts/*`, `swift`, `xcodebuild`, `xcodegen`, `xcrun`, `git`. `sudo` bleibt gesperrt |
+| `.claude/skills/` | `xcode-workflow` und `release-discipline` — greifen von selbst, wenn das Thema passt |
+
+Persönliche Abweichungen gehören in `.claude/settings.local.json`; die Datei ist
+nicht eingecheckt. Wer gar nicht gefragt werden will, startet mit
+`claude --dangerously-skip-permissions` — dann fällt allerdings auch die
+`sudo`-Sperre weg, und der Name ist ernst gemeint.
+
 ## Klick-Dummy
 
 **[Zuletzt veröffentlichter Entwurf →](https://claude.ai/code/artifact/4fceea88-8d26-4e50-a395-9638646dba10)**

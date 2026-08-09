@@ -47,6 +47,18 @@ dass er am Mac saß: Warum auf die CI warten, wenn der Rechner hier steht?
   Ein Zweig, in dem nur die grünen Läufe stehen, sähe aus wie eine lückenlose
   Erfolgsreihe und sagte damit das Falsche.
 
+- **`.claude/settings.json`** — die Befehle dieses Projekts laufen in einer
+  lokalen Sitzung ohne Rückfrage: `scripts/*`, `swift`, `xcodebuild`,
+  `xcodegen`, `xcrun`, `git`, Lesen und Schreiben im Projekt. `sudo` bleibt
+  gesperrt; es wird hier nirgends gebraucht, und `setup-mac.sh` sagt selbst
+  Bescheid, wenn der Nutzer es einmal von Hand braucht. Persönliche
+  Abweichungen gehören in `.claude/settings.local.json` und sind nicht
+  eingecheckt.
+- **`CLAUDE.md` benennt, wo eine Sitzung läuft.** Am Mac mit vollem Zugriff, in
+  der Cloud in einem Linux-Container ohne Xcode und ohne Verbindung zu diesem
+  Rechner. Die beiden sehen einander nicht — und eine Cloud-Sitzung darf nicht
+  behaupten, sie könne dort etwas ausführen.
+
 ### Behoben
 - **0.32.0 ist auf der CI nicht übersetzt.** Beim Barrierefreiheits-Durchgang
   landete `spokenValue(for:)` in `YearBars` statt in `PeriodBars` — die

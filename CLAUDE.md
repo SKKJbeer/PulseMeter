@@ -97,6 +97,21 @@ jedem Push (`scripts/setup-mac.sh` richtet ihn ein, `git push --no-verify`
 | Zahlen im Prototyp | Vor dem Veröffentlichen einmal ausrechnen lassen und auf Plausibilität ansehen |
 | Erst wenn das grün ist | pushen. Die CI ist die Gegenprobe auf einem frischen Rechner, nicht der erste Durchgang |
 
+### Wo diese Sitzung läuft
+
+Zwei Orte, und sie können einander **nicht** sehen:
+
+- **Am Mac** (`claude` im Projektordner, Desktop-App, IDE-Erweiterung): voller
+  Zugriff auf Dateien, Terminal, Xcode, Simulator. `.claude/settings.json` lässt
+  die Befehle dieses Projekts ohne Rückfrage durch.
+- **In der Cloud** (claude.ai/code): Linux-Container, kein Xcode, keine
+  Verbindung zum Rechner des Gründers. `PulseCore` und der Klick-Dummy laufen
+  hier vollständig; alles mit SwiftUI oder SwiftData nicht.
+
+Eine Cloud-Sitzung erfährt **nur über den Zweig `pruefungen`** oder durch eine
+Nachricht, was am Mac passiert ist. Sie darf nicht behaupten, sie könne dort
+etwas ausführen.
+
 ### Wurde ein Stand schon auf dem Mac geprüft?
 
 Eine Sitzung in einem Linux-Container sieht den Mac des Gründers **nicht**. Sie
