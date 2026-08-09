@@ -51,6 +51,8 @@ und ist keine Historie, sondern der aktuelle Blick auf die Oberfläche.
 
 ## Mit Claude Code am Mac arbeiten
 
+**Kurzfassung für den Anfang: [START-HIER.md](START-HIER.md).**
+
 Das Gegenstück zu Copilot in VS Code: Claude Code läuft **lokal** auf deinem
 Rechner und hat dort Zugriff auf Dateien und Terminal. Eine Sitzung in der Cloud
 (claude.ai/code) kann das nicht — sie läuft in einem Container ohne Xcode und
