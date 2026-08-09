@@ -9,6 +9,37 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.32.8 — 2026-08-09
+
+**Ein roter Lauf lieferte bisher keine einzige Aufnahme. Genau verkehrt
+herum.**
+
+### Behoben
+- Die Screenshots hingen in der CI an `if: success()` und lokal an `APP_OK`.
+  Eine einzige rote Prüfung unterdrückte damit **alle sechzehn Bilder** — und
+  damit die produktivste Prüfung, die dieses Projekt hat: Sieben der bisher
+  gefundenen Darstellungsfehler hat kein Test gefunden, sondern der Blick auf
+  ein Bild. Wenn etwas nicht stimmt, braucht man die Bilder mehr als sonst,
+  nicht weniger. Ein ganzer Nachmittag ist so blind vergangen: drei Läufe rot,
+  kein einziges Bild, und der PDF-Bericht bis heute ungesehen — obwohl die App
+  in jedem dieser Läufe gebaut und gestartet wurde.
+- Sie entstehen jetzt auch bei einem gefallenen Lauf, in der CI mit
+  `continue-on-error`, damit ein gescheiterter Bilderlauf das eigentliche
+  Ergebnis nicht überschreibt: Rot bleibt rot, aus dem Grund, aus dem es rot
+  war. Voraussetzung bleibt ein fertig gebautes Programm — ist schon die
+  Übersetzung gescheitert, gibt es nichts zu fotografieren.
+- Der Zweig `screenshots` sagt jetzt, aus welchem Zustand die Bilder stammen.
+  Bei einem gefallenen Lauf steht ein Warnhinweis in der Kopfzeile. Ohne ihn
+  läse sich der Zweig als Beleg für einen Stand, der durchgelaufen wäre.
+
+_154 Prüfungen in `PulseCore`, alle grün. Klick-Dummy 44 von 44, hell und
+dunkel. `ci.yml` als YAML geprüft, beide Schritte auf `always()` samt
+`continue-on-error` ausgelesen. Der Vermerk im Zweig ist gegen ein
+Wegwerf-Repository in beiden Fällen durchgespielt — mit Warnhinweis bei „rot",
+ohne bei „grün". Ungeprüft bleibt, was Xcode braucht._
+
+---
+
 ## 0.32.7 — 2026-08-09
 
 **Zwei Korrekturversuche an derselben Prüfung sind gescheitert. Statt eines

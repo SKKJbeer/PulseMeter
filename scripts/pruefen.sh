@@ -227,12 +227,29 @@ fi
 
 # ------------------------------------------------------------ 5. Die Bilder
 
-if [ "$SHOTS" = "1" ] && [ "$APP_OK" = "1" ] && [ "$APPLE" = "1" ] \
+# **Auch bei einem gefallenen Lauf.** Bis 0.32.7 hing dieser Abschnitt an
+# `APP_OK`, und damit unterdrückte eine einzige rote Prüfung alle sechzehn
+# Bilder. Genau verkehrt herum: Wenn etwas nicht stimmt, will man die Bilder
+# *mehr* als sonst — sieben der bisher gefundenen Darstellungsfehler hat kein
+# Test gefunden, sondern der Blick auf ein Bild. Ein ganzer Nachmittag ist so
+# blind vergangen, weil eine Prüfung rot war und deshalb nichts zu sehen gab.
+#
+# Voraussetzung bleibt ein fertig gebautes Programm: Ist schon die Übersetzung
+# gescheitert, gibt es nichts zu fotografieren, und ein zweiter Bauversuch
+# kostet nur Minuten.
+GEBAUT=$(find "${PULSE_DERIVED_DATA:-build/DerivedData}/Build/Products" \
+           -name "PulseMeter.app" -maxdepth 3 2>/dev/null | head -1 || true)
+if [ "$SHOTS" = "1" ] && [ "$APPLE" = "1" ] && [ -n "$GEBAUT" ] \
    && { [ "$SCOPE" = "alles" ] || [ "$SCOPE" = "bilder" ]; }; then
   step "Screenshots"
   note "Verwendet den vorhandenen Build weiter — es wird nicht neu übersetzt."
+  [ "$APP_OK" = "1" ] || note "Der Lauf ist gefallen — die Bilder entstehen trotzdem."
   run "Bilder in build/" scripts/run.sh build || true
   SHOTS_RAN=1
+  # Der Zweig soll sagen, aus welchem Zustand die Bilder stammen. Bilder eines
+  # roten Laufs sind nützlich, aber sie sind keine Aussage über einen Stand,
+  # der durchgelaufen wäre.
+  [ "$APP_OK" = "1" ] && export PULSE_LAUF="grün" || export PULSE_LAUF="rot"
   # Mit `--melden` gehen die Bilder auch in den Zweig `screenshots`. Ohne das
   # war die CI der einzige Weg, wie eine Sitzung ohne Zugriff auf diesen Mac
   # sie je zu sehen bekam — und damit war sie das Nadelöhr für eine Prüfung,

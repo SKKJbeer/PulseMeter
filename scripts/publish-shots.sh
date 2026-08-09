@@ -67,6 +67,14 @@ done
   echo
   echo "Erzeugt am $(date -u '+%Y-%m-%d %H:%M UTC') aus \`$STAND\` — $WOHER."
   echo
+  # Seit 0.32.8 entstehen die Bilder auch bei einem gefallenen Lauf. Dann muss
+  # hier stehen, woher sie kommen — sonst liest sich der Zweig als Beleg für
+  # einen Stand, der durchgelaufen wäre.
+  if [ "${PULSE_LAUF:-}" = "rot" ]; then
+    echo "> ⚠️ **Aus einem gefallenen Lauf.** Die Bilder zeigen, was die App"
+    echo "> tut — nicht, dass alle Prüfungen grün waren."
+    echo
+  fi
   echo "Dieser Zweig wird bei jedem Lauf **überschrieben**. Er ist keine"
   echo "Historie, sondern der jeweils aktuelle Blick auf die Oberfläche."
   echo

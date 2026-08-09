@@ -124,8 +124,19 @@ jobs:
 
       # Verwendet den Build aus dem Testschritt weiter — ein zweiter
       # vollständiger Build kostet auf einem macOS-Läufer mehrere Minuten.
+      #
+      # **`always()` und nicht `success()`.** Mit `success()` unterdrückte eine
+      # einzige rote Prüfung alle sechzehn Bilder — und damit die produktivste
+      # Prüfung, die dieses Projekt hat. Genau verkehrt herum: Wenn etwas nicht
+      # stimmt, braucht man die Bilder mehr als sonst. Ein ganzer Nachmittag
+      # ist so blind vergangen, weil ein Test rot war und deshalb nichts zu
+      # sehen gab.
+      #
+      # `continue-on-error`, damit ein gescheiterter Bilderlauf das Ergebnis
+      # nicht überschreibt: Rot bleibt rot, aus dem Grund, aus dem es rot war.
       - name: Screenshots
-        if: success()
+        if: always()
+        continue-on-error: true
         run: scripts/run.sh build
 
       # Die Bilder zusätzlich in einen Zweig, nicht nur ins Artefakt: An ein
@@ -133,9 +144,12 @@ jobs:
       # der Weg zur GitHub-API ist dort gesperrt, git aber nicht. Und ohne die
       # Bilder fehlt die produktivste Prüfung, die dieses Projekt hat.
       - name: Screenshots in den Zweig
-        if: success()
+        if: always()
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Der Zweig soll sagen, aus welchem Zustand die Bilder stammen.
+          PULSE_LAUF: ${{ job.status == 'success' && 'grün' || 'rot' }}
         run: scripts/publish-shots.sh build
 
       - name: Ergebnisse sichern
