@@ -24,6 +24,8 @@
 #   --ohne-bilder   Screenshots überspringen
 #   --seriell       Oberflächentests nacheinander statt auf mehreren Simulatoren
 #   --sauber        Ableseverzeichnis vorher wegräumen (wie die CI, langsam)
+#   --melden        Ergebnis in den Zweig `pruefungen` schreiben, damit eine
+#                   Sitzung ohne Zugriff auf diesen Rechner es sehen kann
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
@@ -32,6 +34,7 @@ ONLY=""
 SHOTS=1
 PARALLEL=1
 CLEAN=0
+REPORT=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -40,6 +43,7 @@ while [ $# -gt 0 ]; do
     --ohne-bilder) SHOTS=0 ;;
     --seriell) PARALLEL=0 ;;
     --sauber) CLEAN=1 ;;
+    --melden) REPORT=1 ;;
     -h|--hilfe|--help) sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "Unbekannter Schalter: $1" >&2; exit 2 ;;
   esac
@@ -241,8 +245,12 @@ printf "\n"
 if [ ${#FAILED[@]} -eq 0 ]; then
   printf "%sAlles durchgelaufen — %ss.%s\n" "$GREEN" "$DAUER" "$RESET"
   [ "$SHOTS_RAN" = "1" ] && note "Bilder in build/ — hell und dunkel."
+  [ "$REPORT" = "1" ] && scripts/melden.sh "grün" "$DAUER" "$SCOPE" || true
   exit 0
 fi
 printf "%s%s Schritt(e) gefallen: %s — nach %ss.%s\n" "$RED" "${#FAILED[@]}" "${FAILED[*]}" "$DAUER" "$RESET"
 printf "%sVollständige Protokolle: build/xcodebuild-test.log, %s%s\n" "$DIM" "$PROTO_LOG" "$RESET"
+# Auch ein Fehlschlag wird gemeldet. Ein Zweig, in dem nur die grünen Läufe
+# stehen, sagt genau das Falsche: Er sieht aus wie eine lückenlose Erfolgsreihe.
+[ "$REPORT" = "1" ] && scripts/melden.sh "gefallen" "$DAUER" "$SCOPE" "${FAILED[*]}" || true
 exit 1

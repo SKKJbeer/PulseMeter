@@ -97,6 +97,24 @@ jedem Push (`scripts/setup-mac.sh` richtet ihn ein, `git push --no-verify`
 | Zahlen im Prototyp | Vor dem Veröffentlichen einmal ausrechnen lassen und auf Plausibilität ansehen |
 | Erst wenn das grün ist | pushen. Die CI ist die Gegenprobe auf einem frischen Rechner, nicht der erste Durchgang |
 
+### Wurde ein Stand schon auf dem Mac geprüft?
+
+Eine Sitzung in einem Linux-Container sieht den Mac des Gründers **nicht**. Sie
+erfährt nur davon, wenn er es schreibt — oder hier:
+
+```bash
+git fetch origin pruefungen && git show origin/pruefungen:README.md | tail -5
+```
+
+Der Zweig `pruefungen` bekommt eine Zeile je lokalem Lauf: Zeitpunkt, Stand,
+Ergebnis, Umfang, Dauer, Rechner. Geschrieben wird sie vom Haken vor dem Push
+(`scripts/pruefen.sh --melden`). Steht der aktuelle Stand dort grün, ist das
+Warten auf die CI überflüssig.
+
+**Nicht als Ersatz lesen, sondern als Vorsprung.** Ein Lauf „mit Änderungen"
+sagt über den committeten Stand nichts, und `schnell` sagt nichts über die App
+im Simulator. Beides steht in der Zeile.
+
 Swift-Toolchain unter Linux: `/opt/swift/usr/bin` (Swift 6.0.3).
 Chromium für Playwright: `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`.
 

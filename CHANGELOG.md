@@ -39,6 +39,14 @@ dass er am Mac saß: Warum auf die CI warten, wenn der Rechner hier steht?
   Typprüfung, in drei Sekunden — und trotzdem eine ganze Fehlerklasse: ein
   Block, der in der falschen Struktur gelandet ist.
 
+- **Der Zweig `pruefungen`** — eine Zeile je lokalem Lauf: Zeitpunkt, Stand,
+  Ergebnis, Umfang, Dauer, Rechner, und ob das Arbeitsverzeichnis sauber war.
+  Geschrieben vom Haken vor dem Push. Damit sieht eine Sitzung, die den Mac
+  nicht erreicht, ob ein Stand dort schon geprüft wurde — statt auf eine CI zu
+  warten, deren Ergebnis längst vorliegt. **Auch Fehlschläge werden gemeldet:**
+  Ein Zweig, in dem nur die grünen Läufe stehen, sähe aus wie eine lückenlose
+  Erfolgsreihe und sagte damit das Falsche.
+
 ### Behoben
 - **0.32.0 ist auf der CI nicht übersetzt.** Beim Barrierefreiheits-Durchgang
   landete `spokenValue(for:)` in `YearBars` statt in `PeriodBars` — die

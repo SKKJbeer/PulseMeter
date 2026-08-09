@@ -28,6 +28,13 @@ nur das Geänderte.
 | `scripts/pruefen.sh --nur zurueck` | eine einzelne Oberflächenprüfung | 20 s |
 | `scripts/run.sh` | App im Simulator starten, Screenshots ablegen | 40 s |
 
+Vor jedem `git push` laufen die schnellen Prüfungen als Haken und schreiben ihr
+Ergebnis in den Zweig [`pruefungen`](../../tree/pruefungen) — eine Zeile je
+Lauf. Dadurch sieht auch eine Sitzung, die diesen Rechner nicht erreicht, ob
+ein Stand hier schon geprüft wurde, statt zwölf Minuten auf die CI zu warten.
+Überspringen: `git push --no-verify`. Nichts melden: `git config --unset
+core.hooksPath`.
+
 Voraussetzung ist Xcode aus dem App Store, einmal geöffnet und mit bestätigter
 Lizenz. Alles Weitere richtet das Skript ein.
 

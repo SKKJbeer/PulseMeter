@@ -15,4 +15,7 @@
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 printf "\033[2mVor dem Push: schnelle Prüfungen (überspringen mit --no-verify)\033[0m\n"
-exec scripts/pruefen.sh schnell --ohne-bilder
+# `--melden` schreibt das Ergebnis in den Zweig `pruefungen`. Damit sieht eine
+# Sitzung, die diesen Rechner nicht erreicht, dass der Stand hier schon geprüft
+# wurde — und wartet nicht auf eine CI, deren Ergebnis längst vorliegt.
+exec scripts/pruefen.sh schnell --ohne-bilder --melden
