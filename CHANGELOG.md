@@ -9,6 +9,52 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.32.5 — 2026-08-09
+
+**Die letzte rote Prüfung berichtigt, und die CI dorthin gestellt, wo sie
+Gegenprobe ist statt Warteschlange.**
+
+### Behoben
+- `testCreatingADualTariffMeterAsksForBothNumbers` blieb auch nach 0.32.2 rot
+  („Das Feld für den Nachtpreis fehlt"). Das Produkt war nie betroffen: Der
+  Nachtpreis steht in `priceSection`, sobald der Schalter umgelegt ist, und
+  genau dieser Schalter wurde im selben Test gefunden und bedient. Falsch waren
+  zwei Dinge in der Prüfung selbst:
+  - `app.textFields.containing(…)` sucht die Beschriftung unter den
+    **Nachfahren** des Feldes. Ein Eingabefeld hat keine — seit dem
+    Barrierefreiheits-Durchgang trägt es sie selbst. Richtig ist `matching`.
+    Bei den Textelementen weiter oben fällt der Unterschied nicht auf, weshalb
+    dieselbe Schreibweise dort seit Langem unauffällig funktioniert.
+  - Der Scroll-Helfer wischte auf `collectionViews.firstMatch`. Bei einem
+    vorgeblendeten Formular ist das die Liste **dahinter**: Das Formular bewegt
+    sich nicht, das Feld bleibt außerhalb des Bildes, und die Prüfung meldet
+    „fehlt", obwohl es da ist. Er nimmt jetzt die oberste Sammlung — was auch
+    jede künftige Prüfung an einem vorgeblendeten Formular betrifft.
+
+- Die Syntaxprüfung ließ `AppUITests/` aus — ausgerechnet die Hälfte, deren
+  Fehler am teuersten auffallen: Ein Tippfehler dort zeigte sich erst nach dem
+  vollständigen App-Build. Jetzt wird auch sie geparst, in `scripts/pruefen.sh`
+  und in der CI.
+
+### Geändert
+- Der macOS-Auftrag der CI läuft nicht mehr bei jedem Push auf einen
+  Arbeitszweig, sondern auf `main`, bei jeder Pull-Request und auf Zuruf
+  (`workflow_dispatch`). Seit 0.32.4 prüft ein Mac dasselbe in zwei statt in
+  fünfzehn Minuten und liefert die Bilder mit; auf einem Arbeitszweig war der
+  Auftrag damit keine Gegenprobe mehr, sondern die Warteschlange davor. Dazu
+  kam, dass `cancel-in-progress` ihn bei zügiger Arbeit ohnehin abbrach —
+  drei der letzten fünf Läufe endeten ohne Ergebnis und verbrauchten dabei
+  eine Dreiviertelstunde macOS-Läufer.
+
+_154 Prüfungen in `PulseCore`, alle grün. Klick-Dummy 44 von 44, hell und
+dunkel. Die Änderung an `ci.yml` ist als YAML geprüft und die Bedingung
+ausgelesen. **Die beiden Korrekturen an der Oberflächenprüfung sind
+Schlussfolgerung, nicht Messung** — hier gibt es keinen Simulator. Sie werden
+mit dem nächsten macOS-Lauf belegt oder widerlegt; bis dahin gilt der Stand als
+ungeprüft._
+
+---
+
 ## 0.32.4 — 2026-08-09
 
 **Der lokale Lauf liefert jetzt alles, was auch die CI liefert — die Bilder

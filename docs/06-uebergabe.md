@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-08-09, Version 0.32.4
+Stand: 2026-08-09, Version 0.32.5
 
 ---
 
@@ -45,6 +45,7 @@ das ist einer Sitzung passiert.
 | 0.32.2 | zwei Oberflächenprüfungen berichtigt | **noch nicht auf einem Mac geprüft** |
 | 0.32.3 | `scripts/mac-start.sh` und `Am-Mac-starten.command` — ein Aufruf für alles | **noch nicht auf einem Mac geprüft** |
 | 0.32.4 | Der lokale Lauf liefert jetzt dasselbe wie die CI, inklusive Bilder | **noch nicht auf einem Mac geprüft** |
+| 0.32.5 | Die letzte rote Oberflächenprüfung berichtigt; macOS-Auftrag der CI nur noch auf `main`, bei Pull-Requests und auf Zuruf | **noch nicht auf einem Mac geprüft** |
 
 ### Was als Nächstes zu tun ist
 
@@ -60,17 +61,30 @@ das ist einer Sitzung passiert.
 
 ### Was zuletzt rot war und warum
 
-Der Lauf auf `164c7df` meldete zwei Fehlschläge. Beide waren echt, beide sind
-in 0.32.2 berichtigt — aber ungeprüft:
+Der Lauf auf `6df2969` (0.32.2) meldete **21 Prüfungen, ein Fehlschlag**. Die
+Korrektur an `testTheReportCarriesBothTariffsOfADualTariffMeter` hat gehalten;
+die andere nicht:
 
-- `testCreatingADualTariffMeterAsksForBothNumbers` suchte nach dem sichtbaren
-  Text „Arbeitspreis nachts". Den gibt es für VoiceOver nicht mehr: Seit dem
-  Barrierefreiheits-Durchgang trägt das **Eingabefeld** die Beschriftung, und
-  der Text daneben ist versteckt. Der Test hat damit eine echte Änderung
-  gemeldet und die falsche Schlussfolgerung nahegelegt.
-- `testTheReportCarriesBothTariffsOfADualTariffMeter` fand „Wärmepumpe"
-  zweimal — einmal im Bericht, einmal in der Zählerauswahl darunter.
-  `firstMatch` löst es.
+```
+LaunchTests.swift:629: XCTAssertTrue failed - Das Feld für den Nachtpreis fehlt
+```
+
+Das Produkt ist in Ordnung — `priceSection` zeigt „Arbeitspreis nachts", sobald
+der Schalter steht, und der Schalter wurde im selben Test gefunden und
+umgelegt. Rot war die **Prüfung**, aus zwei Gründen, die in 0.32.5 beide
+geschlossen sind:
+
+- `app.textFields.containing(…)` sucht die Beschriftung unter den **Nachfahren**
+  des Feldes. Ein Eingabefeld hat keine; die Beschriftung hängt seit 0.32.0 am
+  Feld selbst. Richtig ist `matching`. Bei den `staticTexts` weiter oben fällt
+  der Unterschied nicht auf — deshalb ist er so lange durchgegangen.
+- Der Scroll-Helfer wischte auf `collectionViews.firstMatch`. Bei einem
+  vorgeblendeten Formular ist das die Liste **dahinter**; das Formular bewegt
+  sich nicht, das Feld bleibt außerhalb des Bildes, und der Test meldet „fehlt".
+  Er nimmt jetzt die oberste Sammlung.
+
+**Beides ist Schlussfolgerung, nicht Messung.** Ein Simulator stand hier nicht
+zur Verfügung. Der erste Lauf auf einem Mac entscheidet.
 
 ### Was ich nicht prüfen konnte
 

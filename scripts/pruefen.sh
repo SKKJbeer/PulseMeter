@@ -119,8 +119,13 @@ if [ "$SCOPE" != "bilder" ]; then
   # Hilfsfunktion war in die benachbarte Struktur gerutscht, und der Lauf
   # meldete es nach fünfzehn Minuten. Hier kostet es drei Sekunden.
   if command -v swiftc >/dev/null 2>&1; then
+    # `AppUITests` gehört dazu. Es fehlte, und das ist die schlechtere Hälfte:
+    # Ein Tippfehler in einer Oberflächenprüfung fällt sonst erst nach dem
+    # vollständigen App-Build auf — also nach der teuersten Minute des Laufs,
+    # für einen Fehler, der drei Sekunden zum Finden braucht.
     run "Syntax der iOS-Quellen" swiftc -parse \
-      App/*.swift Packages/PulseUI/Sources/PulseUI/*.swift Widget/*.swift || true
+      App/*.swift Packages/PulseUI/Sources/PulseUI/*.swift Widget/*.swift \
+      AppUITests/*.swift || true
   fi
 fi
 

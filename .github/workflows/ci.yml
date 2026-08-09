@@ -58,7 +58,27 @@ jobs:
       - name: Klick-Dummy prüfen
         run: node scripts/check-prototype.mjs
 
+  # Nicht mehr bei jedem Push auf einen Arbeitszweig.
+  #
+  # **Warum.** Der Auftrag braucht zwölf bis fünfzehn Minuten, und seit 0.32.4
+  # prüft `scripts/pruefen.sh` auf einem Mac dasselbe in zwei — inklusive der
+  # Bilder, die seither auch von dort in den Zweig `screenshots` gehen. Damit
+  # war dieser Auftrag auf einem Arbeitszweig nicht die Gegenprobe, sondern die
+  # Warteschlange davor.
+  #
+  # Dazu kam ein Nebeneffekt, der ihn dort ohnehin wertlos machte: Bei
+  # zügiger Arbeit bricht `cancel-in-progress` den Lauf ab, bevor der App-Build
+  # durch ist. Drei der letzten fünf Läufe endeten so — abgebrochen, ohne je
+  # ein Ergebnis geliefert zu haben, und trotzdem eine Dreiviertelstunde
+  # macOS-Läufer verbraucht.
+  #
+  # Er läuft weiter, wo er wirklich die Gegenprobe ist: auf `main`, bei jeder
+  # Pull-Request und auf Zuruf über `workflow_dispatch`.
   build-and-test:
+    if: >-
+      github.event_name == 'pull_request' ||
+      github.event_name == 'workflow_dispatch' ||
+      github.ref == 'refs/heads/main'
     runs-on: macos-15
     timeout-minutes: 45
 
@@ -81,7 +101,7 @@ jobs:
       # einen Block ab, der in der falschen Struktur gelandet ist — 0.32.0 ging
       # genau daran zu Bruch, und zwar erst nach dem Paketbau.
       - name: Syntax der iOS-Quellen
-        run: swiftc -parse App/*.swift Packages/PulseUI/Sources/PulseUI/*.swift Widget/*.swift
+        run: swiftc -parse App/*.swift Packages/PulseUI/Sources/PulseUI/*.swift Widget/*.swift AppUITests/*.swift
 
       # Die Domäne zuerst: schnell, und wenn sie bricht, ist alles andere egal.
       - name: PulseCore

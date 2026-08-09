@@ -42,10 +42,18 @@ final class LaunchTests: XCTestCase {
         // auf `app` landet unter Umständen auf der Tab-Leiste und bewegt
         // nichts. Ein `Form` ist unter der Haube eine Sammlung, ein
         // `ScrollView` eine Bildlaufansicht — beides kommt vor.
+        //
+        // **Und zwar die oberste, nicht die erste.** Ein vorgeblendetes
+        // Formular legt eine zweite Sammlung über die Liste dahinter.
+        // `firstMatch` trifft die hintere; ein Wisch darauf bewegt das
+        // Formular nicht, das Feld bleibt außerhalb des Bildes, und der Test
+        // meldet „Feld fehlt", obwohl es da ist und nur nicht sichtbar.
+        // Genau so las sich der Fehlschlag von 0.32.2.
         let container: XCUIElement = {
-            if app.collectionViews.firstMatch.exists { return app.collectionViews.firstMatch }
-            if app.tables.firstMatch.exists { return app.tables.firstMatch }
-            if app.scrollViews.firstMatch.exists { return app.scrollViews.firstMatch }
+            for query in [app.collectionViews, app.tables, app.scrollViews] {
+                let anzahl = query.count
+                if anzahl > 0 { return query.element(boundBy: anzahl - 1) }
+            }
             return app
         }()
         for _ in 0..<swipes {
@@ -623,11 +631,15 @@ final class LaunchTests: XCTestCase {
         // der nach dem sichtbaren Text sucht, findet ihn deshalb zu Recht
         // nicht mehr. Er hat damit eine echte Änderung gemeldet, nur die
         // falsche Schlussfolgerung nahegelegt.
-        let nachtPreis = app.textFields.containing(
+        // `matching` und nicht `containing`: Die Beschriftung hängt am Feld
+        // selbst, und `containing` sucht sie unter dessen Nachfahren. Bei den
+        // Texten weiter oben fällt der Unterschied nicht auf, bei einem
+        // Eingabefeld schon — es hat keine.
+        let nachtPreis = app.textFields.matching(
             NSPredicate(format: "label BEGINSWITH 'Arbeitspreis nachts'")
         ).firstMatch
         XCTAssertTrue(scroll(to: nachtPreis, in: app), "Das Feld für den Nachtpreis fehlt")
-        XCTAssertTrue(app.textFields.containing(
+        XCTAssertTrue(app.textFields.matching(
             NSPredicate(format: "label BEGINSWITH 'Arbeitspreis tagsüber'")
         ).firstMatch.exists,
                       "Mit zwei Preisen muss der erste sagen, für wann er gilt")
