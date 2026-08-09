@@ -9,6 +9,42 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.32.9 — 2026-08-09
+
+**Der Schalter war nie umgelegt. Gemessen, nicht geraten.**
+
+### Behoben
+- `testCreatingADualTariffMeterAsksForBothNumbers` tippte auf den Schalter
+  „Zwei Preise: Tag und Nacht" und lief weiter, ohne nachzusehen, ob er
+  wirklich umgelegt ist. Er war es nicht: Ein `tap()` auf eine Formularzeile
+  geht still ins Leere, wenn die Zeile noch in Bewegung ist — hier, weil kurz
+  zuvor die Tastatur ausgeblendet wurde und das Formular zurückspringt.
+  Die Prüfung suchte danach ein Feld, das die App zu Recht nicht zeigte, und
+  meldete „Das Feld für den Nachtpreis fehlt". Sie prüft jetzt den Zustand des
+  Schalters, versucht es bei Bedarf ein zweites Mal und sagt andernfalls genau
+  das, statt einen Produktfehler zu behaupten.
+- **Das Produkt war nie betroffen.** Die Aufstellung aus 0.32.7 hat es belegt:
+  drei Textfelder statt vier, und das erste hieß „Arbeitspreis in Euro je kWh"
+  statt „Arbeitspreis tagsüber". Beides sagt dasselbe — `hasDualTariff` stand
+  auf `false`.
+- Nebenbei zwei Diagnosen widerlegt, die 0.32.2 und 0.32.5 zugrunde lagen:
+  Der Baum enthält genau **eine** Sammlung, also lag es nicht am Schieben auf
+  der falschen Liste; und die Beschriftung hängt tatsächlich am Feld, also war
+  auch `matching` statt `containing` nicht die Ursache. Beide Änderungen
+  bleiben — sie sind für sich richtig —, aber sie waren nicht die Korrektur.
+- Der Fehlerfilter in `scripts/test.sh` und `scripts/pruefen.sh` zeigte nur die
+  **erste** Zeile einer Begründung. Ausgerechnet die Prüfung, die bei einem
+  Fehlschlag den halben Zugänglichkeitsbaum ausgibt, war damit dort stumm, wo
+  sie helfen sollte — die Aufstellung ließ sich nur noch aus dem Artefakt der
+  CI holen. Beide zeigen jetzt zwölf Folgezeilen mit.
+
+_154 Prüfungen in `PulseCore`, alle grün. Klick-Dummy 44 von 44, hell und
+dunkel. `AppUITests` parsen sauber. Die Korrektur selbst beruht diesmal auf
+einer Messung aus einem macOS-Lauf, nicht auf einer Vermutung — belegt bleibt
+sie erst mit dem nächsten Lauf._
+
+---
+
 ## 0.32.8 — 2026-08-09
 
 **Ein roter Lauf lieferte bisher keine einzige Aufnahme. Genau verkehrt

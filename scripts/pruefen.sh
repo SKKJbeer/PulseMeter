@@ -221,7 +221,12 @@ elif [ "$SCOPE" = "alles" ] || [ "$SCOPE" = "app" ]; then
     bad "App und Oberflächentests" "$(( $(date +%s) - began ))"
     APP_OK=0
     printf "\n  %sGefallene Prüfungen, mit Begründung%s\n" "$YELLOW" "$RESET"
-    grep -E "error:|Assertion Failure|XCTAssert|Failing tests:" "$LOG" | tail -30 | sed 's/^/    /'
+    # `-A 12`, weil eine Begründung mehrzeilig sein darf. Ohne das kam nur die
+    # erste Zeile an — und eine Prüfung, die bei einem Fehlschlag den halben
+    # Zugänglichkeitsbaum ausgibt, war damit genau dort stumm, wo sie helfen
+    # sollte. Die Aufstellung ließ sich nur noch aus dem Artefakt der CI holen.
+    grep -A 12 -E "error:|Assertion Failure|XCTAssert|Failing tests:" "$LOG" \
+      | tail -45 | sed 's/^/    /'
   fi
 fi
 

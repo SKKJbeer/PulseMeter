@@ -621,6 +621,25 @@ final class LaunchTests: XCTestCase {
         XCTAssertTrue(scroll(to: toggle, in: app), "Der Schalter ließ sich nicht erreichen")
         toggle.tap()
 
+        // **Nachsehen, ob er wirklich umgelegt ist.** Ein `tap()` auf einen
+        // Schalter in einem Formular geht still ins Leere, wenn die Zeile
+        // gerade noch in Bewegung ist — hier, weil kurz zuvor die Tastatur
+        // ausgeblendet wurde und das Formular zurückspringt.
+        //
+        // Genau das ist zweimal unentdeckt geblieben und hat zwei falsche
+        // Diagnosen ausgelöst: Die Prüfung lief weiter, das Nachtpreis-Feld
+        // fehlte, und der Fehlschlag las sich wie „die App zeigt es nicht" —
+        // dabei hatte niemand den Schalter umgelegt. Die Messung hat es
+        // gezeigt: Das erste Preisfeld hieß noch „Arbeitspreis" statt
+        // „Arbeitspreis tagsüber", und im ganzen Baum lagen drei Felder statt
+        // vier.
+        //
+        // Ein zweiter Versuch statt einer längeren Wartezeit: Sitzt der erste,
+        // kostet die Abfrage nichts.
+        if toggle.value as? String != "1" { toggle.tap() }
+        XCTAssertEqual(toggle.value as? String, "1",
+                       "Der Schalter für Tag- und Nachtstrom ließ sich nicht umlegen")
+
         // Zwei Arbeitspreise heißt: zwei Felder. Vorher gab es nur eines, und
         // der Nachtpreis hätte nirgends hingekonnt.
         //

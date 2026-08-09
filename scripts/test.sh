@@ -54,8 +54,12 @@ if [ "$SCOPE" = "all" ] || [ "$SCOPE" = "app" ]; then
   if [ "$status" -ne 0 ]; then
     echo
     echo "--- Gefallene Prüfungen, mit Begründung ---"
-    grep -E "error:|Assertion Failure|XCTAssert|Failing tests:|^[[:space:]]+[A-Za-z]+Tests\." "$LOG" \
-      | tail -80
+    # `-A 12`: Eine Begründung darf mehrzeilig sein. Ohne das kam nur ihre
+    # erste Zeile an, und der Rest — bei einer Prüfung, die den halben
+    # Zugänglichkeitsbaum ausgibt, die eigentliche Auskunft — blieb im
+    # Artefakt liegen.
+    grep -A 12 -E "error:|Assertion Failure|XCTAssert|Failing tests:|^[[:space:]]+[A-Za-z]+Tests\." "$LOG" \
+      | tail -100
     echo "--- Ende ---"
     exit "$status"
   fi
