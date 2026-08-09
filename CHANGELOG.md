@@ -9,6 +9,35 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.32.10 — 2026-08-09
+
+**Der Weg zum ersten Go-Live, mit Streichliste.**
+
+### Hinzugefügt
+- `docs/07-v1-plan.md`: Was für 1.0 wirklich hinein muss, was gestrichen wird
+  und in welcher Reihenfolge. Kernaussage: Der Engpass ist kein Feature,
+  sondern das Apple Developer Program — ohne das gibt es kein TestFlight,
+  keinen App Store, keine Paywall und keine App-Gruppe fürs Widget.
+- Zwei Posten sind für 1.0 gestrichen und stehen jetzt in 1.1: **Foto-Belege**
+  (größtes Restrisiko im Umfang — Bilder in CloudKit, Speicherplatz, Export,
+  Löschen, Zählerwechsel; und niemand vermisst sie, der die App noch nicht hat)
+  und der **Siri-Kurzbefehl**. Dazu der Vermerk, dass beide dann auch nicht in
+  der Pro-Beschreibung im Store auftauchen dürfen: Ein verkauftes Merkmal, das
+  es nicht gibt, ist eine Rückerstattung und eine schlechte Bewertung.
+- Benannt, was bisher nirgends stand und am meisten unterschätzt wird: das
+  App-Store-Material — Icon, Bilder je Gerätegröße, Texte, Datenschutzerklärung
+  mit erreichbarer URL, Support-Adresse. Es ist nicht angefangen und blockiert
+  am Ende die Einreichung.
+
+### Geändert
+- `docs/05-roadmap.md` verweist für den 1.0-Umfang auf das neue Dokument und
+  führt die beiden Streichungen mit Begründung.
+
+_154 Prüfungen in `PulseCore`, alle grün. Klick-Dummy 44 von 44, hell und
+dunkel. Diese Version ändert nur Dokumente und Versionsnummern._
+
+---
+
 ## 0.32.9 — 2026-08-09
 
 **Der Schalter war nie umgelegt. Gemessen, nicht geraten.**

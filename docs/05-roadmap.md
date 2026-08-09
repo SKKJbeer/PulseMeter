@@ -56,6 +56,22 @@ Der v1-Scope ist bewusst schmerzhaft klein. Jede Funktion, die wir vor dem erste
 
 ---
 
+### Nachträglich für 1.0 gestrichen
+
+Der Umfang oben war die Planung vor der Umsetzung. Für den ersten Go-Live ist
+er bewusst weiter beschnitten worden — die Begründung je Posten steht in
+[`07-v1-plan.md`](07-v1-plan.md), der ab hier den Vorrang hat:
+
+| Gestrichen | Nach | Kurz |
+|---|---|---|
+| Foto-Belege *(Pro)* | 1.1 | Größtes Restrisiko, und niemand vermisst es, der die App noch nicht hat |
+| Siri-Kurzbefehl *(Pro)* | 1.1 | Wer die App nicht kennt, richtet keinen Kurzbefehl ein |
+
+Alles andere aus der Liste steht bereits. Der Engpass ist kein Feature, sondern
+das Apple Developer Program.
+
+---
+
 ## v1.1 – „Für mehr als eine Wohnung"
 
 - Objekte und Einheiten in der Oberfläche
@@ -96,7 +112,7 @@ Die Reihenfolge ist bewusst nicht „Screens von oben nach unten", sondern nach 
 
 ---
 
-## Aktueller Stand — Version 0.32.9
+## Aktueller Stand — Version 0.32.10
 
 | Schritt | Stand |
 |---|---|
