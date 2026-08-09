@@ -634,11 +634,24 @@ final class LaunchTests: XCTestCase {
         // „Arbeitspreis tagsüber", und im ganzen Baum lagen drei Felder statt
         // vier.
         //
-        // Ein zweiter Versuch statt einer längeren Wartezeit: Sitzt der erste,
-        // kostet die Abfrage nichts.
-        if toggle.value as? String != "1" { toggle.tap() }
+        // Ein zweiter Tipper half nicht — gemessen: Der Wert blieb „0". Ein
+        // `tap()` auf einen Schalter landet in dessen Mitte, und die liegt bei
+        // einer Formularzeile auf der **Beschriftung**, nicht auf dem Knopf.
+        // Deshalb der zweite Weg über den Rand: 90 % der Breite, also dort, wo
+        // der Schalter tatsächlich sitzt.
+        //
+        // Beide Wege nacheinander statt eines geratenen: Sitzt der erste, kostet
+        // die Abfrage nichts. Sitzt keiner, sagt die Meldung unten, woran es
+        // liegt — statt wieder nur „ging nicht".
+        if toggle.value as? String != "1" {
+            toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+        }
         XCTAssertEqual(toggle.value as? String, "1",
-                       "Der Schalter für Tag- und Nachtstrom ließ sich nicht umlegen")
+                       """
+                       Der Schalter für Tag- und Nachtstrom ließ sich nicht umlegen.
+                       bedienbar=\(toggle.isEnabled) sichtbar=\(toggle.isHittable) \
+                       rahmen=\(toggle.frame) wert=\(String(describing: toggle.value))
+                       """)
 
         // Zwei Arbeitspreise heißt: zwei Felder. Vorher gab es nur eines, und
         // der Nachtpreis hätte nirgends hingekonnt.

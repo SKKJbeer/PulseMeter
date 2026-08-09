@@ -9,6 +9,41 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.33.1 — 2026-08-09
+
+**Der Schalter wird nie umgelegt — jetzt gemessen statt vermutet. Und der
+PDF-Bericht bekommt Zeit, sich zu zeigen.**
+
+### Behoben
+- `testCreatingADualTariffMeterAsksForBothNumbers`: Die Aufstellung aus 0.32.9
+  hat es benannt — `("Optional("0")") ≠ ("Optional("1")")`. Der Schalter steht
+  nach zwei Tippern immer noch auf „aus". Ein `tap()` landet in der **Mitte**
+  des Schalters, und die liegt bei einer Formularzeile auf der Beschriftung,
+  nicht auf dem Knopf. Die Prüfung tippt jetzt zusätzlich bei 90 % der Breite
+  an — dort, wo der Schalter tatsächlich sitzt — und gibt bei einem Fehlschlag
+  `isEnabled`, `isHittable`, Rahmen und Wert aus.
+- `scripts/run.sh` kennt `PULSE_WARTEN`. Der PDF-Bericht bekommt 15 statt 4
+  Sekunden. Vier genügen für jeden Bildschirm, den SwiftUI selbst zeichnet —
+  nicht aber für ein Blatt, das erst gesetzt werden muss. Damit wird die Frage
+  entscheidbar, die das erste Bild des Berichts aufgeworfen hat: Bleiben die
+  sechs Seiten auch nach 15 Sekunden leer, rendert der Bericht leer, und das
+  ist ein Produktfehler.
+
+### Angemerkt
+- Drei Diagnosen zu derselben Prüfung sind inzwischen widerlegt — 0.32.2,
+  0.32.5 und 0.32.9 —, jede durch eine Messung, keine durch ein Argument. Die
+  Lehre steht in `docs/06-uebergabe.md` und in `docs/08-baukasten.md`: Nach dem
+  zweiten Fehlversuch nicht weiterraten, sondern die Prüfung dazu bringen, den
+  Zustand zu berichten. Der eine Lauf mit Aufstellung hat mehr geklärt als drei
+  Vermutungen davor.
+
+_154 Prüfungen in `PulseCore`, alle grün. Klick-Dummy 44 von 44, hell und
+dunkel. `AppUITests` parsen sauber, Zeichenketten in Ordnung. Beide Korrekturen
+brauchen einen Simulator und sind hier deshalb ungeprüft — der nächste
+macOS-Lauf entscheidet, und er liefert dank 0.32.8 in jedem Fall die Bilder._
+
+---
+
 ## 0.33.0 — 2026-08-09
 
 **Die selbsttätige Prüfung ist zurück — und das Aufbauschema ist jetzt

@@ -41,15 +41,23 @@ xcrun simctl install "$DEVICE" "$APP"
 # Immer mit `-pulse-reset`: Sonst zeigen die Bilder, was die Oberflächentests
 # vorher im Simulator hinterlassen haben — bei einem frisch aufgesetzten Läufer
 # also den leeren Zustand, bei einem wiederverwendeten irgendetwas dazwischen.
+#
+# `PULSE_WARTEN` setzt die Wartezeit für einen einzelnen Schuss hoch. Vier
+# Sekunden genügen für jeden Bildschirm, den SwiftUI selbst zeichnet — nicht
+# aber für ein Blatt, das erst gesetzt werden muss. Das erste Bild des
+# PDF-Berichts, das je jemand gesehen hat, zeigte sechs **leere** Seitenrahmen.
+# Ob die Vorschau nur noch nicht fertig war oder der Bericht wirklich leer
+# rendert, war daran nicht zu unterscheiden — deshalb bekommt er hier deutlich
+# mehr Zeit. Bleibt er auch dann leer, ist die Frage beantwortet.
 shoot() {
   local mode="$1" name="$2"
   shift 2
   xcrun simctl ui "$DEVICE" appearance "$mode" >/dev/null 2>&1 || true
   xcrun simctl terminate "$DEVICE" com.pulsemeter.app >/dev/null 2>&1 || true
   xcrun simctl launch "$DEVICE" com.pulsemeter.app -pulse-reset "$@" >/dev/null
-  sleep 4
+  sleep "${PULSE_WARTEN:-4}"
   xcrun simctl io "$DEVICE" screenshot "$OUTDIR/$name.png"
-  echo "Screenshot: $OUTDIR/$name.png"
+  echo "Screenshot: $OUTDIR/$name.png (nach ${PULSE_WARTEN:-4}s)"
 }
 
 shoot light screenshot-light
@@ -62,8 +70,8 @@ shoot light screenshot-zurueck-light -pulse-capture-step2
 shoot dark  screenshot-zurueck-dark  -pulse-capture-step2
 shoot light screenshot-verlauf-light -pulse-verlauf
 shoot dark  screenshot-verlauf-dark  -pulse-verlauf
-shoot light screenshot-bericht-light -pulse-bericht
-shoot dark  screenshot-bericht-dark  -pulse-bericht
+PULSE_WARTEN=15 shoot light screenshot-bericht-light -pulse-bericht
+PULSE_WARTEN=15 shoot dark  screenshot-bericht-dark  -pulse-bericht
 shoot light screenshot-leer-light -pulse-empty
 shoot dark  screenshot-leer-dark  -pulse-empty
 shoot light screenshot-zaehler-light -pulse-zaehler

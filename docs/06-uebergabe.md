@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-08-09, Version 0.33.0
+Stand: 2026-08-09, Version 0.33.1
 
 ---
 
@@ -70,21 +70,33 @@ LaunchTests.swift:629: XCTAssertTrue failed - Das Feld für den Nachtpreis fehlt
 ```
 
 Das Produkt ist in Ordnung — `priceSection` zeigt „Arbeitspreis nachts", sobald
-der Schalter steht, und der Schalter wurde im selben Test gefunden und
-umgelegt. Rot war die **Prüfung**, aus zwei Gründen, die in 0.32.5 beide
-geschlossen sind:
+der Schalter steht. **Rot ist die Prüfung**, und inzwischen ist auch gemessen,
+woran:
 
-- `app.textFields.containing(…)` sucht die Beschriftung unter den **Nachfahren**
-  des Feldes. Ein Eingabefeld hat keine; die Beschriftung hängt seit 0.32.0 am
-  Feld selbst. Richtig ist `matching`. Bei den `staticTexts` weiter oben fällt
-  der Unterschied nicht auf — deshalb ist er so lange durchgegangen.
-- Der Scroll-Helfer wischte auf `collectionViews.firstMatch`. Bei einem
-  vorgeblendeten Formular ist das die Liste **dahinter**; das Formular bewegt
-  sich nicht, das Feld bleibt außerhalb des Bildes, und der Test meldet „fehlt".
-  Er nimmt jetzt die oberste Sammlung.
+```
+LaunchTests.swift:640: XCTAssertEqual failed: („Optional(„0“)“) ≠ („Optional(„1“)“)
+                       — Der Schalter für Tag- und Nachtstrom ließ sich nicht umlegen
+```
 
-**Beides ist Schlussfolgerung, nicht Messung.** Ein Simulator stand hier nicht
-zur Verfügung. Der erste Lauf auf einem Mac entscheidet.
+**Der Schalter wird nie umgelegt.** Die Prüfung tippt ihn an und läuft weiter,
+und alles Weitere sucht danach ein Feld, das die App zu Recht nicht zeigt.
+
+Drei Diagnosen sind dabei **widerlegt** worden, alle drei durch Messung:
+
+| Vermutung | Version | Widerlegt durch |
+|---|---|---|
+| Sichtbarer Text statt Feldbeschriftung | 0.32.2 | blieb rot |
+| `containing` statt `matching`; falsche Sammlung beim Schieben | 0.32.5 | Baum enthält genau **eine** Sammlung, und die Beschriftung hängt am Feld |
+| Ein zweiter Tipper genügt | 0.32.9 | Wert blieb „0" |
+
+Was bleibt: Ein `tap()` landet in der **Mitte** des Schalters, und die liegt bei
+einer Formularzeile auf der Beschriftung statt auf dem Knopf. 0.33.1 tippt
+deshalb zusätzlich bei 90 % der Breite an und gibt bei einem Fehlschlag
+`isEnabled`, `isHittable`, Rahmen und Wert aus.
+
+**Die Lehre, teuer bezahlt:** Nach dem zweiten Fehlversuch nicht weiterraten,
+sondern die Prüfung dazu bringen, den Zustand zu berichten. Der eine Lauf mit
+Aufstellung hat mehr geklärt als drei Vermutungen davor.
 
 ### Der wichtigste offene Punkt: Der PDF-Bericht zeigt sechs leere Seiten
 
