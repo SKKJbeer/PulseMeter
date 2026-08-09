@@ -479,10 +479,15 @@ struct OverviewView: View {
                 let periods = try repository.billingPeriods(for: point.id)
                 let costs = cost(point: point, readings: everything,
                                  tariffs: tariffs, in: yearRange)
-                let result = ConsumptionEngine.consumption(register: register,
-                                                           readings: primary, in: yearRange)
-                let comparison = ConsumptionEngine.yearOverYear(register: register,
-                                                               readings: primary, in: yearRange)
+                // **Menge und Vergleich gehören zum Zähler, nicht zum ersten
+                // Zählwerk.** Bei einem Doppeltarifzähler stünde sonst der
+                // Hochtarif allein auf der Karte, und der Niedertarif fehlte
+                // wortlos. Beim Zweirichtungszähler ändert sich dadurch nichts:
+                // Die Einspeisung ist kein Bezug und zählt nicht mit.
+                let result = ConsumptionEngine.consumption(meteringPoint: point,
+                                                           readings: everything, in: yearRange)
+                let comparison = ConsumptionEngine.yearOverYear(meteringPoint: point,
+                                                               readings: everything, in: yearRange)
                 return MeterRow(
                     id: point.id,
                     name: point.name,
@@ -495,7 +500,7 @@ struct OverviewView: View {
                     fractionDigits: register.fractionDigits,
                     yearToDate: result,
                     changeVersusLastYear: comparison?.relativeChange,
-                    monthlySeries: monthlySeries(register: register, readings: primary, today: today),
+                    monthlySeries: monthlySeries(point: point, readings: everything, today: today),
                     daysSinceReading: last.map { today.days(since: $0.day) },
                     isDue: ConsumptionEngine.isReadingDue(meteringPoint: point,
                                                           readings: primary, today: today),
@@ -622,7 +627,7 @@ struct OverviewView: View {
     ///
     /// Monate ohne vollständige Daten werden ausgelassen und nicht als Null
     /// gezeichnet — eine Datenlücke ist kein Nullverbrauch.
-    private func monthlySeries(register: Register, readings: [Reading], today: CalendarDay) -> [Double] {
+    private func monthlySeries(point: MeteringPoint, readings: [Reading], today: CalendarDay) -> [Double] {
         var values: [Double] = []
         for offset in stride(from: 12, through: 1, by: -1) {
             var month = today.month - offset
@@ -633,7 +638,7 @@ struct OverviewView: View {
             guard let from = CalendarDay(year: year, month: month, day: 1),
                   let to = CalendarDay(year: nextYear, month: nextMonth, day: 1),
                   let range = DayRange(start: from, end: to) else { continue }
-            let result = ConsumptionEngine.consumption(register: register, readings: readings, in: range)
+            let result = ConsumptionEngine.consumption(meteringPoint: point, readings: readings, in: range)
             guard result.isComplete else { continue }
             values.append(NSDecimalNumber(decimal: result.quantity.value).doubleValue)
         }

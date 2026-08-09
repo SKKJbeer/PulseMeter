@@ -9,6 +9,63 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.31.0 — 2026-08-09
+
+**Doppeltarif (HT/NT) in der App.** Ein Gerät, zwei Arbeitspreise — der
+klassische Nachtspeicher- und Wärmepumpentarif. Der Rechenkern konnte das seit
+dem ersten Tag, der Entwurf seit 0.30.0; was fehlte, war die Möglichkeit, so
+einen Zähler überhaupt **anzulegen** — und alles, was danach kommt.
+
+### Neu
+- **Schalter „Zwei Preise: Tag und Nacht"** im Zähler-Editor, neben dem für die
+  Einspeisung. Weder „Doppeltarif" noch „HT/NT": Beides sind Wörter von der
+  Rechnung. Der Nutzer weiß, dass sein Strom nachts weniger kostet.
+- **Zwei Arbeitspreise**, „tagsüber" und „nachts". Der erste heißt erst dann
+  „Arbeitspreis tagsüber", wenn es einen zweiten gibt.
+- Beide Zahlen werden **in einem Vorgang** erfasst — derselbe Ablauf wie beim
+  Zweirichtungszähler, mit dem Weg zurück aus 0.30.1.
+- Ein Doppeltarifzähler in den Beispieldaten: **Wärmepumpe**, mit denselben
+  Preisen wie im Entwurf.
+
+### Geändert — und das ist der eigentliche Teil
+- **`ConsumptionEngine.consumption(meteringPoint:…)`**: Der Verbrauch eines
+  Zählers ist die Summe seiner Bezugs-Zählwerke, **zugeschnitten auf den
+  Zeitausschnitt, den alle abdecken**. Wer den Hochtarif bis August abgelesen
+  hat und den Niedertarif bis Mai, hat für den Zähler eine Aussage bis Mai. Die
+  Summe über zwei verschieden lange Zeiträume wäre keine — das ist die
+  wiederkehrende Fehlerklasse aus `CLAUDE.md`, und sie steht jetzt als Prüfung
+  im Rechenkern.
+- Karte, Vorjahresvergleich, Zwölf-Monats-Linie, Verlauf, Vergleichskarte und
+  **Widget** rechnen über den Zähler statt über sein erstes Zählwerk. Bei einem
+  gewöhnlichen Zähler und beim Zweirichtungszähler ändert sich dadurch nichts:
+  Die Einspeisung ist kein Bezug und zählt nicht mit.
+- **Der Export verliert nichts mehr.** Bisher ging nur das erste Zählwerk in
+  die CSV-Datei — bei einem Doppeltarifzähler die Hälfte der Daten, und die
+  Datei sah vollständig aus. Neue Spalte „Bezeichnung", aber nur bei Zählern
+  mit mehr als einer Zahl. Gilt in App **und** Entwurf; dort war derselbe
+  Fehler.
+- **Ein Tarif je Zählwerk**, und der Grundpreis steht nur am ersten: Er gehört
+  zum Anschluss, und der Anschluss ist einer.
+
+### Behoben
+- Beim Zweirichtungszähler blieb die neue Spalte im Entwurf für den Bezug
+  **leer** — daneben stand „Einspeisung", und niemand konnte das Leerfeld
+  deuten. Ohne eigenen Namen ergibt er sich jetzt aus der Richtung.
+
+### Geprüft
+- `PulseCore`: **143 Prüfungen**, acht davon neu. Darunter die Fehlerklasse als
+  Prüfung: Hochtarif bis August, Niedertarif bis Mai — 2.541 kWh bis zum
+  1. Juni, nicht 2.916 kWh über zwei verschiedene Zeiträume.
+- **Kosten auf den Cent gegen die Handrechnung**: 1.232,0 × 0,31 € +
+  1.309,0 × 0,21 € = 656,81 €, Grundpreis 8,90 €/Monat × 12 ÷ 365 × 151 Tage
+  = 44,18 €, zusammen **700,99 €** — derselbe Betrag, den der Entwurf zeigt.
+- Klick-Dummy: **44 Prüfungen** in Hell und Dunkel, vier davon neu für den
+  Export.
+- Neue Oberflächenprüfung: Zähler mit zwei Preisen anlegen, beide Felder
+  vorhanden, Erfassung fragt Hochtarif und Niedertarif nacheinander.
+
+---
+
 ## 0.30.1 — 2026-08-09
 
 **Aus der Erfassung führt wieder ein Weg zurück.** Vom Gründer beim

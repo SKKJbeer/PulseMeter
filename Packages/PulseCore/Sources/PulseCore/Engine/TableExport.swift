@@ -33,6 +33,70 @@ public enum TableExport {
         return lines.joined(separator: "\r\n") + "\r\n"
     }
 
+    /// Alle Ablesungen eines Zählers, älteste zuerst.
+    ///
+    /// **Warum es diese zweite Fassung gibt.** Ein Doppeltarifzähler führt zwei
+    /// Zahlen. Wer nur die des ersten Zählwerks exportiert, verliert beim
+    /// Export die Hälfte seiner Daten — und merkt es an der Datei nicht, weil
+    /// sie vollständig aussieht. Produktprinzip 5 ist damit gebrochen, bevor
+    /// jemand die Datei öffnet.
+    ///
+    /// Die Spalte „Bezeichnung" steht nur da, wenn es mehr als eine Zahl gibt.
+    /// Bei einem gewöhnlichen Zähler bliebe sie leer und wäre eine Frage ohne
+    /// Anlass.
+    public static func readings(
+        _ readings: [Reading],
+        meteringPoint: MeteringPoint,
+        meterName: String
+    ) -> String {
+        let registers = meteringPoint.registers
+        guard registers.count > 1, let first = registers.first else {
+            let register = meteringPoint.primaryRegister
+                ?? Register(unit: meteringPoint.kind.defaultUnit)
+            return self.readings(readings, register: register, meterName: meterName)
+        }
+
+        let byID = Dictionary(uniqueKeysWithValues: registers.map { ($0.id, $0) })
+        // Reihenfolge wie am Gerät, damit die Zeilen eines Tages so
+        // untereinanderstehen wie sie abgelesen wurden.
+        let order = Dictionary(uniqueKeysWithValues: registers.enumerated().map { ($0.element.id, $0.offset) })
+
+        var lines = ["Zähler\(separator)Bezeichnung\(separator)Datum\(separator)Stand\(separator)Einheit\(separator)Art"]
+        let sorted = readings.sorted {
+            $0.day != $1.day
+                ? $0.day < $1.day
+                : (order[$0.registerID] ?? 0) < (order[$1.registerID] ?? 0)
+        }
+        for reading in sorted {
+            let register = byID[reading.registerID] ?? first
+            lines.append([
+                escape(meterName),
+                escape(name(of: register)),
+                isoDate(reading.day),
+                decimal(reading.value, digits: register.fractionDigits),
+                escape(register.unit.symbol),
+                origin(reading.origin)
+            ].joined(separator: separator))
+        }
+        return lines.joined(separator: "\r\n") + "\r\n"
+    }
+
+    /// Wie ein Zählwerk in der Tabelle heißt.
+    ///
+    /// Ein leeres Feld neben „Einspeisung" wäre eine Frage: Der Leser weiß
+    /// nicht, ob dort nichts steht oder etwas fehlt. Ohne eigenen Namen ergibt
+    /// er sich aus der Richtung.
+    static func name(of register: Register) -> String {
+        if let label = register.label, !label.isEmpty { return label }
+        switch register.direction {
+        case .consumption: return "Bezug"
+        case .feedIn:      return "Einspeisung"
+        case .production:  return "Erzeugung"
+        case .charge:      return "Ladung"
+        case .discharge:   return "Entladung"
+        }
+    }
+
     /// Auswertung nach Monaten, Quartalen oder Jahren.
     ///
     /// Die Spalte „Vollständig" ist kein Beiwerk. Ohne sie steht in der

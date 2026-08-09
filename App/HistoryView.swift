@@ -49,6 +49,15 @@ struct HistoryView: View {
     private var accent: Color { PulseColor.resource(meter?.appearance.colorToken ?? "amber") }
     private var unit: String { register?.unit.symbol ?? "" }
 
+    /// Namen der Zählwerke — nur bei einem Zähler, der mehr als eine Zahl
+    /// führt. Sonst bleibt die Liste, wie sie war.
+    private var registerLabels: [Register.ID: String] {
+        guard let meter, meter.registers.count > 1 else { return [:] }
+        return Dictionary(uniqueKeysWithValues: meter.registers.compactMap { register in
+            register.label.map { (register.id, $0) }
+        })
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -84,7 +93,8 @@ struct HistoryView: View {
             .onAppear(perform: load)
             .sheet(isPresented: $showingReadings) {
                 ReadingsList(readings: readings, unit: unit,
-                             fractionDigits: register?.fractionDigits ?? 1)
+                             fractionDigits: register?.fractionDigits ?? 1,
+                             labels: registerLabels)
             }
         }
     }
@@ -425,31 +435,34 @@ struct HistoryView: View {
     }
 
     private func recompute() {
-        guard let register else {
+        guard let meter, register != nil else {
             buckets = []; previousYear = []; readings = []; comparison = nil
             return
         }
         do {
             let repository = PulseRepository(context: context)
-            readings = try repository.readings(for: register.id)
-            tariffs = try repository.tariffs(for: meter?.id ?? UUID())
+            // Alle Zählwerke, nicht nur das erste: Bei Doppeltarif zeigte der
+            // Verlauf sonst den Hochtarif und die Karte darüber beide — zwei
+            // Zahlen über verschiedene Sachverhalte, direkt untereinander.
+            readings = try repository.readings(for: meter)
+            tariffs = try repository.tariffs(for: meter.id)
             if granularity == .year {
                 // Ein Jahr hat genau einen Abschnitt — als Diagramm wäre das
                 // ein einzelner Balken und damit keine Aussage. Bei „Jahr"
                 // stehen deshalb mehrere Jahre nebeneinander, und die
                 // Vorjahresmarke entfällt: Das Vorjahr ist der Balken daneben.
                 buckets = yearSpan.compactMap { year in
-                    PeriodEngine.buckets(register: register, readings: readings,
+                    PeriodEngine.buckets(meteringPoint: meter, readings: readings,
                                          year: year, granularity: .year).first
                 }
                 previousYear = []
             } else {
-                buckets = PeriodEngine.buckets(register: register, readings: readings,
+                buckets = PeriodEngine.buckets(meteringPoint: meter, readings: readings,
                                                year: today.year, granularity: granularity)
-                previousYear = PeriodEngine.buckets(register: register, readings: readings,
+                previousYear = PeriodEngine.buckets(meteringPoint: meter, readings: readings,
                                                     year: today.year - 1, granularity: granularity)
             }
-            recomputeCosts(register: register)
+            recomputeCosts(meter: meter)
             recomputeComparison()
         } catch {
             problem = "Die Ablesungen ließen sich nicht laden: \(error.localizedDescription)"
@@ -457,14 +470,14 @@ struct HistoryView: View {
     }
 
     private func recomputeComparison() {
-        guard let register, let selection = selectedSlot else {
+        guard let meter, let selection = selectedSlot else {
             comparison = nil
             return
         }
         // Bei „Jahr" ist die Auswahl eine Jahreszahl, sonst die Nummer des
         // Abschnitts im laufenden Jahr.
         comparison = PeriodEngine.compareAcrossYears(
-            register: register, readings: readings,
+            meteringPoint: meter, readings: readings,
             slot: granularity == .year ? 1 : selection,
             granularity: granularity,
             referenceYear: granularity == .year ? selection : today.year,
@@ -477,15 +490,17 @@ struct HistoryView: View {
     /// Abschnitte ohne Tarif oder ohne verwertbaren Tarif — Gas ohne
     /// Umrechnung etwa — bleiben leer statt null. Eine Null wäre die Aussage
     /// „hat nichts gekostet", und die hat niemand gemacht.
-    private func recomputeCosts(register: Register) {
+    private func recomputeCosts(meter: MeteringPoint) {
         costs = [:]
         guard !tariffs.isEmpty else { return }
         for bucket in buckets where bucket.hasData {
             guard let covered = bucket.result.coveredRange else { continue }
-            if let result = try? CostEngine.cost(register: register, readings: readings,
-                                                 tariffs: tariffs, in: covered) {
-                costs[bucket.id] = result.total
-            }
+            // Über den ganzen Zähler: Bei Doppeltarif werden beide Arbeitspreise
+            // gebraucht, und der Grundpreis darf trotzdem nur einmal anfallen —
+            // das kann nur die Rechnung über die Messstelle leisten.
+            guard let result = try? CostEngine.cost(meteringPoint: meter, readings: readings,
+                                                    tariffs: tariffs, in: covered) else { continue }
+            costs[bucket.id] = result.total
         }
     }
 
@@ -558,7 +573,7 @@ struct HistoryView: View {
         guard let register, let meter, !readings.isEmpty else { return nil }
         return exportFile(
             named: "\(exportBaseName)-Ablesungen.csv",
-            content: TableExport.readings(readings, register: register, meterName: meter.name)
+            content: TableExport.readings(readings, meteringPoint: meter, meterName: meter.name)
         )
     }
 
@@ -684,6 +699,10 @@ struct ReadingsList: View {
     let readings: [Reading]
     let unit: String
     let fractionDigits: Int
+    /// Name je Zählwerk, aber nur wenn der Zähler mehr als eine Zahl führt.
+    /// Bei einem gewöhnlichen Zähler stünde sonst „Bezug" an jeder Zeile —
+    /// ein Wort, das der Nutzer nie gebraucht hat.
+    var labels: [Register.ID: String] = [:]
 
     @Environment(\.dismiss) private var dismiss
 
@@ -692,14 +711,23 @@ struct ReadingsList: View {
             List {
                 ForEach(readings.reversed()) { reading in
                     HStack {
-                        Text(germanDate(reading.day))
-                            .font(PulseText.detail)
-                            .foregroundStyle(PulseColor.inkSecondary)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(germanDate(reading.day))
+                                .font(PulseText.detail)
+                                .foregroundStyle(PulseColor.inkSecondary)
+                            if let label = labels[reading.registerID] {
+                                Text(label)
+                                    .font(PulseText.detail)
+                                    .foregroundStyle(PulseColor.inkTertiary)
+                            }
+                        }
                         Spacer(minLength: 10)
                         Text("\(number(reading.value)) \(unit)")
                             .font(.system(.body, weight: .medium))
                             .foregroundStyle(PulseColor.ink)
                     }
+                    // Als ein Satz: „1. Juni 2026, Hochtarif, 25.971,5 kWh".
+                    .accessibilityElement(children: .combine)
                 }
             }
             .navigationTitle("Ablesungen")

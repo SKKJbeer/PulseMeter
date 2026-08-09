@@ -277,4 +277,44 @@ final class CostEngineTests: XCTestCase {
         assertClose(result?.baseAmount.amount ?? 0, 216, accuracy: 0.01)   // 120 + 96
         assertClose(result?.energyAmount.amount ?? 0, 500, accuracy: 0.01) // 300 + 200
     }
+
+    /// Doppeltarif, gerechnet wie im Entwurf — auf den Cent.
+    ///
+    /// **Die Form, in der die App einen Doppeltarifzähler ablegt:** je
+    /// Zählwerk ein Tarif, und der Grundpreis steht nur am ersten. Er gehört
+    /// zum Anschluss, und der Anschluss ist einer. Stünde er an beiden, zählte
+    /// ihn der Rechenkern zweimal — er unterscheidet zwei eigene Tarife nicht
+    /// von zwei Anschlüssen, und das ist so gewollt (siehe die Prüfung
+    /// darüber). Diese Prüfung hält die Ablageform fest, damit sie nicht
+    /// unbemerkt kippt.
+    ///
+    /// - Hochtarif 1.232,0 kWh × 0,31 € = 381,92 €
+    /// - Niedertarif 1.309,0 kWh × 0,21 € = 274,89 €
+    /// - Grundpreis 8,90 €/Monat × 12 ÷ 365 × 151 Tage = 44,18 €
+    /// - zusammen **700,99 €**
+    func testDualTariffMatchesTheHandCalculationToTheCent() throws {
+        let high = Register(label: "Hochtarif", unit: .kilowattHour, integerDigits: 6, fractionDigits: 1)
+        let low = Register(label: "Niedertarif", unit: .kilowattHour, integerDigits: 6, fractionDigits: 1)
+        let point = Fixture.meteringPoint(registers: [high, low])
+        let readings = [
+            Fixture.reading(high, day(2026, 1, 1), 24_739.5),
+            Fixture.reading(high, day(2026, 6, 1), 25_971.5),
+            Fixture.reading(low, day(2026, 1, 1), 29_479.8),
+            Fixture.reading(low, day(2026, 6, 1), 30_788.8)
+        ]
+        let tariffs = [
+            Tariff(meteringPointID: point.id, registerID: high.id, validFrom: day(2026, 1, 1),
+                   pricePerUnit: dec("0.31"), monthlyBasePrice: dec("8.90"), billingUnit: .kilowattHour),
+            Tariff(meteringPointID: point.id, registerID: low.id, validFrom: day(2026, 1, 1),
+                   pricePerUnit: dec("0.21"), monthlyBasePrice: 0, billingUnit: .kilowattHour)
+        ]
+
+        let result = try CostEngine.cost(meteringPoint: point, readings: readings,
+                                         tariffs: tariffs,
+                                         in: span(day(2026, 1, 1), day(2026, 6, 1)))
+
+        assertClose(result?.energyAmount.amount ?? 0, 656.81, accuracy: 0.005)
+        assertClose(result?.baseAmount.amount ?? 0, 44.183, accuracy: 0.005)
+        assertClose(result?.total.amount ?? 0, 700.993, accuracy: 0.005)
+    }
 }

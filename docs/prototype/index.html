@@ -667,7 +667,7 @@ select.field { cursor: pointer; }
 
 <div class="stage-head">
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.30.1</p>
+  <p>Klickbarer Entwurf · v0.31.0</p>
 </div>
 
 <div class="device">
@@ -963,7 +963,10 @@ const METERS = [
 
     serial: "1ESY1161284302",
     registers: [
-      { id: "strom-bezug", label: null, unit: "kWh", int: 6, frac: 1,
+      // Beschriftet, weil daneben die Einspeisung steht: „Bezug" allein wäre
+      // nichtssagend, „Bezug" neben „Einspeisung" sagt alles. So legt die App
+      // einen Zweirichtungszähler auch an.
+      { id: "strom-bezug", label: "Bezug", unit: "kWh", int: 6, frac: 1,
         readings: buildReadings(41231.4, SHAPE.strom, { frac: 1 }) },
       { id: "strom-eins", label: "Einspeisung", unit: "kWh", int: 6, frac: 1, feedIn: true,
         readings: buildReadings(7170.2, SHAPE.einsp, { frac: 1 }) }
@@ -2019,13 +2022,37 @@ function buildCsv(kind) {
   const reg = m.registers[0];
 
   if (kind === "readings") {
-    const lines = ["Zähler;Datum;Stand;Einheit;Art"];
-    for (const r of reg.readings) {
-      lines.push([csvField(m.name),
-        `${r.y}-${String(r.m).padStart(2, "0")}-${String(r.d).padStart(2, "0")}`,
-        csvNum(r.value, m.frac), m.unit,
-        r.origin === "estimated" ? "geschätzt" : "abgelesen"
-      ].join(";"));
+    // **Alle Zählwerke, nicht nur das erste.** Bei einem Zähler mit zwei
+    // Zahlen verlöre der Export sonst die Hälfte — und die Datei sähe
+    // vollständig aus. Die Spalte „Bezeichnung" steht nur da, wo es mehr als
+    // eine Zahl gibt; sonst wäre sie eine Frage ohne Anlass.
+    const many = m.registers.length > 1;
+    const lines = [many ? "Zähler;Bezeichnung;Datum;Stand;Einheit;Art"
+                        : "Zähler;Datum;Stand;Einheit;Art"];
+    const zeilen = [];
+    m.registers.forEach((r, i) => {
+      for (const a of r.readings) {
+        zeilen.push({ reg: r, order: i, a });
+      }
+    });
+    // Nach Tag, bei gleichem Tag in der Reihenfolge am Gerät — so, wie sie
+    // abgelesen wurden.
+    zeilen.sort((x, y) => {
+      const dx = x.a.y * 10000 + x.a.m * 100 + x.a.d;
+      const dy = y.a.y * 10000 + y.a.m * 100 + y.a.d;
+      return dx !== dy ? dx - dy : x.order - y.order;
+    });
+    for (const z of zeilen) {
+      const felder = [csvField(m.name)];
+      // Ohne eigenen Namen ergibt er sich aus der Richtung — ein leeres Feld
+      // neben „Einspeisung" wäre eine Frage statt einer Angabe.
+      if (many) felder.push(csvField(z.reg.label || (z.reg.feedIn ? "Einspeisung" : "Bezug")));
+      felder.push(
+        `${z.a.y}-${String(z.a.m).padStart(2, "0")}-${String(z.a.d).padStart(2, "0")}`,
+        csvNum(z.a.value, z.reg.frac), z.reg.unit,
+        z.a.origin === "estimated" ? "geschätzt" : "abgelesen"
+      );
+      lines.push(felder.join(";"));
     }
     return lines.join("\n");
   }

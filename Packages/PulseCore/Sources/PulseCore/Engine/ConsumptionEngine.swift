@@ -56,6 +56,106 @@ public enum ConsumptionEngine {
         )
     }
 
+    // MARK: - Ganze Messstelle
+
+    /// Der Verbrauch eines Zählers — die Summe seiner Bezugs-Zählwerke.
+    ///
+    /// **Warum das nötig ist.** Bei einem Doppeltarifzähler steht auf der Karte
+    /// sonst nur der Hochtarif, und der Niedertarif fehlt wortlos. Ein Zähler
+    /// mit einem einzigen Zählwerk liefert unverändert dasselbe Ergebnis wie
+    /// ``consumption(register:readings:in:)`` — und ein Zweirichtungszähler
+    /// ebenso, weil die Einspeisung kein Bezug ist und nicht mitgezählt wird.
+    ///
+    /// **Zugeschnitten auf den Ausschnitt, den *alle* beteiligten Zählwerke
+    /// abdecken.** Wer den Hochtarif bis August abgelesen hat und den
+    /// Niedertarif bis Mai, hat für den Zähler eine Aussage bis Mai. Die Summe
+    /// über zwei verschieden lange Zeiträume wäre keine — das ist die
+    /// Fehlerklasse aus CLAUDE.md, und sie hat in diesem Projekt bisher jeden
+    /// gefundenen Rechenfehler verursacht.
+    public static func consumption(
+        meteringPoint: MeteringPoint,
+        readings: [Reading],
+        in range: DayRange
+    ) -> ConsumptionResult {
+
+        let draws = meteringPoint.registers.filter { $0.direction == .consumption }
+        guard let first = draws.first else {
+            let unit = meteringPoint.primaryRegister?.unit ?? meteringPoint.kind.defaultUnit
+            return .empty(unit: unit, range: range, warnings: [.insufficientReadings])
+        }
+        // Ein einzelnes Zählwerk geht den kürzeren Weg — nicht aus Sparsamkeit,
+        // sondern damit der bisherige Pfad Bit für Bit derselbe bleibt.
+        guard draws.count > 1 else {
+            return consumption(register: first, readings: readings, in: range)
+        }
+        // Verschiedene Einheiten ließen sich nicht addieren. Der Fall entsteht
+        // im Modell nicht — beide Zählwerke sitzen auf demselben Gerät —, und
+        // falls doch, ist die Zahl des ersten Zählwerks besser als eine Summe
+        // aus kWh und m³.
+        guard draws.allSatisfy({ $0.unit == first.unit }) else {
+            return consumption(register: first, readings: readings, in: range)
+        }
+
+        var seriesList: [ConsumptionSeries] = []
+        var warnings: [ConsumptionWarning] = []
+        for register in draws {
+            guard let series = ConsumptionSeries.build(register: register, readings: readings) else {
+                // Ein Zählwerk ohne Ablesungen kann den gemeinsamen Ausschnitt
+                // nicht begrenzen — es weiß über keinen Tag etwas. Es fällt
+                // heraus, aber nicht stillschweigend.
+                warnings.append(.insufficientReadings)
+                continue
+            }
+            seriesList.append(series)
+        }
+
+        guard !seriesList.isEmpty,
+              let latestStart = seriesList.compactMap(\.firstDay).max(),
+              let earliestEnd = seriesList.compactMap(\.lastDay).min()
+        else {
+            return .empty(unit: first.unit, range: range, warnings: warnings + [.insufficientReadings])
+        }
+
+        if range.start < latestStart { warnings.append(.noDataBeforeStart(firstReading: latestStart)) }
+        if range.end > earliestEnd { warnings.append(.noDataAfterEnd(lastReading: earliestEnd)) }
+
+        guard let common = DayRange(start: Swift.max(range.start, latestStart),
+                                    end: Swift.min(range.end, earliestEnd)),
+              common.spanInDays > 0
+        else {
+            return .empty(unit: first.unit, range: range, warnings: warnings)
+        }
+
+        var total = Decimal(0)
+        var confidence: Confidence = .measured
+        var longestGap = 0
+        for series in seriesList {
+            let part = consumption(series: series, in: common)
+            total += part.quantity.value
+            confidence = confidence.degraded(to: part.confidence)
+            longestGap = Swift.max(longestGap, part.longestGapInDays)
+            // Die Randwarnungen der Teile fallen weg: Sie beschrieben den
+            // gemeinsamen Ausschnitt, den es hier per Konstruktion voll gibt.
+            // Alles andere — Überlauf, Gerätewechsel, unerklärter Rücksprung —
+            // gehört weitergereicht.
+            warnings.append(contentsOf: part.warnings.filter {
+                switch $0 {
+                case .noDataBeforeStart, .noDataAfterEnd: return false
+                default: return true
+                }
+            })
+        }
+
+        return ConsumptionResult(
+            quantity: Quantity(total, first.unit),
+            confidence: confidence,
+            requestedRange: range,
+            coveredRange: common,
+            warnings: warnings,
+            longestGapInDays: longestGap
+        )
+    }
+
     // MARK: - Vergleiche
 
     /// Vergleich eines Zeitraums mit demselben Zeitraum im Vorjahr.
@@ -92,7 +192,30 @@ public enum ConsumptionEngine {
         else { return nil }
 
         let previous = consumption(series: series, in: previousRange)
+        return compare(current: current, previous: previous)
+    }
 
+    /// Derselbe Vergleich für einen ganzen Zähler.
+    ///
+    /// Bei Doppeltarif verglich der Prozentwert sonst nur den Hochtarif, während
+    /// die Menge daneben beide Zählwerke zeigte — zwei Zahlen über verschiedene
+    /// Sachverhalte, direkt nebeneinander.
+    public static func yearOverYear(
+        meteringPoint: MeteringPoint,
+        readings: [Reading],
+        in range: DayRange
+    ) -> YearComparison? {
+        let current = consumption(meteringPoint: meteringPoint, readings: readings, in: range)
+        guard let covered = current.coveredRange,
+              let previousRange = DayRange(start: covered.start.oneYearEarlier,
+                                           end: covered.end.oneYearEarlier)
+        else { return nil }
+
+        let previous = consumption(meteringPoint: meteringPoint, readings: readings, in: previousRange)
+        return compare(current: current, previous: previous)
+    }
+
+    private static func compare(current: ConsumptionResult, previous: ConsumptionResult) -> YearComparison {
         var change: Decimal?
         if previous.hasData, current.hasData, previous.quantity.value != 0 {
             // Auf Tagesbasis normalisieren: Zeiträume unterschiedlicher Länge —
@@ -103,7 +226,6 @@ public enum ConsumptionEngine {
                 change = (currentPerDay - previousPerDay) / previousPerDay
             }
         }
-
         return YearComparison(current: current, previous: previous, relativeChange: change)
     }
 

@@ -96,11 +96,11 @@ Die Reihenfolge ist bewusst nicht „Screens von oben nach unten", sondern nach 
 
 ---
 
-## Aktueller Stand — Version 0.30.1
+## Aktueller Stand — Version 0.31.0
 
 | Schritt | Stand |
 |---|---|
-| 1. `PulseCore` + Tests | **fertig** — 135 Prüfungen, alle Randfälle aus `02`, Abschnitt 3 |
+| 1. `PulseCore` + Tests | **fertig** — 143 Prüfungen, alle Randfälle aus `02`, Abschnitt 3 |
 | 2. `PulseData` + Repositories | **fertig** — auf macOS geprüft |
 | 3. `PulseUI` Design-System | **fertig** — Hell und Dunkel, auf jedem Lauf fotografiert |
 | 4. Erfassungsfluss | **fertig** — Zählwerk-Optik, Plausibilisierung, Vorbelegung |
@@ -120,7 +120,7 @@ der Oberfläche fehlt, sieht in den Tests grün aus und ist trotzdem nicht da.
 | Fähigkeit | Rechenkern | App | Entwurf |
 |---|---|---|---|
 | Zweirichtungszähler (PV-Einspeisung) | ja | ja | ja |
-| Doppeltarif (HT/NT) | ja | **nein** | ja |
+| Doppeltarif (HT/NT) | ja | ja | ja |
 | Zählerwechsel | ja | ja | ja |
 | PDF-Bericht | — | **nein** | ja |
 | Foto-Belege | — | nein | nein |
@@ -132,9 +132,13 @@ Mit 0.24.0 ist auch der Entwurf nachgezogen: Er rechnet jetzt über dieselbe
 aufsummierte Reihe wie `PulseCore`, mit Gerätewechsel und Zählerüberlauf, und
 der Wechsel lässt sich anklicken. Damit gilt Regel 2 wieder ohne Einschränkung.
 
-Offen bleibt der **Doppeltarifzähler**, und dort fehlt er auf beiden Seiten —
-in der App und im Entwurf. Der Entwurf sollte zuerst drankommen: Ein Fehler
-fällt dort schneller auf und kostet weniger.
+Der Doppeltarifzähler ist mit 0.30.0 im Entwurf entstanden und mit **0.31.0**
+in der App angekommen: Er lässt sich anlegen, beide Zahlen werden in einem
+Vorgang erfasst, und Karte, Verlauf, Widget und Export rechnen über den
+ganzen Zähler statt über sein erstes Zählwerk. Der Grundpreis fällt dabei
+einmal an, nicht je Zählwerk.
+
+Offen bleibt der **PDF-Bericht** — den gibt es bisher nur im Entwurf.
 
 Zusätzlich entstanden, weil der Prototyp es nötig machte: Datenansicht mit
 Monats-, Quartals- und Jahresvergleich, Verbrauchsbericht mit Zeitraumwahl,
@@ -147,13 +151,12 @@ Mac beurteilen.
 
 ### Die nächsten drei Schritte
 
-1. **Barrierefreiheit weiterführen.** Mit 0.27.0 ist der Anfang gemacht;
-   Erfassungsschirm, Verlauf und Zählerverwaltung sind noch nicht durchgegangen.
-   Die Bilder bei größter Schrift zeigen, wo es klemmt — sie werden ab dem
-   nächsten Lauf mitgeliefert.
+1. **PDF-Bericht.** Im Entwurf vorhanden, in der App nicht. Die letzte offene
+   Zeile in der Tabelle darüber.
 
-2. **Doppeltarif (HT/NT).** Fehlt auf beiden Seiten; der Entwurf sollte zuerst
-   drankommen, weil ein Fehler dort schneller auffällt.
+2. **Barrierefreiheit weiterführen.** Mit 0.27.0 ist der Anfang gemacht,
+   0.29.0 hat den Erfassungsschirm genommen; Verlauf und Zählerverwaltung
+   sind noch nicht durchgegangen.
 
 Danach Paywall und StoreKit, sobald das Apple Developer Program vorliegt. Das
 Widget wartet ebenfalls darauf: Die App-Gruppe greift ohne Entwicklerkonto

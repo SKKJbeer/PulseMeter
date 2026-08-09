@@ -136,6 +136,26 @@ for (const scheme of ["light", "dark"]) {
          `Beide Zählwerke erfasst (${vorher} → ${nachher})`);
   }
 
+  // --- Export: Ein Zähler mit zwei Zahlen darf keine davon verlieren
+  const csv = await page.evaluate(() => {
+    const m = METERS.find(x => x.registers.length > 1);
+    if (!m) return null;
+    histMeter = m.id;
+    return { id: m.id, text: buildCsv("readings") };
+  });
+  if (csv) {
+    const zeilen = csv.text.split("\n");
+    const namen = new Set(zeilen.slice(1).map(z => z.split(";")[1]).filter(Boolean));
+    note(zeilen[0].includes("Bezeichnung"),
+         "Der Export benennt, welche Zahl in der Zeile steht");
+    note(namen.size >= 2,
+         `Beide Zählwerke stehen im Export (${[...namen].join(", ")})`);
+    note(!zeilen.slice(1).some(z => z && z.split(";")[1] === ""),
+         "Keine Zeile ohne Bezeichnung — ein leeres Feld wäre eine Frage");
+    note(!csv.text.includes("Zählwerk"),
+         "Das Wort aus der Wortliste steht auch im Export nicht");
+  }
+
   // --- Darstellung
   const overflow = await page.evaluate(() =>
     document.documentElement.scrollWidth > document.documentElement.clientWidth);

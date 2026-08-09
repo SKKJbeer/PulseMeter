@@ -90,4 +90,45 @@ final class TableExportTests: XCTestCase {
         XCTAssertEqual(TableExport.decimal(dec("1234.5"), digits: 0), "1234")
         XCTAssertEqual(TableExport.decimal(dec("1235.5"), digits: 0), "1236")
     }
+
+    /// Der Export eines Doppeltarifzählers enthält **beide** Zahlen.
+    ///
+    /// Ohne diese Prüfung verschwände beim Export die Hälfte der Daten, und die
+    /// Datei sähe trotzdem vollständig aus — der teuerste Fehler, den ein
+    /// Export machen kann.
+    func testDualTariffExportCarriesBothRegisters() {
+        let high = Register(label: "Hochtarif", unit: .kilowattHour, integerDigits: 6, fractionDigits: 1)
+        let low = Register(label: "Niedertarif", unit: .kilowattHour, integerDigits: 6, fractionDigits: 1)
+        let point = Fixture.meteringPoint(registers: [high, low])
+        let readings = [
+            Fixture.reading(low, day(2026, 1, 1), 29_479.8),
+            Fixture.reading(high, day(2026, 1, 1), 24_739.5),
+            Fixture.reading(high, day(2026, 6, 1), 25_971.5),
+            Fixture.reading(low, day(2026, 6, 1), 30_788.8)
+        ]
+
+        let csv = TableExport.readings(readings, meteringPoint: point, meterName: "Wärmepumpe")
+        let lines = csv.split(separator: "\r\n").map(String.init)
+
+        XCTAssertEqual(lines.count, 5, "Kopfzeile und vier Ablesungen")
+        XCTAssertTrue(lines[0].contains("Bezeichnung"))
+        XCTAssertTrue(lines[1].contains("Hochtarif") && lines[1].contains("24739,5"),
+                      "Am selben Tag steht das erste Zählwerk oben — gelesen: \(lines[1])")
+        XCTAssertTrue(lines[2].contains("Niedertarif") && lines[2].contains("29479,8"))
+        XCTAssertTrue(lines[3].contains("Hochtarif") && lines[3].contains("25971,5"))
+        XCTAssertTrue(lines[4].contains("Niedertarif") && lines[4].contains("30788,8"))
+    }
+
+    /// Ein gewöhnlicher Zähler behält die alte Form — ohne leere Spalte.
+    func testSingleRegisterExportKeepsItsShape() {
+        let register = Fixture.electricityRegister()
+        let point = Fixture.meteringPoint(registers: [register])
+        let readings = [Fixture.reading(register, day(2026, 1, 1), 1_000)]
+
+        let viaMeter = TableExport.readings(readings, meteringPoint: point, meterName: "Strom")
+        let viaRegister = TableExport.readings(readings, register: register, meterName: "Strom")
+
+        XCTAssertEqual(viaMeter, viaRegister)
+        XCTAssertFalse(viaMeter.contains("Bezeichnung"))
+    }
 }

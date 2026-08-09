@@ -616,4 +616,124 @@ final class ConsumptionEngineTests: XCTestCase {
         XCTAssertNotEqual(consumption(finalFirst: false), 800,
                           "Falsche Reihenfolge muss ein anderes Ergebnis liefern — sonst prüft der Zeitstempel nichts")
     }
+
+    // MARK: - Ganze Messstelle: Doppeltarif
+
+    /// Der Zähler verbraucht, was seine Bezugs-Zählwerke zusammen verbrauchen.
+    func testDualTariffMeterAddsBothRegisters() {
+        let high = Register(label: "Hochtarif", unit: .kilowattHour, integerDigits: 6, fractionDigits: 1)
+        let low = Register(label: "Niedertarif", unit: .kilowattHour, integerDigits: 6, fractionDigits: 1)
+        let point = Fixture.meteringPoint(registers: [high, low])
+        let readings = [
+            Fixture.reading(high, day(2026, 1, 1), 24_739.5),
+            Fixture.reading(high, day(2026, 6, 1), 25_971.5),
+            Fixture.reading(low, day(2026, 1, 1), 29_479.8),
+            Fixture.reading(low, day(2026, 6, 1), 30_788.8)
+        ]
+
+        let result = ConsumptionEngine.consumption(
+            meteringPoint: point, readings: readings,
+            in: span(day(2026, 1, 1), day(2026, 6, 1))
+        )
+
+        // 1.232,0 Hochtarif + 1.309,0 Niedertarif
+        XCTAssertEqual(result.quantity.value, dec("2541"))
+        XCTAssertEqual(result.coveredDays, 151)
+        XCTAssertEqual(result.confidence, .measured)
+        XCTAssertTrue(result.isComplete)
+    }
+
+    /// **Die wiederkehrende Fehlerklasse, als Prüfung.**
+    ///
+    /// Der Hochtarif ist bis August abgelesen, der Niedertarif nur bis Mai.
+    /// Wer beide über ihren jeweils eigenen Zeitraum summiert, kommt auf
+    /// 2.916 kWh — eine Zahl, die keinen Zeitraum beschreibt. Richtig sind
+    /// 2.541 kWh bis zum 1. Juni, und der Zähler muss sagen, dass er dort
+    /// endet.
+    func testDualTariffTrimsToTheWindowBothRegistersCover() {
+        let high = Register(label: "Hochtarif", unit: .kilowattHour, integerDigits: 6, fractionDigits: 1)
+        let low = Register(label: "Niedertarif", unit: .kilowattHour, integerDigits: 6, fractionDigits: 1)
+        let point = Fixture.meteringPoint(registers: [high, low])
+        let readings = [
+            Fixture.reading(high, day(2026, 1, 1), 24_739.5),
+            Fixture.reading(high, day(2026, 6, 1), 25_971.5),
+            Fixture.reading(high, day(2026, 8, 1), 26_346.5),
+            Fixture.reading(low, day(2026, 1, 1), 29_479.8),
+            Fixture.reading(low, day(2026, 6, 1), 30_788.8)
+        ]
+
+        let result = ConsumptionEngine.consumption(
+            meteringPoint: point, readings: readings,
+            in: span(day(2026, 1, 1), day(2026, 8, 1))
+        )
+
+        XCTAssertEqual(result.quantity.value, dec("2541"),
+                       "Über den gemeinsamen Ausschnitt gerechnet, nicht je Zählwerk bis zu dessen letzter Ablesung")
+        XCTAssertEqual(result.coveredRange?.end, day(2026, 6, 1))
+        XCTAssertFalse(result.isComplete)
+        if case .endsEarly(let lastDay) = result.coverage {
+            XCTAssertEqual(lastDay, day(2026, 6, 1))
+        } else {
+            XCTFail("Der Zähler endet früher als angefragt und muss das auch sagen — gelesen: \(result.coverage)")
+        }
+    }
+
+    /// Ein einzelnes Zählwerk muss auf beiden Wegen dieselbe Zahl liefern.
+    func testSingleRegisterMeterMatchesTheRegisterPath() {
+        let register = Fixture.electricityRegister()
+        let point = Fixture.meteringPoint(registers: [register])
+        let readings = [
+            Fixture.reading(register, day(2026, 1, 1), 1_000),
+            Fixture.reading(register, day(2026, 3, 1), 1_450)
+        ]
+        let range = span(day(2026, 1, 1), day(2026, 3, 1))
+
+        XCTAssertEqual(
+            ConsumptionEngine.consumption(meteringPoint: point, readings: readings, in: range),
+            ConsumptionEngine.consumption(register: register, readings: readings, in: range)
+        )
+    }
+
+    /// Die Einspeisung ist kein Bezug und wird nicht mitgezählt — sonst stünde
+    /// auf der Karte die Summe aus Verbrauch und Erzeugung.
+    func testFeedInIsNotAddedToConsumption() {
+        let draw = Register(label: "Bezug", unit: .kilowattHour, integerDigits: 6, fractionDigits: 1)
+        let feed = Register(label: "Einspeisung", unit: .kilowattHour, direction: .feedIn,
+                            integerDigits: 6, fractionDigits: 1)
+        let point = Fixture.meteringPoint(registers: [draw, feed])
+        let readings = [
+            Fixture.reading(draw, day(2026, 1, 1), 41_230),
+            Fixture.reading(draw, day(2026, 3, 1), 41_830),
+            Fixture.reading(feed, day(2026, 1, 1), 6_480),
+            Fixture.reading(feed, day(2026, 3, 1), 6_900)
+        ]
+
+        let result = ConsumptionEngine.consumption(
+            meteringPoint: point, readings: readings,
+            in: span(day(2026, 1, 1), day(2026, 3, 1))
+        )
+
+        XCTAssertEqual(result.quantity.value, 600)
+    }
+
+    /// Ein frisch dazugenommenes Zählwerk ohne Ablesungen darf den Zähler nicht
+    /// stumm schalten — es kann den gemeinsamen Ausschnitt nicht begrenzen,
+    /// weil es über keinen Tag etwas weiß. Gemeldet wird es trotzdem.
+    func testRegisterWithoutReadingsDoesNotBlankTheMeter() {
+        let high = Register(label: "Hochtarif", unit: .kilowattHour, integerDigits: 6, fractionDigits: 1)
+        let low = Register(label: "Niedertarif", unit: .kilowattHour, integerDigits: 6, fractionDigits: 1)
+        let point = Fixture.meteringPoint(registers: [high, low])
+        let readings = [
+            Fixture.reading(high, day(2026, 1, 1), 1_000),
+            Fixture.reading(high, day(2026, 3, 1), 1_450)
+        ]
+
+        let result = ConsumptionEngine.consumption(
+            meteringPoint: point, readings: readings,
+            in: span(day(2026, 1, 1), day(2026, 3, 1))
+        )
+
+        XCTAssertEqual(result.quantity.value, 450)
+        XCTAssertTrue(result.warnings.contains(.insufficientReadings))
+    }
 }

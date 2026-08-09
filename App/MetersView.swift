@@ -351,6 +351,10 @@ struct MeterEditor: View {
     @State private var stateNumber = ""
     @State private var calorificValue = ""
     @State private var existingTariff: Tariff?
+    /// Alle hinterlegten Tarife. Bei Doppeltarif hängt an jedem Zählwerk einer,
+    /// und beim Sichern müssen ihre Kennungen erhalten bleiben — sonst entstünde
+    /// bei jedem Speichern ein neuer Tarif neben dem alten.
+    @State private var existingTariffs: [Tariff] = []
     /// Ob der Zähler auch in die andere Richtung zählt.
     ///
     /// Nur bei Strom sichtbar. Der Rechenkern kann Zweirichtungszähler seit
@@ -363,6 +367,17 @@ struct MeterEditor: View {
     /// das es nicht mehr gibt.
     @State private var feedInHasReadings = false
     @State private var feedInPrice = ""
+    /// Ob der Zähler zwei Arbeitspreise hat — Hochtarif und Niedertarif.
+    ///
+    /// Der klassische Nachtspeicher- oder Wärmepumpentarif. Ein Gerät, zwei
+    /// Zahlen — dasselbe Modell wie beim Zweirichtungszähler, nur zählen hier
+    /// beide Zählwerke Bezug. Der Rechenkern kann das seit dem ersten Tag; bis
+    /// 0.31.0 gab es nur keine Möglichkeit, so einen Zähler anzulegen.
+    @State private var hasDualTariff = false
+    /// Ob für den Niedertarif schon Werte vorliegen. Dann darf er nicht mehr
+    /// abgeschaltet werden — dieselbe Regel wie bei der Einspeisung.
+    @State private var lowTariffHasReadings = false
+    @State private var lowTariffPrice = ""
     @State private var prepayment = ""
     @State private var billingMonth = 1
     @State private var existingPeriod: BillingPeriod?
@@ -450,6 +465,20 @@ struct MeterEditor: View {
                 }
 
                 if kind == .electricity {
+                    Section {
+                        Toggle("Zwei Preise: Tag und Nacht", isOn: $hasDualTariff)
+                            .disabled(hasDualTariff && lowTariffHasReadings)
+                    } header: {
+                        Text("Tag- und Nachtstrom")
+                    } footer: {
+                        // Weder „Doppeltarif" noch „HT/NT": Beides sind Wörter
+                        // von der Rechnung, nicht aus dem Kopf des Nutzers.
+                        // Er weiß, dass sein Strom nachts weniger kostet.
+                        Text(hasDualTariff && lowTariffHasReadings
+                             ? "Für den Nachtstrom liegen bereits Ablesungen vor. Er lässt sich deshalb nicht mehr abschalten — die Werte gingen sonst verloren."
+                             : "Für Zähler mit getrennten Preisen für Tag und Nacht. Beim Eintragen fragt die App dann nach beiden Zahlen.")
+                    }
+
                     Section {
                         Toggle("Einspeisung ins Netz", isOn: $hasFeedIn)
                             .disabled(hasFeedIn && feedInHasReadings)
@@ -546,7 +575,7 @@ struct MeterEditor: View {
     private var priceSection: some View {
         Section {
             HStack {
-                Text("Arbeitspreis")
+                Text(hasDualTariff && kind == .electricity ? "Arbeitspreis tagsüber" : "Arbeitspreis")
                 Spacer(minLength: 10)
                 TextField("0,00", text: $pricePerUnit)
                     .keyboardType(.decimalPad)
@@ -564,6 +593,19 @@ struct MeterEditor: View {
                     .frame(maxWidth: 110)
                 Text("€/Monat")
                     .foregroundStyle(PulseColor.inkTertiary)
+            }
+
+            if hasDualTariff && kind == .electricity {
+                HStack {
+                    Text("Arbeitspreis nachts")
+                    Spacer(minLength: 10)
+                    TextField("0,00", text: $lowTariffPrice)
+                        .keyboardType(.decimalPad)
+                        .multilineTextAlignment(.trailing)
+                        .frame(maxWidth: 110)
+                    Text("€/kWh")
+                        .foregroundStyle(PulseColor.inkTertiary)
+                }
             }
 
             if hasFeedIn && kind == .electricity {
@@ -660,13 +702,38 @@ struct MeterEditor: View {
             let count = (try? PulseRepository(context: context).readings(for: feed.id))?.count ?? 0
             feedInHasReadings = count > 0
         }
+        // Zwei Bezugs-Zählwerke heißen: Tag und Nacht getrennt.
+        let draws = existing.registers.filter { $0.direction == .consumption }
+        if draws.count > 1 {
+            hasDualTariff = true
+            let count = (try? PulseRepository(context: context).readings(for: draws[1].id))?.count ?? 0
+            lowTariffHasReadings = count > 0
+        }
         fillBilling(existing)
 
         // Der zuletzt gültige Tarif. Mehrere Tarife über die Zeit kann der
         // Rechenkern längst; die Oberfläche bearbeitet vorerst nur den
         // aktuellen — ein Preisverlauf ist eine eigene Ansicht.
-        let tariff = (try? PulseRepository(context: context).tariffs(for: existing.id))?.last
+        let all = (try? PulseRepository(context: context).tariffs(for: existing.id)) ?? []
+        existingTariffs = all
+
+        // Der Tarif des ersten Bezugs-Zählwerks führt Arbeitspreis, Grundpreis
+        // und Umrechnung. Bei einem Zähler ohne Doppeltarif ist das der eine
+        // Tarif ohne Zählwerk-Bindung — deshalb beide Fälle in einer Suche.
+        let primaryID = draws.first?.id
+        let tariff = all.last { $0.registerID == nil || $0.registerID == primaryID }
         existingTariff = tariff
+        if draws.count > 1 {
+            let low = draws[1]
+            if let lowTariff = all.last(where: { $0.registerID == low.id }) {
+                lowTariffPrice = decimalText(lowTariff.pricePerUnit)
+            }
+        }
+        if let feed = existing.registers.first(where: { $0.direction == .feedIn }),
+           let feedTariff = all.last(where: { $0.registerID == feed.id || $0.registerID == nil }),
+           let price = feedTariff.feedInPricePerUnit {
+            feedInPrice = decimalText(price)
+        }
         guard let tariff else { return }
         pricePerUnit = decimalText(tariff.pricePerUnit)
         monthlyBasePrice = decimalText(tariff.monthlyBasePrice)
@@ -730,6 +797,47 @@ struct MeterEditor: View {
                  obisCode: "2.8.0")
     }
 
+    /// Das zweite Bezugs-Zählwerk — der Nachtstrom.
+    ///
+    /// Dieselben Stellen wie tagsüber, weil es dasselbe Gerät ist. Die
+    /// OBIS-Kennzahlen 1.8.1 und 1.8.2 sind die üblichen für Hoch- und
+    /// Niedertarif; sie stehen nur in den Daten und nirgends auf dem Schirm.
+    private var lowTariffRegister: Register {
+        Register(label: "Niedertarif", unit: .kilowattHour, direction: .consumption,
+                 integerDigits: integerDigits, fractionDigits: fractionDigits,
+                 obisCode: "1.8.2")
+    }
+
+    /// Nimmt den Nachtstrom dazu oder wieder weg.
+    ///
+    /// Eingefügt wird er direkt hinter dem Tagstrom und **vor** der
+    /// Einspeisung: In der Erfassung kommen die Zählwerke in dieser Reihenfolge
+    /// dran, und wer am Gerät steht, liest erst beide Bezugszahlen ab.
+    private func applyDualTariff(to point: inout MeteringPoint) {
+        guard kind == .electricity else { return }
+        let draws = point.registers.enumerated().filter { $0.element.direction == .consumption }
+
+        if hasDualTariff {
+            guard draws.count < 2 else { return }
+            if point.registers.indices.contains(0), point.registers[0].label == nil {
+                point.registers[0].label = "Hochtarif"
+            } else if point.registers.indices.contains(0), point.registers[0].label == "Bezug" {
+                // „Bezug" neben „Niedertarif" wäre eine Gegenüberstellung, die
+                // es nicht gibt: Beides ist Bezug.
+                point.registers[0].label = "Hochtarif"
+            }
+            let insertAt = (draws.last?.offset).map { $0 + 1 } ?? point.registers.count
+            point.registers.insert(lowTariffRegister, at: insertAt)
+        } else if draws.count > 1, !lowTariffHasReadings {
+            point.registers.remove(at: draws[1].offset)
+            if point.registers.count == 1 {
+                point.registers[0].label = nil
+            } else if point.registers.contains(where: { $0.direction == .feedIn }) {
+                point.registers[0].label = "Bezug"
+            }
+        }
+    }
+
     /// Nimmt die Einspeisung dazu oder wieder weg.
     ///
     /// Weggenommen wird nur, wenn dafür keine Ablesungen vorliegen — der
@@ -742,6 +850,8 @@ struct MeterEditor: View {
 
         if hasFeedIn {
             guard existingFeed == nil else { return }
+            // Bei Doppeltarif heißt das erste Zählwerk schon „Hochtarif" — dann
+            // bliebe „Bezug" daneben eine zweite Antwort auf dieselbe Frage.
             if point.registers.indices.contains(0), point.registers[0].label == nil {
                 point.registers[0].label = "Bezug"
             }
@@ -772,17 +882,106 @@ struct MeterEditor: View {
             ?? CalendarDay(year: CalendarDay.containing(Date(), in: .current).year, month: 1, day: 1)
             ?? CalendarDay.containing(Date(), in: .current)
 
-        let tariff = Tariff(
-            id: existingTariff?.id ?? UUID(),
+        let unit: MeasurementUnit = needsGasConversion ? .kilowattHour : kind.defaultUnit
+        let draws = point.registers.filter { $0.direction == .consumption }
+
+        // Ohne zweiten Bezug bleibt es bei **einem** Tarif für alle Zählwerke —
+        // unverändert der Weg, den ein gewöhnlicher Zähler und der
+        // Zweirichtungszähler seit jeher gehen.
+        guard draws.count > 1 else {
+            try repository.save(Tariff(
+                id: existingTariff?.id ?? UUID(),
+                meteringPointID: point.id,
+                validFrom: from,
+                pricePerUnit: price ?? 0,
+                monthlyBasePrice: base ?? 0,
+                billingUnit: unit,
+                gasConversion: conversion,
+                feedInPricePerUnit: hasFeedIn ? decimalValue(feedInPrice) : nil
+            ))
+            try removeOrphanedTariffs(keeping: [existingTariff?.id].compactMap { $0 },
+                                      of: point, in: repository)
+            return
+        }
+
+        // Kennungen erhalten: Ein neuer Tarif bei jedem Sichern hieße, dass die
+        // Kosten des laufenden Jahres plötzlich aus zwei Abschnitten bestünden.
+        // Der bisherige Tarif ohne Zählwerk-Bindung wird zum Tarif des ersten
+        // Zählwerks — so bleibt sein Gültigkeitsbeginn erhalten.
+        func identifier(for register: Register, isPrimary: Bool = false) -> UUID {
+            if let match = existingTariffs.last(where: { $0.registerID == register.id }) { return match.id }
+            if isPrimary, let unbound = existingTariffs.last(where: { $0.registerID == nil }) { return unbound.id }
+            return UUID()
+        }
+
+        var written: [Tariff.ID] = []
+
+        // **Der Grundpreis steht nur am ersten Tarif.** Er gehört zum
+        // Anschluss, und der Anschluss ist einer. Stünde er an beiden, zählte
+        // ihn der Rechenkern zweimal — er unterscheidet zwei eigene Tarife
+        // nicht von zwei Anschlüssen, und das ist dort so gewollt.
+        let high = draws[0]
+        let highTariff = Tariff(
+            id: identifier(for: high, isPrimary: true),
             meteringPointID: point.id,
+            registerID: high.id,
             validFrom: from,
             pricePerUnit: price ?? 0,
             monthlyBasePrice: base ?? 0,
-            billingUnit: needsGasConversion ? .kilowattHour : kind.defaultUnit,
-            gasConversion: conversion,
-            feedInPricePerUnit: hasFeedIn ? decimalValue(feedInPrice) : nil
+            billingUnit: unit,
+            gasConversion: conversion
         )
-        try repository.save(tariff)
+        try repository.save(highTariff)
+        written.append(highTariff.id)
+
+        let low = draws[1]
+        let lowTariff = Tariff(
+            id: identifier(for: low),
+            meteringPointID: point.id,
+            registerID: low.id,
+            validFrom: from,
+            pricePerUnit: decimalValue(lowTariffPrice) ?? 0,
+            monthlyBasePrice: 0,
+            billingUnit: unit,
+            gasConversion: conversion
+        )
+        try repository.save(lowTariff)
+        written.append(lowTariff.id)
+
+        if let feed = point.registers.first(where: { $0.direction == .feedIn }) {
+            let feedTariff = Tariff(
+                id: identifier(for: feed),
+                meteringPointID: point.id,
+                registerID: feed.id,
+                validFrom: from,
+                pricePerUnit: 0,
+                monthlyBasePrice: 0,
+                billingUnit: unit,
+                feedInPricePerUnit: decimalValue(feedInPrice)
+            )
+            try repository.save(feedTariff)
+            written.append(feedTariff.id)
+        }
+
+        try removeOrphanedTariffs(keeping: written, of: point, in: repository)
+    }
+
+    /// Räumt Tarife weg, die zu keinem Zählwerk mehr gehören.
+    ///
+    /// Ohne das bliebe nach dem Abschalten des Nachtstroms sein Tarif liegen.
+    /// Der Rechenkern fände ihn weiterhin, fände aber kein Zählwerk dazu — und
+    /// beim erneuten Einschalten stünde ein zweiter daneben.
+    private func removeOrphanedTariffs(
+        keeping ids: [Tariff.ID],
+        of point: MeteringPoint,
+        in repository: PulseRepository
+    ) throws {
+        let live = Set(point.registers.map(\.id))
+        for tariff in try repository.tariffs(for: point.id) {
+            guard !ids.contains(tariff.id) else { continue }
+            guard let registerID = tariff.registerID, !live.contains(registerID) else { continue }
+            try repository.delete(tariffID: tariff.id)
+        }
     }
 
     private func save() {
@@ -808,6 +1007,10 @@ struct MeterEditor: View {
                     if canChangeKind { register.unit = kind.defaultUnit }
                     existing.registers[0] = register
                 }
+                // Erst der Nachtstrom, dann die Einspeisung: `applyDualTariff`
+                // fügt hinter dem letzten Bezug ein, und die Einspeisung hängt
+                // sich hinten an. Andersherum stünde sie in der Mitte.
+                applyDualTariff(to: &existing)
                 applyFeedIn(to: &existing)
                 try repository.save(existing)
                 try saveTariff(for: existing, in: repository)
@@ -819,8 +1022,15 @@ struct MeterEditor: View {
                 // Beim Zweirichtungszähler bekommt auch das erste Zählwerk
                 // einen Namen. „Bezug" allein wäre nichtssagend, „Bezug" neben
                 // „Einspeisung" sagt alles.
-                if hasFeedIn && kind == .electricity { register.label = "Bezug" }
+                if hasDualTariff && kind == .electricity {
+                    register.label = "Hochtarif"
+                } else if hasFeedIn && kind == .electricity {
+                    register.label = "Bezug"
+                }
                 var registers = [register]
+                if hasDualTariff && kind == .electricity {
+                    registers.append(lowTariffRegister)
+                }
                 if hasFeedIn && kind == .electricity {
                     registers.append(feedInRegister)
                 }

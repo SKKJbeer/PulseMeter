@@ -248,6 +248,17 @@ public final class PulseRepository {
         try context.save()
     }
 
+    /// Entfernt einen Tarif.
+    ///
+    /// Gebraucht, wenn ein Zählwerk wieder verschwindet — sonst bliebe sein
+    /// Tarif liegen und stünde beim erneuten Anlegen ein zweites Mal daneben.
+    public func delete(tariffID: Tariff.ID) throws {
+        let descriptor = FetchDescriptor<TariffRecord>(predicate: #Predicate { $0.id == tariffID })
+        guard let record = try context.fetch(descriptor).first else { return }
+        context.delete(record)
+        try context.save()
+    }
+
     public func billingPeriods(for meteringPointID: MeteringPoint.ID) throws -> [BillingPeriod] {
         let descriptor = FetchDescriptor<BillingPeriodRecord>(
             predicate: #Predicate { $0.meteringPointID == meteringPointID },

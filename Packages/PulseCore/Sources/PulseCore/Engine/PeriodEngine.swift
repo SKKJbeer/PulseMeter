@@ -101,6 +101,28 @@ public enum PeriodEngine {
         return buckets(series: series, year: year, granularity: granularity)
     }
 
+    /// Abschnitte für einen ganzen Zähler — bei Doppeltarif die Summe beider
+    /// Zählwerke, je Abschnitt auf den gemeinsam abgedeckten Ausschnitt
+    /// zugeschnitten.
+    public static func buckets(
+        meteringPoint: MeteringPoint,
+        readings: [Reading],
+        year: Int,
+        granularity: Granularity
+    ) -> [Bucket] {
+        (1...granularity.slotsPerYear).compactMap { slot in
+            guard let range = range(year: year, slot: slot, granularity: granularity) else { return nil }
+            return Bucket(
+                year: year,
+                slot: slot,
+                granularity: granularity,
+                range: range,
+                result: ConsumptionEngine.consumption(meteringPoint: meteringPoint,
+                                                      readings: readings, in: range)
+            )
+        }
+    }
+
     // MARK: - Derselbe Abschnitt über mehrere Jahre
 
     /// „Februar 2026 gegen Februar 2025" — die Frage, für die es diese App gibt.
@@ -210,6 +232,46 @@ public enum PeriodEngine {
         guard let series = ConsumptionSeries.build(register: register, readings: readings) else { return nil }
         return compareAcrossYears(series: series, slot: slot, granularity: granularity,
                                   referenceYear: referenceYear, yearsBack: yearsBack)
+    }
+
+    /// Derselbe Vergleich für einen ganzen Zähler.
+    ///
+    /// Bei einem Doppeltarifzähler steht sonst der Hochtarif für den Zähler,
+    /// und der Verlauf zeigte etwas anderes als die Karte darüber.
+    public static func compareAcrossYears(
+        meteringPoint: MeteringPoint,
+        readings: [Reading],
+        slot: Int,
+        granularity: Granularity,
+        referenceYear: Int,
+        yearsBack: Int
+    ) -> SlotComparison? {
+        guard let full = range(year: referenceYear, slot: slot, granularity: granularity) else { return nil }
+        let probe = ConsumptionEngine.consumption(meteringPoint: meteringPoint, readings: readings, in: full)
+        guard let window = probe.coveredRange, window.spanInDays > 0 else { return nil }
+
+        var entries: [SlotComparison.Entry] = []
+        for step in 0...Swift.max(0, yearsBack) {
+            guard let start = shifted(window.start, byYears: -step),
+                  let end = shifted(window.end, byYears: -step),
+                  let shiftedWindow = DayRange(start: start, end: end)
+            else { continue }
+            entries.append(
+                SlotComparison.Entry(
+                    year: referenceYear - step,
+                    result: ConsumptionEngine.consumption(meteringPoint: meteringPoint,
+                                                          readings: readings, in: shiftedWindow)
+                )
+            )
+        }
+
+        return SlotComparison(
+            slot: slot,
+            granularity: granularity,
+            entries: entries,
+            window: window,
+            isPartial: window.start != full.start || window.end != full.end
+        )
     }
 
     /// Verschiebt einen Tag um volle Jahre. Der 29. Februar rutscht auf den

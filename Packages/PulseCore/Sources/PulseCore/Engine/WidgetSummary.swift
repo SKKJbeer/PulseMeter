@@ -109,7 +109,11 @@ extension WidgetSummary {
         for point in meteringPoints where !point.isArchived {
             guard let register = point.primaryRegister else { continue }
             let own = readings[point.id] ?? []
-            let result = ConsumptionEngine.consumption(register: register,
+            // Auf Zählerebene, damit im Widget dieselbe Zahl steht wie auf der
+            // Karte darunter. Bei Doppeltarif wäre das sonst der Hochtarif
+            // allein — und ein Widget, das etwas anderes zeigt als der
+            // Bildschirm daneben, ist schlimmer als keines.
+            let result = ConsumptionEngine.consumption(meteringPoint: point,
                                                        readings: own, in: range)
             let last = own.filter { $0.registerID == register.id }.map(\.day).max()
 

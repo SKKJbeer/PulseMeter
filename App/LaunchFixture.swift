@@ -79,6 +79,8 @@ enum LaunchFixture {
             let prepay: Decimal?
             /// Jahresform der Einspeisung. Gesetzt heißt: Zweirichtungszähler.
             var feedIn: (start: Decimal, monthly: [Decimal], price: Decimal)?
+            /// Jahresform des Nachtstroms. Gesetzt heißt: zwei Arbeitspreise.
+            var lowTariff: (start: Decimal, monthly: [Decimal], price: Decimal)? = nil
         }
 
         let profiles: [Profile] = [
@@ -103,7 +105,18 @@ enum LaunchFixture {
                     monthly: [418, 376, 298, 178, 92, 41, 36, 39, 84, 192, 308, 402],
                     staleMonths: 3,
                     price: Decimal(string: "0.11")!, base: Decimal(string: "14.50")!,
-                    gas: true, prepay: 230, feedIn: nil)
+                    gas: true, prepay: 230, feedIn: nil),
+            // Wärmepumpe mit getrennten Preisen für Tag und Nacht — derselbe
+            // Zähler wie im Entwurf, mit denselben Preisen. Nachts läuft sie
+            // länger und kostet weniger; genau darum gibt es den Tarif.
+            Profile(name: "Wärmepumpe", kind: .electricity, start: 24_180,
+                    monthly: [402, 361, 288, 174, 96, 44, 38, 41, 88, 186, 297, 388],
+                    staleMonths: 0,
+                    price: Decimal(string: "0.31")!, base: Decimal(string: "8.90")!,
+                    gas: false, prepay: 60, feedIn: nil,
+                    lowTariff: (start: 28_940,
+                                monthly: [428, 384, 306, 185, 102, 47, 41, 44, 94, 198, 316, 413],
+                                price: Decimal(string: "0.21")!))
         ]
 
         let property = try repository.ensureDefaultProperty()
@@ -117,6 +130,15 @@ enum LaunchFixture {
                 propertyID: property.id, name: profile.name, kind: profile.kind,
                 billingCycle: profile.prepay == nil ? nil : BillingCycle(anchorMonth: 1, anchorDay: 1)
             )
+            if profile.lowTariff != nil, var first = point.registers.first {
+                first.label = "Hochtarif"
+                point.registers[0] = first
+                point.registers.append(
+                    Register(label: "Niedertarif", unit: .kilowattHour, direction: .consumption,
+                             integerDigits: first.integerDigits,
+                             fractionDigits: first.fractionDigits, obisCode: "1.8.2")
+                )
+            }
             if profile.feedIn != nil, var first = point.registers.first {
                 first.label = "Bezug"
                 point.registers[0] = first
@@ -131,7 +153,9 @@ enum LaunchFixture {
 
             var value = profile.start
             var feedValue = profile.feedIn?.start ?? 0
+            var lowValue = profile.lowTariff?.start ?? 0
             let feedRegister = point.registers.first { $0.direction == .feedIn }
+            let lowRegister = point.registers.filter { $0.direction == .consumption }.dropFirst().first
             for offset in stride(from: 25, through: profile.staleMonths, by: -1) {
                 var month = today.month - offset
                 var year = today.year
@@ -151,14 +175,29 @@ enum LaunchFixture {
                     )
                     feedValue += feed.monthly[month - 1]
                 }
+                if let lowRegister, let low = profile.lowTariff {
+                    try repository.save(
+                        Reading(registerID: lowRegister.id, day: day, value: lowValue),
+                        fractionDigits: lowRegister.fractionDigits
+                    )
+                    lowValue += year == today.year
+                        ? low.monthly[month - 1] * Decimal(string: "0.93")!
+                        : low.monthly[month - 1]
+                }
                 // Das laufende Jahr liegt sieben Prozent unter dem Vorjahr.
                 let seasonal = profile.monthly[month - 1]
                 value += year == today.year ? seasonal * Decimal(string: "0.93")! : seasonal
             }
 
             guard let yearStart = CalendarDay(year: today.year - 2, month: 1, day: 1) else { continue }
+            // Bei zwei Arbeitspreisen hängt an jedem Zählwerk ein eigener
+            // Tarif, und der Grundpreis steht nur am ersten: Er gehört zum
+            // Anschluss, und der Anschluss ist einer. Dieselbe Ablageform, die
+            // `MeterEditor` schreibt — zwei Fassungen davon würden
+            // auseinanderlaufen.
             try repository.save(Tariff(
                 meteringPointID: point.id,
+                registerID: profile.lowTariff == nil ? nil : register.id,
                 validFrom: yearStart,
                 pricePerUnit: profile.price,
                 monthlyBasePrice: profile.base,
@@ -166,6 +205,16 @@ enum LaunchFixture {
                 gasConversion: profile.gas ? .typical : nil,
                 feedInPricePerUnit: profile.feedIn?.price
             ))
+            if let lowRegister, let low = profile.lowTariff {
+                try repository.save(Tariff(
+                    meteringPointID: point.id,
+                    registerID: lowRegister.id,
+                    validFrom: yearStart,
+                    pricePerUnit: low.price,
+                    monthlyBasePrice: 0,
+                    billingUnit: profile.kind.defaultUnit
+                ))
+            }
 
             if let prepay = profile.prepay,
                let running = point.currentBillingPeriod(on: today) {

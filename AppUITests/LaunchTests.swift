@@ -39,6 +39,19 @@ final class LaunchTests: XCTestCase {
     /// Zwei ernste Fehler saßen genau hier: Die Statuszeile meldete „Alles im
     /// Rahmen" für einen nie abgelesenen Zähler, und der Verlauf zeigte „0"
     /// als wäre nichts verbraucht worden statt als wäre nichts bekannt.
+    /// Schiebt ein Formular so weit, bis das Element antippbar ist.
+    ///
+    /// Ein Formular ist länger als der Bildschirm, und `tap()` auf etwas
+    /// außerhalb des sichtbaren Bereichs scheitert — als läge ein Fehler in
+    /// der App vor, obwohl nur gescrollt werden müsste.
+    private func scroll(to element: XCUIElement, in app: XCUIApplication, swipes: Int = 6) -> Bool {
+        for _ in 0..<swipes {
+            if element.exists && element.isHittable { return true }
+            app.swipeUp()
+        }
+        return element.exists && element.isHittable
+    }
+
     private func launchEmpty() -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-pulse-empty"]
@@ -550,5 +563,71 @@ final class LaunchTests: XCTestCase {
         // außer Flattern. Was bleibt, ist die Zahl im Protokoll; sie ergibt
         // einen Verlauf, und ein Verlauf zeigt Verschlechterungen, die keine
         // einzelne Schranke je zuverlässig gefunden hätte.
+    }
+
+    /// Ein Zähler mit getrennten Preisen für Tag und Nacht, von Hand angelegt.
+    ///
+    /// **Warum über die Oberfläche und nicht über den Ausgangszustand.** Der
+    /// Rechenkern kann den Doppeltarif seit dem ersten Tag; was bis 0.31.0
+    /// fehlte, war die Möglichkeit, so einen Zähler *anzulegen*. Ein Test auf
+    /// vorbereiteten Daten hätte genau diese Lücke nicht bemerkt.
+    func testCreatingADualTariffMeterAsksForBothNumbers() {
+        let app = launchWithData()
+        app.tabBars.buttons["Zähler"].tap()
+
+        let add = app.buttons["Zähler hinzufügen"]
+        XCTAssertTrue(add.waitForExistence(timeout: 5), "Die Schaltfläche zum Anlegen fehlt")
+        add.tap()
+
+        let field = app.textFields["Name"]
+        XCTAssertTrue(field.waitForExistence(timeout: 5), "Das Namensfeld fehlt")
+        field.tap()
+        // Mit Zeilenschaltung: Sonst steht die Tastatur über dem Formular, und
+        // der Schalter weiter unten ist nicht antippbar.
+        field.typeText("Nachtspeicher\n")
+
+        let toggle = app.switches["Zwei Preise: Tag und Nacht"]
+        XCTAssertTrue(toggle.waitForExistence(timeout: 5),
+                      "Der Schalter für Tag- und Nachtstrom fehlt")
+        XCTAssertTrue(scroll(to: toggle, in: app), "Der Schalter ließ sich nicht erreichen")
+        toggle.tap()
+
+        // Zwei Arbeitspreise heißt: zwei Felder. Vorher gab es nur eines, und
+        // der Nachtpreis hätte nirgends hingekonnt.
+        let nachtPreis = app.staticTexts["Arbeitspreis nachts"]
+        XCTAssertTrue(scroll(to: nachtPreis, in: app), "Das Feld für den Nachtpreis fehlt")
+        XCTAssertTrue(app.staticTexts["Arbeitspreis tagsüber"].exists,
+                      "Mit zwei Preisen muss der erste sagen, für wann er gilt")
+
+        app.buttons["Sichern"].tap()
+
+        app.tabBars.buttons["Übersicht"].tap()
+        let karte = app.descendants(matching: .any).containing(
+            NSPredicate(format: "label BEGINSWITH 'Nachtspeicher'")
+        ).firstMatch
+        XCTAssertTrue(karte.waitForExistence(timeout: 5),
+                      "Der neue Zähler steht nicht auf der Übersicht")
+        karte.tap()
+
+        // Erst der Tagstrom, dann der Nachtstrom — in einem Vorgang, wie beim
+        // Zweirichtungszähler.
+        let erst = app.staticTexts.containing(
+            NSPredicate(format: "label BEGINSWITH 'Hochtarif'")
+        ).firstMatch
+        XCTAssertTrue(erst.waitForExistence(timeout: 10),
+                      "Die Erfassung nennt das erste Zählwerk nicht")
+        XCTAssertTrue(erst.label.contains("1 von 2"),
+                      "Ohne den Fortschritt weiß niemand, dass noch etwas kommt — gelesen: \(erst.label)")
+
+        for taste in ["1", "2", "3", "4"] { app.buttons[taste].firstMatch.tap() }
+        app.buttons["Weiter"].tap()
+
+        let zweit = app.staticTexts.containing(
+            NSPredicate(format: "label BEGINSWITH 'Niedertarif'")
+        ).firstMatch
+        XCTAssertTrue(zweit.waitForExistence(timeout: 5),
+                      "Nach dem Tagstrom muss der Nachtstrom drankommen")
+        XCTAssertTrue(app.buttons["Sichern"].exists,
+                      "Beim letzten Zählwerk muss „Sichern“ dastehen")
     }
 }
