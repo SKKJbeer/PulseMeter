@@ -26,9 +26,17 @@ on:
 # Commit-Reihenfolge. Wartet ein Lauf lange auf einen Läufer, kann er dadurch
 # einen jüngeren erschlagen. Das ist selten und kostet einen Lauf; die Regel
 # bleibt, weil sie im Normalfall genau das Richtige tut.
-concurrency:
-  group: ci-${{ github.event.pull_request.head.ref || github.ref_name }}-2
-  cancel-in-progress: true
+# **Die Nebenläufigkeit liegt seit 0.33.0 je Auftrag, nicht über dem Ganzen.**
+# Zusammen bewirkten die beiden Regeln oben nämlich genau das Gegenteil dessen,
+# wofür sie da sind: Bei zügiger Arbeit brach jeder neue Push den laufenden
+# App-Build ab — an einem Tag drei Mal, jedes Mal kurz vor dem Ende und ohne je
+# ein Ergebnis geliefert zu haben. Wer nicht am Mac sitzt, stand danach ohne
+# jede Aussage da.
+#
+# Die schnelle Prüfung darf weiter abgebrochen werden: Sie dauert eine Minute,
+# und das Ergebnis eines überholten Standes interessiert niemanden. Der
+# App-Build darf es nicht — er ist die einzige Aussage über die App, wenn
+# gerade niemand an einem Mac sitzt, und ein abgebrochener Lauf ist keine.
 
 # Schreibrecht nur, weil der Lauf die Screenshots in einen eigenen Zweig legt.
 # Sonst bliebe es beim Lesen.
@@ -46,6 +54,9 @@ jobs:
   prototype:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    concurrency:
+      group: entwurf-${{ github.event.pull_request.head.ref || github.ref_name }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -58,29 +69,27 @@ jobs:
       - name: Klick-Dummy prüfen
         run: node scripts/check-prototype.mjs
 
-  # Nicht mehr bei jedem Push auf einen Arbeitszweig.
+  # **Läuft wieder bei jedem Push**, auch auf einen Arbeitszweig.
   #
-  # **Warum.** Der Auftrag braucht zwölf bis fünfzehn Minuten, und seit 0.32.4
-  # prüft `scripts/pruefen.sh` auf einem Mac dasselbe in zwei — inklusive der
-  # Bilder, die seither auch von dort in den Zweig `screenshots` gehen. Damit
-  # war dieser Auftrag auf einem Arbeitszweig nicht die Gegenprobe, sondern die
-  # Warteschlange davor.
+  # In 0.32.5 war er auf `main`, Pull-Requests und Zuruf beschränkt worden, weil
+  # ein Mac dasselbe in zwei statt fünfzehn Minuten prüft. Das stimmt — gilt
+  # aber nur, **wenn jemand am Mac sitzt**. Sonst war die Folge, dass ein
+  # Arbeitszweig gar nicht mehr geprüft wurde und der Gründer ohne jede Aussage
+  # über die App dastand. Genau dafür gibt es diesen Auftrag.
   #
-  # Dazu kam ein Nebeneffekt, der ihn dort ohnehin wertlos machte: Bei
-  # zügiger Arbeit bricht `cancel-in-progress` den Lauf ab, bevor der App-Build
-  # durch ist. Drei der letzten fünf Läufe endeten so — abgebrochen, ohne je
-  # ein Ergebnis geliefert zu haben, und trotzdem eine Dreiviertelstunde
-  # macOS-Läufer verbraucht.
+  # Er bleibt trotzdem die Gegenprobe und nicht der erste Durchgang: Wer am Mac
+  # sitzt, hat sein Ergebnis lange vorher, und der Zweig `pruefungen` sagt, ob
+  # das der Fall war.
   #
-  # Er läuft weiter, wo er wirklich die Gegenprobe ist: auf `main`, bei jeder
-  # Pull-Request und auf Zuruf über `workflow_dispatch`.
+  # `cancel-in-progress: false` — anders als bei der schnellen Prüfung. Ein
+  # abgebrochener App-Build ist keine Aussage, sondern eine verlorene
+  # Viertelstunde. Lieber laufen zwei hintereinander als keiner zu Ende.
   build-and-test:
-    if: >-
-      github.event_name == 'pull_request' ||
-      github.event_name == 'workflow_dispatch' ||
-      github.ref == 'refs/heads/main'
     runs-on: macos-15
     timeout-minutes: 45
+    concurrency:
+      group: app-${{ github.event.pull_request.head.ref || github.ref_name }}
+      cancel-in-progress: false
 
     steps:
       - uses: actions/checkout@v4

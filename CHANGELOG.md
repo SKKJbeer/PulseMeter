@@ -9,6 +9,41 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.33.0 — 2026-08-09
+
+**Die selbsttätige Prüfung ist zurück — und das Aufbauschema ist jetzt
+übertragbar.**
+
+### Behoben
+- **Rückschritt aus 0.32.5 zurückgenommen.** Der macOS-Auftrag war auf `main`,
+  Pull-Requests und Zuruf beschränkt worden, weil ein Mac dasselbe in zwei
+  statt fünfzehn Minuten prüft. Das stimmt — aber nur, **wenn jemand am Mac
+  sitzt.** Sonst wurde ein Arbeitszweig gar nicht mehr geprüft, und wer gerade
+  nicht am Rechner ist, stand ohne jede Aussage über die App da. Genau dafür
+  gibt es diesen Auftrag. Er läuft wieder bei jedem Push.
+- Damit er das auch zu Ende tut, liegt die Nebenläufigkeit jetzt **je Auftrag**
+  statt über dem ganzen Ablauf: Die schnelle Prüfung darf weiter abgebrochen
+  werden — eine Minute, und ein überholter Stand interessiert niemanden. Der
+  App-Build darf es nicht. Ein abgebrochener Build ist keine Aussage, sondern
+  eine verlorene Viertelstunde; drei Läufe an einem Tag endeten so, jeder kurz
+  vor dem Ziel.
+
+### Hinzugefügt
+- `docs/08-baukasten.md`: das Aufbauschema dieses Projekts, aufgeschrieben zum
+  Übertragen auf ein anderes. Was allgemein ist und was ausgetauscht werden
+  muss, in zehn Schritten — und die sechs Fehler, die es gekostet hat, mit
+  Begründung. Sie wiederholen sich in jedem Projekt: das veraltete
+  Arbeitsverzeichnis, das vollständig aussieht; der rote Lauf ohne Bilder; der
+  Fehlschlag, der nur „fehlt" sagt; der Filter, der nur die erste Zeile zeigt;
+  `cancel-in-progress` über dem ganzen Ablauf; der Prüfschritt, der die
+  Testquellen auslässt.
+
+_154 Prüfungen in `PulseCore`, alle grün. Klick-Dummy 44 von 44, hell und
+dunkel. `ci.yml` als YAML geprüft: kein Auslöser eingeschränkt, beide Aufträge
+mit eigener Nebenläufigkeitsgruppe, `cancel-in-progress` nur beim schnellen._
+
+---
+
 ## 0.32.10 — 2026-08-09
 
 **Der Weg zum ersten Go-Live, mit Streichliste.**

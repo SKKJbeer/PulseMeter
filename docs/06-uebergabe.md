@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-08-09, Version 0.32.10
+Stand: 2026-08-09, Version 0.33.0
 
 ---
 
@@ -85,6 +85,33 @@ geschlossen sind:
 
 **Beides ist Schlussfolgerung, nicht Messung.** Ein Simulator stand hier nicht
 zur Verfügung. Der erste Lauf auf einem Mac entscheidet.
+
+### Der wichtigste offene Punkt: Der PDF-Bericht zeigt sechs leere Seiten
+
+Mit 0.32.8 entstehen Bilder auch bei einem gefallenen Lauf. Das erste Bild des
+Berichts, das je jemand gesehen hat, zeigt **sechs leere Seitenrahmen** — kein
+Text, keine Tabelle, keine Zahl. In Hell **und** in Dunkel, und in Dunkel sind
+die Seiten dunkel statt weiß.
+
+Der Rest der App stellt auf demselben Lauf einwandfrei dar: Die Übersicht zeigt
+Karten, Zahlen, Vorjahresvergleich und Abschlagsvorschau.
+
+Zwei Lesarten, und **keine ist bisher belegt**:
+
+1. **Der Bericht rendert leer.** Dann ist es ein Produktfehler, und zwar ein
+   schwerer: `ReportBuilderTests` belegt die Zahlen auf den Cent, sagt aber
+   nichts darüber, ob sie auf Papier landen.
+2. **Die Vorschau war noch nicht fertig.** `scripts/run.sh` wartet vier
+   Sekunden nach dem Start; für sechs A4-Seiten kann das zu wenig sein.
+
+Zu klären, bevor irgendetwas anderes am Bericht passiert. Am schnellsten auf
+einem Mac: `scripts/run.sh` laufen lassen und das Blatt selbst ansehen. Fällt
+die Entscheidung auf 2., gehört in `run.sh` eine Wartebedingung statt einer
+festen Zahl.
+
+Dieser Fund ist die Bestätigung des Satzes weiter unten: Screenshots finden,
+was Tests nicht finden. Der Bericht war seit 0.32.0 „auf den Cent belegt" — und
+niemand hatte ihn je gesehen.
 
 ### Was ich nicht prüfen konnte
 
