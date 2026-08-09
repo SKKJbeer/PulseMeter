@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-08-09, Version 0.32.3
+Stand: 2026-08-09, Version 0.32.4
 
 ---
 
@@ -44,6 +44,7 @@ das ist einer Sitzung passiert.
 | 0.32.1 | `scripts/pruefen.sh`, Push-Haken, Zweig `pruefungen`, lokale Einrichtung | gebaut |
 | 0.32.2 | zwei Oberflächenprüfungen berichtigt | **noch nicht auf einem Mac geprüft** |
 | 0.32.3 | `scripts/mac-start.sh` und `Am-Mac-starten.command` — ein Aufruf für alles | **noch nicht auf einem Mac geprüft** |
+| 0.32.4 | Der lokale Lauf liefert jetzt dasselbe wie die CI, inklusive Bilder | **noch nicht auf einem Mac geprüft** |
 
 ### Was als Nächstes zu tun ist
 
@@ -112,8 +113,15 @@ sind sie über das Repository und über zwei Zweige:
   Umfang, Dauer, Rechner, und ob das Arbeitsverzeichnis sauber war. Geschrieben
   vom Haken vor dem Push. Eine Cloud-Sitzung liest daraus, ob ein Stand schon
   geprüft wurde, statt auf die CI zu warten.
-- **`screenshots`** — die Bilder des letzten CI-Laufs, hell und dunkel. Wird
-  überschrieben, ist also keine Historie.
+- **`screenshots`** — die Bilder des letzten Laufs, hell und dunkel. Seit 0.32.4
+  füllt ihn auch ein **lokaler** Lauf (`scripts/pruefen.sh --melden`, und damit
+  jedes `scripts/mac-start.sh`), nicht mehr nur die CI. Die Kopfzeile im Zweig
+  sagt, woher die Bilder stammen — CI oder Mac — und ob das Arbeitsverzeichnis
+  sauber war. Wird überschrieben, ist also keine Historie.
+
+Damit ist die CI für nichts mehr das Nadelöhr. Sie bleibt die Gegenprobe auf
+einem frischen Rechner; der erste Durchgang gehört auf den Mac, weil er dort
+zwei statt fünfzehn Minuten dauert.
 
 Sinnvolle Aufteilung: Die Cloud-Sitzung nimmt `PulseCore` und den Entwurf, die
 Sitzung am Mac baut, prüft und fotografiert die App. Beide halten sich an

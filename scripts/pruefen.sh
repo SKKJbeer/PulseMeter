@@ -165,10 +165,16 @@ if { [ "$SCOPE" = "alles" ] || [ "$SCOPE" = "app" ]; } && [ "$APPLE" = "0" ]; th
   note "Übersprungen — SwiftUI und der Simulator brauchen Xcode."
 elif [ "$SCOPE" = "alles" ] || [ "$SCOPE" = "app" ]; then
   step "App bauen und Oberflächentests"
-  [ -d PulseMeter.xcodeproj ] || {
-    note "Xcode-Projekt fehlt — wird erzeugt."
+  # Auch dann neu erzeugen, wenn `project.yml` jünger ist als das Projekt.
+  # Die CI baut immer von null und merkt das nie; lokal bleibt das Projekt
+  # liegen, und eine Änderung an `project.yml` — eine neue Datei im Ziel, eine
+  # andere Versionsnummer, ein zusätzliches Ziel — wäre stillschweigend nicht
+  # im Build gewesen. Genau der Unterschied, der einen lokalen Lauf grün und
+  # die CI danach rot macht.
+  if [ ! -d PulseMeter.xcodeproj ] || [ project.yml -nt PulseMeter.xcodeproj ]; then
+    note "Xcode-Projekt fehlt oder ist älter als project.yml — wird erzeugt."
     xcodegen generate >/dev/null
-  }
+  fi
   DEVICE=$(scripts/sim.sh 2>/dev/null)
   # Der Simulator wird einmal gestartet und bleibt es. Ein kalter Start kostet
   # bei jedem Lauf zwanzig Sekunden, und niemand schaltet seinen Mac zwischen
@@ -222,6 +228,13 @@ if [ "$SHOTS" = "1" ] && [ "$APP_OK" = "1" ] && [ "$APPLE" = "1" ] \
   note "Verwendet den vorhandenen Build weiter — es wird nicht neu übersetzt."
   run "Bilder in build/" scripts/run.sh build || true
   SHOTS_RAN=1
+  # Mit `--melden` gehen die Bilder auch in den Zweig `screenshots`. Ohne das
+  # war die CI der einzige Weg, wie eine Sitzung ohne Zugriff auf diesen Mac
+  # sie je zu sehen bekam — und damit war sie das Nadelöhr für eine Prüfung,
+  # die hier längst fertig in `build/` liegt.
+  if [ "$REPORT" = "1" ]; then
+    run "Bilder in den Zweig screenshots" scripts/publish-shots.sh build || true
+  fi
 fi
 
 # ------------------------------------------------- 6. Auf den Entwurf warten

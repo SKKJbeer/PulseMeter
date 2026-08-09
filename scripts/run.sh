@@ -10,7 +10,12 @@ cd "$(dirname "$0")/.."
 OUTDIR="${1:-build}"
 DERIVED="${PULSE_DERIVED_DATA:-build/DerivedData}"
 
-[ -d PulseMeter.xcodeproj ] || xcodegen generate
+# Auch dann neu erzeugen, wenn `project.yml` jünger ist: Ein liegengebliebenes
+# Projekt kennt eine Änderung daran nicht, und die Bilder zeigen dann einen
+# Stand, den es so nicht gibt.
+if [ ! -d PulseMeter.xcodeproj ] || [ project.yml -nt PulseMeter.xcodeproj ]; then
+  xcodegen generate
+fi
 DEVICE=$(scripts/sim.sh)
 mkdir -p "$OUTDIR"
 

@@ -27,15 +27,21 @@ nur das Geänderte.
 |---|---|---|
 | `scripts/mac-start.sh` | Stand holen, einrichten, alles prüfen, fotografieren | 2–3 min |
 | `scripts/pruefen.sh` | alles | 1–2 min |
+| `scripts/pruefen.sh --melden` | alles, und Ergebnis samt Bildern in die Zweige | +10 s |
 | `scripts/pruefen.sh schnell` | ohne App-Build | 20 s |
 | `scripts/pruefen.sh app` | nur App-Build und Oberflächentests | 1 min |
 | `scripts/pruefen.sh --nur zurueck` | eine einzelne Oberflächenprüfung | 20 s |
 | `scripts/run.sh` | App im Simulator starten, Screenshots ablegen | 40 s |
 
-Vor jedem `git push` laufen die schnellen Prüfungen als Haken und schreiben ihr
-Ergebnis in den Zweig [`pruefungen`](../../tree/pruefungen) — eine Zeile je
-Lauf. Dadurch sieht auch eine Sitzung, die diesen Rechner nicht erreicht, ob
-ein Stand hier schon geprüft wurde, statt zwölf Minuten auf die CI zu warten.
+**Die CI ist die Gegenprobe, nicht der erste Durchgang.** Der lokale Lauf prüft
+dasselbe und ist in zwei statt in fünfzehn Minuten fertig; er schreibt sein
+Ergebnis in den Zweig [`pruefungen`](../../tree/pruefungen) und seine Bilder in
+[`screenshots`](../../tree/screenshots) — dieselben zwei Zweige, die sonst nur
+die CI füllt. Damit sieht auch eine Sitzung, die diesen Rechner nicht erreicht,
+das Ergebnis sofort, ohne dass jemand auf einen gemieteten macOS-Läufer wartet.
+
+Vor jedem `git push` laufen zusätzlich die schnellen Prüfungen als Haken und
+schreiben ihre Zeile nach `pruefungen`.
 Überspringen: `git push --no-verify`. Nichts melden: `git config --unset
 core.hooksPath`.
 
@@ -44,7 +50,7 @@ Lizenz. Alles Weitere richtet das Skript ein.
 
 ## Status
 
-Version **0.32.3**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
+Version **0.32.4**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
 rechnet echt. Alle vier Bildschirme — Übersicht, Erfassung, Verlauf und Zähler —
 laufen als SwiftUI-App im Simulator und werden auf jedem Lauf fotografiert,
 hell und dunkel. Siehe [CHANGELOG.md](CHANGELOG.md).
@@ -86,7 +92,7 @@ nicht eingecheckt. Wer gar nicht gefragt werden will, startet mit
 
 ## Klick-Dummy
 
-**[Zuletzt veröffentlichter Entwurf →](https://claude.ai/code/artifact/2b3533ce-f7ad-4d36-aeba-7d3f1c4323a6)**
+**[Zuletzt veröffentlichter Entwurf →](https://claude.ai/code/artifact/f6890c20-79de-475d-b3eb-b085199c0137)**
 
 Jede Produktänderung wird sofort sichtbar gemacht — als **neue** Veröffentlichung
 mit eigener URL, weil erneutes Veröffentlichen auf dieselbe Adresse nicht

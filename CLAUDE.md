@@ -132,6 +132,15 @@ Ergebnis, Umfang, Dauer, Rechner. Geschrieben wird sie vom Haken vor dem Push
 (`scripts/pruefen.sh --melden`). Steht der aktuelle Stand dort grün, ist das
 Warten auf die CI überflüssig.
 
+Ein **vollständiger** Lauf mit `--melden` legt zusätzlich die Screenshots in den
+Zweig `screenshots` — dieselben Bilder, die sonst nur die CI liefert. Damit ist
+die CI für nichts mehr das Nadelöhr: `scripts/mac-start.sh` ruft `--melden` von
+sich aus auf.
+
+```bash
+git fetch origin screenshots && git show origin/screenshots:README.md | head -3
+```
+
 **Nicht als Ersatz lesen, sondern als Vorsprung.** Ein Lauf „mit Änderungen"
 sagt über den committeten Stand nichts, und `schnell` sagt nichts über die App
 im Simulator. Beides steht in der Zeile.

@@ -9,6 +9,48 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.32.4 — 2026-08-09
+
+**Der lokale Lauf liefert jetzt alles, was auch die CI liefert — die Bilder
+eingeschlossen. Damit ist die CI die Gegenprobe und nicht mehr das Nadelöhr.**
+
+### Hinzugefügt
+- `scripts/pruefen.sh --melden` legt die Screenshots in den Zweig `screenshots`,
+  nicht mehr nur die Ergebniszeile nach `pruefungen`. `scripts/mac-start.sh`
+  ruft `--melden` von sich aus auf. Vorher war die CI der einzige Weg, wie eine
+  Sitzung ohne Zugriff auf den Mac die Bilder je zu sehen bekam — fünfzehn
+  Minuten für etwas, das lokal nach zwei Minuten fertig in `build/` liegt.
+- `scripts/publish-shots.sh` läuft auch ohne `GITHUB_TOKEN`: Auf einem Mac
+  schiebt es über `origin` mit den ohnehin eingerichteten Zugangsdaten. Die
+  Kopfzeile im Zweig nennt Herkunft (CI oder Mac) und vermerkt, wenn der Lauf
+  auf einem Arbeitsverzeichnis mit nicht eingecheckten Änderungen stattfand —
+  sonst läse sich der Zweig später als Aussage über einen Stand, den es nie gab.
+
+### Behoben
+- **Ein liegengebliebenes Xcode-Projekt kannte Änderungen an `project.yml`
+  nicht.** `scripts/pruefen.sh` und `scripts/run.sh` erzeugten es nur, wenn es
+  ganz fehlte. Die CI baut immer von null und hätte den Unterschied nie
+  gezeigt: Ein neues Ziel, eine neue Datei oder eine geänderte Versionsnummer
+  wäre lokal stillschweigend nicht im Build gewesen — der Lauf grün, die CI
+  danach rot, ohne erkennbaren Grund. Beide erzeugen jetzt auch dann neu, wenn
+  `project.yml` jünger ist als das Projekt. Diese Version selbst war der erste
+  Fall: Sie ändert `MARKETING_VERSION`.
+
+### Geändert
+- `README.md`, `CLAUDE.md` und `docs/06-uebergabe.md` sagen jetzt ausdrücklich,
+  dass der erste Durchgang auf den Mac gehört und die CI die Gegenprobe ist.
+
+_154 Prüfungen in `PulseCore`, alle grün. Klick-Dummy 44 von 44, hell und
+dunkel. Der lokale Veröffentlichungsweg ist gegen ein Wegwerf-Repository
+durchgespielt: Bilder landen im Zweig, die Kopfzeile nennt Stand und Herkunft,
+der Vermerk „mit Änderungen" greift, und ohne `origin` oder ohne Bilder bricht
+nichts ab. Die Erkennung des veralteten Projekts ist in allen drei Fällen
+geprüft (Projekt fehlt, `project.yml` jünger, Projekt jünger). Ungeprüft bleibt
+alles, was Xcode braucht — `sips`, `xcodegen` und der Simulator gibt es hier
+nicht; das entscheidet der erste Lauf auf dem Mac._
+
+---
+
 ## 0.32.3 — 2026-08-09
 
 **Ein Aufruf, und ein Mac kann alles — inklusive des Schritts, der bisher

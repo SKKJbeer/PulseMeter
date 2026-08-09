@@ -96,7 +96,11 @@ scripts/setup-mac.sh || fail "Die Einrichtung ist gefallen — die Meldung darü
 
 say "Alles prüfen"
 note "Rechenkern, Speicher, App, Oberflächentests, Bilder, Klick-Dummy."
-scripts/pruefen.sh
+# `--melden` schreibt das Ergebnis in den Zweig `pruefungen` und die Bilder in
+# den Zweig `screenshots`. Damit sieht eine Sitzung, die diesen Mac nicht
+# erreicht, beides sofort — und niemand muss auf die CI warten, deren Ergebnis
+# dann schon vorliegt.
+scripts/pruefen.sh --melden
 ERGEBNIS=$?
 
 # ------------------------------------------------------------- 4. Die Bilder
