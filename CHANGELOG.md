@@ -9,6 +9,30 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.32.6 — 2026-08-09
+
+**Regel 4: Angefangenes wird zu Ende gebracht, ohne Nachfrage.**
+
+### Hinzugefügt
+- `CLAUDE.md` bekommt eine vierte Regel. Bisher endete eine Aufgabe für eine
+  Sitzung faktisch mit dem Push — was danach kam, hing daran, dass der Nutzer
+  nachfragte. Jetzt steht dort: Eine Aufgabe ist erst erledigt, wenn das
+  Ergebnis zusammengeführt, aufgeräumt und gemeldet ist. Wer einen Lauf
+  anstößt, plant die Nachschau selbst; ein grüner Lauf wird zusammengeführt,
+  ein roter eingeordnet und gemeldet, ein noch offener stillschweigend erneut
+  nachgesehen. Eine Zwischenmeldung ohne Ergebnis ist eine Störung.
+- Dazu die Regel, die heute drei Läufe gekostet hat: **nie pushen, solange auf
+  demselben Zweig ein Prüflauf läuft.** `cancel-in-progress` bewertet „neu"
+  nach Startzeit und bricht den laufenden Auftrag ab — jedes Mal kurz vor dem
+  App-Build, also nach der teuersten Minute und ohne je ein Ergebnis geliefert
+  zu haben.
+
+_154 Prüfungen in `PulseCore`, alle grün. Klick-Dummy 44 von 44, hell und
+dunkel. Diese Version ändert nur Dokumente und Versionsnummern; der macOS-Lauf
+zu `13fc143` deckt den Code ab, den sie nicht anfasst._
+
+---
+
 ## 0.32.5 — 2026-08-09
 
 **Die letzte rote Prüfung berichtigt, und die CI dorthin gestellt, wo sie

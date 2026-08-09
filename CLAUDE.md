@@ -137,6 +137,34 @@ Zweig `screenshots` — dieselben Bilder, die sonst nur die CI liefert. Damit is
 die CI für nichts mehr das Nadelöhr: `scripts/mac-start.sh` ruft `--melden` von
 sich aus auf.
 
+## Regel 4 — Angefangenes wird zu Ende gebracht, ohne Nachfrage
+
+Der Nutzer erinnert nicht. Wer einen Lauf anstößt, sieht auch nach — und wer
+etwas gebaut hat, bringt es bis in `main`, ohne dass jemand danach fragt.
+
+Eine Aufgabe ist **nicht** erledigt, wenn der Zweig gepusht ist. Sie ist
+erledigt, wenn das Ergebnis zusammengeführt, aufgeräumt und gemeldet ist.
+
+Konkret, nach jedem Push und jedem angestoßenen Lauf:
+
+1. **Nachschau planen**, bevor der Zug endet — `send_later` in dieser Umgebung,
+   sonst der nächste Lauf von `scripts/pruefen.sh`. Nie auf eine Erinnerung
+   warten und nie mit `sleep` blockieren.
+2. **Grün** → zusammenführen, zusammengeführte Arbeitszweige löschen, Bilder
+   holen, Ergebnis melden.
+3. **Rot** → Begründung aus dem Protokoll holen, einordnen (Prüf- oder
+   Produktfehler) und melden. Ein roter Lauf, der stillschweigend liegen
+   bleibt, ist schlimmer als gar keiner.
+4. **Noch offen** → nächste Nachschau planen und **nichts** melden. Eine
+   Zwischenmeldung ohne Ergebnis ist eine Störung.
+
+### Nie pushen, solange ein Prüflauf auf demselben Zweig läuft
+
+`cancel-in-progress` in `ci.yml` bewertet „neu" nach Startzeit und bricht den
+laufenden Auftrag ab. An einem einzigen Tag hat das drei Läufe gekostet — jeder
+abgebrochen kurz vor dem App-Build, also nach der teuersten Minute und ohne je
+ein Ergebnis geliefert zu haben. Fertige Arbeit wartet, bis der Lauf durch ist.
+
 ```bash
 git fetch origin screenshots && git show origin/screenshots:README.md | head -3
 ```
