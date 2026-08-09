@@ -121,7 +121,10 @@ struct CaptureView: View {
                     }
                 }
             }
-            .onAppear(perform: loadPrevious)
+            .onAppear {
+                applyScreenshotFixture()
+                loadPrevious()
+            }
             .sheet(isPresented: $changingMeter) {
                 MeterChangeView(meteringPoint: meteringPoint) {
                     // Nach dem Wechsel ist der eingetippte Wert gegenstandslos:
@@ -296,6 +299,24 @@ struct CaptureView: View {
     private func loadPrevious() {
         guard let register else { return }
         previous = try? PulseRepository(context: context).lastReading(for: register.id)
+    }
+
+    /// Öffnet den Schirm gleich beim zweiten Zählwerk — nur für die Bilder.
+    ///
+    /// `simctl` kann nicht tippen. Ohne diesen Schalter käme der zweite
+    /// Schritt auf kein Bildschirmfoto, und genau dort steht seit 0.30.1 der
+    /// Weg zurück. Ein Knopf, den niemand ansieht, ist ein Knopf, in dem sich
+    /// ein Fehler beliebig lange hält — derselbe Grund wie bei
+    /// `-pulse-capture-pv`.
+    private func applyScreenshotFixture() {
+        guard ProcessInfo.processInfo.arguments.contains("-pulse-capture-step2"),
+              registers.count > 1, let first = registers.first else { return }
+        // Der erste Wert muss belegt sein, sonst zeigt der Rücksprung ein
+        // leeres Zählwerk und das Bild belegt nicht, was es belegen soll.
+        if let last = try? PulseRepository(context: context).lastReading(for: first.id) {
+            entered[first.id] = last.value
+        }
+        index = 1
     }
 
     /// Merkt sich den Wert und geht weiter — oder sichert, wenn es das letzte

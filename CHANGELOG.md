@@ -30,6 +30,15 @@ Das verstößt gegen Prinzip 4, „keine Sackgasse".
   erscheint, „Abbrechen" bleibt daneben erreichbar, der Rücksprung landet beim
   ersten Zählwerk, und der Wert ist wieder da. 36 Prüfungen in Hell und
   Dunkel, alle grün.
+- **Oberflächenprüfung** in `testCapturingBothDirectionsInOneGo`: „Zurück" ist
+  da, „Abbrechen" bleibt daneben erreichbar, der Rücksprung landet beim ersten
+  Zählwerk, und „Weiter" ist wieder freigeschaltet — was nur geht, wenn der
+  Wert noch im Zählwerk steht.
+- **Zwei neue Bilder** (`screenshot-zurueck-*`) über den Schalter
+  `-pulse-capture-step2`. Ohne ihn kam der zweite Schritt auf kein einziges
+  Bildschirmfoto: `simctl` kann nicht tippen, und alle Bilder zeigten Schritt 1
+  von 2. Ein Knopf, den niemand ansieht, ist ein Knopf, in dem sich ein Fehler
+  beliebig lange hält.
 - **Eigene Zahlenprobe zum Doppeltarif.** Gemeinsamer Ausschnitt 1.1.–1.6.2026,
   151 Tage: Hochtarif 1.232,0 kWh, Niedertarif 1.309,0 kWh, zusammen
   2.541,0 kWh. Arbeitspreis 1.232,0 × 0,31 € + 1.309,0 × 0,21 € = 656,81 €,
