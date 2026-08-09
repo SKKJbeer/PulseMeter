@@ -32,13 +32,6 @@ final class LaunchTests: XCTestCase {
         return app
     }
 
-    /// Startet die App ohne jeden Bestand.
-    ///
-    /// Der Zustand, in dem jeder neue Nutzer anfängt — und bis 0.16 der
-    /// einzige, den weder ein Test noch ein Bildschirmfoto je gesehen hat.
-    /// Zwei ernste Fehler saßen genau hier: Die Statuszeile meldete „Alles im
-    /// Rahmen" für einen nie abgelesenen Zähler, und der Verlauf zeigte „0"
-    /// als wäre nichts verbraucht worden statt als wäre nichts bekannt.
     /// Schiebt ein Formular so weit, bis das Element antippbar ist.
     ///
     /// Ein Formular ist länger als der Bildschirm, und `tap()` auf etwas
@@ -62,6 +55,13 @@ final class LaunchTests: XCTestCase {
         return element.exists && element.isHittable
     }
 
+    /// Startet die App ohne jeden Bestand.
+    ///
+    /// Der Zustand, in dem jeder neue Nutzer anfängt — und bis 0.16 der
+    /// einzige, den weder ein Test noch ein Bildschirmfoto je gesehen hat.
+    /// Zwei ernste Fehler saßen genau hier: Die Statuszeile meldete „Alles im
+    /// Rahmen“ für einen nie abgelesenen Zähler, und der Verlauf zeigte „0“
+    /// als wäre nichts verbraucht worden statt als wäre nichts bekannt.
     private func launchEmpty() -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-pulse-empty"]
@@ -615,9 +615,21 @@ final class LaunchTests: XCTestCase {
 
         // Zwei Arbeitspreise heißt: zwei Felder. Vorher gab es nur eines, und
         // der Nachtpreis hätte nirgends hingekonnt.
-        let nachtPreis = app.staticTexts["Arbeitspreis nachts"]
+        //
+        // **Gesucht wird das Feld, nicht die Beschriftung daneben.** Seit dem
+        // Barrierefreiheits-Durchgang in 0.32.0 trägt das Eingabefeld seine
+        // Beschriftung selbst, und der sichtbare Text ist für die Ansage
+        // versteckt — sonst wären es drei Stationen für VoiceOver. Ein Test,
+        // der nach dem sichtbaren Text sucht, findet ihn deshalb zu Recht
+        // nicht mehr. Er hat damit eine echte Änderung gemeldet, nur die
+        // falsche Schlussfolgerung nahegelegt.
+        let nachtPreis = app.textFields.containing(
+            NSPredicate(format: "label BEGINSWITH 'Arbeitspreis nachts'")
+        ).firstMatch
         XCTAssertTrue(scroll(to: nachtPreis, in: app), "Das Feld für den Nachtpreis fehlt")
-        XCTAssertTrue(app.staticTexts["Arbeitspreis tagsüber"].exists,
+        XCTAssertTrue(app.textFields.containing(
+            NSPredicate(format: "label BEGINSWITH 'Arbeitspreis tagsüber'")
+        ).firstMatch.exists,
                       "Mit zwei Preisen muss der erste sagen, für wann er gilt")
 
         app.buttons["Sichern"].tap()
@@ -703,7 +715,10 @@ final class LaunchTests: XCTestCase {
         XCTAssertTrue(scroll(to: entry, in: app))
         entry.tap()
 
-        let waermepumpe = app.buttons["Wärmepumpe"]
+        // `firstMatch`, weil der Name zweimal dasteht: einmal als Auswahl im
+        // Bericht und einmal in der Zählerauswahl des Verlaufs darunter. Beide
+        // sind gültig; gemeint ist die obere.
+        let waermepumpe = app.buttons["Wärmepumpe"].firstMatch
         XCTAssertTrue(waermepumpe.waitForExistence(timeout: 5),
                       "Der Doppeltarifzähler steht nicht zur Wahl")
         waermepumpe.tap()

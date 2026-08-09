@@ -40,7 +40,7 @@ Lizenz. Alles Weitere richtet das Skript ein.
 
 ## Status
 
-Version **0.32.1**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
+Version **0.32.2**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
 rechnet echt. Alle vier Bildschirme — Übersicht, Erfassung, Verlauf und Zähler —
 laufen als SwiftUI-App im Simulator und werden auf jedem Lauf fotografiert,
 hell und dunkel. Siehe [CHANGELOG.md](CHANGELOG.md).
@@ -82,7 +82,7 @@ nicht eingecheckt. Wer gar nicht gefragt werden will, startet mit
 
 ## Klick-Dummy
 
-**[Zuletzt veröffentlichter Entwurf →](https://claude.ai/code/artifact/4fceea88-8d26-4e50-a395-9638646dba10)**
+**[Zuletzt veröffentlichter Entwurf →](https://claude.ai/code/artifact/1ea0bccd-c8ad-413d-9b34-d9b2496597c0)**
 
 Jede Produktänderung wird sofort sichtbar gemacht — als **neue** Veröffentlichung
 mit eigener URL, weil erneutes Veröffentlichen auf dieselbe Adresse nicht
@@ -99,6 +99,7 @@ Siehe [CLAUDE.md](CLAUDE.md), Regel 1.
 | [03 – UX-Konzept](docs/03-ux-konzept.md) | Navigation, Kernscreens, Design-System |
 | [04 – Monetarisierung](docs/04-monetarisierung.md) | Free/Pro/Vermieter, Preise, Begründung |
 | [05 – Roadmap](docs/05-roadmap.md) | v1-Scope, Ausschlüsse, Umsetzungsreihenfolge |
+| [06 – Übergabe](docs/06-uebergabe.md) | Der laufende Zustand für eine Sitzung, die den Verlauf nicht kennt |
 | [CLAUDE.md](CLAUDE.md) | Arbeitsweise, Prüfschritte, Sprachregeln |
 | [CHANGELOG.md](CHANGELOG.md) | Release Notes je Version |
 | [project.yml](project.yml) | Beschreibung des Xcode-Projekts, Quelle für XcodeGen |

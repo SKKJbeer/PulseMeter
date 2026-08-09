@@ -9,6 +9,37 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.32.2 — 2026-08-09
+
+**Zwei Oberflächenprüfungen berichtigt — und eine Übergabe geschrieben.**
+
+### Behoben
+- `testCreatingADualTariffMeterAsksForBothNumbers` suchte nach dem sichtbaren
+  Text „Arbeitspreis nachts". Den gibt es für VoiceOver seit dem
+  Barrierefreiheits-Durchgang in 0.32.0 nicht mehr: Das **Eingabefeld** trägt
+  die Beschriftung, der Text daneben ist versteckt. Die Prüfung hat damit eine
+  echte Änderung gemeldet und die falsche Schlussfolgerung nahegelegt — sie
+  sucht jetzt das Feld.
+- `testTheReportCarriesBothTariffsOfADualTariffMeter` fand „Wärmepumpe"
+  zweimal: einmal als Auswahl im Bericht, einmal in der Zählerauswahl des
+  Verlaufs darunter. Beide sind gültig; gemeint ist die obere.
+- Beim Einfügen der Scroll-Hilfe war deren Kommentar in den von `launchEmpty`
+  gerutscht. Zwei Funktionen, ein Kommentar, und der stand über der falschen.
+
+### Neu
+- **`docs/06-uebergabe.md`** — der laufende Zustand für eine Sitzung, die
+  diesen Verlauf nicht kennt: was gebaut, was ungeprüft, was zuletzt rot war
+  und warum, worauf zu achten ist. Der **dauerhafte** Teil steht ohnehin in
+  Strategie, Architektur, Datenmodell, `CHANGELOG.md` und den Kommentaren im
+  Code; diese Datei trägt nur, was sich nicht dorthin schreiben lässt, und
+  wird bei jeder Übergabe überschrieben statt fortgeschrieben.
+
+**Weiter offen und ehrlich benannt:** Der PDF-Bericht ist durchgerechnet und
+auf den Cent belegt, aber **noch nie als PDF gesehen worden** — das geht nur
+auf einem Mac. Dasselbe gilt für die beiden hier berichtigten Prüfungen.
+
+---
+
 ## 0.32.1 — 2026-08-09
 
 **Ein Befehl statt fünfzehn Minuten Warten.** Vom Gründer angestoßen, kaum
