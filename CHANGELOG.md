@@ -9,6 +9,96 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.30.1 — 2026-08-09
+
+**Aus der Erfassung führt wieder ein Weg zurück.** Vom Gründer beim
+Ausprobieren gefunden: Wer bei einem Zähler mit zwei Zählwerken den ersten
+Stand eingetippt, „Weiter" gedrückt und dann den Tippfehler bemerkt hat, kam
+nicht mehr zurück. Der einzige Ausweg war Abbrechen — also alles noch einmal.
+Das verstößt gegen Prinzip 4, „keine Sackgasse".
+
+### Behoben
+- **„Zurück" ab dem zweiten Zählwerk**, links in der Kopfzeile, „Abbrechen"
+  daneben. Im ersten Schritt bleibt es bei „Abbrechen" allein: Dort wäre
+  „Zurück" dasselbe und damit eine Wahl ohne Unterschied.
+- **Der bereits eingetippte Wert steht beim Zurückspringen wieder da.** Ihn zu
+  leeren hieße, die Korrektur mit einer zweiten Eingabe zu bezahlen.
+- Gilt in beiden Fassungen — `App/CaptureView.swift` und der Entwurf.
+
+### Geprüft
+- Vier neue Prüfungen in `scripts/check-prototype.mjs`: der Weg zurück
+  erscheint, „Abbrechen" bleibt daneben erreichbar, der Rücksprung landet beim
+  ersten Zählwerk, und der Wert ist wieder da. 36 Prüfungen in Hell und
+  Dunkel, alle grün.
+- **Oberflächenprüfung** in `testCapturingBothDirectionsInOneGo`: „Zurück" ist
+  da, „Abbrechen" bleibt daneben erreichbar, der Rücksprung landet beim ersten
+  Zählwerk, und „Weiter" ist wieder freigeschaltet — was nur geht, wenn der
+  Wert noch im Zählwerk steht.
+- **Zwei neue Bilder** (`screenshot-zurueck-*`) über den Schalter
+  `-pulse-capture-step2`. Ohne ihn kam der zweite Schritt auf kein einziges
+  Bildschirmfoto: `simctl` kann nicht tippen, und alle Bilder zeigten Schritt 1
+  von 2. Ein Knopf, den niemand ansieht, ist ein Knopf, in dem sich ein Fehler
+  beliebig lange hält.
+- **Eigene Zahlenprobe zum Doppeltarif.** Gemeinsamer Ausschnitt 1.1.–1.6.2026,
+  151 Tage: Hochtarif 1.232,0 kWh, Niedertarif 1.309,0 kWh, zusammen
+  2.541,0 kWh. Arbeitspreis 1.232,0 × 0,31 € + 1.309,0 × 0,21 € = 656,81 €,
+  Grundpreis 8,90 €/Monat × 12 ÷ 365 × 151 = 44,18 €, zusammen **700,99 €** —
+  auf den Cent das, was der Entwurf zeigt. Der Grundpreis wird **einmal**
+  berechnet, nicht je Zählwerk.
+- Danach durch die Erfassung getippt, mit absichtlichem Tippfehler und
+  Korrektur über „Zurück": Der falsche Wert wird nicht gesichert. Der
+  gemeinsame Ausschnitt reicht dann bis heute (215 Tage), Menge 3.116,0 kWh,
+  Kosten 889,97 € — Abweichung zur Handrechnung 0,0000 €.
+
+**Und ein Fehler in meiner eigenen Rechnung, der Regel „Wiederkehrende
+Fehlerklasse" bestätigt:** Beim ersten Anlauf habe ich den Hochtarif bis zu
+seiner letzten Ablesung am 1.8. gegen den Niedertarif bis 1.6. gerechnet und
+kam auf 2.916 kWh statt 2.541. Der Entwurf schneidet richtig auf den
+Ausschnitt zu, den **beide** Zählwerke abdecken. Zum elften Mal derselbe
+Fehlertyp — diesmal in der Prüfung, nicht im Code.
+
+---
+
+## 0.30.0 — 2026-08-07
+
+**Doppeltarif (HT/NT) im Entwurf.** Ein Gerät, zwei Arbeitspreise — der
+klassische Nachtspeicher- und Wärmepumpentarif. Der Rechenkern kann es seit
+dem ersten Tag; hier kommt der Entwurf zuerst, weil ein Fehler darin in einer
+Minute auffällt statt in zwanzig.
+
+### Geändert
+- **Der Arbeitspreis hängt jetzt am Zählwerk, nicht am Zähler.** Bisher gab es
+  einen Preis je Zähler plus einen Sonderfall für die Einspeisung. Ein zweiter
+  Sonderfall hätte die Stelle unlesbar gemacht; ein Preis je Zählwerk deckt
+  beides ab — wie `CostEngine.price(for:tariff:)`.
+- **Der Verbrauch eines Zählers ist die Summe seiner Bezugs-Zählwerke.** Bei
+  HT/NT ist beides Bezug, und die Karte zeigt, was verbraucht wurde.
+
+### Die Fehlerklasse, zum zehnten Mal
+- **Beide Zählwerke müssen denselben Ausschnitt beschreiben.** Im
+  Ausgangszustand reicht der Hochtarif bis August, der Niedertarif bis Juni.
+  Sie einfach zu addieren ergäbe 2.916 kWh — eine Zahl, in der ein Teil drei
+  Monate weiter reicht als der andere. Beschnitten auf den gemeinsamen
+  Ausschnitt sind es 2.541 kWh für Januar bis Juni.
+
+  Bemerkenswert: **Meine eigene Nachrechnung war die falsche Seite.** Ich hatte
+  2.916 erwartet und musste feststellen, dass ich damit genau den Fehler
+  reproduziert hatte, gegen den der Code gebaut ist.
+- **Und dabei fiel ein echter Fehler auf, den ich selbst eingebaut hatte:** Die
+  Kosten nahmen weiter den Ausschnitt des ersten Zählwerks. Auf einer Karte
+  stand damit eine Menge für Januar bis Juni neben einem Betrag für Januar bis
+  August. Aufgefallen beim Nachrechnen, nicht in einer Prüfung — 560,20 € statt
+  700,99 €.
+
+### Geprüft
+- 28 Prüfungen des Entwurfs grün, hell und dunkel.
+- Kosten von Hand nachgerechnet, auf dem gemeinsamen Ausschnitt: 700,99 €
+  berechnet, 700,99 € erwartet.
+
+### Offen
+- In der **App** fehlt der Doppeltarif noch. Der Entwurf zeigt jetzt, wie es
+  aussieht und wo die Fallen liegen — genau dafür gibt es ihn.
+
 ## 0.29.0 — 2026-08-07
 
 **Barrierefreiheit, dritter Durchgang: der Erfassungsschirm.** Damit ist der

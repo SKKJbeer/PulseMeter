@@ -424,7 +424,7 @@ struct OverviewView: View {
         // einzige, den ein automatischer Lauf sonst nie zu Gesicht bekommt —
         // `simctl` kann nicht tippen.
         let arguments = ProcessInfo.processInfo.arguments
-        if arguments.contains("-pulse-capture-pv") {
+        if arguments.contains("-pulse-capture-pv") || arguments.contains("-pulse-capture-step2") {
             // Eigener Schalter für den Zweirichtungszähler: `-pulse-capture`
             // nimmt den ersten Zähler, und das ist Gas mit einem einzigen
             // Zählwerk. Der zweistufige Ablauf — erst Bezug, dann Einspeisung —

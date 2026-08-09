@@ -96,7 +96,7 @@ Die Reihenfolge ist bewusst nicht „Screens von oben nach unten", sondern nach 
 
 ---
 
-## Aktueller Stand — Version 0.29.0
+## Aktueller Stand — Version 0.30.1
 
 | Schritt | Stand |
 |---|---|
@@ -109,6 +109,7 @@ Die Reihenfolge ist bewusst nicht „Screens von oben nach unten", sondern nach 
 | 7. Tarife, Kosten, Prognose | **fertig** — saisonale Hochrechnung, Abschlagsvergleich |
 | 8. Widgets, Kurzbefehle, Erinnerungen | Erinnerungen und Widget **fertig**; Siri offen |
 | 9. Paywall und StoreKit | offen — braucht das Apple Developer Program |
+| 4. Erfassungsfluss — Nachtrag | **0.30.1** — aus dem zweiten Zählwerk führt ein Weg zurück; ohne ihn war der Tippfehler eine Sackgasse |
 | 10. Politur | **angefangen** (0.27.0) — Karte und Fußzeilen lesen sich für VoiceOver als ein Satz, Bilder bei größter Schrift, Startzeit im Protokoll. Die 800 ms auf einem **Gerät** sind weiter offen |
 
 ### Was die App noch nicht kann, obwohl der Rechenkern es kann
@@ -119,7 +120,7 @@ der Oberfläche fehlt, sieht in den Tests grün aus und ist trotzdem nicht da.
 | Fähigkeit | Rechenkern | App | Entwurf |
 |---|---|---|---|
 | Zweirichtungszähler (PV-Einspeisung) | ja | ja | ja |
-| Doppeltarif (HT/NT) | ja | **nein** | nein |
+| Doppeltarif (HT/NT) | ja | **nein** | ja |
 | Zählerwechsel | ja | ja | ja |
 | PDF-Bericht | — | **nein** | ja |
 | Foto-Belege | — | nein | nein |

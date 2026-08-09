@@ -461,6 +461,27 @@ final class LaunchTests: XCTestCase {
 
         let save = app.buttons["Sichern"]
         XCTAssertTrue(save.exists, "Beim letzten Zählwerk muss „Sichern“ dastehen")
+
+        // Prinzip 4 — keine Sackgasse. Vom Gründer gefunden: Wer beim zweiten
+        // Zählwerk den Tippfehler im ersten bemerkt, kam bis 0.30.1 nicht mehr
+        // zurück; der einzige Ausweg war Abbrechen, also alles noch einmal.
+        let back = app.buttons["Zurück"]
+        XCTAssertTrue(back.exists, "Aus dem zweiten Zählwerk muss ein Weg zurück führen")
+        XCTAssertTrue(app.buttons["Abbrechen"].exists,
+                      "„Abbrechen“ muss neben „Zurück“ erreichbar bleiben")
+        back.tap()
+
+        XCTAssertTrue(schritt.waitForExistence(timeout: 5),
+                      "„Zurück“ hat nicht wieder zum ersten Zählwerk geführt")
+        XCTAssertTrue(next.exists, "Beim ersten Zählwerk muss wieder „Weiter“ dastehen")
+        // Der eingetippte Wert muss wieder dastehen. „Weiter" ist nur
+        // freigeschaltet, wenn eine Zahl im Zählwerk steht — bliebe es
+        // gesperrt, wäre der Wert verloren und der Weg zurück wertlos.
+        XCTAssertTrue(next.isEnabled, "Nach dem Rücksprung war die Eingabe leer")
+        next.tap()
+
+        XCTAssertTrue(zweiter.waitForExistence(timeout: 5),
+                      "Nach dem Rücksprung ging es nicht wieder vorwärts")
         app.buttons["Vom letzten Stand übernehmen"].tap()
         save.tap()
 

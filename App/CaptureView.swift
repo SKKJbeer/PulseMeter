@@ -105,11 +105,26 @@ struct CaptureView: View {
             .navigationTitle(meteringPoint.name)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                // Links „Zurück", rechts „Abbrechen" — aber erst ab dem
+                // zweiten Zählwerk. Im ersten Schritt wäre „Zurück" dasselbe
+                // wie „Abbrechen" und damit eine Wahl ohne Unterschied.
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Abbrechen") { dismiss() }
+                    if index > 0 {
+                        Button("Zurück", action: retreat)
+                    } else {
+                        Button("Abbrechen") { dismiss() }
+                    }
+                }
+                if index > 0 {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Abbrechen") { dismiss() }
+                    }
                 }
             }
-            .onAppear(perform: loadPrevious)
+            .onAppear {
+                applyScreenshotFixture()
+                loadPrevious()
+            }
             .sheet(isPresented: $changingMeter) {
                 MeterChangeView(meteringPoint: meteringPoint) {
                     // Nach dem Wechsel ist der eingetippte Wert gegenstandslos:
@@ -286,6 +301,24 @@ struct CaptureView: View {
         previous = try? PulseRepository(context: context).lastReading(for: register.id)
     }
 
+    /// Öffnet den Schirm gleich beim zweiten Zählwerk — nur für die Bilder.
+    ///
+    /// `simctl` kann nicht tippen. Ohne diesen Schalter käme der zweite
+    /// Schritt auf kein Bildschirmfoto, und genau dort steht seit 0.30.1 der
+    /// Weg zurück. Ein Knopf, den niemand ansieht, ist ein Knopf, in dem sich
+    /// ein Fehler beliebig lange hält — derselbe Grund wie bei
+    /// `-pulse-capture-pv`.
+    private func applyScreenshotFixture() {
+        guard ProcessInfo.processInfo.arguments.contains("-pulse-capture-step2"),
+              registers.count > 1, let first = registers.first else { return }
+        // Der erste Wert muss belegt sein, sonst zeigt der Rücksprung ein
+        // leeres Zählwerk und das Bild belegt nicht, was es belegen soll.
+        if let last = try? PulseRepository(context: context).lastReading(for: first.id) {
+            entered[first.id] = last.value
+        }
+        index = 1
+    }
+
     /// Merkt sich den Wert und geht weiter — oder sichert, wenn es das letzte
     /// Zählwerk war.
     private func advance() {
@@ -294,12 +327,37 @@ struct CaptureView: View {
 
         guard isLastRegister else {
             index += 1
-            digits = ""
-            verdict = .noReference
-            loadPrevious()
+            showStep()
             return
         }
         save()
+    }
+
+    /// Einen Schritt zurück zum vorigen Zählwerk.
+    ///
+    /// **Prinzip 4 — keine Sackgasse.** Wer beim zweiten Zählwerk merkt, dass
+    /// er sich beim ersten vertippt hat, muss zurück können. Bis 0.30.0 zählte
+    /// `index` nur hoch, und der einzige Ausweg war Abbrechen — also den
+    /// ganzen Vorgang noch einmal von vorn.
+    private func retreat() {
+        guard index > 0 else { return }
+        index -= 1
+        showStep()
+    }
+
+    /// Setzt die Anzeige auf das Zählwerk, das gerade dran ist.
+    ///
+    /// Ein bereits eingetippter Wert steht wieder da. Ihn zu leeren hieße, die
+    /// Korrektur mit einer zweiten Eingabe zu bezahlen.
+    private func showStep() {
+        if let register, let value = entered[register.id] {
+            digits = String(ScaledDecimal(value, scale: register.fractionDigits).scaled)
+        } else {
+            digits = ""
+        }
+        verdict = .noReference
+        loadPrevious()
+        judge()
     }
 
     /// Alle Zählwerke in einem Vorgang.

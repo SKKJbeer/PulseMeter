@@ -667,7 +667,7 @@ select.field { cursor: pointer; }
 
 <div class="stage-head">
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.26.1</p>
+  <p>Klickbarer Entwurf · v0.30.1</p>
 </div>
 
 <div class="device">
@@ -795,9 +795,9 @@ select.field { cursor: pointer; }
   <div class="sheet" id="sheet-capture" role="dialog" aria-modal="true" aria-label="Zählerstand eintragen">
     <div class="grabber"></div>
     <div class="sheet-head">
-      <button type="button" class="sheet-close" data-close>Abbrechen</button>
+      <button type="button" class="sheet-close" id="cap-back">Abbrechen</button>
       <div class="sheet-title" id="cap-title"></div>
-      <button type="button" class="sheet-close" style="visibility:hidden">Abbrechen</button>
+      <button type="button" class="sheet-close" id="cap-cancel" data-close style="visibility:hidden">Abbrechen</button>
     </div>
     <div class="sheet-body" id="cap-body">
       <div class="capture-meta" id="cap-meta"></div>
@@ -991,6 +991,25 @@ const METERS = [
     registers: [
       { id: "gas-r", label: null, unit: "m³", int: 5, frac: 3,
         readings: buildReadings(3579.106, SHAPE.gas, { frac: 3, partialInto: { m: 5, d: 28 } }) }
+    ]
+  },
+  {
+    // Doppeltarifzähler: ein Gerät, zwei Arbeitspreise. In Deutschland der
+    // klassische Nachtspeicher- und Wärmepumpentarif — und der Fall, an dem
+    // ein Modell mit einer Zahl je Zähler ebenso scheitert wie bei der
+    // Photovoltaik, nur unauffälliger: Hier sind beide Zählwerke Bezug, und
+    // die Summe ist der Verbrauch.
+    id: "waermepumpe", kind: "electricity", name: "Wärmepumpe", color: "var(--amber)",
+    icon: '<path d="M13 2 4 13h6l-1 9 9-11h-6z"/>',
+    interval: 30, unit: "kWh", int: 6, frac: 1,
+    price: 0.26, base: 8.90, prepay: 60,
+    billing: { m: 1, d: 1 },
+    serial: "1ESY1161284777",
+    registers: [
+      { id: "wp-ht", label: "Hochtarif", unit: "kWh", int: 6, frac: 1, price: 0.31,
+        readings: buildReadings(18420.5, SHAPE.strom, { frac: 1 }) },
+      { id: "wp-nt", label: "Niedertarif", unit: "kWh", int: 6, frac: 1, price: 0.21,
+        readings: buildReadings(24310.8, SHAPE.gas, { frac: 1 }) }
     ]
   },
   {
@@ -1200,6 +1219,50 @@ const isDue = m => {
 function yearToDate(reg) {
   return consumption(reg, { y: 2026, m: 1, d: 1 }, TODAY);
 }
+
+/* Verbrauch eines **Zählers** — die Summe seiner Bezugs-Zählwerke.
+
+   Bei einem Doppeltarifzähler ist der Verbrauch Hochtarif **plus**
+   Niedertarif; die Einspeisung zählt hier nicht mit, die steht als Gutschrift
+   auf einer eigenen Zeile.
+
+   **Beide Seiten müssen denselben Ausschnitt beschreiben.** Wer den Hochtarif
+   im August abliest und den Niedertarif zuletzt im Mai, bekäme sonst eine
+   Summe, in der ein Teil drei Monate weiter reicht als der andere — die
+   wiederkehrende Fehlerklasse aus CLAUDE.md, diesmal innerhalb eines einzigen
+   Geräts. Deshalb wird auf den gemeinsamen Ausschnitt beschnitten und dort neu
+   gerechnet, statt zwei ungleiche Zahlen zu addieren. */
+function meterConsumption(m, from, to) {
+  const draws = m.registers.filter(r => !r.feedIn);
+  if (!draws.length) return null;
+  if (draws.length === 1) return consumption(draws[0], from, to);
+
+  const parts = draws.map(r => consumption(r, from, to));
+  if (parts.some(p => !p)) return null;
+
+  let cf = parts[0].cfrom, ct = parts[0].cto;
+  for (const p of parts) {
+    if (serial(p.cfrom.y, p.cfrom.m, p.cfrom.d) > serial(cf.y, cf.m, cf.d)) cf = p.cfrom;
+    if (serial(p.cto.y, p.cto.m, p.cto.d) < serial(ct.y, ct.m, ct.d)) ct = p.cto;
+  }
+  if (serial(cf.y, cf.m, cf.d) >= serial(ct.y, ct.m, ct.d)) return null;
+
+  const trimmed = draws.map(r => consumption(r, cf, ct));
+  if (trimmed.some(p => !p)) return null;
+
+  return {
+    value: trimmed.reduce((sum, p) => sum + p.value, 0),
+    days: between(cf, ct),
+    exact: trimmed.every(p => p.exact),
+    complete: trimmed.every(p => p.complete),
+    cfrom: cf, cto: ct, rfrom: from, rto: to,
+    gap: Math.max(...trimmed.map(p => p.gap))
+  };
+}
+
+function meterYearToDate(m) {
+  return meterConsumption(m, { y: 2026, m: 1, d: 1 }, TODAY);
+}
 function priorYearToDate(reg) {
   return consumption(reg, { y: 2025, m: 1, d: 1 }, { y: 2025, m: TODAY.m, d: TODAY.d });
 }
@@ -1390,7 +1453,9 @@ function renderCards() {
 
   host.innerHTML = activeMeters().map(m => {
     const reg = m.registers[0];
-    const ytd = yearToDate(reg);
+    // Der Zähler, nicht das erste Zählwerk: Bei einem Doppeltarifzähler ist
+    // der Verbrauch Hochtarif plus Niedertarif.
+    const ytd = meterYearToDate(m);
     const yoy = yearOverYear(reg);
     const fc = forecast(reg);
     const due = isDue(m);
@@ -1724,22 +1789,49 @@ function usageFor(m, p) {
 }
 /* Kosten einer Messstelle im Zeitraum: Arbeitspreis, Einspeisung als
    Gutschrift, Grundpreis tagesgenau — wie CostEngine in PulseCore. */
+/* Der Arbeitspreis eines Zählwerks — eigener Preis, sonst der des Zählers.
+
+   Spiegelt `CostEngine.price(for:tariff:)`. Bis 0.30.0 kannte der Entwurf nur
+   einen Preis je Zähler plus einen Sonderfall für die Einspeisung. Ein
+   Doppeltarifzähler hat aber zwei Arbeitspreise am selben Gerät — Hochtarif
+   und Niedertarif —, und ein Sonderfall mehr hätte die Stelle endgültig
+   unlesbar gemacht. Ein Preis je Zählwerk deckt beides ab. */
+function registerPrice(m, reg) {
+  if (reg.feedIn) return m.feedInPrice || 0;
+  return reg.price !== undefined ? reg.price : m.price;
+}
+
+/* Kosten aller Zählwerke im Zeitraum.
+
+   Der Grundpreis wird **einmal** berechnet, nicht je Zählwerk: Er gehört zum
+   Anschluss, und ein Gerät bekommt eine Rechnung. Dieselbe Regel wie in
+   `CostEngine` seit 0.22.1 — dort war sie ein Fehler, den ein Bildschirmfoto
+   aufgedeckt hat. */
 function costFor(m, p) {
-  const c = consumption(m.registers[0], p.from, p.to);
-  if (!c || !c.complete) return null;
-  let v = billedUnits(m, c.value) * m.price;
-  if (m.registers[1] && m.feedInPrice) {
-    const f = consumption(m.registers[1], p.from, p.to);
-    if (f && f.complete) v -= f.value * m.feedInPrice;
+  const first = consumption(m.registers[0], p.from, p.to);
+  if (!first || !first.complete) return null;
+
+  let energy = 0;
+  for (const reg of m.registers) {
+    const c = consumption(reg, p.from, p.to);
+    if (!c || !c.complete) continue;
+    const sign = reg.feedIn ? -1 : 1;
+    energy += sign * billedUnits(m, c.value) * registerPrice(m, reg);
   }
-  return v + m.base * 12 / 365 * between(p.from, p.to);
+  return energy + m.base * 12 / 365 * between(p.from, p.to);
 }
 /* Kosten des laufenden Jahres für die Übersichtskarte.
    Über den Zeitraum, den die Ablesungen **abdecken**, nicht über den bis
    heute: Sonst stünde beim Gaszähler gar kein Betrag, obwohl bis zum 1. Mai
    alles bekannt ist. Die Beschriftung nennt den Ausschnitt dann auch. */
 function costYearToDate(m) {
-  const ytd = yearToDate(m.registers[0]);
+  // **Derselbe Ausschnitt wie die Menge auf der Karte.** Hier stand
+  // `yearToDate(m.registers[0])` — der Ausschnitt des ersten Zählwerks. Bei
+  // einem Doppeltarifzähler, dessen Zählwerke unterschiedlich weit reichen,
+  // stand damit auf einer Karte eine Menge für Januar bis Juni neben einem
+  // Betrag für Januar bis August. Aufgefallen beim Nachrechnen des neuen
+  // Zählers, nicht in einer Prüfung.
+  const ytd = meterYearToDate(m);
   if (!ytd) return null;
   return costFor(m, { from: ytd.cfrom, to: ytd.cto });
 }
@@ -2368,12 +2460,34 @@ function openCapture(id) {
   openSheet("sheet-capture");
 }
 
+/* Einen Schritt zurück zum vorigen Zählwerk.
+
+   Prinzip 4 — keine Sackgasse: Wer beim zweiten Zählwerk merkt, dass er sich
+   beim ersten vertippt hat, muss zurück können. Bis 0.30.0 zählte `capIndex`
+   nur hoch, und der einzige Ausweg war Abbrechen — also alles noch einmal. */
+function capBack() {
+  if (capIndex === 0) return closeSheets();
+  capIndex -= 1;
+  showCaptureStep();
+}
+
 function showCaptureStep() {
-  digits = "";
   const reg = capRegister();
+  // Beim Zurückspringen steht der zuvor eingetippte Wert wieder da. Ihn zu
+  // leeren hieße, die Korrektur mit einer zweiten Eingabe zu bezahlen.
+  const known = capEntered[reg.id];
+  digits = known === undefined ? "" : String(Math.round(known * 10 ** reg.frac));
   const last = reg.readings[reg.readings.length - 1];
   const many = capMeter.registers.length > 1;
   document.getElementById("cap-title").textContent = capMeter.name;
+
+  // Links „Zurück", rechts „Abbrechen" — aber erst ab dem zweiten Schritt.
+  // Im ersten wäre „Zurück" dasselbe wie „Abbrechen" und damit eine Wahl
+  // ohne Unterschied.
+  const back = document.getElementById("cap-back");
+  const cancel = document.getElementById("cap-cancel");
+  back.textContent = capIndex > 0 ? "Zurück" : "Abbrechen";
+  cancel.style.visibility = capIndex > 0 ? "visible" : "hidden";
 
   // Der Name des Zählwerks steht nur da, wenn es mehr als eines gibt. Bei
   // einem einzelnen wäre „Bezug" ein Wort, das der Nutzer nie gebraucht hat.
@@ -2796,6 +2910,7 @@ document.addEventListener("click", e => {
 document.getElementById("print").addEventListener("click", () => window.print());
 document.getElementById("scrim").addEventListener("click", closeSheets);
 document.getElementById("save").addEventListener("click", saveReading);
+document.getElementById("cap-back").addEventListener("click", capBack);
 document.addEventListener("keydown", e => {
   if (e.key === "Escape") closeSheets();
   if (!document.getElementById("sheet-capture").classList.contains("on")) return;
