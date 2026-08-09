@@ -9,6 +9,40 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.32.7 — 2026-08-09
+
+**Zwei Korrekturversuche an derselben Prüfung sind gescheitert. Statt eines
+dritten Versuchs sagt der Fehlschlag jetzt, was tatsächlich da ist.**
+
+### Geändert
+- `testCreatingADualTariffMeterAsksForBothNumbers` gibt bei einem Fehlschlag
+  jedes Textfeld im Zugänglichkeitsbaum aus — Kennung, Beschriftung,
+  Platzhalter, Sichtbarkeit — und dazu die Zahl der Sammlungen. Bisher sagte
+  er nur „Das Feld für den Nachtpreis fehlt", und damit blieb nur das Raten:
+  Zwei plausible Diagnosen (erst die Beschriftung statt des sichtbaren Textes,
+  dann `matching` statt `containing` samt oberster Sammlung beim Schieben)
+  haben je einen CI-Lauf von dreizehn Minuten gekostet und beide nicht
+  gestimmt. Ein Fehlschlag, der nur „fehlt" sagt, ist die eigentliche Ursache
+  dieser Schleife.
+
+### Was weiterhin offen ist
+- Die Prüfung ist **rot**, und das Produkt ist nach allem, was von hier aus zu
+  sehen ist, in Ordnung: `priceSection` zeigt „Arbeitspreis nachts", sobald der
+  Schalter steht, und genau diesen Schalter findet und bedient dieselbe Prüfung
+  zwei Zeilen vorher. 20 der 21 Oberflächenprüfungen laufen durch, darunter
+  beide zum PDF-Bericht.
+- **Nach `main` wird deshalb nichts zusammengeführt.** Ein roter Stand wird
+  nicht zum Hauptstand gemacht, auch wenn nur eine Prüfung fällt.
+
+_154 Prüfungen in `PulseCore`, alle grün. Klick-Dummy 44 von 44, hell und
+dunkel. `AppUITests` parsen sauber. Der nächste macOS-Lauf ist bewusst kein
+Korrekturversuch, sondern eine Messung: Er liefert die Aufstellung, aus der die
+Korrektur dann abzulesen ist. Am schnellsten geht das auf einem Mac —
+`scripts/pruefen.sh --nur dual` prüft genau diesen einen Fall in etwa zwanzig
+Sekunden statt in dreizehn Minuten._
+
+---
+
 ## 0.32.6 — 2026-08-09
 
 **Regel 4: Angefangenes wird zu Ende gebracht, ohne Nachfrage.**

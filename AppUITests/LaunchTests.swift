@@ -638,7 +638,40 @@ final class LaunchTests: XCTestCase {
         let nachtPreis = app.textFields.matching(
             NSPredicate(format: "label BEGINSWITH 'Arbeitspreis nachts'")
         ).firstMatch
-        XCTAssertTrue(scroll(to: nachtPreis, in: app), "Das Feld für den Nachtpreis fehlt")
+
+        if !scroll(to: nachtPreis, in: app) {
+            // **Diagnose statt Vermutung.** Zwei Korrekturversuche sind hier
+            // gescheitert — erst der Wechsel vom sichtbaren Text auf die
+            // Beschriftung des Feldes, dann `matching` statt `containing` und
+            // die oberste Sammlung beim Schieben. Beide waren plausibel, beide
+            // waren falsch, und beide haben einen CI-Lauf von dreizehn Minuten
+            // gekostet, der als Antwort nur „fehlt" sagte.
+            //
+            // Ein Fehlschlag, der nicht sagt, was stattdessen da ist, lässt
+            // einem nur das Raten. Diese Aufstellung beendet es: Sie nennt
+            // jedes Textfeld im Baum mit Kennung, Beschriftung, Platzhalter
+            // und Sichtbarkeit. Danach ist die Korrektur eine Ablesung.
+            let felder = app.textFields.allElementsBoundByIndex.map { feld -> String in
+                // Der Platzhalter zuerst in eine eigene Konstante: Ein gerades
+                // Anführungszeichen mitten in einer Zeichenkette — hier über
+                // den Ersatzwert in der Auswertung — beendet für
+                // `scripts/check-strings.py` das Literal an der falschen
+                // Stelle. Die Prüfung hat recht, sie kann es nicht anders
+                // sehen, und sie ist zu wertvoll, um sie dafür aufzuweichen.
+                let platzhalter = feld.placeholderValue ?? "—"
+                return "  id=„\(feld.identifier)“ label=„\(feld.label)“ "
+                    + "platzhalter=„\(platzhalter)“ "
+                    + "sichtbar=\(feld.isHittable)"
+            }
+            XCTFail("""
+                Das Feld für den Nachtpreis fehlt.
+                Sammlungen im Baum: \(app.collectionViews.count), \
+                Textfelder: \(felder.count)
+                \(felder.joined(separator: "\n"))
+                """)
+            return
+        }
+
         XCTAssertTrue(app.textFields.matching(
             NSPredicate(format: "label BEGINSWITH 'Arbeitspreis tagsüber'")
         ).firstMatch.exists,
