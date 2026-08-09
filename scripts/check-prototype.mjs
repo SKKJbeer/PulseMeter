@@ -102,10 +102,31 @@ for (const scheme of ["light", "dark"]) {
     note((await page.locator("#save").textContent()) === "Weiter",
          "Beim ersten von zwei Zählwerken steht „Weiter“");
     await page.locator("#prefill").click();
+    const ersteEingabe = await page.evaluate(() => digits);
     await page.locator("#save").click();
     await page.waitForTimeout(250);
     note((await page.locator("#save").textContent()) === "Sichern",
          "Beim letzten Zählwerk steht „Sichern“");
+
+    // Prinzip 4 — keine Sackgasse: Wer sich beim ersten Zählwerk vertippt hat,
+    // muss zurück können, ohne den ganzen Vorgang zu verlieren.
+    note((await page.locator("#cap-back").textContent()) === "Zurück",
+         "Beim zweiten Zählwerk führt ein Weg zurück");
+    note(await page.locator("#cap-cancel").isVisible(),
+         "Abbrechen bleibt daneben erreichbar");
+    await page.locator("#cap-back").click();
+    await page.waitForTimeout(250);
+    const zurueck = await page.evaluate(() => ({
+      eingabe: digits,
+      knopf: document.getElementById("save").textContent,
+      schritt: document.getElementById("cap-meta").innerText
+    }));
+    note(zurueck.knopf === "Weiter" && /1 von 2/.test(zurueck.schritt),
+         "Zurück landet wieder beim ersten Zählwerk");
+    note(zurueck.eingabe === ersteEingabe,
+         `Der eingetippte Wert steht wieder da (${zurueck.eingabe})`);
+    await page.locator("#save").click();
+    await page.waitForTimeout(250);
     await page.locator("#prefill").click();
     await page.locator("#save").click();
     await page.waitForTimeout(400);

@@ -8,3 +8,4 @@ DerivedData/
 build/
 *.xcuserstate
 xcuserdata/
+node_modules/

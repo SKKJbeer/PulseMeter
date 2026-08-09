@@ -9,6 +9,47 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.30.1 — 2026-08-09
+
+**Aus der Erfassung führt wieder ein Weg zurück.** Vom Gründer beim
+Ausprobieren gefunden: Wer bei einem Zähler mit zwei Zählwerken den ersten
+Stand eingetippt, „Weiter" gedrückt und dann den Tippfehler bemerkt hat, kam
+nicht mehr zurück. Der einzige Ausweg war Abbrechen — also alles noch einmal.
+Das verstößt gegen Prinzip 4, „keine Sackgasse".
+
+### Behoben
+- **„Zurück" ab dem zweiten Zählwerk**, links in der Kopfzeile, „Abbrechen"
+  daneben. Im ersten Schritt bleibt es bei „Abbrechen" allein: Dort wäre
+  „Zurück" dasselbe und damit eine Wahl ohne Unterschied.
+- **Der bereits eingetippte Wert steht beim Zurückspringen wieder da.** Ihn zu
+  leeren hieße, die Korrektur mit einer zweiten Eingabe zu bezahlen.
+- Gilt in beiden Fassungen — `App/CaptureView.swift` und der Entwurf.
+
+### Geprüft
+- Vier neue Prüfungen in `scripts/check-prototype.mjs`: der Weg zurück
+  erscheint, „Abbrechen" bleibt daneben erreichbar, der Rücksprung landet beim
+  ersten Zählwerk, und der Wert ist wieder da. 36 Prüfungen in Hell und
+  Dunkel, alle grün.
+- **Eigene Zahlenprobe zum Doppeltarif.** Gemeinsamer Ausschnitt 1.1.–1.6.2026,
+  151 Tage: Hochtarif 1.232,0 kWh, Niedertarif 1.309,0 kWh, zusammen
+  2.541,0 kWh. Arbeitspreis 1.232,0 × 0,31 € + 1.309,0 × 0,21 € = 656,81 €,
+  Grundpreis 8,90 €/Monat × 12 ÷ 365 × 151 = 44,18 €, zusammen **700,99 €** —
+  auf den Cent das, was der Entwurf zeigt. Der Grundpreis wird **einmal**
+  berechnet, nicht je Zählwerk.
+- Danach durch die Erfassung getippt, mit absichtlichem Tippfehler und
+  Korrektur über „Zurück": Der falsche Wert wird nicht gesichert. Der
+  gemeinsame Ausschnitt reicht dann bis heute (215 Tage), Menge 3.116,0 kWh,
+  Kosten 889,97 € — Abweichung zur Handrechnung 0,0000 €.
+
+**Und ein Fehler in meiner eigenen Rechnung, der Regel „Wiederkehrende
+Fehlerklasse" bestätigt:** Beim ersten Anlauf habe ich den Hochtarif bis zu
+seiner letzten Ablesung am 1.8. gegen den Niedertarif bis 1.6. gerechnet und
+kam auf 2.916 kWh statt 2.541. Der Entwurf schneidet richtig auf den
+Ausschnitt zu, den **beide** Zählwerke abdecken. Zum elften Mal derselbe
+Fehlertyp — diesmal in der Prüfung, nicht im Code.
+
+---
+
 ## 0.30.0 — 2026-08-07
 
 **Doppeltarif (HT/NT) im Entwurf.** Ein Gerät, zwei Arbeitspreise — der

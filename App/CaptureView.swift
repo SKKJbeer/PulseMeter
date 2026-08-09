@@ -105,8 +105,20 @@ struct CaptureView: View {
             .navigationTitle(meteringPoint.name)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                // Links „Zurück", rechts „Abbrechen" — aber erst ab dem
+                // zweiten Zählwerk. Im ersten Schritt wäre „Zurück" dasselbe
+                // wie „Abbrechen" und damit eine Wahl ohne Unterschied.
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Abbrechen") { dismiss() }
+                    if index > 0 {
+                        Button("Zurück", action: retreat)
+                    } else {
+                        Button("Abbrechen") { dismiss() }
+                    }
+                }
+                if index > 0 {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Abbrechen") { dismiss() }
+                    }
                 }
             }
             .onAppear(perform: loadPrevious)
@@ -294,12 +306,37 @@ struct CaptureView: View {
 
         guard isLastRegister else {
             index += 1
-            digits = ""
-            verdict = .noReference
-            loadPrevious()
+            showStep()
             return
         }
         save()
+    }
+
+    /// Einen Schritt zurück zum vorigen Zählwerk.
+    ///
+    /// **Prinzip 4 — keine Sackgasse.** Wer beim zweiten Zählwerk merkt, dass
+    /// er sich beim ersten vertippt hat, muss zurück können. Bis 0.30.0 zählte
+    /// `index` nur hoch, und der einzige Ausweg war Abbrechen — also den
+    /// ganzen Vorgang noch einmal von vorn.
+    private func retreat() {
+        guard index > 0 else { return }
+        index -= 1
+        showStep()
+    }
+
+    /// Setzt die Anzeige auf das Zählwerk, das gerade dran ist.
+    ///
+    /// Ein bereits eingetippter Wert steht wieder da. Ihn zu leeren hieße, die
+    /// Korrektur mit einer zweiten Eingabe zu bezahlen.
+    private func showStep() {
+        if let register, let value = entered[register.id] {
+            digits = String(ScaledDecimal(value, scale: register.fractionDigits).scaled)
+        } else {
+            digits = ""
+        }
+        verdict = .noReference
+        loadPrevious()
+        judge()
     }
 
     /// Alle Zählwerke in einem Vorgang.

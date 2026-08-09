@@ -667,7 +667,7 @@ select.field { cursor: pointer; }
 
 <div class="stage-head">
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.30.0</p>
+  <p>Klickbarer Entwurf · v0.30.1</p>
 </div>
 
 <div class="device">
@@ -795,9 +795,9 @@ select.field { cursor: pointer; }
   <div class="sheet" id="sheet-capture" role="dialog" aria-modal="true" aria-label="Zählerstand eintragen">
     <div class="grabber"></div>
     <div class="sheet-head">
-      <button type="button" class="sheet-close" data-close>Abbrechen</button>
+      <button type="button" class="sheet-close" id="cap-back">Abbrechen</button>
       <div class="sheet-title" id="cap-title"></div>
-      <button type="button" class="sheet-close" style="visibility:hidden">Abbrechen</button>
+      <button type="button" class="sheet-close" id="cap-cancel" data-close style="visibility:hidden">Abbrechen</button>
     </div>
     <div class="sheet-body" id="cap-body">
       <div class="capture-meta" id="cap-meta"></div>
@@ -2460,12 +2460,34 @@ function openCapture(id) {
   openSheet("sheet-capture");
 }
 
+/* Einen Schritt zurück zum vorigen Zählwerk.
+
+   Prinzip 4 — keine Sackgasse: Wer beim zweiten Zählwerk merkt, dass er sich
+   beim ersten vertippt hat, muss zurück können. Bis 0.30.0 zählte `capIndex`
+   nur hoch, und der einzige Ausweg war Abbrechen — also alles noch einmal. */
+function capBack() {
+  if (capIndex === 0) return closeSheets();
+  capIndex -= 1;
+  showCaptureStep();
+}
+
 function showCaptureStep() {
-  digits = "";
   const reg = capRegister();
+  // Beim Zurückspringen steht der zuvor eingetippte Wert wieder da. Ihn zu
+  // leeren hieße, die Korrektur mit einer zweiten Eingabe zu bezahlen.
+  const known = capEntered[reg.id];
+  digits = known === undefined ? "" : String(Math.round(known * 10 ** reg.frac));
   const last = reg.readings[reg.readings.length - 1];
   const many = capMeter.registers.length > 1;
   document.getElementById("cap-title").textContent = capMeter.name;
+
+  // Links „Zurück", rechts „Abbrechen" — aber erst ab dem zweiten Schritt.
+  // Im ersten wäre „Zurück" dasselbe wie „Abbrechen" und damit eine Wahl
+  // ohne Unterschied.
+  const back = document.getElementById("cap-back");
+  const cancel = document.getElementById("cap-cancel");
+  back.textContent = capIndex > 0 ? "Zurück" : "Abbrechen";
+  cancel.style.visibility = capIndex > 0 ? "visible" : "hidden";
 
   // Der Name des Zählwerks steht nur da, wenn es mehr als eines gibt. Bei
   // einem einzelnen wäre „Bezug" ein Wort, das der Nutzer nie gebraucht hat.
@@ -2888,6 +2910,7 @@ document.addEventListener("click", e => {
 document.getElementById("print").addEventListener("click", () => window.print());
 document.getElementById("scrim").addEventListener("click", closeSheets);
 document.getElementById("save").addEventListener("click", saveReading);
+document.getElementById("cap-back").addEventListener("click", capBack);
 document.addEventListener("keydown", e => {
   if (e.key === "Escape") closeSheets();
   if (!document.getElementById("sheet-capture").classList.contains("on")) return;
