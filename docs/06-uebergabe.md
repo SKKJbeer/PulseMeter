@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-08-09, Version 0.32.2
+Stand: 2026-08-09, Version 0.32.3
 
 ---
 
@@ -32,8 +32,10 @@ Sie wird bei jeder Übergabe überschrieben, nicht fortgeschrieben.
 
 ## Wo die Arbeit gerade steht
 
-**Zweig:** `claude/pulsemeter-kickoff-dns3am`, sechs Commits vor `main`.
-`main` steht auf 0.30.1 (PR #7 zusammengeführt).
+**Zweig:** `main`. Der Arbeitszweig `claude/pulsemeter-kickoff-dns3am` ist mit
+0.32.3 dorthin zusammengeführt worden — vorher stand `main` auf 0.30.1, und
+eine Arbeitskopie darauf sah vollständig aus und war zwei Versionen alt. Genau
+das ist einer Sitzung passiert.
 
 | Version | Was | Zustand |
 |---|---|---|
@@ -41,14 +43,15 @@ Sie wird bei jeder Übergabe überschrieben, nicht fortgeschrieben.
 | 0.32.0 | PDF-Bericht, dritter Barrierefreiheits-Durchgang | gebaut |
 | 0.32.1 | `scripts/pruefen.sh`, Push-Haken, Zweig `pruefungen`, lokale Einrichtung | gebaut |
 | 0.32.2 | zwei Oberflächenprüfungen berichtigt | **noch nicht auf einem Mac geprüft** |
+| 0.32.3 | `scripts/mac-start.sh` und `Am-Mac-starten.command` — ein Aufruf für alles | **noch nicht auf einem Mac geprüft** |
 
 ### Was als Nächstes zu tun ist
 
-1. **`scripts/pruefen.sh` einmal vollständig laufen lassen.** Das ist der
-   eigentliche offene Punkt: Die letzten drei Versionen sind nie auf einem Mac
-   gelaufen, nur in der CI — und die letzte CI-Runde hatte zwei rote
-   Prüfungen, die mit 0.32.2 berichtigt sein sollten. Ob sie es sind, weiß
-   niemand.
+1. **`scripts/mac-start.sh` einmal laufen lassen** (oder
+   `Am-Mac-starten.command` doppelklicken). Das ist der eigentliche offene
+   Punkt: Die letzten vier Versionen sind nie auf einem Mac gelaufen, nur in
+   der CI — und eine CI-Runde hatte zwei rote Prüfungen, die mit 0.32.2
+   berichtigt sein sollten. Ob sie es sind, weiß niemand.
 2. **Die Screenshots ansehen**, besonders `screenshot-bericht-*` und
    `screenshot-zurueck-*`. Beide zeigen etwas, das noch nie jemand gesehen
    hat: den PDF-Bericht und den zweiten Schritt der Erfassung.

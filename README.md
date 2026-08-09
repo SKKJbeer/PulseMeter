@@ -9,12 +9,15 @@ Die App zur Erfassung, Analyse und Dokumentation von Zählerständen.
 
 ```bash
 git clone https://github.com/SKKJbeer/PulseMeter.git
-cd PulseMeter && git checkout claude/pulsemeter-kickoff-dns3am
-scripts/setup-mac.sh        # prüft Xcode, erzeugt das Projekt, richtet den Push-Haken ein
-scripts/pruefen.sh          # alles, was auch die CI prüft — in ein bis zwei Minuten
+cd PulseMeter && scripts/mac-start.sh
 ```
 
-`scripts/pruefen.sh` ist der eine Befehl für alles: Zeichenketten, `PulseCore`,
+Das ist alles: Stand holen, Xcode-Projekt erzeugen, Push-Haken einrichten, alles
+prüfen, Screenshots ablegen. Ohne Terminal geht es auch — im Finder
+**`Am-Mac-starten.command`** doppelklicken. Der ausführliche Einstieg steht in
+[START-HIER.md](START-HIER.md).
+
+Danach ist `scripts/pruefen.sh` der eine Befehl für alles: Zeichenketten, `PulseCore`,
 `PulseData`, App-Build, Oberflächentests, Screenshots und der Klick-Dummy. Die
 CI macht dasselbe auf einem frischen Rechner und braucht dafür zwölf bis
 fünfzehn Minuten — lokal bleibt das Ableseverzeichnis liegen, und Xcode baut
@@ -22,6 +25,7 @@ nur das Geänderte.
 
 | Aufruf | Was er tut | Ungefähr |
 |---|---|---|
+| `scripts/mac-start.sh` | Stand holen, einrichten, alles prüfen, fotografieren | 2–3 min |
 | `scripts/pruefen.sh` | alles | 1–2 min |
 | `scripts/pruefen.sh schnell` | ohne App-Build | 20 s |
 | `scripts/pruefen.sh app` | nur App-Build und Oberflächentests | 1 min |
@@ -40,7 +44,7 @@ Lizenz. Alles Weitere richtet das Skript ein.
 
 ## Status
 
-Version **0.32.2**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
+Version **0.32.3**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
 rechnet echt. Alle vier Bildschirme — Übersicht, Erfassung, Verlauf und Zähler —
 laufen als SwiftUI-App im Simulator und werden auf jedem Lauf fotografiert,
 hell und dunkel. Siehe [CHANGELOG.md](CHANGELOG.md).
@@ -82,7 +86,7 @@ nicht eingecheckt. Wer gar nicht gefragt werden will, startet mit
 
 ## Klick-Dummy
 
-**[Zuletzt veröffentlichter Entwurf →](https://claude.ai/code/artifact/1ea0bccd-c8ad-413d-9b34-d9b2496597c0)**
+**[Zuletzt veröffentlichter Entwurf →](https://claude.ai/code/artifact/2b3533ce-f7ad-4d36-aeba-7d3f1c4323a6)**
 
 Jede Produktänderung wird sofort sichtbar gemacht — als **neue** Veröffentlichung
 mit eigener URL, weil erneutes Veröffentlichen auf dieselbe Adresse nicht

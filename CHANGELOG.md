@@ -9,6 +9,48 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.32.3 — 2026-08-09
+
+**Ein Aufruf, und ein Mac kann alles — inklusive des Schritts, der bisher
+fehlte: den aktuellen Stand zu holen.**
+
+### Hinzugefügt
+- `scripts/mac-start.sh` führt in einem Durchgang zusammen, was bisher an vier
+  Stellen beschrieben war: aktuellen Stand holen, Xcode-Projekt erzeugen,
+  Push-Haken einrichten, alles prüfen, Screenshots ablegen und den Ordner
+  öffnen. Fehlt Xcode, sagt es das in drei Zeilen statt in einer Fehlermeldung.
+- `Am-Mac-starten.command` im Wurzelverzeichnis macht denselben Ablauf per
+  Doppelklick im Finder erreichbar — `.command` ist die einzige Endung, die
+  macOS von sich aus im Terminal öffnet. Das Fenster bleibt am Ende offen,
+  sonst ist das Ergebnis weg, bevor es jemand liest.
+
+### Geändert
+- `START-HIER.md` und `README.md` beginnen jetzt mit diesem einen Schritt statt
+  mit einer Reihenfolge aus vier Befehlen.
+- Der Arbeitszweig ist nach `main` zusammengeführt. Der lange Zweigname in der
+  Anleitung entfällt; `git clone` liefert wieder den aktuellen Stand.
+
+### Behoben
+- Eine Arbeitskopie auf einem veralteten Zweig sah vollständig aus und war zwei
+  Versionen alt. Eine Sitzung hat auf diesem Weg 0.30.1 vollständig geprüft,
+  grün gemeldet und für den aktuellen Stand gehalten — der Doppeltarif in der
+  App und der PDF-Bericht fehlten in dieser Prüfung ersatzlos, ohne dass etwas
+  rot wurde. `scripts/mac-start.sh` holt deshalb **zuerst** und prüft **danach**,
+  und nennt Zweig und Version, bevor es loslegt.
+- Der Wächter gegen ungesicherte Arbeit sieht nur eingecheckte Dateien an. Eine
+  unbeteiligte Notiz im Projektordner hätte sonst den ganzen Ablauf blockiert,
+  obwohl ein Zweigwechsel sie nicht anfasst.
+
+_154 Prüfungen in `PulseCore`, alle grün. Klick-Dummy 44 von 44, hell und
+dunkel. `PulseData`, App-Build und Oberflächentests konnten hier nicht laufen —
+dieser Stand entstand in einem Linux-Container ohne Xcode; die CI deckt sie ab.
+`scripts/mac-start.sh` selbst ist unter Linux bis zur Xcode-Prüfung
+durchgespielt: Stand holen, Zweigwechsel mit elf neuen Commits, Wächter gegen
+ungesicherte Änderungen, Versionsanzeige. Der Teil **ab** Xcode ist ungeprüft
+und wird es erst mit dem ersten Lauf auf dem Mac._
+
+---
+
 ## 0.32.2 — 2026-08-09
 
 **Zwei Oberflächenprüfungen berichtigt — und eine Übergabe geschrieben.**

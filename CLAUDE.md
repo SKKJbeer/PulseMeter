@@ -79,6 +79,12 @@ scripts/pruefen.sh schnell    # ohne App-Build, in Sekunden
 scripts/pruefen.sh --nur zurueck   # eine einzelne Oberflächenprüfung
 ```
 
+Auf einem frisch übernommenen Mac steht davor `scripts/mac-start.sh`: Es holt
+zuerst den aktuellen Stand und ruft dann die Einrichtung und diese Prüfung auf.
+Der Schritt existiert, weil ein Arbeitsverzeichnis auf einem veralteten Zweig
+vollständig aussieht — eine Sitzung hat so 0.30.1 geprüft und für den aktuellen
+Stand gehalten.
+
 Das Skript läuft an beiden Orten. Auf einem Mac macht es alles; unter Linux
 macht es, was ohne Xcode geht, und **benennt**, was es überspringt. Es ist
 absichtlich dasselbe Skript wie in der CI-Beschreibung — zwei Abläufe würden
