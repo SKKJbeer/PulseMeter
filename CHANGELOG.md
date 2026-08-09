@@ -9,6 +9,67 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.32.0 — 2026-08-09
+
+**Der PDF-Bericht — und ein Durchgang durch Verlauf und Zählerverwaltung.**
+Damit ist die Tabelle „Was der Rechenkern kann und die App nicht" leer, bis
+auf die Foto-Belege.
+
+### Neu — Verbrauchsbericht
+- **Zeitraum und Umfang zur Wahl**, bevor das Dokument entsteht. Oben steht
+  das **Abrechnungsjahr des Versorgers**, nicht das Kalenderjahr: Es beginnt
+  bei Strom oft im April und bei Gas im Oktober, und wer seine Rechnung prüfen
+  will, braucht *ihren* Zeitraum. Für einen gemeinsamen Bericht über mehrere
+  Zähler gibt es keinen gemeinsamen Rhythmus — das steht auch so da.
+- **Echte A4-Seiten.** Zusammenfassung mit Kosten, Abschlägen und Saldo; je
+  Zähler Menge, Zählernummer, Anfangs- und Endstand je Zählwerk, Monatstabelle
+  mit Vorjahresvergleich und die Kosten aufgeschlüsselt; zum Schluss eine Seite
+  darüber, wie die Zahlen entstehen.
+- **Vorschau und Teilen** in der App, Einstieg im Verlauf unter dem Export.
+- `ReportBuilder` in `PulseCore`: Der rechnende Teil ist ohne Xcode prüfbar.
+  Ein Bericht wird gedruckt und weitergereicht — eine falsche Zahl darin wiegt
+  schwerer als eine auf dem Bildschirm.
+
+### Geändert — Barrierefreiheit, dritter Durchgang
+- **Diagrammbalken sagen, was im Bild steckt:** Wert *mit Einheit*, Vorjahr und
+  „unvollständiger Abschnitt". Vorher las VoiceOver eine nackte Zahl vor — in
+  einer App, in der kWh und m³ nebeneinanderstehen, ist das keine Auskunft.
+- **Tabellenzeilen als ein Satz.** Der Hinweis „nur 1. bis 15. Januar" stand
+  neben der Zahl, ohne erkennbar dazuzugehören — und genau er ist der Grund,
+  warum die Zahl kleiner ist.
+- **Preisfelder tragen ihre Beschriftung selbst.** Vorher waren es drei
+  Stationen: „Arbeitspreis", „0,00, Textfeld", „Euro je Kilowattstunde". Wer
+  das Feld erreicht, hatte die Beschriftung schon hinter sich.
+- Zählerauswahl meldet, welcher Zähler gewählt ist; Legendenfarben, Kopf- und
+  Summenzeile, Vergleichskarte entsprechend zusammengefasst.
+
+### Geändert — Entwurf
+- **Der Bericht rechnete noch mit `registers[0]` und dem Zählerpreis.** Beim
+  Doppeltarifzähler stand dort der Hochtarif zum falschen Preis, und der
+  Niedertarif kam gar nicht vor. Jetzt über den ganzen Zähler, mit einem
+  Arbeitspreis je Zählwerk und Ständen je Zählwerk.
+
+### Behoben
+- Drei Oberflächenprüfungen fielen in 0.31.0 — alle drei zu Recht:
+  - Der neue Abschnitt „Tag und Nacht" schob das Preisfeld unter den
+    Bildschirmrand. Ein `Form` baut nur, was sichtbar ist; was darunter liegt,
+    existiert für die Prüfung nicht. Die Prüfungen scrollen jetzt.
+  - Die Abschlagsprüfung zählte zwei Zähler und fand drei — die neue
+    Wärmepumpe hat einen Abschlag. Die Erwartung ist nachgezogen.
+
+### Geprüft
+- `PulseCore`: **154 Prüfungen**, elf davon neu für den Bericht. Darunter: Der
+  Grundpreis fällt einmal an, die Monatstabelle nimmt nur vollständige Monate,
+  in den Saldo fließen nur Zähler mit Abschlag, und über einen Rücksprung
+  hinweg wird kein Zählerstand eingesetzt.
+- Zwei neue Oberflächenprüfungen: Der Bericht bietet Zeiträume an und erzeugt
+  ein Dokument; bei einem Doppeltarifzähler stehen **beide** Arbeitspreise
+  darin.
+- Zwei neue Bilder (`screenshot-bericht-*`) über den Schalter `-pulse-bericht`.
+- Klick-Dummy: 44 Prüfungen in Hell und Dunkel.
+
+---
+
 ## 0.31.0 — 2026-08-09
 
 **Doppeltarif (HT/NT) in der App.** Ein Gerät, zwei Arbeitspreise — der

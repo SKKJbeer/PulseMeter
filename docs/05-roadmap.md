@@ -96,11 +96,11 @@ Die Reihenfolge ist bewusst nicht „Screens von oben nach unten", sondern nach 
 
 ---
 
-## Aktueller Stand — Version 0.31.0
+## Aktueller Stand — Version 0.32.0
 
 | Schritt | Stand |
 |---|---|
-| 1. `PulseCore` + Tests | **fertig** — 143 Prüfungen, alle Randfälle aus `02`, Abschnitt 3 |
+| 1. `PulseCore` + Tests | **fertig** — 154 Prüfungen, alle Randfälle aus `02`, Abschnitt 3 |
 | 2. `PulseData` + Repositories | **fertig** — auf macOS geprüft |
 | 3. `PulseUI` Design-System | **fertig** — Hell und Dunkel, auf jedem Lauf fotografiert |
 | 4. Erfassungsfluss | **fertig** — Zählwerk-Optik, Plausibilisierung, Vorbelegung |
@@ -110,7 +110,7 @@ Die Reihenfolge ist bewusst nicht „Screens von oben nach unten", sondern nach 
 | 8. Widgets, Kurzbefehle, Erinnerungen | Erinnerungen und Widget **fertig**; Siri offen |
 | 9. Paywall und StoreKit | offen — braucht das Apple Developer Program |
 | 4. Erfassungsfluss — Nachtrag | **0.30.1** — aus dem zweiten Zählwerk führt ein Weg zurück; ohne ihn war der Tippfehler eine Sackgasse |
-| 10. Politur | **angefangen** (0.27.0) — Karte und Fußzeilen lesen sich für VoiceOver als ein Satz, Bilder bei größter Schrift, Startzeit im Protokoll. Die 800 ms auf einem **Gerät** sind weiter offen |
+| 10. Politur | **angefangen** (0.27.0), fortgesetzt in **0.32.0** — Verlauf und Zählerverwaltung durchgegangen: Diagrammbalken sagen Wert, Einheit, Vorjahr und Unvollständigkeit; Tabellenzeilen lesen sich als ein Satz; Preisfelder tragen ihre Beschriftung selbst — Karte und Fußzeilen lesen sich für VoiceOver als ein Satz, Bilder bei größter Schrift, Startzeit im Protokoll. Die 800 ms auf einem **Gerät** sind weiter offen |
 
 ### Was die App noch nicht kann, obwohl der Rechenkern es kann
 
@@ -122,7 +122,7 @@ der Oberfläche fehlt, sieht in den Tests grün aus und ist trotzdem nicht da.
 | Zweirichtungszähler (PV-Einspeisung) | ja | ja | ja |
 | Doppeltarif (HT/NT) | ja | ja | ja |
 | Zählerwechsel | ja | ja | ja |
-| PDF-Bericht | — | **nein** | ja |
+| PDF-Bericht | ja | ja | ja |
 | Foto-Belege | — | nein | nein |
 
 Der Zweirichtungszähler ist mit 0.22.0 geschlossen, der Zählerwechsel mit
@@ -138,7 +138,13 @@ Vorgang erfasst, und Karte, Verlauf, Widget und Export rechnen über den
 ganzen Zähler statt über sein erstes Zählwerk. Der Grundpreis fällt dabei
 einmal an, nicht je Zählwerk.
 
-Offen bleibt der **PDF-Bericht** — den gibt es bisher nur im Entwurf.
+Mit **0.32.0** ist auch der PDF-Bericht angekommen: Zeitraum und Umfang zur
+Wahl, echte A4-Seiten, Zusammenfassung mit Abschlagssaldo, je Zähler die
+Monatstabelle mit Vorjahresvergleich und die Kosten je Zählwerk. Der
+rechnende Teil steht in `PulseCore` und ist damit ohne Xcode prüfbar.
+
+Damit ist die Tabelle geschlossen — bis auf die Foto-Belege, die auch der
+Entwurf nicht kennt.
 
 Zusätzlich entstanden, weil der Prototyp es nötig machte: Datenansicht mit
 Monats-, Quartals- und Jahresvergleich, Verbrauchsbericht mit Zeitraumwahl,
@@ -151,12 +157,10 @@ Mac beurteilen.
 
 ### Die nächsten drei Schritte
 
-1. **PDF-Bericht.** Im Entwurf vorhanden, in der App nicht. Die letzte offene
-   Zeile in der Tabelle darüber.
+1. **Foto-Belege.** Die letzte offene Zeile in der Tabelle darüber — und
+   die einzige, die auch der Entwurf nicht kennt.
 
-2. **Barrierefreiheit weiterführen.** Mit 0.27.0 ist der Anfang gemacht,
-   0.29.0 hat den Erfassungsschirm genommen; Verlauf und Zählerverwaltung
-   sind noch nicht durchgegangen.
+2. **Siri-Kurzbefehl.** Der letzte offene Punkt aus Schritt 8.
 
 Danach Paywall und StoreKit, sobald das Apple Developer Program vorliegt. Das
 Widget wartet ebenfalls darauf: Die App-Gruppe greift ohne Entwicklerkonto

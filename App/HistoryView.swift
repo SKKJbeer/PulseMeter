@@ -22,6 +22,7 @@ struct HistoryView: View {
     @State private var comparison: PeriodEngine.SlotComparison?
     @State private var readings: [Reading] = []
     @State private var showingReadings = false
+    @State private var showingReport = false
     @State private var mode: Mode = .chart
     @State private var metric: Metric = .quantity
     @State private var tariffs: [Tariff] = []
@@ -82,6 +83,7 @@ struct HistoryView: View {
                             tableCard
                         }
                         if !buckets.isEmpty { exportRow }
+                        reportRow
                         readingsRow
                     }
                 }
@@ -90,7 +92,18 @@ struct HistoryView: View {
             }
             .background(PulseColor.ground)
             .navigationTitle("Verlauf")
-            .onAppear(perform: load)
+            .onAppear {
+                load()
+                // Nur für die Bildschirmfotos: `simctl` kann nicht tippen, und
+                // ein Dokument, das niemand ansieht, ist ein Dokument, in dem
+                // sich ein Fehler beliebig lange hält.
+                if ProcessInfo.processInfo.arguments.contains("-pulse-bericht") {
+                    showingReport = true
+                }
+            }
+            .sheet(isPresented: $showingReport) {
+                ReportView()
+            }
             .sheet(isPresented: $showingReadings) {
                 ReadingsList(readings: readings, unit: unit,
                              fractionDigits: register?.fractionDigits ?? 1,
@@ -170,10 +183,15 @@ struct HistoryView: View {
                             )
                     }
                     .buttonStyle(.plain)
+                    // Ohne diese Angabe liest VoiceOver alle Zähler gleich vor,
+                    // und der gewählte ist nicht zu erkennen — die Farbe allein
+                    // sagt niemandem etwas, der sie nicht sieht.
+                    .accessibilityAddTraits(chosen ? [.isSelected] : [])
                 }
             }
             .padding(.vertical, 1)
         }
+        .accessibilityLabel("Zähler auswählen")
     }
 
     private var granularityPicker: some View {
@@ -217,6 +235,9 @@ struct HistoryView: View {
                 .font(PulseText.sectionLabel)
                 .foregroundStyle(PulseColor.inkTertiary)
                 .textCase(.uppercase)
+                // Eine Kopfzeile ist ein Satz über die Spalten, keine zwei
+                // Wörter hintereinander.
+                .accessibilityElement(children: .combine)
                 .padding(.horizontal, 15)
                 .padding(.top, 14)
                 .padding(.bottom, 8)
@@ -246,6 +267,11 @@ struct HistoryView: View {
                     }
                     .padding(.horizontal, 15)
                     .padding(.vertical, 10)
+                    // Als ein Satz: „Januar, nur 1. bis 15. Januar, 312 kWh".
+                    // Getrennt vorgelesen steht der Hinweis auf den halben
+                    // Monat neben der Zahl, ohne erkennbar dazuzugehören —
+                    // und genau er ist der Grund, warum die Zahl kleiner ist.
+                    .accessibilityElement(children: .combine)
                 }
 
                 Divider().overlay(PulseColor.ink)
@@ -260,6 +286,7 @@ struct HistoryView: View {
                 }
                 .padding(.horizontal, 15)
                 .padding(.vertical, 12)
+                .accessibilityElement(children: .combine)
             }
         }
     }
@@ -279,6 +306,46 @@ struct HistoryView: View {
                 }
             }
         }
+    }
+
+    /// Der Bericht steht unter dem Export und nicht daneben.
+    ///
+    /// Er ist kein dritter Export, sondern ein Dokument: Wer die Rechnung des
+    /// Versorgers prüfen will, braucht Zeitraum und Zähler zur Wahl — und
+    /// danach Papier, keine Tabelle.
+    private var reportRow: some View {
+        Button {
+            showingReport = true
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "doc.text")
+                    .font(.system(.subheadline, weight: .semibold))
+                    .foregroundStyle(PulseColor.tint)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Verbrauchsbericht")
+                        .font(.system(.subheadline, weight: .semibold))
+                        .foregroundStyle(PulseColor.ink)
+                    Text("Gestaltetes Dokument zum Prüfen der Jahresabrechnung")
+                        .font(PulseText.detail)
+                        .foregroundStyle(PulseColor.inkTertiary)
+                        .multilineTextAlignment(.leading)
+                }
+                Spacer(minLength: 8)
+                Image(systemName: "chevron.right")
+                    .font(.system(.footnote, weight: .semibold))
+                    .foregroundStyle(PulseColor.inkTertiary)
+            }
+            .padding(.horizontal, 15)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(PulseColor.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(PulseColor.hairlineStrong, lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
     }
 
     private func exportLabel(_ text: String) -> some View {
@@ -310,8 +377,14 @@ struct HistoryView: View {
                             .foregroundStyle(PulseColor.inkSecondary)
                     }
                 }
+                // Als ein Satz: „Verbrauch 2026, 2.541 kWh". Getrennt
+                // vorgelesen käme die Einheit als eigener Brocken nach der
+                // Zahl — dieselbe Änderung wie auf der Übersichtskarte in
+                // 0.27.0.
+                .accessibilityElement(children: .combine)
 
-                PeriodBars(columns: chartColumns, accent: accent, selection: selectedSlot) { slot in
+                PeriodBars(columns: chartColumns, accent: accent, selection: selectedSlot,
+                           unit: unit) { slot in
                     selectedSlot = selectedSlot == slot ? nil : slot
                     recomputeComparison()
                 }
@@ -331,6 +404,11 @@ struct HistoryView: View {
                 }
                 .font(PulseText.caption)
                 .foregroundStyle(PulseColor.inkTertiary)
+                // Eine Legende erklärt Farben. Wer sie nicht sieht, braucht
+                // die Erklärung nicht als drei einzelne Wörter vorgelesen —
+                // die Balken darunter sagen ihren Wert selbst.
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel(legendDescription)
 
                 Text(selectedSlot == nil
                      ? "Tippe einen Abschnitt an, um ihn mit den Vorjahren zu vergleichen"
@@ -347,6 +425,7 @@ struct HistoryView: View {
     private func legendDot(color: Color, text: String) -> some View {
         HStack(spacing: 5) {
             RoundedRectangle(cornerRadius: 2).fill(color).frame(width: 10, height: 10)
+                .accessibilityHidden(true)
             Text(text)
         }
     }
@@ -354,8 +433,20 @@ struct HistoryView: View {
     private func legendLine(text: String) -> some View {
         HStack(spacing: 5) {
             Rectangle().fill(PulseColor.inkTertiary).frame(width: 10, height: 2)
+                .accessibilityHidden(true)
             Text(text)
         }
+    }
+
+    /// Was die Legende in einem Satz sagt.
+    private var legendDescription: String {
+        var parts = [granularity == .year ? "Balken zeigen den Verbrauch"
+                                          : "Balken zeigen \(today.year)"]
+        if granularity != .year { parts.append("die Linie \(today.year - 1)") }
+        if chartColumns.contains(where: \.isPartial) {
+            parts.append("blasse Balken sind unvollständige Abschnitte")
+        }
+        return parts.joined(separator: ", ")
     }
 
     private func comparisonCard(_ comparison: PeriodEngine.SlotComparison) -> some View {
@@ -376,6 +467,9 @@ struct HistoryView: View {
                             .foregroundStyle(PulseColor.inkTertiary)
                     }
                 }
+                // „Februar gegenüber Vorjahr, −7 %" als ein Satz. Die Richtung
+                // steckt sonst allein in der Farbe, und die liest niemand vor.
+                .accessibilityElement(children: .combine)
 
                 YearBars(rows: comparisonRows(comparison), accent: accent)
 

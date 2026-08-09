@@ -44,10 +44,20 @@ final class LaunchTests: XCTestCase {
     /// Ein Formular ist länger als der Bildschirm, und `tap()` auf etwas
     /// außerhalb des sichtbaren Bereichs scheitert — als läge ein Fehler in
     /// der App vor, obwohl nur gescrollt werden müsste.
-    private func scroll(to element: XCUIElement, in app: XCUIApplication, swipes: Int = 6) -> Bool {
+    private func scroll(to element: XCUIElement, in app: XCUIApplication, swipes: Int = 8) -> Bool {
+        // Gewischt wird auf dem Formular selbst, nicht auf der App: Ein Wisch
+        // auf `app` landet unter Umständen auf der Tab-Leiste und bewegt
+        // nichts. Ein `Form` ist unter der Haube eine Sammlung, ein
+        // `ScrollView` eine Bildlaufansicht — beides kommt vor.
+        let container: XCUIElement = {
+            if app.collectionViews.firstMatch.exists { return app.collectionViews.firstMatch }
+            if app.tables.firstMatch.exists { return app.tables.firstMatch }
+            if app.scrollViews.firstMatch.exists { return app.scrollViews.firstMatch }
+            return app
+        }()
         for _ in 0..<swipes {
             if element.exists && element.isHittable { return true }
-            app.swipeUp()
+            container.swipeUp()
         }
         return element.exists && element.isHittable
     }
@@ -234,8 +244,13 @@ final class LaunchTests: XCTestCase {
         // Damit ein Fehlschlag nicht wieder raten lässt, was gefunden wurde.
         print("ABSCHLAG-BESCHRIFTUNGEN: \(seen.sorted())")
 
-        XCTAssertEqual(seen.count, 2,
-                       "Genau die zwei Zähler mit Abschlag dürfen eine Vorschau zeigen — gefunden: \(seen.sorted())")
+        // Drei seit 0.31.0: Strom, Gas und die Wärmepumpe. Der Wasserzähler
+        // hat bewusst keinen Abschlag und darf deshalb keine Vorschau zeigen.
+        // Die Zahl steht hier fest und wird nicht aus den Daten abgeleitet —
+        // ein Test, der seine Erwartung aus derselben Quelle holt wie die App,
+        // prüft nichts.
+        XCTAssertEqual(seen.count, 3,
+                       "Genau die drei Zähler mit Abschlag dürfen eine Vorschau zeigen — gefunden: \(seen.sorted())")
     }
 
     /// Ein Preis lässt sich eintragen, ohne dass man vorher irgendetwas über
@@ -249,10 +264,16 @@ final class LaunchTests: XCTestCase {
         let field = app.textFields["Name"]
         XCTAssertTrue(field.waitForExistence(timeout: 5))
         field.tap()
-        field.typeText("Strom")
+        // Mit Zeilenschaltung: Die Tastatur verdeckt sonst die untere Hälfte
+        // des Formulars, und das Preisfeld ist genau dort.
+        field.typeText("Strom\n")
 
+        // Gescrollt, bevor geprüft wird: Ein `Form` baut nur, was sichtbar
+        // ist. Was unten steht, existiert im Zugänglichkeitsbaum schlicht
+        // nicht — und ein Test, der das nicht berücksichtigt, meldet einen
+        // Fehler in der App, wo nur gescrollt werden müsste.
         let price = app.textFields["0,00"].firstMatch
-        XCTAssertTrue(price.exists, "Das Feld für den Arbeitspreis fehlt")
+        XCTAssertTrue(scroll(to: price, in: app), "Das Feld für den Arbeitspreis fehlt")
         price.tap()
         price.typeText("0,34")
 
@@ -629,5 +650,74 @@ final class LaunchTests: XCTestCase {
                       "Nach dem Tagstrom muss der Nachtstrom drankommen")
         XCTAssertTrue(app.buttons["Sichern"].exists,
                       "Beim letzten Zählwerk muss „Sichern“ dastehen")
+    }
+
+    /// Der Verbrauchsbericht: Zeitraum wählen, Dokument ansehen, teilen.
+    ///
+    /// **Warum das eine Prüfung braucht.** Ein Bericht ist das einzige, was
+    /// diese App auf Papier verlässt. Er wird neben die Jahresabrechnung
+    /// gelegt, und eine falsche oder fehlende Zahl darin wiegt schwerer als
+    /// eine auf dem Bildschirm — sie ist ausgedruckt und weitergereicht.
+    func testTheReportOffersPeriodsAndProducesADocument() {
+        let app = launchWithData()
+        app.tabBars.buttons["Verlauf"].tap()
+
+        let entry = app.buttons.containing(
+            NSPredicate(format: "label CONTAINS 'Verbrauchsbericht'")
+        ).firstMatch
+        XCTAssertTrue(entry.waitForExistence(timeout: 10),
+                      "Der Einstieg zum Bericht fehlt im Verlauf")
+        XCTAssertTrue(scroll(to: entry, in: app), "Der Einstieg ließ sich nicht erreichen")
+        entry.tap()
+
+        // Das Abrechnungsjahr des Versorgers ist der Grund, aus dem es diese
+        // Wahl gibt: Es beginnt selten am 1. Januar.
+        let laufendes = app.staticTexts["Laufendes Jahr"]
+        XCTAssertTrue(laufendes.waitForExistence(timeout: 5),
+                      "Der Bericht bietet keinen Zeitraum an")
+        XCTAssertTrue(app.staticTexts["Letzte 12 Monate"].exists)
+
+        app.buttons["Bericht erstellen"].tap()
+
+        // Das Dokument selbst — und der Weg, es aus der App zu bekommen.
+        let titel = app.staticTexts["Verbrauchsbericht"].firstMatch
+        XCTAssertTrue(titel.waitForExistence(timeout: 10),
+                      "Das Dokument wurde nicht aufgebaut")
+        XCTAssertTrue(app.staticTexts["Zusammenfassung"].waitForExistence(timeout: 5),
+                      "Die Zusammenfassung fehlt auf der ersten Seite")
+        XCTAssertTrue(app.buttons["Teilen"].exists,
+                      "Ohne Teilen bleibt der Bericht in der App — und ist damit keiner")
+        XCTAssertTrue(app.buttons["Zurück"].exists,
+                      "Aus dem Dokument muss ein Weg zurück zur Wahl führen")
+    }
+
+    /// Ein Doppeltarifzähler steht mit **beiden** Zahlen im Bericht.
+    func testTheReportCarriesBothTariffsOfADualTariffMeter() {
+        let app = launchWithData()
+        app.tabBars.buttons["Verlauf"].tap()
+
+        let entry = app.buttons.containing(
+            NSPredicate(format: "label CONTAINS 'Verbrauchsbericht'")
+        ).firstMatch
+        XCTAssertTrue(entry.waitForExistence(timeout: 10))
+        XCTAssertTrue(scroll(to: entry, in: app))
+        entry.tap()
+
+        let waermepumpe = app.buttons["Wärmepumpe"]
+        XCTAssertTrue(waermepumpe.waitForExistence(timeout: 5),
+                      "Der Doppeltarifzähler steht nicht zur Wahl")
+        waermepumpe.tap()
+        app.buttons["Bericht erstellen"].tap()
+
+        let hoch = app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS 'Arbeitspreis Hochtarif'")
+        ).firstMatch
+        XCTAssertTrue(hoch.waitForExistence(timeout: 10),
+                      "Der Hochtarif fehlt im Bericht")
+        let nieder = app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS 'Arbeitspreis Niedertarif'")
+        ).firstMatch
+        XCTAssertTrue(nieder.exists,
+                      "Der Niedertarif fehlt im Bericht — genau der Fehler, den es zu vermeiden gilt")
     }
 }

@@ -14,7 +14,7 @@ struct RootView: View {
     /// zuletzt drei Fehler im Erfassungsschirm monatelang vorbeigelaufen.
     @State private var tab: Int = {
         let arguments = ProcessInfo.processInfo.arguments
-        if arguments.contains("-pulse-verlauf") { return 1 }
+        if arguments.contains("-pulse-verlauf") || arguments.contains("-pulse-bericht") { return 1 }
         if arguments.contains("-pulse-zaehler") { return 2 }
         return 0
     }()

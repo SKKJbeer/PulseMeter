@@ -30,13 +30,36 @@ public struct PeriodBars: View {
     private let columns: [Column]
     private let accent: Color
     private let selection: Int?
+    private let unit: String
     private let onSelect: (Int) -> Void
 
-    public init(columns: [Column], accent: Color, selection: Int?, onSelect: @escaping (Int) -> Void) {
+    /// - Parameter unit: Einheit für die Ansage. Ein Balken, der „312" sagt,
+    ///   sagt nichts — kWh und m³ stehen in derselben App nebeneinander, und
+    ///   ohne Einheit ist die Zahl nicht zu deuten.
+    public init(columns: [Column], accent: Color, selection: Int?, unit: String = "",
+                onSelect: @escaping (Int) -> Void) {
         self.columns = columns
         self.accent = accent
         self.selection = selection
+        self.unit = unit
         self.onSelect = onSelect
+    }
+
+    /// Was ein Balken sagt, wenn man ihn nicht sehen kann.
+    ///
+    /// Mit Einheit, mit dem Vorjahreswert und mit dem Hinweis auf einen
+    /// unvollständigen Abschnitt: Genau diese drei Angaben stecken im Bild —
+    /// Höhe, Marke und blasse Färbung —, und ohne sie bleibt von der Auskunft
+    /// eine nackte Zahl übrig.
+    private func spokenValue(for column: Column) -> String {
+        guard let value = column.value else { return "keine Ablesung" }
+        var text = unit.isEmpty ? "\(Int(value.rounded()))" : "\(Int(value.rounded())) \(unit)"
+        if column.isPartial { text += ", unvollständiger Abschnitt" }
+        if let reference = column.reference {
+            text += unit.isEmpty ? ", Vorjahr \(Int(reference.rounded()))"
+                                 : ", Vorjahr \(Int(reference.rounded())) \(unit)"
+        }
+        return text
     }
 
     private var upperBound: Double {
@@ -114,8 +137,9 @@ public struct PeriodBars: View {
         .onTapGesture { onSelect(column.id) }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(column.label)
-        .accessibilityValue(column.value.map { "\(Int($0.rounded()))" } ?? "keine Ablesung")
+        .accessibilityValue(spokenValue(for: column))
         .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
+        .accessibilityHint("Öffnet den Vergleich mit den Vorjahren")
     }
 }
 
@@ -147,6 +171,23 @@ public struct YearBars: View {
     public init(rows: [Row], accent: Color) {
         self.rows = rows
         self.accent = accent
+    }
+
+    /// Was ein Balken sagt, wenn man ihn nicht sehen kann.
+    ///
+    /// Mit Einheit, mit dem Vorjahreswert und mit dem Hinweis auf einen
+    /// unvollständigen Abschnitt: Genau diese drei Angaben stecken im Bild —
+    /// Höhe, Marke und blasse Färbung —, und ohne sie bleibt von der Auskunft
+    /// eine nackte Zahl übrig.
+    private func spokenValue(for column: Column) -> String {
+        guard let value = column.value else { return "keine Ablesung" }
+        var text = unit.isEmpty ? "\(Int(value.rounded()))" : "\(Int(value.rounded())) \(unit)"
+        if column.isPartial { text += ", unvollständiger Abschnitt" }
+        if let reference = column.reference {
+            text += unit.isEmpty ? ", Vorjahr \(Int(reference.rounded()))"
+                                 : ", Vorjahr \(Int(reference.rounded())) \(unit)"
+        }
+        return text
     }
 
     private var upperBound: Double {

@@ -574,86 +574,32 @@ struct MeterEditor: View {
     @ViewBuilder
     private var priceSection: some View {
         Section {
-            HStack {
-                Text(hasDualTariff && kind == .electricity ? "Arbeitspreis tagsüber" : "Arbeitspreis")
-                Spacer(minLength: 10)
-                TextField("0,00", text: $pricePerUnit)
-                    .keyboardType(.decimalPad)
-                    .multilineTextAlignment(.trailing)
-                    .frame(maxWidth: 110)
-                Text("€/\(billingUnitSymbol)")
-                    .foregroundStyle(PulseColor.inkTertiary)
-            }
-            HStack {
-                Text("Grundpreis")
-                Spacer(minLength: 10)
-                TextField("0,00", text: $monthlyBasePrice)
-                    .keyboardType(.decimalPad)
-                    .multilineTextAlignment(.trailing)
-                    .frame(maxWidth: 110)
-                Text("€/Monat")
-                    .foregroundStyle(PulseColor.inkTertiary)
-            }
+            numberRow(hasDualTariff && kind == .electricity ? "Arbeitspreis tagsüber" : "Arbeitspreis",
+                      unit: "€/\(billingUnitSymbol)", spokenUnit: "Euro je \(billingUnitSymbol)",
+                      text: $pricePerUnit)
+            numberRow("Grundpreis", unit: "€/Monat", spokenUnit: "Euro je Monat",
+                      text: $monthlyBasePrice)
 
             if hasDualTariff && kind == .electricity {
-                HStack {
-                    Text("Arbeitspreis nachts")
-                    Spacer(minLength: 10)
-                    TextField("0,00", text: $lowTariffPrice)
-                        .keyboardType(.decimalPad)
-                        .multilineTextAlignment(.trailing)
-                        .frame(maxWidth: 110)
-                    Text("€/kWh")
-                        .foregroundStyle(PulseColor.inkTertiary)
-                }
+                numberRow("Arbeitspreis nachts", unit: "€/kWh", spokenUnit: "Euro je Kilowattstunde",
+                          text: $lowTariffPrice)
             }
 
             if hasFeedIn && kind == .electricity {
-                HStack {
-                    Text("Einspeisevergütung")
-                    Spacer(minLength: 10)
-                    TextField("0,00", text: $feedInPrice)
-                        .keyboardType(.decimalPad)
-                        .multilineTextAlignment(.trailing)
-                        .frame(maxWidth: 110)
-                    Text("€/kWh")
-                        .foregroundStyle(PulseColor.inkTertiary)
-                }
+                numberRow("Einspeisevergütung", unit: "€/kWh", spokenUnit: "Euro je Kilowattstunde",
+                          text: $feedInPrice)
             }
 
             // Gas wird in m³ gemessen und in kWh abgerechnet. Ohne diese
             // beiden Zahlen von der Rechnung lässt sich aus dem Zählerstand
             // kein Betrag bilden — und die App rät nicht.
             if needsGasConversion {
-                HStack {
-                    Text("Zustandszahl")
-                    Spacer(minLength: 10)
-                    TextField("0,95", text: $stateNumber)
-                        .keyboardType(.decimalPad)
-                        .multilineTextAlignment(.trailing)
-                        .frame(maxWidth: 110)
-                }
-                HStack {
-                    Text("Brennwert")
-                    Spacer(minLength: 10)
-                    TextField("10,5", text: $calorificValue)
-                        .keyboardType(.decimalPad)
-                        .multilineTextAlignment(.trailing)
-                        .frame(maxWidth: 110)
-                    Text("kWh/m³")
-                        .foregroundStyle(PulseColor.inkTertiary)
-                }
+                numberRow("Zustandszahl", unit: nil, spokenUnit: nil,
+                          placeholder: "0,95", text: $stateNumber)
+                numberRow("Brennwert", unit: "kWh/m³", spokenUnit: "Kilowattstunden je Kubikmeter",
+                          placeholder: "10,5", text: $calorificValue)
             }
-            HStack {
-                Text("Abschlag")
-                Spacer(minLength: 10)
-                TextField("0,00", text: $prepayment)
-                    .keyboardType(.decimalPad)
-                    .multilineTextAlignment(.trailing)
-                    .frame(maxWidth: 110)
-                Text("€/Monat")
-                    .foregroundStyle(PulseColor.inkTertiary)
-            }
+            numberRow("Abschlag", unit: "€/Monat", spokenUnit: "Euro je Monat", text: $prepayment)
             if !prepayment.isEmpty {
                 Picker("Abrechnungsjahr ab", selection: $billingMonth) {
                     ForEach(1...12, id: \.self) { month in
@@ -667,6 +613,39 @@ struct MeterEditor: View {
             Text(needsGasConversion
                  ? "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Zustandszahl und Brennwert stehen auf deiner Gasrechnung; ohne sie lässt sich aus m³ kein Betrag bilden. Mit dem Abschlag rechnet die App aus, ob am Jahresende ein Guthaben oder eine Nachzahlung zu erwarten ist."
                  : "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Alle Zahlen stehen auf deiner Jahresrechnung. Mit dem Abschlag rechnet die App aus, ob am Jahresende ein Guthaben oder eine Nachzahlung zu erwarten ist.")
+        }
+    }
+
+    /// Eine Zeile mit Beschriftung, Zahlenfeld und Einheit.
+    ///
+    /// **Warum die Beschriftung am Feld hängt und nicht daneben steht.** Für
+    /// das Auge sind es drei Teile nebeneinander; für VoiceOver waren es drei
+    /// Stationen — „Arbeitspreis", dann „0,00, Textfeld", dann „Euro je
+    /// Kilowattstunde". Wer das Feld erreicht, hat die Beschriftung schon
+    /// hinter sich und weiß nicht mehr, was er da eintippt. Beschriftung und
+    /// Einheit gehören deshalb ans Feld, und die sichtbaren Texte sind für die
+    /// Ansage Beiwerk.
+    private func numberRow(
+        _ title: String,
+        unit: String?,
+        spokenUnit: String?,
+        placeholder: String = "0,00",
+        text: Binding<String>
+    ) -> some View {
+        HStack {
+            Text(title)
+                .accessibilityHidden(true)
+            Spacer(minLength: 10)
+            TextField(placeholder, text: text)
+                .keyboardType(.decimalPad)
+                .multilineTextAlignment(.trailing)
+                .frame(maxWidth: 110)
+                .accessibilityLabel(spokenUnit.map { "\(title) in \($0)" } ?? title)
+            if let unit {
+                Text(unit)
+                    .foregroundStyle(PulseColor.inkTertiary)
+                    .accessibilityHidden(true)
+            }
         }
     }
 

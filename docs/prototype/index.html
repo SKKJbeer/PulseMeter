@@ -667,7 +667,7 @@ select.field { cursor: pointer; }
 
 <div class="stage-head">
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.31.0</p>
+  <p>Klickbarer Entwurf · v0.32.0</p>
 </div>
 
 <div class="device">
@@ -1191,6 +1191,13 @@ const shiftYear = (d, n) => ({ y: d.y + n, m: d.m, d: d.m === 2 && d.d === 29 ? 
 function monthConsumption(reg, y, m) {
   const nm = m === 12 ? 1 : m + 1, ny = m === 12 ? y + 1 : y;
   return consumption(reg, { y, m, d: 1 }, { y: ny, m: nm, d: 1 });
+}
+
+/* Derselbe Monat, aber über den ganzen Zähler — Summe der Bezugs-Zählwerke.
+   Wie `PeriodEngine.buckets(meteringPoint:)`. */
+function meterMonthConsumption(m, y, mo) {
+  const nm = mo === 12 ? 1 : mo + 1, ny = mo === 12 ? y + 1 : y;
+  return meterConsumption(m, { y, m: mo, d: 1 }, { y: ny, m: nm, d: 1 });
 }
 
 /* Gibt `null` zurück, wenn der Zähler noch nie abgelesen wurde.
@@ -2144,33 +2151,46 @@ function reportMeters() {
   return repScope === "all" ? METERS : [METERS.find(x => x.id === repScope)];
 }
 
+/* Eine Berichtszeile je Zähler.
+
+   **Über den ganzen Zähler, nicht über sein erstes Zählwerk.** Bis 0.31.0 stand
+   hier `m.registers[0]` und `m.price` — beim Doppeltarifzähler also der
+   Hochtarif zum falschen Preis, und der Niedertarif kam im Bericht gar nicht
+   vor. Ein Bericht, den man dem Versorger entgegenhält, muss vollständig sein. */
 function reportRows(meters, from, to) {
   return meters.map(m => {
     const reg = m.registers[0];
-    const c = consumption(reg, from, to);
+    const c = meterConsumption(m, from, to);
     if (!c) return null;
-    const prev = consumption(reg, shiftYear(c.cfrom, -1), shiftYear(c.cto, -1));
+    const prev = meterConsumption(m, shiftYear(c.cfrom, -1), shiftYear(c.cto, -1));
     const delta = prev && prev.complete && prev.value ? (c.value - prev.value) / prev.value : null;
-    const work = billedUnits(m, c.value) * m.price;
-    // Einspeisung mindert die Kosten — beim Zweirichtungszähler gehört sie
-    // in dieselbe Zeile wie der Bezug, sonst stimmt die Summe nicht.
-    let feed = 0;
-    if (m.registers[1] && m.feedInPrice) {
-      const f = consumption(m.registers[1], c.cfrom, c.cto);
-      if (f) feed = f.value * m.feedInPrice;
+
+    // Arbeitspreis je Zählwerk: Bei zwei Tarifen sind es zwei Preise, und ein
+    // Mischpreis wäre eine Zahl, die auf keiner Rechnung steht.
+    const parts = [];
+    let work = 0, feed = 0;
+    for (const r of m.registers) {
+      const cr = consumption(r, c.cfrom, c.cto);
+      if (!cr) continue;
+      const price = registerPrice(m, r);
+      const amount = billedUnits(m, cr.value) * price;
+      if (r.feedIn) { feed += amount; } else { work += amount; }
+      parts.push({ reg: r, c: cr, price, amount,
+                   start: readingAt(r, c.cfrom), end: readingAt(r, c.cto) });
     }
     const base = m.base * 12 / 365 * c.days;
+
     // Monate des gewählten Zeitraums, jeder gegen denselben Monat des Vorjahres.
     const months = [];
     let cur = { y: c.cfrom.y, m: c.cfrom.m, d: 1 };
     while (serial(cur.y, cur.m, 1) < serial(c.cto.y, c.cto.m, c.cto.d)) {
-      const a = monthConsumption(reg, cur.y, cur.m);
-      const b = monthConsumption(reg, cur.y - 1, cur.m);
+      const a = meterMonthConsumption(m, cur.y, cur.m);
+      const b = meterMonthConsumption(m, cur.y - 1, cur.m);
       if (a && a.complete) months.push({ y: cur.y, i: cur.m, a: a.value, b: b && b.complete ? b.value : null });
       cur = cur.m === 12 ? { y: cur.y + 1, m: 1, d: 1 } : { y: cur.y, m: cur.m + 1, d: 1 };
     }
     return {
-      m, reg, c, prev, delta, work, feed, base, months,
+      m, reg, c, prev, delta, work, feed, base, months, parts,
       cost: work - feed + base,
       // Roher Stand, nicht aufgelaufener Verbrauch: Im Bericht steht die
       // Zahl, die am Tag auf dem Gerät stand.
@@ -2262,8 +2282,9 @@ function renderReport() {
       <div class="doc-meter">
         <div class="name">${nf(r.c.value, d)} ${m.unit}
           <span style="font-weight:500;color:#6B6659;font-size:11.5px">im Zeitraum</span></div>
-        <div class="serial">Zählernummer ${m.serial} · Stand ${nf(r.start.v, m.frac)} am ${dateShort(r.c.cfrom)}
-          bis ${nf(r.end.v, m.frac)} am ${dateShort(r.c.cto)}${r.c.complete ? "" : " (letzte vorliegende Ablesung)"}</div>
+        <div class="serial">Zählernummer ${m.serial}${r.parts.map(p =>
+          `<br>${r.parts.length > 1 ? (p.reg.label || "Bezug") + " · " : ""}Stand ${nf(p.start.v, p.reg.frac)} am ${dateShort(r.c.cfrom)}
+           bis ${nf(p.end.v, p.reg.frac)} am ${dateShort(r.c.cto)}`).join("")}${r.c.complete ? "" : "<br>(bis zur letzten vorliegenden Ablesung)"}</div>
       </div>
       <table class="doc-t">
         <thead><tr><th>Monat</th><th>Wert</th><th>Vorjahr</th><th>Δ</th></tr></thead>
@@ -2274,7 +2295,10 @@ function renderReport() {
         </tbody>
       </table>
       <div class="doc-sum" style="margin-top:9px">
-        <div><span class="k">Arbeitspreis${m.zZahl ? ` · ${nf(billedUnits(m, r.c.value), 0)} kWh × ${nf(m.price, 3)} €` : ` · ${nf(m.price, 2)} € je ${m.unit}`}</span><span class="v">${money(r.work)}</span></div>
+        ${r.parts.filter(p => !p.reg.feedIn).map(p =>
+          `<div><span class="k">Arbeitspreis${r.parts.filter(x => !x.reg.feedIn).length > 1 ? " " + (p.reg.label || "Bezug") : ""}${
+            m.zZahl ? ` · ${nf(billedUnits(m, p.c.value), 0)} kWh × ${nf(p.price, 3)} €`
+                    : ` · ${nf(p.c.value, dp(m.frac))} ${m.unit} × ${nf(p.price, 2)} €`}</span><span class="v">${money(p.amount)}</span></div>`).join("")}
         ${r.feed ? `<div><span class="k">Einspeisevergütung</span><span class="v">− ${money(r.feed)}</span></div>` : ""}
         ${m.base ? `<div><span class="k">Grundpreis · ${r.c.days} Tage</span><span class="v">${money(r.base)}</span></div>` : ""}
         <div class="big"><span class="k">Kosten ${m.name}</span><span class="v">${money(r.cost)}</span></div>

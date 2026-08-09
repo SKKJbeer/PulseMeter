@@ -57,6 +57,8 @@ shoot light screenshot-zurueck-light -pulse-capture-step2
 shoot dark  screenshot-zurueck-dark  -pulse-capture-step2
 shoot light screenshot-verlauf-light -pulse-verlauf
 shoot dark  screenshot-verlauf-dark  -pulse-verlauf
+shoot light screenshot-bericht-light -pulse-bericht
+shoot dark  screenshot-bericht-dark  -pulse-bericht
 shoot light screenshot-leer-light -pulse-empty
 shoot dark  screenshot-leer-dark  -pulse-empty
 shoot light screenshot-zaehler-light -pulse-zaehler
