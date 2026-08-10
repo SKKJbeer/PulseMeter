@@ -1,6 +1,6 @@
 # 07 – Der Weg zum ersten Go-Live
 
-Stand: 2026-08-09
+Stand: 2026-08-10, Version 0.35.0
 Ziel: **1.0 im App Store**, mit dem kleinsten Umfang, der das Produktversprechen einlöst.
 
 ---
@@ -31,7 +31,7 @@ Das ist Schritt eins. Alles andere läuft parallel.
 
 Erfassung, Übersicht, Verlauf, Zählerverwaltung, Tarife, Kosten, Prognose,
 Abschlagsvergleich, Zweirichtungszähler, Doppeltarif, Zählerwechsel,
-CSV-Export, Erinnerungen, Widget, PDF-Bericht. Rechenkern mit 154 Prüfungen,
+CSV-Export, Erinnerungen, Widget, PDF-Bericht. Rechenkern mit 166 Prüfungen,
 `PulseData` auf macOS geprüft, Design-System in Hell und Dunkel.
 
 Das ist mehr Umfang, als die meisten 1.0 haben.
@@ -40,14 +40,45 @@ Das ist mehr Umfang, als die meisten 1.0 haben.
 
 ## 3. Was für 1.0 noch hinein muss
 
+Diese Liste ist am 10. August **am Code nachgesehen** worden, nicht
+fortgeschrieben. Dabei kamen sechs Punkte dazu, die hier fehlten — zwei davon
+größer als alles, was vorher dastand.
+
 | Was | Zustand | Wer |
 |---|---|---|
-| Paywall, StoreKit 2, Kaufwiederherstellung | offen | Mac, nach dem Programm |
-| **App-Store-Material** — Icon, Bilder je Gerätegröße, Texte, Datenschutzerklärung mit URL, Support-URL | **nicht angefangen** | gemeinsam |
+| ~~Sperrlogik: dritter Zähler, zweites Zählwerk, Preise, Bericht~~ | **erledigt mit 0.35.0** | — |
+| StoreKit 2: Produkt, Kauf, Kaufwiederherstellung | offen, aber vorbereitet — `PurchaseGateway` ist eine Datei | Mac, nach dem Programm |
+| **CloudKit einschalten** — steht auf `false`, weil die Berechtigung fehlt | nie gelaufen | Mac, nach dem Programm |
+| **App-Icon und Asset-Katalog** — es gibt im Repo keine `.xcassets` | nicht angefangen | gemeinsam |
+| **`PrivacyInfo.xcprivacy`** — Apple verlangt es seit Mai 2024 | fehlt | Mac |
+| **`.entitlements`** — App-Gruppe fürs Widget, iCloud | fehlt | Mac, nach dem Programm |
+| Barrierefreiheit: Widget und Erfassung | offen | Mac |
+| **App-Store-Material** — Bilder je Gerätegröße, Texte, Datenschutzerklärung mit URL, Support-URL | **nicht angefangen** | gemeinsam |
 | App-Privacy-Angaben | offen | Nutzer |
-| Barrierefreiheit zu Ende | halb | Mac |
 | 800 ms Kaltstart auf einem **Gerät** | nie gemessen | Nutzer |
 | **Zwei Wochen echte Eigennutzung** | offen | Nutzer |
+
+### Die zwei, die vorher fehlten und wehtun
+
+**Die Sperrlogik** stand nur als „Paywall" da — das ist der Verkaufsteil. Der
+Sperrteil, also die Stellen, an denen die App tatsächlich nein sagt, war
+ungeschrieben. Mit 0.35.0 ist er fertig und geprüft; übrig bleibt der Kauf
+selbst, und der ist eine Datei hinter dem Developer Program.
+
+**CloudKit ist abgeschaltet.** `App/PulseMeterApp.swift` ruft
+`PulseStore.container(cloudKit: false)`, sauber begründet: Ohne die
+iCloud-Berechtigung scheitert schon der Aufbau des Speichers beim ersten Start.
+Der Abgleich ist laut ADR-002 aber genau das, was den Einmalkauf trägt — ein
+Kauf, der nur auf einem Gerät gilt, ist keiner. Und er ist **bis heute nie
+gelaufen**. Ein Schalter ist das nicht; eine SwiftData-Schemamigration über
+CloudKit ist eine eigene Testrunde.
+
+**Das Widget bleibt ohne Berechtigungsdatei still leer.**
+`Shared/WidgetBridge.swift` erwartet die App-Gruppe `group.com.pulsemeter.app`
+und fällt ohne sie auf den app-eigenen Ordner zurück — mit Absicht, damit die
+App in der CI läuft. Auf einem Gerät hieße das: Das Widget zeigt dauerhaft
+nichts, ohne Fehlermeldung, ohne Absturz. Genau die Sorte Fehler, die kein Test
+findet und die erst auf dem Gerät auffällt.
 
 ### Warum die Eigennutzung ganz oben mitsteht
 
@@ -93,9 +124,10 @@ schlechte Bewertung.
 
 1. **Apple Developer Program kaufen.** Blockiert alles Weitere.
 2. **Die App benutzen** — ab sofort, parallel, mit echten Zählerständen.
-3. **Paywall und StoreKit**, sobald das Programm da ist.
+3. **StoreKit, CloudKit, Berechtigungen**, sobald das Programm da ist — die
+   drei hängen am selben Nagel. Die Sperrlogik steht bereits.
 4. **Reparieren, was Punkt 2 gefunden hat.** Dieses Fenster nicht wegplanen.
-5. **Barrierefreiheit zu Ende, 800 ms auf dem Gerät messen.**
+5. **Barrierefreiheit von Widget und Erfassung, 800 ms auf dem Gerät messen.**
 6. **App-Store-Material.** Früher anfangen, als es sich anfühlt.
 7. **TestFlight** an fünf bis zehn Leute, zwei Wochen.
 8. **Einreichen.** Die erste Ablehnung ist normal und eingeplant.
@@ -118,6 +150,8 @@ schlechte Bewertung.
 gekauft und die App tatsächlich benutzt wird. Der Code ist nicht das Problem —
 Material, Eigennutzung und Review sind es.
 
-Ein Vorbehalt gehört dazu: Der PDF-Bericht ist bis heute **nie als PDF gesehen
-worden**, und die App lief noch nie auf einem echten Gerät. Beides kann diesen
-Plan ändern. Genau deshalb steht die Eigennutzung so weit vorn.
+Ein Vorbehalt gehört dazu: Die App lief noch nie auf einem echten Gerät. Das
+kann diesen Plan ändern — genau deshalb steht die Eigennutzung so weit vorn.
+
+Der zweite Vorbehalt ist inzwischen erledigt: Der PDF-Bericht war bis 0.33.3
+unsichtbar und wird seither auf jedem Lauf fotografiert, hell und dunkel.

@@ -13,8 +13,10 @@ import PulseUI
 struct MetersView: View {
 
     @Environment(\.modelContext) private var context
+    @Environment(Purchase.self) private var purchase
 
     @State private var meters: [MeteringPoint] = []
+    @State private var showingPaywall = false
     @State private var readingCounts: [MeteringPoint.ID: Int] = [:]
     @State private var lastReadings: [MeteringPoint.ID: Reading] = [:]
     @State private var archived: [MeteringPoint] = []
@@ -45,10 +47,20 @@ struct MetersView: View {
                         }
                     }
 
+                    // **Der Knopf bleibt derselbe, auch wenn die Grenze
+                    // erreicht ist.** Er führt dann zur Kaufseite statt zum
+                    // Formular. Ihn auszugrauen wäre die schlechtere Lösung:
+                    // Der Nutzer sähe, dass es nicht geht, aber nicht, warum —
+                    // und Produktprinzip 4 verbietet genau diese Sackgasse.
                     Button {
-                        editing = MeterDraft()
+                        if canAddMeter {
+                            editing = MeterDraft()
+                        } else {
+                            showingPaywall = true
+                        }
                     } label: {
-                        Label("Zähler hinzufügen", systemImage: "plus")
+                        Label("Zähler hinzufügen",
+                              systemImage: canAddMeter ? "plus" : "lock")
                             .font(.system(.body, weight: .semibold))
                             .foregroundStyle(PulseColor.onAccent)
                             .frame(maxWidth: .infinity)
@@ -57,6 +69,16 @@ struct MetersView: View {
                                         in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                     }
                     .buttonStyle(.plain)
+                    .accessibilityHint(canAddMeter
+                                       ? "Öffnet das Formular für einen neuen Zähler"
+                                       : "Kostenlos sind \(AccessPolicy.freeMeterLimit) Zähler. Doppeltippen, um PulseMeter Pro anzusehen")
+
+                    if let note = limitNote {
+                        Text(note)
+                            .font(PulseText.caption)
+                            .foregroundStyle(PulseColor.inkTertiary)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
 
                     if !meters.isEmpty { reminderSection }
 
@@ -69,12 +91,50 @@ struct MetersView: View {
             }
             .background(PulseColor.ground)
             .navigationTitle("Zähler")
-            .onAppear(perform: load)
+            .onAppear {
+                load()
+                // Nur für die Bildschirmfotos: Die Kaufseite ist der einzige
+                // Schirm, den ein automatischer Lauf nie erreicht — `simctl`
+                // kann nicht tippen —, und zugleich der, bei dem am meisten
+                // davon abhängt, wie er wirkt.
+                if ProcessInfo.processInfo.arguments.contains("-pulse-kaufen") {
+                    showingPaywall = true
+                }
+            }
             .sheet(item: $editing) { draft in
                 MeterEditor(draft: draft,
                             readingCount: draft.existing.flatMap { readingCounts[$0.id] } ?? 0,
                             onDone: { load() })
             }
+            .sheet(isPresented: $showingPaywall) {
+                PaywallView(reason: .additionalMeters)
+            }
+        }
+    }
+
+    /// Ob noch ein Zähler dazu darf.
+    ///
+    /// **Archivierte zählen mit.** Sie sind nicht gelöscht, ihre Ablesungen
+    /// liegen vollständig vor, und sie lassen sich mit einem Tipp zurückholen.
+    /// Zählten sie nicht, wäre Archivieren ein Weg um die Grenze herum — und
+    /// wer zwei archivierte zurückholt, stünde ohne Vorwarnung darüber.
+    private var canAddMeter: Bool {
+        purchase.canAddMeter(existingCount: meters.count + archived.count)
+    }
+
+    /// Der Satz unter dem Knopf, oder keiner.
+    ///
+    /// Erscheint erst ab dem ersten Zähler: Wer noch keinen hat, braucht keine
+    /// Auskunft über eine Grenze, die er nicht sieht — er braucht seinen ersten
+    /// Zähler (Produktprinzip 1).
+    private var limitNote: String? {
+        let total = meters.count + archived.count
+        guard let remaining = purchase.policy.remainingMeters(existingCount: total),
+              total > 0 else { return nil }
+        switch remaining {
+        case 0:  return "Kostenlos sind \(AccessPolicy.freeMeterLimit) Zähler. Mit Pro werden es beliebig viele."
+        case 1:  return "Noch ein Zähler ist kostenlos."
+        default: return "Noch \(remaining) Zähler sind kostenlos."
         }
     }
 
@@ -347,6 +407,15 @@ struct MeterEditor: View {
 
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Environment(Purchase.self) private var purchase
+
+    /// Welche Sperre die Kaufseite geöffnet hat, oder `nil`.
+    ///
+    /// Zwei Zustände statt `sheet(item:)`: `ProFeature` liegt im Rechenkern,
+    /// und ihm dort eine Kennung anzuhängen, hieße eine Anforderung der
+    /// Oberfläche in die Domäne zu tragen.
+    @State private var paywallReason: ProFeature?
+    @State private var showingPaywall = false
 
     @State private var name = ""
     @State private var kind: ResourceKind = .electricity
@@ -410,6 +479,29 @@ struct MeterEditor: View {
     /// umdeuten — aus 8.285 m³ Gas würden 8.285 kWh Strom. Deshalb nur
     /// änderbar, solange nichts abgelesen wurde.
     private var canChangeKind: Bool { readingCount == 0 }
+
+    /// Ob dieser Zähler zwei Zahlen führen darf.
+    ///
+    /// Pro darf immer. Ohne Pro darf, wer es **schon** tut: Ein Zähler mit
+    /// Nachtstrom oder Einspeisung behält seine Schalter, sonst verschwände
+    /// mit dem Schalter auch der Weg, die vorhandenen Werte zu verstehen.
+    private var canUseMultipleRegisters: Bool {
+        purchase.allows(.multipleRegisters) || (draft.existing?.registers.count ?? 0) > 1
+    }
+
+    /// Dieselbe Regel für die Preise: Wer schon einen Tarif hat, behält ihn.
+    ///
+    /// Sonst stünden auf der Übersichtskarte Beträge, die sich nicht mehr
+    /// nachsehen und nicht mehr berichtigen ließen — eine Sackgasse
+    /// (Produktprinzip 4).
+    private var canUseTariffs: Bool {
+        purchase.allows(.costsAndTariffs) || existingTariff != nil || !existingTariffs.isEmpty
+    }
+
+    private func openPaywall(_ feature: ProFeature) {
+        paywallReason = feature
+        showingPaywall = true
+    }
 
     var body: some View {
         NavigationStack {
@@ -477,32 +569,47 @@ struct MeterEditor: View {
                 }
 
                 if kind == .electricity {
-                    Section {
-                        Toggle("Zwei Preise: Tag und Nacht", isOn: $hasDualTariff)
-                            .disabled(hasDualTariff && lowTariffHasReadings)
-                    } header: {
-                        Text("Tag- und Nachtstrom")
-                    } footer: {
-                        // Weder „Doppeltarif" noch „HT/NT": Beides sind Wörter
-                        // von der Rechnung, nicht aus dem Kopf des Nutzers.
-                        // Er weiß, dass sein Strom nachts weniger kostet.
-                        Text(hasDualTariff && lowTariffHasReadings
-                             ? "Für den Nachtstrom liegen bereits Ablesungen vor. Er lässt sich deshalb nicht mehr abschalten — die Werte gingen sonst verloren."
-                             : "Für Zähler mit getrennten Preisen für Tag und Nacht. Beim Eintragen fragt die App dann nach beiden Zahlen.")
-                    }
+                    // **Ein Gerät mit zwei Zahlen darauf ist Pro** — es sei
+                    // denn, es hat sie schon. Wer den Nachtstrom vor dem Kauf
+                    // angelegt hat oder ihn aus iCloud zurückbekommt, behält
+                    // ihn samt Schalter; die Grenze greift beim Anlegen, nie
+                    // beim Behalten (Produktprinzip 5).
+                    if canUseMultipleRegisters {
+                        Section {
+                            Toggle("Zwei Preise: Tag und Nacht", isOn: $hasDualTariff)
+                                .disabled(hasDualTariff && lowTariffHasReadings)
+                        } header: {
+                            Text("Tag- und Nachtstrom")
+                        } footer: {
+                            // Weder „Doppeltarif" noch „HT/NT": Beides sind Wörter
+                            // von der Rechnung, nicht aus dem Kopf des Nutzers.
+                            // Er weiß, dass sein Strom nachts weniger kostet.
+                            Text(hasDualTariff && lowTariffHasReadings
+                                 ? "Für den Nachtstrom liegen bereits Ablesungen vor. Er lässt sich deshalb nicht mehr abschalten — die Werte gingen sonst verloren."
+                                 : "Für Zähler mit getrennten Preisen für Tag und Nacht. Beim Eintragen fragt die App dann nach beiden Zahlen.")
+                        }
 
-                    Section {
-                        Toggle("Einspeisung ins Netz", isOn: $hasFeedIn)
-                            .disabled(hasFeedIn && feedInHasReadings)
-                    } header: {
-                        Text("Photovoltaik")
-                    } footer: {
-                        // Kein Wort über Zählwerke: Der Nutzer sieht ein Gerät
-                        // mit zwei Zahlen darauf, und genau so wird es
-                        // beschrieben (Produktprinzip 6).
-                        Text(hasFeedIn && feedInHasReadings
-                             ? "Für die Einspeisung liegen bereits Ablesungen vor. Sie lässt sich deshalb nicht mehr abschalten — die Werte gingen sonst verloren."
-                             : "Für Zähler, die in beide Richtungen zählen. Beim Eintragen fragt die App dann nach beiden Zahlen — erst Bezug, dann Einspeisung.")
+                        Section {
+                            Toggle("Einspeisung ins Netz", isOn: $hasFeedIn)
+                                .disabled(hasFeedIn && feedInHasReadings)
+                        } header: {
+                            Text("Photovoltaik")
+                        } footer: {
+                            // Kein Wort über Zählwerke: Der Nutzer sieht ein Gerät
+                            // mit zwei Zahlen darauf, und genau so wird es
+                            // beschrieben (Produktprinzip 6).
+                            Text(hasFeedIn && feedInHasReadings
+                                 ? "Für die Einspeisung liegen bereits Ablesungen vor. Sie lässt sich deshalb nicht mehr abschalten — die Werte gingen sonst verloren."
+                                 : "Für Zähler, die in beide Richtungen zählen. Beim Eintragen fragt die App dann nach beiden Zahlen — erst Bezug, dann Einspeisung.")
+                        }
+                    } else {
+                        Section {
+                            ProLockRow(feature: .multipleRegisters) {
+                                openPaywall(.multipleRegisters)
+                            }
+                        } header: {
+                            Text("Tag- und Nachtstrom, Photovoltaik")
+                        }
                     }
                 }
 
@@ -567,6 +674,9 @@ struct MeterEditor: View {
                     }
                 }
             }
+            .sheet(isPresented: $showingPaywall) {
+                PaywallView(reason: paywallReason)
+            }
             .confirmationDialog("Wirklich löschen?", isPresented: $confirmingDelete, titleVisibility: .visible) {
                 Button("Löschen", role: .destructive) { deletePermanently() }
                 Button("Abbrechen", role: .cancel) { }
@@ -585,6 +695,31 @@ struct MeterEditor: View {
     /// blockiert ein leeres Feld nichts.
     @ViewBuilder
     private var priceSection: some View {
+        if !canUseTariffs {
+            // **Eine Sperre statt eines fehlenden Abschnitts.** Versteckt man
+            // „Preise" ganz, vermisst niemand sie — und niemand kauft. Die
+            // Zeile sagt, was es gibt und was es bringt, und führt mit einem
+            // Tipp zur Kaufseite.
+            //
+            // Der Abschlagsvergleich hängt mit dran: Ohne Preise gibt es
+            // nichts, wogegen sich ein Abschlag rechnen ließe. Zwei getrennte
+            // Sperren wären zwei Schlösser an derselben Tür.
+            Section {
+                ProLockRow(feature: .costsAndTariffs) {
+                    openPaywall(.costsAndTariffs)
+                }
+            } header: {
+                Text("Preise")
+            } footer: {
+                Text("Ohne Preise zeigt die App den Verbrauch — vollständig und unbegrenzt. Beträge, Abschlagsvergleich und die Vorschau aufs Jahresende kommen mit Pro dazu.")
+            }
+        } else {
+            tariffFields
+        }
+    }
+
+    @ViewBuilder
+    private var tariffFields: some View {
         Section {
             numberRow(hasDualTariff && kind == .electricity ? "Arbeitspreis tagsüber" : "Arbeitspreis",
                       unit: "€/\(billingUnitSymbol)", spokenUnit: "Euro je \(billingUnitSymbol)",

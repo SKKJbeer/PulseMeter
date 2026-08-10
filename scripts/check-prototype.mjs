@@ -156,6 +156,53 @@ for (const scheme of ["light", "dark"]) {
          "Das Wort aus der Wortliste steht auch im Export nicht");
   }
 
+  // --- Die Grenze zwischen Kostenlos und Pro
+  //
+  // Geprüft wird nicht, dass etwas gesperrt ist, sondern dass die Sperre
+  // **erklärt** und weiterführt: ein Knopf, der in eine Sackgasse läuft, wäre
+  // schlimmer als gar keine Grenze (Produktprinzip 4).
+  await page.locator('[data-pane="meters"]').first().click();
+  await page.waitForTimeout(200);
+  await page.locator('[data-pro="0"]').first().click();
+  await page.waitForTimeout(250);
+
+  const grenze = await page.evaluate(() => ({
+    hinweis: document.getElementById("limit-note").textContent.trim(),
+    zaehler: METERS.length
+  }));
+  note(grenze.zaehler > 2 && /Kostenlos sind 2 Zähler/.test(grenze.hinweis),
+       `Die Grenze steht da, bevor jemand dagegenläuft („${grenze.hinweis}“)`);
+
+  await page.locator("#add-meter").click();
+  await page.waitForTimeout(300);
+  const kaufseite = await page.evaluate(() => ({
+    offen: document.getElementById("sheet-pro").classList.contains("on"),
+    text: document.getElementById("pro-body").innerText,
+    erste: (document.querySelector("#pro-body .rl") || {}).innerText || ""
+  }));
+  note(kaufseite.offen, "Die Grenze führt zur Kaufseite statt ins Leere");
+  note(/Unbegrenzt viele Zähler/.test(kaufseite.erste),
+       "Der Grund steht zuerst — wer am dritten Zähler hängt, liest nicht über PDF-Berichte");
+  note(/Der Export\s+bleibt kostenlos/.test(kaufseite.text.replace(/\s+/g, " "))
+       || /Export bleibt kostenlos/.test(kaufseite.text.replace(/\s+/g, " ")),
+       "Die Kaufseite sagt, was kostenlos bleibt");
+
+  // Nichts versprechen, was es noch nicht gibt: Foto-Belege und
+  // Siri-Kurzbefehle sind aus 1.0 gestrichen (docs/07-v1-plan.md).
+  const zuviel = ["Foto", "Beleg", "Siri", "Kurzbefehl"].filter(w => kaufseite.text.includes(w));
+  note(zuviel.length === 0,
+       `Die Kaufseite verspricht nichts aus 1.1${zuviel.length ? ": " + zuviel.join(", ") : ""}`);
+
+  // Und der Kauf hebt sie auf.
+  await page.locator("#pro-buy").click();
+  await page.waitForTimeout(350);
+  await page.locator("#add-meter").click();
+  await page.waitForTimeout(300);
+  note(await page.locator("#sheet-editor").evaluate(el => el.classList.contains("on")),
+       "Nach dem Kauf öffnet derselbe Knopf wieder das Formular");
+  await page.locator("#sheet-editor [data-close]").first().click();
+  await page.waitForTimeout(250);
+
   // --- Darstellung
   const overflow = await page.evaluate(() =>
     document.documentElement.scrollWidth > document.documentElement.clientWidth);

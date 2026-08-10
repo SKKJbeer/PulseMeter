@@ -54,7 +54,12 @@ shoot() {
   shift 2
   xcrun simctl ui "$DEVICE" appearance "$mode" >/dev/null 2>&1 || true
   xcrun simctl terminate "$DEVICE" com.pulsemeter.app >/dev/null 2>&1 || true
-  xcrun simctl launch "$DEVICE" com.pulsemeter.app -pulse-reset "$@" >/dev/null
+  # `-pulse-pro` gehört zum Ausgangszustand wie `-pulse-reset`: Die
+  # Beispieldaten führen vier Zähler mit Preisen, Abschlag und Einspeisung —
+  # also lauter Dinge, die seit 0.35.0 Pro sind. Ohne den Schalter zeigten
+  # sämtliche Bilder eine App voller Schlösser und wären als Beleg wertlos.
+  # Der Zustand *vor* dem Kauf bekommt eigene Bilder, weiter unten.
+  xcrun simctl launch "$DEVICE" com.pulsemeter.app -pulse-reset -pulse-pro "$@" >/dev/null
   sleep "${PULSE_WARTEN:-4}"
   xcrun simctl io "$DEVICE" screenshot "$OUTDIR/$name.png"
   echo "Screenshot: $OUTDIR/$name.png (nach ${PULSE_WARTEN:-4}s)"
@@ -76,6 +81,19 @@ shoot light screenshot-leer-light -pulse-empty
 shoot dark  screenshot-leer-dark  -pulse-empty
 shoot light screenshot-zaehler-light -pulse-zaehler
 shoot dark  screenshot-zaehler-dark  -pulse-zaehler
+
+# Der Zustand vor dem Kauf.
+#
+# `-pulse-frei` überstimmt das `-pulse-pro` von oben — die Reihenfolge der
+# Schalter ist egal, `Purchase` liest `-pulse-pro` zuerst und `-pulse-frei`
+# danach. Zwei Bilder, die es vorher nicht geben konnte: die Grenze am
+# Zähler-Schirm und die Kaufseite selbst. Beide gehen in den App Store, und
+# beide sind die einzige Stelle, an der sich sehen lässt, ob eine Sperre
+# einladend wirkt oder nach Erpressung aussieht.
+shoot light screenshot-grenze-light -pulse-zaehler -pulse-frei
+shoot dark  screenshot-grenze-dark  -pulse-zaehler -pulse-frei
+shoot light screenshot-pro-light -pulse-kaufen -pulse-frei
+shoot dark  screenshot-pro-dark  -pulse-kaufen -pulse-frei
 
 # Größte Schriftgröße, die iOS anbietet.
 #

@@ -15,7 +15,7 @@ struct RootView: View {
     @State private var tab: Int = {
         let arguments = ProcessInfo.processInfo.arguments
         if arguments.contains("-pulse-verlauf") || arguments.contains("-pulse-bericht") { return 1 }
-        if arguments.contains("-pulse-zaehler") { return 2 }
+        if arguments.contains("-pulse-zaehler") || arguments.contains("-pulse-kaufen") { return 2 }
         return 0
     }()
 
@@ -716,4 +716,5 @@ struct OverviewView: View {
 #Preview {
     RootView()
         .modelContainer(try! PulseStore.container(inMemory: true, cloudKit: false))
+        .environment(Purchase())
 }

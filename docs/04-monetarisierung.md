@@ -28,6 +28,14 @@ Die Nutzungsfrequenz einer Zähler-App liegt bei 1–12 Öffnungen pro Jahr und 
 
 ### Struktur
 
+> **Seit 0.35.0 ist diese Struktur gebaut**, nicht mehr nur beschrieben. Die
+> Grenze steht in `AccessPolicy` (PulseCore), die Leistungen in `ProFeature`,
+> und beide sind geprüft. Was hier steht und was die App tut, darf nicht
+> auseinanderlaufen — Änderungen an dieser Liste gehören in denselben Zug.
+>
+> Eine Regel gilt dabei über allem: **Gesperrt ist das Anlegen, nie das
+> Benutzen.** Ein Bestand über der Grenze bleibt vollständig zugänglich.
+
 **Kostenlos — dauerhaft, ohne Zeitlimit**
 - Bis zu **2 Zähler**
 - Unbegrenzt viele Ablesungen, unbegrenzte Historie

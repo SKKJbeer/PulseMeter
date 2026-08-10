@@ -42,9 +42,15 @@ final class LaunchTests: XCTestCase {
     /// vorherige hinterlassen hat. Genau daran ist dieser Testsatz beim ersten
     /// Lauf gescheitert — der Erfassungstest trug beim obersten Zähler einen
     /// Stand ein und räumte damit die Fälligkeit weg, die der nächste erwartete.
+    /// **Warum `-pulse-pro` überall dabeisteht.** Seit 0.35.0 gibt es eine
+    /// Grenze zwischen Kostenlos und Pro, und die Beispieldaten liegen
+    /// vollständig darüber: vier Zähler, Preise, Abschlag, Einspeisung, zwei
+    /// Arbeitspreise. Ohne den Schalter prüften alle Abläufe hier die App
+    /// hinter einem Schloss — und der dritte Zähler ließe sich gar nicht mehr
+    /// anlegen. Der Zustand *vor* dem Kauf hat eigene Prüfungen, weiter unten.
     private func launchWithData() -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = ["-pulse-reset"]
+        app.launchArguments = ["-pulse-reset", "-pulse-pro"]
         app.launch()
         XCTAssertTrue(app.staticTexts["Strom"].waitForExistence(timeout: 15),
                       "Die Beispieldaten wurden nicht angelegt")
@@ -91,7 +97,7 @@ final class LaunchTests: XCTestCase {
     /// als wäre nichts verbraucht worden statt als wäre nichts bekannt.
     private func launchEmpty() -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = ["-pulse-empty"]
+        app.launchArguments = ["-pulse-empty", "-pulse-pro"]
         app.launch()
         return app
     }
@@ -459,7 +465,7 @@ final class LaunchTests: XCTestCase {
     /// gesehen, weil jeder von ihnen in der Übersicht beginnt.
     func testFixtureAppliesRegardlessOfTheOpeningScreen() {
         let empty = XCUIApplication()
-        empty.launchArguments = ["-pulse-empty"]
+        empty.launchArguments = ["-pulse-empty", "-pulse-pro"]
         empty.launch()
         XCTAssertTrue(empty.staticTexts["Noch kein Zähler"].waitForExistence(timeout: 15))
         empty.terminate()
@@ -467,7 +473,7 @@ final class LaunchTests: XCTestCase {
         // Derselbe Simulator, direkt in den Zähler-Schirm. Ohne die Verlagerung
         // in `LaunchFixture` stünde hier der leere Bestand des Laufs davor.
         let app = XCUIApplication()
-        app.launchArguments = ["-pulse-reset", "-pulse-zaehler"]
+        app.launchArguments = ["-pulse-reset", "-pulse-pro", "-pulse-zaehler"]
         app.launch()
 
         XCTAssertTrue(app.staticTexts["Zähler"].waitForExistence(timeout: 15),
@@ -492,7 +498,7 @@ final class LaunchTests: XCTestCase {
     /// dem sich ein Fehler beliebig lange hält.
     func testCapturingBothDirectionsInOneGo() {
         let app = XCUIApplication()
-        app.launchArguments = ["-pulse-reset", "-pulse-capture-pv"]
+        app.launchArguments = ["-pulse-reset", "-pulse-pro", "-pulse-capture-pv"]
         app.launch()
 
         // Über den Anfang der Beschriftung: Seit 0.29.0 stehen Zählwerkname und
@@ -588,7 +594,7 @@ final class LaunchTests: XCTestCase {
     /// Die eigentliche Messung gehört auf ein Gerät und ist offen.
     func testLaunchReachesTheFirstFigureQuickly() {
         let app = XCUIApplication()
-        app.launchArguments = ["-pulse-reset"]
+        app.launchArguments = ["-pulse-reset", "-pulse-pro"]
 
         let started = Date()
         app.launch()
@@ -871,5 +877,130 @@ final class LaunchTests: XCTestCase {
         ).firstMatch
         XCTAssertTrue(nieder.exists,
                       "Der Niedertarif fehlt im Bericht — genau der Fehler, den es zu vermeiden gilt")
+    }
+
+    // MARK: - Vor dem Kauf
+
+    /// Startet mit den Beispieldaten, aber **ohne** Pro.
+    ///
+    /// Genau der Zustand, in dem ein Nutzer nach zwei Wochen steht, wenn ihm
+    /// die App gefällt: Zahlen da, Nutzen erkannt, Grenze erreicht.
+    private func launchFree(_ extra: String...) -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchArguments = ["-pulse-reset", "-pulse-frei"] + extra
+        app.launch()
+        return app
+    }
+
+    /// Die Grenze führt zur Kaufseite, nicht in eine Sackgasse.
+    ///
+    /// Der Knopf „Zähler hinzufügen" bleibt sichtbar und bedienbar; er
+    /// erklärt, warum es nicht weitergeht. Ein ausgegrauter Knopf hätte
+    /// dasselbe verhindert und nichts erklärt — Produktprinzip 4.
+    func testTheMeterLimitLeadsToThePurchasePage() {
+        let app = launchFree("-pulse-zaehler")
+
+        let hinzu = app.buttons["Zähler hinzufügen"]
+        XCTAssertTrue(hinzu.waitForExistence(timeout: 15),
+                      "Der Knopf zum Anlegen fehlt — er muss auch an der Grenze dastehen")
+
+        let hinweis = app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS 'Kostenlos sind'")
+        ).firstMatch
+        XCTAssertTrue(hinweis.waitForExistence(timeout: erscheint),
+                      "Die Grenze muss dastehen, bevor jemand dagegenläuft")
+
+        hinzu.tap()
+        XCTAssertTrue(app.staticTexts["PulseMeter Pro"].waitForExistence(timeout: erscheint),
+                      "Die Kaufseite kam nicht")
+        // Der Grund steht zuerst: Wer am dritten Zähler hängt, will nicht
+        // über PDF-Berichte lesen.
+        XCTAssertTrue(app.staticTexts["Unbegrenzt viele Zähler"].exists,
+                      "Die Leistung, an der es gerade hakte, fehlt auf der Kaufseite")
+        XCTAssertFalse(app.staticTexts["Neuer Zähler"].exists,
+                       "Ohne Pro darf sich kein weiteres Formular öffnen")
+    }
+
+    /// **Die wichtigste Prüfung dieser Gruppe.** Was schon da ist, bleibt
+    /// benutzbar — auch wenn es über der Grenze liegt.
+    ///
+    /// Die Beispieldaten führen vier Zähler mit Preisen und zwei
+    /// Arbeitspreisen. Ein Bestand über der Grenze ist real: über iCloud, über
+    /// die Beispieldaten, über einen Kauf auf einem anderen Gerät, der noch
+    /// nicht angekommen ist. Nähme die App dem Nutzer dann seine eigenen
+    /// Zahlen weg, wäre das ein Vertrauensbruch und kein Verkaufsargument
+    /// (Produktprinzip 5).
+    func testExistingMetersStayUsableWithoutPro() {
+        let app = launchFree()
+
+        // Alle vier Karten stehen, mit Zahlen.
+        for name in ["Strom", "Wasser", "Gas", "Wärmepumpe"] {
+            XCTAssertTrue(app.staticTexts[name].waitForExistence(timeout: erscheint),
+                          "\(name) fehlt — ohne Pro wird nichts weggenommen")
+        }
+
+        // Und ablesen geht auch.
+        let eintragen = app.buttons.matching(
+            NSPredicate(format: "label BEGINSWITH 'Stand eintragen'")
+        ).firstMatch
+        XCTAssertTrue(eintragen.waitForExistence(timeout: erscheint),
+                      "Ablesen ist nie Pro — es ist der Zweck der App")
+        eintragen.tap()
+        XCTAssertTrue(app.buttons["1"].waitForExistence(timeout: erscheint),
+                      "Der Ziffernblock erschien nicht")
+    }
+
+    /// Der Bericht ist Pro, der Export nicht — und beide stehen untereinander.
+    ///
+    /// Diese Prüfung ist die Bremse gegen den Tag, an dem jemand den Export
+    /// „auch noch" hinter die Schranke zieht. Er ist Produktprinzip 5 und das
+    /// stärkste Argument gegen die Angst, die Menschen bei Excel hält.
+    func testTheReportIsProAndTheExportNeverIs() {
+        let app = launchFree("-pulse-verlauf")
+
+        let bericht = app.buttons.containing(
+            NSPredicate(format: "label CONTAINS 'Verbrauchsbericht'")
+        ).firstMatch
+        XCTAssertTrue(bericht.waitForExistence(timeout: 15),
+                      "Die Berichtszeile fehlt im Verlauf")
+
+        // Der Export steht darüber und ist offen.
+        XCTAssertTrue(app.buttons["Ablesungen"].exists || app.buttons["Auswertung"].exists,
+                      "Der Export muss ohne Pro erreichbar sein — dauerhaft")
+
+        bericht.tap()
+        XCTAssertTrue(app.staticTexts["PulseMeter Pro"].waitForExistence(timeout: erscheint),
+                      "Der Bericht muss ohne Pro zur Kaufseite führen")
+        XCTAssertTrue(app.staticTexts["Bericht als PDF"].exists,
+                      "Die Kaufseite nennt die Leistung nicht, an der es hakte")
+    }
+
+    /// Die Kaufseite verspricht nichts, was es noch nicht gibt.
+    ///
+    /// Foto-Belege und Siri-Kurzbefehle sind aus 1.0 gestrichen
+    /// (`docs/07-v1-plan.md`). Ein verkauftes Merkmal, das es nicht gibt, ist
+    /// eine Rückerstattung, eine schlechte Bewertung und im Zweifel eine
+    /// Ablehnung durch die Prüfung. Der Rechenkern hält das schon fest; hier
+    /// wird geprüft, dass auch der fertige Schirm nichts anderes zeigt.
+    func testThePurchasePagePromisesOnlyWhatExists() {
+        let app = launchFree("-pulse-kaufen")
+
+        XCTAssertTrue(app.staticTexts["PulseMeter Pro"].waitForExistence(timeout: 15),
+                      "Die Kaufseite kam nicht")
+        for verboten in ["Foto", "Beleg", "Siri", "Kurzbefehl", "Abo"] {
+            let treffer = app.staticTexts.containing(
+                NSPredicate(format: "label CONTAINS[c] %@", verboten)
+            ).firstMatch
+            // „Kein Abo" darf dastehen — das Wort allein aber nur so.
+            if verboten == "Abo" {
+                if treffer.exists {
+                    XCTAssertTrue(treffer.label.contains("Kein Abo"),
+                                  "Das Wort Abo darf nur in der Zusage stehen, dass es keins ist")
+                }
+                continue
+            }
+            XCTAssertFalse(treffer.exists,
+                           "\(verboten) steht auf der Kaufseite, kommt aber erst mit 1.1")
+        }
     }
 }

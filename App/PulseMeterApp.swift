@@ -7,6 +7,13 @@ struct PulseMeterApp: App {
 
     private let container: ModelContainer
 
+    /// Der Kaufzustand, einmal für die ganze App.
+    ///
+    /// Hier und nicht in einer Ansicht: Vier Stellen fragen ihn, und vier
+    /// eigene Kopien wären vier Gelegenheiten, dass eine davon nach einem Kauf
+    /// noch die alte Antwort gibt.
+    @State private var purchase = Purchase()
+
     init() {
         // CloudKit bleibt vorerst aus. Die Synchronisation verlangt die
         // iCloud-Berechtigung am Target; fehlt sie, schlägt schon der Aufbau
@@ -31,6 +38,7 @@ struct PulseMeterApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
+                .environment(purchase)
         }
         .modelContainer(container)
     }

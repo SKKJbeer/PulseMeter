@@ -667,7 +667,7 @@ select.field { cursor: pointer; }
 
 <div class="stage-head">
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.34.1</p>
+  <p>Klickbarer Entwurf · v0.35.0</p>
 </div>
 
 <div class="device">
@@ -765,12 +765,22 @@ select.field { cursor: pointer; }
       <button type="button" class="save" id="add-meter" style="--c:var(--tint);margin-top:14px">
         Zähler hinzufügen
       </button>
+      <div class="note" id="limit-note" style="text-align:center"></div>
       <div class="section-label">Erinnerungen</div>
       <div class="list">
         <div class="row"><div class="rl">Monatlich am 1.<small>Für Strom, Wasser, Wärmepumpe</small></div><div class="rv" style="color:var(--good)">An</div></div>
         <div class="row"><div class="rl">Gas<small>Monatlich am 1.</small></div><div class="rv" style="color:var(--good)">An</div></div>
       </div>
-      <div class="note">Der Entwurf zeigt keine Bezahlschranke. Kosten, Prognose und Belegfotos wären in der fertigen App Pro-Funktionen — die Erfassung selbst bleibt immer frei.</div>
+      <div class="section-label">Nur im Entwurf</div>
+      <div class="list">
+        <div class="row">
+          <div class="rl">Kaufzustand<small>Zum Ansehen beider Seiten der Grenze — in der App gibt es diesen Schalter nicht</small></div>
+          <div class="segmented" style="flex:0 0 auto;width:170px">
+            <button type="button" data-pro="0" aria-selected="false">Kostenlos</button>
+            <button type="button" data-pro="1" aria-selected="true">Pro</button>
+          </div>
+        </div>
+      </div>
     </section>
   </div>
 
@@ -861,6 +871,16 @@ select.field { cursor: pointer; }
       <button type="button" class="sheet-close" data-close>Fertig</button>
     </div>
     <div class="sheet-body" id="ex2-body"></div>
+  </div>
+
+  <!-- Kaufseite -->
+  <div class="sheet" id="sheet-pro" role="dialog" aria-modal="true" aria-label="PulseMeter Pro">
+    <div class="grabber"></div>
+    <div class="sheet-head">
+      <div class="sheet-title">PulseMeter Pro</div>
+      <button type="button" class="sheet-close" data-close>Fertig</button>
+    </div>
+    <div class="sheet-body" id="pro-body"></div>
   </div>
 
   <!-- Erklärung -->
@@ -2361,6 +2381,91 @@ function renderHistory() {
 }
 
 /* ============================================================
+   Die Grenze zwischen Kostenlos und Pro
+
+   Spiegelt `AccessPolicy` und `ProFeature` aus PulseCore — dieselben Wörter,
+   dieselbe Grenze, dieselbe Regel. Weichen beide voneinander ab, ist das ein
+   Fehler und kein Zustand (CLAUDE.md, Regel 2).
+
+   Die wichtigste Regel steht in `mayAddMeter`: Gesperrt ist das **Anlegen**,
+   nie das Benutzen. Was schon da ist, bleibt vollständig zugänglich —
+   Produktprinzip 5.
+   ============================================================ */
+let PRO = true;
+const FREE_METER_LIMIT = 2;
+
+const PRO_FEATURES = [
+  { id: "additionalMeters",     title: "Unbegrenzt viele Zähler",
+    text: "Kostenlos sind zwei. Wer Strom, Gas und Wasser führt, braucht den dritten." },
+  { id: "multipleRegisters",    title: "Tag- und Nachtstrom, Einspeisung",
+    text: "Ein Gerät mit zwei Zahlen darauf: Nachtstrom, Wärmepumpe, Wallbox oder eine Anlage auf dem Dach." },
+  { id: "costsAndTariffs",      title: "Kosten und Preise",
+    text: "Zwei Zahlen von der Rechnung, und aus dem Verbrauch wird ein Betrag." },
+  { id: "prepaymentComparison", title: "Abschlagsvergleich",
+    text: "Zeigt vor der Abrechnung, ob eine Nachzahlung kommt oder Geld zurück." },
+  { id: "yearlyForecast",       title: "Vorschau aufs Jahresende",
+    text: "Rechnet den angefangenen Zeitraum aufs Jahr hoch." },
+  { id: "pdfReport",            title: "Bericht als PDF",
+    text: "Ein gestaltetes Dokument zum Weitergeben — an den Vermieter, den Steuerberater, das Amt." }
+];
+
+/* Archivierte zählen mit: Sie sind nicht gelöscht und lassen sich mit einem
+   Tipp zurückholen. Zählten sie nicht, wäre Archivieren ein Weg um die Grenze
+   herum. */
+function meterCount() { return METERS.length; }
+function mayAddMeter() { return PRO || meterCount() < FREE_METER_LIMIT; }
+function mayUse(feature) { return PRO; }
+
+function openPaywall(reasonID) {
+  const sorted = reasonID
+    ? [PRO_FEATURES.find(f => f.id === reasonID)].concat(PRO_FEATURES.filter(f => f.id !== reasonID))
+    : PRO_FEATURES;
+  document.getElementById("pro-body").innerHTML = `
+    <div class="capture-meta" style="margin-bottom:12px"><b>Einmal kaufen, für immer behalten.</b>
+    Kein Abo. Keine laufenden Kosten. Der Kauf gilt auf allen deinen Geräten.</div>
+    <div class="list">
+      ${sorted.map(f => `<div class="row">
+        <div class="rl"${f.id === reasonID ? ' style="font-weight:600"' : ""}>${f.title}<small>${f.text}</small></div>
+      </div>`).join("")}
+    </div>
+    <div class="section-label">Dauerhaft kostenlos</div>
+    <div class="note">Zwei Zähler, unbegrenzt viele Ablesungen, die ganze Historie, der
+    Vorjahresvergleich, Erinnerungen — und der Export deiner Daten als Tabelle. Der Export
+    bleibt kostenlos, auch wenn du nie kaufst.</div>
+    <button type="button" class="save" id="pro-buy" style="--c:var(--tint)">Pro kaufen — 14,99 €</button>
+    <div class="note">Im Entwurf schaltet der Knopf frei, ohne zu bezahlen. In der App
+    übernimmt das StoreKit, sobald PulseMeter im App Store ist.</div>`;
+  openSheet("sheet-pro");
+  document.getElementById("pro-buy").onclick = () => {
+    setPro(true);
+    closeSheets();
+    const t = document.getElementById("toast");
+    document.getElementById("toast-text").textContent = "Pro freigeschaltet";
+    t.classList.add("on");
+    setTimeout(() => t.classList.remove("on"), 1250);
+    renderAll();
+  };
+}
+
+function setPro(on) {
+  PRO = on;
+  document.querySelectorAll("[data-pro]").forEach(b =>
+    b.setAttribute("aria-selected", String((b.dataset.pro === "1") === on)));
+  renderLimitNote();
+  renderCards();
+}
+
+function renderLimitNote() {
+  const note = document.getElementById("limit-note");
+  if (!note) return;
+  const rest = PRO ? null : Math.max(0, FREE_METER_LIMIT - meterCount());
+  note.textContent = rest === null ? ""
+    : rest === 0 ? `Kostenlos sind ${FREE_METER_LIMIT} Zähler. Mit Pro werden es beliebig viele.`
+    : rest === 1 ? "Noch ein Zähler ist kostenlos."
+    : `Noch ${rest} Zähler sind kostenlos.`;
+}
+
+/* ============================================================
    Zählerliste
    ============================================================ */
 function renderMeterList() {
@@ -2407,6 +2512,11 @@ function openMeterEditor(id) {
   editMeter = id ? METERS.find(m => m.id === id) : null;
   const readingCount = editMeter ? editMeter.registers[0].readings.length : 0;
   const kindID = editMeter ? (editMeter.kind || "electricity") : "electricity";
+  /* Wer schon einen Preis hinterlegt hat, behält ihn — sonst stünden auf der
+     Übersicht Beträge, die sich nicht mehr nachsehen und nicht berichtigen
+     ließen (Produktprinzip 4). Dieselbe Regel wie `canUseTariffs` in
+     `MeterEditor`. */
+  const priceOpen = mayUse("costsAndTariffs") || !!(editMeter && editMeter.price);
 
   document.getElementById("editor-title").textContent = editMeter ? "Zähler" : "Neuer Zähler";
   document.getElementById("editor-body").innerHTML = `
@@ -2424,6 +2534,17 @@ function openMeterEditor(id) {
       ? `Die Art lässt sich nicht mehr ändern, weil für diesen Zähler schon ${readingCount} Ablesungen vorliegen — sie sind in ${editMeter.unit} erfasst.`
       : "Legt Einheit und Aussehen fest."}</div>
 
+    ${!priceOpen ? `
+    <div class="section-label">Preise</div>
+    <div class="list">
+      <button type="button" class="rowbtn" data-unlock="costsAndTariffs">
+        <div class="rl">Kosten und Preise<small>Zwei Zahlen von der Rechnung, und aus dem Verbrauch wird ein Betrag.</small></div>
+        <span class="freebadge pro">Pro</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+      </button>
+    </div>
+    <div class="note">Ohne Preise zeigt die App den Verbrauch — vollständig und unbegrenzt.
+    Beträge, Abschlagsvergleich und die Vorschau aufs Jahresende kommen mit Pro dazu.</div>` : `
     <div class="section-label">Preise</div>
     <div class="list">
       <div class="row"><div class="rl">Arbeitspreis</div>
@@ -2454,7 +2575,7 @@ function openMeterEditor(id) {
     </div>
     <div class="note">${kindID === "gas"
       ? "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Zustandszahl und Brennwert stehen auf deiner Gasrechnung; ohne sie lässt sich aus m³ kein Betrag bilden. Mit dem Abschlag rechnet die App aus, ob am Jahresende ein Guthaben oder eine Nachzahlung zu erwarten ist."
-      : "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Alle Zahlen stehen auf deiner Jahresrechnung. Mit dem Abschlag rechnet die App aus, ob am Jahresende ein Guthaben oder eine Nachzahlung zu erwarten ist."}</div>
+      : "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Alle Zahlen stehen auf deiner Jahresrechnung. Mit dem Abschlag rechnet die App aus, ob am Jahresende ein Guthaben oder eine Nachzahlung zu erwarten ist."}</div>`}
 
     <div class="section-label">Wie oft ablesen?</div>
     <div class="list"><div class="row"><select class="field" id="ed-interval">
@@ -2777,6 +2898,7 @@ function renderAll() {
   renderPicker();
   renderHistory();
   renderMeterList();
+  renderLimitNote();
 }
 
 /* Tastenfeld aufbauen */
@@ -2886,10 +3008,17 @@ function refreshAfterMeterChange() {
 
 /* Ereignisse */
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-capture],[data-meterchange],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export],[data-month],[data-open],[data-scope],[data-period],[data-meter],#add-meter,#first-meter,#ed-save,#ed-archive,#ed-delete");
+  const t = e.target.closest("[data-capture],[data-meterchange],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export],[data-month],[data-open],[data-scope],[data-period],[data-meter],[data-pro],[data-unlock],#add-meter,#first-meter,#ed-save,#ed-archive,#ed-delete");
   if (!t) return;
 
-  if (t.id === "add-meter" || t.id === "first-meter") return openMeterEditor(null);
+  if (t.dataset.pro !== undefined) return setPro(t.dataset.pro === "1");
+  if (t.dataset.unlock) return openPaywall(t.dataset.unlock);
+
+  // Der Knopf bleibt derselbe und führt zur Kaufseite statt ins Leere. Ihn
+  // auszugrauen verhinderte dasselbe und erklärte nichts — Produktprinzip 4.
+  if (t.id === "add-meter" || t.id === "first-meter") {
+    return mayAddMeter() ? openMeterEditor(null) : openPaywall("additionalMeters");
+  }
   if (t.dataset.meter) return openMeterEditor(t.dataset.meter);
   if (t.id === "ed-save") return saveMeter();
   if (t.id === "ed-archive") return archiveMeter();
@@ -2953,7 +3082,9 @@ document.addEventListener("click", e => {
     return renderTable();
   }
   if (t.dataset.open === "readings") return openSheet("sheet-readings");
-  if (t.dataset.open === "report") return openReportConfig();
+  if (t.dataset.open === "report") {
+    return mayUse("pdfReport") ? openReportConfig() : openPaywall("pdfReport");
+  }
   if (t.dataset.scope) { repScope = t.dataset.scope; return openReportConfig(); }
   if (t.dataset.period) { repPeriod = t.dataset.period; return openReportConfig(); }
   if (t.dataset.export) return openExport(t.dataset.export);

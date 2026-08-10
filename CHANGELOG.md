@@ -9,6 +9,85 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.35.0 — 2026-08-10
+
+**Die Grenze zwischen Kostenlos und Pro stand bisher nur im Dokument. Jetzt
+steht sie im Code — und sie nimmt niemandem etwas weg.**
+
+Bis heute war in PulseMeter alles kostenlos. `docs/04-monetarisierung.md`
+beschreibt seit dem 4. August zwei Zähler frei und den Rest hinter einem
+Einmalkauf; in der App gab es dazu **keine einzige Zeile** — kein `isPro`,
+keine Grenze, keine Sperre. Der Weg zu 1.0 führte das als „Paywall, StoreKit 2,
+Kaufwiederherstellung", also als den Verkaufsteil. Der Sperrteil fehlte
+vollständig und ist der größere von beiden.
+
+### Neu
+
+- **`AccessPolicy` in `PulseCore`** — die Grenze an einer Stelle, ohne
+  Simulator prüfbar. `ProFeature` zählt die sechs Leistungen auf und trägt
+  ihre Beschriftungen selbst; vorher standen dieselben Wörter in drei
+  Fassungen (Dokument, App, Entwurf), und drei Fassungen laufen auseinander.
+- **Vier Sperren in der App:** der dritte Zähler, das zweite Zählwerk (Tag- und
+  Nachtstrom, Einspeisung), der Abschnitt Preise, der PDF-Bericht.
+- **Eine Kaufseite**, die erklärt statt zu drängen: kein Countdown, keine
+  durchgestrichenen Preise. Die Leistung, an der es gerade hakte, steht zuerst
+  — wer am dritten Zähler hängt, will nicht über PDF-Berichte lesen. Daneben
+  ein Absatz darüber, was **dauerhaft kostenlos** bleibt.
+- **`PurchaseGateway`** als Protokoll mit einer ehrlichen Fassung ohne Kauf.
+  Solange die App nicht im Store ist, zeigt die Kaufseite **keinen** Knopf, der
+  ins Leere greift, sondern den Grund. StoreKit ist damit eine Datei und kein
+  Umbau — es braucht nur noch das Apple Developer Program.
+- **Zwei neue Bildschirmfotos** in Hell und Dunkel: die Grenze am
+  Zähler-Schirm und die Kaufseite. Beide gehen später in den App Store, und
+  beide sind die einzige Stelle, an der sich sehen lässt, ob eine Sperre
+  einladend wirkt oder nach Erpressung aussieht.
+
+### Die Regel, auf die es ankommt
+
+**Gesperrt ist das Anlegen, nie das Benutzen.** Was schon da ist, bleibt
+vollständig zugänglich: Ein Zähler mit Nachtstrom behält seinen Schalter, ein
+Zähler mit Preisen behält seinen Preisabschnitt, alle Ablesungen bleiben
+erfassbar, der Export bleibt offen.
+
+Ein Bestand über der Grenze ist real — über iCloud, über die Beispieldaten,
+über einen Kauf auf einem anderen Gerät, der noch nicht angekommen ist. Nähme
+die App dem Nutzer dann seine eigenen Zahlen weg, wäre das ein Vertrauensbruch
+und kein Verkaufsargument (Produktprinzip 5). Dass Pro ein **Einmalkauf** ist
+und nicht abläuft, macht die Regel obendrein billig: Aus Pro kann niemand
+herausfallen.
+
+Der Export bleibt kostenlos, und zwei Prüfungen halten das fest — eine im
+Rechenkern gegen die Aufzählung selbst, eine an der fertigen Oberfläche. Sie
+sind die Bremse gegen den Tag, an dem jemand ihn „auch noch" hinter die
+Schranke zieht.
+
+### Geändert
+
+- Die Bildschirmfotos und alle Oberflächenprüfungen starten mit `-pulse-pro`.
+  Die Beispieldaten liegen vollständig über der Grenze — vier Zähler, Preise,
+  Abschlag, Einspeisung, zwei Arbeitspreise —, und ohne den Schalter zeigten
+  sämtliche Bilder eine App voller Schlösser.
+- Der Klick-Dummy hat die Grenze mitbekommen, samt einem Schalter, der beide
+  Seiten nebeneinanderstellt. Er ist im Entwurf sichtbar als solcher
+  gekennzeichnet — in der App gibt es ihn nicht.
+- `docs/07-v1-plan.md` nennt jetzt sechs offene Punkte, die dort fehlten: die
+  Sperrlogik (mit dieser Version erledigt), das abgeschaltete CloudKit, den
+  fehlenden Asset-Katalog, das fehlende Privacy-Manifest, die fehlende
+  Berechtigungsdatei und die Barrierefreiheit von Widget und Erfassung.
+
+### Berichtigt
+
+- Die Behauptung, Dynamic Type sei „nie angesehen worden", war falsch. Seit
+  0.27.0 fotografiert `scripts/run.sh` jeden Lauf zusätzlich in der größten
+  Schriftstufe, hell und dunkel. Nachgesehen statt weitergeschrieben.
+
+_Geprüft: 166 Prüfungen in `PulseCore` (11 neu), 56 im Klick-Dummy (12 neu),
+Syntax aller iOS-Quellen. Vier neue Oberflächenprüfungen für den Zustand vor
+dem Kauf — App-Build und Simulator laufen in der CI, nicht in diesem
+Container._
+
+---
+
 ## 0.34.1 — 2026-08-10
 
 **Eine Prüfung, die zufällig fällt, ist schlimmer als keine.**

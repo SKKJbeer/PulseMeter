@@ -12,8 +12,10 @@ import PulseUI
 struct HistoryView: View {
 
     @Environment(\.modelContext) private var context
+    @Environment(Purchase.self) private var purchase
 
     @State private var meters: [MeteringPoint] = []
+    @State private var showingPaywall = false
     @State private var selectedMeterID: MeteringPoint.ID?
     @State private var granularity: PeriodEngine.Granularity = .month
     @State private var buckets: [PeriodEngine.Bucket] = []
@@ -108,6 +110,9 @@ struct HistoryView: View {
                 ReadingsList(readings: readings, unit: unit,
                              fractionDigits: register?.fractionDigits ?? 1,
                              labels: registerLabels)
+            }
+            .sheet(isPresented: $showingPaywall) {
+                PaywallView(reason: .pdfReport)
             }
         }
     }
@@ -317,10 +322,17 @@ struct HistoryView: View {
     /// danach Papier, keine Tabelle.
     private var reportRow: some View {
         Button {
-            showingReport = true
+            // Der Bericht ist Pro; der Export darüber bleibt es nie. Beide
+            // Zeilen stehen bewusst untereinander — so ist ohne ein Wort zu
+            // sehen, dass die Daten frei sind und nur das Dokument kostet.
+            if purchase.allows(.pdfReport) {
+                showingReport = true
+            } else {
+                showingPaywall = true
+            }
         } label: {
             HStack(spacing: 10) {
-                Image(systemName: "doc.text")
+                Image(systemName: purchase.allows(.pdfReport) ? "doc.text" : "lock")
                     .accessibilityHidden(true)
                     .font(.system(.subheadline, weight: .semibold))
                     .foregroundStyle(PulseColor.tint)
@@ -334,6 +346,7 @@ struct HistoryView: View {
                         .multilineTextAlignment(.leading)
                 }
                 Spacer(minLength: 8)
+                if !purchase.allows(.pdfReport) { ProBadge() }
                 Image(systemName: "chevron.right")
                     .accessibilityHidden(true)
                     .font(.system(.footnote, weight: .semibold))
@@ -350,6 +363,13 @@ struct HistoryView: View {
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
+        // Ohne diesen Zusatz sagte VoiceOver nur „Verbrauchsbericht,
+        // gestaltetes Dokument…" — und führte auf die Kaufseite, ohne dass
+        // vorher irgendwo das Wort Pro gefallen wäre.
+        .accessibilityValue(purchase.allows(.pdfReport) ? "" : "Mit Pro")
+        .accessibilityHint(purchase.allows(.pdfReport)
+                           ? "Öffnet den Bericht"
+                           : "Doppeltippen, um PulseMeter Pro anzusehen")
     }
 
     private func exportLabel(_ text: String) -> some View {
