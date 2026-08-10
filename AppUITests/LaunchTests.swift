@@ -13,6 +13,25 @@ import XCTest
 @MainActor
 final class LaunchTests: XCTestCase {
 
+    /// Wie lange auf ein Element gewartet wird, das gleich erscheinen soll.
+    ///
+    /// **Zehn Sekunden, nicht fünf — und das ist gemessen, nicht geschätzt.**
+    /// Mit 0.34.0 fiel `testAddingAMeterFromTheMetersTab` mit „Die Schaltfläche
+    /// zum Anlegen fehlt", nach 55 Sekunden. Derselbe Commit, noch einmal
+    /// gelaufen, war grün: Es lag nicht am Code, sondern an der Uhr.
+    ///
+    /// Die Oberflächenprüfungen laufen auf **drei geklonten Simulatoren
+    /// gleichzeitig** (`-parallel-testing-enabled` in `scripts/pruefen.sh`).
+    /// Unter dieser Last braucht ein Tabwechsel gelegentlich länger als fünf
+    /// Sekunden — und eine Prüfung, die zufällig fällt, ist schlimmer als
+    /// keine: Sie kostet einen Lauf von fünfzehn Minuten und, schlimmer, das
+    /// Vertrauen in jeden roten Lauf danach.
+    ///
+    /// Der Preis ist gering: Länger gewartet wird nur dort, wo etwas
+    /// **wirklich** fehlt, und dann sind fünf Sekunden mehr gegen eine
+    /// verlorene Viertelstunde gerechnet.
+    private let erscheint: TimeInterval = 10
+
     override func setUp() {
         continueAfterFailure = false
     }
@@ -97,24 +116,24 @@ final class LaunchTests: XCTestCase {
         app.buttons["Ersten Zähler anlegen"].tap()
 
         let field = app.textFields["Name"]
-        XCTAssertTrue(field.waitForExistence(timeout: 5), "Das Namensfeld fehlt")
+        XCTAssertTrue(field.waitForExistence(timeout: erscheint), "Das Namensfeld fehlt")
         field.tap()
         field.typeText("Keller")
         app.buttons["Sichern"].tap()
 
         // Die Karte steht und sagt, dass noch nichts abgelesen wurde.
-        XCTAssertTrue(app.staticTexts["Keller"].waitForExistence(timeout: 5),
+        XCTAssertTrue(app.staticTexts["Keller"].waitForExistence(timeout: erscheint),
                       "Der neue Zähler erscheint nicht auf der Übersicht")
         let never = app.staticTexts.containing(
             NSPredicate(format: "label CONTAINS 'noch nie abgelesen' OR label CONTAINS 'Noch nie abgelesen'")
         ).firstMatch
-        XCTAssertTrue(never.waitForExistence(timeout: 5),
+        XCTAssertTrue(never.waitForExistence(timeout: erscheint),
                       "Ein nie abgelesener Zähler muss als solcher gemeldet werden")
 
         // Erste Ablesung eintippen — es gibt keinen Vorgängerwert zum Übernehmen.
         app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Stand eintragen'"))
             .firstMatch.tap()
-        XCTAssertTrue(app.buttons["1"].waitForExistence(timeout: 5), "Der Ziffernblock erschien nicht")
+        XCTAssertTrue(app.buttons["1"].waitForExistence(timeout: erscheint), "Der Ziffernblock erschien nicht")
         XCTAssertTrue(app.staticTexts["Erste Ablesung für diesen Zähler"].exists,
                       "Ohne Vorgänger muss das dastehen")
         for digit in ["1", "0", "0", "0", "0"] { app.buttons[digit].tap() }
@@ -132,7 +151,7 @@ final class LaunchTests: XCTestCase {
         let needsSecond = app.staticTexts.containing(
             NSPredicate(format: "label CONTAINS 'ergibt sich aus zwei Ablesungen'")
         ).firstMatch
-        XCTAssertTrue(needsSecond.waitForExistence(timeout: 5),
+        XCTAssertTrue(needsSecond.waitForExistence(timeout: erscheint),
                       "Nach der ersten Ablesung muss die Karte den zweiten Schritt nennen")
     }
 
@@ -153,7 +172,7 @@ final class LaunchTests: XCTestCase {
         let comparison = app.staticTexts.containing(
             NSPredicate(format: "label CONTAINS 'gegenüber Vorjahr'")
         ).firstMatch
-        XCTAssertTrue(comparison.waitForExistence(timeout: 5),
+        XCTAssertTrue(comparison.waitForExistence(timeout: erscheint),
                       "Es wurde kein Vorjahresvergleich angezeigt")
     }
 
@@ -164,7 +183,7 @@ final class LaunchTests: XCTestCase {
         let notice = app.staticTexts.containing(
             NSPredicate(format: "label CONTAINS 'nicht abgelesen'")
         ).firstMatch
-        XCTAssertTrue(notice.waitForExistence(timeout: 5),
+        XCTAssertTrue(notice.waitForExistence(timeout: erscheint),
                       "Der überfällige Gaszähler wurde nicht gemeldet")
     }
 
@@ -215,7 +234,7 @@ final class LaunchTests: XCTestCase {
         let outlook = app.staticTexts.containing(
             NSPredicate(format: "label CONTAINS 'Guthaben' OR label CONTAINS 'Nachzahlung'")
         ).firstMatch
-        XCTAssertTrue(outlook.waitForExistence(timeout: 5),
+        XCTAssertTrue(outlook.waitForExistence(timeout: erscheint),
                       "Mit hinterlegtem Abschlag muss eine Vorschau dastehen")
 
         // Der Wasserzähler hat bewusst keinen Abschlag — dort darf nichts
@@ -271,7 +290,7 @@ final class LaunchTests: XCTestCase {
         app.buttons["Ersten Zähler anlegen"].tap()
 
         let field = app.textFields["Name"]
-        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        XCTAssertTrue(field.waitForExistence(timeout: erscheint))
         field.tap()
         // Mit Zeilenschaltung: Die Tastatur verdeckt sonst die untere Hälfte
         // des Formulars, und das Preisfeld ist genau dort.
@@ -287,7 +306,7 @@ final class LaunchTests: XCTestCase {
         price.typeText("0,34")
 
         app.buttons["Sichern"].tap()
-        XCTAssertTrue(app.staticTexts["Strom"].waitForExistence(timeout: 5),
+        XCTAssertTrue(app.staticTexts["Strom"].waitForExistence(timeout: erscheint),
                       "Der Zähler wurde nicht gesichert")
     }
 
@@ -307,7 +326,7 @@ final class LaunchTests: XCTestCase {
         let caption = app.staticTexts.containing(
             NSPredicate(format: "label BEGINSWITH '1. Januar bis' OR label == 'Noch keine Ablesung'")
         ).firstMatch
-        XCTAssertTrue(caption.waitForExistence(timeout: 5),
+        XCTAssertTrue(caption.waitForExistence(timeout: erscheint),
                       "Die Zahl des überfälligen Zählers nennt ihren Zeitraum nicht")
     }
 
@@ -319,18 +338,18 @@ final class LaunchTests: XCTestCase {
     func testHistoryTableSwitchesToCosts() {
         let app = launchWithData()
         app.tabBars.buttons["Verlauf"].tap()
-        XCTAssertTrue(app.buttons["Alle Zahlen"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Alle Zahlen"].waitForExistence(timeout: erscheint))
         app.buttons["Alle Zahlen"].tap()
 
-        XCTAssertTrue(app.staticTexts["VERBRAUCH"].waitForExistence(timeout: 5),
+        XCTAssertTrue(app.staticTexts["VERBRAUCH"].waitForExistence(timeout: erscheint),
                       "Die Mengenspalte fehlt")
 
         let costs = app.buttons["Kosten"]
-        XCTAssertTrue(costs.waitForExistence(timeout: 5),
+        XCTAssertTrue(costs.waitForExistence(timeout: erscheint),
                       "Mit hinterlegtem Tarif muss sich auf Kosten umschalten lassen")
         costs.tap()
 
-        XCTAssertTrue(app.staticTexts["KOSTEN"].waitForExistence(timeout: 5),
+        XCTAssertTrue(app.staticTexts["KOSTEN"].waitForExistence(timeout: erscheint),
                       "Die Spaltenüberschrift ist nicht mitgewandert")
     }
 
@@ -339,9 +358,9 @@ final class LaunchTests: XCTestCase {
         let app = launchWithData()
         app.tabBars.buttons["Verlauf"].tap()
 
-        XCTAssertTrue(app.staticTexts["Verlauf"].waitForExistence(timeout: 5),
+        XCTAssertTrue(app.staticTexts["Verlauf"].waitForExistence(timeout: erscheint),
                       "Der Verlauf wurde nicht geöffnet")
-        XCTAssertTrue(app.buttons["Monat"].waitForExistence(timeout: 5),
+        XCTAssertTrue(app.buttons["Monat"].waitForExistence(timeout: erscheint),
                       "Die Zeitraumwahl fehlt")
         XCTAssertTrue(app.staticTexts["Alle Ablesungen"].exists,
                       "Der Zugang zu den Ablesungen fehlt")
@@ -355,14 +374,14 @@ final class LaunchTests: XCTestCase {
     func testTappingAMonthOpensTheYearComparison() {
         let app = launchWithData()
         app.tabBars.buttons["Verlauf"].tap()
-        XCTAssertTrue(app.buttons["Monat"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Monat"].waitForExistence(timeout: erscheint))
 
         // „F" ist der Februar — ein abgeschlossener Monat mit Vorjahr daneben.
         let february = app.buttons["F"].firstMatch
-        XCTAssertTrue(february.waitForExistence(timeout: 5), "Kein Balken für Februar")
+        XCTAssertTrue(february.waitForExistence(timeout: erscheint), "Kein Balken für Februar")
         february.tap()
 
-        XCTAssertTrue(app.staticTexts["Februar"].waitForExistence(timeout: 5),
+        XCTAssertTrue(app.staticTexts["Februar"].waitForExistence(timeout: erscheint),
                       "Die Gegenüberstellung wurde nicht geöffnet")
     }
 
@@ -374,11 +393,11 @@ final class LaunchTests: XCTestCase {
         app.tabBars.buttons["Zähler"].tap()
 
         let add = app.buttons["Zähler hinzufügen"]
-        XCTAssertTrue(add.waitForExistence(timeout: 5), "Die Schaltfläche zum Anlegen fehlt")
+        XCTAssertTrue(add.waitForExistence(timeout: erscheint), "Die Schaltfläche zum Anlegen fehlt")
         add.tap()
 
         let field = app.textFields["Name"]
-        XCTAssertTrue(field.waitForExistence(timeout: 5), "Das Namensfeld fehlt")
+        XCTAssertTrue(field.waitForExistence(timeout: erscheint), "Das Namensfeld fehlt")
         field.tap()
         field.typeText("Gartenwasser")
 
@@ -392,7 +411,7 @@ final class LaunchTests: XCTestCase {
         let neu = app.descendants(matching: .any).containing(
             NSPredicate(format: "label BEGINSWITH 'Gartenwasser'")
         ).firstMatch
-        XCTAssertTrue(neu.waitForExistence(timeout: 5),
+        XCTAssertTrue(neu.waitForExistence(timeout: erscheint),
                       "Der neue Zähler taucht nicht in der Liste auf")
     }
 
@@ -407,7 +426,7 @@ final class LaunchTests: XCTestCase {
 
         app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Stand eintragen'"))
             .firstMatch.tap()
-        XCTAssertTrue(app.buttons["7"].waitForExistence(timeout: 5),
+        XCTAssertTrue(app.buttons["7"].waitForExistence(timeout: erscheint),
                       "Der Ziffernblock erschien nicht")
 
         // Über die Vorbelegung, weil sie einen garantiert plausiblen Wert
@@ -418,7 +437,7 @@ final class LaunchTests: XCTestCase {
         XCTAssertTrue(save.isEnabled, "Sichern blieb gesperrt, obwohl ein Wert übernommen wurde")
         save.tap()
 
-        XCTAssertTrue(app.staticTexts["Übersicht"].waitForExistence(timeout: 5),
+        XCTAssertTrue(app.staticTexts["Übersicht"].waitForExistence(timeout: erscheint),
                       "Nach dem Sichern wurde die Übersicht nicht wieder angezeigt")
 
         let notice = app.staticTexts.containing(
@@ -459,7 +478,7 @@ final class LaunchTests: XCTestCase {
             let zeile = app.descendants(matching: .any).containing(
                 NSPredicate(format: "label BEGINSWITH %@", name)
             ).firstMatch
-            XCTAssertTrue(zeile.waitForExistence(timeout: 5),
+            XCTAssertTrue(zeile.waitForExistence(timeout: erscheint),
                           "\(name) fehlt im Zähler-Schirm — der Ausgangszustand kam nicht an")
         }
     }
@@ -498,7 +517,7 @@ final class LaunchTests: XCTestCase {
         let zweiter = app.staticTexts.containing(
             NSPredicate(format: "label BEGINSWITH 'Einspeisung'")
         ).firstMatch
-        XCTAssertTrue(zweiter.waitForExistence(timeout: 5),
+        XCTAssertTrue(zweiter.waitForExistence(timeout: erscheint),
                       "Nach dem Bezug muss die Einspeisung drankommen")
         XCTAssertTrue(zweiter.label.contains("Zählwerk 2 von 2"),
                       "gelesen: \(zweiter.label)")
@@ -515,7 +534,7 @@ final class LaunchTests: XCTestCase {
                       "„Abbrechen“ muss neben „Zurück“ erreichbar bleiben")
         back.tap()
 
-        XCTAssertTrue(schritt.waitForExistence(timeout: 5),
+        XCTAssertTrue(schritt.waitForExistence(timeout: erscheint),
                       "„Zurück“ hat nicht wieder zum ersten Zählwerk geführt")
         XCTAssertTrue(next.exists, "Beim ersten Zählwerk muss wieder „Weiter“ dastehen")
         // Der eingetippte Wert muss wieder dastehen. „Weiter" ist nur
@@ -524,12 +543,12 @@ final class LaunchTests: XCTestCase {
         XCTAssertTrue(next.isEnabled, "Nach dem Rücksprung war die Eingabe leer")
         next.tap()
 
-        XCTAssertTrue(zweiter.waitForExistence(timeout: 5),
+        XCTAssertTrue(zweiter.waitForExistence(timeout: erscheint),
                       "Nach dem Rücksprung ging es nicht wieder vorwärts")
         app.buttons["Vom letzten Stand übernehmen"].tap()
         save.tap()
 
-        XCTAssertTrue(app.staticTexts["Übersicht"].waitForExistence(timeout: 5),
+        XCTAssertTrue(app.staticTexts["Übersicht"].waitForExistence(timeout: erscheint),
                       "Nach dem Sichern wurde die Übersicht nicht wieder angezeigt")
     }
 
@@ -607,18 +626,18 @@ final class LaunchTests: XCTestCase {
         app.tabBars.buttons["Zähler"].tap()
 
         let add = app.buttons["Zähler hinzufügen"]
-        XCTAssertTrue(add.waitForExistence(timeout: 5), "Die Schaltfläche zum Anlegen fehlt")
+        XCTAssertTrue(add.waitForExistence(timeout: erscheint), "Die Schaltfläche zum Anlegen fehlt")
         add.tap()
 
         let field = app.textFields["Name"]
-        XCTAssertTrue(field.waitForExistence(timeout: 5), "Das Namensfeld fehlt")
+        XCTAssertTrue(field.waitForExistence(timeout: erscheint), "Das Namensfeld fehlt")
         field.tap()
         // Mit Zeilenschaltung: Sonst steht die Tastatur über dem Formular, und
         // der Schalter weiter unten ist nicht antippbar.
         field.typeText("Nachtspeicher\n")
 
         let toggle = app.switches["Zwei Preise: Tag und Nacht"]
-        XCTAssertTrue(toggle.waitForExistence(timeout: 5),
+        XCTAssertTrue(toggle.waitForExistence(timeout: erscheint),
                       "Der Schalter für Tag- und Nachtstrom fehlt")
         XCTAssertTrue(scroll(to: toggle, in: app), "Der Schalter ließ sich nicht erreichen")
         toggle.tap()
@@ -717,7 +736,7 @@ final class LaunchTests: XCTestCase {
         let karte = app.descendants(matching: .any).containing(
             NSPredicate(format: "label BEGINSWITH 'Nachtspeicher'")
         ).firstMatch
-        XCTAssertTrue(karte.waitForExistence(timeout: 5),
+        XCTAssertTrue(karte.waitForExistence(timeout: erscheint),
                       "Der neue Zähler steht nicht auf der Übersicht")
 
         // **Nicht die Karte antippen, sondern ihren Knopf.** Die Karte selbst
@@ -731,7 +750,7 @@ final class LaunchTests: XCTestCase {
         // eindeutig ansprechbar — bei mehreren fälligen Zählern gäbe es sonst
         // mehrere Knöpfe gleichen Namens.
         let eintragen = app.buttons["Stand eintragen für Nachtspeicher"]
-        XCTAssertTrue(eintragen.waitForExistence(timeout: 5),
+        XCTAssertTrue(eintragen.waitForExistence(timeout: erscheint),
                       "Die Karte des neuen Zählers hat keinen Knopf zum Eintragen")
         XCTAssertTrue(scroll(to: eintragen, in: app),
                       "Der Knopf zum Eintragen ließ sich nicht erreichen")
@@ -767,7 +786,7 @@ final class LaunchTests: XCTestCase {
         let zweit = app.staticTexts.containing(
             NSPredicate(format: "label BEGINSWITH 'Niedertarif'")
         ).firstMatch
-        XCTAssertTrue(zweit.waitForExistence(timeout: 5),
+        XCTAssertTrue(zweit.waitForExistence(timeout: erscheint),
                       "Nach dem Tagstrom muss der Nachtstrom drankommen")
         XCTAssertTrue(app.buttons["Sichern"].exists,
                       "Beim letzten Zählwerk muss „Sichern“ dastehen")
@@ -794,7 +813,7 @@ final class LaunchTests: XCTestCase {
         // Das Abrechnungsjahr des Versorgers ist der Grund, aus dem es diese
         // Wahl gibt: Es beginnt selten am 1. Januar.
         let laufendes = app.staticTexts["Laufendes Jahr"]
-        XCTAssertTrue(laufendes.waitForExistence(timeout: 5),
+        XCTAssertTrue(laufendes.waitForExistence(timeout: erscheint),
                       "Der Bericht bietet keinen Zeitraum an")
         XCTAssertTrue(app.staticTexts["Letzte 12 Monate"].exists)
 
@@ -804,7 +823,7 @@ final class LaunchTests: XCTestCase {
         let titel = app.staticTexts["Verbrauchsbericht"].firstMatch
         XCTAssertTrue(titel.waitForExistence(timeout: 10),
                       "Das Dokument wurde nicht aufgebaut")
-        XCTAssertTrue(app.staticTexts["Zusammenfassung"].waitForExistence(timeout: 5),
+        XCTAssertTrue(app.staticTexts["Zusammenfassung"].waitForExistence(timeout: erscheint),
                       "Die Zusammenfassung fehlt auf der ersten Seite")
         XCTAssertTrue(app.buttons["Teilen"].exists,
                       "Ohne Teilen bleibt der Bericht in der App — und ist damit keiner")
@@ -828,7 +847,7 @@ final class LaunchTests: XCTestCase {
         // Bericht und einmal in der Zählerauswahl des Verlaufs darunter. Beide
         // sind gültig; gemeint ist die obere.
         let waermepumpe = app.buttons["Wärmepumpe"].firstMatch
-        XCTAssertTrue(waermepumpe.waitForExistence(timeout: 5),
+        XCTAssertTrue(waermepumpe.waitForExistence(timeout: erscheint),
                       "Der Doppeltarifzähler steht nicht zur Wahl")
         waermepumpe.tap()
         app.buttons["Bericht erstellen"].tap()

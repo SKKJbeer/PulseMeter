@@ -9,6 +9,42 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.34.1 — 2026-08-10
+
+**Eine Prüfung, die zufällig fällt, ist schlimmer als keine.**
+
+### Behoben
+- Der Lauf zu 0.34.0 meldete `testAddingAMeterFromTheMetersTab` als gefallen —
+  „Die Schaltfläche zum Anlegen fehlt", nach 55 Sekunden statt der üblichen
+  zwanzig. Der Knopf war von 0.34.0 gar nicht berührt worden. Statt eine achte
+  Vermutung zu bauen, ist **derselbe Commit ein zweites Mal gelaufen**: grün.
+  Es lag nicht am Code, sondern an der Uhr.
+- Die Oberflächenprüfungen laufen auf **drei geklonten Simulatoren
+  gleichzeitig**. Unter dieser Last braucht ein Tabwechsel gelegentlich länger
+  als die fest verdrahteten fünf Sekunden. Alle 39 dieser Wartezeiten laufen
+  jetzt über eine benannte Konstante mit **zehn** Sekunden und der Begründung
+  daneben.
+
+  Der Preis ist gering: Länger gewartet wird nur dort, wo etwas **wirklich**
+  fehlt — und dann stehen fünf Sekunden mehr gegen eine verlorene
+  Viertelstunde. Der Nutzen ist groß: Ein roter Lauf bedeutet wieder, dass
+  etwas kaputt ist. Eine Prüfung, der man nicht glaubt, prüft nichts.
+
+### Bestätigt
+- `testCreatingADualTariffMeterAsksForBothNumbers` läuft durch. Die Prüfung,
+  an der sieben Vermutungen und ein halber Tag hingen, ist grün — und damit ist
+  der Doppeltarif-Anlegefluss von Ende zu Ende belegt: Schalter umlegen, beide
+  Preise eintragen, sichern, Karte finden, beide Zählwerke erfassen.
+- **21 von 21** Oberflächenprüfungen im Wiederholungslauf, 155 in `PulseCore`.
+  0.34.0 ist damit auf `main`.
+
+_155 Prüfungen in `PulseCore`, alle grün. Klick-Dummy 44 von 44, hell und
+dunkel. `AppUITests` parsen sauber. Ob die längere Wartezeit das Flattern
+tatsächlich beseitigt, lässt sich nur über mehrere Läufe belegen — dieser eine
+zeigt nur, dass nichts anderes kaputtgegangen ist._
+
+---
+
 ## 0.34.0 — 2026-08-10
 
 **Der letzte Schirm ohne Barrierefreiheit ist durch — und elf Symbole hören
