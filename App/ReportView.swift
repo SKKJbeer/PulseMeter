@@ -241,6 +241,28 @@ struct ReportView: View {
         // als das Ergebnis, ist keine.
         let scale = contentWidth > 0 ? contentWidth / ReportPaper.pageWidth : 0.55
         return VStack(spacing: 14) {
+            // **Die Zahlen aufs Bild, statt eine fünfte Vermutung.**
+            //
+            // Vier Erklärungen für die leeren Seiten sind widerlegt: die
+            // Wartezeit, der fehlende Inhalt, der Kreisschluss bei der Messung
+            // und die Ausrichtung unter `scaleEffect`. Nach der dritten
+            // gescheiterten Diagnose kostet jede weitere Vermutung eine
+            // Viertelstunde Läuferzeit und bringt nichts.
+            //
+            // Diese Zeile erscheint ausschließlich beim Bildschirmfoto-Start
+            // (`-pulse-bericht`) — kein Nutzer sieht sie je. Das nächste Bild
+            // sagt dann selbst, welche Zahl falsch ist, statt dass jemand sie
+            // errät.
+            if ProcessInfo.processInfo.arguments.contains("-pulse-bericht") {
+                Text(verbatim: "Messung: breite=\(Int(contentWidth)) "
+                     + "maßstab=\(String(format: "%.3f", scale)) "
+                     + "rahmen=\(Int(ReportPaper.pageWidth * scale))×"
+                     + "\(Int(ReportPaper.pageHeight * scale)) "
+                     + "seiten=\(pages.count)")
+                    .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(.red)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             ForEach(Array(pages.enumerated()), id: \.element.id) { index, page in
                 ReportPageView(page: page, pageNumber: index + 1, pageCount: pages.count)
                     .scaleEffect(scale, anchor: .topLeading)

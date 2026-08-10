@@ -9,6 +9,44 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.33.4 — 2026-08-10
+
+**Vier Vermutungen, vier Fehlschläge. Jetzt schreibt die Vorschau ihre eigenen
+Zahlen aufs Bild.**
+
+### Angemerkt
+- Das Bild aus dem Lauf zu `79a71b2` widerlegt auch die Erklärung aus 0.33.2:
+  Die Seiten sind nicht größer geworden, sondern **kleiner** — von rund 95 auf
+  rund 60 Punkte Breite. Die Messung an der Bildlaufansicht liefert ebenfalls
+  einen falschen Wert, und niemand weiß warum: Der Fühler hängt am Hintergrund
+  der `ScrollView`, deren Breite von außen kommt und von nichts abhängt, was
+  die Vorschau bestimmt.
+
+| Vermutung | Version | Widerlegt durch |
+|---|---|---|
+| Vorschau noch nicht fertig | 0.33.1 | 15 statt 4 Sekunden, Bild unverändert |
+| Inhalt fehlt | — | Der Text steht nachweislich im Baum |
+| Kreisschluss bei der Breitenmessung | 0.33.2 | Seiten wurden **kleiner** |
+| Ausrichtung unter `scaleEffect` | 0.33.3 | allein zu wenig |
+
+### Hinzugefügt
+- Beim Start mit `-pulse-bericht` steht über den Seiten eine rote Zeile:
+  `breite=… maßstab=… rahmen=…×… seiten=…`. Sie erscheint ausschließlich beim
+  Bildschirmfoto-Start und nie für einen Nutzer. Damit sagt das nächste Bild
+  selbst, welche Zahl falsch ist, statt dass jemand sie errät.
+
+  Der Grund für diesen Schritt steht in `docs/08-baukasten.md` und hat heute
+  bereits einmal funktioniert: Beim Doppeltarif-Schalter klärte ein einziger
+  Lauf mit Aufstellung mehr als drei Vermutungen davor. Jede weitere Vermutung
+  kostet eine Viertelstunde Läuferzeit und bringt nichts.
+
+_154 Prüfungen in `PulseCore`, alle grün. Klick-Dummy 44 von 44, hell und
+dunkel. Alle iOS-Quellen und `AppUITests` parsen sauber. Die Messzeile selbst
+ist hier nicht darstellbar — sie braucht den Simulator, und genau dafür ist
+sie da._
+
+---
+
 ## 0.33.3 — 2026-08-09
 
 **Die Vorschau schnitt ihren eigenen Inhalt weg. Gefunden, weil jemand das Bild

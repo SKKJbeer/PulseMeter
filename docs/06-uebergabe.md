@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-08-09, Version 0.33.3
+Stand: 2026-08-09, Version 0.33.4
 
 ---
 
@@ -148,9 +148,29 @@ fragt jetzt `isHittable` statt nur `exists`. Genau diese Prüfung lief grün,
 während der Schirm leer war — der Text stand im Baum und wurde weggeschnitten.
 Ein Bericht, den man nicht sehen kann, ist keiner.
 
-**Ungeprüft** bleibt beides bis zum nächsten Bild. Bleiben die Seiten leer, war
-auch das falsch — dann den gemessenen Maßstab in die Beschriftung der Seite
-schreiben und ablesen, statt eine fünfte Vermutung zu bauen.
+**Und das Bild aus dem Lauf zu `79a71b2` (0.33.2) widerlegt auch das.** Die
+Seiten sind nicht größer geworden, sondern **kleiner** — von rund 95 auf rund
+60 Punkte Breite. Die Messung an der Bildlaufansicht liefert also ebenfalls
+einen falschen Wert, und zwar einen kleineren als vorher. Warum, ist unbekannt:
+Der Fühler hängt am Hintergrund der `ScrollView`, deren Breite von außen kommt.
+
+Vier Erklärungen, vier Fehlschläge:
+
+| Vermutung | Version | Widerlegt durch |
+|---|---|---|
+| Vorschau noch nicht fertig | 0.33.1 | 15 statt 4 Sekunden — Bild unverändert |
+| Inhalt fehlt | — | `isHittable`-Prüfung findet den Text im Baum |
+| Kreisschluss bei der Breitenmessung | 0.33.2 | Seiten wurden **kleiner**, nicht größer |
+| Ausrichtung unter `scaleEffect` | 0.33.3 | noch ungeprüft, aber allein zu wenig |
+
+**0.33.4 rät deshalb nicht weiter, sondern schreibt die Zahlen aufs Bild.**
+Beim Start mit `-pulse-bericht` steht über den Seiten eine rote Zeile:
+`breite=… maßstab=… rahmen=…×… seiten=…`. Sie erscheint nur beim
+Bildschirmfoto-Start, nie für einen Nutzer. Das nächste Bild sagt damit selbst,
+welche Zahl falsch ist.
+
+Wer das auf einem Mac in zwei Minuten sehen will: `scripts/run.sh` und dann
+`build/screenshot-bericht-light.png`.
 
 Und unabhängig vom Ausgang: Das **PDF** in der Datei entsteht über einen
 eigenen Weg (`ReportPDF.write` mit `renderer.proposedSize` auf A4) und ist von
