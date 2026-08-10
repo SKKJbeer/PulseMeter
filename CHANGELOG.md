@@ -9,6 +9,40 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.33.3 — 2026-08-09
+
+**Die Vorschau schnitt ihren eigenen Inhalt weg. Gefunden, weil jemand das Bild
+angesehen und die richtige Frage gestellt hat.**
+
+### Behoben
+- **Der Verbrauchsbericht zeigte leere Seiten, weil der Inhalt außerhalb des
+  Zuschnitts gezeichnet wurde.** `scaleEffect` ändert die **Layoutgröße
+  nicht**: Die Seite bleibt 595 × 842 Punkte groß und wird nur kleiner
+  gezeichnet. Der Rahmen darunter zentrierte diese unveränderte Box, während ab
+  oben links gemalt wird — der sichtbare Inhalt saß dadurch oberhalb und links
+  des Zuschnitts und fiel vollständig weg. Übrig blieb der leere Seitenrahmen
+  mit Haarlinie. `alignment: .topLeading` am äußeren Rahmen behebt es.
+
+  Zusammen mit dem Kreisschluss aus 0.33.2 verstärkten sich beide Fehler: Je
+  kleiner der Maßstab, desto vollständiger der Verlust. Das erklärt, warum die
+  Seiten nicht bloß winzig, sondern **restlos leer** aussahen — die Frage, die
+  der Gründer beim Ansehen des Bildes stellte und die den Ausschlag gab.
+
+### Hinzugefügt
+- `testTheReportCarriesBothTariffsOfADualTariffMeter` prüft jetzt `isHittable`
+  statt nur `exists`. Genau diese Prüfung lief grün, während der Bericht leer
+  auf dem Schirm stand: Der Text war im Zugänglichkeitsbaum vorhanden und wurde
+  trotzdem weggeschnitten. Ein Bericht, den man nicht sehen kann, ist keiner —
+  und `exists` allein merkt das nie. Das ist der Test, der den Fehler vorher
+  gefangen hätte.
+
+_154 Prüfungen in `PulseCore`, alle grün. Klick-Dummy 44 von 44, hell und
+dunkel. Alle iOS-Quellen und `AppUITests` parsen sauber, Zeichenketten in
+Ordnung. Die Behebung selbst braucht einen Simulator und ist hier ungeprüft;
+das Bild aus dem nächsten Lauf entscheidet, und es kommt auch bei Rot._
+
+---
+
 ## 0.33.2 — 2026-08-09
 
 **Der leere Bericht war ein Kreisschluss in der Vorschau — und der Schalter

@@ -820,6 +820,15 @@ final class LaunchTests: XCTestCase {
         ).firstMatch
         XCTAssertTrue(hoch.waitForExistence(timeout: 10),
                       "Der Hochtarif fehlt im Bericht")
+        // **`isHittable`, nicht nur `exists`** — und das ist der eigentliche
+        // Wert dieser Zeile. Genau diese Prüfung lief grün, während die
+        // Vorschau sechs leere Seiten zeigte: Der Text stand im Baum, wurde
+        // aber vollständig weggeschnitten (siehe `ReportView`, Ausrichtung des
+        // Rahmens unter `scaleEffect`). Ein Bericht, den man nicht sehen kann,
+        // ist keiner — und `exists` allein merkt das nie.
+        XCTAssertTrue(hoch.isHittable,
+                      "Der Hochtarif steht im Baum, ist aber nicht zu sehen — "
+                      + "die Vorschau schneidet ihren eigenen Inhalt weg")
         let nieder = app.staticTexts.containing(
             NSPredicate(format: "label CONTAINS 'Arbeitspreis Niedertarif'")
         ).firstMatch

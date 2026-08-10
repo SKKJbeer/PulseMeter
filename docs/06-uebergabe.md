@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-08-09, Version 0.33.2
+Stand: 2026-08-09, Version 0.33.3
 
 ---
 
@@ -129,10 +129,28 @@ Maßstab blieb bei einem winzigen Wert stehen. 0.33.2 misst stattdessen die
 der Messung abhängt. Dazu `onChange` statt nur `onAppear`, damit Drehung und
 geteilter Bildschirm nachziehen.
 
-**Ungeprüft.** Das entscheidet das Bild aus dem nächsten Lauf. Bleiben die
-Seiten leer, war auch diese Erklärung falsch — dann ist der nächste Schritt,
-den gemessenen Maßstab in die Beschriftung der Seite zu schreiben und ihn
-abzulesen, statt eine vierte Vermutung zu bauen.
+**Und mit 0.33.3 die zweite, schwerer wiegende Ursache.** Der Gründer sah sich
+das Bild an und stellte die Frage, die den Ausschlag gab: Warum sind die Rahmen
+*vollständig* leer und nicht bloß winzig bekritzelt?
+
+`scaleEffect` ändert die **Layoutgröße nicht**. Die Seite bleibt 595 × 842 groß
+und wird nur kleiner gezeichnet. Der Rahmen darunter — `.frame(width:height:)`
+ohne Ausrichtung — zentriert diese unveränderte Box im kleinen Rahmen, während
+ab **oben links** gezeichnet wird. Der gemalte Inhalt sitzt dadurch oberhalb
+und links des Zuschnitts und wird vollständig weggeschnitten. Übrig bleibt der
+leere Rahmen mit Haarlinie, genau wie auf dem Bild. Je kleiner der Maßstab,
+desto vollständiger der Verlust — beide Fehler verstärkten einander.
+
+Behoben durch `alignment: .topLeading` am äußeren Rahmen.
+
+**Dazu ein Regressionsnetz:** `testTheReportCarriesBothTariffsOfADualTariffMeter`
+fragt jetzt `isHittable` statt nur `exists`. Genau diese Prüfung lief grün,
+während der Schirm leer war — der Text stand im Baum und wurde weggeschnitten.
+Ein Bericht, den man nicht sehen kann, ist keiner.
+
+**Ungeprüft** bleibt beides bis zum nächsten Bild. Bleiben die Seiten leer, war
+auch das falsch — dann den gemessenen Maßstab in die Beschriftung der Seite
+schreiben und ablesen, statt eine fünfte Vermutung zu bauen.
 
 Und unabhängig vom Ausgang: Das **PDF** in der Datei entsteht über einen
 eigenen Weg (`ReportPDF.write` mit `renderer.proposedSize` auf A4) und ist von

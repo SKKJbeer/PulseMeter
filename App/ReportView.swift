@@ -244,8 +244,24 @@ struct ReportView: View {
             ForEach(Array(pages.enumerated()), id: \.element.id) { index, page in
                 ReportPageView(page: page, pageNumber: index + 1, pageCount: pages.count)
                     .scaleEffect(scale, anchor: .topLeading)
+                    // **`alignment: .topLeading` ist hier nicht Geschmack,
+                    // sondern der Unterschied zwischen sichtbar und leer.**
+                    //
+                    // `scaleEffect` ändert die Layoutgröße **nicht**: Die Seite
+                    // bleibt 595 × 842 groß und wird nur kleiner gezeichnet.
+                    // Ein Rahmen ohne Ausrichtung zentriert diese unveränderte
+                    // Box im kleinen Rahmen — gezeichnet wird aber ab oben
+                    // links. Der gemalte Inhalt sitzt dadurch weit oberhalb und
+                    // links des Zuschnitts und wird vollständig weggeschnitten.
+                    // Übrig bleibt genau das, was auf dem Bild zu sehen war:
+                    // ein leerer Seitenrahmen mit Haarlinie.
+                    //
+                    // Je kleiner der Maßstab, desto vollständiger der Verlust —
+                    // deshalb fielen beide Fehler zusammen auf und deshalb sah
+                    // es aus, als rendere der Bericht gar nichts.
                     .frame(width: ReportPaper.pageWidth * scale,
-                           height: ReportPaper.pageHeight * scale)
+                           height: ReportPaper.pageHeight * scale,
+                           alignment: .topLeading)
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                     .overlay(
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
