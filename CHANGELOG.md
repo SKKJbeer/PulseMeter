@@ -9,6 +9,38 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.33.6 — 2026-08-10
+
+**Grün, zusammengeführt, aufgeräumt.**
+
+### Bestätigt
+- Der Lauf zu `28a52cf` ist **vollständig grün**: 154 Prüfungen in `PulseCore`,
+  **21 von 21** Oberflächenprüfungen, 44 im Klick-Dummy, 18 Screenshots. Damit
+  sind 21 Commits von 0.31.0 bis 0.33.5 nach `main` zusammengeführt — Doppeltarif
+  in der App, PDF-Bericht, das ganze Werkzeug und drei neue Dokumente.
+- Die Messzeile aus 0.33.4 las `breite=400 maßstab=0.673 rahmen=400×566` ab,
+  also genau die erwarteten Werte. Damit war belegt: Die Breitenmessung stimmt,
+  und der Fehler lag allein im Zuschnitt.
+
+### Entfernt
+- Die rote Messzeile in der Berichtsvorschau. Sie hat ihren Zweck erfüllt. Was
+  bleibt, ist die Begründung im Code und die Regel in `docs/08-baukasten.md`:
+  Nach dem zweiten Fehlversuch nicht weiterraten, sondern die Ansicht ihre
+  eigenen Zahlen berichten lassen. Sieben Vermutungen an zwei Fehlern kosteten
+  je einen Lauf und klärten nichts; zwei Messungen klärten beides.
+
+### Geändert
+- `docs/06-uebergabe.md` neu geschrieben — sie ist eine Momentaufnahme, keine
+  Historie. Sie nennt jetzt den grünen Stand auf `main`, die nächsten Schritte
+  aus `07-v1-plan.md` und die beiden Zweige, die sich aus der Cloud-Sitzung
+  nicht löschen ließen.
+
+_154 Prüfungen in `PulseCore`, alle grün. Klick-Dummy 44 von 44, hell und
+dunkel. Alle iOS-Quellen und `AppUITests` parsen sauber. Die Entfernung der
+Messzeile berührt keine Prüfung; der macOS-Lauf auf `main` ist die Gegenprobe._
+
+---
+
 ## 0.33.5 — 2026-08-10
 
 **Der Zuschnitt war es: Der Bericht zeigt Inhalt. Und die Erfassung ging nie

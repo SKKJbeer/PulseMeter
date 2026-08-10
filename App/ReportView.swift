@@ -241,28 +241,17 @@ struct ReportView: View {
         // als das Ergebnis, ist keine.
         let scale = contentWidth > 0 ? contentWidth / ReportPaper.pageWidth : 0.55
         return VStack(spacing: 14) {
-            // **Die Zahlen aufs Bild, statt eine fünfte Vermutung.**
+            // Hier stand in 0.33.4 eine rote Messzeile, die `breite`,
+            // `maßstab` und `rahmen` aufs Bildschirmfoto schrieb. Sie hat ihren
+            // Zweck erfüllt und ist wieder draußen: Der Lauf zu `28a52cf` las
+            // `breite=400 maßstab=0.673 rahmen=400×566` ab — also genau das,
+            // was zu erwarten war. Damit war belegt, dass die Messung stimmt
+            // und der Fehler allein im Zuschnitt lag.
             //
-            // Vier Erklärungen für die leeren Seiten sind widerlegt: die
-            // Wartezeit, der fehlende Inhalt, der Kreisschluss bei der Messung
-            // und die Ausrichtung unter `scaleEffect`. Nach der dritten
-            // gescheiterten Diagnose kostet jede weitere Vermutung eine
-            // Viertelstunde Läuferzeit und bringt nichts.
-            //
-            // Diese Zeile erscheint ausschließlich beim Bildschirmfoto-Start
-            // (`-pulse-bericht`) — kein Nutzer sieht sie je. Das nächste Bild
-            // sagt dann selbst, welche Zahl falsch ist, statt dass jemand sie
-            // errät.
-            if ProcessInfo.processInfo.arguments.contains("-pulse-bericht") {
-                Text(verbatim: "Messung: breite=\(Int(contentWidth)) "
-                     + "maßstab=\(String(format: "%.3f", scale)) "
-                     + "rahmen=\(Int(ReportPaper.pageWidth * scale))×"
-                     + "\(Int(ReportPaper.pageHeight * scale)) "
-                     + "seiten=\(pages.count)")
-                    .font(.system(size: 12, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(.red)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+            // Die Lehre bleibt und steht in `docs/08-baukasten.md`: Nach dem
+            // zweiten Fehlversuch nicht weiterraten, sondern die Ansicht ihre
+            // eigenen Zahlen berichten lassen. Vier Vermutungen hatten je einen
+            // Lauf gekostet und nichts geklärt; die eine Messung klärte alles.
             ForEach(Array(pages.enumerated()), id: \.element.id) { index, page in
                 ReportPageView(page: page, pageNumber: index + 1, pageCount: pages.count)
                     .scaleEffect(scale, anchor: .topLeading)
