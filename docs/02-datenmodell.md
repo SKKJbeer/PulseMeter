@@ -292,3 +292,42 @@ Diese Tabelle ist gleichzeitig die Testspezifikation für `PulseCore`.
 - **Vor jeder Migration** automatischer vollständiger JSON-Snapshot im App-Container, die letzten drei werden vorgehalten.
 - Export enthält *alle* Entitäten, nicht nur Ablesungen — ein Export muss ein vollständiger Wiederherstellungspunkt sein.
 - Import ist idempotent über die `UUID`s. Ein zweimal importierter Export erzeugt keine Dubletten.
+
+---
+
+## Hochrechnung: die Rangfolge und ihre Quellen
+
+Seit 0.38.0 wählt `ForecastEngine` in dieser Reihenfolge, und `Forecast.method`
+sagt hinterher, welche Stufe gegriffen hat:
+
+| Stufe | Grundlage | Wann |
+|---|---|---|
+| `ownHistory` | Form gemittelt über bis zu **drei** eigene Vorjahre | Mehrere vollständige Jahre liegen vor |
+| `previousYear` | Form des eigenen Vorjahres | Genau ein vollständiges Jahr |
+| `reference` | Veröffentlichtes Profil für die Zählerart | Kein eigenes Jahr, aber eine Quelle |
+| `linear` | Tagesschnitt gleichmäßig fortgeschrieben | Kein Jahr und keine Quelle |
+
+Gerechnet wird immer gleich: Deckt der gemessene Ausschnitt **x %** eines
+Jahres ab, entspricht das Gemessene x % des Jahres. Nur die Herkunft von x
+unterscheidet die Stufen. Gemittelt werden Anteile, nie Mengen — die Vorjahre
+steuern die Form bei, das Niveau kommt aus dem laufenden Jahr.
+
+### Woher die Referenzprofile stammen
+
+Sie stehen in `SeasonalProfile` und sind **keine Schätzungen**:
+
+- **Heizen** (Gas, Fernwärme, Heizöl) — Gradtagszahlen nach **VDI 2067**, in
+  Deutschland der anerkannte Maßstab, um einen Jahresbetrag auf Monate zu
+  verteilen; angewandt bei jeder Heizkostenabrechnung mit Mieterwechsel.
+  Darunter 18 % Warmwasser gleichmäßig nach Tagen.
+- **Haushaltsstrom** — **Standardlastprofil H0** (VDEW/BDEW): Winter 43,75 %,
+  Sommer 28,77 %, Übergangszeit 27,48 %, auf Monate umgerechnet.
+- **Photovoltaik und jede Einspeisung** — der veröffentlichte Jahresverlauf des
+  spezifischen Ertrags in Deutschland.
+- **Wasser, Warmwasser, Regenwasser, Betriebsstunden** — bewusst **kein**
+  Profil. Ohne belastbare Quelle wäre es erfunden, und der Verbrauch schwankt
+  über das Jahr ohnehin kaum.
+
+**Ein Profil ist immer die zweitbeste Antwort.** Es ist der Durchschnitt vieler
+Haushalte, und niemand wohnt im Durchschnitt. Sobald ein eigenes Jahr vorliegt,
+gewinnt es — ausnahmslos.

@@ -682,7 +682,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.37.1</p>
+  <p>Klickbarer Entwurf · v0.38.0</p>
 </div>
 
 <div class="device">
@@ -1314,23 +1314,106 @@ function priorYearToDate(reg) {
 function priorYearFull(reg) {
   return consumption(reg, { y: 2025, m: 1, d: 1 }, { y: 2026, m: 1, d: 1 });
 }
-/* Saisonale Hochrechnung über die Vorjahresform — bei Gas und Heizung
-   deutlich näher dran als die lineare Fortschreibung.
+/* Referenzprofile: wie sich ein Jahresverbrauch typischerweise auf die Monate
+   verteilt. Spiegelt `SeasonalProfile` in PulseCore — dieselben Zahlen,
+   dieselben Quellen. Weichen beide voneinander ab, ist das ein Fehler und kein
+   Zustand (CLAUDE.md, Regel 2).
+
+   Die Zahlen stammen nicht aus dem Gefühl: Heizen nach den Gradtagszahlen der
+   VDI 2067 (dem Maßstab, nach dem in Deutschland Heizkosten auf Monate
+   verteilt werden) mit 18 % Warmwasser gleichmäßig darunter; Haushaltsstrom
+   aus dem Standardlastprofil H0; Photovoltaik aus dem veröffentlichten
+   Jahresverlauf des spezifischen Ertrags. */
+const PROFILES = (() => {
+  const heizung = [170, 150, 130, 80, 40, 13.333, 13.333, 13.333, 30, 80, 120, 160];
+  const tage = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  const ww = 0.18;
+  const heating = heizung.map((h, i) => (1 - ww) * h / 1000 + ww * tage[i] / 365);
+
+  const winter = 43.75 / 140, sommer = 28.77 / 123, uebergang = 27.48 / 102;
+  const verteilung = [[31,0,0],[28,0,0],[20,0,11],[0,0,30],[0,17,14],[0,30,0],
+                      [0,31,0],[0,31,0],[0,14,16],[0,0,31],[30,0,0],[31,0,0]];
+  const household = verteilung.map(([w, s, u]) => w * winter + s * sommer + u * uebergang);
+
+  const solarRaw = [22, 43, 83, 100, 128, 134, 128, 120, 93, 57, 27, 15];
+  const solarSum = solarRaw.reduce((a, b) => a + b, 0);
+  const solar = solarRaw.map(v => v / solarSum);
+
+  const norm = a => { const t = a.reduce((x, y) => x + y, 0); return a.map(v => v / t); };
+  return { heating: norm(heating), household: norm(household), solar: solar };
+})();
+
+function referenceProfile(meter, reg) {
+  // `feedIn` heißt das Merkmal hier, `direction == .feedIn` in `Register`.
+  // Zwei Namen für dieselbe Sache, und beim ersten Anlauf hatte ich hier den
+  // aus der App stehen — dann bekäme die Einspeisung das Bezugsprofil und
+  // liefe der Sonne genau entgegen.
+  if (reg && reg.feedIn) return PROFILES.solar;
+  switch (meter && meter.kind) {
+    case "gas": case "districtHeating": case "heatingOil": return PROFILES.heating;
+    case "electricity": case "wallbox": return PROFILES.household;
+    case "solarProduction": return PROFILES.solar;
+    default: return null;   // Wasser schwankt kaum — Gleichverteilung ist hier ehrlich
+  }
+}
+
+/* Welcher Anteil eines Jahres in einen Zeitraum fällt. Innerhalb eines Monats
+   nach Tagen geteilt. Halboffen gelesen: `from` zählt mit, `to` nicht. */
+function profileShare(profile, from, to) {
+  let total = 0;
+  let y = from.y, mo = from.m, d = from.d;
+  while (y < to.y || (y === to.y && (mo < to.m || (mo === to.m && d < to.d)))) {
+    const tageImMonat = new Date(y, mo, 0).getDate();
+    const endeDesMonats = { y: mo === 12 ? y + 1 : y, m: mo === 12 ? 1 : mo + 1, d: 1 };
+    const schluss = (endeDesMonats.y < to.y ||
+                     (endeDesMonats.y === to.y && (endeDesMonats.m < to.m ||
+                      (endeDesMonats.m === to.m && endeDesMonats.d <= to.d))))
+      ? endeDesMonats : to;
+    const tage = between({ y, m: mo, d }, schluss);
+    total += profile[mo - 1] * tage / tageImMonat;
+    y = schluss.y; mo = schluss.m; d = schluss.d;
+  }
+  return total;
+}
+
+/* Die Rangfolge der Hochrechnung — dieselbe wie in `ForecastEngine`:
+   eigene Jahre, dann das eigene Vorjahr, dann ein veröffentlichtes Profil,
+   zuletzt die gleichmäßige Fortschreibung. Und der Nutzer erfährt, welche
+   Stufe gegriffen hat: Eine Zahl, die auf fremden Daten beruht, muss als
+   solche gekennzeichnet sein (Produktprinzip 7).
+
    Maßgeblich ist der Zeitraum, den die Daten abdecken, nicht der bis heute:
    Sonst würde ein veralteter Zählerstand die Prognose systematisch drücken. */
-function forecast(reg) {
+function forecast(reg, meter) {
   const now = yearToDate(reg);
   if (!now) return null;
   const pf = priorYearFull(reg);
   const ps = consumption(reg, shiftYear(now.cfrom, -1), shiftYear(now.cto, -1));
   if (pf && ps && ps.complete && ps.value > 0 && pf.value > 0) {
     const share = ps.value / pf.value;
-    if (share > 0 && share <= 1) return { value: now.value / share, method: "seasonal", now: now };
+    if (share > 0 && share <= 1) return { value: now.value / share, method: "previousYear", now: now };
+  }
+  const profile = referenceProfile(meter || METERS.find(m => m.registers.includes(reg)), reg);
+  if (profile) {
+    const anteil = profileShare(profile, now.cfrom, now.cto)
+                 / profileShare(profile, { y: 2026, m: 1, d: 1 }, { y: 2027, m: 1, d: 1 });
+    if (anteil > 0 && anteil <= 1) {
+      return { value: now.value / anteil, method: "reference", now: now };
+    }
   }
   const perDay = now.value / now.days;
   const remaining = between(now.cto, { y: 2026, m: 12, d: 31 });
   return { value: now.value + perDay * remaining, method: "linear", now: now };
 }
+
+/* Worauf die Zahl beruht, in einem Satzteil. Wortgleich mit
+   `ForecastEngine.Method.explanation`. */
+const FORECAST_BASIS = {
+  ownHistory:   "nach dem Verlauf deiner Vorjahre",
+  previousYear: "nach dem Verlauf deines Vorjahres",
+  reference:    "nach einem typischen Jahresverlauf, weil noch kein eigenes Jahr vorliegt",
+  linear:       "gleichmäßig aus dem bisherigen Tagesschnitt"
+};
 /* Das Vorjahresfenster folgt dem abgedeckten Zeitraum, nicht dem angefragten:
    Sonst verglichen wir bei einem überfälligen Zähler eine halbe Heizperiode
    mit einem Vorjahr inklusive Sommer. */
@@ -1358,7 +1441,7 @@ function projectedCost(m, fc) {
   let energy = billedUnits(m, fc.value) * m.price;
   const second = m.registers[1];
   if (second && m.feedInPrice) {
-    const f = forecast(second);
+    const f = forecast(second, m);
     if (f) energy -= f.value * m.feedInPrice;
   }
   return energy + m.base * 12;
@@ -1502,7 +1585,7 @@ function renderCards() {
     // der Verbrauch Hochtarif plus Niedertarif.
     const ytd = meterYearToDate(m);
     const yoy = yearOverYear(reg);
-    const fc = forecast(reg);
+    const fc = forecast(reg, m);
     const due = isDue(m);
 
     let extra = "";
@@ -1707,7 +1790,7 @@ function renderChart() {
   const host = document.getElementById("chart");
   host.style.color = m.color;
 
-  const ytd = yearToDate(reg), yoy = yearOverYear(reg), fc = forecast(reg);
+  const ytd = yearToDate(reg), yoy = yearOverYear(reg), fc = forecast(reg, m);
   const W = 322, H = 148;
 
   if (histScale === "month") {
@@ -2867,7 +2950,7 @@ function commitReadings() {
 function openExplain(id) {
   const m = METERS.find(x => x.id === id);
   const reg = m.registers[0];
-  const fc = forecast(reg), ytd = yearToDate(reg);
+  const fc = forecast(reg, m), ytd = yearToDate(reg);
   const units = billedUnits(m, fc.value);
   const work = units * m.price;
   const base = m.base * 12;
@@ -2879,7 +2962,7 @@ function openExplain(id) {
   document.getElementById("ex-body").innerHTML = `
     <div class="calc">
       <div class="calc-row"><span class="k">Verbrauch bis heute</span><span class="v">${nf(ytd.value, 0)} ${m.unit}</span></div>
-      <div class="calc-row"><span class="k">Hochrechnung aufs Jahr<br><small style="color:var(--ink-3)">${fc.method === "seasonal" ? "nach dem Verlauf des Vorjahres" : "aus dem bisherigen Tagesschnitt"}</small></span><span class="v">${nf(fc.value, 0)} ${m.unit}</span></div>
+      <div class="calc-row"><span class="k">Hochrechnung aufs Jahr<br><small style="color:var(--ink-3)">${FORECAST_BASIS[fc.method]}</small></span><span class="v">${nf(fc.value, 0)} ${m.unit}</span></div>
       ${m.zZahl ? `<div class="calc-row"><span class="k">Umrechnung in kWh<br><small style="color:var(--ink-3)">× ${nf(m.zZahl, 4)} Zustandszahl × ${nf(m.brennwert, 3)} kWh/m³</small></span><span class="v">${nf(units, 0)} kWh</span></div>` : ""}
       <div class="calc-row"><span class="k">Arbeitspreis<br><small style="color:var(--ink-3)">${nf(m.price, m.zZahl ? 3 : 2)} € je ${m.zZahl ? "kWh" : m.unit}</small></span><span class="v">${money(work)}</span></div>
       <div class="calc-row"><span class="k">Grundpreis<br><small style="color:var(--ink-3)">${money(m.base)} × 12 Monate</small></span><span class="v">${money(base)}</span></div>

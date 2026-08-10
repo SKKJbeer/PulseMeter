@@ -203,6 +203,46 @@ for (const scheme of ["light", "dark"]) {
   await page.locator("#sheet-editor [data-close]").first().click();
   await page.waitForTimeout(250);
 
+  // --- Die Hochrechnung und ihre Grundlage
+  //
+  // **Warum das hier geprüft wird und nicht nur in PulseCore.** Regel 2 sagt,
+  // dass Entwurf und Rechenkern dieselbe Rechnung machen. Die Referenzprofile
+  // stehen an zwei Stellen — hier und in `SeasonalProfile.swift` —, und zwei
+  // Fassungen laufen auseinander. Geprüft werden deshalb die Zahlen, die aus
+  // den veröffentlichten Quellen folgen und die ein Tippfehler zerstören
+  // würde.
+  const profile = await page.evaluate(() => ({
+    summen: [PROFILES.heating, PROFILES.household, PROFILES.solar]
+      .map(p => p.reduce((a, b) => a + b, 0)),
+    heizJanuarZuJuli: PROFILES.heating[0] / PROFILES.heating[6],
+    stromJanuarZuJuli: PROFILES.household[0] / PROFILES.household[6],
+    solarJuniZuDezember: PROFILES.solar[5] / PROFILES.solar[11],
+    winterquartal: profileShare(PROFILES.heating, { y: 2026, m: 1, d: 1 }, { y: 2026, m: 4, d: 1 })
+  }));
+  note(profile.summen.every(s => Math.abs(s - 1) < 1e-9),
+       "Jedes Referenzprofil summiert sich auf ein Jahr");
+  note(profile.heizJanuarZuJuli > 5 && profile.heizJanuarZuJuli < 7,
+       `Heizen: Januar zu Juli wie ${profile.heizJanuarZuJuli.toFixed(1)} zu 1`);
+  note(profile.stromJanuarZuJuli > 1.2 && profile.stromJanuarZuJuli < 1.6,
+       `Haushaltsstrom: Januar zu Juli wie ${profile.stromJanuarZuJuli.toFixed(2)} zu 1`);
+  note(profile.solarJuniZuDezember > 6,
+       `Photovoltaik läuft gegenläufig (Juni zu Dezember ${profile.solarJuniZuDezember.toFixed(1)} zu 1)`);
+  note(profile.winterquartal > 0.40 && profile.winterquartal < 0.46,
+       `Januar bis März tragen ${(profile.winterquartal * 100).toFixed(1)} % des Heizjahres`);
+
+  // Und die Grundlage steht auf dem Schirm, nicht nur im Code.
+  await page.locator('[data-pane="home"]').first().click();
+  await page.waitForTimeout(200);
+  await page.locator('[data-explain]').first().click();
+  await page.waitForTimeout(300);
+  const erklaerung = await page.evaluate(() =>
+    document.getElementById("ex-body").innerText);
+  note(/Hochrechnung aufs Jahr/.test(erklaerung), "Die Erklärung nennt die Hochrechnung");
+  note(/nach dem Verlauf|typischen Jahresverlauf|Tagesschnitt/.test(erklaerung),
+       "Und sie sagt, worauf die Zahl beruht");
+  await page.locator("#sheet-explain [data-close]").first().click();
+  await page.waitForTimeout(200);
+
   // --- Keine Taste, die nichts tut
   //
   // Auf dem Ziffernblock stand ein Kamerasymbol als Platzhalter für

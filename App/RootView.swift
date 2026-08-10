@@ -240,6 +240,24 @@ struct OverviewView: View {
                             .font(.system(.subheadline, weight: .semibold))
                             .foregroundStyle(outlook.expectsRefund ? PulseColor.favourable : PulseColor.adverse)
                     }
+                    // **Worauf die Zahl beruht — und zwar direkt darunter.**
+                    //
+                    // Bis 0.38.0 stand hier „≈ 71,63 € Guthaben" und sonst
+                    // nichts. Ob dahinter das eigene Vorjahr steckte oder eine
+                    // gleichmäßige Fortschreibung, die bei Gas im Februar um
+                    // 100 % danebenliegt, war der Zahl nicht anzusehen. Das
+                    // ist die folgenreichste Zahl der App, und Produktprinzip 7
+                    // verlangt genau hier eine Kennzeichnung.
+                    //
+                    // Der Klick-Dummy konnte das längst; die App nicht. Eine
+                    // Abweichung zwischen beiden ist ein Fehler (Regel 2).
+                    Text("Hochgerechnet \(outlook.method.explanation)")
+                        .font(PulseText.caption)
+                        .foregroundStyle(PulseColor.inkTertiary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 15)
+                        .padding(.bottom, 10)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 Divider().overlay(PulseColor.hairline)
                 Button {

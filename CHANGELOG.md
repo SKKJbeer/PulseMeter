@@ -9,6 +9,113 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.38.0 — 2026-08-10
+
+**Die Hochrechnung sagte einem Gaskunden im ersten Jahr am 1. Februar das
+Doppelte voraus. Gemessen, nicht vermutet — und behoben.**
+
+Die Vorschau aufs Jahresende ist die Zahl, für die dieses Produkt existiert.
+Sie beruhte bisher auf zwei Verfahren: dem eigenen Vorjahr, wenn eines
+vollständig vorlag, und sonst einer gleichmäßigen Fortschreibung des
+Tagesschnitts. Der zweite Fall trifft **jeden neuen Nutzer** — und bei allem,
+was mit der Jahreszeit schwankt, ist er grob falsch.
+
+### Was die Messung ergab
+
+Ein Gaszähler, erstes Jahr, gleichmäßig fortgeschrieben:
+
+| Stand | Fehler gegenüber dem wahren Jahreswert |
+|---|---|
+| 1. Februar | **+100 %** |
+| 1. April | +80 % |
+| 1. Juni | +34 % |
+| 1. Oktober | −15 % |
+
+Bei Haushaltsstrom sind es +22 % im Februar. Aus „+100 % Verbrauch" wird im
+Abschlagsvergleich eine erfundene Nachzahlung von mehreren hundert Euro — in
+der Jahreszeit, in der jemand die App installiert.
+
+### Neu: Referenzprofile aus veröffentlichten Quellen
+
+`SeasonalProfile` in `PulseCore` weiß, wie sich ein Jahresverbrauch typisch auf
+die Monate verteilt. Die Zahlen sind **nicht ausgedacht** — das ist der Punkt:
+
+- **Heizen** (Gas, Fernwärme, Heizöl): Gradtagszahlen nach **VDI 2067**, der
+  Maßstab, nach dem in Deutschland Heizkosten auf Monate verteilt werden, aus
+  zwanzig Jahren Temperaturmessungen. Darunter 18 % Warmwasser gleichmäßig
+  verteilt, denn wer mit Gas auch das Wasser wärmt, verbraucht im Juli nicht
+  nichts. Januar zu Juli steht damit bei 5,9 zu 1.
+- **Haushaltsstrom**: aus dem **Standardlastprofil H0** (VDEW/BDEW) —
+  Winter 43,75 %, Sommer 28,77 %, Übergangszeit 27,48 %, umgerechnet auf
+  Monate. Januar zu Juli: 1,34 zu 1.
+- **Photovoltaik**: aus dem veröffentlichten Jahresverlauf des spezifischen
+  Ertrags in Deutschland. Juni zu Dezember: 8,9 zu 1 — **gegenläufig** zum
+  Verbrauch, weshalb eine Einspeisung nie mit einem Bezugsprofil gerechnet
+  werden darf.
+- **Wasser, Warmwasser, Regenwasser, Betriebsstunden**: **kein** Profil. Es
+  gibt keine belastbare Quelle, der Verbrauch schwankt kaum, und ein
+  erfundenes Profil wäre schlimmer als gar keines. Hier bleibt es bei der
+  gleichmäßigen Fortschreibung — und die App sagt das.
+
+### Neu: eine Rangfolge statt zweier Fälle
+
+1. **Mehrere eigene Jahre** — die Form wird über bis zu drei Vorjahre
+   gemittelt. Ein Ausreißer (Umbau, Sommer im Ausland) zieht die Form dann
+   nicht mehr allein.
+2. **Das eigene Vorjahr** — wie bisher.
+3. **Das Referenzprofil** — neu, und der Fall, der die 100 % beseitigt.
+4. **Gleichmäßig** — nur noch dort, wo es richtig ist.
+
+Gemittelt werden die **Anteile**, nicht die Mengen: Die Vorjahre steuern die
+Form bei, das Niveau kommt ausschließlich aus dem laufenden Jahr.
+
+### Neu: Die App sagt endlich, worauf die Zahl beruht
+
+Auf der Karte stand „≈ 71,63 € Guthaben" und sonst nichts. Ob dahinter das
+eigene Vorjahr steckte oder eine Fortschreibung, die um 100 % danebenliegt,
+war der Zahl nicht anzusehen — bei der folgenreichsten Zahl der App und
+entgegen Produktprinzip 7.
+
+`PrepaymentOutlook` führt die Methode jetzt mit, und darunter steht ein Satz:
+„Hochgerechnet nach dem Verlauf deines Vorjahres" oder „…nach einem typischen
+Jahresverlauf, weil noch kein eigenes Jahr vorliegt". Bei mehreren Zählwerken
+wird die **schwächste** Grundlage genannt, nicht die schmeichelhafteste.
+
+**Der Klick-Dummy konnte das längst** — er zeigte die Grundlage im
+Erklärungsblatt, die App gar nicht. Das war ein Regel-2-Verstoß, und er ist
+jetzt in beide Richtungen aufgelöst: Der Entwurf hat die Rangfolge und die
+Profile ebenfalls bekommen.
+
+### Was sich an bestehenden Zahlen ändert
+
+Die Prüfungen zum Abschlagsvergleich tragen neue Erwartungswerte, alle von
+Hand nachgerechnet. Zwei Beispiele:
+
+- Strom, 900 kWh bis zum 1. April: vorher 1095 € erwartete Kosten, jetzt
+  **976,46 €**. Januar bis März sind 27,65 % des Jahres, nicht 24,7 %.
+- Ein Zweirichtungszähler: vorher 422,81 €, jetzt **342,09 €**. Der
+  Unterschied kommt fast vollständig aus der Einspeisung — gleichmäßig
+  fortgeschrieben hätte die Anlage im Sommer so weitergeliefert wie im Winter.
+
+### Zur Ehrlichkeit dieser Messung
+
+Die erste Fassung dieser Untersuchung hat gegen ein Verbrauchsprofil gemessen,
+das ich mir selbst ausgedacht hatte — das beweist nur, dass der Rechenkern
+seine eigene Kurve wiederfindet. Der Einwand kam vom Gründer und war richtig.
+Die Profile stammen deshalb aus veröffentlichten Quellen, und die Prüfungen
+messen die Vorhersagegüte gegen ein Jahr, das den Profilen ausdrücklich
+**nicht** folgt.
+
+Was damit **nicht** belegt ist: wie gut die Profile zu einem konkreten
+Haushalt passen. Das zeigt erst ein Jahr eigener Ablesungen — und genau
+deshalb schlägt die eigene Historie das Profil, sobald sie vorliegt.
+
+_Geprüft: 189 Prüfungen in `PulseCore` (17 neu), 74 im Klick-Dummy (14 neu),
+Syntax aller iOS-Quellen. Die Zahlen der Beispiele oben sind von Hand
+nachgerechnet und stehen als Erwartungswerte in den Prüfungen._
+
+---
+
 ## 0.37.1 — 2026-08-10
 
 **Meine Erklärung aus 0.34.1 war falsch. Der Tipp ging verloren, nicht die

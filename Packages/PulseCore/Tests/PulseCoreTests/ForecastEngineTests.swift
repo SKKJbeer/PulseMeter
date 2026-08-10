@@ -44,7 +44,7 @@ final class ForecastEngineTests: XCTestCase {
             period: year2026, today: day(2026, 4, 1)
         )
 
-        XCTAssertEqual(forecast?.method, .seasonal)
+        XCTAssertEqual(forecast?.method, .previousYear)
         // 1000 kWh entsprechen 40 % → 2500 kWh erwartet,
         // deutlich unter der linearen Schätzung von rund 4040 kWh.
         assertClose(forecast?.projected.value ?? 0, 2500, accuracy: 0.01)
@@ -123,11 +123,22 @@ final class ForecastEngineTests: XCTestCase {
         )
 
         XCTAssertNotNil(outlook)
-        // Hochrechnung 3650 kWh × 0,30 € = 1095 €, Abschläge 12 × 100 € = 1200 €
+        // **Von Hand nachgerechnet, seit 0.38.0 nach dem Referenzprofil.**
+        // Januar bis März sind im Standardlastprofil H0 zusammen 27,651 % des
+        // Jahres — mehr als die 24,7 %, die 90 von 365 Tagen ergäben, denn im
+        // Winter läuft das Licht länger. Also: 900 kWh ÷ 0,27651 = 3255 kWh
+        // im Jahr, × 0,30 € = 976,46 €. Abschläge 12 × 100 € = 1200 €.
+        //
+        // Vorher stand hier 1095 € aus der gleichmäßigen Fortschreibung
+        // (3650 kWh). Die 119 € Unterschied sind kein Rundungsfehler, sondern
+        // der Betrag, um den die App einem Nutzer im Frühjahr zu viel
+        // vorhergesagt hat.
         assertClose(outlook?.totalPrepayment.amount ?? 0, 1200, accuracy: 0.01)
-        assertClose(outlook?.projectedCost.amount ?? 0, 1095, accuracy: 0.01)
-        assertClose(outlook?.balance.amount ?? 0, 105, accuracy: 0.01)
+        assertClose(outlook?.projectedCost.amount ?? 0, 976.46, accuracy: 0.01)
+        assertClose(outlook?.balance.amount ?? 0, 223.54, accuracy: 0.01)
         XCTAssertEqual(outlook?.expectsRefund, true)
+        XCTAssertEqual(outlook?.method, .reference,
+                       "Ohne eigenes Vorjahr trägt das veröffentlichte Profil — und sagt das auch")
     }
 
     func testPrepaymentOutlookPredictsAdditionalPayment() throws {
@@ -148,7 +159,8 @@ final class ForecastEngineTests: XCTestCase {
         )
 
         XCTAssertEqual(outlook?.expectsRefund, false)
-        assertClose(outlook?.balance.amount ?? 0, -990, accuracy: 0.01)   // 2 × 3650 × 0,30 = 2190
+        // 1800 kWh ÷ 0,27651 = 6510 kWh × 0,30 € = 1952,91 €, minus 1200 € Abschläge.
+        assertClose(outlook?.balance.amount ?? 0, -752.91, accuracy: 0.01)
     }
 
     func testNoOutlookWithoutPrepayment() throws {
@@ -188,14 +200,22 @@ final class ForecastEngineTests: XCTestCase {
     /// 1. April — jemand hat die zweite Zahl einmal vergessen. Der Bezug
     /// rechnet sich also mit 365/181 hoch, die Einspeisung mit 365/90.
     ///
-    /// - Bezug: 900 kWh in 181 Tagen → 1814,92 kWh im Jahr × 0,30 € = 544,48 €
-    /// - Einspeisung: 300 kWh in 90 Tagen → 1216,67 kWh im Jahr × 0,10 € = 121,67 €
-    /// - Erwartet: 544,48 − 121,67 = **422,81 €**
+    /// **Seit 0.38.0 mit den Referenzprofilen, und dadurch deutlich anders.**
+    /// Der Bezug folgt dem Haushaltsprofil, die Einspeisung der Sonne — zwei
+    /// gegenläufige Formen an einem Gerät.
     ///
-    /// Die alte Rechnung kam auf 483,98 € — sie nahm die 240 € Nettokosten
-    /// bis Juli und multiplizierte sie mit dem Faktor des Bezugs. Einundsechzig
-    /// Euro daneben, und im Winter wäre der Abstand größer: Dann steht die
-    /// Einspeisung des ganzen Sommers noch aus.
+    /// - Bezug: 900 kWh bis zum 1. Juli. Januar bis Juni sind im H0-Profil
+    ///   50,499 % des Jahres → 1782,2 kWh × 0,30 € = **534,66 €**
+    /// - Einspeisung: 300 kWh bis zum 1. April. Januar bis März bringen aber
+    ///   nur 15,579 % des Jahresertrags einer Anlage → 1925,7 kWh
+    ///   × 0,10 € = **192,57 €**
+    /// - Erwartet: 534,66 − 192,57 = **342,09 €**
+    ///
+    /// Vorher stand hier 422,81 €. Der Unterschied von 81 € kommt fast
+    /// vollständig aus der Einspeisung: Gleichmäßig fortgeschrieben hätte die
+    /// Anlage im Rest des Jahres so weitergeliefert wie im Winter — bei
+    /// Photovoltaik der schlechtestmögliche Schätzwert. Dezember zu Juni steht
+    /// wie 1 zu 9.
     func testOutlookProjectsEachRegisterWithItsOwnShape() throws {
         let draw = Fixture.electricityRegister()
         let feedIn = Register(label: "Einspeisung", unit: .kilowattHour,
@@ -218,9 +238,9 @@ final class ForecastEngineTests: XCTestCase {
             period: period, today: day(2026, 7, 1)
         )
 
-        assertClose(outlook?.projectedCost.amount ?? 0, 422.81, accuracy: 0.02)
+        assertClose(outlook?.projectedCost.amount ?? 0, 342.09, accuracy: 0.02)
         assertClose(outlook?.totalPrepayment.amount ?? 0, 600, accuracy: 0.01)
-        assertClose(outlook?.balance.amount ?? 0, 177.19, accuracy: 0.02)
+        assertClose(outlook?.balance.amount ?? 0, 257.91, accuracy: 0.02)
         XCTAssertEqual(outlook?.expectsRefund, true)
     }
 
@@ -256,7 +276,65 @@ final class ForecastEngineTests: XCTestCase {
         let withFeedIn = try projected([draw, feedIn], feedInPrice: dec("0.10"))
         XCTAssertLessThan(withFeedIn, withoutFeedIn,
                           "Die Einspeisung muss die erwarteten Kosten senken")
-        // 600 kWh in 181 Tagen → 1209,94 kWh × 0,10 € = 120,99 € Gutschrift.
-        assertClose(withoutFeedIn - withFeedIn, 120.99, accuracy: 0.02)
+        // 600 kWh bis zum 1. Juli sind 53,684 % des Jahresertrags einer Anlage
+        // → 1117,6 kWh × 0,10 € = 111,76 € Gutschrift. Gleichmäßig
+        // fortgeschrieben wären es 120,99 € gewesen — zu viel, denn die
+        // Sonnenhälfte des Jahres ist zur Jahresmitte schon zur Hälfte vorbei.
+        assertClose(withoutFeedIn - withFeedIn, 111.76, accuracy: 0.02)
+    }
+
+    /// Die Grundlage kommt bis in den Abschlagsvergleich mit — sonst steht auf
+    /// der Karte ein Betrag, dem niemand ansieht, worauf er beruht.
+    ///
+    /// Bei mehreren Zählwerken zählt die **schwächste** Grundlage. Hier hat
+    /// der Bezug ein eigenes Vorjahr, die Einspeisung nicht; genannt wird
+    /// deshalb das Referenzprofil.
+    func testTheOutlookNamesItsWeakestBasis() throws {
+        let draw = Fixture.electricityRegister()
+        let feedIn = Register(label: "Einspeisung", unit: .kilowattHour,
+                              direction: .feedIn, integerDigits: 6, fractionDigits: 1)
+        let point = Fixture.meteringPoint(registers: [draw, feedIn])
+        let readings = [
+            // Der Bezug hat ein vollständiges Vorjahr.
+            Fixture.reading(draw, day(2025, 1, 1), 0),
+            Fixture.reading(draw, day(2025, 4, 1), 1000),
+            Fixture.reading(draw, day(2026, 1, 1), 3000),
+            Fixture.reading(draw, day(2026, 4, 1), 3900),
+            // Die Einspeisung erst seit Januar.
+            Fixture.reading(feedIn, day(2026, 1, 1), 0),
+            Fixture.reading(feedIn, day(2026, 4, 1), 300)
+        ]
+        let tariff = Tariff(meteringPointID: point.id, validFrom: day(2025, 1, 1),
+                            pricePerUnit: dec("0.30"), billingUnit: .kilowattHour,
+                            feedInPricePerUnit: dec("0.10"))
+        let period = BillingPeriod(meteringPointID: point.id, range: year2026,
+                                   monthlyPrepayment: 100)
+
+        let outlook = try ForecastEngine.prepaymentOutlook(
+            meteringPoint: point, readings: readings, tariffs: [tariff],
+            period: period, today: day(2026, 4, 1))
+
+        XCTAssertEqual(outlook?.method, .reference,
+                       "Genannt wird die schwächste Grundlage, nicht die schmeichelhafteste")
+        XCTAssertEqual(outlook?.method.usesOwnHistory, false)
+    }
+
+    /// Ohne Profil und ohne Vorjahr bleibt es bei der gleichmäßigen
+    /// Fortschreibung — und auch das steht dann da.
+    ///
+    /// Wasser ist der Fall: Es schwankt über das Jahr kaum, ein Profil dafür
+    /// wäre erfunden, und gleichmäßig ist hier die ehrliche Annahme.
+    func testWaterStaysLinearAndSaysSo() {
+        let register = Register.standard(for: .water)
+        let readings = [
+            Fixture.reading(register, day(2026, 1, 1), 0),
+            Fixture.reading(register, day(2026, 4, 1), 30)
+        ]
+        let forecast = ForecastEngine.forecast(
+            register: register, readings: readings,
+            period: year2026, today: day(2026, 4, 1), kind: .water)
+
+        XCTAssertEqual(forecast?.method, .linear)
+        assertClose(forecast?.projected.value ?? 0, 121.667, accuracy: 0.01)
     }
 }
