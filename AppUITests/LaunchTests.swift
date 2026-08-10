@@ -112,7 +112,8 @@ final class LaunchTests: XCTestCase {
                       "Ein nie abgelesener Zähler muss als solcher gemeldet werden")
 
         // Erste Ablesung eintippen — es gibt keinen Vorgängerwert zum Übernehmen.
-        app.buttons["Stand eintragen"].firstMatch.tap()
+        app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Stand eintragen'"))
+            .firstMatch.tap()
         XCTAssertTrue(app.buttons["1"].waitForExistence(timeout: 5), "Der Ziffernblock erschien nicht")
         XCTAssertTrue(app.staticTexts["Erste Ablesung für diesen Zähler"].exists,
                       "Ohne Vorgänger muss das dastehen")
@@ -404,7 +405,8 @@ final class LaunchTests: XCTestCase {
     func testCapturingAReadingClearsTheNotice() {
         let app = launchWithData()
 
-        app.buttons["Stand eintragen"].firstMatch.tap()
+        app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Stand eintragen'"))
+            .firstMatch.tap()
         XCTAssertTrue(app.buttons["7"].waitForExistence(timeout: 5),
                       "Der Ziffernblock erschien nicht")
 
@@ -717,7 +719,23 @@ final class LaunchTests: XCTestCase {
         ).firstMatch
         XCTAssertTrue(karte.waitForExistence(timeout: 5),
                       "Der neue Zähler steht nicht auf der Übersicht")
-        karte.tap()
+
+        // **Nicht die Karte antippen, sondern ihren Knopf.** Die Karte selbst
+        // öffnet nichts — die Erfassung hängt an „Stand eintragen“. Der Tipper
+        // auf die Karte ging deshalb ins Leere, und alles Weitere suchte
+        // Zählwerke auf einem Schirm, der noch die Übersicht war. Die
+        // Aufstellung im Fehlschlag hat genau das gezeigt: lauter Texte der
+        // Übersicht, kein einziger aus der Erfassung.
+        //
+        // Der Knopf trägt seit dieser Version den Zählernamen, deshalb ist er
+        // eindeutig ansprechbar — bei mehreren fälligen Zählern gäbe es sonst
+        // mehrere Knöpfe gleichen Namens.
+        let eintragen = app.buttons["Stand eintragen für Nachtspeicher"]
+        XCTAssertTrue(eintragen.waitForExistence(timeout: 5),
+                      "Die Karte des neuen Zählers hat keinen Knopf zum Eintragen")
+        XCTAssertTrue(scroll(to: eintragen, in: app),
+                      "Der Knopf zum Eintragen ließ sich nicht erreichen")
+        eintragen.tap()
 
         // Erst der Tagstrom, dann der Nachtstrom — in einem Vorgang, wie beim
         // Zweirichtungszähler.

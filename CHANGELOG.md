@@ -9,6 +9,44 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.33.5 — 2026-08-10
+
+**Der Zuschnitt war es: Der Bericht zeigt Inhalt. Und die Erfassung ging nie
+auf, weil auf die Karte statt auf ihren Knopf getippt wurde.**
+
+### Bestätigt
+- **Der PDF-Bericht trägt Inhalt.** Das Bild aus dem Lauf zu `5f3b9af` zeigt
+  sechs Seiten mit Überschriften, Tabellen und Zahlen — zum ersten Mal seit
+  0.32.0 überhaupt sichtbar. `alignment: .topLeading` aus 0.33.3 war die
+  Ursache: Der Inhalt wurde nicht weggelassen, sondern weggeschnitten.
+- Offen bleibt allein der **Maßstab** — die Seiten sind noch etwa ein Sechstel
+  zu klein. Die Messzeile aus 0.33.4 liest ihn im nächsten Lauf ab.
+
+### Behoben
+- **Die Erfassung öffnete sich nie.** `testCreatingADualTariffMeterAsksForBothNumbers`
+  tippte auf die **Karte** des neuen Zählers — die öffnet aber nichts, die
+  Erfassung hängt am Knopf „Stand eintragen". Alles Weitere suchte danach
+  Zählwerke auf einem Schirm, der noch die Übersicht war. Belegt durch die
+  Aufstellung aus 0.33.2: lauter Texte der Übersicht, kein einziger aus der
+  Erfassung.
+
+### Geändert
+- **Der Knopf „Stand eintragen" sagt jetzt, für welchen Zähler er gilt.**
+  Sichtbar bleibt es bei „Stand eintragen" — in der Karte ist das eindeutig,
+  der Name steht zwei Zeilen darüber. Für VoiceOver war es das **nicht**: Wer
+  vier Zähler hat, fand vier Knöpfe mit demselben Namen und musste sich merken,
+  in welcher Karte er gerade steht. Genau die Sackgasse, die Produktprinzip 4
+  ausschließt. Aufgefallen ist es einer Prüfung, die den richtigen Knopf nicht
+  ansprechen konnte — ein Testproblem, das ein echtes Bedienproblem aufgedeckt
+  hat.
+
+_154 Prüfungen in `PulseCore`, alle grün. Klick-Dummy 44 von 44, hell und
+dunkel. Alle iOS-Quellen und `AppUITests` parsen sauber, Zeichenketten in
+Ordnung. Die Änderung an der Beschriftung berührt zwei weitere Prüfungen, die
+mitgezogen wurden; ob alle greifen, entscheidet der nächste macOS-Lauf._
+
+---
+
 ## 0.33.4 — 2026-08-10
 
 **Vier Vermutungen, vier Fehlschläge. Jetzt schreibt die Vorschau ihre eigenen

@@ -251,6 +251,18 @@ struct OverviewView: View {
                         .padding(.vertical, 13)
                 }
                 .buttonStyle(.plain)
+                // **Der Knopf sagt, für welchen Zähler er gilt.**
+                //
+                // Sichtbar steht „Stand eintragen“ — in der Karte ist das
+                // eindeutig, denn der Name steht zwei Zeilen darüber. Für
+                // VoiceOver war es das nicht: Wer vier Zähler hat, fand vier
+                // Knöpfe mit demselben Namen und musste sich merken, in
+                // welcher Karte er gerade steht. Genau die Art Sackgasse, die
+                // Produktprinzip 4 ausschließt.
+                //
+                // Aufgefallen ist es einer Oberflächenprüfung, die den
+                // richtigen Knopf nicht ansprechen konnte.
+                .accessibilityLabel("Stand eintragen für \(row.name)")
             }
         }
     }
