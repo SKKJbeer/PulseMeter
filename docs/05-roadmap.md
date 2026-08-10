@@ -1,13 +1,68 @@
 # 05 – Roadmap und v1-Scope
 
 Status: laufend gepflegt
-Letzte Änderung: 2026-08-06
+Letzte Änderung: 2026-08-10
 
 ---
 
 ## Leitsatz
 
 Der v1-Scope ist bewusst schmerzhaft klein. Jede Funktion, die wir vor dem ersten echten Nutzer bauen, ist eine Wette ohne Rückmeldung. Die größte Gefahr für dieses Projekt ist nicht ein fehlendes Feature — es ist eine Version 1, die nie fertig wird (Risiko R7).
+
+---
+
+## Gesamtübersicht auf einen Blick
+
+Für den schnellen Einstieg. Die Begründungen stehen weiter unten und in
+[`07-v1-plan.md`](07-v1-plan.md); hier steht nur, **was da ist und was nicht.**
+
+### Gebaut und grün geprüft
+
+| Bereich | Was |
+|---|---|
+| **Fundament** | `PulseCore` (154 Prüfungen) · `PulseData` mit SwiftData und CloudKit · `PulseUI` in Hell und Dunkel, Dynamic Type |
+| **Übersicht** | Statuszeile, Zähler-Karten, Kosten, Abschlagsvorschau, Fällig-Hinweis |
+| **Erfassung** | Zählwerk-Optik, Live-Plausibilisierung, Vorbelegung, mehrere Zählwerke in einem Vorgang, Weg zurück |
+| **Verlauf** | Monat/Quartal/Jahr, Diagramm und Tabelle, Menge oder Kosten, Vorjahresvergleich |
+| **Zählerverwaltung** | Preise, Abschlag, Archiv, Zählerwechsel |
+| **Rechnen** | Tarife und Kosten · saisonale Jahresprognose · Abschlagsvergleich · Zweirichtungszähler (PV) · Doppeltarif (HT/NT) · Zählerwechsel · Zählerüberlauf |
+| **Ausgabe** | CSV-Export *(frei)* · PDF-Bericht mit Zeitraumwahl · Erinnerungen · Home- und Lock-Screen-Widget |
+| **Werkzeug** | `pruefen.sh` als ein Befehl für alles · `mac-start.sh` und Doppelklick-Start · CI auf Linux und macOS · Bilder auch bei rotem Lauf · Zweige `screenshots` und `pruefungen` · Klick-Dummy mit echtem Rechenkern (44 Prüfungen) |
+
+### Für 1.0 offen
+
+| Was | Bei wem |
+|---|---|
+| **Apple Developer Program** (99 €) | **Nutzer** — blockiert alles Weitere und lässt sich nicht vorarbeiten |
+| Paywall, StoreKit 2, Kaufwiederherstellung | Sitzung am Mac, sobald das Programm da ist |
+| **App-Store-Material** — Icon, Bilder je Gerätegröße, Texte, Datenschutzerklärung, Support-Adresse | gemeinsam, **nicht angefangen** |
+| App-Privacy-Angaben | Nutzer |
+| Barrierefreiheit zu Ende | Sitzung am Mac |
+| 800 ms Kaltstart auf einem **Gerät** | Nutzer |
+| **Zwei Wochen echte Nutzung** | Nutzer |
+
+### Nach 1.0
+
+| Version | Inhalt |
+|---|---|
+| **1.1** | Objekte und Einheiten · Mieterzuordnung mit Ein-/Auszugsprotokoll und Unterschrift · Sammelerfassung · Vermieter-Abo · iPad-Layout · Import · **Foto-Belege** und **Siri-Kurzbefehl** (aus 1.0 gestrichen) |
+| **1.2** | Kamera-Erkennung des Zählerstands (on-device, immer als Vorschlag) · Erfassung aus der Benachrichtigung · Control-Center |
+| **2.0** | offen, marktabhängig: Mac-App · geteilte Haushalte · optionale Live-Datenquellen · CO₂ mit belastbarer Datenquelle |
+| **nie** | Watch-App · Vergleich mit anderen Haushalten · ML-Prognose |
+
+### Was das fürs Geldverdienen heißt
+
+**Frei bleibt dauerhaft:** bis zwei Zähler, unbegrenzte Ablesungen und
+Historie, Verlauf, Vorjahresvergleich, Erinnerungen und der CSV-Export.
+
+**Pro trägt zum Start mit fünf Dingen, die alle fertig sind:** unbegrenzte
+Zähler und Zählwerke, Kosten und Tarife, Abschlagsvergleich, Jahresprognose,
+PDF-Bericht.
+
+> ⚠️ **Fürs Store-Material:** In `04-monetarisierung.md` stehen **Foto-Belege**
+> und **Siri-Kurzbefehle** in der Pro-Liste. Beide sind aus 1.0 gestrichen und
+> dürfen in der Store-Beschreibung nicht auftauchen. Ein verkauftes Merkmal,
+> das es nicht gibt, ist eine Rückerstattung und eine schlechte Bewertung.
 
 ---
 
@@ -112,7 +167,7 @@ Die Reihenfolge ist bewusst nicht „Screens von oben nach unten", sondern nach 
 
 ---
 
-## Aktueller Stand — Version 0.33.6
+## Aktueller Stand — Version 0.33.7
 
 | Schritt | Stand |
 |---|---|

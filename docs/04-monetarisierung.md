@@ -39,10 +39,22 @@ Die Nutzungsfrequenz einer Zähler-App liegt bei 1–12 Öffnungen pro Jahr und 
 - Unbegrenzte Zähler und Zählwerke (PV, HT/NT, Wärmepumpe, Wallbox)
 - Kosten & Tarife, Tarifhistorie
 - Abschlagsvergleich und Jahresprognose
-- Foto-Belege
+- Foto-Belege — **erst ab 1.1**, siehe Hinweis unten
 - PDF-Bericht
-- Widgets, Siri-Kurzbefehle
+- Widgets — Siri-Kurzbefehle **erst ab 1.1**, siehe Hinweis unten
 - Alle künftigen Funktionen des Privatbereichs
+
+> ⚠️ **Zum Verkaufsstart nicht bewerben:** **Foto-Belege** und
+> **Siri-Kurzbefehle** sind aus 1.0 gestrichen (Begründung in
+> [`07-v1-plan.md`](07-v1-plan.md)) und kommen mit 1.1. Sie gehören deshalb
+> **nicht** in die Pro-Beschreibung im App Store, nicht in die Paywall und
+> nicht in die Schlagworte. Ein verkauftes Merkmal, das es nicht gibt, ist eine
+> Rückerstattung, eine schlechte Bewertung und im Zweifel eine Ablehnung durch
+> die Prüfung.
+>
+> Pro trägt zum Start auch ohne sie: unbegrenzte Zähler und Zählwerke, Kosten
+> und Tarife, Abschlagsvergleich, Jahresprognose und der PDF-Bericht sind fünf
+> Gründe, und keiner davon ist ein Versprechen auf später.
 
 **PulseMeter Vermieter — Abo, ca. 29,99 €/Jahr**
 - Mehrere Objekte und Einheiten

@@ -9,6 +9,36 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.33.7 — 2026-08-10
+
+**Eine Gesamtübersicht ganz oben in der Roadmap — und eine Falle fürs
+Store-Material entschärft.**
+
+### Hinzugefügt
+- `docs/05-roadmap.md` beginnt jetzt mit einer **Gesamtübersicht auf einen
+  Blick**: was gebaut und grün geprüft ist, was für 1.0 offen ist und bei wem
+  es liegt, und was in 1.1, 1.2, 2.0 oder nie kommt. Der Inhalt stand vorher
+  verteilt über vier Dokumente — wer sich orientieren wollte, musste alle vier
+  lesen und selbst zusammensetzen.
+
+### Behoben
+- **Foto-Belege und Siri-Kurzbefehle standen weiter in der Pro-Liste**, obwohl
+  sie mit 0.32.10 aus 1.0 gestrichen wurden. `04-monetarisierung.md` ist die
+  Vorlage fürs Store-Material — von dort wäre beides ungeprüft in die
+  Produktbeschreibung gewandert. Ein verkauftes Merkmal, das es nicht gibt, ist
+  eine Rückerstattung, eine schlechte Bewertung und im Zweifel eine Ablehnung
+  durch die Prüfung. Beide sind jetzt als „erst ab 1.1" gekennzeichnet, mit
+  einem ausdrücklichen Hinweis, sie zum Start nicht zu bewerben.
+
+  Dass Pro auch ohne sie trägt, steht daneben: unbegrenzte Zähler und
+  Zählwerke, Kosten und Tarife, Abschlagsvergleich, Jahresprognose und der
+  PDF-Bericht sind fünf fertige Gründe.
+
+_154 Prüfungen in `PulseCore`, alle grün. Klick-Dummy 44 von 44, hell und
+dunkel. Diese Version ändert nur Dokumente und Versionsnummern._
+
+---
+
 ## 0.33.6 — 2026-08-10
 
 **Grün, zusammengeführt, aufgeräumt.**
