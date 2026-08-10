@@ -35,6 +35,10 @@ targets:
     platform: iOS
     sources:
       - path: App
+      # Das Icon. Erzeugt aus `scripts/icon.mjs`, nicht von Hand gepflegt —
+      # drei Erscheinungsbilder aus einer Zeichnung, damit sie nicht
+      # auseinanderlaufen.
+      - path: Assets.xcassets
       # Die Brücke zum Widget liegt in Shared, weil beide Ziele sie brauchen.
       # Zweimal übersetzt statt zweimal geschrieben: Eine zweite Fassung
       # zeigte früher oder später eine andere Zahl als die erste.
@@ -48,9 +52,16 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.pulsemeter.app
         PRODUCT_NAME: PulseMeter
-        MARKETING_VERSION: "0.36.0"
+        MARKETING_VERSION: "0.37.0"
         CURRENT_PROJECT_VERSION: "1"
-        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        # **Nur iPhone.** Stand bis 0.37.0 auf "1,2", also universal — und
+        # damit hätte Apple zur Einreichung iPad-Bilder verlangt und die App
+        # auf einem iPad geprüft, das sie nie zur Kenntnis genommen hat. Die
+        # Ansichten sind für eine Hand gebaut; ein iPad bekäme eine auf 13 Zoll
+        # gezogene Telefonoberfläche und eine schlechte Bewertung dafür.
+        # iPad steht in `docs/07-v1-plan.md` für 1.1 — dann richtig.
+        TARGETED_DEVICE_FAMILY: "1"
         GENERATE_INFOPLIST_FILE: NO
         INFOPLIST_FILE: App/Info.plist
         CODE_SIGN_STYLE: Automatic
@@ -71,7 +82,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.pulsemeter.app.widget
         PRODUCT_NAME: PulseWidget
-        MARKETING_VERSION: "0.36.0"
+        MARKETING_VERSION: "0.37.0"
         CURRENT_PROJECT_VERSION: "1"
         GENERATE_INFOPLIST_FILE: NO
         INFOPLIST_FILE: Widget/Info.plist

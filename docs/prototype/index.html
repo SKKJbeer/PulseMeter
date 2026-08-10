@@ -110,6 +110,7 @@ body {
   width: 100%; max-width: 430px;
   display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
 }
+.stage-head .mark { display:block; margin: 0 auto 10px; border-radius: 12px; }
 .stage-head h1 {
   margin: 0; font-size: 15px; font-weight: 640; letter-spacing: -0.01em;
 }
@@ -666,8 +667,22 @@ select.field { cursor: pointer; }
 </style>
 
 <div class="stage-head">
+  <!-- Dasselbe Zeichen wie das App-Icon: ein Bogen als Skala, ein Puls darin.
+       Erzeugt wird das Icon aus `scripts/icon.mjs`; hier steht die Zeichnung
+       ein zweites Mal, weil der Entwurf in sich geschlossen bleiben soll und
+       ohne Netz laufen muss. Ändert sich das eine, gehört das andere
+       nachgezogen — sonst wirbt der Entwurf mit einem Zeichen, das es nicht
+       mehr gibt. -->
+  <svg class="mark" viewBox="0 0 1024 1024" width="52" height="52" aria-hidden="true">
+    <rect width="1024" height="1024" rx="230" fill="#1B1811"/>
+    <path d="M 306 718 A 290 290 0 1 1 718 718" fill="none" stroke="#DE9A2E"
+          stroke-width="86" stroke-linecap="round"/>
+    <path d="M 356 512 L 440 512 L 486 382 L 560 642 L 606 512 L 668 512"
+          fill="none" stroke="#FDF8EF" stroke-width="56"
+          stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.36.0</p>
+  <p>Klickbarer Entwurf · v0.37.0</p>
 </div>
 
 <div class="device">

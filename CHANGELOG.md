@@ -9,6 +9,70 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.37.0 — 2026-08-10
+
+**Material für den App Store: Icon, Texte, Bilder, Datenschutzerklärung — und
+eine Einstellung, die eine Ablehnung gekostet hätte.**
+
+`docs/07-v1-plan.md` nennt das App-Store-Material seit jeher „das, was am
+meisten unterschätzt wird" und führte es als **nicht angefangen**. Es ist
+jetzt fertig, so weit es ohne Apple-Konto geht.
+
+### Neu
+
+- **Ein App-Icon.** Bis heute gab es im ganzen Repository keinen
+  Asset-Katalog — ohne Icon nimmt Apple nichts entgegen. Die Zeichnung ist der
+  Name: ein Bogen als Skala eines Messwerks, ein Puls als Linie darin.
+  Bernstein auf warmem Dunkel, weil die Kategorie blau und grün ist.
+
+  Erzeugt wird es aus `scripts/icon.mjs` in den drei Fassungen, die iOS 18
+  verlangt — hell, dunkel, getönt. Ein Skript und keine Bilddateien von Hand:
+  Drei Fassungen laufen auseinander, sobald sich eine Farbe ändert, und dann
+  steht im Store ein anderes Zeichen als auf dem Gerät.
+
+- **`docs/09-appstore.md`** — jedes Textfeld fertig zum Einfügen, mit
+  Zeichenzahl und Begründung: Name, Untertitel, Werbetext, Schlagworte,
+  Beschreibung, Versionshinweise, Kategorien, Altersfreigabe, die Antworten
+  des Datenschutz-Fragebogens und die Notizen für die Prüfung.
+
+- **`docs/datenschutz.md`** — die Datenschutzerklärung, die als erreichbare
+  URL Pflicht ist. Sie kann kurz sein, weil die Architektur es hergibt: kein
+  Konto, kein Tracking, keine Server. Nur Name und Anschrift des
+  Verantwortlichen fehlen; die kann niemand außer dem Gründer eintragen.
+
+- **`scripts/store-shots.mjs`** — setzt die Simulator-Bilder mit Überschrift
+  und Gerätrahmen auf 1320 × 2868, das Maß für 6,9 Zoll. Ein Skript, weil sich
+  die Bilder bei jeder Oberflächenänderung ändern: Von Hand gesetzte müsste
+  man jedes Mal neu setzen, also setzt man sie irgendwann nicht mehr neu — und
+  im Store steht dann eine App, die es so nicht mehr gibt.
+
+- Der Klick-Dummy trägt das Zeichen jetzt im Kopf.
+
+### Behoben
+
+- **Die App war als Universal-App eingestellt.** `TARGETED_DEVICE_FAMILY`
+  stand auf `"1,2"`, also iPhone **und** iPad. Damit hätte Apple zur
+  Einreichung iPad-Bilder verlangt und die App auf einem iPad geprüft, für das
+  sie nicht gebaut ist: Die Ansichten sind für eine Hand gemacht, ein iPad
+  bekäme eine auf 13 Zoll gezogene Telefonoberfläche und eine schlechte
+  Bewertung dafür. iPad steht in `docs/07-v1-plan.md` für 1.1 — dann richtig.
+  Jetzt `"1"`, und der iPad-Block aus `Info.plist` ist mit weg.
+
+### Zur Vorsicht vermerkt
+
+Das sechste Store-Bild zeigt die Kaufseite, und dort steht heute „Der Kauf
+steht bereit, sobald PulseMeter im App Store ist". Im Store selbst wäre dieser
+Satz absurd — und er stünde ausgerechnet auf dem Bild, das verkaufen soll.
+Nach dem Einbau von StoreKit sind die Bilder neu zu erzeugen; der Hinweis
+steht in `09-appstore.md` an der Stelle, an der jemand danach sucht.
+
+_Geprüft: 172 Prüfungen in `PulseCore`, 60 im Klick-Dummy, Syntax aller
+iOS-Quellen. Icon und Store-Bilder erzeugt und angesehen. Der Xcode-Build
+läuft in der CI — dort zeigt sich auch, ob der Asset-Katalog richtig
+eingebunden ist._
+
+---
+
 ## 0.36.0 — 2026-08-10
 
 **Beim Nachsehen für die Barrierefreiheit fiel eine Taste auf, die nichts tat
