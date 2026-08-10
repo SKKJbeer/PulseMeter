@@ -82,6 +82,21 @@ abgebrochen werden, der lange nicht.
 **Ein Prüfschritt, der die Testquellen auslässt**, findet Tippfehler dort erst
 nach dem vollständigen Build — nach der teuersten Minute des Laufs.
 
+**Eine plausible Erklärung ist keine gemessene.** Eine Oberflächenprüfung fiel
+zweimal mit „Knopf fehlt". Beim ersten Mal war die Erklärung „zu kurz
+gewartet", und alle Wartezeiten wurden verdoppelt. Beim zweiten Mal fiel sie
+wieder — und die Zeitstempel, die schon im **ersten** Protokoll gestanden
+hatten, sagten etwas anderes: Der Start dauerte vierzehn Sekunden, und der
+Tipp auf den Tab fiel in dieses Fenster und ging verloren. Der Knopf war nie
+langsam, er war auf einem anderen Schirm — und dagegen hilft keine Wartezeit
+der Welt.
+
+Die Lehre ist nicht „länger warten" und auch nicht „öfter tippen", sondern:
+**Eine Bedienhandlung, deren Wirkung nicht nachgeprüft wird, ist eine
+Annahme.** Wo ein Test etwas antippt, gehört die Gegenprobe daneben, dass es
+gewirkt hat — und zwar an einem Merkmal, das der Tipp selbst nicht schon
+erfüllt.
+
 ---
 
 ## In zehn Schritten übertragen

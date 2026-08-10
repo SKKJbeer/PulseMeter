@@ -88,6 +88,53 @@ final class LaunchTests: XCTestCase {
         return element.exists && element.isHittable
     }
 
+    /// Wechselt den Tab und **prüft nach, dass er auch gewechselt hat**.
+    ///
+    /// **Warum das nötig ist.** `testAddingAMeterFromTheMetersTab` ist zweimal
+    /// gefallen — in 0.34.0 und in 0.36.0 —, beide Male mit „Die Schaltfläche
+    /// zum Anlegen fehlt", beide Male als **erste** Prüfung des Laufs, beide
+    /// Male nach knapp einer Minute. Beide Male war derselbe Commit im zweiten
+    /// Anlauf grün.
+    ///
+    /// In 0.34.1 habe ich daraus geschlossen, es sei zu kurz gewartet, und
+    /// alle Wartezeiten von fünf auf zehn Sekunden gesetzt. **Das war die
+    /// falsche Erklärung**, denn es ist danach wieder gefallen. Das Protokoll
+    /// des Laufs 31418692022 sagt, was wirklich passiert: Der Start dauerte
+    /// 14 Sekunden („Setting up automation session", „Wait for app to idle"),
+    /// und der Tipp auf den Tab fiel in genau dieses Fenster. Er ging
+    /// verloren — die App blieb auf der Übersicht stehen. Danach hätte auch
+    /// eine Wartezeit von einer Minute nichts gefunden, denn der Knopf war
+    /// nicht langsam, sondern auf einem anderen Schirm.
+    ///
+    /// Deshalb hier keine längere Wartezeit, sondern eine Gegenprobe: Ist der
+    /// Zielschirm nach dem Tipp nicht da, wird noch einmal getippt. Kommt er
+    /// dann immer noch nicht, ist es ein echter Fehler — und die Meldung sagt,
+    /// was stattdessen zu sehen war.
+    @discardableResult
+    private func wechsel(zu tab: String, in app: XCUIApplication) -> Bool {
+        let knopf = app.tabBars.buttons[tab]
+        guard knopf.waitForExistence(timeout: erscheint) else {
+            XCTFail("Die Tab-Leiste kennt den Eintrag \(tab) nicht")
+            return false
+        }
+        for versuch in 1...2 {
+            knopf.tap()
+            // **Über die Navigationsleiste, nicht über einen Text.** Der Tab
+            // trägt denselben Namen wie der Schirm; ein `staticTexts[tab]`
+            // könnte deshalb die Beschriftung des Tabs selbst treffen und
+            // wäre auch dann erfüllt, wenn gar nichts gewechselt hat — die
+            // Gegenprobe prüfte sich dann selbst.
+            if app.navigationBars[tab].waitForExistence(timeout: erscheint) { return true }
+            if versuch == 1 {
+                // Ein verlorener Tipp während des Starts. Kein Grund zur
+                // Aufregung, aber einer, der im Protokoll stehen soll.
+                XCTContext.runActivity(named: "Tab \(tab) kam nicht — zweiter Versuch") { _ in }
+            }
+        }
+        XCTFail("Der Schirm \(tab) kam auch nach zwei Versuchen nicht")
+        return false
+    }
+
     /// Startet die App ohne jeden Bestand.
     ///
     /// Der Zustand, in dem jeder neue Nutzer anfängt — und bis 0.16 der
@@ -343,7 +390,7 @@ final class LaunchTests: XCTestCase {
     /// „Verbrauch".
     func testHistoryTableSwitchesToCosts() {
         let app = launchWithData()
-        app.tabBars.buttons["Verlauf"].tap()
+        wechsel(zu: "Verlauf", in: app)
         XCTAssertTrue(app.buttons["Alle Zahlen"].waitForExistence(timeout: erscheint))
         app.buttons["Alle Zahlen"].tap()
 
@@ -362,7 +409,7 @@ final class LaunchTests: XCTestCase {
     /// Der Verlauf steht und zeigt einen Zähler mit Diagramm.
     func testHistoryShowsAChartForTheSelectedMeter() {
         let app = launchWithData()
-        app.tabBars.buttons["Verlauf"].tap()
+        wechsel(zu: "Verlauf", in: app)
 
         XCTAssertTrue(app.staticTexts["Verlauf"].waitForExistence(timeout: erscheint),
                       "Der Verlauf wurde nicht geöffnet")
@@ -379,7 +426,7 @@ final class LaunchTests: XCTestCase {
     /// weil ein Balken keinen Text trägt.
     func testTappingAMonthOpensTheYearComparison() {
         let app = launchWithData()
-        app.tabBars.buttons["Verlauf"].tap()
+        wechsel(zu: "Verlauf", in: app)
         XCTAssertTrue(app.buttons["Monat"].waitForExistence(timeout: erscheint))
 
         // „F" ist der Februar — ein abgeschlossener Monat mit Vorjahr daneben.
@@ -396,7 +443,7 @@ final class LaunchTests: XCTestCase {
     /// vorher kam man nur über „Beispieldaten anlegen" zu einem Zähler.
     func testAddingAMeterFromTheMetersTab() {
         let app = launchWithData()
-        app.tabBars.buttons["Zähler"].tap()
+        wechsel(zu: "Zähler", in: app)
 
         let add = app.buttons["Zähler hinzufügen"]
         XCTAssertTrue(add.waitForExistence(timeout: erscheint), "Die Schaltfläche zum Anlegen fehlt")
@@ -629,7 +676,7 @@ final class LaunchTests: XCTestCase {
     /// vorbereiteten Daten hätte genau diese Lücke nicht bemerkt.
     func testCreatingADualTariffMeterAsksForBothNumbers() {
         let app = launchWithData()
-        app.tabBars.buttons["Zähler"].tap()
+        wechsel(zu: "Zähler", in: app)
 
         let add = app.buttons["Zähler hinzufügen"]
         XCTAssertTrue(add.waitForExistence(timeout: erscheint), "Die Schaltfläche zum Anlegen fehlt")
@@ -738,7 +785,7 @@ final class LaunchTests: XCTestCase {
 
         app.buttons["Sichern"].tap()
 
-        app.tabBars.buttons["Übersicht"].tap()
+        wechsel(zu: "Übersicht", in: app)
         let karte = app.descendants(matching: .any).containing(
             NSPredicate(format: "label BEGINSWITH 'Nachtspeicher'")
         ).firstMatch
@@ -806,7 +853,7 @@ final class LaunchTests: XCTestCase {
     /// eine auf dem Bildschirm — sie ist ausgedruckt und weitergereicht.
     func testTheReportOffersPeriodsAndProducesADocument() {
         let app = launchWithData()
-        app.tabBars.buttons["Verlauf"].tap()
+        wechsel(zu: "Verlauf", in: app)
 
         let entry = app.buttons.containing(
             NSPredicate(format: "label CONTAINS 'Verbrauchsbericht'")
@@ -840,7 +887,7 @@ final class LaunchTests: XCTestCase {
     /// Ein Doppeltarifzähler steht mit **beiden** Zahlen im Bericht.
     func testTheReportCarriesBothTariffsOfADualTariffMeter() {
         let app = launchWithData()
-        app.tabBars.buttons["Verlauf"].tap()
+        wechsel(zu: "Verlauf", in: app)
 
         let entry = app.buttons.containing(
             NSPredicate(format: "label CONTAINS 'Verbrauchsbericht'")

@@ -9,6 +9,57 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.37.1 — 2026-08-10
+
+**Meine Erklärung aus 0.34.1 war falsch. Der Tipp ging verloren, nicht die
+Zeit.**
+
+`testAddingAMeterFromTheMetersTab` ist zum zweiten Mal gefallen — in 0.34.0
+und jetzt in 0.36.0. Beide Male mit derselben Meldung („Die Schaltfläche zum
+Anlegen fehlt"), beide Male als **erste** Prüfung des Laufs, beide Male nach
+knapp einer Minute, und beide Male war derselbe Commit im nächsten Anlauf
+grün.
+
+In 0.34.1 hatte ich daraus geschlossen, es sei zu kurz gewartet, und alle 39
+Wartezeiten von fünf auf zehn Sekunden gesetzt. Das hat den Fehler nicht
+behoben, weil er nicht dort saß.
+
+### Was das Protokoll wirklich sagt
+
+Lauf 31418692022, Zeitstempel im Klartext: Der Start brauchte **14 Sekunden**
+— `Setting up automation session` allein 7,85 s, `Wait for app to idle`
+weitere 3 s. Der Tipp auf den Tab „Zähler" fiel in genau dieses Fenster und
+**ging verloren**. Die App blieb auf der Übersicht stehen.
+
+Danach hätte auch eine Wartezeit von einer Minute nichts gefunden: Der Knopf
+war nicht langsam, er war auf einem anderen Schirm. Eine längere Wartezeit
+kann einen verlorenen Tipp nicht nachholen.
+
+### Behoben
+
+Alle Tabwechsel laufen jetzt über einen Helfer, der **nachprüft, dass der
+Wechsel stattgefunden hat**, und den Tipp einmal wiederholt, wenn nicht. Die
+Gegenprobe fragt die **Navigationsleiste** ab, nicht einen Text: Der Tab trägt
+denselben Namen wie der Schirm, und über `staticTexts` hätte die Prüfung sich
+selbst bestätigen können, ohne dass etwas gewechselt wäre.
+
+Kommt der Schirm auch beim zweiten Versuch nicht, ist es ein echter Fehler —
+und die Meldung sagt es als solchen.
+
+### Was daraus zu lernen ist
+
+Das steht so schon in `docs/08-baukasten.md` und ist hier zum dritten Mal
+bestätigt: **Nach dem zweiten Fehlversuch nicht weiterraten, sondern messen.**
+Die Zeitstempel standen im Protokoll jedes gefallenen Laufs — ich hatte sie
+beim ersten Mal nur nicht gelesen, sondern eine plausible Erklärung gebaut.
+Plausibel und richtig sind nicht dasselbe.
+
+_Geprüft: 172 Prüfungen in `PulseCore`, 60 im Klick-Dummy, Syntax aller
+iOS-Quellen. Ob der Helfer trägt, zeigt erst die CI — und richtig belegt ist
+er erst, wenn mehrere Läufe hintereinander grün bleiben._
+
+---
+
 ## 0.37.0 — 2026-08-10
 
 **Material für den App Store: Icon, Texte, Bilder, Datenschutzerklärung — und
