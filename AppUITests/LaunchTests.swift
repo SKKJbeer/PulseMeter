@@ -724,8 +724,22 @@ final class LaunchTests: XCTestCase {
         let erst = app.staticTexts.containing(
             NSPredicate(format: "label BEGINSWITH 'Hochtarif'")
         ).firstMatch
-        XCTAssertTrue(erst.waitForExistence(timeout: 10),
-                      "Die Erfassung nennt das erste Zählwerk nicht")
+        if !erst.waitForExistence(timeout: 10) {
+            // Dieselbe Lehre wie beim Schalter: nicht raten, sondern den
+            // Bildschirm berichten lassen. Ein selbst angelegter
+            // Doppeltarifzähler kann sein erstes Zählwerk anders benennen als
+            // der Zähler aus den Beispieldaten — welchen Namen die Erfassung
+            // tatsächlich zeigt, steht danach hier.
+            let texte = app.staticTexts.allElementsBoundByIndex
+                .prefix(25)
+                .map { "  „\($0.label)“" }
+            XCTFail("""
+                Die Erfassung nennt das erste Zählwerk nicht.
+                Texte auf dem Schirm (\(app.staticTexts.count)):
+                \(texte.joined(separator: "\n"))
+                """)
+            return
+        }
         XCTAssertTrue(erst.label.contains("1 von 2"),
                       "Ohne den Fortschritt weiß niemand, dass noch etwas kommt — gelesen: \(erst.label)")
 

@@ -112,7 +112,7 @@ Die Reihenfolge ist bewusst nicht „Screens von oben nach unten", sondern nach 
 
 ---
 
-## Aktueller Stand — Version 0.33.1
+## Aktueller Stand — Version 0.33.2
 
 | Schritt | Stand |
 |---|---|

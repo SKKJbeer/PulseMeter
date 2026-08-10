@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-08-09, Version 0.33.1
+Stand: 2026-08-09, Version 0.33.2
 
 ---
 
@@ -89,41 +89,58 @@ Drei Diagnosen sind dabei **widerlegt** worden, alle drei durch Messung:
 | `containing` statt `matching`; falsche Sammlung beim Schieben | 0.32.5 | Baum enthält genau **eine** Sammlung, und die Beschriftung hängt am Feld |
 | Ein zweiter Tipper genügt | 0.32.9 | Wert blieb „0" |
 
-Was bleibt: Ein `tap()` landet in der **Mitte** des Schalters, und die liegt bei
-einer Formularzeile auf der Beschriftung statt auf dem Knopf. 0.33.1 tippt
-deshalb zusätzlich bei 90 % der Breite an und gibt bei einem Fehlschlag
-`isEnabled`, `isHittable`, Rahmen und Wert aus.
+**Mit 0.33.1 gelöst.** Ein `tap()` landet in der **Mitte** des Schalters, und
+die liegt bei einer Formularzeile auf der Beschriftung statt auf dem Knopf. Der
+zusätzliche Tipper bei 90 % der Breite legt ihn um — belegt dadurch, dass der
+Fehlschlag von Zeile 640 auf **727** gewandert ist und die Prüfung jetzt
+39 statt 21 Sekunden läuft: Sie legt den Schalter um, trägt beide Preise ein,
+sichert den Zähler, findet ihn auf der Übersicht und scheitert erst in der
+Erfassung.
+
+Der neue Fehlschlag lautet „Die Erfassung nennt das erste Zählwerk nicht" — sie
+sucht einen Text, der mit `Hochtarif` beginnt. Vermutlich benennt ein selbst
+angelegter Doppeltarifzähler sein erstes Zählwerk anders als der aus den
+Beispieldaten. **Nicht geraten:** 0.33.2 gibt bei einem Fehlschlag alle Texte
+des Schirms aus, dann ist es eine Ablesung.
 
 **Die Lehre, teuer bezahlt:** Nach dem zweiten Fehlversuch nicht weiterraten,
 sondern die Prüfung dazu bringen, den Zustand zu berichten. Der eine Lauf mit
 Aufstellung hat mehr geklärt als drei Vermutungen davor.
 
-### Der wichtigste offene Punkt: Der PDF-Bericht zeigt sechs leere Seiten
+### Der leere PDF-Bericht — Ursache gefunden, Behebung ungeprüft
 
 Mit 0.32.8 entstehen Bilder auch bei einem gefallenen Lauf. Das erste Bild des
-Berichts, das je jemand gesehen hat, zeigt **sechs leere Seitenrahmen** — kein
-Text, keine Tabelle, keine Zahl. In Hell **und** in Dunkel, und in Dunkel sind
-die Seiten dunkel statt weiß.
+Berichts, das je jemand gesehen hat, zeigte **sechs leere Seitenrahmen**,
+schmal in der Mitte des Schirms, in Hell wie in Dunkel.
 
-Der Rest der App stellt auf demselben Lauf einwandfrei dar: Die Übersicht zeigt
-Karten, Zahlen, Vorjahresvergleich und Abschlagsvorschau.
+**Die Wartezeit war es nicht.** 0.33.1 gab dem Bericht 15 statt 4 Sekunden —
+das Bild ist unverändert.
 
-Zwei Lesarten, und **keine ist bisher belegt**:
+**Der Inhalt fehlt auch nicht.** `testTheReportCarriesBothTariffsOfADualTariffMeter`
+läuft grün durch und findet „Arbeitspreis Hochtarif" und „Arbeitspreis
+Niedertarif" als Text im Bericht. Er ist da, er wird nur unlesbar klein
+gezeichnet.
 
-1. **Der Bericht rendert leer.** Dann ist es ein Produktfehler, und zwar ein
-   schwerer: `ReportBuilderTests` belegt die Zahlen auf den Cent, sagt aber
-   nichts darüber, ob sie auf Papier landen.
-2. **Die Vorschau war noch nicht fertig.** `scripts/run.sh` wartet vier
-   Sekunden nach dem Start; für sechs A4-Seiten kann das zu wenig sein.
+**Die Ursache ist ein Kreisschluss in der Vorschau.** `ReportView` maß die
+Breite mit einem `GeometryReader` am Hintergrund genau des Stapels, dessen
+Breite von den Seiten kommt — und deren Breite kommt aus dieser Messung. Der
+Maßstab blieb bei einem winzigen Wert stehen. 0.33.2 misst stattdessen die
+**Bildlaufansicht**: Ihre Breite kommt von außen und hängt an nichts, was von
+der Messung abhängt. Dazu `onChange` statt nur `onAppear`, damit Drehung und
+geteilter Bildschirm nachziehen.
 
-Zu klären, bevor irgendetwas anderes am Bericht passiert. Am schnellsten auf
-einem Mac: `scripts/run.sh` laufen lassen und das Blatt selbst ansehen. Fällt
-die Entscheidung auf 2., gehört in `run.sh` eine Wartebedingung statt einer
-festen Zahl.
+**Ungeprüft.** Das entscheidet das Bild aus dem nächsten Lauf. Bleiben die
+Seiten leer, war auch diese Erklärung falsch — dann ist der nächste Schritt,
+den gemessenen Maßstab in die Beschriftung der Seite zu schreiben und ihn
+abzulesen, statt eine vierte Vermutung zu bauen.
+
+Und unabhängig vom Ausgang: Das **PDF** in der Datei entsteht über einen
+eigenen Weg (`ReportPDF.write` mit `renderer.proposedSize` auf A4) und ist von
+diesem Fehler nicht betroffen. Betroffen war die Vorschau auf dem Schirm.
 
 Dieser Fund ist die Bestätigung des Satzes weiter unten: Screenshots finden,
-was Tests nicht finden. Der Bericht war seit 0.32.0 „auf den Cent belegt" — und
-niemand hatte ihn je gesehen.
+was Tests nicht finden. Der Bericht war seit 0.32.0 „auf den Cent belegt", alle
+Prüfungen dazu grün — und trotzdem sah ihn niemand.
 
 ### Was ich nicht prüfen konnte
 

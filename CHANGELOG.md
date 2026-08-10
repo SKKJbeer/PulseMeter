@@ -9,6 +9,47 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.33.2 — 2026-08-09
+
+**Der leere Bericht war ein Kreisschluss in der Vorschau — und der Schalter
+sitzt.**
+
+### Behoben
+- **Die Vorschau des Verbrauchsberichts zeichnete die Seiten unlesbar klein.**
+  `ReportView` maß die verfügbare Breite mit einem `GeometryReader` am
+  Hintergrund genau des Stapels, **dessen Breite von den Seiten kommt** — und
+  deren Breite kommt aus dieser Messung. Der Maßstab blieb bei einem winzigen
+  Wert stehen: sechs schmale, praktisch leere Rahmen in der Mitte des Schirms.
+  Gemessen wird jetzt die Bildlaufansicht, deren Breite von außen kommt, und
+  `onChange` zieht bei Drehung nach statt nur beim ersten Erscheinen.
+
+  Der Weg dorthin ist die eigentliche Geschichte: Das Bild sah aus wie ein
+  leerer Bericht, war aber ein falsch skalierter. Ausgeschlossen wurde es durch
+  zwei Messungen — die längere Wartezeit aus 0.33.1 änderte nichts, und
+  `testTheReportCarriesBothTariffsOfADualTariffMeter` findet „Arbeitspreis
+  Hochtarif" die ganze Zeit im Baum. Das **PDF in der Datei** entsteht über
+  einen eigenen Weg und war nie betroffen.
+
+### Bestätigt
+- Der Tipper bei 90 % der Breite legt den Schalter um. Belegt, nicht vermutet:
+  Der Fehlschlag ist von Zeile 640 auf 727 gewandert, und die Prüfung läuft
+  39 statt 21 Sekunden — sie legt den Schalter um, trägt beide Preise ein,
+  sichert den Zähler und findet ihn auf der Übersicht.
+
+### Geändert
+- Die verbleibende Stelle („Die Erfassung nennt das erste Zählwerk nicht")
+  gibt bei einem Fehlschlag alle Texte des Schirms aus, statt eine vierte
+  Vermutung zu erzeugen. Ein selbst angelegter Doppeltarifzähler benennt sein
+  erstes Zählwerk vermutlich anders als der aus den Beispieldaten — der nächste
+  Lauf sagt, wie.
+
+_154 Prüfungen in `PulseCore`, alle grün. Klick-Dummy 44 von 44, hell und
+dunkel. Alle iOS-Quellen und `AppUITests` parsen sauber, Zeichenketten in
+Ordnung. Beide Änderungen brauchen einen Simulator und sind hier ungeprüft; das
+Bild aus dem nächsten Lauf entscheidet, und es kommt auch bei Rot._
+
+---
+
 ## 0.33.1 — 2026-08-09
 
 **Der Schalter wird nie umgelegt — jetzt gemessen statt vermutet. Und der

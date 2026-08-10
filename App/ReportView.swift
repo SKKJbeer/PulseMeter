@@ -99,11 +99,31 @@ struct ReportView: View {
                 }
                 .padding(.horizontal, 18)
                 .padding(.bottom, 28)
-                .background(
-                    GeometryReader { geometry in
-                        Color.clear.onAppear { contentWidth = geometry.size.width }
-                    }
-                )
+            }
+            // **Der Messfühler darf nicht messen, was er selbst bestimmt.**
+            // Vorher hing der `GeometryReader` am Hintergrund genau des
+            // Stapels, dessen Breite von den Seiten kommt — und deren Breite
+            // kommt aus dieser Messung. Ein Kreisschluss: Die Vorschau blieb
+            // bei einer viel zu kleinen Breite stehen, und die sechs Seiten
+            // standen als schmale, praktisch leere Rahmen in der Mitte des
+            // Schirms. Der Inhalt war die ganze Zeit da — die
+            // Oberflächenprüfungen finden „Arbeitspreis Hochtarif“ im Baum —,
+            // nur unlesbar klein gezeichnet.
+            //
+            // Gemessen wird jetzt die **Bildlaufansicht**. Ihre Breite kommt
+            // von außen und hängt an nichts, was von `contentWidth` abhängt.
+            // Die seitliche Polsterung wird abgezogen, weil die Seiten
+            // innerhalb davon stehen. `onChange` zieht bei Drehung oder
+            // geteiltem Bildschirm nach; `onAppear` allein feuert einmal und
+            // bleibt danach falsch stehen.
+            .background {
+                GeometryReader { geometry in
+                    Color.clear
+                        .onAppear { contentWidth = geometry.size.width - 36 }
+                        .onChange(of: geometry.size.width) { _, neu in
+                            contentWidth = neu - 36
+                        }
+                }
             }
             .background(PulseColor.ground)
             .navigationTitle("Verbrauchsbericht")
