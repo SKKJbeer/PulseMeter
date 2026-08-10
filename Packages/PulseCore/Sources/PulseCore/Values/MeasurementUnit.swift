@@ -25,6 +25,30 @@ public enum MeasurementUnit: String, Codable, Hashable, Sendable, CaseIterable {
 
     public var symbol: String { rawValue }
 
+    /// Wie die Einheit vorgelesen wird.
+    ///
+    /// **Warum das hierher gehört und nicht in die Oberfläche.** VoiceOver
+    /// liest „m³“ als „m hoch drei“ und „kWh“ buchstabenweise — beides ist
+    /// keine Einheit, sondern ein Rätsel. Die Schirme hatten sich deshalb
+    /// begonnen, eigene gesprochene Formen zu basteln; drei Stellen, drei
+    /// Fassungen, und beim nächsten Zähler-Typ wäre eine davon vergessen
+    /// worden.
+    ///
+    /// Hier steht sie einmal, ist ohne Xcode prüfbar, und `CaseIterable`
+    /// sorgt zusammen mit `testEveryUnitCanBeSpoken` dafür, dass eine neue
+    /// Einheit nicht ohne gesprochenen Namen durchrutscht.
+    public var spokenName: String {
+        switch self {
+        case .kilowattHour: return "Kilowattstunden"
+        case .megawattHour: return "Megawattstunden"
+        case .gigajoule:    return "Gigajoule"
+        case .cubicMetre:   return "Kubikmeter"
+        case .litre:        return "Liter"
+        case .hour:         return "Stunden"
+        case .kilogram:     return "Kilogramm"
+        }
+    }
+
     public var dimension: UnitDimension {
         switch self {
         case .kilowattHour, .megawattHour, .gigajoule: return .energy

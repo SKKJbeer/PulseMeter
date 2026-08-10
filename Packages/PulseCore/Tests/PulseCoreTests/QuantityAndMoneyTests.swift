@@ -46,6 +46,24 @@ final class QuantityAndMoneyTests: XCTestCase {
         XCTAssertThrowsError(try Money(10, .eur).adding(Money(10, .chf)))
     }
 
+    /// Jede Einheit muss vorgelesen werden können.
+    ///
+    /// Über `allCases`, damit eine neu hinzugefügte Einheit ohne gesprochenen
+    /// Namen hier auffällt und nicht erst bei einem Nutzer, dem VoiceOver
+    /// „m hoch drei“ vorliest. Geprüft wird auch, dass der gesprochene Name
+    /// **nicht** das Kürzel ist — sonst wäre die Zusage erfüllt und die
+    /// Wirkung dieselbe wie vorher.
+    func testEveryUnitCanBeSpoken() {
+        for unit in MeasurementUnit.allCases {
+            XCTAssertFalse(unit.spokenName.isEmpty,
+                           "\(unit.symbol) hat keinen gesprochenen Namen")
+            XCTAssertNotEqual(unit.spokenName, unit.symbol,
+                              "\(unit.symbol) wird nur buchstabiert statt gesprochen")
+            XCTAssertGreaterThan(unit.spokenName.count, unit.symbol.count,
+                                 "\(unit.symbol): der gesprochene Name sieht nach einem Kürzel aus")
+        }
+    }
+
     func testGasConversionFollowsGermanBillingFormula() throws {
         let conversion = GasConversion(stateNumber: dec("0.95"), calorificValue: dec("10.5"))
         let energy = try conversion.energy(fromVolume: Quantity(200, .cubicMetre))

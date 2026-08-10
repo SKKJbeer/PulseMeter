@@ -118,6 +118,7 @@ struct HistoryView: View {
         PulseCard {
             VStack(spacing: 10) {
                 Image(systemName: "chart.bar")
+                    .accessibilityHidden(true)
                     .font(.system(size: 30))
                     .foregroundStyle(PulseColor.inkTertiary)
                 Text("Noch nichts zu zeigen")
@@ -143,6 +144,7 @@ struct HistoryView: View {
         PulseCard {
             VStack(spacing: 10) {
                 Image(systemName: "chart.bar")
+                    .accessibilityHidden(true)
                     .font(.system(size: 28))
                     .foregroundStyle(PulseColor.inkTertiary)
                 Text(readings.isEmpty ? "Noch keine Ablesung" : "Erst eine Ablesung")
@@ -319,6 +321,7 @@ struct HistoryView: View {
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: "doc.text")
+                    .accessibilityHidden(true)
                     .font(.system(.subheadline, weight: .semibold))
                     .foregroundStyle(PulseColor.tint)
                 VStack(alignment: .leading, spacing: 2) {
@@ -332,6 +335,7 @@ struct HistoryView: View {
                 }
                 Spacer(minLength: 8)
                 Image(systemName: "chevron.right")
+                    .accessibilityHidden(true)
                     .font(.system(.footnote, weight: .semibold))
                     .foregroundStyle(PulseColor.inkTertiary)
             }
@@ -504,6 +508,7 @@ struct HistoryView: View {
                     }
                     Spacer(minLength: 10)
                     Image(systemName: "chevron.right")
+                        .accessibilityHidden(true)
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(PulseColor.inkTertiary)
                 }

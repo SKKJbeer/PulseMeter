@@ -9,6 +9,52 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.34.0 — 2026-08-10
+
+**Der letzte Schirm ohne Barrierefreiheit ist durch — und elf Symbole hören
+auf, ihren Dateinamen vorzulesen.**
+
+### Hinzugefügt
+- `MeasurementUnit.spokenName` in `PulseCore`: „Kilowattstunden" statt „kWh",
+  „Kubikmeter" statt „m³". VoiceOver liest `m³` als „m hoch drei" und `kWh`
+  buchstabenweise — beides ist keine Einheit, sondern ein Rätsel. Die Schirme
+  hatten begonnen, sich eigene gesprochene Formen zu basteln; jetzt steht sie
+  einmal an der Einheit selbst, ohne Xcode prüfbar.
+- `testEveryUnitCanBeSpoken` geht über `allCases` und fällt, sobald eine neue
+  Einheit ohne gesprochenen Namen dazukommt — oder wenn der „gesprochene" Name
+  nur das Kürzel wiederholt. **155 Prüfungen** in `PulseCore`.
+
+### Behoben
+- **Der Zählerwechsel hatte als einziger Schirm überhaupt keine
+  Barrierefreiheits-Arbeit gesehen.** Für VoiceOver waren „Endstand alter
+  Zähler", das Eingabefeld und die Einheit **drei getrennte Stationen** — wer
+  das Feld erreicht, hat die Beschriftung hinter sich und weiß nicht mehr,
+  welche der beiden Zahlen er eintippt. Bei einem Zählerwechsel sind das die
+  zwei Zahlen, an denen der gesamte weitere Verbrauch hängt. Beschriftung und
+  Einheit hängen jetzt am Feld, wie in `MetersView` seit 0.32.0.
+- Das Feld für die Gerätenummer hieß für VoiceOver **„optional"** — der
+  Platzhalter wurde zum Namen, und wofür das Feld da ist, stand nur daneben.
+- Die Fehlermeldung im Zählerwechsel war **roter Text und sonst nichts**. Farbe
+  allein ist keine Aussage: nicht für VoiceOver, und nicht für die rund acht
+  Prozent Männer mit einer Rotschwäche. Sie läuft jetzt über `StatusBanner`,
+  wie überall sonst in der App.
+- **Elf Symbolbilder** in Übersicht, Verlauf, Zählerverwaltung und Bericht
+  waren für VoiceOver sichtbar und wurden als Symbolname vorgelesen —
+  „chevron.right", „gauge.medium". Alle sind Zierrat: Die Pfeile stehen an
+  Zeilen, die ohnehin als Taste angesagt werden, das Häkchen im Bericht wird
+  bereits über „ausgewählt" mitgeteilt. Sie sind jetzt ausgeblendet.
+- Weil der Pfeil an der Archiv-Klappe damit verschwindet, sagt der Knopf selbst,
+  ob sie offen ist („ausgeklappt" / „eingeklappt") und was ein Doppeltipp
+  bewirkt. Vorher war der Pfeil die einzige Auskunft darüber.
+
+_155 Prüfungen in `PulseCore`, alle grün. Klick-Dummy 44 von 44, hell und
+dunkel. Alle iOS-Quellen und `AppUITests` parsen sauber. Die Wirkung auf
+VoiceOver selbst lässt sich hier nicht messen — dafür braucht es ein Gerät oder
+den Simulator mit eingeschaltetem VoiceOver; die Änderungen sind jede für sich
+begründet und im Code vermerkt._
+
+---
+
 ## 0.33.7 — 2026-08-10
 
 **Eine Gesamtübersicht ganz oben in der Roadmap — und eine Falle fürs

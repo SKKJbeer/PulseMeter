@@ -20,7 +20,7 @@ Für den schnellen Einstieg. Die Begründungen stehen weiter unten und in
 
 | Bereich | Was |
 |---|---|
-| **Fundament** | `PulseCore` (154 Prüfungen) · `PulseData` mit SwiftData und CloudKit · `PulseUI` in Hell und Dunkel, Dynamic Type |
+| **Fundament** | `PulseCore` (155 Prüfungen) · `PulseData` mit SwiftData und CloudKit · `PulseUI` in Hell und Dunkel, Dynamic Type |
 | **Übersicht** | Statuszeile, Zähler-Karten, Kosten, Abschlagsvorschau, Fällig-Hinweis |
 | **Erfassung** | Zählwerk-Optik, Live-Plausibilisierung, Vorbelegung, mehrere Zählwerke in einem Vorgang, Weg zurück |
 | **Verlauf** | Monat/Quartal/Jahr, Diagramm und Tabelle, Menge oder Kosten, Vorjahresvergleich |
@@ -167,11 +167,11 @@ Die Reihenfolge ist bewusst nicht „Screens von oben nach unten", sondern nach 
 
 ---
 
-## Aktueller Stand — Version 0.33.7
+## Aktueller Stand — Version 0.34.0
 
 | Schritt | Stand |
 |---|---|
-| 1. `PulseCore` + Tests | **fertig** — 154 Prüfungen, alle Randfälle aus `02`, Abschnitt 3 |
+| 1. `PulseCore` + Tests | **fertig** — 155 Prüfungen, alle Randfälle aus `02`, Abschnitt 3 |
 | 2. `PulseData` + Repositories | **fertig** — auf macOS geprüft |
 | 3. `PulseUI` Design-System | **fertig** — Hell und Dunkel, auf jedem Lauf fotografiert |
 | 4. Erfassungsfluss | **fertig** — Zählwerk-Optik, Plausibilisierung, Vorbelegung |
@@ -181,7 +181,7 @@ Die Reihenfolge ist bewusst nicht „Screens von oben nach unten", sondern nach 
 | 8. Widgets, Kurzbefehle, Erinnerungen | Erinnerungen und Widget **fertig**; Siri offen |
 | 9. Paywall und StoreKit | offen — braucht das Apple Developer Program |
 | 4. Erfassungsfluss — Nachtrag | **0.30.1** — aus dem zweiten Zählwerk führt ein Weg zurück; ohne ihn war der Tippfehler eine Sackgasse |
-| 10. Politur | **angefangen** (0.27.0), fortgesetzt in **0.32.0** — Verlauf und Zählerverwaltung durchgegangen: Diagrammbalken sagen Wert, Einheit, Vorjahr und Unvollständigkeit; Tabellenzeilen lesen sich als ein Satz; Preisfelder tragen ihre Beschriftung selbst — Karte und Fußzeilen lesen sich für VoiceOver als ein Satz, Bilder bei größter Schrift, Startzeit im Protokoll. Die 800 ms auf einem **Gerät** sind weiter offen |
+| 10. Politur | **angefangen** (0.27.0), fortgesetzt in **0.32.0** und **0.34.0** — Verlauf und Zählerverwaltung durchgegangen: Diagrammbalken sagen Wert, Einheit, Vorjahr und Unvollständigkeit; Tabellenzeilen lesen sich als ein Satz; Preisfelder tragen ihre Beschriftung selbst — Karte und Fußzeilen lesen sich für VoiceOver als ein Satz, Bilder bei größter Schrift, Startzeit im Protokoll. Die 800 ms auf einem **Gerät** sind weiter offen |
 
 ### Was die App noch nicht kann, obwohl der Rechenkern es kann
 

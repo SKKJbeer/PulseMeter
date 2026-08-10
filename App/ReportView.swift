@@ -186,6 +186,7 @@ struct ReportView: View {
                                 }
                                 Spacer(minLength: 8)
                                 Image(systemName: "checkmark")
+                                    .accessibilityHidden(true)
                                     .font(.system(.subheadline, weight: .semibold))
                                     .foregroundStyle(PulseColor.tint)
                                     .opacity(option.id == period?.id ? 1 : 0)

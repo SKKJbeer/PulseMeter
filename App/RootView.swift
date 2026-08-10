@@ -153,6 +153,7 @@ struct OverviewView: View {
         PulseCard {
             VStack(spacing: 14) {
                 Image(systemName: "gauge.medium")
+                    .accessibilityHidden(true)
                     .font(.system(size: 34))
                     .foregroundStyle(PulseColor.inkTertiary)
                 Text("Noch kein Zähler")

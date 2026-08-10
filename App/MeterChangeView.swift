@@ -57,9 +57,14 @@ struct MeterChangeView: View {
                     valueField("Anfangsstand neuer Zähler", text: $initialValue)
                     HStack {
                         Text("Gerätenummer")
+                            .accessibilityHidden(true)
                         Spacer(minLength: 10)
+                        // Ohne eigene Beschriftung sagte VoiceOver hier
+                        // „optional, Textfeld“ — der Platzhalter wird zum
+                        // Namen, und wofür das Feld da ist, stand nur daneben.
                         TextField("optional", text: $serialNumber)
                             .multilineTextAlignment(.trailing)
+                            .accessibilityLabel("Gerätenummer, optional")
                     }
                 } header: {
                     Text("Der neue Zähler")
@@ -78,7 +83,12 @@ struct MeterChangeView: View {
 
                 if let problem {
                     Section {
-                        Text(problem).foregroundStyle(PulseColor.adverse)
+                        // Vorher roter Text und sonst nichts. Farbe allein ist
+                        // keine Aussage — nicht für VoiceOver, und nicht für
+                        // die rund acht Prozent Männer mit einer Rotschwäche.
+                        // `StatusBanner` trägt den Hinweis sichtbar **und**
+                        // hörbar, so wie überall sonst in der App.
+                        StatusBanner(tone: .notice, message: AttributedString(problem))
                     }
                 }
             }
@@ -96,16 +106,29 @@ struct MeterChangeView: View {
         }
     }
 
+    /// Eine Zeile mit Beschriftung, Zahlenfeld und Einheit.
+    ///
+    /// **Beschriftung und Einheit hängen am Feld, nicht daneben.** Für das Auge
+    /// sind es drei Teile nebeneinander; für VoiceOver waren es drei Stationen
+    /// — „Endstand alter Zähler“, dann „0, Textfeld“, dann „kWh“. Wer das Feld
+    /// erreicht, hat die Beschriftung schon hinter sich und weiß nicht mehr,
+    /// welche der beiden Zahlen er gerade eintippt. Bei einem Zählerwechsel
+    /// sind das die zwei Zahlen, an denen der ganze Verbrauch hängt.
+    ///
+    /// Dieselbe Form wie in `MetersView.numberRow`, aus derselben Begründung.
     private func valueField(_ label: String, text: Binding<String>) -> some View {
         HStack {
             Text(label)
+                .accessibilityHidden(true)
             Spacer(minLength: 10)
             TextField("0", text: text)
                 .keyboardType(.decimalPad)
                 .multilineTextAlignment(.trailing)
                 .frame(maxWidth: 130)
+                .accessibilityLabel(register.map { "\(label) in \($0.unit.spokenName)" } ?? label)
             Text(register?.unit.symbol ?? "")
                 .foregroundStyle(PulseColor.inkTertiary)
+                .accessibilityHidden(true)
         }
     }
 

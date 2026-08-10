@@ -84,6 +84,7 @@ struct MetersView: View {
         PulseCard {
             VStack(spacing: 12) {
                 Image(systemName: "gauge.medium")
+                    .accessibilityHidden(true)
                     .font(.system(size: 32))
                     .foregroundStyle(PulseColor.inkTertiary)
                 Text("Noch kein Zähler")
@@ -106,6 +107,7 @@ struct MetersView: View {
         } label: {
             HStack(spacing: 12) {
                 Image(systemName: point.appearance.symbolName)
+                    .accessibilityHidden(true)
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(accent)
                     .frame(width: 30, height: 30)
@@ -123,6 +125,7 @@ struct MetersView: View {
 
                 Spacer(minLength: 8)
                 Image(systemName: "chevron.right")
+                    .accessibilityHidden(true)
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(PulseColor.inkTertiary)
             }
@@ -208,12 +211,21 @@ struct MetersView: View {
                         .textCase(.uppercase)
                         .foregroundStyle(PulseColor.inkTertiary)
                     Image(systemName: showingArchived ? "chevron.up" : "chevron.down")
+                        .accessibilityHidden(true)
                         .font(.system(size: 10, weight: .semibold))
                         .foregroundStyle(PulseColor.inkTertiary)
                     Spacer()
                 }
             }
             .buttonStyle(.plain)
+            // Ob die Klappe offen ist, sagte allein der Pfeil — und der ist
+            // jetzt zu Recht für VoiceOver ausgeblendet, weil er sonst als
+            // „chevron.down" vorgelesen würde. Die Auskunft gehört damit an
+            // den Knopf selbst, sonst tippt man ins Ungewisse.
+            .accessibilityValue(showingArchived ? "ausgeklappt" : "eingeklappt")
+            .accessibilityHint(showingArchived
+                               ? "Doppeltippen, um die archivierten Zähler zu verbergen"
+                               : "Doppeltippen, um die archivierten Zähler zu zeigen")
             .padding(.top, 6)
 
             if showingArchived {
