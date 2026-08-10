@@ -9,6 +9,61 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.36.0 — 2026-08-10
+
+**Beim Nachsehen für die Barrierefreiheit fiel eine Taste auf, die nichts tat
+— mitten auf dem wichtigsten Schirm der App.**
+
+### Behoben
+
+- **Der Ziffernblock hatte eine tote Taste.** Ein Kamerasymbol als Platzhalter
+  für Belegfotos, für VoiceOver angekündigt als „Belegfoto"; angetippt
+  passierte nichts (`case .photo: break`). Wer sie sieht, probiert es einmal
+  und lässt es. Wer sie nur hört, hat einen Knopf gefunden, der eine Funktion
+  verspricht, die es nicht gibt — eine Sackgasse im Erfassungsschirm, und
+  Produktprinzip 4 schließt genau die aus.
+
+  Belegfotos sind für 1.0 gestrichen (`docs/07-v1-plan.md`). Die Taste kommt
+  mit ihnen zurück; bis dahin hält eine leere Fläche den Platz, damit später
+  nichts wandert. Entfernt in App **und** Entwurf, mit je einer Prüfung
+  dagegen.
+
+- **Das Widget hatte keine einzige Zugriffsangabe.** Es ist der eine Teil der
+  App, den ein Nutzer sieht, **ohne** die App zu öffnen — für jemanden mit
+  VoiceOver war es damit der eine Teil, den es nicht gab. Name, Zeile, Zahl und
+  Einheit standen als vier Fundstücke nebeneinander, und „kWh" ohne die Zahl
+  davor sagt nichts.
+
+  Jetzt ein Satz je Zähler: „Gas. Seit 96 Tagen fällig. ungefähr 1181
+  Kubikmeter." Gebaut wird er in `PulseCore` und ist dort ohne Simulator
+  geprüft — samt der Regel, dass Fälligkeit vor dem Zeitraum kommt. Die
+  sichtbare Zeile stammt seither aus derselben Quelle; zwei Fassungen hätten
+  früher oder später verschiedene Zeilen gewählt, und die gesprochene sieht
+  niemand nach.
+
+- **„≈" wird zu „ungefähr".** Das Zeichen liest je nach Stimme „Ungefähr
+  gleich" oder gar nichts. Es ist aber keine Zierde, sondern Produktprinzip 7:
+  Die Zahl beruht auf einer Schätzung, und das muss mitgesprochen werden.
+
+- **Eine volle Anzeige meldet sich.** Wer sie sieht, merkt am Ausbleiben der
+  Ziffer, dass nichts mehr geht. Wer sie nicht sieht, hörte beim Tippen nur den
+  Namen der Taste — „7" — und hielt den Wert für angekommen. Eine stille Grenze
+  ist für ihn eine falsche Zahl.
+
+- **Der Ziffernblock wächst jetzt mit der Schrift.** Feste 52 und 26 Punkt
+  ließen ihn auf der größten Stufe als einzigen Teil des Schirms unverändert
+  klein — ausgerechnet den Teil, der getroffen werden muss. Gedeckelt, weil
+  drei ungebremste Ziffern nebeneinander breiter wären als der Schirm.
+
+- Kleineres: Das Zählwerk sagt, wie viele Stellen es hat; der gesperrte
+  Sicherungsknopf sagt, was ihm fehlt, statt nur „abgeblendet" zu sein.
+
+_Geprüft: 172 Prüfungen in `PulseCore` (6 neu), 60 im Klick-Dummy (4 neu),
+Syntax aller iOS-Quellen. Zwei neue Oberflächenprüfungen — die tote Taste und
+die Ansage des Zählwerks — laufen in der CI._
+
+---
+
 ## 0.35.0 — 2026-08-10
 
 **Die Grenze zwischen Kostenlos und Pro stand bisher nur im Dokument. Jetzt

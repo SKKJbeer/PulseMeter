@@ -1,6 +1,6 @@
 # 07 – Der Weg zum ersten Go-Live
 
-Stand: 2026-08-10, Version 0.35.0
+Stand: 2026-08-10, Version 0.36.0
 Ziel: **1.0 im App Store**, mit dem kleinsten Umfang, der das Produktversprechen einlöst.
 
 ---
@@ -31,7 +31,7 @@ Das ist Schritt eins. Alles andere läuft parallel.
 
 Erfassung, Übersicht, Verlauf, Zählerverwaltung, Tarife, Kosten, Prognose,
 Abschlagsvergleich, Zweirichtungszähler, Doppeltarif, Zählerwechsel,
-CSV-Export, Erinnerungen, Widget, PDF-Bericht. Rechenkern mit 166 Prüfungen,
+CSV-Export, Erinnerungen, Widget, PDF-Bericht. Rechenkern mit 172 Prüfungen,
 `PulseData` auf macOS geprüft, Design-System in Hell und Dunkel.
 
 Das ist mehr Umfang, als die meisten 1.0 haben.
@@ -52,7 +52,7 @@ größer als alles, was vorher dastand.
 | **App-Icon und Asset-Katalog** — es gibt im Repo keine `.xcassets` | nicht angefangen | gemeinsam |
 | **`PrivacyInfo.xcprivacy`** — Apple verlangt es seit Mai 2024 | fehlt | Mac |
 | **`.entitlements`** — App-Gruppe fürs Widget, iCloud | fehlt | Mac, nach dem Programm |
-| Barrierefreiheit: Widget und Erfassung | offen | Mac |
+| ~~Barrierefreiheit: Widget und Erfassung~~ | **erledigt mit 0.36.0** | — |
 | **App-Store-Material** — Bilder je Gerätegröße, Texte, Datenschutzerklärung mit URL, Support-URL | **nicht angefangen** | gemeinsam |
 | App-Privacy-Angaben | offen | Nutzer |
 | 800 ms Kaltstart auf einem **Gerät** | nie gemessen | Nutzer |
@@ -72,6 +72,18 @@ Der Abgleich ist laut ADR-002 aber genau das, was den Einmalkauf trägt — ein
 Kauf, der nur auf einem Gerät gilt, ist keiner. Und er ist **bis heute nie
 gelaufen**. Ein Schalter ist das nicht; eine SwiftData-Schemamigration über
 CloudKit ist eine eigene Testrunde.
+
+### Was das Nachsehen für die Barrierefreiheit zutage gefördert hat
+
+Eine **Taste, die nichts tat** — Kamerasymbol, für VoiceOver als „Belegfoto"
+angekündigt, ohne Wirkung. Sie stand seit der ersten Fassung des
+Erfassungsschirms dort und ist keinem Test und keinem Bildschirmfoto
+aufgefallen, weil beide nur prüfen, was passiert, und nicht, was ausbleibt.
+
+Das ist die Regel dahinter, und sie gilt über die Barrierefreiheit hinaus:
+**Ein Platzhalter für eine gestrichene Funktion ist in der ausgelieferten App
+ein Versprechen.** Bei der nächsten Durchsicht vor der Einreichung gehört
+danach gesucht.
 
 **Das Widget bleibt ohne Berechtigungsdatei still leer.**
 `Shared/WidgetBridge.swift` erwartet die App-Gruppe `group.com.pulsemeter.app`
@@ -127,7 +139,7 @@ schlechte Bewertung.
 3. **StoreKit, CloudKit, Berechtigungen**, sobald das Programm da ist — die
    drei hängen am selben Nagel. Die Sperrlogik steht bereits.
 4. **Reparieren, was Punkt 2 gefunden hat.** Dieses Fenster nicht wegplanen.
-5. **Barrierefreiheit von Widget und Erfassung, 800 ms auf dem Gerät messen.**
+5. **800 ms auf dem Gerät messen.** Die Barrierefreiheit steht seit 0.36.0.
 6. **App-Store-Material.** Früher anfangen, als es sich anfühlt.
 7. **TestFlight** an fünf bis zehn Leute, zwei Wochen.
 8. **Einreichen.** Die erste Ablehnung ist normal und eingeplant.

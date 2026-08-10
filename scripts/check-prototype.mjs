@@ -203,6 +203,26 @@ for (const scheme of ["light", "dark"]) {
   await page.locator("#sheet-editor [data-close]").first().click();
   await page.waitForTimeout(250);
 
+  // --- Keine Taste, die nichts tut
+  //
+  // Auf dem Ziffernblock stand ein Kamerasymbol als Platzhalter für
+  // Belegfotos. Die sind für 1.0 gestrichen; ein angekündigter Knopf ohne
+  // Wirkung ist eine Sackgasse, und für jemanden, der die Tasten nur hört,
+  // eine besonders ärgerliche.
+  await page.locator('[data-pane="home"]').first().click();
+  await page.waitForTimeout(200);
+  await page.locator("[data-capture]").first().click();
+  await page.waitForTimeout(250);
+  const tasten = await page.evaluate(() => ({
+    tot: document.querySelectorAll('#keys [data-key="photo"]').length,
+    ziffern: document.querySelectorAll('#keys [data-key]').length
+  }));
+  note(tasten.tot === 0, "Keine Taste auf dem Ziffernblock, die nichts tut");
+  note(tasten.ziffern === 11,
+       `Zehn Ziffern und das Löschen stehen weiter (${tasten.ziffern} Tasten)`);
+  await page.locator("#cap-back").click();
+  await page.waitForTimeout(250);
+
   // --- Darstellung
   const overflow = await page.evaluate(() =>
     document.documentElement.scrollWidth > document.documentElement.clientWidth);

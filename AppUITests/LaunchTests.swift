@@ -1003,4 +1003,56 @@ final class LaunchTests: XCTestCase {
                            "\(verboten) steht auf der Kaufseite, kommt aber erst mit 1.1")
         }
     }
+
+    // MARK: - Barrierefreiheit
+
+    /// Auf dem Ziffernblock stand eine Taste, die nichts tat.
+    ///
+    /// Ein Kamerasymbol als Platzhalter für Belegfotos, für VoiceOver
+    /// angekündigt als „Belegfoto" — angetippt passierte nichts. Wer die
+    /// Tasten sieht, probiert es einmal und lässt es. Wer sie nur hört, hat
+    /// einen Knopf gefunden, der eine Funktion verspricht, die es nicht gibt:
+    /// eine Sackgasse mitten im wichtigsten Schirm der App.
+    ///
+    /// Belegfotos sind für 1.0 gestrichen (`docs/07-v1-plan.md`). Diese
+    /// Prüfung hält fest, dass die Taste erst mit ihnen zurückkommt.
+    func testTheKeypadHasNoDeadKey() {
+        let app = launchWithData()
+
+        app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Stand eintragen'"))
+            .firstMatch.tap()
+        XCTAssertTrue(app.buttons["1"].waitForExistence(timeout: erscheint),
+                      "Der Ziffernblock erschien nicht")
+
+        XCTAssertFalse(app.buttons["Belegfoto"].exists,
+                       "Eine Taste, die nichts tut, darf nicht angekündigt werden")
+        // Die übrigen Tasten stehen weiter, und zwar alle.
+        for key in ["0", "1", "9", "Löschen"] {
+            XCTAssertTrue(app.buttons[key].exists, "Die Taste \(key) fehlt")
+        }
+    }
+
+    /// Das Zählwerk sagt, was es zeigt — auch wenn niemand hinsieht.
+    ///
+    /// Die Anzeige ist ein Bild aus Rollen, kein Textfeld. Ohne eigene
+    /// Beschriftung läse VoiceOver sie als Folge einzelner Ziffern vor, und
+    /// „vier, sieben, drei, vier, sieben, null" ist keine Zahl, die sich
+    /// jemand merkt.
+    func testTheCounterAnnouncesItsValue() {
+        let app = launchWithData()
+
+        app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Stand eintragen'"))
+            .firstMatch.tap()
+        XCTAssertTrue(app.buttons["1"].waitForExistence(timeout: erscheint),
+                      "Der Ziffernblock erschien nicht")
+
+        let counter = app.otherElements["Zählerstand"]
+        XCTAssertTrue(counter.waitForExistence(timeout: erscheint),
+                      "Das Zählwerk trägt keine Beschriftung")
+
+        for digit in ["1", "2", "3"] { app.buttons[digit].tap() }
+        let value = counter.value as? String ?? ""
+        XCTAssertTrue(value.contains("123"),
+                      "Der eingetippte Wert muss sich vorlesen lassen, gelesen wurde: \(value)")
+    }
 }

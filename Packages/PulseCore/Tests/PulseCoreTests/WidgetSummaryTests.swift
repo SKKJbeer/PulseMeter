@@ -117,4 +117,86 @@ final class WidgetSummaryTests: XCTestCase {
         let restored = try JSONDecoder().decode(WidgetSummary.self, from: data)
         XCTAssertGreaterThan(restored.version, WidgetSummary.currentVersion)
     }
+
+    // MARK: - Was VoiceOver hört
+
+    /// Das Widget zeigt Name, Zeile, Zahl und Einheit als vier Bausteine. Für
+    /// das Auge ist das eine Karte; vorgelesen waren es vier Fundstücke, und
+    /// „kWh" allein sagt nichts.
+    func testSpokenSummaryIsOneSentence() {
+        let meter = WidgetSummary.Meter(
+            id: UUID(), name: "Strom", symbolName: "bolt", colorToken: "amber",
+            unit: "kWh", quantity: 1607, isApproximate: false,
+            periodCaption: "Seit Jahresbeginn", isDue: false, daysSinceReading: 4)
+
+        XCTAssertEqual(meter.spokenSummary { "\($0)" },
+                       "Strom. Seit Jahresbeginn. 1607 Kilowattstunden.")
+    }
+
+    /// Produktprinzip 7: Eine geschätzte Zahl ist als solche gekennzeichnet —
+    /// sichtbar durch „≈", hörbar durch ein Wort. Das Zeichen wird je nach
+    /// Stimme als „Ungefähr gleich" oder gar nicht gelesen.
+    func testAnEstimateSaysSoOutLoud() {
+        let meter = WidgetSummary.Meter(
+            id: UUID(), name: "Gas", symbolName: "flame", colorToken: "orange",
+            unit: "m³", quantity: 1181, isApproximate: true,
+            periodCaption: "1. Januar bis 1. Mai", isDue: false, daysSinceReading: 96)
+
+        let spoken = meter.spokenSummary { "\($0)" }
+        XCTAssertTrue(spoken.contains("ungefähr"), "Die Schätzung muss mitgesprochen werden")
+        XCTAssertFalse(spoken.contains("≈"), "Das Zeichen taugt nicht zum Vorlesen")
+        XCTAssertTrue(spoken.contains("Kubikmeter"), "m³ ist kein Wort")
+    }
+
+    /// Unbekannt ist nicht null. Auf dem Schirm steht dafür ein Strich — und
+    /// ein Strich liest sich nicht vor.
+    func testNoNumberIsSaidAsSuchAndNotAsZero() {
+        let meter = WidgetSummary.Meter(
+            id: UUID(), name: "Wasser", symbolName: "drop", colorToken: "blue",
+            unit: "m³", quantity: nil, isApproximate: false,
+            periodCaption: "Noch keine Ablesung", isDue: false, daysSinceReading: nil)
+
+        let spoken = meter.spokenSummary { "\($0)" }
+        XCTAssertTrue(spoken.contains("Noch keine Zahl"))
+        XCTAssertFalse(spoken.contains("0 "), "Eine Null wäre eine Aussage, die niemand gemacht hat")
+    }
+
+    /// Fälligkeit hat Vorrang vor dem Zeitraum — in der sichtbaren Zeile wie
+    /// in der gesprochenen. Zwei Fassungen hätten hier auseinanderlaufen
+    /// können, und die gesprochene sieht niemand nach.
+    func testDueBeatsThePeriodInBothLines() {
+        let meter = WidgetSummary.Meter(
+            id: UUID(), name: "Gas", symbolName: "flame", colorToken: "orange",
+            unit: "m³", quantity: 1181, isApproximate: false,
+            periodCaption: "1. Januar bis 1. Mai", isDue: true, daysSinceReading: 96)
+
+        XCTAssertEqual(meter.statusText, "Seit 96 Tagen fällig")
+        XCTAssertTrue(meter.spokenSummary { "\($0)" }.contains("Seit 96 Tagen fällig"))
+        XCTAssertFalse(meter.spokenSummary { "\($0)" }.contains("1. Januar"))
+    }
+
+    /// Ein nie abgelesener Zähler ist der dringendste Fall, nicht der
+    /// unwichtigste — und er hat kein Datum, auf das sich „seit" beziehen ließe.
+    func testNeverReadSaysSoInsteadOfCountingFromNothing() {
+        let meter = WidgetSummary.Meter(
+            id: UUID(), name: "Keller", symbolName: "bolt", colorToken: "amber",
+            unit: "kWh", quantity: nil, isApproximate: false,
+            periodCaption: "Noch keine Ablesung", isDue: true, daysSinceReading: nil)
+
+        XCTAssertEqual(meter.statusText, "Noch nie abgelesen")
+    }
+
+    /// Jede Einheit, die ein Zähler tragen kann, muss sich auch vorlesen
+    /// lassen. Fällt eine durch, stünde dort das Zeichen — „m hoch drei" oder
+    /// gar nichts.
+    func testEveryUnitFindsItsSpokenForm() {
+        for unit in MeasurementUnit.allCases {
+            let meter = WidgetSummary.Meter(
+                id: UUID(), name: "Prüf", symbolName: "bolt", colorToken: "amber",
+                unit: unit.symbol, quantity: 1, isApproximate: false,
+                periodCaption: "Seit Jahresbeginn", isDue: false, daysSinceReading: 1)
+            XCTAssertEqual(meter.spokenUnit, unit.spokenName,
+                           "\(unit.symbol) findet seine gesprochene Form nicht")
+        }
+    }
 }

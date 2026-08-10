@@ -58,6 +58,61 @@ public struct WidgetSummary: Codable, Hashable, Sendable {
             self.isDue = isDue
             self.daysSinceReading = daysSinceReading
         }
+
+        /// Die eine Zeile unter dem Namen.
+        ///
+        /// **Fälligkeit hat Vorrang vor dem Zeitraum.** Wer im Vorbeigehen
+        /// liest, liest eine Zeile. Steht dort der Zeitraum, während ein Zähler
+        /// seit drei Monaten überfällig ist, hat das Widget die falsche Zeile
+        /// gewählt.
+        ///
+        /// Stand bis 0.36.0 in der Widget-Ansicht. Hierher geholt, weil die
+        /// gesprochene Fassung darunter dieselbe Auswahl treffen muss — zwei
+        /// Fassungen davon hätten früher oder später verschiedene Zeilen
+        /// gewählt, und die gesprochene sieht niemand nach.
+        public var statusText: String {
+            if isDue {
+                return daysSinceReading.map { "Seit \($0) Tagen fällig" } ?? "Noch nie abgelesen"
+            }
+            return periodCaption
+        }
+
+        /// Was VoiceOver vorliest — ein Satz statt vier Fundstücke.
+        ///
+        /// **Warum hier und nicht in der Ansicht.** Das Widget zeigt Name,
+        /// Zeile, Zahl und Einheit als vier Bausteine nebeneinander; für das
+        /// Auge ist das eine Karte, für VoiceOver waren es vier Stationen —
+        /// und die vierte, „kWh", steht ohne die dritte sinnlos da. Der Satz
+        /// gehört deshalb dorthin, wo er ohne Simulator prüfbar ist.
+        ///
+        /// - Parameter number: Wie die Zahl geschrieben wird. Hineingereicht,
+        ///   weil die Sprachformatierung nicht in den Rechenkern gehört —
+        ///   dieselbe Trennung wie bei ``WidgetSummary/build(meteringPoints:readings:range:today:caption:)``.
+        public func spokenSummary(number: (Decimal) -> String) -> String {
+            guard let quantity else {
+                // Kein „null": Unbekannt ist nicht dasselbe wie nichts
+                // verbraucht (Produktprinzip 7). Auf dem Schirm steht dafür
+                // ein Strich, und ein Strich liest sich nicht vor.
+                return "\(name). \(statusText). Noch keine Zahl."
+            }
+            // „ungefähr" statt „≈": Das Zeichen wird je nach Stimme als
+            // „Ungefähr gleich" oder gar nicht gelesen. Und es ist keine
+            // Zierde, sondern Produktprinzip 7 — die Zahl beruht auf einer
+            // Schätzung, und das muss mitgesprochen werden.
+            let prefix = isApproximate ? "ungefähr " : ""
+            return "\(name). \(statusText). \(prefix)\(number(quantity)) \(spokenUnit)."
+        }
+
+        /// Die Einheit ausgeschrieben — „Kilowattstunden" statt „kWh".
+        ///
+        /// Über das Zeichen nachgeschlagen statt mitgeführt: Ein zusätzliches
+        /// Feld in dieser Struktur hieße, dass ein Widget die Datei einer
+        /// neueren App nicht mehr lesen kann, solange es selbst noch die alte
+        /// Fassung ist. Das ist ein hoher Preis für eine Angabe, die sich
+        /// ableiten lässt.
+        public var spokenUnit: String {
+            MeasurementUnit.allCases.first { $0.symbol == unit }?.spokenName ?? unit
+        }
     }
 
     public init(version: Int = WidgetSummary.currentVersion,

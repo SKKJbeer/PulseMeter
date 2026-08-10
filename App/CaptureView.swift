@@ -1,5 +1,9 @@
 import SwiftUI
 import SwiftData
+// Für `UIAccessibility`: Eine Ansage ist die einzige Möglichkeit, etwas zu
+// melden, das auf dem Schirm gar nicht erscheint. SwiftUI hat dafür kein
+// Gegenstück, das ohne Zustand auskommt.
+import UIKit
 import PulseCore
 import PulseData
 import PulseUI
@@ -200,7 +204,23 @@ struct CaptureView: View {
                             in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
         .disabled(!ready)
+        // Ein gesperrter Knopf sagt „abgeblendet" und sonst nichts. Der Grund
+        // steht zwar im Hinweisfeld darüber, aber wer den Knopf gerade
+        // angesteuert hat, hat ihn hinter sich — und tippt ins Ungewisse.
+        .accessibilityHint(ready
+                           ? (isLastRegister ? "Sichert die Ablesung" : "Weiter zum nächsten Zählwerk")
+                           : "Erst einen Zählerstand eintippen")
         .padding(.top, 14)
+    }
+
+    /// Sagt etwas, das auf dem Schirm nicht steht.
+    ///
+    /// Sparsam einzusetzen: Eine Ansage unterbricht, was VoiceOver gerade
+    /// liest. Sie ist hier richtig, weil die Auskunft sonst **nirgends**
+    /// vorkommt — die Ziffer bleibt schlicht aus, und das ist eine rein
+    /// sichtbare Rückmeldung.
+    private func announce(_ text: String) {
+        UIAccessibility.post(notification: .announcement, argument: text)
     }
 
     // MARK: - Eingabe
@@ -210,13 +230,18 @@ struct CaptureView: View {
         switch key {
         case .digit(let value):
             let limit = register.integerDigits + register.fractionDigits
-            if digits.count < limit { digits.append(String(value)) }
+            if digits.count < limit {
+                digits.append(String(value))
+            } else {
+                // **Eine volle Anzeige muss sich melden.** Wer sie sieht,
+                // merkt am Ausbleiben der Ziffer, dass nichts mehr geht. Wer
+                // sie nicht sieht, hört beim Tippen nur den Namen der Taste —
+                // „7" — und hält den Wert für angekommen. Eine stille Grenze
+                // ist für ihn eine falsche Zahl.
+                announce("Das Zählwerk hat nur \(limit) Stellen. Weitere Ziffern werden nicht übernommen.")
+            }
         case .delete:
             if !digits.isEmpty { digits.removeLast() }
-        case .photo:
-            // Belegfotos folgen mit der Kamera-Erfassung; die Taste steht
-            // schon hier, damit der Platz im Raster nicht später wandert.
-            break
         }
         judge()
     }

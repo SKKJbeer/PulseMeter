@@ -81,7 +81,7 @@ struct PulseWidgetView: View {
                 } else {
                     Text("—").font(.system(.title2, weight: .semibold))
                 }
-                Text(statusLine(for: meter))
+                Text(meter.statusText)
                     .font(.system(.caption2))
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
@@ -90,6 +90,16 @@ struct PulseWidgetView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        // **Ein Satz statt vier Fundstücke.** Für das Auge ist das eine Karte:
+        // Name oben, Zahl groß, Zeitraum darunter. Vorgelesen waren es vier
+        // Stationen — und „kWh" allein, ohne die Zahl davor, sagt nichts.
+        //
+        // Das Widget hatte bis 0.36.0 überhaupt keine Zugriffsangaben. Es ist
+        // der eine Teil der App, den ein Nutzer sieht, **ohne** die App zu
+        // öffnen; für jemanden, der VoiceOver benutzt, war es damit der eine
+        // Teil, den es nicht gab.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(spoken(entry.summary?.headline))
     }
 
     // MARK: - Mittel
@@ -100,12 +110,13 @@ struct PulseWidgetView: View {
                 ForEach(summary.meters.prefix(3)) { meter in
                     HStack(spacing: 8) {
                         Image(systemName: meter.symbolName)
+                            .accessibilityHidden(true)
                             .font(.system(size: 12, weight: .semibold))
                             .foregroundStyle(PulseColor.resource(meter.colorToken))
                             .frame(width: 18)
                         VStack(alignment: .leading, spacing: 1) {
                             Text(meter.name).font(.system(.caption, weight: .medium))
-                            Text(statusLine(for: meter))
+                            Text(meter.statusText)
                                 .font(.system(.caption2))
                                 .foregroundStyle(.secondary)
                                 .lineLimit(1)
@@ -120,6 +131,11 @@ struct PulseWidgetView: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
+                    // Je Zähler ein Element, nicht je Baustein. Drei Zähler
+                    // ergaben sonst zwölf Wischbewegungen für eine Auskunft,
+                    // die in drei Sätze passt.
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(spoken(meter))
                 }
             } else {
                 emptyState
@@ -138,19 +154,21 @@ struct PulseWidgetView: View {
                 .font(.system(.caption2))
                 .foregroundStyle(.secondary)
         }
+        .accessibilityElement(children: .combine)
     }
 
-    /// Fälligkeit hat Vorrang vor dem Zeitraum.
+    /// Was VoiceOver vorliest.
     ///
-    /// Wer im Vorbeigehen liest, liest eine Zeile. Steht dort der Zeitraum,
-    /// während ein Zähler seit drei Monaten überfällig ist, hat das Widget die
-    /// falsche Zeile gewählt.
-    private func statusLine(for meter: WidgetSummary.Meter) -> String {
-        if meter.isDue {
-            return meter.daysSinceReading.map { "Seit \($0) Tagen fällig" }
-                ?? "Noch nie abgelesen"
+    /// Gebaut wird der Satz in `PulseCore` — dort ist er ohne Simulator
+    /// prüfbar, und dort trifft er dieselbe Auswahl zwischen Fälligkeit und
+    /// Zeitraum wie die sichtbare Zeile. Eine zweite Fassung hier hätte
+    /// früher oder später eine andere Zeile gewählt, und die gesprochene
+    /// sieht niemand nach.
+    private func spoken(_ meter: WidgetSummary.Meter?) -> String {
+        guard let meter else {
+            return "PulseMeter. Öffne die App und trag deinen ersten Stand ein."
         }
-        return meter.periodCaption
+        return meter.spokenSummary(number: number)
     }
 
     private func number(_ value: Decimal) -> String {

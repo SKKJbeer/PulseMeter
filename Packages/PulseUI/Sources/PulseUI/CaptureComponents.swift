@@ -43,6 +43,12 @@ public struct CounterDisplay: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Zählerstand")
         .accessibilityValue(readableValue)
+        // Wer die Rollen nicht sieht, weiß sonst nicht, wie viele Ziffern das
+        // Gerät überhaupt hat — und tippt gegen eine Grenze, die es für ihn
+        // nicht gibt.
+        .accessibilityHint(fractionDigits > 0
+            ? "\(integerDigits) Stellen vor und \(fractionDigits) nach dem Komma"
+            : "\(integerDigits) Stellen")
     }
 
     private var readableValue: String {
@@ -157,7 +163,6 @@ public struct NumberPad: View {
     public enum Key: Hashable {
         case digit(Int)
         case delete
-        case photo
     }
 
     private let onKey: (Key) -> Void
@@ -168,12 +173,36 @@ public struct NumberPad: View {
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 9), count: 3)
 
+    /// Höhe und Schriftgröße wachsen mit der eingestellten Schrift.
+    ///
+    /// Bis 0.36.0 standen hier feste 52 und 26 Punkt. Auf der größten Stufe
+    /// blieb der Ziffernblock damit als einziger Teil des Schirms unverändert
+    /// klein, während alles darüber wuchs — ausgerechnet der Teil, der
+    /// getroffen werden muss. `00-produktstrategie.md` nennt „Dynamic Type bis
+    /// zur größten Stufe" nicht verhandelbar.
+    @ScaledMetric(relativeTo: .title2) private var keyHeight: CGFloat = 52
+    @ScaledMetric(relativeTo: .title2) private var keyFontSize: CGFloat = 26
+
     public var body: some View {
         LazyVGrid(columns: columns, spacing: 9) {
             ForEach(1...9, id: \.self) { number in
                 key(label: "\(number)") { onKey(.digit(number)) }
             }
-            auxKey(symbol: "camera", label: "Belegfoto") { onKey(.photo) }
+            // **Hier saß bis 0.36.0 eine Taste, die nichts tat.** Sie trug ein
+            // Kamerasymbol und hieß für VoiceOver „Belegfoto"; angetippt
+            // passierte nichts. Gedacht war sie als Platzhalter, damit das
+            // Raster später nicht wandert — der Preis dafür wäre gewesen, in
+            // 1.0 einen angekündigten Knopf auszuliefern, der ins Leere greift.
+            // Für jemanden, der die Tasten nur hört, ist das keine Kleinigkeit,
+            // sondern eine Sackgasse (Produktprinzip 4).
+            //
+            // Belegfotos sind für 1.0 gestrichen (docs/07-v1-plan.md) und
+            // kommen mit 1.1. Bis dahin steht hier eine leere Fläche: Die Null
+            // bleibt in der Mitte, das Löschen unten rechts, und die Plätze
+            // wandern später trotzdem nicht.
+            Color.clear
+                .frame(minHeight: 52)
+                .accessibilityHidden(true)
             key(label: "0") { onKey(.digit(0)) }
             auxKey(symbol: "delete.left", label: "Löschen") { onKey(.delete) }
         }
@@ -182,9 +211,15 @@ public struct NumberPad: View {
     private func key(label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(label)
-                .font(.system(size: 26, weight: .regular, design: .default))
+                // Wächst mit der Schrift, aber gedeckelt: Bei der größten
+                // Stufe wären drei ungebremste Ziffern nebeneinander breiter
+                // als der Schirm, und ein Ziffernblock, der überläuft, ist
+                // schlechter zu treffen als einer, der etwas kleiner bleibt.
+                .font(.system(size: keyFontSize, weight: .regular, design: .default))
+                .minimumScaleFactor(0.7)
+                .lineLimit(1)
                 .foregroundStyle(PulseColor.ink)
-                .frame(maxWidth: .infinity, minHeight: 52)
+                .frame(maxWidth: .infinity, minHeight: keyHeight)
                 .background(PulseColor.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
@@ -199,7 +234,7 @@ public struct NumberPad: View {
             Image(systemName: symbol)
                 .font(.system(size: 20))
                 .foregroundStyle(PulseColor.inkSecondary)
-                .frame(maxWidth: .infinity, minHeight: 52)
+                .frame(maxWidth: .infinity, minHeight: keyHeight)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(label)
