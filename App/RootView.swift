@@ -75,6 +75,13 @@ struct MeterRow: Identifiable {
     let isDue: Bool
     /// Kosten des laufenden Jahres, `nil` ohne hinterlegten Tarif.
     let cost: Money?
+    /// Ob der Betrag Schätzungen enthält.
+    ///
+    /// Er erbt die Verlässlichkeit vom Verbrauch: Steckt in der Menge eine
+    /// Interpolation, steckt sie auch im Betrag. Bis 0.39.0 trug die Menge ihr
+    /// Zeichen und der Euro-Betrag daneben nicht — dieselbe Unsicherheit,
+    /// einmal gekennzeichnet und einmal nicht (Produktprinzip 7).
+    let costIsApproximate: Bool
     /// Warum keine Kosten dastehen, wenn ein Tarif zwar da ist, aber nicht
     /// reicht — bei Gas ohne Zustandszahl und Brennwert etwa. Ein leeres Feld
     /// erklärt sich nicht; ein Satz schon.
@@ -222,7 +229,10 @@ struct OverviewView: View {
                 }
                 if let cost = row.cost {
                     CardFooterRow(costCaption(for: row)) {
-                        Text(money(cost))
+                        // Dasselbe Zeichen wie über der großen Zahl und wie an
+                        // der Einspeisung: Ein „≈" heißt in dieser App überall
+                        // dasselbe.
+                        Text((row.costIsApproximate ? "≈ " : "") + money(cost))
                             .font(.system(.subheadline, weight: .semibold))
                             .foregroundStyle(PulseColor.ink)
                     }
@@ -485,7 +495,8 @@ struct OverviewView: View {
                                     fractionDigits: 0, yearToDate: nil,
                                     changeVersusLastYear: nil, monthlySeries: [],
                                     daysSinceReading: nil, isDue: false,
-                                    cost: nil, costProblem: nil, outlook: nil, feedIn: nil)
+                                    cost: nil, costIsApproximate: false,
+                                    costProblem: nil, outlook: nil, feedIn: nil)
                 }
                 // **Zwei Listen, und die Namen sagen welche.**
                 //
@@ -536,6 +547,7 @@ struct OverviewView: View {
                     isDue: ConsumptionEngine.isReadingDue(meteringPoint: point,
                                                           readings: primary, today: today),
                     cost: costs.value,
+                    costIsApproximate: costs.isApproximate,
                     costProblem: costs.problem,
                     outlook: outlook(point: point, readings: everything,
                                      tariffs: tariffs, periods: periods),
@@ -589,19 +601,22 @@ struct OverviewView: View {
     /// Tarif, der nicht reicht, ist dagegen etwas, das der Nutzer beheben kann
     /// — und dann muss dastehen, was fehlt.
     private func cost(point: MeteringPoint, readings: [Reading], tariffs: [Tariff],
-                      in range: DayRange) -> (value: Money?, problem: String?) {
-        guard !tariffs.isEmpty else { return (nil, nil) }
+                      in range: DayRange) -> (value: Money?, isApproximate: Bool, problem: String?) {
+        guard !tariffs.isEmpty else { return (nil, false, nil) }
         do {
             guard let result = try CostEngine.cost(meteringPoint: point, readings: readings,
                                                    tariffs: tariffs, in: range)
-            else { return (nil, nil) }
-            return (result.total, nil)
+            else { return (nil, false, nil) }
+            // Der Rechenkern reicht die Verlässlichkeit vom Verbrauch bis in
+            // den Betrag durch. Sie hier fallen zu lassen hieße, eine
+            // geschätzte Zahl als gemessene auszugeben.
+            return (result.total, result.confidence != .measured, nil)
         } catch CostEngine.CostError.missingConversion {
-            return (nil, "Für die Kosten fehlen Zustandszahl und Brennwert von deiner Rechnung.")
+            return (nil, false, "Für die Kosten fehlen Zustandszahl und Brennwert von deiner Rechnung.")
         } catch CostEngine.CostError.noTariff {
-            return (nil, nil)
+            return (nil, false, nil)
         } catch {
-            return (nil, "Die Kosten ließen sich nicht berechnen.")
+            return (nil, false, "Die Kosten ließen sich nicht berechnen.")
         }
     }
 

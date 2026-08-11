@@ -9,6 +9,62 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.39.0 — 2026-08-11
+
+**Am Preisfeld stand nicht, dass es Bruttopreise will. Der Fehler daraus wäre
+niemandem aufgefallen — bis zur Jahresabrechnung.**
+
+`Tariff.pricePerUnit` ist im Modell seit jeher als **brutto** dokumentiert. Auf
+dem Schirm hieß das Feld nur „Arbeitspreis · €/kWh". Auf einer deutschen
+Rechnung steht der **Netto**-Arbeitspreis oft größer und weiter oben als der
+Bruttopreis; wer ihn abschreibt, bekommt dauerhaft rund ein Fünftel zu niedrige
+Kosten.
+
+Nachgerechnet: 3000 kWh zu 0,34 € brutto sind 1020 €. Dieselbe Zahl netto
+(0,2857 €) ergibt 857 € — **163 € zu wenig**, ein Jahr lang. Und die App kann
+es nicht bemerken: Aus einer Zahl allein lässt sich nicht erkennen, ob Steuer
+darin steckt.
+
+### Behoben
+
+- **Arbeitspreis und Grundpreis heißen jetzt „(brutto)"** — in der sichtbaren
+  Beschriftung und damit auch in der, die VoiceOver beim Betreten des Feldes
+  vorliest. Am Feld und nicht nur in der Fußzeile: Wer den Preis eintippt, hat
+  die Fußzeile schon hinter sich.
+- Die Fußzeile sagt zusätzlich, woran man den falschen Wert erkennt — der
+  Nettopreis steht auf der Rechnung meist daneben und ist rund ein Fünftel
+  kleiner.
+- Die **Einspeisevergütung** bekommt den Zusatz bewusst **nicht**: Sie ist für
+  private Anlagen in aller Regel ein Nettobetrag ohne Umsatzsteuer, und
+  „brutto" wäre dort die falsche Ansage.
+- **Der Kostenbetrag trägt jetzt sein „≈".** Der Rechenkern reicht die
+  Verlässlichkeit vom Verbrauch bis in den Betrag durch — die Übersicht ließ
+  sie beim Anzeigen fallen. Die Menge war als geschätzt gekennzeichnet, der
+  Euro-Betrag daneben nicht, obwohl er dieselbe Unsicherheit erbt
+  (Produktprinzip 7).
+
+### Was dabei sonst am Kostenkonzept auffiel
+
+Nicht behoben, weil es erst eine echte Rechnung zu klären gilt:
+
+- **Der Grundpreis wird nach Tagen verteilt, nicht nach Monaten.**
+  `monthlyBasePrice × 12 ÷ Tage des Jahres × Tage des Abschnitts`. Übers Jahr
+  exakt; im Februar 11,88 € statt 12,90 € (**−8 %**), im Januar 13,15 €
+  (+1,9 %). Ob das falsch ist, hängt am Versorger — viele rechnen den
+  Grundpreis bei Teilzeiträumen ebenfalls tagesanteilig ab. Steht auf der
+  Rechnung des Gründers und gehört in die zwei Wochen Eigennutzung.
+- `dailyBasePrice` nimmt die Jahreslänge aus `range.start.year`. Ein
+  Abrechnungsjahr, das ins Schaltjahr läuft, rechnet durchgehend mit 365 Tagen
+  — rund 0,3 %.
+- Zwei Tarife mit demselben Starttag: Der ältere fällt still weg. Ein
+  plausibler Eingabefehler ohne Warnung.
+
+_Geprüft: 189 Prüfungen in `PulseCore`, 74 im Klick-Dummy, Syntax aller
+iOS-Quellen. Eine neue Oberflächenprüfung hält fest, dass der Hinweis am Feld
+steht — im Klick-Dummy steht er wortgleich._
+
+---
+
 ## 0.38.0 — 2026-08-10
 
 **Die Hochrechnung sagte einem Gaskunden im ersten Jahr am 1. Februar das

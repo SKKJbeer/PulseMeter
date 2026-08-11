@@ -1102,4 +1102,37 @@ final class LaunchTests: XCTestCase {
         XCTAssertTrue(value.contains("123"),
                       "Der eingetippte Wert muss sich vorlesen lassen, gelesen wurde: \(value)")
     }
+
+    /// Am Preisfeld muss stehen, dass brutto gemeint ist.
+    ///
+    /// **Der Fehler, den die App nicht bemerken kann.** Der Rechenkern erwartet
+    /// Bruttopreise; auf einer deutschen Rechnung steht der Nettopreis oft
+    /// größer und weiter oben. Wer ihn abschreibt, bekommt dauerhaft rund ein
+    /// Fünftel zu niedrige Kosten — nachgerechnet 163 € bei 3000 kWh —, und aus
+    /// einer Zahl allein lässt sich nicht erkennen, ob Steuer darin steckt.
+    /// Also muss es am Feld stehen, bevor jemand tippt.
+    func testThePriceFieldSaysItWantsGrossPrices() {
+        let app = launchEmpty()
+
+        XCTAssertTrue(app.buttons["Ersten Zähler anlegen"].waitForExistence(timeout: erscheint))
+        app.buttons["Ersten Zähler anlegen"].tap()
+
+        let field = app.textFields["Name"]
+        XCTAssertTrue(field.waitForExistence(timeout: erscheint))
+        field.tap()
+        field.typeText("Strom\n")
+
+        // Das Feld trägt die Angabe in seiner Beschriftung — dort, wo VoiceOver
+        // sie beim Betreten vorliest.
+        let preisfeld = app.textFields.containing(
+            NSPredicate(format: "label CONTAINS 'Arbeitspreis' AND label CONTAINS 'brutto'")
+        ).firstMatch
+        XCTAssertTrue(scroll(to: preisfeld, in: app),
+                      "Am Arbeitspreis fehlt der Hinweis, dass brutto gemeint ist")
+
+        let grundpreis = app.textFields.containing(
+            NSPredicate(format: "label CONTAINS 'Grundpreis' AND label CONTAINS 'brutto'")
+        ).firstMatch
+        XCTAssertTrue(grundpreis.exists, "Am Grundpreis fehlt derselbe Hinweis")
+    }
 }

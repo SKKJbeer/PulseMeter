@@ -718,21 +718,39 @@ struct MeterEditor: View {
         }
     }
 
+    /// **Brutto, und das muss dastehen.**
+    ///
+    /// Der Rechenkern erwartet Bruttopreise. Auf einer deutschen Rechnung steht
+    /// der **Netto**-Arbeitspreis oft größer und weiter oben als der Brutto —
+    /// wer ihn abschreibt, bekommt dauerhaft rund ein Fünftel zu niedrige
+    /// Kosten. Nachgerechnet: 3000 kWh zu 0,34 € brutto sind 1020 €; mit
+    /// derselben Zahl netto (0,2857 €) nur 857 €. **163 € zu wenig**, ein Jahr
+    /// lang, und die App kann es nicht bemerken — ihr fehlt jede Handhabe, aus
+    /// einer Zahl zu erkennen, ob Steuer darin steckt.
+    ///
+    /// Deshalb steht es am Feld und nicht nur in der Fußzeile: Wer den Preis
+    /// eintippt, hat die Fußzeile schon hinter sich.
+    private var grossHint: String { " (brutto)" }
+
     @ViewBuilder
     private var tariffFields: some View {
         Section {
-            numberRow(hasDualTariff && kind == .electricity ? "Arbeitspreis tagsüber" : "Arbeitspreis",
+            numberRow((hasDualTariff && kind == .electricity ? "Arbeitspreis tagsüber" : "Arbeitspreis") + grossHint,
                       unit: "€/\(billingUnitSymbol)", spokenUnit: "Euro je \(billingUnitSymbol)",
                       text: $pricePerUnit)
-            numberRow("Grundpreis", unit: "€/Monat", spokenUnit: "Euro je Monat",
+            numberRow("Grundpreis" + grossHint, unit: "€/Monat", spokenUnit: "Euro je Monat",
                       text: $monthlyBasePrice)
 
             if hasDualTariff && kind == .electricity {
-                numberRow("Arbeitspreis nachts", unit: "€/kWh", spokenUnit: "Euro je Kilowattstunde",
+                numberRow("Arbeitspreis nachts" + grossHint,
+                          unit: "€/kWh", spokenUnit: "Euro je Kilowattstunde",
                           text: $lowTariffPrice)
             }
 
             if hasFeedIn && kind == .electricity {
+                // Ohne Zusatz: Die Einspeisevergütung ist für private Anlagen
+                // in aller Regel ein Nettobetrag ohne Umsatzsteuer, und
+                // „brutto" daneben wäre hier die falsche Ansage.
                 numberRow("Einspeisevergütung", unit: "€/kWh", spokenUnit: "Euro je Kilowattstunde",
                           text: $feedInPrice)
             }
@@ -758,8 +776,8 @@ struct MeterEditor: View {
             Text("Preise")
         } footer: {
             Text(needsGasConversion
-                 ? "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Zustandszahl und Brennwert stehen auf deiner Gasrechnung; ohne sie lässt sich aus m³ kein Betrag bilden. Mit dem Abschlag rechnet die App aus, ob am Jahresende ein Guthaben oder eine Nachzahlung zu erwarten ist."
-                 : "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Alle Zahlen stehen auf deiner Jahresrechnung. Mit dem Abschlag rechnet die App aus, ob am Jahresende ein Guthaben oder eine Nachzahlung zu erwarten ist.")
+                 ? "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Nimm die Preise inklusive Mehrwertsteuer — der Nettopreis steht auf der Rechnung oft daneben und ist rund ein Fünftel kleiner. Zustandszahl und Brennwert stehen ebenfalls auf deiner Gasrechnung; ohne sie lässt sich aus m³ kein Betrag bilden. Mit dem Abschlag rechnet die App aus, ob am Jahresende ein Guthaben oder eine Nachzahlung zu erwarten ist."
+                 : "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Nimm die Preise inklusive Mehrwertsteuer — der Nettopreis steht auf der Rechnung oft daneben und ist rund ein Fünftel kleiner. Mit dem Abschlag rechnet die App aus, ob am Jahresende ein Guthaben oder eine Nachzahlung zu erwarten ist.")
         }
     }
 
