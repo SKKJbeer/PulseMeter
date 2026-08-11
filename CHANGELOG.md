@@ -9,6 +9,55 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.40.1 — 2026-08-11
+
+**Zwei Oberflächenprüfungen aus 0.40.0 suchten am falschen Ort und meldeten
+„fehlt", wo nichts fehlte.**
+
+Der Lauf zu 0.40.0 war rot: 26 von 28 Prüfungen grün, App-Build und alle 22
+Bildschirmfotos in Ordnung, aber `testThePurchasePagePromisesOnlyWhatExists`
+und `testTheReportIsWatermarkedAndTheExportNeverCosts` fielen. Beide Male lag
+es an der Prüfung, nicht an der App — und beide Male ist die Ursache dieselbe:
+Die Prüfung verlangte einen Text so, wie er im Quelltext steht, statt so, wie
+er beim Nutzer ankommt.
+
+### Behoben
+
+- Die Kaufseite suchte den Absatz `Dauerhaft kostenlos` wortgetreu. Abschnitts-
+  titel tragen `pulseSectionLabel()` und damit `textCase(.uppercase)`; auf dem
+  Schirm heißt der Absatz `DAUERHAFT KOSTENLOS`. Die Prüfung vergleicht jetzt
+  ohne Rücksicht auf Groß- und Kleinschreibung. Unbemerkt geblieben hätte der
+  Fehler nichts kaputt gemacht, aber die Prüfung, die verhindert, dass die
+  Kaufseite Foto-Belege oder Siri-Kurzbefehle verspricht, lief wegen des
+  Abbruchs davor **nie** — sie hätte ein falsches Verkaufsversprechen bis in
+  die Einreichung durchgelassen.
+- Die Prüfung des Wasserzeichens hielt sich für den Beleg, dass sich der
+  Bericht ohne Kauf öffnen lässt, an `Verbrauchsbericht` — das ist aber schon
+  der Titel der Navigationsleiste und steht da, bevor irgendetwas aufgebaut
+  ist. Die Zusicherung war damit erfüllt, ohne etwas zu prüfen; anschließend
+  fehlte der Hinweis zu Recht, weil ohne Vorschau keiner existiert. Sie tippt
+  jetzt „Bericht erstellen" an und prüft die Zusammenfassung des fertigen
+  Dokuments.
+- Denselben Hinweis suchte sie unter den Texten. Er fasst sich für VoiceOver zu
+  einem Element zusammen (`accessibilityElement(children: .ignore)`) und führt
+  angetippt zur Freischaltung, ist also ein **Knopf**. Über `staticTexts` war
+  er nicht zu finden, obwohl er sichtbar dastand.
+
+### Hinzugefügt
+
+- `beschriftungen(in:)` in den Oberflächenprüfungen: Findet eine Prüfung ein
+  Element nicht, steht in der Begründung, was stattdessen auf dem Schirm steht —
+  Texte und Knöpfe getrennt gekennzeichnet. Beide Fehlschläge oben hätten damit
+  einen Lauf statt zwei gekostet. Die Lehre steht seit 0.33.4 in
+  `docs/08-baukasten.md` und galt bisher nur für Zahlen, nicht für
+  Beschriftungen.
+
+_196 Tests in PulseCore, alle grün. 84 Prüfungen des Klick-Dummys in Hell und
+Dunkel. Die Oberflächenprüfungen brauchen einen Mac und laufen in der CI — am
+Prototyp und am Rechenkern hat sich nichts geändert._
+
+---
+
 ## 0.40.0 — 2026-08-11
 
 **Aus einem Kauf über 14,99 € werden vier über zwei bis vier Euro. Und der

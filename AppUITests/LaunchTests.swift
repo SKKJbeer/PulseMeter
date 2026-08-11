@@ -939,6 +939,22 @@ final class LaunchTests: XCTestCase {
         return app
     }
 
+    /// Was gerade auf dem Schirm steht, für die Begründung eines Fehlschlags.
+    ///
+    /// **Warum das hier steht.** Zwei Prüfungen in 0.40.0 fielen mit „kam
+    /// nicht", obwohl beides da war — einmal, weil ein Abschnittstitel durch
+    /// `textCase(.uppercase)` als `DAUERHAFT KOSTENLOS` ankommt, einmal, weil
+    /// ein Hinweis mit `accessibilityElement(children: .ignore)` als **Knopf**
+    /// und nicht als Text erscheint. Beide Male hätte die Meldung die Antwort
+    /// enthalten können und tat es nicht. Die Lehre aus `docs/08-baukasten.md`:
+    /// nach dem zweiten Fehlversuch nicht raten, sondern die Ansicht ihre
+    /// eigenen Beschriftungen berichten lassen.
+    private func beschriftungen(in app: XCUIApplication, limit: Int = 40) -> String {
+        let texte = app.staticTexts.allElementsBoundByIndex.prefix(limit).map { "T:\($0.label)" }
+        let knoepfe = app.buttons.allElementsBoundByIndex.prefix(limit).map { "K:\($0.label)" }
+        return (texte + knoepfe).joined(separator: " · ")
+    }
+
     /// Die Grenze führt zur Kaufseite, nicht in eine Sackgasse.
     ///
     /// Der Knopf „Zähler hinzufügen" bleibt sichtbar und bedienbar; er
@@ -1021,14 +1037,28 @@ final class LaunchTests: XCTestCase {
                       "Der Export muss ohne Kauf erreichbar sein — dauerhaft")
 
         bericht.tap()
-        // Kein Kaufblatt, sondern der Bericht selbst.
-        XCTAssertTrue(app.staticTexts["Verbrauchsbericht"].waitForExistence(timeout: erscheint),
+
+        // **Der Bericht entsteht erst auf Tippen.** Die erste Fassung dieser
+        // Prüfung hielt sich an `staticTexts["Verbrauchsbericht"]` — das ist
+        // aber schon der Titel der Navigationsleiste und steht da, bevor
+        // irgendetwas aufgebaut ist. Die Zusicherung war damit erfüllt, ohne
+        // etwas zu prüfen, und der Hinweis fehlte anschließend zu Recht: Ohne
+        // Vorschau gibt es ihn nicht.
+        XCTAssertTrue(app.staticTexts["Laufendes Jahr"].waitForExistence(timeout: erscheint),
                       "Der Bericht muss sich auch ohne Kauf öffnen lassen")
-        let hinweis = app.staticTexts.containing(
+        app.buttons["Bericht erstellen"].tap()
+        XCTAssertTrue(app.staticTexts["Zusammenfassung"].waitForExistence(timeout: 15),
+                      "Das Dokument wurde ohne Kauf nicht aufgebaut — der Bericht ist nie gesperrt")
+
+        // **Als Knopf, nicht als Text.** Der Hinweis fasst sich für VoiceOver
+        // zu einem Element zusammen (`accessibilityElement(children: .ignore)`)
+        // und führt angetippt zur Freischaltung. Über `staticTexts` ist er
+        // deshalb nicht zu finden, obwohl er sichtbar dasteht.
+        let hinweis = app.buttons.containing(
             NSPredicate(format: "label CONTAINS 'Wasserzeichen'")
         ).firstMatch
         XCTAssertTrue(hinweis.waitForExistence(timeout: erscheint),
-                      "Der Hinweis aufs Wasserzeichen fehlt — dann entdeckt es der Nutzer erst beim Teilen")
+                      "Der Hinweis aufs Wasserzeichen fehlt — dann entdeckt es der Nutzer erst beim Teilen. Auf dem Schirm steht: \(beschriftungen(in: app))")
     }
 
     /// Die Kaufseite verspricht nichts, was es noch nicht gibt.
@@ -1041,8 +1071,17 @@ final class LaunchTests: XCTestCase {
     func testThePurchasePagePromisesOnlyWhatExists() {
         let app = launchFree("-pulse-kaufen")
 
-        XCTAssertTrue(app.staticTexts["Dauerhaft kostenlos"].waitForExistence(timeout: 15),
-                      "Das Kaufblatt kam nicht")
+        // **Ohne Rücksicht auf Groß- und Kleinschreibung.** Abschnittstitel
+        // tragen `pulseSectionLabel()` und damit `textCase(.uppercase)`; auf
+        // dem Schirm — und für XCUITest — heißt der Absatz deshalb
+        // `DAUERHAFT KOSTENLOS`. Eine Prüfung, die den Text so verlangt, wie er
+        // im Quelltext steht, prüft die Gestaltung mit und fällt beim nächsten
+        // Feinschliff wieder.
+        let kostenlos = app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS[c] 'Dauerhaft kostenlos'")
+        ).firstMatch
+        XCTAssertTrue(kostenlos.waitForExistence(timeout: 15),
+                      "Das Kaufblatt kam nicht. Auf dem Schirm steht: \(beschriftungen(in: app))")
         for verboten in ["Foto", "Beleg", "Siri", "Kurzbefehl", "Abo"] {
             let treffer = app.staticTexts.containing(
                 NSPredicate(format: "label CONTAINS[c] %@", verboten)
