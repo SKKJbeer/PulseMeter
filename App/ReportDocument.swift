@@ -81,6 +81,17 @@ struct ReportPageView: View {
     let page: ReportPage
     let pageNumber: Int
     let pageCount: Int
+    /// Ob quer über die Seite ein Wasserzeichen liegt.
+    ///
+    /// **Warum ein Wasserzeichen und keine Sperre.** Der Bericht lässt sich
+    /// ansehen, blättern und drucken, auch ohne ihn gekauft zu haben — man
+    /// sieht also vorher, was man bekommt, statt vor einem Schloss zu stehen.
+    /// Bezahlt wird für das, was man weitergeben will: Ein Dokument mit einem
+    /// Schriftzug quer darüber legt niemand seinem Vermieter vor.
+    ///
+    /// Das ist zugleich die ehrlichere Bezahlschranke. Wer nur für sich
+    /// nachsehen will, ob die Abrechnung stimmt, zahlt nichts.
+    var watermarked: Bool = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -91,7 +102,29 @@ struct ReportPageView: View {
         .padding(ReportPaper.margin)
         .frame(width: ReportPaper.pageWidth, height: ReportPaper.pageHeight, alignment: .topLeading)
         .background(ReportPaper.paper)
+        .overlay { if watermarked { watermark } }
         .environment(\.colorScheme, .light)
+    }
+
+    /// Der Schriftzug quer über die Seite.
+    ///
+    /// Diagonal, groß und blass: **lesbar genug, dass ein Empfänger ihn nicht
+    /// übersieht, blass genug, dass die Zahlen darunter zu lesen bleiben.**
+    /// Ein Wasserzeichen, das den Bericht unbrauchbar macht, ist eine Sperre
+    /// mit Umweg — und dann wäre eine Sperre ehrlicher.
+    ///
+    /// `allowsHitTesting(false)`, damit es beim Blättern nicht im Weg liegt,
+    /// und für VoiceOver ausgeblendet: Es steht auf jeder Seite, und dreimal
+    /// „Nicht freigeschaltete Vorschau" vorgelesen zu bekommen, hilft niemandem.
+    /// Die Zeile über der Vorschau sagt dasselbe einmal.
+    private var watermark: some View {
+        Text("PulseMeter · Vorschau")
+            .font(.system(size: 46, weight: .semibold))
+            .foregroundStyle(ReportPaper.ink.opacity(0.11))
+            .rotationEffect(.degrees(-32))
+            .fixedSize()
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
     }
 
     @ViewBuilder

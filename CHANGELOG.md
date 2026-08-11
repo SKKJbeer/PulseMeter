@@ -9,6 +9,79 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.40.0 — 2026-08-11
+
+**Aus einem Kauf über 14,99 € werden vier über zwei bis vier Euro. Und der
+Bericht wird nicht mehr gesperrt, sondern gestempelt.**
+
+Ein einzelner Kauf über fünfzehn Euro ist eine Entscheidung, die man vertagt —
+und vertagte Entscheidungen werden nie getroffen. Drei Euro für die eine Sache,
+die gerade fehlt, sind keine Entscheidung, sondern ein Tipp.
+
+### Neu: fünf Produkte statt eines
+
+| Was | Preis |
+|---|---|
+| Unbegrenzt viele Zähler | 2,99 € |
+| Tag- und Nachtstrom, Einspeisung | 2,99 € |
+| Kosten und Preise (mit Abschlagsvergleich und Jahresvorschau) | 3,99 € |
+| Bericht ohne Wasserzeichen | 2,99 € |
+| **Alles freischalten** | **9,99 €** — rund 23 % günstiger |
+
+Abschlagsvergleich und Jahresvorschau sind **kein** eigenes Produkt: Ohne
+Preise können sie nicht rechnen, und etwas zu verkaufen, das ohne einen zweiten
+Kauf nichts tut, wäre eine Falle.
+
+`Entitlement` ist deshalb eine **Menge** und kein Schalter — „gekauft oder
+nicht" ließe sich nicht mehr beantworten, ohne zu fragen *was*. Käufe werden
+zusammengelegt und nie ersetzt: Käme vom Vermittler nur das eben Gekaufte
+zurück, verlöre der Nutzer bei jedem weiteren Kauf still alle vorherigen.
+
+### Neu: ein Kaufblatt je Funktion, kein Laden
+
+Gekauft wird dort, wo etwas fehlt. Wer am dritten Zähler steht, bekommt den
+dritten Zähler angeboten — mit einem Preis und einem Knopf. Das Bündel steht
+als eine Zeile darunter, mit der ausgerechneten Ersparnis; ein eigener Schirm
+mit allen Produkten wäre ein Ort, den niemand aufsucht.
+
+An den Sperren steht jetzt der **Preis** statt des Wortes „Pro". Ein Wort, das
+nichts kostet, weckt die Erwartung eines großen Kaufs.
+
+### Neu: Der Bericht ist nie gesperrt
+
+Ansehen, blättern und drucken kann ihn jeder. Ungekauft liegt quer über jeder
+Seite „PulseMeter · Vorschau" — blass genug, dass die Zahlen darunter lesbar
+bleiben, deutlich genug, dass ein Empfänger es sieht. Eine Prüfung im
+Klick-Dummy misst genau das: Wasserzeichen vorhanden **und** 3261 Zeichen
+Inhalt weiter lesbar. Ein Wasserzeichen, das den Bericht unbrauchbar macht,
+wäre eine Sperre mit Umweg — dann wäre eine Sperre ehrlicher.
+
+Wer nur prüfen will, ob die Jahresabrechnung stimmt, zahlt nichts. Bezahlt wird
+für das, was man weitergibt. Nach dem Kauf wird das PDF neu geschrieben — sonst
+trüge die Datei auf der Platte weiter den Schriftzug, für den gerade bezahlt
+wurde.
+
+### Der CSV-Export bleibt kostenlos
+
+Er stand ausdrücklich zur Entscheidung — drei Euro — und wurde verneint. Der
+freie Export ist Produktprinzip 5 und das stärkste Argument gegen die Sorge
+„was, wenn die App eingestellt wird": genau die Sorge, die Menschen bei Excel
+hält. Zwei Prüfungen halten fest, dass in **keinem** Produkt das Wort Export,
+CSV oder Tabelle vorkommt.
+
+### Geändert
+
+- `docs/04-monetarisierung.md` und `docs/09-appstore.md` tragen das neue
+  Modell, samt der fünf Produktkennungen für App Store Connect. Sie dürfen sich
+  nie ändern: Ein umbenanntes Produkt ist für jeden Käufer ein verlorener Kauf.
+- Ein Abo bleibt für Vermieter reserviert und wird in keinem Text angedeutet.
+
+_Geprüft: 196 Prüfungen in `PulseCore` (7 neu), 84 im Klick-Dummy (10 neu),
+Syntax aller iOS-Quellen. Die Oberflächenprüfungen zum Kauf sind auf das neue
+Modell umgeschrieben._
+
+---
+
 ## 0.39.0 — 2026-08-11
 
 **Am Preisfeld stand nicht, dass es Bruttopreise will. Der Fehler daraus wäre

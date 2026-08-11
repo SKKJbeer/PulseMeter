@@ -1,6 +1,6 @@
 # 09 – Material für den App Store
 
-Stand: 2026-08-10, Version 0.37.0
+Stand: 2026-08-11, Version 0.40.0
 
 Alles, was App Store Connect zur Einreichung verlangt, fertig zum Einfügen.
 Was hier steht, ist geprüft gegen das, was die App **heute** kann — nicht
@@ -37,9 +37,9 @@ Ihre Zählerstände" — das sagt dasselbe und nutzt nichts.
 ### Werbetext (max. 170 Zeichen, jederzeit ohne neue Version änderbar)
 
 ```
-Neu: Der Verbrauchsbericht als PDF — für die Jahresabrechnung, den Vermieter
-oder das Finanzamt. Und alles ohne Konto, ohne Abo und ohne dass Daten das
-Gerät verlassen.
+Neu: Freischalten in kleinen Schritten — jede Funktion für ein paar Euro,
+kein Abo. Der Verbrauchsbericht ist zum Ansehen und Drucken frei; freigekauft
+wird er zum Weitergeben.
 ```
 
 Dieses Feld ist der einzige Text, der sich **ohne** neue Version ändern lässt.
@@ -136,17 +136,22 @@ eingetragen hast. Ein Zahlungsmodell, das die eigenen Daten als Pfand nimmt,
 ist genau das, was Menschen bei Excel hält.
 
 
-KOSTENLOS UND PRO
+KOSTENLOS — UND EINZELN FREISCHALTEN
 
 Kostenlos, dauerhaft und ohne Zeitlimit: zwei Zähler, unbegrenzt viele
 Ablesungen, die ganze Historie, der Vorjahresvergleich, Erinnerungen und der
 Export.
 
-PulseMeter Pro ist ein Einmalkauf — kein Abo. Er schaltet frei: unbegrenzt
-viele Zähler, Zähler mit zwei Zahlen (Tag- und Nachtstrom, Einspeisung),
-Kosten und Preise, den Abschlagsvergleich, die Vorschau aufs Jahresende und
-den Verbrauchsbericht als PDF. Einmal gekauft, gilt er auf allen deinen
+Was mehr kann, schaltest du einzeln frei — kleine Einmalkäufe, kein Abo:
+unbegrenzt viele Zähler, Zähler mit zwei Zahlen (Tag- und Nachtstrom,
+Einspeisung), Kosten und Preise samt Abschlagsvergleich und Jahresvorschau,
+und den Verbrauchsbericht ohne Wasserzeichen. Jedes Stück kostet ein paar Euro,
+alle zusammen deutlich weniger. Einmal gekauft, gilt es auf allen deinen
 Geräten und bleibt, solange du die App behältst.
+
+Den Verbrauchsbericht kannst du auch ohne Kauf ansehen und drucken — quer
+darüber steht dann ein Schriftzug. Freigeschaltet wird er für das, wofür man
+ihn braucht: zum Weitergeben.
 ```
 
 Rund 2900 Zeichen. Aufbau mit Absicht: Die ersten zwei Zeilen stehen in der
@@ -178,8 +183,8 @@ ist keine Versionsinformation, sondern deren Verweigerung.
 | Primäre Kategorie | **Dienstprogramme** | Dort sucht, wer ein Werkzeug will |
 | Sekundäre Kategorie | **Finanzen** | Kosten und Abschlagsvergleich; bringt eine zweite Bestenliste |
 | Altersfreigabe | **4+** | Keine Inhalte, die etwas anderes rechtfertigten |
-| Preis | **Kostenlos** mit In-App-Kauf | Der Einstieg darf nichts kosten, sonst gibt es keinen |
-| In-App-Kauf | „PulseMeter Pro", nicht verbrauchbar, 14,99 € | Begründung in `04-monetarisierung.md` |
+| Preis | **Kostenlos** mit In-App-Käufen | Der Einstieg darf nichts kosten, sonst gibt es keinen |
+| In-App-Käufe | Fünf nicht verbrauchbare Produkte: drei zu 2,99 €, eines zu 3,99 €, Bündel 9,99 € | Begründung in `04-monetarisierung.md` |
 | Länder | Zunächst **Deutschland, Österreich, Schweiz** | Die App ist deutsch, die Rechnungslogik auch |
 
 ---
@@ -303,8 +308,12 @@ Diese Liste ist der Rest von `07-v1-plan.md`, hier auf die Einreichung
 verkürzt:
 
 - [ ] **Apple Developer Program** (99 €) — blockiert alles Weitere
-- [ ] **StoreKit**: Produkt `com.pulsemeter.app.pro` in App Store Connect
-      anlegen, `PurchaseGateway` dagegen implementieren
+- [ ] **StoreKit**: fünf Produkte in App Store Connect anlegen —
+      `com.pulsemeter.app.additionalmeters`, `.multipleregisters`,
+      `.costsandtariffs`, `.pdfreport`, `.everything` — und `PurchaseGateway`
+      dagegen implementieren. Die Kennungen stehen in `ProductID` und dürfen
+      sich nie ändern: Ein umbenanntes Produkt ist für jeden Käufer ein
+      verlorener Kauf.
 - [ ] **CloudKit einschalten** (`PulseStore.container(cloudKit:)` steht auf
       `false`) und die Berechtigung eintragen
 - [ ] **`.entitlements`**: App-Gruppe `group.com.pulsemeter.app` fürs Widget,

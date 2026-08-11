@@ -180,9 +180,15 @@ for (const scheme of ["light", "dark"]) {
     text: document.getElementById("pro-body").innerText,
     erste: (document.querySelector("#pro-body .rl") || {}).innerText || ""
   }));
-  note(kaufseite.offen, "Die Grenze führt zur Kaufseite statt ins Leere");
-  note(/Unbegrenzt viele Zähler/.test(kaufseite.erste),
-       "Der Grund steht zuerst — wer am dritten Zähler hängt, liest nicht über PDF-Berichte");
+  note(kaufseite.offen, "Die Grenze führt zum Kaufblatt statt ins Leere");
+  // Seit 0.40.0 ein Blatt je Funktion statt einer Liste: Wer am dritten Zähler
+  // hängt, bekommt den dritten Zähler angeboten — mit Preis, nicht mit Regal.
+  note(/Kostenlos sind zwei/.test(kaufseite.text),
+       "Das Kaufblatt zeigt die eine Sache, an der es hakte");
+  note(/Freischalten · 2,99/.test(kaufseite.text),
+       "Und den Preis dazu, bevor jemand tippt");
+  note(/Alles freischalten/.test(kaufseite.text) && /9,99/.test(kaufseite.text),
+       "Das Bündel steht darunter, nicht als Regal davor");
   note(/Der Export\s+bleibt kostenlos/.test(kaufseite.text.replace(/\s+/g, " "))
        || /Export bleibt kostenlos/.test(kaufseite.text.replace(/\s+/g, " ")),
        "Die Kaufseite sagt, was kostenlos bleibt");
@@ -192,6 +198,38 @@ for (const scheme of ["light", "dark"]) {
   const zuviel = ["Foto", "Beleg", "Siri", "Kurzbefehl"].filter(w => kaufseite.text.includes(w));
   note(zuviel.length === 0,
        `Die Kaufseite verspricht nichts aus 1.1${zuviel.length ? ": " + zuviel.join(", ") : ""}`);
+
+  // Der Bericht ist nie gesperrt — ungekauft trägt er ein Wasserzeichen.
+  // Diese Prüfung hält fest, dass er sich öffnen lässt und dass der Schriftzug
+  // dabei wirklich auf dem Papier liegt, nicht nur im Kopf des Entwicklers.
+  // Gezielt das offene Blatt schließen, nicht irgendeines: `[data-close]`
+  // trifft auch die Knöpfe der verdeckten Blätter, und ein Klick darauf landet
+  // im Nichts.
+  await page.locator("#sheet-pro [data-close]").first().click();
+  await page.waitForTimeout(250);
+  await page.locator('[data-pane="history"]').first().click();
+  await page.waitForTimeout(250);
+  await page.locator('[data-export]').first().click();
+  await page.waitForTimeout(300);
+  await page.locator('#sheet-export [data-open="report"]').first().click();
+  await page.waitForTimeout(250);
+  await page.locator("#makereport").click();
+  await page.waitForTimeout(350);
+  const bericht = await page.evaluate(() => ({
+    offen: document.getElementById("sheet-report").classList.contains("on"),
+    wasserzeichen: document.getElementById("doc").innerHTML.includes("PulseMeter · Vorschau"),
+    inhalt: document.getElementById("doc").innerText.length
+  }));
+  note(bericht.offen, "Der Bericht lässt sich auch ungekauft öffnen");
+  note(bericht.wasserzeichen, "Und trägt dann ein Wasserzeichen");
+  note(bericht.inhalt > 200,
+       `Der Inhalt bleibt lesbar (${bericht.inhalt} Zeichen) — sonst wäre es eine Sperre mit Umweg`);
+  await page.locator("#sheet-report [data-close]").first().click();
+  await page.waitForTimeout(300);
+  await page.locator('[data-pane="meters"]').first().click();
+  await page.waitForTimeout(200);
+  await page.locator("#add-meter").click();
+  await page.waitForTimeout(300);
 
   // Und der Kauf hebt sie auf.
   await page.locator("#pro-buy").click();

@@ -28,13 +28,25 @@ Die Nutzungsfrequenz einer Zähler-App liegt bei 1–12 Öffnungen pro Jahr und 
 
 ### Struktur
 
-> **Seit 0.35.0 ist diese Struktur gebaut**, nicht mehr nur beschrieben. Die
-> Grenze steht in `AccessPolicy` (PulseCore), die Leistungen in `ProFeature`,
-> und beide sind geprüft. Was hier steht und was die App tut, darf nicht
-> auseinanderlaufen — Änderungen an dieser Liste gehören in denselben Zug.
+> **Seit 0.40.0 wird einzeln freigeschaltet**, nicht mehr als ein großer Kauf.
+> Die Struktur steht in `ProductID` und `AccessPolicy` (PulseCore) und ist
+> geprüft. Was hier steht und was die App tut, darf nicht auseinanderlaufen —
+> Änderungen an dieser Liste gehören in denselben Zug.
 >
-> Eine Regel gilt dabei über allem: **Gesperrt ist das Anlegen, nie das
-> Benutzen.** Ein Bestand über der Grenze bleibt vollständig zugänglich.
+> Zwei Regeln gelten dabei über allem: **Gesperrt ist das Anlegen, nie das
+> Benutzen** — ein Bestand über der Grenze bleibt vollständig zugänglich. Und
+> **der Export ist unverkäuflich**; er stand am 11. August ausdrücklich zur
+> Entscheidung und blieb frei.
+
+### Warum kleine Stücke statt eines großen Kaufs
+
+Ein einzelner Kauf über 14,99 € ist eine Entscheidung, die man vertagt — und
+vertagte Entscheidungen werden nie getroffen. Drei Euro für die eine Sache, die
+gerade fehlt, sind keine Entscheidung, sondern ein Tipp. Wer später mehr
+braucht, kauft mehr; wer alles will, nimmt das Bündel.
+
+Das Abo kommt später und nur dort, wo es hingehört: bei Vermietern, wo
+wiederkehrender Nutzen entsteht.
 
 **Kostenlos — dauerhaft, ohne Zeitlimit**
 - Bis zu **2 Zähler**
@@ -42,27 +54,28 @@ Die Nutzungsfrequenz einer Zähler-App liegt bei 1–12 Öffnungen pro Jahr und 
 - Verlauf und Vorjahresvergleich
 - Erinnerungen
 - **CSV-Export** — dauerhaft und uneingeschränkt
+- **Der Verbrauchsbericht zum Ansehen und Drucken**, mit Wasserzeichen
 
-**PulseMeter Pro — Einmalkauf, ca. 14,99 €**
-- Unbegrenzte Zähler und Zählwerke (PV, HT/NT, Wärmepumpe, Wallbox)
-- Kosten & Tarife, Tarifhistorie
-- Abschlagsvergleich und Jahresprognose
-- Foto-Belege — **erst ab 1.1**, siehe Hinweis unten
-- PDF-Bericht
-- Widgets — Siri-Kurzbefehle **erst ab 1.1**, siehe Hinweis unten
-- Alle künftigen Funktionen des Privatbereichs
+**Einzeln freischalten — Einmalkäufe**
 
-> ⚠️ **Zum Verkaufsstart nicht bewerben:** **Foto-Belege** und
-> **Siri-Kurzbefehle** sind aus 1.0 gestrichen (Begründung in
-> [`07-v1-plan.md`](07-v1-plan.md)) und kommen mit 1.1. Sie gehören deshalb
-> **nicht** in die Pro-Beschreibung im App Store, nicht in die Paywall und
-> nicht in die Schlagworte. Ein verkauftes Merkmal, das es nicht gibt, ist eine
-> Rückerstattung, eine schlechte Bewertung und im Zweifel eine Ablehnung durch
-> die Prüfung.
->
-> Pro trägt zum Start auch ohne sie: unbegrenzte Zähler und Zählwerke, Kosten
-> und Tarife, Abschlagsvergleich, Jahresprognose und der PDF-Bericht sind fünf
-> Gründe, und keiner davon ist ein Versprechen auf später.
+| Was | Preis | Wofür |
+|---|---|---|
+| Unbegrenzt viele Zähler | **2,99 €** | ab dem dritten Zähler |
+| Tag- und Nachtstrom, Einspeisung | **2,99 €** | ein Gerät mit zwei Zahlen |
+| Kosten und Preise | **3,99 €** | Preise, Tarifhistorie, Abschlagsvergleich, Jahresvorschau |
+| Bericht ohne Wasserzeichen | **2,99 €** | das Dokument zum Weitergeben |
+| **Alles freischalten** | **9,99 €** | alle vier zusammen, rund 23 % günstiger |
+
+### Warum der Bericht ein Wasserzeichen statt einer Sperre bekommt
+
+Ansehen, blättern und drucken kann ihn jeder. Wer nur prüfen will, ob die
+Jahresabrechnung stimmt, zahlt nichts. Bezahlt wird für das, was man
+weitergibt: Ein Dokument mit einem Schriftzug quer darüber legt niemand seinem
+Vermieter vor.
+
+Das ist ehrlicher als eine Sperre — man sieht vorher, was man bekommt — und es
+verkauft besser: Ein Schloss weckt Widerstand, ein fertiges Dokument mit einem
+Schriftzug weckt den Wunsch, ihn loszuwerden.
 
 **PulseMeter Vermieter — Abo, ca. 29,99 €/Jahr**
 - Mehrere Objekte und Einheiten

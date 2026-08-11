@@ -112,7 +112,7 @@ struct HistoryView: View {
                              labels: registerLabels)
             }
             .sheet(isPresented: $showingPaywall) {
-                PaywallView(reason: .pdfReport)
+                UnlockSheet(product: .pdfReport)
             }
         }
     }
@@ -322,17 +322,14 @@ struct HistoryView: View {
     /// danach Papier, keine Tabelle.
     private var reportRow: some View {
         Button {
-            // Der Bericht ist Pro; der Export darüber bleibt es nie. Beide
-            // Zeilen stehen bewusst untereinander — so ist ohne ein Wort zu
-            // sehen, dass die Daten frei sind und nur das Dokument kostet.
-            if purchase.allows(.pdfReport) {
-                showingReport = true
-            } else {
-                showingPaywall = true
-            }
+            // **Der Bericht ist nie gesperrt.** Seit 0.40.0 lässt er sich immer
+            // öffnen; ungekauft trägt er ein Wasserzeichen. Das ist ehrlicher
+            // als eine Sperre — man sieht vorher, was man bekommt, und zahlt
+            // für das, was man weitergeben will.
+            showingReport = true
         } label: {
             HStack(spacing: 10) {
-                Image(systemName: purchase.allows(.pdfReport) ? "doc.text" : "lock")
+                Image(systemName: "doc.text")
                     .accessibilityHidden(true)
                     .font(.system(.subheadline, weight: .semibold))
                     .foregroundStyle(PulseColor.tint)
@@ -346,7 +343,7 @@ struct HistoryView: View {
                         .multilineTextAlignment(.leading)
                 }
                 Spacer(minLength: 8)
-                if !purchase.allows(.pdfReport) { ProBadge() }
+                if purchase.reportIsWatermarked { PriceBadge(product: .pdfReport) }
                 Image(systemName: "chevron.right")
                     .accessibilityHidden(true)
                     .font(.system(.footnote, weight: .semibold))
@@ -366,10 +363,9 @@ struct HistoryView: View {
         // Ohne diesen Zusatz sagte VoiceOver nur „Verbrauchsbericht,
         // gestaltetes Dokument…" — und führte auf die Kaufseite, ohne dass
         // vorher irgendwo das Wort Pro gefallen wäre.
-        .accessibilityValue(purchase.allows(.pdfReport) ? "" : "Mit Pro")
-        .accessibilityHint(purchase.allows(.pdfReport)
-                           ? "Öffnet den Bericht"
-                           : "Doppeltippen, um PulseMeter Pro anzusehen")
+        .accessibilityValue(purchase.reportIsWatermarked
+                            ? "Mit Wasserzeichen, bis er freigeschaltet ist" : "")
+        .accessibilityHint("Öffnet den Bericht")
     }
 
     private func exportLabel(_ text: String) -> some View {

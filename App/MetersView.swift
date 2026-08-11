@@ -107,7 +107,7 @@ struct MetersView: View {
                             onDone: { load() })
             }
             .sheet(isPresented: $showingPaywall) {
-                PaywallView(reason: .additionalMeters)
+                UnlockSheet(product: .additionalMeters)
             }
         }
     }
@@ -411,10 +411,10 @@ struct MeterEditor: View {
 
     /// Welche Sperre die Kaufseite geöffnet hat, oder `nil`.
     ///
-    /// Zwei Zustände statt `sheet(item:)`: `ProFeature` liegt im Rechenkern,
+    /// Zwei Zustände statt `sheet(item:)`: `ProductID` liegt im Rechenkern,
     /// und ihm dort eine Kennung anzuhängen, hieße eine Anforderung der
     /// Oberfläche in die Domäne zu tragen.
-    @State private var paywallReason: ProFeature?
+    @State private var paywallReason: ProductID?
     @State private var showingPaywall = false
 
     @State private var name = ""
@@ -498,8 +498,8 @@ struct MeterEditor: View {
         purchase.allows(.costsAndTariffs) || existingTariff != nil || !existingTariffs.isEmpty
     }
 
-    private func openPaywall(_ feature: ProFeature) {
-        paywallReason = feature
+    private func openPaywall(_ product: ProductID) {
+        paywallReason = product
         showingPaywall = true
     }
 
@@ -604,7 +604,7 @@ struct MeterEditor: View {
                         }
                     } else {
                         Section {
-                            ProLockRow(feature: .multipleRegisters) {
+                            ProLockRow(product: .multipleRegisters) {
                                 openPaywall(.multipleRegisters)
                             }
                         } header: {
@@ -675,7 +675,7 @@ struct MeterEditor: View {
                 }
             }
             .sheet(isPresented: $showingPaywall) {
-                PaywallView(reason: paywallReason)
+                UnlockSheet(product: paywallReason ?? .costsAndTariffs)
             }
             .confirmationDialog("Wirklich löschen?", isPresented: $confirmingDelete, titleVisibility: .visible) {
                 Button("Löschen", role: .destructive) { deletePermanently() }
@@ -705,7 +705,7 @@ struct MeterEditor: View {
             // nichts, wogegen sich ein Abschlag rechnen ließe. Zwei getrennte
             // Sperren wären zwei Schlösser an derselben Tür.
             Section {
-                ProLockRow(feature: .costsAndTariffs) {
+                ProLockRow(product: .costsAndTariffs) {
                     openPaywall(.costsAndTariffs)
                 }
             } header: {

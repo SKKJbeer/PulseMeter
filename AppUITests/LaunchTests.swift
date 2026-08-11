@@ -958,14 +958,16 @@ final class LaunchTests: XCTestCase {
                       "Die Grenze muss dastehen, bevor jemand dagegenläuft")
 
         hinzu.tap()
-        XCTAssertTrue(app.staticTexts["PulseMeter Pro"].waitForExistence(timeout: erscheint),
-                      "Die Kaufseite kam nicht")
-        // Der Grund steht zuerst: Wer am dritten Zähler hängt, will nicht
-        // über PDF-Berichte lesen.
-        XCTAssertTrue(app.staticTexts["Unbegrenzt viele Zähler"].exists,
-                      "Die Leistung, an der es gerade hakte, fehlt auf der Kaufseite")
+        // **Das Kaufblatt zeigt genau die eine Sache**, an der es hakte — seit
+        // 0.40.0 wird einzeln freigeschaltet, und ein Regal mit allen
+        // Produkten wäre an dieser Stelle eine Zumutung.
+        XCTAssertTrue(app.staticTexts["Unbegrenzt viele Zähler"].waitForExistence(timeout: erscheint),
+                      "Das Kaufblatt für den dritten Zähler kam nicht")
+        XCTAssertTrue(app.buttons.containing(
+            NSPredicate(format: "label CONTAINS 'Unbegrenzt viele Zähler freischalten'")
+        ).firstMatch.exists, "Auf dem Kaufblatt fehlt der Knopf mit dem Preis")
         XCTAssertFalse(app.staticTexts["Neuer Zähler"].exists,
-                       "Ohne Pro darf sich kein weiteres Formular öffnen")
+                       "Ohne Freischaltung darf sich kein weiteres Formular öffnen")
     }
 
     /// **Die wichtigste Prüfung dieser Gruppe.** Was schon da ist, bleibt
@@ -997,12 +999,15 @@ final class LaunchTests: XCTestCase {
                       "Der Ziffernblock erschien nicht")
     }
 
-    /// Der Bericht ist Pro, der Export nicht — und beide stehen untereinander.
+    /// **Der Bericht ist nie gesperrt, und der Export nie käuflich.**
     ///
-    /// Diese Prüfung ist die Bremse gegen den Tag, an dem jemand den Export
-    /// „auch noch" hinter die Schranke zieht. Er ist Produktprinzip 5 und das
-    /// stärkste Argument gegen die Angst, die Menschen bei Excel hält.
-    func testTheReportIsProAndTheExportNeverIs() {
+    /// Seit 0.40.0 lässt sich der Bericht immer öffnen; ungekauft trägt er ein
+    /// Wasserzeichen. Diese Prüfung hält beides fest — dass das Dokument
+    /// zugänglich bleibt und dass der Export daneben offen ist. Der freie
+    /// Export ist Produktprinzip 5 und das stärkste Argument gegen die Angst,
+    /// die Menschen bei Excel hält; er stand am 11. August ausdrücklich zur
+    /// Entscheidung und wurde bewusst nicht verkauft.
+    func testTheReportIsWatermarkedAndTheExportNeverCosts() {
         let app = launchFree("-pulse-verlauf")
 
         let bericht = app.buttons.containing(
@@ -1011,15 +1016,19 @@ final class LaunchTests: XCTestCase {
         XCTAssertTrue(bericht.waitForExistence(timeout: 15),
                       "Die Berichtszeile fehlt im Verlauf")
 
-        // Der Export steht darüber und ist offen.
+        // Der Export steht darüber und ist offen — dauerhaft und ohne Kauf.
         XCTAssertTrue(app.buttons["Ablesungen"].exists || app.buttons["Auswertung"].exists,
-                      "Der Export muss ohne Pro erreichbar sein — dauerhaft")
+                      "Der Export muss ohne Kauf erreichbar sein — dauerhaft")
 
         bericht.tap()
-        XCTAssertTrue(app.staticTexts["PulseMeter Pro"].waitForExistence(timeout: erscheint),
-                      "Der Bericht muss ohne Pro zur Kaufseite führen")
-        XCTAssertTrue(app.staticTexts["Bericht als PDF"].exists,
-                      "Die Kaufseite nennt die Leistung nicht, an der es hakte")
+        // Kein Kaufblatt, sondern der Bericht selbst.
+        XCTAssertTrue(app.staticTexts["Verbrauchsbericht"].waitForExistence(timeout: erscheint),
+                      "Der Bericht muss sich auch ohne Kauf öffnen lassen")
+        let hinweis = app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS 'Wasserzeichen'")
+        ).firstMatch
+        XCTAssertTrue(hinweis.waitForExistence(timeout: erscheint),
+                      "Der Hinweis aufs Wasserzeichen fehlt — dann entdeckt es der Nutzer erst beim Teilen")
     }
 
     /// Die Kaufseite verspricht nichts, was es noch nicht gibt.
@@ -1032,8 +1041,8 @@ final class LaunchTests: XCTestCase {
     func testThePurchasePagePromisesOnlyWhatExists() {
         let app = launchFree("-pulse-kaufen")
 
-        XCTAssertTrue(app.staticTexts["PulseMeter Pro"].waitForExistence(timeout: 15),
-                      "Die Kaufseite kam nicht")
+        XCTAssertTrue(app.staticTexts["Dauerhaft kostenlos"].waitForExistence(timeout: 15),
+                      "Das Kaufblatt kam nicht")
         for verboten in ["Foto", "Beleg", "Siri", "Kurzbefehl", "Abo"] {
             let treffer = app.staticTexts.containing(
                 NSPredicate(format: "label CONTAINS[c] %@", verboten)

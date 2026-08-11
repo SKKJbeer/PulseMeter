@@ -682,7 +682,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.39.0</p>
+  <p>Klickbarer Entwurf · v0.40.0</p>
 </div>
 
 <div class="device">
@@ -2436,7 +2436,21 @@ function renderReport() {
       nachzuvollziehen und zu prüfen. Maßgeblich bleibt die Rechnung des Versorgers.
     </div>`;
 
-  document.getElementById("doc").innerHTML = head + summary + sections + note;
+  /* Das Wasserzeichen, wie in `ReportPageView`: diagonal, groß und blass.
+     Lesbar genug, dass ein Empfänger es nicht übersieht, blass genug, dass die
+     Zahlen darunter zu lesen bleiben. Ein Wasserzeichen, das den Bericht
+     unbrauchbar macht, wäre eine Sperre mit Umweg — dann wäre eine Sperre
+     ehrlicher. */
+  const mark = reportIsWatermarked()
+    ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+                   pointer-events:none;overflow:hidden" aria-hidden="true">
+         <div style="transform:rotate(-32deg);font-size:44px;font-weight:600;
+                     color:rgba(26,23,20,.11);white-space:nowrap">PulseMeter · Vorschau</div>
+       </div>`
+    : "";
+  const doc = document.getElementById("doc");
+  doc.style.position = "relative";
+  doc.innerHTML = head + summary + sections + note + mark;
 }
 
 function openExport(kind) {
@@ -2452,8 +2466,10 @@ function openExport(kind) {
       <span class="freebadge">frei</span>
     </div>
     <button type="button" class="rowbtn" data-open="report" style="padding-left:0;padding-right:0">
-      <div class="rl">Verbrauchsbericht<small>Gestaltetes Dokument zum Prüfen der Jahresabrechnung</small></div>
-      <span class="freebadge pro">Pro</span>
+      <div class="rl">Verbrauchsbericht<small>${reportIsWatermarked()
+        ? "Ansehen und drucken frei — ohne Wasserzeichen weitergeben"
+        : "Gestaltetes Dokument zum Prüfen der Jahresabrechnung"}</small></div>
+      ${reportIsWatermarked() ? `<span class="freebadge pro">${price("pdfReport")}</span>` : ""}
       <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
     </button>
     <div class="preview">${csv.split("\n").slice(0, 14).join("\n")
@@ -2489,66 +2505,94 @@ function renderHistory() {
    nie das Benutzen. Was schon da ist, bleibt vollständig zugänglich —
    Produktprinzip 5.
    ============================================================ */
-let PRO = true;
+/* Seit 0.40.0 wird **einzeln** freigeschaltet: vier Stücke zu ein paar Euro
+   und ein Bündel. Spiegelt `ProductID` und `AccessPolicy` in PulseCore —
+   dieselben Preise, dieselben Wörter, dieselbe Regel. Weichen beide
+   voneinander ab, ist das ein Fehler und kein Zustand (Regel 2).
+
+   Der Export steht in keinem Produkt und kommt auch in keines: Er ist
+   Produktprinzip 5. */
+let OWNED = new Set(["everything"]);
 const FREE_METER_LIMIT = 2;
 
-const PRO_FEATURES = [
-  { id: "additionalMeters",     title: "Unbegrenzt viele Zähler",
+const PRODUCTS = [
+  { id: "additionalMeters", price: 2.99, title: "Unbegrenzt viele Zähler",
     text: "Kostenlos sind zwei. Wer Strom, Gas und Wasser führt, braucht den dritten." },
-  { id: "multipleRegisters",    title: "Tag- und Nachtstrom, Einspeisung",
+  { id: "multipleRegisters", price: 2.99, title: "Tag- und Nachtstrom, Einspeisung",
     text: "Ein Gerät mit zwei Zahlen darauf: Nachtstrom, Wärmepumpe, Wallbox oder eine Anlage auf dem Dach." },
-  { id: "costsAndTariffs",      title: "Kosten und Preise",
-    text: "Zwei Zahlen von der Rechnung, und aus dem Verbrauch wird ein Betrag." },
-  { id: "prepaymentComparison", title: "Abschlagsvergleich",
-    text: "Zeigt vor der Abrechnung, ob eine Nachzahlung kommt oder Geld zurück." },
-  { id: "yearlyForecast",       title: "Vorschau aufs Jahresende",
-    text: "Rechnet den angefangenen Zeitraum aufs Jahr hoch." },
-  { id: "pdfReport",            title: "Bericht als PDF",
-    text: "Ein gestaltetes Dokument zum Weitergeben — an den Vermieter, den Steuerberater, das Amt." }
+  { id: "costsAndTariffs", price: 3.99, title: "Kosten und Preise",
+    text: "Zwei Zahlen von der Rechnung, und aus dem Verbrauch wird ein Betrag — mit Abschlagsvergleich und Vorschau aufs Jahresende." },
+  { id: "pdfReport", price: 2.99, title: "Bericht ohne Wasserzeichen",
+    text: "Der Bericht zum Weitergeben, ohne den Schriftzug quer darüber. Ansehen und drucken kannst du ihn auch so." }
 ];
+const BUNDLE = { id: "everything", price: 9.99, title: "Alles freischalten",
+                 text: "Alle vier Freischaltungen zusammen, dauerhaft. Günstiger als einzeln." };
+
+function product(id) { return PRODUCTS.find(p => p.id === id) || BUNDLE; }
+function owns(id) { return OWNED.has(id) || OWNED.has("everything"); }
+function price(id) { return money(product(id).price); }
 
 /* Archivierte zählen mit: Sie sind nicht gelöscht und lassen sich mit einem
    Tipp zurückholen. Zählten sie nicht, wäre Archivieren ein Weg um die Grenze
    herum. */
 function meterCount() { return METERS.length; }
-function mayAddMeter() { return PRO || meterCount() < FREE_METER_LIMIT; }
-function mayUse(feature) { return PRO; }
+function mayAddMeter() { return owns("additionalMeters") || meterCount() < FREE_METER_LIMIT; }
+function mayUse(id) { return owns(id); }
+function reportIsWatermarked() { return !owns("pdfReport"); }
 
-function openPaywall(reasonID) {
-  const sorted = reasonID
-    ? [PRO_FEATURES.find(f => f.id === reasonID)].concat(PRO_FEATURES.filter(f => f.id !== reasonID))
-    : PRO_FEATURES;
+/* Ein Kaufblatt für **eine** Funktion — kein Laden.
+
+   Gekauft wird dort, wo etwas fehlt: Wer am dritten Zähler steht, bekommt den
+   dritten Zähler angeboten, mit einem Preis und einem Knopf. Ein eigener
+   Schirm mit allen Produkten wäre ein Ort, den niemand aufsucht. */
+function openPaywall(id) {
+  const p = product(id);
+  const einzeln = PRODUCTS.reduce((a, b) => a + b.price, 0);
+  const spart = einzeln - BUNDLE.price;
+  const rest = PRODUCTS.filter(x => x.id !== id && !owns(x.id));
+
   document.getElementById("pro-body").innerHTML = `
-    <div class="capture-meta" style="margin-bottom:12px"><b>Einmal kaufen, für immer behalten.</b>
-    Kein Abo. Keine laufenden Kosten. Der Kauf gilt auf allen deinen Geräten.</div>
-    <div class="list">
-      ${sorted.map(f => `<div class="row">
-        <div class="rl"${f.id === reasonID ? ' style="font-weight:600"' : ""}>${f.title}<small>${f.text}</small></div>
-      </div>`).join("")}
-    </div>
+    <div class="capture-meta" style="margin-bottom:12px">${p.text}<br><br>
+    <b>Einmal kaufen, für immer behalten.</b> Kein Abo, keine laufenden Kosten —
+    auf allen deinen Geräten.</div>
+    <button type="button" class="save" id="pro-buy" style="--c:var(--tint)">
+      Freischalten · ${money(p.price)}</button>
+    ${rest.length && !owns("everything") ? `
+      <div class="section-label">Oder gleich alles</div>
+      <button type="button" class="rowbtn" id="pro-bundle" style="padding-left:0;padding-right:0">
+        <div class="rl">${BUNDLE.title}<small>${BUNDLE.text}</small></div>
+        <span class="freebadge pro">${money(BUNDLE.price)}</span>
+      </button>
+      <div class="note">Alle vier Freischaltungen zusammen — ${money(spart)} günstiger als einzeln.</div>` : ""}
     <div class="section-label">Dauerhaft kostenlos</div>
     <div class="note">Zwei Zähler, unbegrenzt viele Ablesungen, die ganze Historie, der
     Vorjahresvergleich, Erinnerungen — und der Export deiner Daten als Tabelle. Der Export
     bleibt kostenlos, auch wenn du nie kaufst.</div>
-    <button type="button" class="save" id="pro-buy" style="--c:var(--tint)">Pro kaufen — 14,99 €</button>
-    <div class="note">Im Entwurf schaltet der Knopf frei, ohne zu bezahlen. In der App
+    <div class="note">Im Entwurf schalten die Knöpfe frei, ohne zu bezahlen. In der App
     übernimmt das StoreKit, sobald PulseMeter im App Store ist.</div>`;
   openSheet("sheet-pro");
-  document.getElementById("pro-buy").onclick = () => {
-    setPro(true);
-    closeSheets();
-    const t = document.getElementById("toast");
-    document.getElementById("toast-text").textContent = "Pro freigeschaltet";
-    t.classList.add("on");
-    setTimeout(() => t.classList.remove("on"), 1250);
-    renderAll();
-  };
+  document.getElementById("pro-buy").onclick = () => unlock(p.id);
+  const bundle = document.getElementById("pro-bundle");
+  if (bundle) bundle.onclick = () => unlock(BUNDLE.id);
 }
 
+function unlock(id) {
+  OWNED.add(id);
+  closeSheets();
+  const t = document.getElementById("toast");
+  document.getElementById("toast-text").textContent = product(id).title + " freigeschaltet";
+  t.classList.add("on");
+  setTimeout(() => t.classList.remove("on"), 1250);
+  setPro(null);
+  renderAll();
+}
+
+/* Der Entwurfsschalter. `null` heißt: nur neu zeichnen, nichts umstellen. */
 function setPro(on) {
-  PRO = on;
+  if (on === true) OWNED = new Set(["everything"]);
+  if (on === false) OWNED = new Set();
   document.querySelectorAll("[data-pro]").forEach(b =>
-    b.setAttribute("aria-selected", String((b.dataset.pro === "1") === on)));
+    b.setAttribute("aria-selected", String((b.dataset.pro === "1") === owns("everything"))));
   renderLimitNote();
   renderCards();
 }
@@ -2556,9 +2600,9 @@ function setPro(on) {
 function renderLimitNote() {
   const note = document.getElementById("limit-note");
   if (!note) return;
-  const rest = PRO ? null : Math.max(0, FREE_METER_LIMIT - meterCount());
+  const rest = owns("additionalMeters") ? null : Math.max(0, FREE_METER_LIMIT - meterCount());
   note.textContent = rest === null ? ""
-    : rest === 0 ? `Kostenlos sind ${FREE_METER_LIMIT} Zähler. Mit Pro werden es beliebig viele.`
+    : rest === 0 ? `Kostenlos sind ${FREE_METER_LIMIT} Zähler. Freischalten kostet ${price("additionalMeters")}.`
     : rest === 1 ? "Noch ein Zähler ist kostenlos."
     : `Noch ${rest} Zähler sind kostenlos.`;
 }
@@ -2637,7 +2681,7 @@ function openMeterEditor(id) {
     <div class="list">
       <button type="button" class="rowbtn" data-unlock="costsAndTariffs">
         <div class="rl">Kosten und Preise<small>Zwei Zahlen von der Rechnung, und aus dem Verbrauch wird ein Betrag.</small></div>
-        <span class="freebadge pro">Pro</span>
+        <span class="freebadge pro">${price("costsAndTariffs")}</span>
         <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
       </button>
     </div>
@@ -3183,9 +3227,8 @@ document.addEventListener("click", e => {
     return renderTable();
   }
   if (t.dataset.open === "readings") return openSheet("sheet-readings");
-  if (t.dataset.open === "report") {
-    return mayUse("pdfReport") ? openReportConfig() : openPaywall("pdfReport");
-  }
+  // Der Bericht ist nie gesperrt — ungekauft trägt er ein Wasserzeichen.
+  if (t.dataset.open === "report") return openReportConfig();
   if (t.dataset.scope) { repScope = t.dataset.scope; return openReportConfig(); }
   if (t.dataset.period) { repPeriod = t.dataset.period; return openReportConfig(); }
   if (t.dataset.export) return openExport(t.dataset.export);
