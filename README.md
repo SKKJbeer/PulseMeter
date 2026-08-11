@@ -32,6 +32,7 @@ nur das Geänderte.
 | `scripts/pruefen.sh app` | nur App-Build und Oberflächentests | 1 min |
 | `scripts/pruefen.sh --nur zurueck` | eine einzelne Oberflächenprüfung | 20 s |
 | `scripts/run.sh` | App im Simulator starten, Screenshots ablegen | 40 s |
+| `scripts/aufs-handy.sh` | auf ein angestecktes iPhone bauen und installieren | 2 min |
 
 **Die CI ist die Gegenprobe, nicht der erste Durchgang.** Der lokale Lauf prüft
 dasselbe und ist in zwei statt in fünfzehn Minuten fertig; er schreibt sein
@@ -48,9 +49,26 @@ core.hooksPath`.
 Voraussetzung ist Xcode aus dem App Store, einmal geöffnet und mit bestätigter
 Lizenz. Alles Weitere richtet das Skript ein.
 
+### Auf ein echtes iPhone
+
+```bash
+scripts/aufs-handy.sh
+```
+
+Dafür genügt eine gewöhnliche Apple-ID in Xcode unter Einstellungen › Accounts
+— **das Apple Developer Program braucht es dafür nicht.** Am Telefon vorher
+einmal Einstellungen › Datenschutz & Sicherheit › **Entwicklermodus**
+einschalten, nach dem ersten Start unter Einstellungen › Allgemein › VPN &
+Geräteverwaltung dem Entwickler vertrauen.
+
+Was ohne Programm nicht geht, weil die Berechtigungen dafür daran hängen: Die
+App läuft nach **sieben Tagen** ab und wird dann neu installiert (die Daten
+bleiben), das Widget bleibt leer, weil es über eine App-Gruppe liest, und
+iCloud-Abgleich wie Käufe lassen sich noch nicht ausprobieren.
+
 ## Status
 
-Version **0.40.1**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
+Version **0.41.0**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
 rechnet echt. Alle vier Bildschirme — Übersicht, Erfassung, Verlauf und Zähler —
 laufen als SwiftUI-App im Simulator und werden auf jedem Lauf fotografiert,
 hell und dunkel. Siehe [CHANGELOG.md](CHANGELOG.md).

@@ -9,6 +9,47 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.41.0 — 2026-08-11
+
+**Ein Aufruf, und die App liegt auf dem eigenen iPhone — ohne Apple Developer
+Program.**
+
+Bisher lief PulseMeter nur im Simulator. Auf ein echtes Telefon kam sie nicht,
+und der Grund stand in `project.yml`: `CODE_SIGNING_ALLOWED: NO`. Für den
+Simulator und die CI ist das genau richtig — dort wird nichts signiert, und die
+Einstellung spart auf einem gemieteten Läufer jedes Mal den Umweg über den
+Schlüsselbund. Auf einem Gerät ist es ein Riegel.
+
+### Hinzugefügt
+
+- `scripts/aufs-handy.sh` baut, signiert und installiert auf ein angestecktes
+  iPhone. Es sucht das Team im Schlüsselbund und das Gerät über `xctrace`,
+  erzeugt das Xcode-Projekt bei Bedarf neu und lässt Xcode mit
+  `-allowProvisioningUpdates` das Profil selbst anlegen. Eine gewöhnliche
+  Apple-ID genügt; das Programm für 99 € im Jahr ist dafür **nicht** nötig.
+- Die Einschränkungen ohne Programm stehen in der Ausgabe des Skripts und in
+  der README, statt später als Überraschung aufzutreten: sieben Tage Laufzeit,
+  ein leeres Widget (es liest über eine App-Gruppe, und die hängt am Programm),
+  kein iCloud-Abgleich, keine Käufe.
+
+### Geändert
+
+- Signiert wird über Bauvariablen auf der Kommandozeile, nicht durch eine
+  Änderung an `project.yml`. In der Xcode-Oberfläche ließe sich der Riegel
+  ebenfalls umlegen — aber `PulseMeter.xcodeproj` wird erzeugt, und beim
+  nächsten `xcodegen generate` wäre die Einstellung spurlos weg. Die CI baut
+  unverändert unsigniert.
+
+_Auf einem Linux-Container **nicht** ausführbar: Das Skript braucht Xcode, ein
+angestecktes iPhone und einen Signierschlüssel. Geprüft ist hier die Syntax
+(`bash -n`) und die Wahl der Kennung — `xcodebuild -destination` und `devicectl`
+verlangen verschiedene, was ohne die Zeile aus `xctrace` zu „Unable to find a
+device matching the provided destination" führt. Der erste echte Lauf ist der
+auf dem Mac. Sonst unverändert: 196 Tests in PulseCore, 84 Prüfungen des
+Klick-Dummys._
+
+---
+
 ## 0.40.1 — 2026-08-11
 
 **Zwei Oberflächenprüfungen aus 0.40.0 suchten am falschen Ort und meldeten
