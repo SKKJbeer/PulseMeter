@@ -9,6 +9,33 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.41.1 — 2026-08-11
+
+**Die App kommt jetzt per Doppelklick aufs Telefon.**
+
+### Hinzugefügt
+
+- `Aufs-iPhone.command` — im Finder doppelklicken, fertig. Es holt vorher den
+  aktuellen Stand, aber nur vorspulend: Liegt im Arbeitsverzeichnis eigene,
+  noch nicht gesicherte Arbeit, bleibt sie unangetastet und es wird gebaut, was
+  da ist. Ein Doppelklick darf nichts wegwerfen. Dasselbe Muster wie
+  `Am-Mac-starten.command` und aus demselben Grund: `.command` ist die einzige
+  Endung, die der Finder von sich aus im Terminal öffnet.
+
+### Geändert
+
+- Die README nennt für Claude Code jetzt zuerst den Installer ohne Node
+  (`curl -fsSL https://claude.ai/install.sh | bash`). `npm install -g` stand
+  dort als einziger Weg — auf einem Mac ohne Node eine Sackgasse, und dieses
+  Projekt braucht Node nur für die Prüfung des Klick-Dummys, weder für den
+  App-Build noch für die Installation aufs Telefon.
+
+_Wie 0.41.0 auf einem Linux-Container nicht ausführbar; geprüft ist die Syntax
+(`bash -n`). Sonst unverändert: 196 Tests in PulseCore, 84 Prüfungen des
+Klick-Dummys._
+
+---
+
 ## 0.41.0 — 2026-08-11
 
 **Ein Aufruf, und die App liegt auf dem eigenen iPhone — ohne Apple Developer

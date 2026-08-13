@@ -51,6 +51,9 @@ Lizenz. Alles Weitere richtet das Skript ein.
 
 ### Auf ein echtes iPhone
 
+Ohne Terminal: im Finder **`Aufs-iPhone.command`** doppelklicken. Es holt den
+aktuellen Stand und ruft dann das Skript auf:
+
 ```bash
 scripts/aufs-handy.sh
 ```
@@ -68,7 +71,7 @@ iCloud-Abgleich wie Käufe lassen sich noch nicht ausprobieren.
 
 ## Status
 
-Version **0.41.0**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
+Version **0.41.1**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
 rechnet echt. Alle vier Bildschirme — Übersicht, Erfassung, Verlauf und Zähler —
 laufen als SwiftUI-App im Simulator und werden auf jedem Lauf fotografiert,
 hell und dunkel. Siehe [CHANGELOG.md](CHANGELOG.md).
@@ -87,10 +90,15 @@ Rechner und hat dort Zugriff auf Dateien und Terminal. Eine Sitzung in der Cloud
 ohne Verbindung zu deiner Maschine.
 
 ```bash
-npm install -g @anthropic-ai/claude-code   # einmalig
+curl -fsSL https://claude.ai/install.sh | bash   # einmalig, ohne Node
 cd PulseMeter
-claude                                     # und los
+claude                                           # und los
 ```
+
+Wer Node ohnehin hat, kann auch `npm install -g @anthropic-ai/claude-code`
+nehmen — nötig ist es nicht. Node braucht dieses Projekt nur für die Prüfung
+des Klick-Dummys, nicht für den App-Build und nicht für die Installation aufs
+Telefon.
 
 Alternativ die Desktop-App oder die Erweiterung für VS Code bzw. JetBrains —
 alle drei greifen auf dasselbe Projekt zu.
