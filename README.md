@@ -118,7 +118,7 @@ nicht eingecheckt. Wer gar nicht gefragt werden will, startet mit
 
 ## Klick-Dummy
 
-**[Zuletzt veröffentlichter Entwurf →](https://claude.ai/code/artifact/5befc28f-51f1-4a52-87f7-ba9afcd21953)**
+**[Zuletzt veröffentlichter Entwurf →](https://claude.ai/code/artifact/5d7aee7c-3e50-479d-b9b9-8698fae5af8e)**
 
 Jede Produktänderung wird sofort sichtbar gemacht — als **neue** Veröffentlichung
 mit eigener URL, weil erneutes Veröffentlichen auf dieselbe Adresse nicht
