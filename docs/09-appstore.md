@@ -292,9 +292,11 @@ Startbildschirm der Knopf „Stattdessen Beispieldaten anlegen": Er legt vier
 Zähler mit gut zwei Jahren Verlauf an, darunter einen mit Photovoltaik und
 einen mit Tag- und Nachtstrom.
 
-Der In-App-Kauf „PulseMeter Pro" ist ein Einmalkauf ohne Abo. Ohne ihn sind
-zwei Zähler und alle Ablesungen dauerhaft nutzbar; der Export bleibt in jedem
-Fall kostenlos.
+Die In-App-Käufe sind fünf Einmalkäufe ohne Abo — vier einzelne Funktionen und
+ein Bündel darüber. Ohne jeden Kauf bleiben zwei Zähler, alle Ablesungen, der
+gesamte Verlauf und der Export dauerhaft nutzbar. Der Verbrauchsbericht lässt
+sich auch ungekauft öffnen, blättern und drucken; er trägt dann ein
+Wasserzeichen.
 ```
 
 Der Hinweis auf die Beispieldaten ist kein Beiwerk: Ein Prüfer, der eine leere
@@ -329,3 +331,10 @@ verkürzt:
 
 Texte, Icon, Bilder, Kategorien und Datenschutzangaben sind damit erledigt.
 Alles Übrige hängt am Developer Program oder am Gerät.
+
+**Gefunden werden** ist ein eigenes Thema und steht in
+[`10-sichtbarkeit.md`](10-sichtbarkeit.md): welche Felder der App Store
+überhaupt durchsucht (die Beschreibung gehört **nicht** dazu), welche Wörter
+ins Schlagwortfeld gehören, warum die Anzeigenamen der fünf Käufe fünf
+zusätzliche Suchfelder sind, und wann veröffentlicht wird — diese App hat eine
+Saison, und sie liegt im Januar.

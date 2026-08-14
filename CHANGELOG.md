@@ -9,6 +9,46 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.42.0 — 2026-08-13
+
+**Wie jemand von dieser App erfährt, der uns nicht kennt.**
+
+### Hinzugefügt
+
+- `docs/10-sichtbarkeit.md`. Der Kern: **Der App Store durchsucht die
+  Beschreibung nicht.** Gefunden wird über Name, Untertitel, das unsichtbare
+  Schlagwortfeld und — fast immer übersehen — die **Anzeigenamen der
+  In-App-Käufe**. Wir haben fünf davon, also fünf zusätzliche Suchfelder, für
+  die das Dokument Namen vorschlägt. Die Kennungen bleiben dabei unangetastet;
+  nur was im Store darübersteht, ändert sich.
+- Ein neuer Vorschlag fürs Schlagwortfeld, 99 von 100 Zeichen, ohne ein
+  einziges Wort aus Name und Untertitel — die stehen dort doppelt und kosten
+  die meisten Apps ein Viertel ihres Feldes.
+- Die Wette, auf der das Dokument steht, ausdrücklich als Wette gekennzeichnet:
+  Wer „zählerstand" tippt, sucht einen Notizblock; wer „nebenkostenabrechnung
+  prüfen" tippt, hat einen Brief in der Hand und sucht ein Mittel. Der zweite
+  ist unsere Beschreibung Wort für Wort, und dort steht kaum jemand. Nachprüfbar
+  ist das erst vier Wochen nach der Veröffentlichung.
+- Der Zeitpunkt: Diese App hat eine Saison. Gesucht wird von Januar bis März,
+  wenn die Jahresabrechnungen kommen. Wer im Februar erscheint, verpasst sie —
+  der Store braucht Wochen, um eine neue App einzuordnen. Also im Herbst
+  veröffentlichen.
+
+### Behoben
+
+- Die Hinweise für die Prüfung in `docs/09-appstore.md` beschrieben noch den
+  Stand vor 0.40.0: einen einzelnen Kauf namens „PulseMeter Pro". Seit 0.40.0
+  sind es fünf. Unbemerkt geblieben wäre das der erste Text gewesen, den ein
+  Prüfer liest — und er hätte etwas anderes vorgefunden, als dort steht. Das
+  ist der kürzeste Weg zu einer Rückfrage, die eine Woche kostet.
+
+_Nur Dokumente; an Code und Prototyp ist nichts geändert. 196 Tests in
+PulseCore und 84 Prüfungen des Klick-Dummys unverändert grün. Die Zahlen zur
+Sichtbarkeit selbst sind **nicht** gemessen und im Dokument als Schätzung
+gekennzeichnet — Suchvolumen lässt sich aus einem Container nicht ermitteln._
+
+---
+
 ## 0.41.1 — 2026-08-11
 
 **Die App kommt jetzt per Doppelklick aufs Telefon.**
