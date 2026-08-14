@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PulseMeter — Zählerstände erfassen, Kosten verstehen</title>
+<meta name="description" content="Zählerstände in zehn Sekunden eintragen und sehen, ob alles im Rahmen ist. Strom, Gas, Wasser, Photovoltaik und Nachtstrom. Ohne Konto, ohne Werbung, Export dauerhaft kostenlos.">
+<meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F0E0C" media="(prefers-color-scheme: dark)">
+<link rel="canonical" href="https://pulsemeter.de/">
+<!-- Das Zeichen liegt als Datenadresse in der Seite und nicht als Datei:
+     eine Anfrage weniger, und es kann nicht verlorengehen. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2317150F'/%3E%3Cpath d='M6 21a10 10 0 0 1 20 0' fill='none' stroke='%23E0A040' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M9 21h4l2-5 3 8 2-3h3' fill='none' stroke='%23E0A040' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="stil.css">
+</head>
+<body>
+
+<a class="sprung" href="#inhalt">Zum Inhalt springen</a>
+
+<header class="kopf">
+  <div class="bahn kopf-innen">
+    <a class="marke" href="/">
+      <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <path d="M4 23a12 12 0 0 1 24 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".28"/>
+        <path d="M7 23h4.5l2.5-6.5L18 27l2.5-4H25" fill="none" stroke="#C77A0E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      PulseMeter
+    </a>
+    <nav aria-label="Bereiche">
+      <a href="#funktionen">Funktionen</a>
+      <a href="#preise">Preise</a>
+      <a href="hilfe.html">Hilfe</a>
+    </nav>
+  </div>
+</header>
+
+<main id="inhalt">
+
+  <div class="anfang">
+    <div class="bahn anfang-gitter">
+      <div>
+        <h1>Eine Zahl eintragen. Und wissen, ob alles im Rahmen ist.</h1>
+        <p class="vorspann">
+          PulseMeter ist das Haushaltsbuch für Verbrauch. Ablesen dauert zehn
+          Sekunden — danach beantwortet die App die Fragen, für die man sonst
+          eine Tabelle bauen müsste.
+        </p>
+        <div class="knoepfe">
+          <a class="knopf knopf-voll" href="https://claude.ai/code/artifact/5d7aee7c-3e50-479d-b9b9-8698fae5af8e">Entwurf ausprobieren</a>
+          <a class="knopf knopf-rand" href="#funktionen">Was sie kann</a>
+        </div>
+        <p class="notiz">
+          Bald im App Store. Bis dahin läuft der klickbare Entwurf im Browser —
+          er rechnet mit echten Zeitreihen über drei Jahre, nicht mit
+          Platzhalterzahlen.
+        </p>
+      </div>
+
+      <div class="geraet-reihe">
+        <picture class="geraet">
+          <source srcset="bilder/dark.jpg" media="(prefers-color-scheme: dark)">
+          <img src="bilder/light.jpg" width="1206" height="2622"
+               alt="Die Übersicht von PulseMeter: vier Zähler mit Verbrauch seit Jahresbeginn, Vorjahresvergleich und Kosten.">
+        </picture>
+        <picture class="geraet">
+          <source srcset="bilder/capture-dark.jpg" media="(prefers-color-scheme: dark)">
+          <img src="bilder/capture-light.jpg" width="1206" height="2622"
+               alt="Die Erfassung: ein großer Ziffernblock, der aussieht wie das Zählwerk an der Wand.">
+        </picture>
+        <picture class="geraet">
+          <source srcset="bilder/verlauf-dark.jpg" media="(prefers-color-scheme: dark)">
+          <img src="bilder/verlauf-light.jpg" width="1206" height="2622"
+               alt="Der Verlauf: Verbrauch je Monat als Diagramm, daneben derselbe Zeitraum des Vorjahres.">
+        </picture>
+      </div>
+    </div>
+  </div>
+
+  <section id="funktionen">
+    <div class="bahn paar">
+      <div>
+        <span class="marke-klein">Erfassen</span>
+        <h2>Zehn Sekunden im Keller, mit einer Hand</h2>
+        <p class="blass">
+          Ein großer Ziffernblock statt der Systemtastatur, bedienbar bei
+          schlechtem Licht. Die Anzeige sieht aus wie das Gerät an der Wand —
+          damit du vergleichst statt überträgst. Das Datum steht auf heute.
+        </p>
+        <p class="blass">
+          Und die App denkt mit: Liegt eine Zahl weit über dem Üblichen oder
+          unter dem letzten Stand, fragt sie im Moment der Eingabe nach. Nicht
+          Monate später, wenn der Verlauf absurd aussieht.
+        </p>
+      </div>
+      <picture class="geraet">
+        <source srcset="bilder/capture-dark.jpg" media="(prefers-color-scheme: dark)">
+        <img src="bilder/capture-light.jpg" width="1206" height="2622"
+             alt="Der Ziffernblock von PulseMeter in voller Größe.">
+      </picture>
+    </div>
+  </section>
+
+  <section class="abschnitt-hell">
+    <div class="bahn paar paar-gedreht">
+      <div>
+        <span class="marke-klein">Verstehen</span>
+        <h2>Jede Zahl sagt, welchen Zeitraum sie meint</h2>
+        <p class="blass">
+          Der Startbildschirm beantwortet ohne Scrollen die eine Frage:
+          Verbrauch seit Jahresbeginn, Vergleich mit dem Vorjahr, und was es
+          bisher gekostet hat.
+        </p>
+        <ul class="liste">
+          <li>Ein Jahreswert, der im Mai endet, ist als solcher gekennzeichnet — und nicht als Jahreswert getarnt.</li>
+          <li>Geschätzte und hochgerechnete Werte sind immer markiert. Die App rechnet nie still.</li>
+          <li>Der Vorjahresvergleich stellt denselben Ausschnitt gegen denselben, bei Heizung auch denselben Ausschnitt des Jahres.</li>
+        </ul>
+      </div>
+      <picture class="geraet">
+        <source srcset="bilder/verlauf-dark.jpg" media="(prefers-color-scheme: dark)">
+        <img src="bilder/verlauf-light.jpg" width="1206" height="2622"
+             alt="Der Verlauf mit Monatswerten und Vorjahresvergleich.">
+      </picture>
+    </div>
+  </section>
+
+  <section>
+    <div class="bahn">
+      <span class="marke-klein">Rechnen</span>
+      <h2>Aus Verbrauch wird ein Betrag</h2>
+      <p class="blass">
+        Trag zwei Zahlen von deiner Rechnung ein — Arbeitspreis und Grundpreis.
+        Mit dem monatlichen Abschlag rechnet die App aus, ob am Jahresende eine
+        Nachzahlung kommt oder Geld zurück.
+      </p>
+
+      <div class="karten">
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v18M5 8h14M5 16h14"/>
+          </svg>
+          <h3>Gas ehrlich gerechnet</h3>
+          <p>Mit Zustandszahl und Brennwert. Aus Kubikmetern lässt sich sonst kein ehrlicher Betrag bilden.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 4v3M5 12H2m20 0h-3M6.3 6.3 4.2 4.2m15.6 2.1 2.1-2.1"/><circle cx="12" cy="14" r="5"/>
+          </svg>
+          <h3>Photovoltaik</h3>
+          <p>Ein Zähler, zwei Richtungen: Bezug und Einspeisung, mit Vergütung. Auch die Jahresvorschau kennt den Sommer.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v5l3 2"/>
+          </svg>
+          <h3>Tag- und Nachtstrom</h3>
+          <p>Zwei Preise an einem Gerät — für Nachtspeicher, Wärmepumpe oder Wallbox.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 7h16M4 12h16M4 17h10"/>
+          </svg>
+          <h3>Zählerwechsel</h3>
+          <p>Endstand und Anfangsstand werden erfasst. Der Verbrauch bis zum Wechseltag bleibt erhalten.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/>
+          </svg>
+          <h3>Erinnerungen</h3>
+          <p>Die App meldet sich, wenn eine Ablesung fällig ist — im Rhythmus, den du je Zähler festlegst.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 14h6M9 17h4"/>
+          </svg>
+          <h3>Bericht und Export</h3>
+          <p>Ein gestalteter Verbrauchsbericht zum Weitergeben — und der Export als Tabelle, dauerhaft kostenlos.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="abschnitt-hell">
+    <div class="bahn">
+      <span class="marke-klein">Datenschutz</span>
+      <h2>Deine Zahlen bleiben deine</h2>
+      <p class="blass">
+        Kein Konto. Keine Anmeldung. Keine Werbung. Kein Tracking. Deine
+        Ablesungen liegen auf deinem Gerät und, wenn du magst, in deiner
+        privaten iCloud — nicht auf unseren Servern, denn wir haben keine.
+      </p>
+      <p class="blass">
+        Der Export als Tabelle ist dauerhaft kostenlos und uneingeschränkt.
+        Auch wenn du nie etwas kaufst, kommst du jederzeit an alles heran, was
+        du eingetragen hast. Ein Zahlungsmodell, das die eigenen Daten als
+        Pfand nimmt, ist genau das, was Menschen bei Excel hält.
+      </p>
+      <p class="notiz">
+        Auch diese Website hält sich daran: keine Cookies, keine Zählpixel,
+        keine Schriften von fremden Servern. Deshalb steht hier kein
+        Zustimmungsfenster im Weg.
+      </p>
+    </div>
+  </section>
+
+  <section id="preise">
+    <div class="bahn">
+      <span class="marke-klein">Preise</span>
+      <h2>Kostenlos anfangen. Einzeln freischalten. Kein Abo.</h2>
+      <p class="blass">
+        Was mehr kann, schaltest du in kleinen Schritten frei — einmal gekauft,
+        auf allen deinen Geräten, und es bleibt, solange du die App behältst.
+      </p>
+
+      <div class="preis-tafel">
+        <div class="preis preis-frei">
+          <b>Dauerhaft kostenlos</b>
+          <span class="betrag">0 €</span>
+          <p>Zwei Zähler, unbegrenzt viele Ablesungen, die ganze Historie, der Vorjahresvergleich, Erinnerungen — und der Export.</p>
+        </div>
+        <div class="preis">
+          <b>Weitere Zähler</b>
+          <span class="betrag">2,99 €</span>
+          <p>Ab dem dritten. Wer Strom, Gas und Wasser führt, braucht ihn.</p>
+        </div>
+        <div class="preis">
+          <b>Kosten und Preise</b>
+          <span class="betrag">3,99 €</span>
+          <p>Beträge, Abschlagsvergleich und Vorschau aufs Jahresende.</p>
+        </div>
+        <div class="preis">
+          <b>Alles zusammen</b>
+          <span class="betrag">9,99 €</span>
+          <p>Alle vier Freischaltungen, deutlich günstiger als einzeln.</p>
+        </div>
+      </div>
+
+      <p class="notiz">
+        Der Verbrauchsbericht lässt sich immer ansehen und drucken — ungekauft
+        trägt er einen Schriftzug. Freigeschaltet wird er für das, wofür man
+        ihn braucht: zum Weitergeben.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="fuss">
+  <div class="bahn fuss-innen">
+    <span>PulseMeter — in Deutschland gebaut.</span>
+    <nav aria-label="Rechtliches">
+      <a href="hilfe.html">Hilfe &amp; Kontakt</a>
+      <a href="datenschutz.html">Datenschutz</a>
+      <a href="impressum.html">Impressum</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>

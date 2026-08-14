@@ -9,6 +9,66 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.43.0 — 2026-08-14
+
+**Die Website steht: Startseite, Hilfe, Datenschutz, Impressum.**
+
+Sie erledigt die zwei URLs, die Apple zur Einreichung verlangt und die bisher
+offen waren — und sie ist zugleich die einzige Fläche, auf der klassische
+Suchmaschinenoptimierung überhaupt greift (`10-sichtbarkeit.md`, Abschnitt 7).
+
+### Hinzugefügt
+
+- `docs/website/` — vier Seiten, ein Stilblatt, drei Bildschirmfotos. Kein
+  Aufbauschritt, kein JavaScript, **keine einzige Anfrage an einen fremden
+  Server**: keine Schriften von Google, kein Analysewerkzeug, kein
+  eingebettetes Video. Das ist die Pointe und keine Sparsamkeit — ohne fremde
+  Anfragen entstehen keine Cookies, und damit braucht die Seite **kein
+  Zustimmungsfenster**. Eine App, die „Keine Daten erfasst" verspricht, darf
+  ihre Website nicht mit einem Cookie-Banner eröffnen.
+- Die Bildschirmfotos kommen aus dem Zweig `screenshots`, den die CI ohnehin
+  füllt — in Hell und Dunkel, und die Seite zeigt automatisch die passende
+  Fassung. Keine zweite Quelle, die auseinanderlaufen könnte.
+- `scripts/check-website.mjs` mit **230 Prüfungen**: alle vier Seiten in Hell
+  und Dunkel bei 320, 768 und 1280 Pixeln, kein horizontaler Überlauf, jeder
+  interne Verweis führt irgendwohin, Datenschutz und Impressum von jeder Seite
+  aus in einem Klick erreichbar, jedes Bild mit Beschreibung — und null
+  Anfragen nach draußen. Das Letzte wird **gemessen**, nicht behauptet: Eine
+  eingebundene Schriftart genügt, um das Versprechen zu brechen, und man sieht
+  ihr das nicht an.
+- Eingehängt in `scripts/pruefen.sh`, parallel zum Klick-Dummy am selben
+  Chromium. Kostet keine zusätzliche Wartezeit und wird geprüft, ohne dass
+  jemand daran denken muss.
+- `docs/website/EINTRAGEN.md` — die vier Stellen, die vor dem Onlinegehen
+  ausgefüllt werden müssen, alle im Quelltext als `PLATZHALTER n von 4`
+  markiert. Solange eine offen ist, bleibt es ein **Hinweis** und kein
+  Fehlschlag; mit `PULSE_WEBSITE_LIVE=1` wird daraus ein Fehler. Ein dauerhaft
+  roter Lauf für etwas, das nur der Gründer eintragen kann, wird nach drei
+  Tagen nicht mehr gelesen.
+- Die Datenschutzerklärung hat einen Abschnitt „Diese Website" bekommen. Er
+  fehlte: Auch ein Hoster, der nichts auswertet, verarbeitet beim Ausliefern
+  IP-Adressen, und das ist anzugeben.
+
+### Behoben
+
+- Der Sprungverweis für die Tastatur stand auf `left: -9999px` — der übliche
+  Trick, der das Dokument um 9999 Pixel verbreitert. Sichtbar war davon nichts;
+  gefunden hat es die neue Überlaufmessung im ersten Lauf. Er liegt jetzt
+  oberhalb des Bildes und kostet keine Breite.
+- Die Kopfzeile lief bei 320 Pixeln aus dem Bild. Die Navigation rutscht dort
+  jetzt in eine zweite Zeile, statt versteckt zu werden — auf den Rechtsseiten
+  ist sie der einzige Weg zurück.
+- Lange deutsche Wörter (`Datenschutz-Grundverordnung`) standen auf schmalen
+  Telefonen über den Rand hinaus. `overflow-wrap` und `hyphens` stehen jetzt
+  global.
+
+_230 Website-Prüfungen, 84 Prüfungen des Klick-Dummys, 196 Tests in PulseCore
+— alle grün. An App und Prototyp ist nichts geändert. Die drei ersten Fehler
+oben hat die Prüfung selbst gefunden, keiner davon war mit bloßem Auge zu
+sehen._
+
+---
+
 ## 0.42.0 — 2026-08-13
 
 **Wie jemand von dieser App erfährt, der uns nicht kennt.**

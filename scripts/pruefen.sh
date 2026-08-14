@@ -133,6 +133,8 @@ fi
 
 PROTO_PID=""
 PROTO_LOG="build/pruefen-entwurf.log"
+WEB_PID=""
+WEB_LOG="build/pruefen-website.log"
 if [ "$SCOPE" != "bilder" ] && [ "$SCOPE" != "app" ]; then
   mkdir -p build
   if [ ! -d node_modules/playwright ]; then
@@ -147,6 +149,11 @@ if [ "$SCOPE" != "bilder" ] && [ "$SCOPE" != "app" ]; then
   # Beides gleichzeitig kostet nichts und spart die kürzere der beiden Zeiten.
   ( node scripts/check-prototype.mjs > "$PROTO_LOG" 2>&1 ) &
   PROTO_PID=$!
+  # Die Website hängt am selben Chromium und läuft daneben mit. Sie kostet
+  # damit keine zusätzliche Wartezeit — und wird geprüft, ohne dass jemand
+  # daran denken muss. Genau daran ist der Klick-Dummy vorher gescheitert.
+  ( node scripts/check-website.mjs > "$WEB_LOG" 2>&1 ) &
+  WEB_PID=$!
 fi
 
 # ------------------------------------------------------------- 3. Die Pakete
@@ -278,6 +285,18 @@ if [ -n "$PROTO_PID" ]; then
   fi
 fi
 
+if [ -n "$WEB_PID" ]; then
+  step "Website"
+  if wait "$WEB_PID"; then
+    GRUEN=$(grep -c '  ok   ' "$WEB_LOG" || true)
+    ok "$GRUEN Prüfungen, hell und dunkel, 320 bis 1280 Pixel" "—"
+    grep '  offen ' "$WEB_LOG" | sed 's/^  offen /    noch offen: /' || true
+  else
+    bad "Website" "—"
+    grep "FEHL" "$WEB_LOG" | sed 's/^/    /'
+  fi
+fi
+
 # ------------------------------------------------------------------- Ergebnis
 
 DAUER=$(( $(date +%s) - START ))
@@ -289,7 +308,7 @@ if [ ${#FAILED[@]} -eq 0 ]; then
   exit 0
 fi
 printf "%s%s Schritt(e) gefallen: %s — nach %ss.%s\n" "$RED" "${#FAILED[@]}" "${FAILED[*]}" "$DAUER" "$RESET"
-printf "%sVollständige Protokolle: build/xcodebuild-test.log, %s%s\n" "$DIM" "$PROTO_LOG" "$RESET"
+printf "%sVollständige Protokolle: build/xcodebuild-test.log, %s, %s%s\n" "$DIM" "$PROTO_LOG" "$WEB_LOG" "$RESET"
 # Auch ein Fehlschlag wird gemeldet. Ein Zweig, in dem nur die grünen Läufe
 # stehen, sagt genau das Falsche: Er sieht aus wie eine lückenlose Erfolgsreihe.
 [ "$REPORT" = "1" ] && scripts/melden.sh "gefallen" "$DAUER" "$SCOPE" "${FAILED[*]}" || true
