@@ -9,6 +9,45 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.44.0 — 2026-08-15
+
+**Die App-Store-Texte sprechen jetzt dieselbe Sprache wie die Website.**
+
+Sie waren als Letztes noch im alten Register — und sie sind der Text, den jeder
+liest, der die App findet.
+
+### Geändert
+
+- Beschreibung, Werbetext und Versionshinweise neu geschrieben. Die
+  Abschnitte heißen nach dem, was der Leser davon hat: „ABLESEN, BEVOR DAS
+  LICHT AUSGEHT", „DIE NACHZAHLUNG SIEHST DU IM OKTOBER", „WIR WISSEN NICHT,
+  WIE VIEL STROM DU VERBRAUCHST". Die Beschreibung ist von rund 2900 auf 3581
+  Zeichen gewachsen und liegt damit weiter unter der Grenze von 4000.
+- **Nicht** umgeschrieben: Name, Untertitel und Schlagwortfeld — die werden
+  durchsucht, nicht gelesen. Ein hübscherer Untertitel, der `Zähler` und
+  `Kosten` verliert, kostet mehr, als er einbringt. Ebenso wenig die Hinweise
+  an die Prüfung: Ein Prüfer will wissen, wo er tippen muss, und sonst nichts.
+- Das Schlagwortfeld in `09-appstore.md` stand noch auf der alten Liste, die
+  mit `zählerstand`, `stromzähler`, `ablesen` und `verbrauch` begann. Alle vier
+  stehen bereits in Name und Untertitel; ein Viertel des Feldes ging dafür
+  drauf. Jetzt steht dort dieselbe Liste wie in `10-sichtbarkeit.md`.
+
+### Behoben
+
+- **Diese Liste war 101 Zeichen lang.** In 0.42.0 steht „99 von 100" — schlicht
+  falsch gezählt. App Store Connect hätte beim Einfügen stillschweigend am Ende
+  abgeschnitten, und niemand hätte gemerkt, welches Wort fehlt. `nachtstrom`
+  ist heraus (über den Anzeigenamen des Kaufs ohnehin abgedeckt), `wallbox` ist
+  drin, das Feld liegt bei 98 Zeichen. Beide Dokumente sind angeglichen, und in
+  `10-sichtbarkeit.md` steht jetzt die Regel, jede künftige Fassung
+  nachzuzählen.
+
+_Nur Dokumente. 230 Website-Prüfungen, 84 Prüfungen des Klick-Dummys, 196 Tests
+in PulseCore unverändert grün. Alle fünf Textfelder nachgezählt: Name 25,
+Untertitel 28, Werbetext 167, Schlagworte 98, Beschreibung 3581._
+
+---
+
 ## 0.43.1 — 2026-08-15
 
 **Die Website klang wie eine Maschine. Jetzt klingt sie wie jemand, der die

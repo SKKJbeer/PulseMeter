@@ -130,15 +130,26 @@ PulseMeter – Zählerstände
 Zähler ablesen, Kosten sehen
 ```
 
-Schlagwortfeld, 99 von 100 Zeichen:
+Schlagwortfeld, 98 von 100 Zeichen:
 
 ```
-nebenkosten,abrechnung,abschlag,heizkosten,gaszähler,wasserzähler,photovoltaik,einspeisung,nachtstrom
+nebenkosten,abrechnung,abschlag,heizkosten,gaszähler,wasserzähler,photovoltaik,einspeisung,wallbox
 ```
 
 **Warum `zählerstand`, `stromzähler`, `ablesen` und `verbrauch` fehlen:** Sie
 stehen bereits in Name und Untertitel und wären dort doppelt. Genau dieser
 Fehler kostet die meisten Apps ein Viertel ihres Feldes.
+
+**Und warum `nachtstrom` nicht dabei ist:** Die erste Fassung dieser Liste
+endete darauf und war damit **101** Zeichen lang — eine zu viel. Aufgefallen
+ist das erst beim Nachzählen in 0.44.0; hier stand „99 von 100", und das war
+schlicht falsch gezählt. App Store Connect hätte stillschweigend abgeschnitten.
+Das Wort ist über den Anzeigenamen des Kaufs ohnehin abgedeckt (Abschnitt 4).
+An seiner Stelle steht jetzt `wallbox`.
+
+Jede künftige Fassung dieses Feldes wird **nachgezählt**, bevor sie hier
+steht. Ein Feld, das eine Zeichengrenze hat, ist der klassische Ort für einen
+Fehler, den niemand sieht.
 
 ---
 

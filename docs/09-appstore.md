@@ -1,6 +1,6 @@
 # 09 – Material für den App Store
 
-Stand: 2026-08-11, Version 0.40.0
+Stand: 2026-08-15, Version 0.44.0
 
 Alles, was App Store Connect zur Einreichung verlangt, fertig zum Einfügen.
 Was hier steht, ist geprüft gegen das, was die App **heute** kann — nicht
@@ -37,9 +37,9 @@ Ihre Zählerstände" — das sagt dasselbe und nutzt nichts.
 ### Werbetext (max. 170 Zeichen, jederzeit ohne neue Version änderbar)
 
 ```
-Neu: Freischalten in kleinen Schritten — jede Funktion für ein paar Euro,
-kein Abo. Der Verbrauchsbericht ist zum Ansehen und Drucken frei; freigekauft
-wird er zum Weitergeben.
+Neu: Du kaufst nur, was dir fehlt. Ein paar Euro, kein Abo. Den
+Verbrauchsbericht kannst du immer ansehen und drucken — freischalten musst du
+ihn erst zum Weitergeben.
 ```
 
 Dieses Feld ist der einzige Text, der sich **ohne** neue Version ändern lässt.
@@ -48,126 +48,152 @@ Es gehört deshalb dem jeweils Neuesten, nicht der Dauerbeschreibung.
 ### Schlagworte (max. 100 Zeichen, komma-getrennt, ohne Leerzeichen)
 
 ```
-zählerstand,stromzähler,gaszähler,wasserzähler,ablesen,verbrauch,nebenkosten,energie,strom,heizung
+nebenkosten,abrechnung,abschlag,heizkosten,gaszähler,wasserzähler,photovoltaik,einspeisung,wallbox
 ```
 
 98 Zeichen. Regeln, gegen die das geprüft ist: keine Wörter aus Name und
 Untertitel wiederholen (Apple wertet sie ohnehin), keine Mehrzahl **und**
-Einzahl desselben Worts, keine fremden Markennamen — das ist ein
-Ablehnungsgrund und kein Kavaliersdelikt.
+Einzahl desselben Worts, keine Wortpaare — die bildet Apple selbst —, keine
+fremden Markennamen. Der letzte Punkt ist ein Ablehnungsgrund und kein
+Kavaliersdelikt.
+
+**Bis 0.43.1 stand hier eine andere Liste**, die mit `zählerstand`,
+`stromzähler`, `ablesen` und `verbrauch` begann. Alle vier stehen bereits in
+Name und Untertitel und waren damit doppelt — ein Viertel des Feldes für
+nichts. An ihrer Stelle steht jetzt, worauf `10-sichtbarkeit.md` setzt: die
+Wörter, die jemand tippt, der gerade eine Abrechnung in der Hand hält, und die
+Fälle, die andere Apps nicht abdecken. Nachprüfbar wird die Wette vier Wochen
+nach der Veröffentlichung.
+
+`nachtstrom` stand in der ersten Fassung dieser Liste und ist wieder heraus:
+Die Liste kam damit auf **101** Zeichen, also eine zu viel — App Store Connect
+hätte sie beim Einfügen abgeschnitten, und zwar stillschweigend am Ende. Das
+Wort ist ohnehin abgedeckt, weil der Anzeigename des Kaufs
+„Nachtstrom & Einspeisung erfassen" ebenfalls durchsucht wird
+(`10-sichtbarkeit.md`, Abschnitt 4). An seiner Stelle steht `wallbox` — ein
+Fall, den kaum eine andere Zähler-App kennt.
 
 ### Beschreibung (max. 4000 Zeichen)
 
 ```
 Du trägst eine Zahl ein. PulseMeter sagt dir, ob alles im Rahmen ist.
 
-Zählerstände notiert man auf einem Zettel, in einer Tabelle oder gar nicht.
-Und dann kommt die Jahresabrechnung, und man weiß nicht, ob sie stimmt.
-PulseMeter ist das Haushaltsbuch für Verbrauch: Ablesen dauert zehn Sekunden,
-und danach beantwortet die App die Fragen, für die man sonst eine Tabelle
-bauen müsste.
+Zählerstände landen auf einem Zettel am Sicherungskasten, in einer Tabelle, die
+niemand pflegt, oder nirgends. Und im Frühjahr kommt die Abrechnung, und man
+glaubt ihr einfach. PulseMeter macht aus zehn Sekunden im Keller eine Zahl, mit
+der sich etwas anfangen lässt.
 
 
-ABLESEN IN ZEHN SEKUNDEN
+ABLESEN, BEVOR DAS LICHT AUSGEHT
 
-Ein großer Ziffernblock statt der Systemtastatur — bedienbar im Keller, bei
-schlechtem Licht, mit einer Hand. Die Anzeige sieht aus wie das Gerät an der
-Wand, damit du vergleichst statt überträgst. Das Datum steht auf heute.
+Der Ziffernblock ist groß genug, dass man ihn einhändig trifft. Im Keller, im
+Halbdunkel, mit klammen Fingern. Er sieht aus wie das Zählwerk an der Wand,
+Stelle für Stelle: Du vergleichst, statt zu übertragen. Das Datum steht schon
+auf heute.
 
-Und die App denkt mit: Liegt eine Zahl weit über dem Üblichen oder unter dem
-letzten Stand, fragt sie nach — im Moment der Eingabe, nicht Monate später,
-wenn der Verlauf absurd aussieht.
+Und wenn du dich vertippst, merkt es die App sofort. Eine Zahl weit über dem
+Üblichen, eine Zahl unter dem letzten Stand — dann fragt sie nach. Im Keller,
+nicht im Februar.
 
 
-ALLES IM RAHMEN?
+FÜNF SEKUNDEN, UND DU WEISST, WO DU STEHST
 
-Der Startbildschirm beantwortet diese eine Frage ohne Scrollen: Verbrauch seit
-Jahresbeginn, Vergleich mit dem Vorjahr, und was es bisher gekostet hat. Jede
-Zahl sagt dazu, welchen Zeitraum sie abdeckt — ein Jahreswert, der im Mai
-endet, ist als solcher gekennzeichnet und nicht als Jahreswert getarnt.
+Ganz oben steht, was zählt: Verbrauch seit Jahresbeginn, daneben das Vorjahr,
+darunter die Kosten. Kein Scrollen, kein Menü.
 
-Geschätzte und hochgerechnete Werte sind immer markiert. Die App rechnet nie
-still.
+Jede Zahl sagt dazu, welchen Zeitraum sie meint. Ein Jahreswert, der im Mai
+endet, gibt sich nicht als Jahreswert aus. Was geschätzt ist, steht als
+geschätzt da. Diese App rechnet nie still.
 
 
 VERLAUF, DER ETWAS ZEIGT
 
-Monat, Quartal oder Jahr, als Diagramm oder als Tabelle, jeweils neben
-demselben Zeitraum des Vorjahres. Tippe einen Monat an, und du siehst, woher
-der Unterschied kommt.
+Monat, Quartal oder Jahr, als Diagramm oder als Tabelle, immer neben demselben
+Zeitraum des Vorjahres. Mai gegen Mai, bei der Heizung sogar Heizperiode gegen
+Heizperiode. Klingt selbstverständlich. Ist es nicht.
+
+Tipp einen Monat an, und du siehst, woher der Unterschied kommt.
 
 
-KOSTEN OHNE TABELLENKALKULATION
+DIE NACHZAHLUNG SIEHST DU IM OKTOBER
 
-Trag zwei Zahlen von deiner Rechnung ein — Arbeitspreis und Grundpreis —, und
-aus dem Verbrauch wird ein Betrag. Mit dem monatlichen Abschlag rechnet die
-App aus, ob am Jahresende eine Nachzahlung kommt oder Geld zurück. Bei Gas
-auch mit Zustandszahl und Brennwert, weil sich aus Kubikmetern sonst kein
-ehrlicher Betrag bilden lässt.
+Zwei Zahlen von deiner Rechnung genügen: Arbeitspreis und Grundpreis. Ab da
+rechnet PulseMeter mit. Kommt dein Abschlag hin, oder legst du im Frühjahr
+nach? Die Antwort steht auf der Übersicht, das ganze Jahr über.
+
+Bei Gas mit Zustandszahl und Brennwert. Wer Kubikmeter einfach mal zehn nimmt,
+liegt daneben.
 
 
-AUCH FÜR DIE FÄLLE, DIE ANDERE APPS NICHT KENNEN
+AUCH DIE FÄLLE, DIE ANDERE APPS NICHT KENNEN
 
 • Photovoltaik: ein Zähler, zwei Richtungen — Bezug und Einspeisung, mit
   Vergütung
 • Tag- und Nachtstrom: zwei Preise an einem Gerät, für Nachtspeicher,
-  Wärmepumpe oder Wallbox
-• Zählerwechsel: Endstand und Anfangsstand werden erfasst, der Verbrauch bis
-  zum Wechseltag bleibt erhalten
+  Wärmepumpe oder die Wallbox in der Garage
+• Zählerwechsel: alter Endstand rein, neuer Anfangsstand rein — der Verlauf
+  reißt nicht ab
 • Gas, Wasser, Warmwasser, Fernwärme, Heizöl, Regenwasser, Betriebsstunden
 
 
-ERINNERUNGEN
+DAMIT DU NICHT DARAN DENKEN MUSST
 
-Die App meldet sich, wenn eine Ablesung fällig ist — im Rhythmus, den du für
-jeden Zähler festlegst. Ein Widget zeigt auf dem Startbildschirm, ob etwas
+Monatlich, vierteljährlich oder wann du willst: Die App meldet sich, wenn eine
+Ablesung fällig ist. Ein Widget auf dem Startbildschirm zeigt, ob etwas
 ansteht.
 
 
-DEINE DATEN BLEIBEN DEINE
+WIR WISSEN NICHT, WIE VIEL STROM DU VERBRAUCHST
 
-Kein Konto. Keine Anmeldung. Keine Werbung. Kein Tracking. Deine Ablesungen
-liegen auf deinem Gerät und, wenn du magst, in deiner privaten iCloud — nicht
-auf unseren Servern, denn wir haben keine.
+Und das soll so bleiben. Kein Konto, keine Anmeldung, keine Werbung, kein
+Tracking. Deine Ablesungen liegen auf deinem Telefon und, wenn du magst, in
+deiner eigenen iCloud. Auf unseren Servern liegen sie nicht — wir haben keine.
 
-Der Export als Tabelle (CSV) ist dauerhaft kostenlos und uneingeschränkt. Auch
-wenn du nie etwas kaufst, kommst du jederzeit an alles heran, was du
-eingetragen hast. Ein Zahlungsmodell, das die eigenen Daten als Pfand nimmt,
-ist genau das, was Menschen bei Excel hält.
+Und du kommst jederzeit wieder heraus. Der Export als Tabelle ist kostenlos und
+bleibt es, auch wenn du nie einen Cent ausgibst. Apps, die die eigenen Daten
+als Pfand nehmen, sind der Grund, warum so viele Leute lieber bei Excel
+bleiben.
 
 
-KOSTENLOS — UND EINZELN FREISCHALTEN
+EIN PAAR EURO, EINMAL. KEIN ABO.
 
-Kostenlos, dauerhaft und ohne Zeitlimit: zwei Zähler, unbegrenzt viele
-Ablesungen, die ganze Historie, der Vorjahresvergleich, Erinnerungen und der
-Export.
+Kostenlos bleiben: zwei Zähler, so viele Ablesungen du willst, der ganze
+Verlauf, der Vorjahresvergleich, Erinnerungen und der Export.
 
-Was mehr kann, schaltest du einzeln frei — kleine Einmalkäufe, kein Abo:
-unbegrenzt viele Zähler, Zähler mit zwei Zahlen (Tag- und Nachtstrom,
-Einspeisung), Kosten und Preise samt Abschlagsvergleich und Jahresvorschau,
-und den Verbrauchsbericht ohne Wasserzeichen. Jedes Stück kostet ein paar Euro,
-alle zusammen deutlich weniger. Einmal gekauft, gilt es auf allen deinen
-Geräten und bleibt, solange du die App behältst.
+Wenn dir später etwas fehlt, kaufst du genau das frei — und nicht ein Paket, in
+dem drei Dinge stecken, die du nie brauchst. Unbegrenzt viele Zähler. Zähler
+mit zwei Zahlen. Kosten und Preise. Den Verbrauchsbericht ohne Schriftzug. Je
+ein paar Euro, alle zusammen ein Drittel günstiger. Einmal bezahlt, auf allen
+deinen Geräten, und es bleibt.
 
-Den Verbrauchsbericht kannst du auch ohne Kauf ansehen und drucken — quer
-darüber steht dann ein Schriftzug. Freigeschaltet wird er für das, wofür man
-ihn braucht: zum Weitergeben.
+Den Bericht kannst du dir immer ansehen und ausdrucken. Freischalten musst du
+ihn erst, wenn du ihn jemandem geben willst.
 ```
 
-Rund 2900 Zeichen. Aufbau mit Absicht: Die ersten zwei Zeilen stehen in der
+Rund 3600 Zeichen. Aufbau mit Absicht: Die ersten zwei Zeilen stehen in der
 Vorschau, bevor jemand „mehr" tippt — sie müssen allein tragen. Der Preis
 steht ganz unten, weil bis dorthin nur liest, wer die App ohnehin will.
+
+**Zum Ton dieser Texte.** Seit 0.44.0 stehen sie im selben Register wie die
+Website: konkrete Lage statt Merkmalsliste, kurze Sätze neben langen, ein
+Standpunkt. Die Regel steht in `CLAUDE.md`, Abschnitt „Tonfall". Sie gilt für
+alles, was ein Käufer liest — **nicht** für die Hinweise an die Prüfung weiter
+unten. Ein Prüfer will wissen, wo er tippen muss, und sonst nichts.
+
+Name, Untertitel und Schlagwortfeld sind davon ausgenommen: Sie werden
+durchsucht, nicht gelesen (`10-sichtbarkeit.md`). Ein hübscherer Untertitel,
+der `Zähler` und `Kosten` verliert, kostet mehr, als er einbringt.
 
 ### Neue Funktionen (Versionshinweise)
 
 Für 1.0:
 
 ```
-Die erste Fassung. Zählerstände eintragen, Verbrauch und Kosten sehen,
-Verlauf vergleichen, als Tabelle exportieren.
+Die erste Fassung. Zählerstände eintragen, Verbrauch und Kosten sehen, den
+Verlauf vergleichen, alles als Tabelle mitnehmen.
 
-Viel Freude damit — und wenn etwas fehlt oder stört: Die Adresse im
-Support-Link geht direkt an den Entwickler, nicht an ein Ticketsystem.
+Wenn etwas fehlt oder stört, schreib mir. Hinter dem Support-Link sitzt kein
+Ticketsystem, sondern der Entwickler.
 ```
 
 Ab 1.1 gilt: Der Text kommt aus `CHANGELOG.md`, in der Sprache des Nutzers und
