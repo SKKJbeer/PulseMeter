@@ -9,6 +9,42 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.45.0 — 2026-08-15
+
+**Drei Entwürfe für die Zählereingabe, alle drei zum Anfassen.**
+
+Dem Gründer gefällt die heutige Eingabe nicht ganz. Statt einer Beschreibung
+liegen jetzt drei Vorschläge da, die man durchtippen kann — eine Eingabe
+beurteilt man nicht nach dem Aussehen, sondern danach, wie sie sich beim
+sechsten Zeichen anfühlt.
+
+### Hinzugefügt
+
+- `docs/entwuerfe/zaehlereingabe.html` mit drei Varianten am selben Beispiel
+  (Strom, letzter Stand 18.472,3 kWh, 34 Tage her) und derselben
+  Plausibilitätsprüfung wie in `PulseCore`:
+  - **A — Walzen wie am Gerät.** Jede Stelle eine Rolle zum Ziehen oder
+    Antippen. Man überträgt nicht, man dreht nach. Dafür am langsamsten.
+  - **B — Zahl läuft von rechts ein.** Eine große Zahl, Tausenderpunkte setzen
+    sich selbst, die Nachkommastelle bleibt rot. Am schnellsten, aber ein
+    Zahlendreher fällt erst am Ergebnis auf.
+  - **C — Nur, was sich geändert hat.** Die vorderen Stellen stehen schon da;
+    getippt wird der Rest, vier Zeichen statt sechs. Der Verbrauch steht
+    daneben, während man tippt. Nach einem Zählerwechsel greift der Vorschlag
+    nicht — dafür gibt es den Weg zurück zur ganzen Zahl.
+- `scripts/check-entwuerfe.mjs`: klickt alle drei durch, in Hell und Dunkel bei
+  360 und 1280 Pixeln. Getippte Zahl, Verbrauchszeile, gesperrtes Sichern bei
+  einem Rückwärtsstand, kein Überlauf, keine JavaScript-Fehler. **Nicht** in
+  `scripts/pruefen.sh` eingehängt: Entwürfe verschwinden wieder, sobald
+  entschieden ist, und sollen die tägliche Prüfung nicht überdauern.
+
+_Kein Eingriff in App oder Prototyp — nur ein Entscheidungshilfsmittel. 230
+Website-Prüfungen, 84 Prüfungen des Klick-Dummys, 196 Tests in PulseCore
+unverändert grün; die Entwürfe selbst grün in vier Kombinationen aus
+Erscheinungsbild und Breite._
+
+---
+
 ## 0.44.0 — 2026-08-15
 
 **Die App-Store-Texte sprechen jetzt dieselbe Sprache wie die Website.**

@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PulseMeter – drei Entwürfe für die Zählereingabe</title>
+<!--
+  Drei Vorschläge zum Anfassen, nicht zum Ansehen.
+
+  **Warum anfassbar.** Eine Eingabe beurteilt man nicht nach dem Aussehen,
+  sondern danach, wie sie sich anfühlt, wenn man sechs Ziffern eintippt. Alle
+  drei rechnen deshalb echt: derselbe Zähler, derselbe letzte Stand, dieselbe
+  Plausibilitätsprüfung wie im Klick-Dummy.
+
+  In sich geschlossen, keine fremden Server, hell und dunkel.
+-->
+<style>
+:root{
+  --ground:#FBFAF8; --app:#F3F0EA; --surface:#FFFFFF; --surface-2:#F4F1EB;
+  --ink:#17150F; --ink-2:#57524A; --ink-3:#8B8578;
+  --line:#E7E3DA; --line-2:#D8D3C7;
+  --tint:#B06E08; --tint-ink:#8A5A08; --on-tint:#FFF;
+  --good:#2F7F52; --good-bg:#E8F3EC; --warn:#8A5A08; --warn-bg:#FBF0DA;
+  --shadow:0 1px 2px rgba(23,21,15,.05),0 14px 34px -14px rgba(23,21,15,.22);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --ground:#0F0E0C; --app:#100F0D; --surface:#1B1917; --surface-2:#242118;
+    --ink:#F5F2EC; --ink-2:#B3ADA1; --ink-3:#837D71;
+    --line:#2B2822; --line-2:#3A362E;
+    --tint:#E0A040; --tint-ink:#E8C070; --on-tint:#1B1408;
+    --good:#5CBF85; --good-bg:#16281D; --warn:#E8C070; --warn-bg:#33290F;
+    --shadow:0 20px 50px -20px rgba(0,0,0,.85);
+  }
+}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0;background:var(--ground);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  font-size:16px;line-height:1.55;overflow-wrap:break-word;hyphens:auto;
+}
+.bahn{max-width:1180px;margin-inline:auto;padding:0 20px}
+header{padding:46px 0 8px}
+h1{font-size:clamp(28px,4vw,40px);line-height:1.1;letter-spacing:-.028em;margin:0 0 12px;text-wrap:balance}
+.lead{color:var(--ink-2);max-width:62ch;margin:0 0 6px}
+.gitter{display:grid;gap:34px;padding:34px 0 70px;grid-template-columns:1fr}
+@media(min-width:900px){.gitter{grid-template-columns:repeat(3,1fr);gap:26px}}
+
+.spalte{display:flex;flex-direction:column;gap:14px}
+.kopfzeile{display:flex;align-items:baseline;gap:9px}
+.nr{
+  font-size:12px;font-weight:700;letter-spacing:.09em;color:var(--tint-ink);
+  border:1px solid var(--tint);border-radius:999px;padding:2px 9px;flex:none
+}
+h2{font-size:20px;letter-spacing:-.02em;margin:0;line-height:1.25}
+.warum{color:var(--ink-2);font-size:14.5px;margin:0}
+.fuer,.gegen{font-size:13.5px;margin:0;padding-left:20px;position:relative;color:var(--ink-2)}
+.fuer::before,.gegen::before{position:absolute;left:0;top:0;font-weight:700}
+.fuer::before{content:"+";color:var(--good)}
+.gegen::before{content:"−";color:var(--ink-3)}
+
+/* --------------------------------------------------------- Telefonrahmen */
+.telefon{
+  background:var(--app);border:1px solid var(--line);border-radius:26px;
+  box-shadow:var(--shadow);padding:16px 15px 18px;
+}
+.zeile{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.zeile b{font-size:15px;letter-spacing:-.01em}
+.zeile span{font-size:12.5px;color:var(--ink-3)}
+.einheit{text-align:center;font-size:12px;font-weight:650;letter-spacing:.05em;color:var(--ink-3);margin:8px 0 12px}
+
+.urteil{
+  min-height:56px;border-radius:12px;padding:10px 12px;font-size:13.5px;line-height:1.4;
+  background:var(--surface);color:var(--ink-2);border:1px solid var(--line);
+  transition:background .18s,color .18s,border-color .18s
+}
+.urteil.gut{background:var(--good-bg);color:var(--good);border-color:transparent}
+.urteil.acht{background:var(--warn-bg);color:var(--warn);border-color:transparent}
+
+.block{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.taste{
+  font:inherit;font-size:24px;font-weight:450;height:50px;border-radius:12px;cursor:pointer;
+  background:var(--surface);color:var(--ink);border:1px solid var(--line);
+  display:grid;place-items:center;-webkit-tap-highlight-color:transparent
+}
+.taste:active{background:var(--surface-2);transform:translateY(1px)}
+.taste.neben{font-size:13px;font-weight:600;color:var(--ink-2);background:transparent;border-color:transparent}
+.sichern{
+  width:100%;margin-top:12px;font:inherit;font-size:16px;font-weight:650;
+  color:var(--on-tint);background:var(--tint);border:0;border-radius:13px;padding:13px;cursor:pointer
+}
+.sichern[disabled]{background:var(--surface-2);color:var(--ink-3);cursor:default}
+
+/* ------------------------------------------------------------- A: Walzen */
+.walzen{
+  display:flex;justify-content:center;gap:4px;padding:12px;border-radius:14px;
+  background:linear-gradient(180deg,#2A2620,#423C33);
+  box-shadow:inset 0 2px 8px rgba(0,0,0,.55);touch-action:none;user-select:none
+}
+.walze{
+  width:32px;height:62px;border-radius:4px;overflow:hidden;position:relative;cursor:grab;
+  background:linear-gradient(180deg,#9E988C 0%,#FDFCFA 22%,#FFF 50%,#EFEBE3 76%,#9E988C 100%);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.22)
+}
+.walze.rot{background:linear-gradient(180deg,#8E2C28 0%,#D9433E 22%,#E4514B 50%,#C93B36 76%,#8E2C28 100%)}
+.walze:active{cursor:grabbing}
+.band{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:26px;font-weight:600;color:#17150F;
+  transition:transform .18s cubic-bezier(.2,.9,.25,1)}
+.walze.rot .band{color:#FFF}
+.band i{height:62px;display:grid;place-items:center;font-style:normal;width:100%}
+.walzen-hinweis{text-align:center;font-size:12px;color:var(--ink-3);margin:9px 0 0}
+
+/* ---------------------------------------------------------- B: Kassenband */
+.gross{
+  text-align:right;padding:20px 16px 14px;border-radius:16px;background:var(--surface);
+  border:1px solid var(--line);overflow:hidden
+}
+.gross .zahl{
+  font-size:clamp(38px,9vw,52px);font-weight:640;letter-spacing:-.035em;
+  font-variant-numeric:tabular-nums;line-height:1;white-space:nowrap
+}
+.gross .zahl .leer{color:var(--ink-3);opacity:.32}
+.gross .zahl .komma{color:#C0392B}
+@media(prefers-color-scheme:dark){.gross .zahl .komma{color:#F0736B}}
+.gross .zahl .strich{
+  display:inline-block;width:3px;height:.85em;background:var(--tint);
+  vertical-align:-.06em;margin-left:3px;animation:blink 1.05s steps(2,start) infinite
+}
+@keyframes blink{50%{opacity:0}}
+.gross .darunter{font-size:12.5px;color:var(--ink-3);margin-top:8px;letter-spacing:.02em}
+
+/* ------------------------------------------------------- C: Nur der Rest */
+.rest{
+  display:flex;align-items:baseline;justify-content:center;gap:2px;padding:20px 12px 16px;
+  border-radius:16px;background:var(--surface);border:1px solid var(--line);
+  font-variant-numeric:tabular-nums;letter-spacing:-.03em
+}
+.rest .fest{font-size:30px;font-weight:600;color:var(--ink-3);opacity:.55}
+.rest .neu{font-size:44px;font-weight:660;color:var(--ink)}
+.rest .neu .leer{color:var(--tint);opacity:.34}
+.rest .kommastelle{font-size:30px;font-weight:600;color:#C0392B}
+@media(prefers-color-scheme:dark){.rest .kommastelle{color:#F0736B}}
+.rest-zeile{display:flex;justify-content:space-between;gap:8px;margin-top:10px;font-size:12.5px;color:var(--ink-3)}
+.mehr{
+  font:inherit;font-size:12.5px;color:var(--tint-ink);background:none;border:0;
+  padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px
+}
+.verbrauch{
+  margin-top:12px;border-radius:12px;border:1px dashed var(--line-2);padding:10px 12px;
+  font-size:13.5px;color:var(--ink-2);text-align:center
+}
+.verbrauch b{color:var(--ink);font-weight:650;font-variant-numeric:tabular-nums}
+
+footer{border-top:1px solid var(--line);padding:26px 0 60px;color:var(--ink-3);font-size:14px}
+</style>
+</head>
+<body>
+
+<header class="bahn">
+  <h1>Drei Wege, sechs Ziffern einzutippen</h1>
+  <p class="lead">
+    Derselbe Zähler in allen drei Entwürfen: <b>Strom</b>, letzter Stand
+    <b>18 472,3 kWh</b>, abgelesen vor 34 Tagen. Alle drei rechnen echt und
+    prüfen die Zahl genauso, wie es die App tut. Tipp sie durch — worauf es
+    ankommt, merkt man erst beim sechsten Zeichen.
+  </p>
+</header>
+
+<div class="bahn gitter">
+
+  <!-- ============================================== A -->
+  <div class="spalte">
+    <div class="kopfzeile"><span class="nr">A</span><h2>Walzen wie am Gerät</h2></div>
+    <p class="warum">
+      Jede Stelle ist eine Rolle, die man hoch- und runterzieht — genau wie das
+      Zählwerk an der Wand. Ziehen oder auf die obere bzw. untere Hälfte tippen.
+    </p>
+    <p class="fuer">Man überträgt nicht, man dreht nach. Stelle für Stelle, kein Verzählen.</p>
+    <p class="gegen">Am langsamsten. Sechs Stellen wollen sechsmal angefasst werden.</p>
+
+    <div class="telefon" id="a">
+      <div class="zeile"><b>Strom</b><span>heute</span></div>
+      <div class="walzen" id="a-walzen"></div>
+      <p class="walzen-hinweis">Ziehen oder oben/unten tippen</p>
+      <div class="einheit">KILOWATTSTUNDEN</div>
+      <div class="urteil" id="a-urteil"></div>
+      <button class="sichern" id="a-sichern">Sichern</button>
+    </div>
+  </div>
+
+  <!-- ============================================== B -->
+  <div class="spalte">
+    <div class="kopfzeile"><span class="nr">B</span><h2>Zahl läuft von rechts ein</h2></div>
+    <p class="warum">
+      Eine große Zahl, sonst nichts. Ziffern rutschen von rechts herein, die
+      Tausenderpunkte setzen sich von selbst, die Nachkommastelle bleibt rot wie
+      auf dem Gerät.
+    </p>
+    <p class="fuer">Am schnellsten, und jeder kennt es vom Geldautomaten.</p>
+    <p class="gegen">Wer sich um eine Stelle vertut, merkt es erst am Ergebnis.</p>
+
+    <div class="telefon" id="b">
+      <div class="zeile"><b>Strom</b><span>heute</span></div>
+      <div class="gross">
+        <div class="zahl" id="b-zahl"></div>
+        <div class="darunter">kWh · zuletzt 18.472,3</div>
+      </div>
+      <div class="urteil" id="b-urteil" style="margin-top:12px"></div>
+      <div class="block" id="b-block"></div>
+      <button class="sichern" id="b-sichern">Sichern</button>
+    </div>
+  </div>
+
+  <!-- ============================================== C -->
+  <div class="spalte">
+    <div class="kopfzeile"><span class="nr">C</span><h2>Nur, was sich geändert hat</h2></div>
+    <p class="warum">
+      Die vorderen Stellen stehen schon da — sie ändern sich zwischen zwei
+      Ablesungen so gut wie nie. Getippt wird nur der Rest, hier vier Zeichen
+      statt sechs. Der Verbrauch steht dabei, während man tippt.
+    </p>
+    <p class="fuer">Ein Drittel weniger Anschläge. Und man sieht sofort, ob es passt.</p>
+    <p class="gegen">Nach einem Zählerwechsel oder langer Pause stimmt der Vorschlag nicht.</p>
+
+    <div class="telefon" id="c">
+      <div class="zeile"><b>Strom</b><span>heute</span></div>
+      <div class="rest">
+        <span class="fest" id="c-fest">18</span><span class="neu" id="c-neu"></span><span class="kommastelle" id="c-frac">,0</span>
+      </div>
+      <div class="rest-zeile">
+        <span>kWh · zuletzt 18.472,3</span>
+        <button class="mehr" id="c-mehr">Ganze Zahl eintippen</button>
+      </div>
+      <div class="verbrauch" id="c-verbrauch"></div>
+      <div class="urteil" id="c-urteil" style="margin-top:10px"></div>
+      <div class="block" id="c-block"></div>
+      <button class="sichern" id="c-sichern">Sichern</button>
+    </div>
+  </div>
+
+</div>
+
+<footer class="bahn">
+  Entwurf, nicht die App. Alle drei prüfen die Zahl mit derselben Regel wie
+  <code>PulseCore</code>: Ein Stand unter dem letzten ist ein Fehler, ein
+  Tagesverbrauch über dem Dreifachen des Üblichen eine Rückfrage.
+</footer>
+
+<script>
+/* Gemeinsame Grundlage — ein Zähler, ein letzter Stand, eine Prüfung.
+   Die Zahlen stammen aus demselben Beispiel wie der Klick-Dummy, damit sich
+   die drei Entwürfe untereinander und mit der App vergleichen lassen. */
+const LETZTER = 18472.3;      // kWh
+const TAGE    = 34;           // seit der letzten Ablesung
+const SCHNITT = 8.4;          // kWh je Tag, aus der Historie
+const STELLEN = 5, NACHKOMMA = 1;
+
+const zahl = n => n.toLocaleString("de-DE", {minimumFractionDigits:1, maximumFractionDigits:1});
+
+/* Spiegelt ConsumptionEngine.plausibility: rückwärts ist ein Fehler, mehr als
+   das Dreifache des Üblichen eine Rückfrage. Nie stillschweigend annehmen. */
+function urteil(el, wert){
+  if (wert === null){ el.className = "urteil"; el.textContent = "Noch keine Zahl eingetragen."; return false; }
+  const diff = wert - LETZTER;
+  if (diff < 0){
+    el.className = "urteil acht";
+    el.textContent = "Kleiner als der letzte Stand (" + zahl(LETZTER) + "). War der Zähler getauscht?";
+    return false;
+  }
+  const proTag = diff / TAGE;
+  if (proTag > SCHNITT * 3){
+    el.className = "urteil acht";
+    el.textContent = "Das wären " + zahl(proTag) + " kWh am Tag — dreimal so viel wie sonst. Stimmt die Zahl?";
+    return true;
+  }
+  el.className = "urteil gut";
+  el.textContent = zahl(diff) + " kWh in " + TAGE + " Tagen, " + zahl(proTag) + " am Tag. Passt zu den Monaten davor.";
+  return true;
+}
+
+/* ------------------------------------------------------------------ A */
+(function(){
+  const start = String(Math.round(LETZTER * 10)).padStart(STELLEN + NACHKOMMA, "0").split("").map(Number);
+  const stand = start.slice();
+  const wrap = document.getElementById("a-walzen");
+
+  wrap.innerHTML = stand.map((d,i) =>
+    `<div class="walze ${i >= STELLEN ? "rot" : ""}" data-i="${i}">
+       <div class="band">${[0,1,2,3,4,5,6,7,8,9,0].map(z=>`<i>${z}</i>`).join("")}</div>
+     </div>`).join("");
+
+  const zeigen = () => {
+    wrap.querySelectorAll(".walze").forEach((w,i) => {
+      w.querySelector(".band").style.transform = `translateY(${-stand[i]*62}px)`;
+    });
+    const wert = Number(stand.join("")) / 10 ** NACHKOMMA;
+    const ok = urteil(document.getElementById("a-urteil"), wert);
+    document.getElementById("a-sichern").disabled = !ok;
+  };
+
+  const dreh = (i, um) => { stand[i] = (stand[i] + um + 10) % 10; zeigen(); };
+
+  wrap.querySelectorAll(".walze").forEach(w => {
+    const i = +w.dataset.i;
+    let startY = null, verbraucht = 0;
+    w.addEventListener("pointerdown", e => { startY = e.clientY; verbraucht = 0; w.setPointerCapture(e.pointerId); });
+    w.addEventListener("pointermove", e => {
+      if (startY === null) return;
+      const weg = e.clientY - startY - verbraucht;
+      if (Math.abs(weg) > 22){ dreh(i, weg > 0 ? -1 : 1); verbraucht += weg > 0 ? 22 : -22; }
+    });
+    w.addEventListener("pointerup", e => {
+      // Kein Ziehen, sondern ein Tipp: obere Hälfte hoch, untere runter.
+      if (Math.abs(verbraucht) < 4){
+        const oben = (e.clientY - w.getBoundingClientRect().top) < w.offsetHeight / 2;
+        dreh(i, oben ? 1 : -1);
+      }
+      startY = null;
+    });
+  });
+  zeigen();
+})();
+
+/* ------------------------------------------------------------------ B */
+(function(){
+  let ziffern = "";
+  const feld = document.getElementById("b-zahl");
+
+  const wert = () => ziffern ? Number(ziffern) / 10 ** NACHKOMMA : null;
+
+  const zeigen = () => {
+    const voll = ziffern.padStart(STELLEN + NACHKOMMA, " ");
+    const vor = voll.slice(0, STELLEN), nach = voll.slice(STELLEN);
+    let html = "";
+    [...vor].forEach((z,i) => {
+      if (i > 0 && (STELLEN - i) % 3 === 0) html += `<span class="${z===" "?"leer":""}">.</span>`;
+      html += z === " " ? '<span class="leer">0</span>' : z;
+    });
+    html += `<span class="komma">,${nach.trim() || '<span class="leer">0</span>'}</span>`;
+    if (ziffern.length < STELLEN + NACHKOMMA) html += '<span class="strich"></span>';
+    feld.innerHTML = html;
+    const ok = urteil(document.getElementById("b-urteil"), wert());
+    document.getElementById("b-sichern").disabled = !ok || !ziffern;
+  };
+
+  const block = document.getElementById("b-block");
+  block.innerHTML = [1,2,3,4,5,6,7,8,9].map(n=>`<button class="taste" data-t="${n}">${n}</button>`).join("")
+    + `<button class="taste neben" data-t="c">Löschen</button>`
+    + `<button class="taste" data-t="0">0</button>`
+    + `<button class="taste neben" data-t="b">◀</button>`;
+
+  block.addEventListener("click", e => {
+    const t = e.target.closest("[data-t]"); if (!t) return;
+    const k = t.dataset.t;
+    if (k === "c") ziffern = "";
+    else if (k === "b") ziffern = ziffern.slice(0, -1);
+    else if (ziffern.length < STELLEN + NACHKOMMA) ziffern += k;
+    zeigen();
+  });
+  zeigen();
+})();
+
+/* ------------------------------------------------------------------ C */
+(function(){
+  const alle = String(Math.round(LETZTER * 10)).padStart(STELLEN + NACHKOMMA, "0");
+  const FEST = 2;                       // so viele Stellen bleiben stehen
+  let ziffern = "";                     // die getippten, ohne Nachkomma
+  let ganz = false;                     // Notausgang: doch alles eintippen
+
+  const festEl = document.getElementById("c-fest");
+  const neuEl  = document.getElementById("c-neu");
+  const fracEl = document.getElementById("c-frac");
+  const verbEl = document.getElementById("c-verbrauch");
+
+  // Getippt werden die offenen Vorkommastellen **und** die rote Nachkommastelle.
+  // Sie wegzulassen wäre bequemer und wäre gelogen: Auf dem Gerät steht sie,
+  // und wer sie nicht eintragen kann, überträgt eben doch nicht.
+  const offen = () => (ganz ? STELLEN : STELLEN - FEST) + NACHKOMMA;
+
+  const wert = () => {
+    if (!ziffern) return null;
+    const vorn = ganz ? "" : alle.slice(0, FEST);
+    const rest = ziffern.padEnd(offen(), "0");
+    return Number(vorn + rest) / 10 ** NACHKOMMA;
+  };
+
+  const zeigen = () => {
+    festEl.textContent = ganz ? "" : alle.slice(0, FEST);
+    const rest = ziffern.padEnd(offen(), "·");
+    const vor = rest.slice(0, offen() - NACHKOMMA), nach = rest.slice(offen() - NACHKOMMA);
+    const male = z => z === "·" ? '<span class="leer">0</span>' : z;
+    neuEl.innerHTML = [...vor].map(male).join("");
+    fracEl.innerHTML = "," + [...nach].map(male).join("");
+
+    const w = wert();
+    const ok = urteil(document.getElementById("c-urteil"), w);
+    if (w === null){
+      verbEl.innerHTML = 'Zuletzt <b>' + zahl(LETZTER) + '</b> kWh. Tipp die letzten ' + offen() + ' Stellen.';
+    } else {
+      const d = w - LETZTER;
+      verbEl.innerHTML = d >= 0
+        ? 'Das wären <b>' + zahl(d) + ' kWh</b> in ' + TAGE + ' Tagen.'
+        : 'Das läge <b>' + zahl(-d) + ' kWh</b> unter dem letzten Stand.';
+    }
+    document.getElementById("c-sichern").disabled = !ok || !ziffern;
+  };
+
+  const block = document.getElementById("c-block");
+  block.innerHTML = [1,2,3,4,5,6,7,8,9].map(n=>`<button class="taste" data-t="${n}">${n}</button>`).join("")
+    + `<button class="taste neben" data-t="c">Löschen</button>`
+    + `<button class="taste" data-t="0">0</button>`
+    + `<button class="taste neben" data-t="b">◀</button>`;
+
+  block.addEventListener("click", e => {
+    const t = e.target.closest("[data-t]"); if (!t) return;
+    const k = t.dataset.t;
+    if (k === "c") ziffern = "";
+    else if (k === "b") ziffern = ziffern.slice(0, -1);
+    else if (ziffern.length < offen()) ziffern += k;
+    zeigen();
+  });
+
+  document.getElementById("c-mehr").addEventListener("click", e => {
+    ganz = !ganz; ziffern = "";
+    e.target.textContent = ganz ? "Wieder ab dem letzten Stand" : "Ganze Zahl eintippen";
+    zeigen();
+  });
+
+  zeigen();
+})();
+</script>
+</body>
+</html>

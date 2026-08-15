@@ -34,6 +34,7 @@ nur das Geänderte.
 | `scripts/run.sh` | App im Simulator starten, Screenshots ablegen | 40 s |
 | `scripts/aufs-handy.sh` | auf ein angestecktes iPhone bauen und installieren | 2 min |
 | `node scripts/check-website.mjs` | die Website prüfen, hell und dunkel, 320–1280 px | 20 s |
+| `node scripts/check-entwuerfe.mjs` | die Entwürfe unter `docs/entwuerfe/` durchklicken | 20 s |
 
 **Die CI ist die Gegenprobe, nicht der erste Durchgang.** Der lokale Lauf prüft
 dasselbe und ist in zwei statt in fünfzehn Minuten fertig; er schreibt sein
@@ -72,7 +73,7 @@ iCloud-Abgleich wie Käufe lassen sich noch nicht ausprobieren.
 
 ## Status
 
-Version **0.44.0**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
+Version **0.45.0**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
 rechnet echt. Alle vier Bildschirme — Übersicht, Erfassung, Verlauf und Zähler —
 laufen als SwiftUI-App im Simulator und werden auf jedem Lauf fotografiert,
 hell und dunkel. Siehe [CHANGELOG.md](CHANGELOG.md).
@@ -142,6 +143,7 @@ Siehe [CLAUDE.md](CLAUDE.md), Regel 1.
 | [09 – App Store](docs/09-appstore.md) | Texte, Icon, Bilder, Datenschutzangaben — fertig zum Einreichen |
 | [10 – Sichtbarkeit](docs/10-sichtbarkeit.md) | Gefunden werden ohne Werbebudget: Suchwörter, Bewertungen, Zeitpunkt |
 | [Website](docs/website/) | Startseite, Hilfe, Datenschutz, Impressum — statisch, ohne fremde Server |
+| [Entwürfe](docs/entwuerfe/) | Vorschläge zum Anfassen, solange noch nicht entschieden ist |
 | [Website: was noch fehlt](docs/website/EINTRAGEN.md) | Die vier Stellen, die vor dem Onlinegehen ausgefüllt werden müssen |
 | [Datenschutzerklärung](docs/datenschutz.md) | Der Text, der als URL im Store hinterlegt wird |
 | [CLAUDE.md](CLAUDE.md) | Arbeitsweise, Prüfschritte, Sprachregeln |
