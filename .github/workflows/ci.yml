@@ -69,6 +69,14 @@ jobs:
       - name: Klick-Dummy prüfen
         run: node scripts/check-prototype.mjs
 
+      # Dieselbe Maschine, dasselbe Chromium, kein zusätzlicher Auftrag: Die
+      # Website ist statisch und in zwanzig Sekunden geprüft. Der erste Lauf
+      # nach 0.43.0 hat gezeigt, warum das hier stehen muss — lokal hängt die
+      # Prüfung in `pruefen.sh`, die CI ruft aber die Skripte einzeln auf und
+      # hätte die Seite auf Dauer ungeprüft mitgeführt.
+      - name: Website prüfen
+        run: node scripts/check-website.mjs
+
   # **Läuft wieder bei jedem Push**, auch auf einen Arbeitszweig.
   #
   # In 0.32.5 war er auf `main`, Pull-Requests und Zuruf beschränkt worden, weil

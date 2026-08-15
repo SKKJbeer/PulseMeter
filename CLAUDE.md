@@ -184,6 +184,32 @@ Chromium für Playwright: `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`.
 - **Code, Bezeichner, Commit-Nachrichten:** Englisch.
 - **Kommentare im Code:** Deutsch, und sie begründen *warum*, nicht *was*.
 
+### Tonfall in allem, was der Nutzer liest
+
+Vom Gründer am 15. August ausdrücklich verlangt, nachdem die erste Fassung der
+Website „steril und wie von einer Maschine" klang. Betrifft Website,
+App-Store-Texte, Oberfläche und Mitteilungen — **nicht** die Dokumente in
+`docs/` und nicht die Kommentare im Code, die dürfen weiter erklären.
+
+Woran man den maschinellen Klang erkennt und was stattdessen dasteht:
+
+| Nicht so | Sondern |
+|---|---|
+| Jeder Satz begründet sich selbst mit einem Gedankenstrich | Behaupten und weitergehen. Die Begründung nur, wo sie überrascht |
+| „Ein großer Ziffernblock, bedienbar bei schlechtem Licht" | „Groß genug, dass man ihn im Keller einhändig trifft" |
+| Gleich lange, gleich gebaute Sätze | Kurz. Dann einer, der ausholt und die Sache zu Ende bringt. Dann wieder kurz |
+| Merkmale aufzählen | Die Lage beschreiben, in der jemand steckt |
+| „ermöglicht", „bietet", „verfügt über" | „macht", „zeigt", „rechnet", „fragt nach" |
+| Alles abwägen und absichern | Einen Standpunkt haben |
+
+Konkrete Zahlen, konkrete Orte, konkrete Gegenstände: Keller, Sicherungskasten,
+Februar, Kubikmeter, Wallbox in der Garage. Sie tragen den Text, nicht die
+Adjektive.
+
+Was sich dabei **nicht** ändert: Nichts versprechen, was es nicht gibt
+(`09-appstore.md`), und geschätzte Zahlen bleiben gekennzeichnet
+(Produktprinzip 7). Lockerer Ton ist kein Freibrief für großzügige Aussagen.
+
 ## Wo was liegt
 
 ```

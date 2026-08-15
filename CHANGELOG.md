@@ -9,6 +9,55 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.43.1 — 2026-08-15
+
+**Die Website klang wie eine Maschine. Jetzt klingt sie wie jemand, der die
+Sache kennt.**
+
+Der Gründer hat die erste Fassung als „steril und wie von KI" bezeichnet, und
+er hatte recht: Jeder Satz begründete sich selbst mit einem Gedankenstrich,
+alle waren gleich lang und gleich gebaut, und keiner beschrieb eine Lage, in
+der jemand tatsächlich steckt.
+
+### Geändert
+
+- Start- und Hilfeseite komplett neu getextet. Aus „Eine Zahl eintragen. Und
+  wissen, ob alles im Rahmen ist." wurde „Einmal im Monat ablesen. Den Rest des
+  Jahres Bescheid wissen." Aus „Ein großer Ziffernblock, bedienbar bei
+  schlechtem Licht" wurde „Groß genug, dass man ihn im Keller einhändig
+  trifft."
+- Die Abschnitte heißen nicht mehr nach ihrer Funktion, sondern nach dem, was
+  der Leser davon hat: „Die Nachzahlung siehst du im Oktober, nicht im März"
+  statt „Aus Verbrauch wird ein Betrag". „Wir wissen nicht, wie viel Strom du
+  verbrauchst" statt „Deine Zahlen bleiben deine".
+- Konkretes statt Adjektive: Keller, Sicherungskasten, Februar, Wallbox in der
+  Garage, Zustandszahl von der Rechnung.
+
+### Hinzugefügt
+
+- `CLAUDE.md` hat einen Abschnitt **Tonfall** bekommen, mit einer Tabelle
+  „nicht so / sondern". Ohne ihn schreibt die nächste Sitzung wieder im alten
+  Klang, und die Arbeit war umsonst. Er gilt für Website, App-Store-Texte,
+  Oberfläche und Mitteilungen — nicht für `docs/` und nicht für die Kommentare
+  im Code, die dürfen weiter erklären.
+- Ausdrücklich festgehalten, was der lockerere Ton **nicht** erlaubt: Es wird
+  nichts versprochen, was es nicht gibt, und geschätzte Zahlen bleiben
+  gekennzeichnet.
+
+### Behoben
+
+- Die CI prüfte die Website gar nicht. Lokal hängt die Prüfung in
+  `scripts/pruefen.sh`, aber `ci.yml` ruft die Skripte einzeln auf — und dort
+  stand nur der Klick-Dummy. Der Lauf zu 0.43.0 war deshalb grün, ohne eine
+  einzige Seite angesehen zu haben. Jetzt läuft `check-website.mjs` im selben
+  Auftrag auf derselben Maschine, zwanzig Sekunden zusätzlich.
+
+_230 Website-Prüfungen weiter grün, 84 Prüfungen des Klick-Dummys, 196 Tests in
+PulseCore. Die Rechtstexte bleiben unangetastet — Datenschutz und Impressum
+müssen genau sein, nicht schwungvoll._
+
+---
+
 ## 0.43.0 — 2026-08-14
 
 **Die Website steht: Startseite, Hilfe, Datenschutz, Impressum.**
