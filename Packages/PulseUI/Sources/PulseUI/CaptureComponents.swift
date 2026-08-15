@@ -20,30 +20,35 @@ public struct CounterDisplay: View {
         self.fractionDigits = fractionDigits
     }
 
+    /// Die Stellen, aufgefüllt von rechts. Ein Leerzeichen steht für „noch
+    /// nicht getippt" und wird blass gezeichnet, statt zu fehlen.
     private var padded: [Character] {
         let total = integerDigits + fractionDigits
         let trimmed = String(digits.suffix(total))
-        return Array(String(repeating: "0", count: max(0, total - trimmed.count)) + trimmed)
+        return Array(String(repeating: " ", count: max(0, total - trimmed.count)) + trimmed)
     }
 
     public var body: some View {
-        HStack(spacing: 3) {
-            ForEach(Array(padded.enumerated()), id: \.offset) { index, digit in
-                if index == integerDigits { Spacer().frame(width: 8) }
-                drum(digit, decimal: index >= integerDigits)
-            }
+        HStack(alignment: .firstTextBaseline, spacing: 3) {
+            Spacer(minLength: 0)
+            Text(zahl)
+                .font(.system(size: 42, weight: .semibold, design: .rounded).monospacedDigit())
+                .lineLimit(1)
+                .minimumScaleFactor(0.45)
+            if digits.count < integerDigits + fractionDigits { schreibmarke }
         }
-        .padding(14)
-        .background(
-            LinearGradient(colors: [Color(red: 0.16, green: 0.15, blue: 0.13),
-                                    Color(red: 0.26, green: 0.24, blue: 0.20)],
-                           startPoint: .top, endPoint: .bottom),
-            in: RoundedRectangle(cornerRadius: 14, style: .continuous)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 17)
+        .frame(maxWidth: .infinity)
+        .background(PulseColor.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(PulseColor.hairline, lineWidth: 1)
         )
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Zählerstand")
         .accessibilityValue(readableValue)
-        // Wer die Rollen nicht sieht, weiß sonst nicht, wie viele Ziffern das
+        // Wer die Zahl nicht sieht, weiß sonst nicht, wie viele Ziffern das
         // Gerät überhaupt hat — und tippt gegen eine Grenze, die es für ihn
         // nicht gibt.
         .accessibilityHint(fractionDigits > 0
@@ -51,45 +56,76 @@ public struct CounterDisplay: View {
             : "\(integerDigits) Stellen")
     }
 
+    /// Die Zahl, wie sie dasteht.
+    ///
+    /// **Tausenderpunkte von rechts gezählt.** Sonst wandern sie, während die
+    /// Zahl wächst, und das Auge verliert die Stelle, an der es gerade war.
+    private var zahl: AttributedString {
+        var out = AttributedString()
+        let vor = padded.prefix(integerDigits)
+
+        for (i, zeichen) in vor.enumerated() {
+            if i > 0 && (integerDigits - i) % 3 == 0 {
+                out += teil(".", offen: zeichen == " ")
+            }
+            out += teil(zeichen == " " ? "0" : String(zeichen), offen: zeichen == " ")
+        }
+        guard fractionDigits > 0 else { return out }
+
+        var nachkomma = AttributedString(",")
+        for zeichen in padded.suffix(fractionDigits) {
+            nachkomma += teil(zeichen == " " ? "0" : String(zeichen), offen: zeichen == " ")
+        }
+        // Rot wie die Nachkommastellen am mechanischen Zählwerk. Wer vom Gerät
+        // abliest, sucht genau diese Farbe.
+        nachkomma.foregroundColor = PulseColor.counterDecimal
+        out += nachkomma
+        return out
+    }
+
+    private func teil(_ text: String, offen: Bool) -> AttributedString {
+        var stueck = AttributedString(text)
+        stueck.foregroundColor = offen ? PulseColor.inkTertiary.opacity(0.30) : PulseColor.ink
+        return stueck
+    }
+
+    /// Zeigt, wo die nächste Ziffer landet.
+    ///
+    /// Ohne Blinken, wenn das System es so verlangt: Ein Strich, der ewig
+    /// zuckt, ist für manche Menschen nicht auszuhalten — und für alle anderen
+    /// nach der dritten Ablesung nur noch Unruhe.
+    private var schreibmarke: some View {
+        Schreibmarke()
+    }
+
     private var readableValue: String {
-        let whole = String(padded.prefix(integerDigits)).drop(while: { $0 == "0" })
-        let fraction = String(padded.suffix(fractionDigits))
+        let whole = String(padded.prefix(integerDigits))
+            .replacingOccurrences(of: " ", with: "")
+            .drop(while: { $0 == "0" })
+        let fraction = String(padded.suffix(fractionDigits)).replacingOccurrences(of: " ", with: "0")
         let head = whole.isEmpty ? "0" : String(whole)
         return fractionDigits > 0 ? "\(head) Komma \(fraction)" : head
     }
+}
 
-    private func drum(_ digit: Character, decimal: Bool) -> some View {
-        Text(String(digit))
-            .font(.system(size: 27, weight: .semibold, design: .monospaced))
-            .foregroundStyle(decimal ? .white : Color(red: 0.09, green: 0.08, blue: 0.06))
-            .frame(width: 30, height: 46)
-            .background(decimal ? Self.redDrum : Self.whiteDrum)
-            .clipShape(RoundedRectangle(cornerRadius: 3))
-            .overlay(RoundedRectangle(cornerRadius: 3).stroke(.black.opacity(0.28), lineWidth: 1))
-            // Die Rolle springt beim Wechsel kurz, wie ein mechanisches Werk.
-            .id(digit)
-            .transition(.move(edge: .top).combined(with: .opacity))
-    }
+/// Der blinkende Strich hinter der Zahl.
+private struct Schreibmarke: View {
 
-    /// Zylindrische Schattierung — hell in der Mitte, dunkel an den Kanten.
-    private static var whiteDrum: LinearGradient {
-        LinearGradient(stops: [
-            .init(color: Color(red: 0.72, green: 0.70, blue: 0.65), location: 0),
-            .init(color: Color(red: 0.99, green: 0.99, blue: 0.98), location: 0.20),
-            .init(color: .white, location: 0.48),
-            .init(color: Color(red: 0.94, green: 0.92, blue: 0.89), location: 0.76),
-            .init(color: Color(red: 0.72, green: 0.70, blue: 0.65), location: 1)
-        ], startPoint: .top, endPoint: .bottom)
-    }
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var sichtbar = true
 
-    private static var redDrum: LinearGradient {
-        LinearGradient(stops: [
-            .init(color: Color(red: 0.48, green: 0.11, blue: 0.09), location: 0),
-            .init(color: Color(red: 0.85, green: 0.21, blue: 0.18), location: 0.20),
-            .init(color: Color(red: 0.93, green: 0.29, blue: 0.26), location: 0.48),
-            .init(color: Color(red: 0.76, green: 0.16, blue: 0.15), location: 0.76),
-            .init(color: Color(red: 0.48, green: 0.11, blue: 0.09), location: 1)
-        ], startPoint: .top, endPoint: .bottom)
+    var body: some View {
+        RoundedRectangle(cornerRadius: 1.5, style: .continuous)
+            .fill(PulseColor.tint)
+            .frame(width: 3, height: 34)
+            .opacity(sichtbar ? 1 : 0)
+            .onAppear {
+                guard !reduceMotion else { return }
+                withAnimation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true)) {
+                    sichtbar = false
+                }
+            }
+            .accessibilityHidden(true)
     }
 }
 

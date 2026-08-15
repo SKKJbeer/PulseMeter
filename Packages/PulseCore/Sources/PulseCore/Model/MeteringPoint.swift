@@ -229,9 +229,9 @@ public struct MeteringPoint: Identifiable, Hashable, Codable, Sendable {
             kind: .electricity,
             registers: [
                 Register(label: "Bezug", unit: .kilowattHour, direction: .consumption,
-                         integerDigits: 6, fractionDigits: 1, obisCode: "1.8.0"),
+                         integerDigits: 6, fractionDigits: 2, obisCode: "1.8.0"),
                 Register(label: "Einspeisung", unit: .kilowattHour, direction: .feedIn,
-                         integerDigits: 6, fractionDigits: 1, obisCode: "2.8.0")
+                         integerDigits: 6, fractionDigits: 2, obisCode: "2.8.0")
             ]
         )
     }
@@ -247,9 +247,9 @@ public struct MeteringPoint: Identifiable, Hashable, Codable, Sendable {
             kind: .electricity,
             registers: [
                 Register(label: "Hochtarif", unit: .kilowattHour, direction: .consumption,
-                         integerDigits: 6, fractionDigits: 1, obisCode: "1.8.1"),
+                         integerDigits: 6, fractionDigits: 2, obisCode: "1.8.1"),
                 Register(label: "Nachttarif", unit: .kilowattHour, direction: .consumption,
-                         integerDigits: 6, fractionDigits: 1, obisCode: "1.8.2")
+                         integerDigits: 6, fractionDigits: 2, obisCode: "1.8.2")
             ]
         )
     }

@@ -29,6 +29,13 @@ public enum PulseColor {
     public static var inkTertiary: Color { .adaptive(light: 0x9A9384, dark: 0x756F62) }
 
     public static var hairline: Color { .adaptive(light: 0xE7E3DA, dark: 0x2B2822) }
+
+    /// Die Nachkommastellen im Zählwerk.
+    ///
+    /// Rot wie die roten Ziffern am mechanischen Gerät — wer abliest, sucht
+    /// genau diese Farbe. Im Dunkeln heller, sonst steht Dunkelrot auf
+    /// Dunkelbraun und ist auf einem Bildschirmfoto der App kaum zu lesen.
+    public static var counterDecimal: Color { .adaptive(light: 0xC0392B, dark: 0xF0736B) }
     public static var hairlineStrong: Color { .adaptive(light: 0xD8D2C6, dark: 0x383430) }
 
     /// Akzent der App. Wird sparsam eingesetzt — die Zählerfarben führen.

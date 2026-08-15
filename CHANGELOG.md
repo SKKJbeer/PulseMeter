@@ -9,6 +9,56 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.46.0 — 2026-08-15
+
+**Die Zahl läuft jetzt von rechts ein — und Stromzähler führen zwei
+Nachkommastellen.**
+
+Aus den drei Entwürfen von 0.45.0 hat der Gründer B gewählt. Die sechs Walzen
+sind damit Geschichte: Es steht eine große Zahl da, die Ziffern rutschen von
+rechts herein, die Tausenderpunkte setzen sich selbst, die Nachkommastellen
+bleiben rot wie am Gerät. Der Grund war Tempo — sechs Rollen einzeln zu drehen
+dauert im Keller länger, als eine Zahl einzutippen.
+
+### Geändert
+
+- Das Zählwerk in `PulseUI` und im Klick-Dummy gleichzeitig umgebaut. Noch
+  nicht getippte Stellen stehen **blass da statt zu fehlen**: So sieht man auf
+  einen Blick, wie viele Ziffern das Gerät hat. Ein Strich zeigt, wo die
+  nächste Ziffer landet; bei eingeschalteter Bewegungsreduzierung blinkt er
+  nicht.
+- Tausenderpunkte werden **von rechts** gezählt. Sonst wandern sie, während
+  die Zahl wächst, und das Auge verliert die Stelle, an der es gerade war.
+- **Stromzähler stehen jetzt auf zwei Nachkommastellen** statt einer, ebenso
+  Photovoltaik, Wallbox, Speicher und Fernwärme. Mechanische Ferraris-Zähler
+  haben eine rote Ziffer, elektronische führen zwei — und die hängen inzwischen
+  in den meisten Kellern. Wer nur eine Stelle eintragen kann, rundet bei jeder
+  Ablesung. Wasser und Gas bleiben bei drei, Heizöl bei null. Die Zahl ist eine
+  Vorbelegung und steht an jedem Zählwerk einzeln.
+
+### Behoben
+
+- `testTheCounterAnnouncesItsValue` verglich die vorgelesene Zeichenkette mit
+  `123` und prüfte damit in Wahrheit die Nachkommastellen des zuerst gefundenen
+  Zählers — vorgelesen wird je nach Gerät „12 Komma 3" oder „0 Komma 123". Die
+  Prüfung hätte bei jeder Änderung an den Vorbelegungen fallen können, ohne
+  dass etwas kaputt gewesen wäre. Sie vergleicht jetzt nur die Ziffern.
+
+### Hinzugefügt
+
+- Zehn neue Prüfungen am Klick-Dummy (jetzt **94**): Tausenderpunkte an der
+  richtigen Stelle, zwei rote Nachkommastellen, blasse Stellen für das, was
+  noch fehlt, und der Strich, der nach dem Löschen zurückkommt.
+- `testTheCounterFillsFromTheRight` in den Oberflächenprüfungen: Die zuletzt
+  getippte Ziffer landet hinten, und die Zahl wird mit keinem Anschlag kürzer.
+  Eine Zahl, die um eine Stelle verrutscht, macht aus 41.312,74 eben 4.131,27 —
+  und das fiele erst bei der Abrechnung auf.
+
+_196 Tests in PulseCore, 94 Prüfungen des Klick-Dummys, 230 Website-Prüfungen —
+alle grün. Die Oberflächenprüfungen brauchen einen Mac und laufen in der CI._
+
+---
+
 ## 0.45.0 — 2026-08-15
 
 **Drei Entwürfe für die Zählereingabe, alle drei zum Anfassen.**

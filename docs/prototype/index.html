@@ -58,6 +58,7 @@
     --shadow-card: 0 1px 2px rgba(0,0,0,.4);
     --shadow-dev:  0 40px 80px -20px rgba(0,0,0,.8), 0 0 0 1px rgba(255,255,255,.06);
     --amber:  #E8A945;
+    --dec-ink: #F0736B;
     --green:  #5CBF85;
     --blue:   #5C9EE0;
     --orange: #E08551;
@@ -320,34 +321,39 @@ h2.large {
 .prefill:focus-visible { outline: 2px solid var(--tint); outline-offset: 2px; }
 
 .counter {
-  display: flex; justify-content: center; gap: 3px;
-  padding: 14px; border-radius: 14px;
-  background: linear-gradient(180deg, #2A2620, #423C33);
-  box-shadow: inset 0 2px 7px rgba(0,0,0,.55);
+  /* **Seit 0.46.0 eine Zahl statt sechs Walzen.** Der Gründer hat zwischen
+     drei Entwürfen gewählt (`docs/entwuerfe/zaehlereingabe.html`): Die Ziffern
+     laufen von rechts ein wie am Geldautomaten, die Tausenderpunkte setzen
+     sich selbst, die Nachkommastellen bleiben rot wie am Gerät. Der Grund für
+     die Wahl war Tempo — sechs Rollen einzeln zu drehen dauert im Keller
+     länger, als eine Zahl einzutippen. */
+  text-align: right;
+  padding: 18px 16px 15px;
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  box-shadow: var(--shadow-card);
   margin-bottom: 4px;
+  overflow: hidden;
 }
-.drum {
-  width: 30px; height: 46px; border-radius: 3px;
-  display: grid; place-items: center; overflow: hidden;
-  font-family: ui-monospace, "SF Mono", Menlo, monospace;
-  font-size: 27px; font-weight: 600; letter-spacing: -0.02em;
-  background: linear-gradient(180deg,#B8B2A6 0%,#FDFCFA 20%,#FFFFFF 48%,#EFEBE3 74%,#B8B2A6 100%);
-  color: #17150F;
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,.28);
+.counter .num {
+  font-size: 42px; font-weight: 640; letter-spacing: -0.035em; line-height: 1;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
 }
-.drum.dec {
-  background: linear-gradient(180deg,#7A1B18 0%,#D9352F 20%,#EC4A43 48%,#C22A25 74%,#7A1B18 100%);
-  color: #FFF;
+/* Noch nicht getippte Stellen stehen blass da, statt zu fehlen: So sieht man
+   auf einen Blick, wie viele Ziffern das Gerät überhaupt hat. */
+.counter .num .leer { color: var(--ink-3); opacity: .30; }
+.counter .num .dec  { color: var(--dec-ink, #C0392B); }
+.counter .num .caret {
+  display: inline-block; width: 3px; height: .82em; margin-left: 3px;
+  background: var(--tint); vertical-align: -0.06em;
+  animation: caret 1.05s steps(2, start) infinite;
 }
-.drum.sep { width: 8px; background: none; box-shadow: none; }
-.drum span { display: block; }
-.drum.rolled span { animation: roll .22s cubic-bezier(.3,.8,.3,1); }
-@keyframes roll {
-  0%   { transform: translateY(-88%); opacity: .25; }
-  100% { transform: none; opacity: 1; }
-}
+@keyframes caret { 50% { opacity: 0; } }
+/* Ein Strich, der ewig blinkt, ist für manche Menschen unerträglich. */
+@media (prefers-reduced-motion: reduce) { .counter .num .caret { animation: none; } }
 .counter-unit {
-  text-align: center; font-size: var(--fs-cap); font-weight: 620;
+  text-align: right; font-size: var(--fs-cap); font-weight: 620;
   letter-spacing: .04em; color: var(--ink-3);
   margin-bottom: 12px;
 }
@@ -682,7 +688,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.45.0</p>
+  <p>Klickbarer Entwurf · v0.46.0</p>
 </div>
 
 <div class="device">
@@ -992,7 +998,7 @@ const METERS = [
   {
     id: "strom", kind: "electricity", name: "Strom", color: "var(--amber)",
     icon: '<path d="M13 2 4 13h6l-1 9 9-11h-6z"/>',
-    interval: 30, unit: "kWh", int: 6, frac: 1,
+    interval: 30, unit: "kWh", int: 6, frac: 2,
     price: 0.34, base: 12.90, prepay: 100, feedInPrice: 0.082,
     billing: { m: 4, d: 1 },   // Abrechnungsjahr des Versorgers: 1. April
 
@@ -1001,10 +1007,10 @@ const METERS = [
       // Beschriftet, weil daneben die Einspeisung steht: „Bezug" allein wäre
       // nichtssagend, „Bezug" neben „Einspeisung" sagt alles. So legt die App
       // einen Zweirichtungszähler auch an.
-      { id: "strom-bezug", label: "Bezug", unit: "kWh", int: 6, frac: 1,
-        readings: buildReadings(41231.4, SHAPE.strom, { frac: 1 }) },
-      { id: "strom-eins", label: "Einspeisung", unit: "kWh", int: 6, frac: 1, feedIn: true,
-        readings: buildReadings(7170.2, SHAPE.einsp, { frac: 1 }) }
+      { id: "strom-bezug", label: "Bezug", unit: "kWh", int: 6, frac: 2,
+        readings: buildReadings(41231.4, SHAPE.strom, { frac: 2 }) },
+      { id: "strom-eins", label: "Einspeisung", unit: "kWh", int: 6, frac: 2, feedIn: true,
+        readings: buildReadings(7170.2, SHAPE.einsp, { frac: 2 }) }
     ]
   },
   {
@@ -1039,27 +1045,27 @@ const METERS = [
     // die Summe ist der Verbrauch.
     id: "waermepumpe", kind: "electricity", name: "Wärmepumpe", color: "var(--amber)",
     icon: '<path d="M13 2 4 13h6l-1 9 9-11h-6z"/>',
-    interval: 30, unit: "kWh", int: 6, frac: 1,
+    interval: 30, unit: "kWh", int: 6, frac: 2,
     price: 0.26, base: 8.90, prepay: 60,
     billing: { m: 1, d: 1 },
     serial: "1ESY1161284777",
     registers: [
-      { id: "wp-ht", label: "Hochtarif", unit: "kWh", int: 6, frac: 1, price: 0.31,
-        readings: buildReadings(18420.5, SHAPE.strom, { frac: 1 }) },
-      { id: "wp-nt", label: "Niedertarif", unit: "kWh", int: 6, frac: 1, price: 0.21,
-        readings: buildReadings(24310.8, SHAPE.gas, { frac: 1 }) }
+      { id: "wp-ht", label: "Hochtarif", unit: "kWh", int: 6, frac: 2, price: 0.31,
+        readings: buildReadings(18420.5, SHAPE.strom, { frac: 2 }) },
+      { id: "wp-nt", label: "Niedertarif", unit: "kWh", int: 6, frac: 2, price: 0.21,
+        readings: buildReadings(24310.8, SHAPE.gas, { frac: 2 }) }
     ]
   },
   {
     id: "wallbox", kind: "wallbox", name: "Wallbox", color: "var(--teal)",
     icon: '<path d="M5 17.5h14v2.2a.8.8 0 0 1-.8.8h-1.4a.8.8 0 0 1-.8-.8v-2.2M5 17.5v2.2a.8.8 0 0 0 .8.8h1.4a.8.8 0 0 0 .8-.8M4.2 12.4l1.6-4.6A2 2 0 0 1 7.7 6.4h8.6a2 2 0 0 1 1.9 1.4l1.6 4.6M4 12.4h16a1 1 0 0 1 1 1v3.1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-3.1a1 1 0 0 1 1-1z"/>',
     iconStroke: true,
-    interval: 30, unit: "kWh", int: 6, frac: 1,
+    interval: 30, unit: "kWh", int: 6, frac: 2,
     price: 0.29, base: 0, prepay: null,
     serial: "1ESY1161299844",
     registers: [
-      { id: "wallbox-r", label: null, unit: "kWh", int: 6, frac: 1,
-        readings: buildReadings(5148.3, SHAPE.wallbox, { frac: 1 }) }
+      { id: "wallbox-r", label: null, unit: "kWh", int: 6, frac: 2,
+        readings: buildReadings(5148.3, SHAPE.wallbox, { frac: 2 }) }
     ]
   }
 ];
@@ -2816,7 +2822,7 @@ function showCaptureStep() {
   document.getElementById("cap-unit").textContent = reg.unit;
   document.getElementById("save").textContent = capIsLast() ? "Sichern" : "Weiter";
   document.getElementById("save").style.setProperty("--c", capMeter.color);
-  drawCounter(true);
+  drawCounter();
   judge();
   const prefill = document.getElementById("prefill");
   if (prefill) prefill.onclick = () => {
@@ -2826,18 +2832,30 @@ function showCaptureStep() {
   };
 }
 
-function drawCounter(silent) {
-  const total = capRegister().int + capRegister().frac;
-  const padded = digits.padStart(total, "0").slice(-total);
-  const prev = window.__prevDigits || "";
+function drawCounter() {
+  const reg = capRegister();
+  const total = reg.int + reg.frac;
+  // Von rechts einlaufen: Was noch nicht getippt ist, bleibt links und blass.
+  const belegt = digits.slice(-total);
+  const voll = belegt.padStart(total, " ");
+  const vor = voll.slice(0, reg.int), nach = voll.slice(reg.int);
+  const male = z => z === " " ? '<span class="leer">0</span>' : z;
+
   let html = "";
-  for (let i = 0; i < total; i++) {
-    if (i === capRegister().int) html += '<span class="drum sep"></span>';
-    const changed = !silent && prev[i] !== padded[i];
-    html += `<span class="drum ${i >= capRegister().int ? "dec" : ""} ${changed ? "rolled" : ""}"><span>${padded[i]}</span></span>`;
+  for (let i = 0; i < reg.int; i++) {
+    // Tausenderpunkte von rechts gezählt, damit sie beim Wachsen der Zahl
+    // stehen bleiben statt zu wandern.
+    if (i > 0 && (reg.int - i) % 3 === 0) {
+      html += vor[i] === " " ? '<span class="leer">.</span>' : ".";
+    }
+    html += male(vor[i]);
   }
-  document.getElementById("counter").innerHTML = html;
-  window.__prevDigits = padded;
+  if (reg.frac > 0) {
+    html += '<span class="dec">,' + [...nach].map(male).join("") + "</span>";
+  }
+  if (belegt.length < total) html += '<span class="caret"></span>';
+
+  document.getElementById("counter").innerHTML = '<div class="num">' + html + "</div>";
 }
 
 function currentValue() {

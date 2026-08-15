@@ -296,6 +296,39 @@ for (const scheme of ["light", "dark"]) {
     ziffern: document.querySelectorAll('#keys [data-key]').length
   }));
   note(tasten.tot === 0, "Keine Taste auf dem Ziffernblock, die nichts tut");
+
+  // --- Die Zahl läuft von rechts ein
+  //
+  // Seit 0.46.0 steht dort eine Zahl statt sechs Walzen. Geprüft wird, was
+  // beim Tippen wirklich dasteht: Tausenderpunkte an der richtigen Stelle,
+  // zwei rote Nachkommastellen, und die noch nicht getippten Stellen blass
+  // statt gar nicht. Eine Zahl, die um eine Stelle verrutscht, ist der
+  // teuerste Fehler, den diese Ansicht machen kann.
+  for (const z of "4131274") await page.locator(`#keys [data-key="${z}"]`).first().click();
+  await page.waitForTimeout(200);
+  const stand = await page.evaluate(() => document.querySelector("#counter .num").textContent.trim());
+  // Die führende Null steht blass **da** und fehlt nicht: Man soll sehen, wie
+  // viele Stellen das Gerät hat. Sie zählt deshalb im Text mit.
+  note(stand === "041.312,74", `Der Stand liest sich als ${stand}`);
+  const blass = await page.evaluate(() =>
+    document.querySelectorAll("#counter .num .leer").length);
+  note(blass === 1, `Eine noch offene Stelle steht blass da (${blass})`);
+  const rot = await page.evaluate(() =>
+    document.querySelector("#counter .num .dec")?.textContent.trim());
+  note(rot === ",74", `Die Nachkommastellen stehen rot: ${rot}`);
+
+  // Löschen bringt die blassen Stellen zurück — und den blinkenden Strich.
+  for (let i = 0; i < 7; i++) await page.locator('#keys [data-key="back"]').first().click();
+  await page.waitForTimeout(200);
+  const leer = await page.evaluate(() => ({
+    blass: document.querySelectorAll("#counter .num .leer").length,
+    strich: document.querySelectorAll("#counter .num .caret").length
+  }));
+  // Acht Stellen und der Tausenderpunkt, der ohne Zahl ebenfalls blass bleibt.
+  note(leer.blass === 9, `Leer steht alles blass (${leer.blass} Zeichen)`);
+  note(leer.strich === 1, "Der Strich zeigt, wo die nächste Ziffer landet");
+  for (const z of "4131274") await page.locator(`#keys [data-key="${z}"]`).first().click();
+  await page.waitForTimeout(150);
   note(tasten.ziffern === 11,
        `Zehn Ziffern und das Löschen stehen weiter (${tasten.ziffern} Tasten)`);
   await page.locator("#cap-back").click();

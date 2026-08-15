@@ -1147,8 +1147,55 @@ final class LaunchTests: XCTestCase {
 
         for digit in ["1", "2", "3"] { app.buttons[digit].tap() }
         let value = counter.value as? String ?? ""
-        XCTAssertTrue(value.contains("123"),
+
+        // **Nur die Ziffern vergleichen.** Vorgelesen wird „12 Komma 3" oder
+        // „0 Komma 123", je nachdem, wie viele Nachkommastellen das Zählwerk
+        // führt — und das ist je Art verschieden. Eine Prüfung, die auf „123"
+        // in einer Zeichenkette besteht, prüft in Wahrheit die
+        // Nachkommastellen des zuerst gefundenen Zählers und fällt, sobald
+        // sich daran etwas ändert. Genau das stand hier bis 0.46.0.
+        let ziffern = value.filter(\.isNumber)
+        XCTAssertTrue(ziffern.hasSuffix("123"),
                       "Der eingetippte Wert muss sich vorlesen lassen, gelesen wurde: \(value)")
+        XCTAssertTrue(value.contains("Komma") || ziffern == "123",
+                      "Ein Zählwerk mit Nachkommastellen muss das Komma auch aussprechen: \(value)")
+    }
+
+    /// Die Zahl läuft von rechts ein, und die Stellen bleiben, wo sie sind.
+    ///
+    /// Seit 0.46.0 steht im Zählwerk eine Zahl statt sechs Walzen — der
+    /// Gründer hat zwischen drei Entwürfen gewählt
+    /// (`docs/entwuerfe/zaehlereingabe.html`). Der teuerste Fehler, den diese
+    /// Ansicht machen kann, ist eine Zahl, die um eine Stelle verrutscht:
+    /// Aus 41.312,74 würde 4.131,27, und das fiele erst bei der Abrechnung
+    /// auf. Hier wird deshalb geprüft, dass die zuletzt getippte Ziffer
+    /// hinten landet und die Zahl mit jedem Anschlag nach links wächst.
+    func testTheCounterFillsFromTheRight() {
+        let app = launchWithData()
+
+        app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Stand eintragen'"))
+            .firstMatch.tap()
+        XCTAssertTrue(app.buttons["1"].waitForExistence(timeout: erscheint),
+                      "Der Ziffernblock erschien nicht")
+
+        let counter = app.otherElements["Zählerstand"]
+        XCTAssertTrue(counter.waitForExistence(timeout: erscheint))
+
+        var gesehen: [String] = []
+        for digit in ["4", "1", "3", "1", "2", "7", "4"] {
+            app.buttons[digit].tap()
+            gesehen.append((counter.value as? String ?? "").filter(\.isNumber))
+        }
+
+        XCTAssertTrue(gesehen.last?.hasSuffix("4131274") == true,
+                      "Zuletzt muss 4131274 dastehen, gelesen wurde: \(gesehen.last ?? "—")")
+        // Jeder Anschlag macht die Zahl um höchstens eine Stelle länger und nie
+        // kürzer. Sprünge dazwischen wären ein Zeichen dafür, dass die
+        // Auffüllung von links her rechnet.
+        for (vorher, nachher) in zip(gesehen, gesehen.dropFirst()) {
+            XCTAssertTrue(nachher.count >= vorher.count,
+                          "Die Zahl wurde beim Tippen kürzer: \(vorher) → \(nachher)")
+        }
     }
 
     /// Am Preisfeld muss stehen, dass brutto gemeint ist.

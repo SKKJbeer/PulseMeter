@@ -37,9 +37,19 @@ public enum ResourceKind: Hashable, Codable, Sendable {
     }
 
     /// Nachkommastellen des typischen Zählwerks dieser Art.
+    ///
+    /// **Strom steht seit 0.46.0 auf zwei statt einer.** Mechanische
+    /// Ferraris-Zähler haben eine rote Ziffer, moderne elektronische Zähler
+    /// führen zwei — und die hängen inzwischen in den meisten Kellern. Wer nur
+    /// eine Stelle eintragen kann, rundet bei jeder Ablesung, und über ein Jahr
+    /// summiert sich das sichtbar. Umgekehrt kostet eine Stelle zu viel nichts:
+    /// Sie bleibt eben null.
+    ///
+    /// Die Zahl ist eine **Vorbelegung**, kein Gesetz — sie steht an jedem
+    /// Zählwerk einzeln und lässt sich dort ändern.
     public var defaultFractionDigits: Int {
         switch self {
-        case .electricity, .solarProduction, .wallbox, .batteryStorage, .districtHeating: return 1
+        case .electricity, .solarProduction, .wallbox, .batteryStorage, .districtHeating: return 2
         case .water, .hotWater, .rainwater: return 3
         case .gas: return 3
         case .heatingOil: return 0
