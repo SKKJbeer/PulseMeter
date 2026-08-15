@@ -9,6 +9,55 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.47.0 — 2026-08-15
+
+**Sicherheitsprüfung über die ganze App. Zwei Funde, beide behoben.**
+
+Das Ergebnis vorweg: Die Fläche ist ungewöhnlich klein. Kein `URLSession`,
+keine fremden Pakete, keine Zwischenablage, keine Protokollausgabe, keine
+eigenen URL-Schemata, keine ATS-Ausnahmen, keine Berechtigungstexte für Dinge,
+die es nicht gibt. Das ist kein Zufall, sondern ADR-002 — was es nicht gibt,
+kann nicht falsch konfiguriert werden. Alles steht in `docs/11-sicherheit.md`.
+
+### Behoben
+
+- **Ein Zählername konnte in einer Tabellenkalkulation zur Formel werden.** Der
+  CSV-Export fasste Felder korrekt ein, neutralisierte aber keine
+  Formelzeichen. Ein Zähler namens `=HYPERLINK("http://…")` ist in der Datei
+  nur Text; beim Öffnen in Excel, Numbers oder LibreOffice wird daraus eine
+  Formel, die **beim bloßen Ansehen der Tabelle läuft**. Einfassen allein hilft
+  nicht — auch `"=1+1"` wird ausgewertet. Beginnt ein Textfeld jetzt mit `=`,
+  `+`, `-`, `@`, Tabulator oder Wagenrücklauf, steht ein Apostroph davor.
+  Zahlen und Daten bleiben unberührt.
+  Heute gering — der Nutzer tippt seine Namen selbst. Ab der Vermieter-Fassung
+  mittel: Dort tippt der eine, und der andere öffnet.
+- **Die Startschalter lagen im ausgelieferten Programm.** An neun Stellen stand
+  `ProcessInfo.processInfo.arguments.contains("-pulse-…")`; zwei davon sind
+  scharf — `-pulse-reset` löscht alle Ablesungen, `-pulse-pro` schaltet jeden
+  Kauf frei. Sie waren in jeder Konfiguration übersetzt. Von außen setzen ließen
+  sie sich auf einem gewöhnlichen iPhone nicht, also keine offene Tür — aber
+  eine Tür ohne Grund. Alle Abfragen laufen jetzt über `App/Startschalter.swift`
+  und geben im `Release`-Bau `false` zurück.
+
+### Hinzugefügt
+
+- `docs/11-sicherheit.md`: die vollständige Prüfung mit Datum — was behoben
+  wurde, was angesehen und für richtig befunden, was mangels Gegenstand
+  entfällt, und was erst mit dem Developer Program prüfbar wird (StoreKit-Belege,
+  CloudKit-Rechte, `.entitlements`, Privacy-Manifest, Systemprotokolle am Gerät).
+- `scripts/check-sicherheit.sh` — sechs Prüfungen, eine Sekunde, eingehängt in
+  `scripts/pruefen.sh` und in die CI. Sie hält fest, was **nicht** da sein darf.
+  Gegengeprüft: Mit einer eingeschmuggelten `URLSession`-Zeile schlägt sie an,
+  ohne sie nicht. Eine Prüfung, die immer grün ist, prüft nichts.
+- Zwei Tests in `TableExportTests`: ein Name wird nie zur Formel, und ein
+  gewöhnliches „Strom" bleibt unangetastet — die Heilung darf nicht schlimmer
+  sein als die Krankheit.
+
+_198 Tests in PulseCore, 94 Prüfungen des Klick-Dummys, 230 Website-Prüfungen,
+6 Sicherheitsprüfungen — alle grün._
+
+---
+
 ## 0.46.0 — 2026-08-15
 
 **Die Zahl läuft jetzt von rechts ein — und Stromzähler führen zwei

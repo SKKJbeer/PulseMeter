@@ -99,7 +99,7 @@ struct HistoryView: View {
                 // Nur für die Bildschirmfotos: `simctl` kann nicht tippen, und
                 // ein Dokument, das niemand ansieht, ist ein Dokument, in dem
                 // sich ein Fehler beliebig lange hält.
-                if ProcessInfo.processInfo.arguments.contains("-pulse-bericht") {
+                if Startschalter.gesetzt("-pulse-bericht") {
                     showingReport = true
                 }
             }

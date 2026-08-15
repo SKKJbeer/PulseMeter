@@ -113,6 +113,9 @@ jobs:
       # das eine Swift-Zeichenkette an der falschen Stelle beendet.
       - name: Zeichenketten
         run: python3 scripts/check-strings.py
+      - name: Angriffsfläche
+        run: scripts/check-sicherheit.sh
+
 
       # Reines Parsen der iOS-Quellen, ohne SDK. Kostet Sekunden und fängt
       # einen Block ab, der in der falschen Struktur gelandet ist — 0.32.0 ging

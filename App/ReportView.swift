@@ -162,7 +162,7 @@ struct ReportView: View {
                 load()
                 // Siehe oben: Für die Bildschirmfotos wird der Bericht gleich
                 // gebaut, sonst zeigt das Bild nur die Auswahl.
-                if ProcessInfo.processInfo.arguments.contains("-pulse-bericht") {
+                if Startschalter.gesetzt("-pulse-bericht") {
                     build()
                 }
             }

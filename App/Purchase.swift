@@ -99,10 +99,9 @@ final class Purchase {
         // damit die Beispieldaten vollständig zu sehen sind; die zwei Bilder
         // vom Zustand vor dem Kauf müssen das überstimmen können, ohne dass
         // die Reihenfolge der Schalter auf der Kommandozeile eine Rolle spielt.
-        let arguments = ProcessInfo.processInfo.arguments
-        if arguments.contains("-pulse-frei") {
+        if Startschalter.gesetzt("-pulse-frei") {
             entitlement = .none
-        } else if arguments.contains("-pulse-pro") {
+        } else if Startschalter.gesetzt("-pulse-pro") {
             entitlement = .everything
         } else {
             entitlement = Entitlement(storageValue: defaults.string(forKey: Self.storageKey) ?? "")

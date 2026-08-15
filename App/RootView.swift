@@ -13,9 +13,8 @@ struct RootView: View {
     /// fotografiert, wird auch von niemandem angesehen — genau daran sind
     /// zuletzt drei Fehler im Erfassungsschirm monatelang vorbeigelaufen.
     @State private var tab: Int = {
-        let arguments = ProcessInfo.processInfo.arguments
-        if arguments.contains("-pulse-verlauf") || arguments.contains("-pulse-bericht") { return 1 }
-        if arguments.contains("-pulse-zaehler") || arguments.contains("-pulse-kaufen") { return 2 }
+        if Startschalter.einerVon("-pulse-verlauf", "-pulse-bericht") { return 1 }
+        if Startschalter.einerVon("-pulse-zaehler", "-pulse-kaufen") { return 2 }
         return 0
     }()
 
@@ -464,14 +463,13 @@ struct OverviewView: View {
         // Bildschirmfotos: Es ist der wichtigste Schirm der App und der
         // einzige, den ein automatischer Lauf sonst nie zu Gesicht bekommt —
         // `simctl` kann nicht tippen.
-        let arguments = ProcessInfo.processInfo.arguments
-        if arguments.contains("-pulse-capture-pv") || arguments.contains("-pulse-capture-step2") {
+        if Startschalter.einerVon("-pulse-capture-pv", "-pulse-capture-step2") {
             // Eigener Schalter für den Zweirichtungszähler: `-pulse-capture`
             // nimmt den ersten Zähler, und das ist Gas mit einem einzigen
             // Zählwerk. Der zweistufige Ablauf — erst Bezug, dann Einspeisung —
             // kam dadurch auf keinem Bild vor, obwohl er neu ist.
             capturing = points.first { $0.registers.count > 1 } ?? points.first
-        } else if arguments.contains("-pulse-capture") {
+        } else if Startschalter.gesetzt("-pulse-capture") {
             capturing = points.first
         }
     }

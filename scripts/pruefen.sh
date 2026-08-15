@@ -111,6 +111,9 @@ fi
 if [ "$SCOPE" != "bilder" ]; then
   step "Sofortprüfungen"
   run "Zeichenketten" python3 scripts/check-strings.py || true
+  # Kostet nichts und hält die Fläche klein, auf der überhaupt etwas
+  # schiefgehen kann — siehe docs/11-sicherheit.md, Abschnitt 6.
+  run "Angriffsfläche" scripts/check-sicherheit.sh || true
   # Reines Parsen, ohne SDK und ohne Typprüfung — und deshalb auch unter Linux.
   #
   # Es findet nicht alles, aber eine ganze Fehlerklasse: einen Block, der in der

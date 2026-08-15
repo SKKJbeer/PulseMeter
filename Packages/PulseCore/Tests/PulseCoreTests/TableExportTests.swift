@@ -131,4 +131,32 @@ final class TableExportTests: XCTestCase {
         XCTAssertEqual(viaMeter, viaRegister)
         XCTAssertFalse(viaMeter.contains("Bezeichnung"))
     }
+
+    // MARK: - Formeln in der Tabelle
+
+    /// **Ein Zählername darf keine Formel werden.**
+    ///
+    /// Der Export ist zum Weitergeben gedacht. Öffnet der Vermieter die Datei,
+    /// ist der Name für ihn fremde Eingabe — und `=HYPERLINK(…)` läuft in
+    /// Excel, sobald die Tabelle auf dem Schirm steht. Einfassen allein hilft
+    /// nicht: Auch ein Feld in Anführungszeichen wird ausgewertet.
+    func testAMeterNameNeverBecomesAFormula() {
+        for gefaehrlich in ["=1+1", "+1", "-1+2", "@SUM(A1)", "\tTabulator"] {
+            let zelle = TableExport.escape(gefaehrlich)
+            XCTAssertTrue(zelle.hasPrefix("'") || zelle.hasPrefix("\"'"),
+                          "Der Wert \(gefaehrlich) ist ungeschützt: \(zelle)")
+        }
+    }
+
+    /// Und ein gewöhnlicher Name bleibt unangetastet.
+    ///
+    /// Sonst stünde vor jedem „Strom" ein Apostroph — die Heilung wäre
+    /// schlimmer als die Krankheit.
+    func testAnOrdinaryNameIsLeftAlone() {
+        XCTAssertEqual(TableExport.escape("Strom"), "Strom")
+        XCTAssertEqual(TableExport.escape("Wärmepumpe (Garage)"), "Wärmepumpe (Garage)")
+        // Semikolon bleibt der Grund fürs Einfassen, ohne Apostroph davor.
+        XCTAssertEqual(TableExport.escape("Keller; hinten"), "\"Keller; hinten\"")
+    }
+
 }

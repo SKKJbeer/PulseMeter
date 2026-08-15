@@ -29,9 +29,8 @@ enum LaunchFixture {
     /// Ohne Startschalter passiert nichts — im Alltag berührt diese Datei die
     /// Daten des Nutzers nie.
     static func apply(to container: ModelContainer) {
-        let arguments = ProcessInfo.processInfo.arguments
-        let empty = arguments.contains("-pulse-empty")
-        let reset = arguments.contains("-pulse-reset")
+        let empty = Startschalter.gesetzt("-pulse-empty")
+        let reset = Startschalter.gesetzt("-pulse-reset")
         guard empty || reset else { return }
 
         let repository = PulseRepository(context: ModelContext(container))

@@ -175,11 +175,35 @@ public enum TableExport {
         }
     }
 
+    /// Zeichen, mit denen eine Tabellenkalkulation eine **Formel** beginnt.
+    ///
+    /// Auch `-` gehört dazu, obwohl es harmlos aussieht: `-2+3` rechnet Excel
+    /// ebenso wie `=2+3`.
+    private static let formelStart: Set<Character> = ["=", "+", "-", "@", "\t", "\r"]
+
     /// Felder mit Trennzeichen, Anführungszeichen oder Zeilenumbruch werden
     /// eingefasst — ein Zählername darf alles enthalten, was der Nutzer tippt.
+    ///
+    /// **Und Formeln werden entschärft.** Ein Zähler namens
+    /// `=HYPERLINK("http://…")` ist in der Datei nur Text; beim Öffnen in
+    /// Excel, Numbers oder LibreOffice wird daraus eine Formel, die beim
+    /// bloßen Ansehen der Tabelle läuft. Einfassen allein hilft nicht — auch
+    /// `"=1+1"` wird ausgewertet. Davor steht deshalb ein Apostroph, das
+    /// Zeichen, mit dem Tabellenkalkulationen seit jeher „das ist Text"
+    /// meinen.
+    ///
+    /// **Warum das hier zählt, obwohl der Nutzer seine Namen selbst tippt:**
+    /// Der Export ist zum **Weitergeben** gedacht — an den Vermieter, an den
+    /// Mieter, an die Steuerberatung. Sobald jemand anderes die Datei öffnet,
+    /// ist der Name kein selbst gewählter mehr, sondern fremde Eingabe. Für
+    /// die Vermieter-Fassung (`04-monetarisierung.md`) gilt das doppelt.
     static func escape(_ text: String) -> String {
-        guard text.contains(separator) || text.contains("\"") || text.contains("\n") || text.contains("\r")
-        else { return text }
-        return "\"" + text.replacingOccurrences(of: "\"", with: "\"\"") + "\""
+        var wert = text
+        if let erstes = wert.first, formelStart.contains(erstes) {
+            wert = "'" + wert
+        }
+        guard wert.contains(separator) || wert.contains("\"") || wert.contains("\n") || wert.contains("\r")
+        else { return wert }
+        return "\"" + wert.replacingOccurrences(of: "\"", with: "\"\"") + "\""
     }
 }

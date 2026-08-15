@@ -334,7 +334,7 @@ struct CaptureView: View {
     /// ein Fehler beliebig lange hält — derselbe Grund wie bei
     /// `-pulse-capture-pv`.
     private func applyScreenshotFixture() {
-        guard ProcessInfo.processInfo.arguments.contains("-pulse-capture-step2"),
+        guard Startschalter.gesetzt("-pulse-capture-step2"),
               registers.count > 1, let first = registers.first else { return }
         // Der erste Wert muss belegt sein, sonst zeigt der Rücksprung ein
         // leeres Zählwerk und das Bild belegt nicht, was es belegen soll.

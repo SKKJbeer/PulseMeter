@@ -35,6 +35,7 @@ nur das Geänderte.
 | `scripts/aufs-handy.sh` | auf ein angestecktes iPhone bauen und installieren | 2 min |
 | `node scripts/check-website.mjs` | die Website prüfen, hell und dunkel, 320–1280 px | 20 s |
 | `node scripts/check-entwuerfe.mjs` | die Entwürfe unter `docs/entwuerfe/` durchklicken | 20 s |
+| `scripts/check-sicherheit.sh` | Angriffsfläche: kein Netz, keine fremden Pakete, keine Protokolle | 1 s |
 
 **Die CI ist die Gegenprobe, nicht der erste Durchgang.** Der lokale Lauf prüft
 dasselbe und ist in zwei statt in fünfzehn Minuten fertig; er schreibt sein
@@ -73,7 +74,7 @@ iCloud-Abgleich wie Käufe lassen sich noch nicht ausprobieren.
 
 ## Status
 
-Version **0.46.0**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
+Version **0.47.0**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
 rechnet echt. Alle vier Bildschirme — Übersicht, Erfassung, Verlauf und Zähler —
 laufen als SwiftUI-App im Simulator und werden auf jedem Lauf fotografiert,
 hell und dunkel. Siehe [CHANGELOG.md](CHANGELOG.md).
@@ -142,6 +143,7 @@ Siehe [CLAUDE.md](CLAUDE.md), Regel 1.
 | [08 – Baukasten](docs/08-baukasten.md) | Dieses Aufbauschema auf ein anderes Projekt übertragen |
 | [09 – App Store](docs/09-appstore.md) | Texte, Icon, Bilder, Datenschutzangaben — fertig zum Einreichen |
 | [10 – Sichtbarkeit](docs/10-sichtbarkeit.md) | Gefunden werden ohne Werbebudget: Suchwörter, Bewertungen, Zeitpunkt |
+| [11 – Sicherheit](docs/11-sicherheit.md) | Was angreifbar wäre, was behoben ist, was erst am Gerät prüfbar wird |
 | [Website](docs/website/) | Startseite, Hilfe, Datenschutz, Impressum — statisch, ohne fremde Server |
 | [Entwürfe](docs/entwuerfe/) | Vorschläge zum Anfassen, solange noch nicht entschieden ist |
 | [Website: was noch fehlt](docs/website/EINTRAGEN.md) | Die vier Stellen, die vor dem Onlinegehen ausgefüllt werden müssen |

@@ -97,7 +97,7 @@ struct MetersView: View {
                 // Schirm, den ein automatischer Lauf nie erreicht — `simctl`
                 // kann nicht tippen —, und zugleich der, bei dem am meisten
                 // davon abhängt, wie er wirkt.
-                if ProcessInfo.processInfo.arguments.contains("-pulse-kaufen") {
+                if Startschalter.gesetzt("-pulse-kaufen") {
                     showingPaywall = true
                 }
             }
