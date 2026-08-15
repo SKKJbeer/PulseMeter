@@ -52,7 +52,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.pulsemeter.app
         PRODUCT_NAME: PulseMeter
-        MARKETING_VERSION: "0.47.0"
+        MARKETING_VERSION: "0.48.0"
         CURRENT_PROJECT_VERSION: "1"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         # **Nur iPhone.** Stand bis 0.37.0 auf "1,2", also universal — und
@@ -82,7 +82,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.pulsemeter.app.widget
         PRODUCT_NAME: PulseWidget
-        MARKETING_VERSION: "0.47.0"
+        MARKETING_VERSION: "0.48.0"
         CURRENT_PROJECT_VERSION: "1"
         GENERATE_INFOPLIST_FILE: NO
         INFOPLIST_FILE: Widget/Info.plist

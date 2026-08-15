@@ -61,6 +61,20 @@ for (const datei of seiten) {
        `${datei}: nichts wird von fremden Servern nachgeladen`);
 }
 
+// Alle Seiten müssen auf **dieselbe** Adresse zeigen. Eine halb umgestellte
+// Website ist schlimmer als eine mit der falschen Adresse: Suchmaschinen
+// halten `canonical` für die Wahrheit und werfen weg, was auf eine fremde
+// Adresse verweist. `scripts/domain-setzen.sh` stellt um, das hier merkt, wenn
+// es jemand doch von Hand versucht hat.
+const adressen = new Set(seiten.map(d => {
+  const m = readFileSync(`${dir}/${d}`, "utf8").match(/rel="canonical" href="https:\/\/([^/"]+)/);
+  return m ? m[1] : "—";
+}));
+note(adressen.size === 1,
+     adressen.size === 1
+       ? `Alle Seiten zeigen auf ${[...adressen][0]}`
+       : `Die Seiten zeigen auf verschiedene Adressen: ${[...adressen].join(", ")}`);
+
 // Platzhalter sind ein **Hinweis**, kein Fehlschlag — solange die Seite nicht
 // online ist. Sonst stünde die CI dauerhaft auf Rot für etwas, das nur der
 // Gründer eintragen kann, und ein dauerhaft roter Lauf wird nach drei Tagen

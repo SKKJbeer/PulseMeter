@@ -9,6 +9,47 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.48.0 — 2026-08-15
+
+**Die Website bekommt erst einmal eine kostenlose Adresse — und der Wechsel
+kostet später einen Befehl.**
+
+Der Gründer will mit `pulsemeter.pages.dev` anfangen statt mit einer eigenen
+Domain. Vernünftig, solange die Entscheidung umkehrbar bleibt: Die Adresse
+steht in vier `canonical`-Zeilen, und eine **halb** umgestellte Website ist
+schlimmer als eine mit der falschen Adresse. Suchmaschinen halten `canonical`
+für die Wahrheit und werfen weg, was auf eine fremde Adresse zeigt.
+
+### Hinzugefügt
+
+- `scripts/domain-setzen.sh` — setzt alle vier Seiten in einem Zug um, zeigt
+  ohne Argument nur an, was eingetragen ist, und **weigert sich**, wenn die
+  Seiten schon auseinanderlaufen. Ersetzt wird ausschließlich innerhalb der
+  `canonical`-Zeilen; ein stumpfes Suchen und Ersetzen über die ganze Datei
+  träfe auch Fließtext.
+- Eine Prüfung in `check-website.mjs`: Alle Seiten müssen auf **dieselbe**
+  Adresse zeigen. Sie merkt, wenn es doch jemand von Hand versucht hat.
+
+### Geändert
+
+- Eingetragen ist jetzt `pulsemeter.pages.dev` statt `pulsemeter.de`.
+- Die Kontaktadresse ist wieder ein Platzhalter. `hallo@pulsemeter.de` gibt es
+  ohne Domain nicht, und eine Support-Seite mit toter Adresse ist schlimmer als
+  keine. Vorgesehen ist stattdessen eine Adresse aus Apples „E-Mail-Adresse
+  verbergen" — sie leitet weiter, hält die private Adresse aus dem Impressum
+  und lässt sich abschalten, wenn Werbung kommt. Der Weg dorthin steht Schritt
+  für Schritt in `docs/website/EINTRAGEN.md`.
+
+_Ausdrücklich **nicht** empfohlen und nirgends eingetragen: Freenom-Adressen
+(`.tk`, `.ml`, `.ga`). Sie sind bei Spam-Filtern verbrannt und werden ohne
+Vorwarnung eingezogen. Eine ehrliche Subdomain trägt weiter als eine billige
+Domain._
+
+_231 Website-Prüfungen, 94 Prüfungen des Klick-Dummys, 198 Tests in PulseCore,
+6 Sicherheitsprüfungen — alle grün._
+
+---
+
 ## 0.47.0 — 2026-08-15
 
 **Sicherheitsprüfung über die ganze App. Zwei Funde, beide behoben.**

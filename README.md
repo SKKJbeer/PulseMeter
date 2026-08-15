@@ -36,6 +36,7 @@ nur das Geänderte.
 | `node scripts/check-website.mjs` | die Website prüfen, hell und dunkel, 320–1280 px | 20 s |
 | `node scripts/check-entwuerfe.mjs` | die Entwürfe unter `docs/entwuerfe/` durchklicken | 20 s |
 | `scripts/check-sicherheit.sh` | Angriffsfläche: kein Netz, keine fremden Pakete, keine Protokolle | 1 s |
+| `scripts/domain-setzen.sh` | die Adresse der Website an allen Stellen umstellen | 1 s |
 
 **Die CI ist die Gegenprobe, nicht der erste Durchgang.** Der lokale Lauf prüft
 dasselbe und ist in zwei statt in fünfzehn Minuten fertig; er schreibt sein
@@ -74,7 +75,7 @@ iCloud-Abgleich wie Käufe lassen sich noch nicht ausprobieren.
 
 ## Status
 
-Version **0.47.0**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
+Version **0.48.0**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
 rechnet echt. Alle vier Bildschirme — Übersicht, Erfassung, Verlauf und Zähler —
 laufen als SwiftUI-App im Simulator und werden auf jedem Lauf fotografiert,
 hell und dunkel. Siehe [CHANGELOG.md](CHANGELOG.md).

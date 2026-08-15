@@ -15,12 +15,21 @@ Apple prüft die Datenschutz-URL vor der Freigabe.
 
 ## 1 — Kontaktadresse auf der Hilfeseite
 
-`hilfe.html`, Abschnitt „Kontakt".
+`hilfe.html`, Abschnitt „Kontakt". Dieselbe Adresse gehört in `impressum.html`
+und in `datenschutz.html` — dort steht derselbe Platzhalter.
 
-Vorgesehen ist `hallo@pulsemeter.de` mit kostenloser Weiterleitung ins
-bestehende Postfach (Cloudflare Email Routing). Bis die Domain steht, ist die
-Adresse **nicht erreichbar** — eine Support-Seite mit toter Adresse ist
-schlimmer als keine.
+Vorgesehen ist eine Adresse aus Apples **„E-Mail-Adresse verbergen"**
+(`…@privaterelay.appleid.com`), die an dein Postfach weiterleitet. So kommt
+deine echte Adresse nicht ins Impressum, und du kannst sie abschalten, falls
+Werbung kommt.
+
+So entsteht sie: iPhone → Einstellungen → dein Name → **iCloud** → „E-Mail
+verbergen" → **Neue Adresse erstellen** → als Bezeichnung „PulseMeter Support"
+eintragen. Setzt iCloud+ voraus (ab 0,99 € im Monat, in jedem
+iCloud-Speicherplan enthalten).
+
+Später mit eigener Domain wird daraus `hallo@…` mit kostenloser Weiterleitung
+über Cloudflare Email Routing. Der Wechsel ist eine Zeile in drei Dateien.
 
 ## 2 — Anbieter im Impressum
 
@@ -60,6 +69,16 @@ Bleibt es bei Cloudflare, genügt es, die eckigen Klammern zu entfernen.
 
 - `node scripts/check-website.mjs` — prüft unter anderem, dass **kein**
   `PLATZHALTER` mehr im Quelltext steht.
-- Domain eintragen: In allen vier Dateien steht `https://pulsemeter.de/` als
-  `canonical`. Wird es eine andere Adresse, muss sie dort ebenfalls geändert
-  werden, sonst verweist die Seite auf sich selbst unter falschem Namen.
+- Adresse eintragen: **nicht von Hand.** `scripts/domain-setzen.sh` setzt die
+  `canonical`-Zeilen aller vier Seiten in einem Zug und weigert sich, wenn sie
+  schon auseinanderlaufen:
+
+  ```bash
+  scripts/domain-setzen.sh                    # zeigt, was eingetragen ist
+  scripts/domain-setzen.sh pulsemeter.de      # stellt um
+  ```
+
+  Eingetragen ist gerade **`pulsemeter.pages.dev`** — die kostenlose Adresse
+  von Cloudflare Pages. Eine halb umgestellte Website ist schlimmer als eine
+  mit der falschen Adresse: Google hält `canonical` für die Wahrheit und wirft
+  die Seiten weg, die auf eine fremde Adresse zeigen. Deshalb das Skript.
