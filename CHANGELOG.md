@@ -9,6 +9,61 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.50.0 — 2026-08-16
+
+**Die Website beantwortet jetzt Fragen, die Leute wirklich eintippen.**
+
+Auszeichnungen sind schnell gesetzt und bringen für sich genommen wenig.
+Gefunden wird eine Seite, weil sie eine Frage beantwortet — und solche Seiten
+gab es hier bisher nicht. Beides ist jetzt da.
+
+### Hinzugefügt
+
+- **Zwei Antwortseiten**, genau auf die Suchabsichten aus
+  `10-sichtbarkeit.md`, Abschnitt 7:
+  - `gas-in-kwh.html` — „Kubikmeter in Kilowattstunden umrechnen". Mit der
+    Formel, einem Beispiel zum Nachrechnen (250 m³ → 2.702 kWh) und den drei
+    Fehlern, die dabei am häufigsten passieren. Der erste davon ist die
+    Faustformel „mal zehn", die je nach Gasqualität um mehrere Prozent
+    danebenliegt.
+  - `abschlag-zu-hoch.html` — „Abschlag zu hoch? So rechnest du es nach".
+    (Jahresverbrauch × Arbeitspreis + Grundpreis) ÷ 12, mit einem Beispiel, bei
+    dem 130 statt 91 € im Monat rund 470 € im Jahr vorstrecken.
+  Beide sind von der Hilfeseite und aus dem Fuß der Startseite verlinkt — eine
+  Seite, auf die nichts zeigt, findet weder Mensch noch Suchmaschine.
+- `robots.txt` und `sitemap.xml` mit fünf Adressen. Das Impressum steht
+  bewusst **nicht** drin: Es trägt `noindex` und soll erreichbar sein, nicht
+  auffindbar. Eine Adresse anzumelden und gleichzeitig auszuschließen wäre ein
+  widersprüchliches Signal.
+- Open Graph und Twitter Cards auf allen Seiten — nicht fürs Ranking, sondern
+  damit ein geteilter Link nicht als nackte Adresse ankommt.
+- Ein JSON-LD-Block auf der Startseite (`SoftwareApplication`), der sagt, was
+  das Ding ist, für welches System und in welcher Sprache.
+
+### Behoben
+
+- **Der Namensraum der Sitemap war falsch.** Dort stand `sitemap.org` statt
+  `sitemaps.org` — mit s. Google hätte die Datei stillschweigend verworfen, und
+  wir hätten sie für erledigt gehalten. Gefunden beim Nachprüfen mit einem
+  XML-Parser, nicht mit dem Auge. Eine Prüfung hält den Namensraum jetzt fest.
+
+### Geändert
+
+- `scripts/domain-setzen.sh` stellt jetzt auch `og:url`, `og:image`, die
+  JSON-LD-Adresse sowie `robots.txt` und `sitemap.xml` um. Ohne das wären nach
+  einem Domainwechsel genau die Dateien stehen geblieben, die eine Suchmaschine
+  als Erstes liest. Gegengeprüft: einmal auf `pulsemeter.de` und zurück, alle
+  Stellen wandern mit.
+- Die Prüfung deckt jetzt **sechs** Seiten ab statt vier und vergleicht die
+  Adresse in `robots.txt` und `sitemap.xml` gegen die der Seiten.
+
+_Die Wirkung ist **nicht gemessen** und kann es vor der Veröffentlichung auch
+nicht sein. Was hier steht, ist die Umsetzung der Wette aus
+`10-sichtbarkeit.md`; nachprüfbar wird sie vier Wochen nach dem Onlinegehen
+über Impressionen und Seitenaufrufe._
+
+---
+
 ## 0.49.0 — 2026-08-16
 
 **Im Impressum stand eine Behauptung, die niemand aufgestellt hatte.**

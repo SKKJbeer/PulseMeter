@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Ohne das Impressum: Es trägt `noindex` und soll erreichbar sein, nicht
+     auffindbar. Eine Adresse, die man anmeldet und dann vom Index ausschließt,
+     ist ein widersprüchliches Signal. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://pulsemeter.pages.dev/</loc></url>
+  <url><loc>https://pulsemeter.pages.dev/hilfe.html</loc></url>
+  <url><loc>https://pulsemeter.pages.dev/gas-in-kwh.html</loc></url>
+  <url><loc>https://pulsemeter.pages.dev/abschlag-zu-hoch.html</loc></url>
+  <url><loc>https://pulsemeter.pages.dev/datenschutz.html</loc></url>
+</urlset>

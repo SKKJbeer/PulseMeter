@@ -19,7 +19,11 @@ import { readFileSync, readdirSync } from "node:fs";
 const dir = process.argv[2] || "docs/website";
 const base = "file://" + process.cwd() + "/" + dir + "/";
 
-const seiten = ["index.html", "hilfe.html", "datenschutz.html", "impressum.html"];
+// Die Antwortseiten zählen mit: Sie sind der Teil, über den jemand die
+// Website überhaupt findet (`docs/10-sichtbarkeit.md`, Abschnitt 7), und ein
+// toter Verweis dorthin fällt sonst niemandem auf.
+const seiten = ["index.html", "hilfe.html", "gas-in-kwh.html",
+                "abschlag-zu-hoch.html", "datenschutz.html", "impressum.html"];
 
 const failures = [];
 const note = (ok, text) => {
@@ -92,6 +96,27 @@ const adressen = new Set(seiten.map(d => {
   const m = readFileSync(`${dir}/${d}`, "utf8").match(/rel="canonical" href="https:\/\/([^/"]+)/);
   return m ? m[1] : "—";
 }));
+// Sitemap und robots.txt müssen auf dieselbe Adresse zeigen wie die Seiten.
+// Eine Sitemap mit fremdem Namen wird verworfen, und dann ist sie schlimmer
+// als keine: Man hält sie für erledigt.
+// Der Namensraum der Sitemap heißt `sitemaps.org` — mit s. Beim ersten
+// Schreiben stand hier `sitemap.org`, und damit hätte Google die Datei
+// verworfen, ohne sich zu beschweren.
+{
+  const xml = readFileSync(`${dir}/sitemap.xml`, "utf8");
+  note(xml.includes('xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"'),
+       "sitemap.xml: richtiger Namensraum");
+  const zahl = (xml.match(/<loc>/g) || []).length;
+  note(zahl >= 5, `sitemap.xml führt ${zahl} Adressen`);
+}
+
+for (const datei of ["robots.txt", "sitemap.xml"]) {
+  const inhalt = readFileSync(`${dir}/${datei}`, "utf8");
+  const fremde = [...inhalt.matchAll(/https:\/\/([^/\s<"]+)/g)].map(m => m[1]);
+  note(fremde.length > 0 && fremde.every(h => h === [...adressen][0]),
+       `${datei}: nennt ${[...new Set(fremde)].join(", ") || "keine Adresse"}`);
+}
+
 note(adressen.size === 1,
      adressen.size === 1
        ? `Alle Seiten zeigen auf ${[...adressen][0]}`

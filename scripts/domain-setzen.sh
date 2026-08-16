@@ -47,10 +47,23 @@ if [ "$(jetzt | wc -l)" -gt 1 ]; then
 fi
 
 for datei in "${DATEIEN[@]}"; do
-  # Nur innerhalb der canonical-Zeilen ersetzen. Ein stumpfes Suchen und
-  # Ersetzen über die ganze Datei träfe auch Fließtext, in dem die Adresse
+  # Nur innerhalb der canonical- und og-Zeilen ersetzen. Ein stumpfes Suchen
+  # und Ersetzen über die ganze Datei träfe auch Fließtext, in dem die Adresse
   # aus gutem Grund anders lauten kann.
-  sed -i.bak "s|\(rel=\"canonical\" href=\"https://\)$ALT|\1$NEU|" "$datei"
+  sed -i.bak \
+    -e "s|\(rel=\"canonical\" href=\"https://\)$ALT|\1$NEU|" \
+    -e "s|\(property=\"og:url\" content=\"https://\)$ALT|\1$NEU|" \
+    -e "s|\(property=\"og:image\" content=\"https://\)$ALT|\1$NEU|" \
+    -e "s|\(\"url\": \"https://\)$ALT|\1$NEU|" \
+    "$datei"
+  rm -f "$datei.bak"
+done
+
+# Sitemap und robots.txt nennen die Adresse ebenfalls. Bleiben sie stehen,
+# verwirft Google beide stillschweigend — und man hält sie für erledigt.
+for datei in "$ORDNER/robots.txt" "$ORDNER/sitemap.xml"; do
+  [ -f "$datei" ] || continue
+  sed -i.bak "s|https://$ALT|https://$NEU|g" "$datei"
   rm -f "$datei.bak"
 done
 

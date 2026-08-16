@@ -1,0 +1,7 @@
+# Alles darf gelesen werden. Es gibt nichts zu verbergen — außer dem
+# Impressum, das ein `noindex` in der Seite selbst trägt: Es soll erreichbar
+# sein, aber nicht als Suchergebnis auftauchen.
+User-agent: *
+Allow: /
+
+Sitemap: https://pulsemeter.pages.dev/sitemap.xml
