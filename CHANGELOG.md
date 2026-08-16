@@ -9,6 +9,42 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.54.1 — 2026-08-16
+
+**Ein verlorener Tipp, zum vierten Mal — und diesmal an einer Stelle, die nie
+angefasst wurde.**
+
+Der Lauf zu 0.53.0 ist rot geworden: `testAddingAMeterFromTheMetersTab` mit
+„Das Namensfeld fehlt". 0.53.0 hat **keine einzige Swift-Zeile** geändert — nur
+Dokumente, die Website und ein Shell-Skript. Dieselbe App war eine Stunde
+vorher grün. Es war also kein Rückschritt, sondern derselbe Wackler wie in
+0.34.0 und 0.36.0: Der Tipp auf „Zähler hinzufügen" ging unter Last verloren,
+das Blatt kam nie, und das Feld fehlte nicht — es war nicht da.
+
+### Behoben
+
+- **Neuer Helfer `oeffne(_:bis:in:_:)`** in `AppUITests/LaunchTests.swift`:
+  tippen, nachsehen, ob der Anker da ist, sonst noch einmal tippen. Das ist
+  genau die Lehre, die seit 0.36.1 für die Tab-Leiste im Code steht — sie galt
+  nur dort, weil dort der erste Fehlschlag war. Jetzt gilt sie auch fürs
+  Öffnen eines Blatts.
+- **Zwei Aufrufstellen** benutzen ihn: `testAddingAMeterFromTheMetersTab` und
+  `testFirstMeterThenFirstReadingThenConsumption`. Beide griffen vorher direkt
+  aufs Namensfeld.
+
+Der Anker ist bewusst die Navigationsleiste „Neuer Zähler" und **nicht** das
+Namensfeld: Das Feld ist die Aussage dieser Tests. Wäre es zugleich die
+Bedingung fürs Wiederholen, prüfte sich der Test selbst.
+
+### Warum nicht einfach länger warten
+
+Weil das in 0.34.1 schon versucht wurde — alle Wartezeiten von fünf auf zehn
+Sekunden — und es danach wieder fiel. Ein Element, das nicht existiert, weil
+der Schirm gar nicht offen ist, erscheint auch nach einer Minute nicht. Länger
+warten kostet nur Zeit und findet nichts.
+
+---
+
 ## 0.54.0 — 2026-08-16
 
 **Der Go-Live-Plan stand noch auf dem Stand vom 10. August.**

@@ -88,6 +88,47 @@ final class LaunchTests: XCTestCase {
         return element.exists && element.isHittable
     }
 
+    /// Tippt einen Knopf und **prüft nach, dass sich das Blatt geöffnet hat**.
+    ///
+    /// **Dieselbe Geschichte wie beim Tabwechsel, eine Stufe später.** In
+    /// 0.53.0 ist `testAddingAMeterFromTheMetersTab` gefallen, diesmal mit
+    /// „Das Namensfeld fehlt" — obwohl der Commit **keine einzige Swift-Zeile**
+    /// angefasst hat und dieselbe App eine Stunde vorher grün war. Der Tipp auf
+    /// „Zähler hinzufügen" ging verloren, das Blatt kam nie, und danach hätte
+    /// auch eine Wartezeit von einer Minute nichts gefunden: Das Feld war nicht
+    /// langsam, es war nicht da.
+    ///
+    /// Für den Tabwechsel steht die Lehre seit 0.36.1 zwölf Zeilen weiter
+    /// unten — ein verlorener Tipp braucht einen zweiten Tipp, keine längere
+    /// Uhr. Sie galt nur für die Tab-Leiste, weil dort der erste Fehlschlag
+    /// war. Hier ist sie verallgemeinert.
+    ///
+    /// - Parameter anker: Etwas, das es **nur** gibt, wenn das Blatt oben ist.
+    ///   Die Navigationsleiste eignet sich; ein Textfeld nicht — das steckt im
+    ///   Blatt und ist damit die Aussage, die geprüft werden soll.
+    @discardableResult
+    private func oeffne(_ knopf: XCUIElement,
+                        bis anker: XCUIElement,
+                        in app: XCUIApplication,
+                        _ was: String,
+                        datei: StaticString = #filePath,
+                        zeile: UInt = #line) -> Bool {
+        guard knopf.waitForExistence(timeout: erscheint) else {
+            XCTFail("\(was): der Knopf ist nicht da", file: datei, line: zeile)
+            return false
+        }
+        for versuch in 1...2 {
+            knopf.tap()
+            if anker.waitForExistence(timeout: erscheint) { return true }
+            if versuch == 1 {
+                print("\(was): der erste Tipp kam nicht an, zweiter Versuch.")
+            }
+        }
+        XCTFail("\(was): das Blatt öffnet nicht. Zu sehen war: \(beschriftungen(in: app))",
+                file: datei, line: zeile)
+        return false
+    }
+
     /// Wechselt den Tab und **prüft nach, dass er auch gewechselt hat**.
     ///
     /// **Warum das nötig ist.** `testAddingAMeterFromTheMetersTab` ist zweimal
@@ -164,9 +205,12 @@ final class LaunchTests: XCTestCase {
     func testFirstMeterThenFirstReadingThenConsumption() {
         let app = launchEmpty()
 
-        // Zähler anlegen
-        XCTAssertTrue(app.buttons["Ersten Zähler anlegen"].waitForExistence(timeout: 10))
-        app.buttons["Ersten Zähler anlegen"].tap()
+        // Zähler anlegen. Auch hier über `oeffne`: Es ist derselbe Griff auf
+        // dasselbe Blatt, und derselbe Tipp kann verlorengehen.
+        guard oeffne(app.buttons["Ersten Zähler anlegen"],
+                     bis: app.navigationBars["Neuer Zähler"],
+                     in: app,
+                     "Ersten Zähler anlegen") else { return }
 
         let field = app.textFields["Name"]
         XCTAssertTrue(field.waitForExistence(timeout: erscheint), "Das Namensfeld fehlt")
@@ -445,9 +489,13 @@ final class LaunchTests: XCTestCase {
         let app = launchWithData()
         wechsel(zu: "Zähler", in: app)
 
-        let add = app.buttons["Zähler hinzufügen"]
-        XCTAssertTrue(add.waitForExistence(timeout: erscheint), "Die Schaltfläche zum Anlegen fehlt")
-        add.tap()
+        // Der Anker ist die Navigationsleiste des Blatts, nicht das Namensfeld:
+        // Das Feld ist die Aussage dieses Tests und darf nicht zugleich die
+        // Bedingung sein, unter der noch einmal getippt wird.
+        guard oeffne(app.buttons["Zähler hinzufügen"],
+                     bis: app.navigationBars["Neuer Zähler"],
+                     in: app,
+                     "Zähler anlegen") else { return }
 
         let field = app.textFields["Name"]
         XCTAssertTrue(field.waitForExistence(timeout: erscheint), "Das Namensfeld fehlt")
