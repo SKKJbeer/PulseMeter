@@ -1,6 +1,6 @@
 # 09 – Material für den App Store
 
-Stand: 2026-08-16, Version 0.51.0
+Stand: 2026-08-16, Version 0.52.0
 
 Alles, was App Store Connect zur Einreichung verlangt, fertig zum Einfügen.
 Was hier steht, ist geprüft gegen das, was die App **heute** kann — nicht
@@ -86,14 +86,14 @@ der sich etwas anfangen lässt.
 
 ABLESEN, BEVOR DAS LICHT AUSGEHT
 
-Der Ziffernblock ist groß genug, dass man ihn einhändig trifft. Im Keller, im
-Halbdunkel, mit klammen Fingern. Die Ziffern laufen von rechts ein, so wie du
-sie am Zähler abliest; was noch fehlt, steht blass da, und die Nachkommastellen
-bleiben rot wie am Gerät. Das Datum steht schon auf heute.
+App öffnen, Zahl eintippen, sichern. Das Datum steht schon auf heute, der
+Ziffernblock ist groß genug, dass man ihn einhändig trifft — im Keller, im
+Halbdunkel, mit klammen Fingern.
 
-Und wenn du dich vertippst, merkt es die App sofort. Eine Zahl weit über dem
-Üblichen, eine Zahl unter dem letzten Stand — dann fragt sie nach. Im Keller,
-nicht im Februar.
+Und bevor der Wert in deinen Daten landet, sieht die App ihn sich an. Eine Zahl
+unter dem letzten Stand, eine Zahl weit über dem, was bei dir üblich ist — dann
+fragt sie nach. Im Keller, wo du noch einmal hinsehen kannst, nicht im Februar
+beim Blick aufs Diagramm.
 
 
 FÜNF SEKUNDEN, UND DU WEISST, WO DU STEHST

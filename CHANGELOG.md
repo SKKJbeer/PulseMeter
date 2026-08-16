@@ -9,6 +9,46 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.52.0 — 2026-08-16
+
+**Die Startseite erzählt nicht mehr, wie die Eingabe aussieht.**
+
+Rückmeldung des Gründers: „das interessiert user nicht." Zu Recht. Dass Ziffern
+von rechts einlaufen und Nachkommastellen rot bleiben, ist eine
+Gestaltungsentscheidung — für den, der die App noch nicht hat, ist es nichts.
+Auf einer Produktseite steht, was jemand davon hat, nicht wie es innen gebaut
+ist.
+
+### Geändert
+
+- **`docs/website/index.html` neu aufgebaut.** Reihenfolge jetzt Überblick →
+  Kosten → Erfassen → besondere Fälle → Daten → Preise: erst der Nutzen, dann
+  der Weg dorthin. Jeder der drei großen Abschnitte hat eine Liste mit drei
+  belegbaren Punkten statt einer Beschreibung der Oberfläche.
+  - **Überblick:** Vergleich auf gleicher Grundlage, gekennzeichnete
+    Schätzungen, jede Zahl antippbar.
+  - **Kosten:** Hochrechnung, die den Winter kennt; Abschlagsvergleich mit
+    Betrag; Preiswechsel getrennt gerechnet.
+  - **Erfassen:** Der Punkt ist die Prüfung beim Eintippen, nicht das Aussehen
+    des Feldes — ein Wert unter dem letzten Stand oder weit über dem Üblichen
+    wird hinterfragt, solange man noch am Zähler steht.
+- **Zwei neue Karten** bei den besonderen Fällen: **Zählerüberlauf** (ein
+  sechsstelliger Zähler fängt wieder bei null an) und **Heizperiode statt
+  Kalenderjahr**. Beides rechnet der Kern seit Langem, und beides stand
+  nirgends. Dafür sind „Erinnerungen" und „Bericht und Export" aus dem Raster
+  heraus — sie stehen jetzt dort, wo sie hingehören.
+- **Der Abschnitt „Datenschutz" heißt „Deine Daten"** und nennt konkret, was
+  herauskommt: Tabelle, PDF-Bericht, Abgleich über die eigene iCloud.
+- **Der Vorspann** sagt in einem Satz, was die App führt und was sie zeigt.
+- **`docs/09-appstore.md`**: derselbe Absatz dort ebenso. Die Beschreibung
+  liegt jetzt bei 3.612 von 4.000 Zeichen.
+
+Nichts davon ist eine neue Behauptung: Jeder Punkt hat seine Entsprechung in
+`PulseCore` — `ConsumptionEngine.plausibility`, `ForecastEngine`,
+`PeriodEngine`, die Überlaufbehandlung in `ConsumptionResult`.
+
+---
+
 ## 0.51.1 — 2026-08-16
 
 **Der Umsatzsteuer-Abschnitt ist raus statt leer.**

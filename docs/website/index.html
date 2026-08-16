@@ -61,10 +61,10 @@
       <div>
         <h1>Einmal im Monat ablesen. Den Rest des Jahres Bescheid wissen.</h1>
         <p class="vorspann">
-          Ein Zettel am Sicherungskasten, eine Tabelle, die niemand pflegt,
-          meistens gar nichts. Und im Frühjahr kommt die Abrechnung, und man
-          glaubt ihr einfach. PulseMeter macht aus zehn Sekunden im Keller eine
-          Zahl, mit der sich etwas anfangen lässt.
+          PulseMeter führt deine Zählerstände für Strom, Gas, Wasser,
+          Photovoltaik und Wärme — und zeigt dir Verbrauch, Vorjahresvergleich
+          und Kosten auf einem Bildschirm. Damit die Abrechnung im Frühjahr
+          keine Überraschung mehr ist.
         </p>
         <div class="knoepfe">
           <a class="knopf knopf-voll" href="https://claude.ai/code/artifact/2edb1918-62e2-4f10-9225-eb8da1c61976">Jetzt ausprobieren</a>
@@ -86,7 +86,7 @@
         <picture class="geraet">
           <source srcset="bilder/capture-dark.jpg" media="(prefers-color-scheme: dark)">
           <img src="bilder/capture-light.jpg" width="1206" height="2622"
-               alt="Die Erfassung: eine große Zahl, in die die Ziffern von rechts einlaufen, darunter ein Ziffernblock.">
+               alt="Eine Ablesung eintragen: großes Zahlenfeld mit Ziffernblock, das Datum steht auf heute.">
         </picture>
         <picture class="geraet">
           <source srcset="bilder/verlauf-dark.jpg" media="(prefers-color-scheme: dark)">
@@ -100,24 +100,23 @@
   <section id="funktionen">
     <div class="bahn paar">
       <div>
-        <span class="marke-klein">Erfassen</span>
-        <h2>Gebaut für schlechtes Licht und klamme Finger</h2>
+        <span class="marke-klein">Überblick</span>
+        <h2>Verbrauch, Vorjahr und Kosten auf einem Bildschirm</h2>
         <p class="blass">
-          Die Ziffern laufen von rechts ein, so wie du sie am Zähler abliest —
-          von links nach rechts, ohne vorher zu überlegen, wo die Zahl anfängt.
-          Was noch fehlt, steht blass da; die Nachkommastellen bleiben rot wie
-          am Gerät. Das Datum steht schon auf heute.
+          Jeder Zähler zeigt, was seit Jahresbeginn zusammengekommen ist, was
+          im selben Zeitraum des Vorjahres zusammenkam und was das in Euro
+          bedeutet. Ohne Scrollen, ohne Menü.
         </p>
-        <p class="blass">
-          Und wenn du dich vertippst, merkt es die App sofort. Eine Zahl weit
-          über dem Üblichen, eine Zahl unter dem letzten Stand — dann fragt sie
-          nach. Im Keller, nicht im Februar.
-        </p>
+        <ul class="liste">
+          <li><strong>Vergleich auf gleicher Grundlage.</strong> Januar bis Mai gegen Januar bis Mai — bei Heizung gegen dieselbe Heizperiode, nicht gegen ein Kalenderjahr.</li>
+          <li><strong>Geschätztes ist gekennzeichnet.</strong> Hochgerechnete und interpolierte Werte stehen als solche da, nie stillschweigend zwischen gemessenen.</li>
+          <li><strong>Jede Zahl lässt sich antippen</strong> und zeigt, aus welchen Ablesungen sie entstanden ist.</li>
+        </ul>
       </div>
       <picture class="geraet">
-        <source srcset="bilder/capture-dark.jpg" media="(prefers-color-scheme: dark)">
-        <img src="bilder/capture-light.jpg" width="1206" height="2622"
-             alt="Die Eingabe in voller Größe: 00.000,000 mit blassen Stellen und roten Nachkommastellen.">
+        <source srcset="bilder/dark.jpg" media="(prefers-color-scheme: dark)">
+        <img src="bilder/light.jpg" width="1206" height="2622"
+             alt="Die Übersicht mit vier Zählern, Vorjahresvergleich und Kosten.">
       </picture>
     </div>
   </section>
@@ -125,17 +124,17 @@
   <section class="abschnitt-hell">
     <div class="bahn paar paar-gedreht">
       <div>
-        <span class="marke-klein">Verstehen</span>
-        <h2>Fünf Sekunden, und du weißt, wo du stehst</h2>
+        <span class="marke-klein">Kosten</span>
+        <h2>Die Nachzahlung siehst du im Oktober, nicht im März</h2>
         <p class="blass">
-          Ganz oben steht, was zählt: Verbrauch seit Jahresbeginn, daneben das
-          Vorjahr, darunter die Kosten. Kein Scrollen, kein Menü, keine
-          Kacheln, die man erst sortieren muss.
+          Zwei Zahlen von deiner Rechnung genügen — Arbeitspreis und
+          Grundpreis. Ab da rechnet PulseMeter mit: Was kostet dieser Monat,
+          was wird das Jahr kosten, und deckt dein Abschlag das ab?
         </p>
         <ul class="liste">
-          <li>Ein Jahreswert, der im Mai endet, sagt das auch. Getarnte Zahlen gibt es hier nicht.</li>
-          <li>Was geschätzt ist, steht als geschätzt da. Wir rechnen nie still.</li>
-          <li>Verglichen wird Mai mit Mai — bei der Heizung sogar Heizperiode mit Heizperiode. Klingt selbstverständlich. Ist es nicht.</li>
+          <li><strong>Hochrechnung aufs Jahresende</strong>, die den Winter kennt. Ein Gasjahr wird nicht aus einem Julischnitt fortgeschrieben.</li>
+          <li><strong>Abschlagsvergleich.</strong> Zu hoch, passend oder zu niedrig — mit dem Betrag, um den es geht.</li>
+          <li><strong>Preiswechsel mitten im Jahr</strong> werden getrennt gerechnet, nicht über den Zeitraum gemittelt.</li>
         </ul>
       </div>
       <picture class="geraet">
@@ -147,13 +146,38 @@
   </section>
 
   <section>
+    <div class="bahn paar">
+      <div>
+        <span class="marke-klein">Erfassen</span>
+        <h2>Zehn Sekunden im Keller, und der Tippfehler bleibt draußen</h2>
+        <p class="blass">
+          App öffnen, Zahl eintippen, sichern. Das Datum steht schon auf heute.
+          Und bevor der Wert in deinen Daten landet, sieht die App ihn sich an:
+          Liegt er unter dem letzten Stand oder weit über dem, was bei dir
+          üblich ist, fragt sie nach — im Keller, wo du es noch nachsehen
+          kannst, nicht im Februar beim Blick aufs Diagramm.
+        </p>
+        <ul class="liste">
+          <li><strong>Erinnerungen</strong> monatlich, vierteljährlich oder zum selbst gewählten Termin.</li>
+          <li><strong>Kein Konto, keine Anmeldung.</strong> Der erste Zähler steht in unter einer Minute.</li>
+          <li><strong>Lücken sind erlaubt.</strong> Wer drei Monate vergisst, verliert nichts — die App rechnet damit und sagt, was geschätzt ist.</li>
+        </ul>
+      </div>
+      <picture class="geraet">
+        <source srcset="bilder/capture-dark.jpg" media="(prefers-color-scheme: dark)">
+        <img src="bilder/capture-light.jpg" width="1206" height="2622"
+             alt="Die Eingabe einer Ablesung mit großem Ziffernblock.">
+      </picture>
+    </div>
+  </section>
+
+  <section class="abschnitt-hell">
     <div class="bahn">
-      <span class="marke-klein">Rechnen</span>
-      <h2>Die Nachzahlung siehst du im Oktober, nicht im März</h2>
+      <span class="marke-klein">Besondere Fälle</span>
+      <h2>Da, wo es sonst ungenau wird</h2>
       <p class="blass">
-        Zwei Zahlen von deiner Rechnung genügen: Arbeitspreis und Grundpreis.
-        Ab da rechnet PulseMeter mit. Kommt dein Abschlag hin, oder legst du im
-        Frühjahr nach? Die Antwort steht auf der Übersicht, das ganze Jahr über.
+        Die meisten Haushalte haben mehr als einen einfachen Stromzähler. Genau
+        an diesen Stellen rechnen Tabellen und einfache Apps falsch.
       </p>
 
       <div class="karten">
@@ -187,38 +211,36 @@
         </div>
         <div class="karte">
           <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/>
+            <path d="M3 12a9 9 0 1 1 3 6.7"/><path d="M3 14v-4h4"/>
           </svg>
-          <h3>Erinnerungen</h3>
-          <p>Monatlich, vierteljährlich oder wann du willst. Die App meldet sich, damit du nicht daran denken musst.</p>
+          <h3>Zählerüberlauf</h3>
+          <p>Ein sechsstelliger Zähler fängt irgendwann wieder bei null an. Die App erkennt das und zieht nicht plötzlich einen Jahresverbrauch ab.</p>
         </div>
         <div class="karte">
           <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 14h6M9 17h4"/>
+            <path d="M4 19V9m5 10V5m5 14v-7m5 7V8"/>
           </svg>
-          <h3>Bericht und Export</h3>
-          <p>Ein sauberer Bericht für den Vermieter oder die Steuer. Und deine Rohdaten als Tabelle, wann immer du willst.</p>
+          <h3>Heizperiode statt Kalenderjahr</h3>
+          <p>Bei Gas und Fernwärme wird Oktober bis April gegen Oktober bis April verglichen. Ein Kalenderjahr zerschneidet den Winter mitten durch.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="abschnitt-hell">
+  <section>
     <div class="bahn">
-      <span class="marke-klein">Datenschutz</span>
-      <h2>Wir wissen nicht, wie viel Strom du verbrauchst</h2>
+      <span class="marke-klein">Deine Daten</span>
+      <h2>Auf deinem Telefon. Und jederzeit wieder heraus.</h2>
       <p class="blass">
-        Und das soll auch so bleiben. Kein Konto, keine Anmeldung, keine
-        Werbung, kein Tracking. Deine Ablesungen liegen auf deinem Telefon und,
-        wenn du magst, in deiner eigenen iCloud. Auf unseren Servern liegen sie
-        nicht — wir haben keine.
+        Kein Konto, keine Anmeldung, keine Werbung, kein Tracking. Deine
+        Ablesungen liegen auf deinem Gerät und, wenn du magst, in deiner
+        eigenen iCloud. Auf unseren Servern liegen sie nicht — wir haben keine.
       </p>
-      <p class="blass">
-        Und du kommst jederzeit wieder heraus: Der Export als Tabelle ist
-        kostenlos und bleibt es, auch wenn du nie einen Cent ausgibst. Apps,
-        die die eigenen Daten als Pfand nehmen, sind der Grund, warum so viele
-        Leute lieber bei Excel bleiben.
-      </p>
+      <ul class="liste">
+        <li><strong>Export als Tabelle</strong>, dauerhaft kostenlos. Alle Ablesungen, alle Zähler, in jedem Tabellenprogramm zu öffnen.</li>
+        <li><strong>Verbrauchsbericht als PDF</strong> für Vermieter, Steuer oder die eigenen Unterlagen.</li>
+        <li><strong>Abgleich über deine iCloud</strong> zwischen iPhone und iPad — ohne dass die Daten dabei jemand anderen passieren.</li>
+      </ul>
       <p class="notiz">
         Diese Seite hält sich an dieselbe Regel: keine Cookies, keine
         Zählpixel, keine fremden Schriftarten. Deshalb hat dich hier auch kein
@@ -227,7 +249,7 @@
     </div>
   </section>
 
-  <section id="preise">
+  <section id="preise" class="abschnitt-hell">
     <div class="bahn">
       <span class="marke-klein">Preise</span>
       <h2>Ein paar Euro, einmal. Kein Abo.</h2>
