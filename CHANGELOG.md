@@ -9,6 +9,66 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.55.0 — 2026-08-16
+
+**Das Privacy-Manifest ist da — der einzige Pflichtpunkt, der nie am
+Developer Program hing.**
+
+Er stand seit Mai in der Liste und wartete hinter dem Engpass, obwohl er nicht
+dahinter gehört: Eine Plist im Bündel braucht kein Programm.
+
+### Hinzugefügt
+
+- **`App/PrivacyInfo.xcprivacy`** und **`Widget/PrivacyInfo.xcprivacy`**. Zwei
+  Dateien, weil Apple je Bündel liest — eine Erweiterung ist nicht vom Manifest
+  der App abgedeckt.
+
+  Inhalt der App: kein Tracking, keine Tracking-Domänen, keine erfassten
+  Daten. Als einzige begründungspflichtige Schnittstelle `UserDefaults` mit
+  Grund **CA92.1** — Zugriff nur auf die Voreinstellungen dieser App, für den
+  Kaufzustand in `Purchase.swift`. Nicht `1C8F.1`: Das gälte für eine
+  App-Gruppe, und die wird dafür nicht benutzt. Der Kommentar in der Datei
+  sagt, wann das zu wechseln ist.
+
+  Das Widget deklariert **keine** solche Schnittstelle, und das ist
+  nachgesehen: Es liest über `WidgetBridge` eine Datei, und
+  `FileManager.containerURL` gehört nicht dazu.
+
+- **Neunte Prüfung in `scripts/check-sicherheit.sh`.** Sie liest die beiden
+  Manifeste als Plist und verlangt: gültiges Format, `NSPrivacyTracking`
+  falsch, keine Tracking-Domänen, keine erfassten Daten, alle vier Schlüssel
+  vorhanden.
+
+  **Warum den Inhalt und nicht die Anwesenheit.** Der teure Fehler ist nicht
+  das fehlende Manifest — das meldet Apple beim Hochladen. Teuer ist das
+  widersprüchliche: Manifest und Fragebogen sagen Verschiedenes, das fällt
+  erst in der Prüfung auf, und dann ist eine Runde weg.
+
+  Gegengeprüft: einmal mit `NSPrivacyCollectedDataTypeDeviceID` im Manifest,
+  einmal mit einer abgeschnittenen Plist. Beide Male hat sie angeschlagen.
+
+### Was bewusst **nicht** dabei ist
+
+**Die `.entitlements`.** Sie sind der nächste Punkt und werden trotzdem hier
+nicht angelegt: Eine Berechtigungsdatei, die auf eine im Entwicklerportal noch
+nicht angelegte Kennung zeigt, lässt die Signierung scheitern — und die
+Fehlermeldung sagt nicht, welche der drei Kennungen fehlt. Sie gehören in
+denselben Arbeitsgang wie das Anlegen von App-ID, App-Gruppe und
+iCloud-Container, auf einem Rechner, der danach sofort bauen kann.
+
+### Geändert
+
+- **`docs/07-v1-plan.md`**: Die Reihenfolge nach der Freischaltung ist jetzt
+  begründet und nicht nur nummeriert. Kennungen anlegen kommt vor allem
+  anderen; **die App aufs Telefon kommt vor CloudKit und StoreKit**, weil die
+  zwei Wochen Eigennutzung erst dann anfangen können und die beiden anderen
+  zusammen eine Woche dauern.
+- `docs/09-appstore.md` und `docs/11-sicherheit.md` führen den Punkt als
+  erledigt, mit dem einen Rest: ob die Datei im gebauten Bündel landet, zeigt
+  erst der Gerätebau.
+
+---
+
 ## 0.54.1 — 2026-08-16
 
 **Ein verlorener Tipp, zum vierten Mal — und diesmal an einer Stelle, die nie

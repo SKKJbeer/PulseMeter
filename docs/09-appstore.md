@@ -351,8 +351,14 @@ verkürzt:
       `false`) und die Berechtigung eintragen
 - [ ] **`.entitlements`**: App-Gruppe `group.com.pulsemeter.app` fürs Widget,
       iCloud für die Synchronisation
-- [ ] **`PrivacyInfo.xcprivacy`** — Apple verlangt das Privacy-Manifest seit
-      Mai 2024
+- [x] **`PrivacyInfo.xcprivacy`** — liegt seit 0.55.0 in `App/` und `Widget/`,
+      je eines. Inhalt: kein Tracking, keine Tracking-Domänen, keine erfassten
+      Daten, und als einzige begründungspflichtige Schnittstelle
+      `UserDefaults` mit Grund `CA92.1` (nur die Voreinstellungen dieser App,
+      für den Kaufzustand in `Purchase.swift`).
+      **Einmal auf dem Mac nachsehen**, dass die Datei auch im gebauten Bündel
+      landet — XcodeGen nimmt sie als Ressource mit, geprüft ist das hier
+      nicht: `find build/DerivedData -name PrivacyInfo.xcprivacy`
 - [ ] **Datenschutzerklärung veröffentlichen** und die URL eintragen
 - [ ] **Support-Seite** einrichten und die URL eintragen
 - [ ] **Bildschirmfotos neu erzeugen**, nachdem StoreKit steht

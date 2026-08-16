@@ -53,7 +53,7 @@ kein neuer ist dazugekommen.
 | ~~Bildschirmfotos fürs Material~~ | **erledigt** — `scripts/store-shots.mjs` liefert 1320 × 2868, das Pflichtmaß für 6,9 Zoll | — |
 | ~~Datenschutzerklärung und Support-Seite als Text~~ | **erledigt mit 0.43.0** — `docs/website/`, es fehlt nur noch die Veröffentlichung | — |
 | ~~Sicherheitsprüfung~~ | **erledigt mit 0.47.0**, erweitert in 0.53.0 — `11-sicherheit.md`, acht Prüfungen bei jedem Lauf | — |
-| **`PrivacyInfo.xcprivacy`** — Apple verlangt es seit Mai 2024 | fehlt, hängt **nicht** am Programm | Mac oder Cloud |
+| ~~**`PrivacyInfo.xcprivacy`**~~ | **erledigt mit 0.55.0** — je eines für App und Widget, geprüft von `check-sicherheit.sh`. Auf dem Mac ist einmal nachzusehen, dass es im gebauten Bündel landet | — |
 | **Website veröffentlichen** — Cloudflare Pages, Ausgabeordner `docs/website` | offen, hängt **nicht** am Programm | Nutzer |
 | StoreKit 2: fünf Produkte anlegen, `PurchaseGateway` implementieren | offen, aber vorbereitet — es ist eine Datei | Mac, nach dem Programm |
 | **CloudKit einschalten** — steht auf `false`, weil die Berechtigung fehlt | nie gelaufen | Mac, nach dem Programm |
@@ -149,29 +149,47 @@ schlechte Bewertung.
 
 ## 5. Reihenfolge
 
-**Vor dem Programm, ab sofort:**
+**Hängt nicht am Programm — jederzeit:**
 
 1. **Website veröffentlichen.** Cloudflare Pages auf dieses Repo, Ausgabeordner
    `docs/website`. Danach den Namen des Hosters in der Datenschutzerklärung
    bestätigen und mit `PULSE_WEBSITE_LIVE=1 node scripts/check-website.mjs`
    gegenprüfen. Die Datenschutz-URL ist ein Pflichtfeld — ohne sie keine
    Einreichung.
-2. **`PrivacyInfo.xcprivacy` anlegen.** Muss zu Abschnitt 3 von
-   `09-appstore.md` passen: keine erfassten Daten, kein Tracking.
 
-**Sobald das Programm da ist:**
+**Sobald das Programm freigeschaltet ist, in dieser Reihenfolge.** Die
+Reihenfolge ist nicht beliebig: Jeder Schritt setzt voraus, dass der vorige
+steht, und Schritt 2 ist der, der die anderen erst prüfbar macht.
 
-3. **Die App aufs eigene Telefon** und ab da benutzen, mit echten
-   Zählerständen. Nicht erst nach StoreKit — dieser Punkt hat bisher am
-   meisten gefunden.
-4. **StoreKit, CloudKit, `.entitlements`.** Die drei hängen am selben Nagel.
-   Die Sperrlogik steht seit 0.35.0; es fehlt nur der Kauf selbst.
-5. **Reparieren, was Punkt 3 gefunden hat.** Dieses Fenster nicht wegplanen.
-6. **800 ms auf dem Gerät messen.** Die Barrierefreiheit steht seit 0.36.0.
-7. **Bildschirmfotos neu erzeugen**, nachdem StoreKit steht — die Kaufseite
+2. **Kennungen im Entwicklerportal anlegen** — die App-ID `com.pulsemeter.app`,
+   die App-Gruppe `group.com.pulsemeter.app` (fürs Widget) und den
+   iCloud-Container. **Erst danach** die `.entitlements` schreiben: Eine
+   Berechtigungsdatei, die auf eine nicht angelegte Kennung zeigt, lässt die
+   Signierung scheitern, und die Fehlermeldung sagt nicht, welche der drei
+   fehlt.
+3. **Die App aufs eigene Telefon** — `scripts/aufs-handy.sh` — und ab da
+   benutzen, mit echten Zählerständen. **Nicht erst nach StoreKit.** Dieser
+   Punkt hat bisher am meisten gefunden, und er braucht das Telefon, nicht den
+   Kauf.
+4. **CloudKit einschalten.** `App/PulseMeterApp.swift` ruft
+   `PulseStore.container(cloudKit: false)`. Das ist der Schritt mit dem
+   größten Rest an Unbekanntem — siehe oben.
+5. **StoreKit.** Fünf Produkte in App Store Connect anlegen, dann
+   `StoreKitGateway` gegen das bestehende `PurchaseGateway`-Protokoll
+   schreiben. Die Sperrlogik steht seit 0.35.0; es fehlt nur der Kauf selbst.
+6. **Reparieren, was Schritt 3 gefunden hat.** Dieses Fenster nicht wegplanen.
+7. **800 ms Kaltstart auf dem Gerät messen.** Die Barrierefreiheit steht seit
+   0.36.0.
+8. **Bildschirmfotos neu erzeugen**, nachdem StoreKit steht — die Kaufseite
    sieht dann anders aus.
-8. **TestFlight** an fünf bis zehn Leute, zwei Wochen.
-9. **Einreichen.** Die erste Ablehnung ist normal und eingeplant.
+9. **TestFlight** an fünf bis zehn Leute, zwei Wochen.
+10. **Einreichen.** Die erste Ablehnung ist normal und eingeplant.
+
+**Warum Schritt 3 vor 4 und 5 steht.** Die App auf dem Telefon zu haben kostet
+zwanzig Minuten und ist die einzige Voraussetzung dafür, dass die zwei Wochen
+Eigennutzung überhaupt anfangen können. CloudKit und StoreKit dauern zusammen
+eine Woche — wer sie vorzieht, verliert diese Woche für die Eigennutzung und
+merkt am Ende zwei Wochen später, was er sonst am ersten Abend gesehen hätte.
 
 ---
 

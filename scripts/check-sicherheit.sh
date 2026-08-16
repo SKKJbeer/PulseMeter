@@ -66,6 +66,51 @@ else
   printf "  %s✗%s In Info.plist steht:\n%s\n" "$ROT" "$AUS" "$rechte"; FEHLER=$((FEHLER + 1))
 fi
 
+# **Das Privacy-Manifest muss dasselbe sagen wie die Startseite.**
+#
+# Apple verlangt es seit Mai 2024 je Bündel — App und Widget getrennt. Der
+# teure Fehler ist nicht das fehlende Manifest, sondern das **widersprüchliche**:
+# Wenn hier „keine Daten erfasst" steht und im Fragebogen etwas anderes, fällt
+# das bei der Prüfung auf und kostet eine Runde. Geprüft wird deshalb der
+# Inhalt, nicht die Anwesenheit.
+manifest_fehler=0
+for ziel in App Widget; do
+  datei="$ziel/PrivacyInfo.xcprivacy"
+  if [ ! -f "$datei" ]; then
+    printf "      %s fehlt\n" "$datei"; manifest_fehler=$((manifest_fehler + 1)); continue
+  fi
+  # Wohlgeformtheit zuerst: Eine kaputte Plist lehnt Apple beim Hochladen ab,
+  # und die Fehlermeldung dort nennt die Zeile nicht.
+  if ! python3 -c "import plistlib,sys; plistlib.load(open(sys.argv[1],'rb'))" "$datei" 2>/dev/null; then
+    printf "      %s ist keine gültige Plist\n" "$datei"; manifest_fehler=$((manifest_fehler + 1)); continue
+  fi
+  befund=$(python3 - "$datei" <<'PY'
+import plistlib, sys
+p = plistlib.load(open(sys.argv[1], "rb"))
+schlecht = []
+if p.get("NSPrivacyTracking") is not False:
+    schlecht.append("NSPrivacyTracking ist nicht false")
+if p.get("NSPrivacyTrackingDomains"):
+    schlecht.append("es sind Tracking-Domänen eingetragen")
+if p.get("NSPrivacyCollectedDataTypes"):
+    schlecht.append("es sind erfasste Daten eingetragen — das widerspricht „Keine Daten erfasst\"")
+for key in ("NSPrivacyTracking", "NSPrivacyTrackingDomains",
+            "NSPrivacyCollectedDataTypes", "NSPrivacyAccessedAPITypes"):
+    if key not in p:
+        schlecht.append(f"{key} fehlt")
+print("; ".join(schlecht))
+PY
+)
+  if [ -n "$befund" ]; then
+    printf "      %s: %s\n" "$datei" "$befund"; manifest_fehler=$((manifest_fehler + 1))
+  fi
+done
+if [ "$manifest_fehler" -eq 0 ]; then
+  printf "  %s✓%s Privacy-Manifeste sagen „keine Daten erfasst\"\n" "$GRUEN" "$AUS"
+else
+  printf "  %s✗%s Privacy-Manifest\n" "$ROT" "$AUS"; FEHLER=$((FEHLER + 1))
+fi
+
 printf "\n"
 if [ "$FEHLER" -eq 0 ]; then
   printf "%sDie Fläche ist so klein wie in docs/11-sicherheit.md beschrieben.%s\n" "$MATT" "$AUS"

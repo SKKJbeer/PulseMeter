@@ -146,7 +146,7 @@ gibt.
 | **StoreKit** | Der Kaufzustand in `UserDefaults` darf **nie** die Wahrheit sein. Bei jedem Start ist `Transaction.currentEntitlements` zu lesen und der Zwischenspeicher daran anzugleichen — auch nach unten. Sonst genügt ein Häkchen auf dem Gerät. |
 | **CloudKit** | Ausschließlich die **private** Datenbank. Eine öffentliche oder geteilte Datenbank würde aus „liegt bei dir" ein „liegt bei uns" machen und die Datenschutzerklärung zur Unwahrheit. |
 | **`.entitlements`** | Nur zwei Einträge: App-Gruppe und iCloud. Jede weitere Berechtigung ist zu begründen oder zu streichen. |
-| **`PrivacyInfo.xcprivacy`** | Muss zu Abschnitt 3 von `09-appstore.md` passen: keine erfassten Daten, kein Tracking. Ein Widerspruch zwischen Manifest und Fragebogen fällt bei der Prüfung auf. |
+| ~~**`PrivacyInfo.xcprivacy`**~~ | **Seit 0.55.0 vorhanden und geprüft** — je eines für App und Widget, `check-sicherheit.sh` liest sie und verlangt kein Tracking, keine Tracking-Domänen und keine erfassten Daten. Offen bleibt nur, ob die Datei im gebauten Bündel landet; das zeigt der erste Gerätebau. |
 | **Gerätelauf** | Ein Blick in die Systemprotokolle, während Ablesungen eingetragen werden: Es darf kein Zählerstand auftauchen. Heute gibt es keine Protokollausgabe, aber SwiftData und StoreKit schreiben von sich aus. |
 
 ---
@@ -165,6 +165,8 @@ deshalb bei jedem Lauf mit — `scripts/pruefen.sh` prüft über
   Mixpanel, Amplitude, Bugsnag, Crashlytics, TelemetryDeck, PostHog),
 - `cloudKitDatabase` nie `.public` oder `.shared` — nur die private Datenbank
   des Nutzers,
+- die **Privacy-Manifeste** von App und Widget sind gültige Plists und sagen
+  „kein Tracking, keine erfassten Daten" — dasselbe wie der Fragebogen,
 - kein direkter Zugriff auf `processInfo.arguments` außerhalb von
   `Startschalter.swift`,
 - keine Berechtigungstexte in `Info.plist` für Dinge, die es nicht gibt.

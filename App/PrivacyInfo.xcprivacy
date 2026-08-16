@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Das Privacy-Manifest der App. Apple verlangt es seit Mai 2024 für jede
+  Einreichung.
+
+  Diese Datei ist die maschinenlesbare Fassung dessen, was auf der Startseite
+  und in `docs/09-appstore.md` Abschnitt 3 steht. **Beides muss übereinstimmen** —
+  ein Widerspruch zwischen Manifest und Fragebogen fällt bei der Prüfung auf und
+  kostet eine Runde. `scripts/check-sicherheit.sh` vergleicht deshalb nicht die
+  Texte, sondern diese Datei.
+
+  Drei leere Listen sind hier eine Aussage und kein Versäumnis:
+    · Kein Tracking über Apps und Websites hinweg.
+    · Keine Tracking-Domänen.
+    · Keine erfassten Daten — auch nicht anonymisiert, auch nicht „zur
+      Verbesserung des Angebots". Das ergibt im Store die Kennzeichnung
+      „Keine Daten erfasst".
+
+  Der iCloud-Abgleich zählt nicht als Erfassung: Die Daten liegen in der
+  privaten Datenbank des Nutzers, auf die der Entwickler keinen Zugriff hat.
+  Genau dafür gibt es CloudKit statt eines eigenen Servers.
+
+  Der eine Eintrag unter NSPrivacyAccessedAPITypes ist `UserDefaults`, benutzt
+  in `App/Purchase.swift` als Zwischenspeicher für den Kaufzustand — damit die
+  Oberfläche beim Start nicht erst kostenlos aussieht und eine Sekunde später
+  umspringt. Grund **CA92.1**: Zugriff ausschließlich auf die Voreinstellungen
+  dieser App, nicht auf die einer App-Gruppe und nicht auf fremde. Wird das
+  später auf die App-Gruppe ausgeweitet (etwa fürs Widget), ist hier
+  1C8F.1 einzutragen — sonst stimmt die Angabe nicht mehr.
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

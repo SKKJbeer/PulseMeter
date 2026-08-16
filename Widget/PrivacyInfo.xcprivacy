@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Das Privacy-Manifest der Erweiterung.
+
+  **Warum eine zweite Datei.** Das Widget ist ein eigenes Bündel im Paket, und
+  Apple liest die Manifeste je Bündel. Eine Erweiterung ohne eigenes Manifest
+  ist nicht automatisch von dem der App abgedeckt.
+
+  Hier steht **nichts** unter NSPrivacyAccessedAPITypes, und das ist geprüft:
+  Das Widget liest über `Shared/WidgetBridge.swift` eine JSON-Datei aus dem
+  Ordner der App-Gruppe. `FileManager.containerURL(...)` gehört nicht zu den
+  Schnittstellen mit Begründungspflicht — `UserDefaults` schon, und das benutzt
+  die Erweiterung nicht.
+
+  Kommt das je dazu, gehört der Eintrag hierher **und** die Begründung in der
+  App wechselt von CA92.1 auf 1C8F.1, weil dann eine App-Gruppe im Spiel ist.
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array/>
+</dict>
+</plist>
