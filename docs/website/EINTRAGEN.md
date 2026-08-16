@@ -1,6 +1,6 @@
 # Was vor dem Onlinegehen noch eingetragen werden muss
 
-**Zwei Stellen** sind noch offen, im Quelltext mit `PLATZHALTER n von 2`
+**Eine Stelle** ist noch offen, im Quelltext mit `PLATZHALTER 1 von 1`
 markiert. Finden lässt sie sich mit:
 
 ```bash
@@ -20,27 +20,21 @@ grep -rn "PLATZHALTER" docs/website/
 - **Die Anschrift.** Steffen Karjoth, Corelliweg 28, 70195 Stuttgart — im
   Impressum und in der Datenschutzerklärung, dort **wortgleich**. Dieselben
   Angaben gehören später in App Store Connect.
+- **Die Umsatzsteuer.** Der Abschnitt ist raus. § 5 DDG verlangt die
+  Umsatzsteuer-Identifikationsnummer nur, *soweit vorhanden* — der Gründer hat
+  am 16. August bestätigt, dass er keine hat, und eine leere Zeile wäre
+  schlechter als gar keine. Bis 0.49.0 stand dort „Kleinunternehmer im Sinne
+  von § 19 Umsatzsteuergesetz", auch das nur geraten.
+
+  Auf die Preise im App Store wirkt sich das nicht aus: Bei App-Verkäufen in
+  der EU ist **Apple der Verkäufer** gegenüber dem Kunden und führt die
+  Umsatzsteuer ab. Die Beträge in `04-monetarisierung.md` sind das, was der
+  Kunde zahlt, und bleiben es. Kommt später eine USt-IdNr. dazu, gehört sie
+  als eigener Abschnitt zurück ins Impressum.
 
 ---
 
-## Offen 1 — Umsatzsteuer-Identifikationsnummer
-
-`impressum.html`, Abschnitt „Umsatzsteuer".
-
-Dort stand bis 0.49.0 „Kleinunternehmer im Sinne von § 19 Umsatzsteuergesetz".
-**Das war eine Annahme, und sie ist falsch** — der Gründer hat am 16. August
-bestätigt, dass er kein Kleinunternehmer ist. Der Satz ist ersatzlos raus.
-
-§ 5 DDG verlangt die Umsatzsteuer-Identifikationsnummer, **soweit vorhanden**.
-Wer eine hat, trägt sie ein; wer keine hat, lässt den Abschnitt weg — dann ist
-auch der Absatz zu löschen und nicht leer stehen zu lassen.
-
-Auf die Preise im App Store wirkt sich das nicht aus: Bei App-Verkäufen in der
-EU ist **Apple der Verkäufer** gegenüber dem Kunden und führt die Umsatzsteuer
-ab. Die Beträge in `04-monetarisierung.md` sind das, was der Kunde zahlt, und
-bleiben es.
-
-## Offen 2 — der Hosting-Anbieter
+## Offen 1 — der Hosting-Anbieter
 
 `datenschutz.html`, Abschnitt 7. Dort steht heute Cloudflare, weil das der
 Plan ist. Wird es ein anderer, gehört dessen Name und Anschrift an diese

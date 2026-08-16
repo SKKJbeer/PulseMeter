@@ -9,6 +9,34 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.51.1 — 2026-08-16
+
+**Der Umsatzsteuer-Abschnitt ist raus statt leer.**
+
+Vom Gründer bestätigt: Er hat keine Umsatzsteuer-Identifikationsnummer. § 5 DDG
+verlangt sie nur, *soweit vorhanden* — also gehört dort nichts hin, und schon
+gar keine leere Zeile.
+
+### Entfernt
+
+- **Der Abschnitt „Umsatzsteuer"** in `docs/website/impressum.html`, samt des
+  Platzhalters `[USt-IdNr. eintragen]`. An seiner Stelle steht ein Kommentar,
+  der begründet, warum dort nichts steht — sonst trägt die nächste Sitzung
+  wieder etwas Plausibles ein. Genau so ist bis 0.49.0 „Kleinunternehmer nach
+  § 19 UStG" hineingeraten.
+
+### Geändert
+
+- **`docs/website/EINTRAGEN.md`**: Der Punkt wandert von „offen" nach
+  „erledigt", mit dem Vermerk, dass eine spätere USt-IdNr. als eigener
+  Abschnitt zurückkommt. Offen ist damit nur noch der Name des Hosters.
+- Der verbliebene Platzhalter heißt jetzt `PLATZHALTER 1 von 1`.
+
+Auf die Preise wirkt sich nichts aus: Bei App-Verkäufen in der EU ist Apple
+der Verkäufer gegenüber dem Kunden und führt die Umsatzsteuer ab.
+
+---
+
 ## 0.51.0 — 2026-08-16
 
 **Auf der Website stand noch der alte Zähler.**
