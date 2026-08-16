@@ -9,6 +9,28 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.48.3 — 2026-08-16
+
+**Im Impressum stand ein Kommentarrest als Text.**
+
+### Behoben
+
+- Beim Entfernen des Platzhalters in 0.48.2 blieb die zweite Zeile eines
+  zweizeiligen HTML-Kommentars stehen — ein `-->` ohne Anfang. Der Browser
+  zeigt so etwas als **Text** an: Über der Anschrift stand „Ohne ladungsfähige
+  Anschrift darf diese Seite nicht online gehen. -->", mitten im Impressum.
+  Genau auf der Seite, die Vertrauen herstellen soll.
+- Keine der 231 Prüfungen sah es. Überschrift, Verweise, Überlauf, fremde
+  Anfragen — alles war in Ordnung. Deshalb gibt es jetzt eine 232.: **Die
+  Kommentarzeichen jeder Seite müssen paarweise auftreten.** Sie hätte den
+  Fehler im selben Lauf gefangen, in dem er entstand.
+
+_Gefunden beim Nachsehen des eigenen Handgriffs, nicht durch eine Prüfung — und
+das ist der Grund, warum es die neue Prüfung jetzt gibt. 232 Website-Prüfungen,
+94 Prüfungen des Klick-Dummys, 198 Tests in PulseCore, 6 Sicherheitsprüfungen._
+
+---
+
 ## 0.48.2 — 2026-08-16
 
 **Die Anschrift steht. Von den vier Platzhaltern ist noch einer übrig — und

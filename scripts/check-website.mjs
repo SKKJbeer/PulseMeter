@@ -53,6 +53,16 @@ for (const datei of seiten) {
     note(html.includes(`href="${ziel}"`), `${datei}: Verweis auf ${ziel}`);
   }
 
+  // **Kommentarzeichen müssen paarweise auftreten.**
+  //
+  // Beim Entfernen eines Platzhalters in 0.48.2 blieb die zweite Zeile eines
+  // zweizeiligen Kommentars stehen — ein `-->` ohne Anfang. Der Browser zeigt
+  // so etwas als **Text** an, mitten im Impressum, und keine der bisherigen
+  // Prüfungen sah es: Überschrift, Verweise und Überlauf waren in Ordnung.
+  const ohneKommentar = html.replace(/<!--[\s\S]*?-->/g, "");
+  note(!ohneKommentar.includes("-->") && !ohneKommentar.includes("<!--"),
+       `${datei}: keine losen Kommentarzeichen`);
+
   // Keine fremde Quelle im Quelltext. Erlaubt sind Verweise (`href` auf eine
   // andere Website), verboten ist alles, was der Browser **nachlädt**.
   const geladen = [...html.matchAll(/\ssrc="(https?:)?\/\/[^"]+"/g)].map(m => m[0]);
