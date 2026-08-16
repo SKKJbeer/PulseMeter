@@ -185,6 +185,25 @@
     background: var(--surface); border: 1px solid var(--line-2);
     border-left: 3px solid var(--tint); border-radius: 0 14px 14px 0;
   }
+  /* Ein Verweis, der aus der Seite herausführt, ist unterstrichen und trägt
+     einen Pfeil. Beides zusammen, weil Farbe allein bei einer Rot-Grün-Schwäche
+     nichts unterscheidet — und weil man auf einem Telefon sehen will, was ein
+     Ziel ist, bevor man danach greift. */
+  .ziel {
+    color: var(--tint); font-weight: 560;
+    text-decoration: underline; text-underline-offset: 2.5px;
+    text-decoration-thickness: 1.5px;
+  }
+  .ziel::after { content: " ↗"; font-size: .82em; text-decoration: none; }
+
+  .ziele { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; }
+  .ziele li {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px;
+    padding: 9px 0; border-bottom: 1px solid var(--line);
+  }
+  .ziele li:last-child { border-bottom: none; }
+  .ziele .wofuer { font-size: 13.5px; color: var(--ink-3); margin-left: auto; }
+
   .abzweig b { font-size: 15px; }
   .abzweig p { margin: 5px 0 0; font-size: 14.5px; color: var(--ink-2); }
   .abzweig a, .schritt a { color: var(--tint); }
@@ -299,7 +318,7 @@ scripts/go-live.sh</pre>
     <div class="text">
       <h3>Die Website online stellen</h3>
       <div class="marken"><span class="marke">Browser</span><span class="marke zeit">10 Min</span></div>
-      <p>Bei Cloudflare anmelden, <strong>Pages</strong> mit diesem Repository verbinden. Kein Framework, Ausgabeordner <code>docs/website</code>. Die Adresse wird <code>pulsemeter.pages.dev</code>.</p>
+      <p>Bei <a class="ziel" href="https://dash.cloudflare.com/sign-up" target="_blank" rel="noopener">Cloudflare anmelden</a>, dann <a class="ziel" href="https://dash.cloudflare.com/?to=/:account/workers-and-pages" target="_blank" rel="noopener">Workers &amp; Pages</a> &rsaquo; Create &rsaquo; Pages, mit diesem Repository verbinden. Kein Framework, Ausgabeordner <code>docs/website</code>. Die Adresse wird <code>pulsemeter.pages.dev</code>.</p>
       <p><strong>Das ist Pflicht, nicht Kür:</strong> App Store Connect verlangt eine erreichbare Datenschutz-URL. Ohne sie lässt sich nichts einreichen.</p>
     </div>
   </li>
@@ -327,7 +346,7 @@ scripts/go-live.sh</pre>
     <div class="text">
       <h3>Die App anlegen</h3>
       <div class="marken"><span class="marke">Browser</span><span class="marke zeit">15 Min</span></div>
-      <p>Neue App, Plattform iOS, Bundle-ID <code>com.pulsemeter.app</code>, Sprache Deutsch. Dann Name, Untertitel, Beschreibung und Schlagworte einfügen.</p>
+      <p><a class="ziel" href="https://appstoreconnect.apple.com/apps" target="_blank" rel="noopener">App Store Connect &rsaquo; Apps</a> &rsaquo; das Pluszeichen. Plattform iOS, Bundle-ID <code>com.pulsemeter.app</code>, Sprache Deutsch. Dann Name, Untertitel, Beschreibung und Schlagworte einfügen.</p>
       <div class="wenn"><b>Beim Schlagwortfeld nichts umstellen.</b> Es ist auf 98 von 100 Zeichen ausgerechnet. Ein Wort dazu, und App Store Connect schneidet am Ende ab — stillschweigend.</div>
     </div>
   </li>
@@ -404,9 +423,9 @@ com.pulsemeter.app.everything</pre>
     <div class="text">
       <h3>Einen Schlüssel für App Store Connect erzeugen</h3>
       <div class="marken"><span class="marke">Browser</span><span class="marke zeit">5 Min</span></div>
-      <p>App Store Connect › Users and Access › Integrations › <strong>App Store Connect API</strong> › Schlüssel erzeugen, Rolle <strong>App Manager</strong>.</p>
+      <p><a class="ziel" href="https://appstoreconnect.apple.com/access/integrations/api" target="_blank" rel="noopener">Users and Access &rsaquo; Integrations &rsaquo; App Store Connect API</a> &rsaquo; Schlüssel erzeugen, Rolle <strong>App Manager</strong>.</p>
       <div class="wenn"><b>Die <code>.p8</code>-Datei lässt sich nur ein einziges Mal laden.</b> Geht sie verloren, hilft nur ein neuer Schlüssel. Also gleich sichern.</div>
-      <p>Notiere dir dazu die <strong>Key-ID</strong> (zehn Zeichen), die <strong>Issuer-ID</strong> (steht über der Liste) und die <strong>Team-ID</strong> aus dem Bereich Membership.</p>
+      <p>Notiere dir dazu die <strong>Key-ID</strong> (zehn Zeichen) und die <strong>Issuer-ID</strong> — beide auf derselben Seite. Die <strong>Team-ID</strong> steht unter <a class="ziel" href="https://developer.apple.com/account" target="_blank" rel="noopener">developer.apple.com &rsaquo; Membership details</a>.</p>
     </div>
   </li>
 
@@ -415,7 +434,7 @@ com.pulsemeter.app.everything</pre>
     <div class="text">
       <h3>Die vier Angaben ins Repository legen</h3>
       <div class="marken"><span class="marke">Browser</span><span class="marke zeit">5 Min</span></div>
-      <p>GitHub › Settings › Secrets and variables › Actions › <strong>New repository secret</strong>, viermal:</p>
+      <p><a class="ziel" href="https://github.com/SKKJbeer/PulseMeter/settings/secrets/actions/new" target="_blank" rel="noopener">Neues Repository-Geheimnis anlegen</a> — viermal:</p>
 <pre>ASC_KEY_ID       die Key-ID
 ASC_ISSUER_ID    die Issuer-ID
 ASC_KEY_P8       der ganze Inhalt der .p8-Datei,
@@ -431,8 +450,8 @@ ASC_TEAM_ID      die Team-ID</pre>
       <h3>Das Zertifikat ein für alle Mal anlegen</h3>
       <div class="marken"><span class="marke">Browser</span><span class="marke zeit">5 Min, einmalig</span></div>
       <p>Ohne diesen Schritt legt Xcode bei <em>jedem</em> Lauf ein neues Signaturzertifikat an — erlaubt sind drei, und danach müsstest du im Portal von Hand aufräumen. Genau die Handarbeit, die hier wegfallen soll.</p>
-      <p>Also einmal: GitHub › Actions › <strong>Zertifikat anlegen</strong> › Run workflow, ins Feld <code>neu</code> eintippen. Der Lauf erzeugt Schlüssel und Zertifikat, holt es bei Apple und legt beides als Geheimnis ab. <strong>Ab dann führt jeder TestFlight-Lauf dasselbe Zertifikat mit sich.</strong></p>
-      <p>Damit der Lauf die Geheimnisse selbst schreiben darf, braucht er ein Token: GitHub › Settings › Developer settings › <strong>Personal access tokens</strong> › fein granuliert, nur dieses Repository, Berechtigung <strong>Secrets: Read and write</strong>. Als Geheimnis <code>GH_PAT</code> hinterlegen.</p>
+      <p>Also einmal <a class="ziel" href="https://github.com/SKKJbeer/PulseMeter/actions/workflows/zertifikat.yml" target="_blank" rel="noopener">Zertifikat anlegen &rsaquo; Run workflow</a> starten und ins Feld <code>neu</code> eintippen. Der Lauf erzeugt Schlüssel und Zertifikat, holt es bei Apple und legt beides als Geheimnis ab. <strong>Ab dann führt jeder TestFlight-Lauf dasselbe Zertifikat mit sich.</strong></p>
+      <p>Damit der Lauf die Geheimnisse selbst schreiben darf, braucht er ein Token: <a class="ziel" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">fein granuliertes Token anlegen</a> — nur dieses Repository, Berechtigung <strong>Secrets: Read and write</strong>. Dann als Geheimnis <code>GH_PAT</code> hinterlegen.</p>
       <div class="wenn"><b>Kein Token vergeben?</b> Dann legt der Lauf die Werte als Artefakt ab, und du trägst <code>DIST_P12_BASE64</code> und <code>DIST_P12_PASSWORD</code> von Hand ein. Es sind gut dreitausend Zeichen — auf dem Telefon kein Vergnügen.</div>
       <p>Wiederholen musst du das erst nach <strong>einem Jahr</strong>, wenn Apple das Zertifikat auslaufen lässt.</p>
     </div>
@@ -443,7 +462,7 @@ ASC_TEAM_ID      die Team-ID</pre>
     <div class="text">
       <h3>Den Lauf starten</h3>
       <div class="marken"><span class="marke">Browser</span><span class="marke zeit">20 Min warten</span></div>
-      <p>GitHub › Actions › <strong>TestFlight</strong> › Run workflow. Der Lauf prüft, baut, signiert und lädt hoch. Kennungen, Zertifikat und Profil legt Xcode dabei selbst an — im Portal ist nichts anzuklicken.</p>
+      <p><a class="ziel" href="https://github.com/SKKJbeer/PulseMeter/actions/workflows/testflight.yml" target="_blank" rel="noopener">TestFlight &rsaquo; Run workflow</a> starten. Der Lauf prüft, baut, signiert und lädt hoch. Kennungen, Zertifikat und Profil legt Xcode dabei selbst an — im Portal ist nichts anzuklicken.</p>
       <div class="wenn"><b>Bricht er gleich am Anfang ab?</b> Dann sagt die Meldung, welches der vier Geheimnisse fehlt. Das ist mit Absicht der erste Schritt — sonst liefe er zwanzig Minuten und scheiterte am Ende.</div>
     </div>
   </li>
@@ -454,7 +473,7 @@ ASC_TEAM_ID      die Team-ID</pre>
       <h3>Über TestFlight installieren</h3>
       <div class="marken"><span class="marke">iPhone</span><span class="marke zeit">5 Min</span></div>
       <p>Apple prüft den Bau automatisch, das dauert nochmal fünf bis dreißig Minuten. Danach steht er in App Store Connect unter TestFlight. Beim allerersten Mal fragt Apple einmal nach der Ausfuhr-Verschlüsselung — die Antwort für diese App ist <strong>nein</strong>.</p>
-      <p>Dann die App <strong>TestFlight</strong> aufs iPhone laden, mit derselben Apple-ID anmelden, installieren. Ab hier weiter bei Schritt&nbsp;4: deine echten Zähler eintragen.</p>
+      <p>Dann <a class="ziel" href="https://apps.apple.com/de/app/testflight/id899247664" target="_blank" rel="noopener">TestFlight aus dem App Store</a> aufs iPhone laden, mit derselben Apple-ID anmelden, installieren. Ab hier weiter bei Schritt&nbsp;4: deine echten Zähler eintragen.</p>
     </div>
   </li>
 
@@ -468,9 +487,40 @@ ASC_TEAM_ID      die Team-ID</pre>
 
 <div class="wenn" style="margin-top:18px">
   <b>Und wenn Apple trotzdem „maximum number of certificates" meldet?</b>
-  Dann liegen aus früheren Versuchen schon drei im Portal. Unter Certificates
+  Dann liegen aus früheren Versuchen schon drei im Portal. Unter
+  <a class="ziel" href="https://developer.apple.com/account/resources/certificates/list" target="_blank" rel="noopener">Certificates</a>
   die alten widerrufen und Schritt&nbsp;B2 noch einmal starten — danach ist
   Ruhe, weil das neue Zertifikat liegen bleibt.
+</div>
+
+<h2 class="abschnitt-titel">Alle Ziele auf einen Blick</h2>
+<p class="abschnitt-hinweis">
+  Dieselben Verweise wie oben, gesammelt — zum Wiederfinden, wenn du mitten
+  drin bist. Alle öffnen in einem neuen Tab.
+</p>
+
+<ul class="ziele">
+  <li><a class="ziel" href="https://appstoreconnect.apple.com/access/integrations/api" target="_blank" rel="noopener">App Store Connect API</a> <span class="wofuer">Schlüssel, Key-ID, Issuer-ID · Schritt A</span></li>
+  <li><a class="ziel" href="https://developer.apple.com/account" target="_blank" rel="noopener">Apple Developer · Membership</a> <span class="wofuer">Team-ID · Schritt A</span></li>
+  <li><a class="ziel" href="https://github.com/SKKJbeer/PulseMeter/settings/secrets/actions" target="_blank" rel="noopener">GitHub · Geheimnisse</a> <span class="wofuer">die vier Angaben · Schritt B</span></li>
+  <li><a class="ziel" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub · Token anlegen</a> <span class="wofuer"><code>GH_PAT</code> · Schritt B2</span></li>
+  <li><a class="ziel" href="https://github.com/SKKJbeer/PulseMeter/actions/workflows/zertifikat.yml" target="_blank" rel="noopener">Ablauf „Zertifikat anlegen“</a> <span class="wofuer">einmalig · Schritt B2</span></li>
+  <li><a class="ziel" href="https://github.com/SKKJbeer/PulseMeter/actions/workflows/testflight.yml" target="_blank" rel="noopener">Ablauf „TestFlight“</a> <span class="wofuer">jeder Bau · Schritt C</span></li>
+  <li><a class="ziel" href="https://developer.apple.com/account/resources/certificates/list" target="_blank" rel="noopener">Apple Developer · Certificates</a> <span class="wofuer">nur falls die Grenze meckert</span></li>
+  <li><a class="ziel" href="https://appstoreconnect.apple.com/apps" target="_blank" rel="noopener">App Store Connect · Apps</a> <span class="wofuer">App, Käufe, TestFlight · Schritte 7–10</span></li>
+  <li><a class="ziel" href="https://apps.apple.com/de/app/testflight/id899247664" target="_blank" rel="noopener">TestFlight im App Store</a> <span class="wofuer">aufs iPhone · Schritt D</span></li>
+  <li><a class="ziel" href="https://dash.cloudflare.com/?to=/:account/workers-and-pages" target="_blank" rel="noopener">Cloudflare · Workers &amp; Pages</a> <span class="wofuer">Website online · Schritt 5</span></li>
+  <li><a class="ziel" href="https://github.com/SKKJbeer/PulseMeter" target="_blank" rel="noopener">Das Repository</a> <span class="wofuer">Code, Abläufe, Dokumente</span></li>
+</ul>
+
+<div class="wenn" style="margin-top:18px">
+  <b>Führt ein Verweis ins Leere?</b> Apple und GitHub bauen ihre Oberflächen
+  gelegentlich um. Dann hilft die Ebene darüber —
+  <a class="ziel" href="https://appstoreconnect.apple.com" target="_blank" rel="noopener">appstoreconnect.apple.com</a>
+  beziehungsweise
+  <a class="ziel" href="https://developer.apple.com/account" target="_blank" rel="noopener">developer.apple.com/account</a>
+  — und von dort der Weg über das Menü. Die Namen der Bereiche stehen in jedem
+  Schritt mit dabei, gerade dafür.
 </div>
 
 <footer>

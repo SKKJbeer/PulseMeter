@@ -9,6 +9,38 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.59.1 — 2026-08-16
+
+**Die Anleitung verlinkt jetzt, wohin sie schickt.**
+
+„App Store Connect › Users and Access › Integrations" ist eine Wegbeschreibung.
+Wer mitten in der Arbeit steckt, will keinen Weg, sondern das Ziel.
+
+### Geändert
+
+- **Elf direkte Verweise** in `docs/go-live-anleitung.html`: der Schlüssel bei
+  App Store Connect, die Team-ID unter Membership, die Geheimnisse und das
+  Token bei GitHub, die zwei Abläufe, die Zertifikatsliste, die Apps-Übersicht,
+  TestFlight im App Store, Cloudflare. Alle öffnen in einem neuen Tab — sonst
+  ist die Anleitung weg, gerade wenn man sie braucht.
+- **Eine Sammlung am Ende**, dieselben Ziele beieinander, jedes mit dem
+  Schritt daneben, zu dem es gehört.
+- Verweise nach außen sind **unterstrichen und tragen einen Pfeil**. Farbe
+  allein unterscheidet bei einer Rot-Grün-Schwäche nichts, und auf einem
+  Telefon will man sehen, was ein Ziel ist, bevor man danach greift.
+
+### Was dabei nicht weggefallen ist
+
+**Die Namen der Bereiche stehen weiter im Text.** Apple und GitHub bauen ihre
+Oberflächen um; ein Verweis, der ins Leere führt, lässt jemanden ratlos zurück,
+wenn daneben nicht steht, wonach er suchen soll. Ein Hinweis am Ende nennt
+zusätzlich die Ebene darüber.
+
+Eine neue Prüfung im Bauskript hält fest, dass **jeder** äußere Verweis
+`target="_blank"` und `rel="noopener"` trägt — 24 sind es, keiner schlampig.
+
+---
+
 ## 0.59.0 — 2026-08-16
 
 **Das Zertifikat wird einmal angelegt und bleibt dann liegen.**
