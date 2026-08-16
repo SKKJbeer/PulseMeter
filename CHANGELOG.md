@@ -9,6 +9,53 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.49.0 — 2026-08-16
+
+**Im Impressum stand eine Behauptung, die niemand aufgestellt hatte.**
+
+„Kleinunternehmer im Sinne von § 19 Umsatzsteuergesetz" — ich hatte das
+geschrieben, weil es bei einem Einzelentwickler plausibel klingt. Der Gründer
+hat am 16. August bestätigt, dass es **nicht** zutrifft. Eine falsche Angabe
+zur Umsatzsteuer im Impressum ist kein Schönheitsfehler.
+
+### Behoben
+
+- Der Satz ist ersatzlos raus. An seiner Stelle steht ein Platzhalter für die
+  Umsatzsteuer-Identifikationsnummer, die § 5 DDG **soweit vorhanden** verlangt.
+- Die Startseite sagte „Bald im App Store". Das ist eine Absicht, keine
+  Tatsache. Jetzt: „Die App ist noch nicht im App Store."
+- Auf der Preisliste steht jetzt dabei, dass sich noch nichts kaufen lässt und
+  die Beträge die **geplanten** Preise sind. Preise für ein Produkt, das man
+  nicht erwerben kann, sind sonst eine stillschweigende Zusage.
+- Der Stand der Datenschutzerklärung ist auf den 16. August gesetzt — er stand
+  auf dem 14., obwohl der Text seither dreimal geändert wurde.
+
+### Hinzugefügt
+
+- **Eine Regel in `CLAUDE.md`:** Was über den Gründer, sein Gewerbe, seine
+  Anschrift oder seine Zahlen behauptet wird, muss von ihm bestätigt sein.
+  Sonst wird es weggelassen — ein fehlender Absatz ist harmlos, ein falscher
+  nicht — oder es steht als markierter Platzhalter da. In `docs/` darf eine
+  Annahme stehen, wenn sie als solche gekennzeichnet ist. Rechtstexte sind
+  keine Textsorte, in der sich etwas plausibel ergänzen lässt.
+- Eine Prüfung dazu: **Jede eckige Klammer im sichtbaren Text braucht einen
+  `PLATZHALTER`-Kommentar.** Ohne sie könnte `[USt-IdNr. eintragen]` online
+  gehen, weil der Kommentar beim Bearbeiten verlorenging und die Zählung dann
+  auf null steht.
+
+### Nachgetragen
+
+- Zur Umsatzsteuer und den Preisen, als überprüfbare Tatsache statt als
+  Vermutung: Bei App-Verkäufen in der EU ist **Apple der Verkäufer** gegenüber
+  dem Kunden und führt die Umsatzsteuer ab. Die Beträge in
+  `04-monetarisierung.md` sind das, was der Kunde zahlt, und bleiben es —
+  unabhängig davon, was im Impressum steht.
+
+_Website-Prüfungen erweitert, 94 Prüfungen des Klick-Dummys, 198 Tests in
+PulseCore, 6 Sicherheitsprüfungen — alle grün._
+
+---
+
 ## 0.48.3 — 2026-08-16
 
 **Im Impressum stand ein Kommentarrest als Text.**

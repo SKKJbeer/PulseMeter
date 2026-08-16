@@ -1,6 +1,6 @@
 # Was vor dem Onlinegehen noch eingetragen werden muss
 
-**Eine Stelle** ist noch offen, im Quelltext mit `PLATZHALTER 1 von 1`
+**Zwei Stellen** sind noch offen, im Quelltext mit `PLATZHALTER n von 2`
 markiert. Finden lässt sie sich mit:
 
 ```bash
@@ -21,15 +21,26 @@ grep -rn "PLATZHALTER" docs/website/
   Impressum und in der Datenschutzerklärung, dort **wortgleich**. Dieselben
   Angaben gehören später in App Store Connect.
 
-> **Noch einmal ansehen, bevor es online geht:** Im Impressum steht
-> „Kleinunternehmer im Sinne von § 19 Umsatzsteuergesetz". Das ist eine
-> Annahme. Trifft sie nicht zu, gehört dort die
-> Umsatzsteuer-Identifikationsnummer hin — und das betrifft auch die Preise in
-> `04-monetarisierung.md`, die als Bruttopreise gedacht sind.
-
 ---
 
-## Offen: der Hosting-Anbieter
+## Offen 1 — Umsatzsteuer-Identifikationsnummer
+
+`impressum.html`, Abschnitt „Umsatzsteuer".
+
+Dort stand bis 0.49.0 „Kleinunternehmer im Sinne von § 19 Umsatzsteuergesetz".
+**Das war eine Annahme, und sie ist falsch** — der Gründer hat am 16. August
+bestätigt, dass er kein Kleinunternehmer ist. Der Satz ist ersatzlos raus.
+
+§ 5 DDG verlangt die Umsatzsteuer-Identifikationsnummer, **soweit vorhanden**.
+Wer eine hat, trägt sie ein; wer keine hat, lässt den Abschnitt weg — dann ist
+auch der Absatz zu löschen und nicht leer stehen zu lassen.
+
+Auf die Preise im App Store wirkt sich das nicht aus: Bei App-Verkäufen in der
+EU ist **Apple der Verkäufer** gegenüber dem Kunden und führt die Umsatzsteuer
+ab. Die Beträge in `04-monetarisierung.md` sind das, was der Kunde zahlt, und
+bleiben es.
+
+## Offen 2 — der Hosting-Anbieter
 
 `datenschutz.html`, Abschnitt 7. Dort steht heute Cloudflare, weil das der
 Plan ist. Wird es ein anderer, gehört dessen Name und Anschrift an diese

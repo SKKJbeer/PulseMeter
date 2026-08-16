@@ -63,6 +63,18 @@ for (const datei of seiten) {
   note(!ohneKommentar.includes("-->") && !ohneKommentar.includes("<!--"),
        `${datei}: keine losen Kommentarzeichen`);
 
+  // **Jede eckige Klammer im Text ist ein Platzhalter — und muss als solcher
+  // markiert sein.** Sonst rutscht ein `[USt-IdNr. eintragen]` durch, weil der
+  // dazugehörige Kommentar beim Bearbeiten verlorenging: Die Zählung stünde auf
+  // null, und im Impressum stünde trotzdem eine Klammer.
+  const sichtbar = html.replace(/<!--[\s\S]*?-->/g, "").replace(/<[^>]+>/g, " ");
+  const klammern = sichtbar.match(/\[[^\]]{3,}\]/g) || [];
+  const markiert = (html.match(/PLATZHALTER/g) || []).length;
+  note(klammern.length === 0 || markiert > 0,
+       klammern.length === 0
+         ? `${datei}: keine offenen Klammern im Text`
+         : `${datei}: ${klammern[0]} steht ohne PLATZHALTER-Kommentar da`);
+
   // Keine fremde Quelle im Quelltext. Erlaubt sind Verweise (`href` auf eine
   // andere Website), verboten ist alles, was der Browser **nachlädt**.
   const geladen = [...html.matchAll(/\ssrc="(https?:)?\/\/[^"]+"/g)].map(m => m[0]);

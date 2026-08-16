@@ -210,6 +210,25 @@ Was sich dabei **nicht** ändert: Nichts versprechen, was es nicht gibt
 (`09-appstore.md`), und geschätzte Zahlen bleiben gekennzeichnet
 (Produktprinzip 7). Lockerer Ton ist kein Freibrief für großzügige Aussagen.
 
+### Keine Annahmen in Texten, die jemand anderes liest
+
+Am 16. August ausdrücklich verlangt, nachdem im Impressum „Kleinunternehmer im
+Sinne von § 19 UStG" stand. Niemand hatte das gesagt — es klang plausibel, und
+es war falsch.
+
+**Was über den Gründer, sein Gewerbe, seine Anschrift, seine Geräte oder seine
+Zahlen behauptet wird, muss von ihm bestätigt sein.** Sonst gilt:
+
+1. **Weglassen** ist die erste Wahl. Ein fehlender Absatz ist harmlos, ein
+   falscher nicht.
+2. Geht es nicht ohne, dann als **Platzhalter in eckigen Klammern** mit einem
+   `PLATZHALTER`-Kommentar daneben — sichtbar, zählbar, prüfbar.
+3. In den Dokumenten unter `docs/` darf eine Annahme stehen, wenn sie **als
+   solche gekennzeichnet** ist („Wette", „geschätzt", „nicht gemessen").
+
+Das gilt besonders für Rechtstexte. Ein Impressum ist keine Textsorte, in der
+sich etwas plausibel ergänzen lässt.
+
 ## Wo was liegt
 
 ```
