@@ -1,6 +1,6 @@
 # Was vor dem Onlinegehen noch eingetragen werden muss
 
-Vier Stellen, alle im Quelltext mit `PLATZHALTER n von 4` markiert. Suchen
+Drei Stellen, alle im Quelltext mit `PLATZHALTER n von 3` markiert. Suchen
 lassen sie sich in einem Zug:
 
 ```bash
@@ -13,25 +13,18 @@ Apple prüft die Datenschutz-URL vor der Freigabe.
 
 ---
 
-## 1 — Kontaktadresse auf der Hilfeseite
+## Erledigt: die Kontaktadresse
 
-`hilfe.html`, Abschnitt „Kontakt". Dieselbe Adresse gehört in `impressum.html`
-und in `datenschutz.html` — dort steht derselbe Platzhalter.
-
-Vorgesehen ist eine Adresse aus Apples **„E-Mail-Adresse verbergen"**
-(`…@privaterelay.appleid.com`), die an dein Postfach weiterleitet. So kommt
-deine echte Adresse nicht ins Impressum, und du kannst sie abschalten, falls
-Werbung kommt.
-
-So entsteht sie: iPhone → Einstellungen → dein Name → **iCloud** → „E-Mail
-verbergen" → **Neue Adresse erstellen** → als Bezeichnung „PulseMeter Support"
-eintragen. Setzt iCloud+ voraus (ab 0,99 € im Monat, in jedem
-iCloud-Speicherplan enthalten).
+Eingetragen ist **`geschult-atome.6r@icloud.com`** — eine Adresse aus Apples
+„E-Mail-Adresse verbergen". Sie steht an drei Stellen: `hilfe.html`,
+`impressum.html` und `datenschutz.html`, und leitet an das Postfach des
+Gründers weiter. Kommt darüber Werbung, lässt sie sich in den
+iCloud-Einstellungen abschalten, ohne dass jemand die private Adresse erfährt.
 
 Später mit eigener Domain wird daraus `hallo@…` mit kostenloser Weiterleitung
-über Cloudflare Email Routing. Der Wechsel ist eine Zeile in drei Dateien.
+über Cloudflare Email Routing — dann sind es dieselben drei Stellen.
 
-## 2 — Anbieter im Impressum
+## 1 — Anbieter im Impressum
 
 `impressum.html`, Abschnitt „Anbieter". Vier Zeilen:
 
@@ -48,13 +41,13 @@ Zu prüfen ist außerdem der Absatz zur **Umsatzsteuer**: Er steht heute auf
 Kleinunternehmer nach § 19 UStG. Trifft das nicht zu, gehört dort die
 Umsatzsteuer-Identifikationsnummer hin.
 
-## 3 — Verantwortlicher in der Datenschutzerklärung
+## 2 — Verantwortlicher in der Datenschutzerklärung
 
 `datenschutz.html`, Abschnitt 1. **Dieselben** Angaben wie im Impressum, und
 dieselben wie später in App Store Connect. Weichen sie voneinander ab, fällt
 es genau dann auf, wenn es unangenehm ist.
 
-## 4 — Der Hosting-Anbieter
+## 3 — Der Hosting-Anbieter
 
 `datenschutz.html`, Abschnitt 7. Dort steht heute Cloudflare, weil das der
 Plan ist. Wird es ein anderer, gehört dessen Name und Anschrift an diese

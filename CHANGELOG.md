@@ -9,6 +9,28 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.48.1 — 2026-08-15
+
+**Die Kontaktadresse steht. Von drei offenen Stellen ist eine weg.**
+
+### Geändert
+
+- `geschult-atome.6r@icloud.com` ist auf der Hilfeseite, im Impressum und in
+  der Datenschutzerklärung eingetragen — eine Adresse aus Apples
+  „E-Mail-Adresse verbergen". Sie leitet weiter, hält die private Adresse aus
+  dem öffentlichen Impressum und lässt sich abschalten, falls Werbung darüber
+  kommt.
+- Die Platzhalter sind neu gezählt: `n von 3` statt `n von 4`. Offen bleiben
+  die Anschrift im Impressum, dieselbe Anschrift in der Datenschutzerklärung —
+  sie **müssen** übereinstimmen, sonst fällt es genau dann auf, wenn es
+  unangenehm ist — und der Name des Hosters, sobald Cloudflare Pages steht.
+
+_231 Website-Prüfungen, 94 Prüfungen des Klick-Dummys, 198 Tests in PulseCore,
+6 Sicherheitsprüfungen — alle grün. Ohne Anschrift darf die Seite weiterhin
+nicht online: Ein Impressum ohne ladungsfähige Anschrift ist abmahnfähig._
+
+---
+
 ## 0.48.0 — 2026-08-15
 
 **Die Website bekommt erst einmal eine kostenlose Adresse — und der Wechsel
