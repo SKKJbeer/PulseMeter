@@ -54,6 +54,17 @@ core.hooksPath`.
 Voraussetzung ist Xcode aus dem App Store, einmal geöffnet und mit bestätigter
 Lizenz. Alles Weitere richtet das Skript ein.
 
+### Ohne eigenen Mac
+
+Geht auch. `.github/workflows/testflight.yml` baut, signiert und lädt die App
+auf dem macOS-Läufer von GitHub nach TestFlight hoch — gestartet mit einem
+Knopf im Browser, auch vom Telefon aus. Einmalig sind vier Angaben aus App
+Store Connect als Repository-Geheimnisse zu hinterlegen; der Kopf der
+Workflow-Datei sagt welche, die Anleitung führt hindurch.
+
+Der Preis: zwanzig Minuten je Bau statt zwei, und Apple prüft danach noch
+einmal. Dafür braucht es kein Kabel und kein Xcode.
+
 ### Auf ein echtes iPhone
 
 Ohne Terminal: im Finder **`Aufs-iPhone.command`** doppelklicken. Es holt den
@@ -76,7 +87,7 @@ iCloud-Abgleich wie Käufe lassen sich noch nicht ausprobieren.
 
 ## Status
 
-Version **0.57.0**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
+Version **0.58.0**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
 rechnet echt. Alle vier Bildschirme — Übersicht, Erfassung, Verlauf und Zähler —
 laufen als SwiftUI-App im Simulator und werden auf jedem Lauf fotografiert,
 hell und dunkel. Siehe [CHANGELOG.md](CHANGELOG.md).
@@ -142,7 +153,7 @@ Siehe [CLAUDE.md](CLAUDE.md), Regel 1.
 | [05 – Roadmap](docs/05-roadmap.md) | v1-Scope, Ausschlüsse, Umsetzungsreihenfolge |
 | [06 – Übergabe](docs/06-uebergabe.md) | Der laufende Zustand für eine Sitzung, die den Verlauf nicht kennt |
 | [07 – Weg zum Go-Live](docs/07-v1-plan.md) | Was für 1.0 hinein muss, was gestrichen ist, in welcher Reihenfolge |
-| [Anleitung: in den App Store](docs/go-live-anleitung.html) | Elf Schritte zum Abarbeiten — Befehle, Zeiten, was schiefgehen kann |
+| [Anleitung: in den App Store](docs/go-live-anleitung.html) | Elf Schritte zum Abarbeiten — plus der Weg ganz ohne eigenen Mac |
 | [08 – Baukasten](docs/08-baukasten.md) | Dieses Aufbauschema auf ein anderes Projekt übertragen |
 | [09 – App Store](docs/09-appstore.md) | Texte, Icon, Bilder, Datenschutzangaben — fertig zum Einreichen |
 | [10 – Sichtbarkeit](docs/10-sichtbarkeit.md) | Gefunden werden ohne Werbebudget: Suchwörter, Bewertungen, Zeitpunkt |

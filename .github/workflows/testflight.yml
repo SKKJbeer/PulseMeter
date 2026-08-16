@@ -1,0 +1,216 @@
+name: TestFlight
+
+# **Der Weg ohne eigenen Mac.**
+#
+# Die CI hat einen: `ci.yml` baut die App bei jedem Push auf `macos-15`. Was
+# dort fehlte, war das Signieren und das Hochladen — und beides geht headless,
+# wenn man Xcode einen App-Store-Connect-Schlüssel gibt statt eines
+# Anmeldefensters. Damit fällt der Mac des Gründers als Voraussetzung weg: Der
+# Lauf wird im Browser gestartet (auch auf dem Telefon), und die fertige App
+# kommt über TestFlight zurück aufs Gerät.
+#
+# **Was das nicht ersetzt.** Die App landet damit in TestFlight, nicht im
+# Store. Und `scripts/aufs-handy.sh` bleibt der schnellere Weg, wenn ein Mac
+# und ein Kabel zur Hand sind: zwei Minuten statt zwanzig.
+#
+# ---
+#
+# **Einmalig einzurichten, alles im Browser** (siehe `docs/go-live-anleitung.html`):
+#
+#   1. App Store Connect › Users and Access › Integrations › App Store Connect
+#      API › Schlüssel erzeugen, Rolle **App Manager**.
+#      Die `.p8`-Datei lässt sich **nur einmal** laden — verliert man sie, muss
+#      ein neuer Schlüssel her.
+#   2. Im Repository unter Settings › Secrets and variables › Actions vier
+#      Geheimnisse anlegen:
+#        ASC_KEY_ID      — die Key-ID, zehn Zeichen
+#        ASC_ISSUER_ID   — die Issuer-ID, eine UUID, steht über der Liste
+#        ASC_KEY_P8      — der **ganze Inhalt** der .p8-Datei, mit den
+#                          BEGIN/END-Zeilen
+#        ASC_TEAM_ID     — die Team-ID, zehn Zeichen, steht unter Membership
+#   3. In App Store Connect die App anlegen, Bundle-ID `com.pulsemeter.app`.
+#
+# Danach: Actions › TestFlight › Run workflow.
+
+on:
+  workflow_dispatch:
+    inputs:
+      hinweis:
+        description: "Was ist neu? Steht später bei den Testern."
+        required: false
+        default: "Neuer Stand zum Ausprobieren."
+
+permissions:
+  contents: read
+
+jobs:
+  hochladen:
+    runs-on: macos-15
+    timeout-minutes: 60
+    # Zwei Uploads gleichzeitig wären zwei Bauten mit derselben Buildnummer,
+    # und den zweiten lehnt App Store Connect ab.
+    concurrency:
+      group: testflight
+      cancel-in-progress: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # **Zuerst prüfen, ob überhaupt eingerichtet ist.** Ohne das läuft der
+      # Auftrag zwanzig Minuten und scheitert am Ende mit einer Meldung von
+      # `altool`, die nicht sagt, welches der vier Geheimnisse fehlt.
+      - name: Zugang prüfen
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+          ASC_TEAM_ID: ${{ secrets.ASC_TEAM_ID }}
+        run: |
+          fehlt=""
+          [ -n "$ASC_KEY_ID" ]    || fehlt="$fehlt ASC_KEY_ID"
+          [ -n "$ASC_ISSUER_ID" ] || fehlt="$fehlt ASC_ISSUER_ID"
+          [ -n "$ASC_KEY_P8" ]    || fehlt="$fehlt ASC_KEY_P8"
+          [ -n "$ASC_TEAM_ID" ]   || fehlt="$fehlt ASC_TEAM_ID"
+          if [ -n "$fehlt" ]; then
+            echo "::error::Diese Geheimnisse fehlen:$fehlt — siehe Kopf von .github/workflows/testflight.yml"
+            exit 1
+          fi
+          echo "Alle vier Angaben liegen vor."
+
+      # Der Schlüssel muss an zwei Orten liegen: `xcodebuild` bekommt ihn über
+      # einen Pfad, `altool` sucht ihn von sich aus in `~/.appstoreconnect`.
+      - name: Schlüssel ablegen
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          mkdir -p ~/private_keys ~/.appstoreconnect/private_keys
+          printf '%s\n' "$ASC_KEY_P8" > ~/private_keys/AuthKey_$ASC_KEY_ID.p8
+          cp ~/private_keys/AuthKey_$ASC_KEY_ID.p8 ~/.appstoreconnect/private_keys/
+          chmod 600 ~/private_keys/AuthKey_$ASC_KEY_ID.p8
+
+      - name: Zeichenketten und Angriffsfläche
+        run: |
+          python3 scripts/check-strings.py
+          scripts/check-sicherheit.sh
+
+      # Der Rechenkern zuerst. Ein Upload eines Standes, dessen Rechnung falsch
+      # ist, kostet Tester-Vertrauen und eine Woche.
+      - name: PulseCore
+        run: swift test --package-path Packages/PulseCore
+
+      - name: XcodeGen
+        run: brew install xcodegen
+
+      # **Die Buildnummer kommt aus der Laufnummer.** App Store Connect nimmt
+      # jede Nummer nur ein einziges Mal an; zweimal `1` hochzuladen scheitert
+      # nach zwanzig Minuten, und zwar erst beim letzten Schritt.
+      - name: Xcode-Projekt erzeugen
+        run: |
+          xcodegen generate
+          echo "Buildnummer ${{ github.run_number }}"
+
+      - name: Archivieren und signieren
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_TEAM_ID: ${{ secrets.ASC_TEAM_ID }}
+        run: |
+          # `-allowProvisioningUpdates` zusammen mit dem Schlüssel ist der
+          # Kern der Sache: Xcode legt App-ID, App-Gruppe, iCloud-Container,
+          # Zertifikat und Profil selbst an — ohne Anmeldefenster und ohne
+          # dass jemand im Portal etwas anklickt.
+          xcodebuild archive \
+            -project PulseMeter.xcodeproj \
+            -scheme PulseMeter \
+            -destination "generic/platform=iOS" \
+            -archivePath build/PulseMeter.xcarchive \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath ~/private_keys/AuthKey_$ASC_KEY_ID.p8 \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            -quiet \
+            DEVELOPMENT_TEAM="$ASC_TEAM_ID" \
+            CODE_SIGN_STYLE=Automatic \
+            CODE_SIGNING_ALLOWED=YES \
+            CODE_SIGNING_REQUIRED=YES \
+            CURRENT_PROJECT_VERSION=${{ github.run_number }}
+
+      - name: Ausfuhrvorgaben schreiben
+        env:
+          ASC_TEAM_ID: ${{ secrets.ASC_TEAM_ID }}
+        run: |
+          # `app-store-connect` heißt der Wert seit Xcode 15.3; davor
+          # `app-store`. Der alte wird noch angenommen, aber mit Warnung.
+          cat > build/ExportOptions.plist <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>teamID</key><string>$ASC_TEAM_ID</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>uploadSymbols</key><true/>
+            <!-- Kein Bitcode: Apple nimmt es seit Xcode 14 nicht mehr an. -->
+            <key>destination</key><string>export</string>
+          </dict>
+          </plist>
+          PLIST
+
+      - name: Ausführen als IPA
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath build/PulseMeter.xcarchive \
+            -exportPath build/ipa \
+            -exportOptionsPlist build/ExportOptions.plist \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath ~/private_keys/AuthKey_$ASC_KEY_ID.p8 \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+          ls -la build/ipa
+
+      - name: Zu TestFlight hochladen
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          IPA=$(find build/ipa -name "*.ipa" | head -1)
+          [ -n "$IPA" ] || { echo "::error::Keine .ipa entstanden."; exit 1; }
+          xcrun altool --upload-app \
+            --type ios \
+            --file "$IPA" \
+            --apiKey "$ASC_KEY_ID" \
+            --apiIssuer "$ASC_ISSUER_ID"
+
+      # Auch bei einem Fehlschlag: Das Protokoll des Signierens ist das, woran
+      # sich der erste Lauf erfahrungsgemäß entscheidet.
+      - name: Protokolle sichern
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: testflight-protokolle
+          path: |
+            build/*.log
+            build/ExportOptions.plist
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Was jetzt passiert
+        run: |
+          cat <<'ENDE'
+
+          Hochgeladen. Was jetzt von allein passiert:
+
+            · Apple prüft den Bau automatisch. Das dauert 5 bis 30 Minuten.
+            · Danach steht er in App Store Connect unter TestFlight.
+            · Beim allerersten Bau fragt Apple einmal nach der
+              Ausfuhr-Verschlüsselung. Antwort für diese App: nein, es wird
+              keine nicht-standardmäßige Verschlüsselung verwendet.
+
+          Dann in der TestFlight-App auf dem iPhone anmelden — dieselbe
+          Apple-ID — und installieren.
+
+          ENDE

@@ -177,6 +177,18 @@
   }
   .pause b { color: var(--ink); font-weight: 620; }
 
+  /* Der Abzweig steht direkt unter dem Vorspann, weil die Frage „habe ich
+     überhaupt einen Mac" vor dem ersten Schritt beantwortet sein muss und
+     nicht auf halber Strecke. */
+  .abzweig {
+    margin: 26px 0 0; padding: 15px 18px;
+    background: var(--surface); border: 1px solid var(--line-2);
+    border-left: 3px solid var(--tint); border-radius: 0 14px 14px 0;
+  }
+  .abzweig b { font-size: 15px; }
+  .abzweig p { margin: 5px 0 0; font-size: 14.5px; color: var(--ink-2); }
+  .abzweig a, .schritt a { color: var(--tint); }
+
   ul.klein { margin: 12px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 7px; }
   ul.klein li { color: var(--ink-2); padding-left: 17px; position: relative; }
   ul.klein li::before {
@@ -205,6 +217,15 @@
     Telefon; danach läuft die Uhr für die zwei Wochen, auf die alles andere
     wartet.
   </p>
+
+  <div class="abzweig">
+    <b>Kein Mac zur Hand?</b>
+    <p>
+      Dann geht es auch ohne — die Schritte&nbsp;1 bis&nbsp;3 werden zu einem
+      Knopfdruck im Browser, und die App kommt über TestFlight aufs Telefon.
+      Einmal einrichten, danach immer. <a href="#ohne-mac">Der Weg steht unten.</a>
+    </p>
+  </div>
 
   <div class="strecke">
     <div class="strecke-zeile">
@@ -369,6 +390,75 @@ com.pulsemeter.app.everything</pre>
   </li>
 
 </ol>
+
+<h2 class="abschnitt-titel" id="ohne-mac">Der Weg ohne eigenen Mac</h2>
+<p class="abschnitt-hinweis">
+  Ersetzt die Schritte 1 bis 3. Alles im Browser, auch auf dem Telefon —
+  gebaut wird auf dem Mac, den GitHub sowieso stellt.
+</p>
+
+<ol class="schritte">
+
+  <li class="schritt">
+    <div class="nummer">A</div>
+    <div class="text">
+      <h3>Einen Schlüssel für App Store Connect erzeugen</h3>
+      <div class="marken"><span class="marke">Browser</span><span class="marke zeit">5 Min</span></div>
+      <p>App Store Connect › Users and Access › Integrations › <strong>App Store Connect API</strong> › Schlüssel erzeugen, Rolle <strong>App Manager</strong>.</p>
+      <div class="wenn"><b>Die <code>.p8</code>-Datei lässt sich nur ein einziges Mal laden.</b> Geht sie verloren, hilft nur ein neuer Schlüssel. Also gleich sichern.</div>
+      <p>Notiere dir dazu die <strong>Key-ID</strong> (zehn Zeichen), die <strong>Issuer-ID</strong> (steht über der Liste) und die <strong>Team-ID</strong> aus dem Bereich Membership.</p>
+    </div>
+  </li>
+
+  <li class="schritt">
+    <div class="nummer">B</div>
+    <div class="text">
+      <h3>Die vier Angaben ins Repository legen</h3>
+      <div class="marken"><span class="marke">Browser</span><span class="marke zeit">5 Min</span></div>
+      <p>GitHub › Settings › Secrets and variables › Actions › <strong>New repository secret</strong>, viermal:</p>
+<pre>ASC_KEY_ID       die Key-ID
+ASC_ISSUER_ID    die Issuer-ID
+ASC_KEY_P8       der ganze Inhalt der .p8-Datei,
+                 mit den BEGIN- und END-Zeilen
+ASC_TEAM_ID      die Team-ID</pre>
+      <p>Geheimnisse lassen sich später nur ersetzen, nicht ansehen. Das ist Absicht.</p>
+    </div>
+  </li>
+
+  <li class="schritt">
+    <div class="nummer">C</div>
+    <div class="text">
+      <h3>Den Lauf starten</h3>
+      <div class="marken"><span class="marke">Browser</span><span class="marke zeit">20 Min warten</span></div>
+      <p>GitHub › Actions › <strong>TestFlight</strong> › Run workflow. Der Lauf prüft, baut, signiert und lädt hoch. Kennungen, Zertifikat und Profil legt Xcode dabei selbst an — im Portal ist nichts anzuklicken.</p>
+      <div class="wenn"><b>Bricht er gleich am Anfang ab?</b> Dann sagt die Meldung, welches der vier Geheimnisse fehlt. Das ist mit Absicht der erste Schritt — sonst liefe er zwanzig Minuten und scheiterte am Ende.</div>
+    </div>
+  </li>
+
+  <li class="schritt">
+    <div class="nummer">D</div>
+    <div class="text">
+      <h3>Über TestFlight installieren</h3>
+      <div class="marken"><span class="marke">iPhone</span><span class="marke zeit">5 Min</span></div>
+      <p>Apple prüft den Bau automatisch, das dauert nochmal fünf bis dreißig Minuten. Danach steht er in App Store Connect unter TestFlight. Beim allerersten Mal fragt Apple einmal nach der Ausfuhr-Verschlüsselung — die Antwort für diese App ist <strong>nein</strong>.</p>
+      <p>Dann die App <strong>TestFlight</strong> aufs iPhone laden, mit derselben Apple-ID anmelden, installieren. Ab hier weiter bei Schritt&nbsp;4: deine echten Zähler eintragen.</p>
+    </div>
+  </li>
+
+</ol>
+
+<div class="pause">
+  <b>Was dieser Weg kostet:</b> zwanzig Minuten statt zwei je Bau, und die App
+  läuft nicht sofort, sondern nach Apples Prüfung. Dafür braucht es keinen Mac,
+  kein Kabel und keine Xcode-Installation.
+</div>
+
+<div class="wenn" style="margin-top:18px">
+  <b>Nach drei, vier Läufen meldet Apple „maximum number of certificates".</b>
+  Jeder Lauf startet auf einem frischen Rechner und legt dafür ein neues
+  Verteilzertifikat an; erlaubt sind drei. Im Entwicklerportal unter
+  Certificates die alten widerrufen — sie werden nicht mehr gebraucht.
+</div>
 
 <footer>
   <p>

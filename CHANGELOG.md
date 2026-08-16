@@ -9,6 +9,54 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.58.0 — 2026-08-16
+
+**Es geht doch ohne eigenen Mac. Ich hatte das zu schnell verneint.**
+
+Auf die Frage, ob das nicht auch vom Telefon aus ginge, war meine erste
+Antwort im Kern „nein, iOS-Apps brauchen Xcode". Das stimmt — und ist trotzdem
+die falsche Auskunft, denn **dieses Projekt hat längst einen Mac**: `ci.yml`
+baut die App bei jedem Push auf `macos-15`. Gefehlt haben nur zwei Dinge, und
+beide gehen headless: signieren und hochladen.
+
+### Hinzugefügt
+
+- **`.github/workflows/testflight.yml`** — baut, signiert und lädt nach
+  TestFlight. Gestartet über Actions › Run workflow, also mit einem Knopf im
+  Browser; das geht auch vom Telefon. Zurück kommt die App über die
+  TestFlight-App aufs Gerät. **Kein Kabel, kein Xcode, kein Mac.**
+
+  Der Kern ist `-allowProvisioningUpdates` zusammen mit einem
+  App-Store-Connect-Schlüssel statt eines Anmeldefensters: Xcode legt App-ID,
+  App-Gruppe, iCloud-Container, Zertifikat und Profil selbst an.
+
+- **Vier Schritte A bis D** in `docs/go-live-anleitung.html`, plus ein Abzweig
+  direkt unter dem Vorspann — die Frage „habe ich überhaupt einen Mac" gehört
+  vor den ersten Schritt und nicht auf halbe Strecke.
+
+### Drei Fallen, die schon eingebaut sind
+
+- **Die Zugangsprüfung steht als erster Schritt**, nicht als letzter. Fehlt
+  eines der vier Geheimnisse, sagt der Lauf das nach zehn Sekunden mit Namen.
+  Sonst liefe er zwanzig Minuten und scheiterte an einer `altool`-Meldung, die
+  nicht verrät, welches fehlt.
+- **Die Buildnummer kommt aus `github.run_number`.** App Store Connect nimmt
+  jede Nummer nur einmal an; zweimal `1` hochzuladen scheitert im allerletzten
+  Schritt.
+- **Nach drei, vier Läufen ist die Zertifikatsgrenze erreicht.** Jeder Lauf
+  startet auf einem frischen Rechner und legt dafür ein neues Verteilzertifikat
+  an; erlaubt sind drei. Das ist eine echte Unschönheit dieses Weges und steht
+  deshalb in der Anleitung, samt der Stelle im Portal, an der man die alten
+  widerruft.
+
+### Was der Weg kostet
+
+Zwanzig Minuten je Bau statt zwei, und danach prüft Apple noch einmal fünf bis
+dreißig Minuten. `scripts/aufs-handy.sh` bleibt der schnellere Weg, wenn ein
+Mac und ein Kabel dastehen. Er ist nur eben keine Voraussetzung mehr.
+
+---
+
 ## 0.57.0 — 2026-08-16
 
 **Eine Anleitung zum Abarbeiten, nicht zum Nachschlagen.**
