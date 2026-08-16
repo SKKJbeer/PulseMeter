@@ -9,6 +9,49 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.57.0 — 2026-08-16
+
+**Eine Anleitung zum Abarbeiten, nicht zum Nachschlagen.**
+
+`07-v1-plan.md` begründet, warum die Reihenfolge so ist. Wer am Mac sitzt und
+das Telefon in der Hand hat, braucht das nicht — er braucht den nächsten
+Befehl.
+
+### Hinzugefügt
+
+- **`docs/go-live-anleitung.html`** — elf Schritte, in vier Abschnitten nach
+  dem, was gerade dran ist: heute am Mac, diese Woche nebenher, eine ruhige
+  Stunde, zum Schluss. Je Schritt ein Befehl zum Kopieren, eine Zeitangabe und
+  — wo es erfahrungsgemäß hakt — was dann zu tun ist.
+
+  **Die Ortsmarke ist die eigentliche Auskunft:** Terminal, iPhone oder
+  Browser. Der Aufwand steckt nicht in den Befehlen, sondern im Wechsel
+  dazwischen, und wer weiß, dass die nächsten drei Schritte alle im Browser
+  passieren, macht sie am Stück.
+
+  Nach Schritt 4 steht ausdrücklich „hier kannst du aufhören": Die zwei Wochen
+  Eigennutzung laufen dann schon, alles Weitere kann warten. Das ist der
+  Unterschied zwischen einer Liste, die man abarbeitet, und einer, vor der man
+  zurückschreckt.
+
+  Farben, Maße und Ton kommen aus `docs/website/stil.css` — es sollen nicht
+  zwei Gestaltungen nebeneinanderstehen. In sich geschlossen, keine fremde
+  Anfrage, hell und dunkel, ab 320 Pixel.
+
+### Zwei Fehler beim Bauen, beide gemessen statt geraten
+
+- **172 Pixel Überlauf bei 320 Pixel Breite.** Ein Grid-Element steht auf
+  `min-width: auto` und schrumpft nicht unter seinen Inhalt; die langen
+  Produktkennungen im Befehlsblock zogen die Spalte auf 492 Pixel. Das
+  `overflow-x: auto` am Block griff nie, weil dort gar nichts überlief.
+- **Danach noch 10 Pixel.** `docs/website/datenschutz.html` im Fließtext — ein
+  Pfad ohne Leerzeichen bricht nirgends um. `overflow-wrap: anywhere`.
+
+Beide Male hat erst das Ausmessen der Elementkanten gesagt, was los war. Ein
+zweiter Blick auf den Quelltext hätte weder das eine noch das andere gefunden.
+
+---
+
 ## 0.56.0 — 2026-08-16
 
 **Alles, was sich automatisieren lässt, läuft jetzt aus einem Befehl.**

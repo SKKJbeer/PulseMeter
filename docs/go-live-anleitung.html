@@ -1,0 +1,384 @@
+<title>Von hier in den App Store</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--
+  Die Anleitung zum Go-Live, zum Abarbeiten.
+
+  Warum eine eigene Seite und kein Abschnitt in `07-v1-plan.md`: Der Plan
+  begründet, diese Seite führt. Wer gerade am Mac sitzt und das Telefon in der
+  Hand hat, will nicht wissen, warum die Reihenfolge so ist — das steht im
+  Plan und wird hier nur verlinkt.
+
+  Farben und Maße kommen aus `docs/website/stil.css`, damit nicht zwei
+  Gestaltungen nebeneinanderstehen. Ergänzt sind nur die Ortsmarken.
+
+  In sich geschlossen, keine fremde Anfrage — dieselbe Regel wie überall hier.
+-->
+<style>
+  :root {
+    --ground:   #FBFAF8;
+    --raised:   #F3F0EA;
+    --surface:  #FFFFFF;
+    --ink:      #17150F;
+    --ink-2:    #57524A;
+    --ink-3:    #8B8578;
+    --line:     #E7E3DA;
+    --line-2:   #D8D3C7;
+    --tint:     #B06E08;
+    --on-tint:  #FFFFFF;
+    --good:     #2F7F52;
+    --shadow: 0 1px 2px rgba(23,21,15,.04), 0 10px 30px -12px rgba(23,21,15,.14);
+
+    --serif: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  /* Zwei Sprünge statt einem: Die Voreinstellung „System" stempelt nichts an
+     die Wurzel, dort entscheidet allein prefers-color-scheme. Eine
+     ausdrückliche Wahl stempelt data-theme und muss in beide Richtungen
+     gewinnen. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:  #0F0E0C;
+      --raised:  #171512;
+      --surface: #1B1917;
+      --ink:     #F5F2EC;
+      --ink-2:   #B3ADA1;
+      --ink-3:   #837D71;
+      --line:    #2B2822;
+      --line-2:  #3A362E;
+      --tint:    #E0A040;
+      --on-tint: #1B1408;
+      --good:    #5CBF85;
+      --shadow: 0 1px 2px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:  #0F0E0C;
+    --raised:  #171512;
+    --surface: #1B1917;
+    --ink:     #F5F2EC;
+    --ink-2:   #B3ADA1;
+    --ink-3:   #837D71;
+    --line:    #2B2822;
+    --line-2:  #3A362E;
+    --tint:    #E0A040;
+    --on-tint: #1B1408;
+    --good:    #5CBF85;
+    --shadow: 0 1px 2px rgba(0,0,0,.5);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16.5px;
+    line-height: 1.62;
+    -webkit-text-size-adjust: 100%;
+  }
+  .bahn { width: 100%; max-width: 760px; margin: 0 auto; padding: 0 22px; }
+
+  header.kopf { padding: 54px 0 30px; }
+  .augenbraue {
+    font-size: 12.5px; font-weight: 620; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--tint); margin: 0 0 14px;
+  }
+  h1 {
+    font-family: var(--serif);
+    font-size: clamp(31px, 6vw, 44px);
+    line-height: 1.12; font-weight: 600; margin: 0 0 16px;
+    text-wrap: balance; letter-spacing: -.012em;
+  }
+  .vorspann { font-size: 18px; color: var(--ink-2); margin: 0; max-width: 54ch; text-wrap: pretty; }
+
+  /* Der Fortschrittsbalken oben ist keine Zierde: Er sagt, wie viel von der
+     Strecke hinter einem liegt — und dass der größte Teil schon fertig ist. */
+  .strecke {
+    margin: 30px 0 0; padding: 16px 18px;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 16px; box-shadow: var(--shadow);
+  }
+  .strecke-zeile { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+  .strecke-zeile b { font-size: 14.5px; font-weight: 620; }
+  .strecke-zeile span { font-size: 13px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .balken { height: 7px; border-radius: 99px; background: var(--line); overflow: hidden; }
+  .balken i { display: block; height: 100%; width: 78%; background: var(--good); border-radius: 99px; }
+
+  .abschnitt-titel {
+    font-family: var(--serif); font-size: 21px; font-weight: 600;
+    margin: 52px 0 6px; padding-top: 26px; border-top: 1px solid var(--line);
+  }
+  .abschnitt-titel:first-of-type { border-top: none; padding-top: 0; }
+  .abschnitt-hinweis { margin: 0 0 24px; color: var(--ink-3); font-size: 14.5px; }
+
+  ol.schritte { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 18px; }
+
+  .schritt {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 18px; padding: 20px 22px 22px; box-shadow: var(--shadow);
+    display: grid; grid-template-columns: 34px 1fr; gap: 4px 16px;
+  }
+  .nummer {
+    grid-row: 1 / span 3;
+    font-family: var(--mono); font-size: 15px; font-weight: 600;
+    color: var(--on-tint); background: var(--tint);
+    width: 34px; height: 34px; border-radius: 10px;
+    display: grid; place-items: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .schritt h3 { margin: 4px 0 0; font-size: 18.5px; font-weight: 640; line-height: 1.3; text-wrap: balance; }
+  .marken { display: flex; flex-wrap: wrap; gap: 7px; margin: 9px 0 0; }
+  /* Die Ortsmarke ist die eigentliche Auskunft dieser Seite: Der Aufwand
+     steckt nicht in den Befehlen, sondern im Wechsel zwischen Terminal,
+     Telefon und Browser. */
+  .marke {
+    font-size: 12px; font-weight: 600; letter-spacing: .03em;
+    padding: 3px 9px; border-radius: 99px;
+    border: 1px solid var(--line-2); color: var(--ink-2); background: var(--raised);
+  }
+  .marke.zeit { font-variant-numeric: tabular-nums; }
+  /* `min-width: 0` ist hier nicht Feinschliff, sondern die Bedingung dafür,
+     dass die Seite auf einem schmalen Telefon überhaupt passt: Ein
+     Grid-Element steht auf `min-width: auto` und schrumpft nicht unter seinen
+     Inhalt. Die langen Produktkennungen im `pre` schoben die Spalte damit auf
+     492 px — das `overflow-x: auto` am `pre` griff nie, weil gar nichts
+     überlief. Gemessen bei 320 px, nicht geraten. */
+  .schritt .text { grid-column: 2; min-width: 0; }
+  .schritt p { margin: 12px 0 0; color: var(--ink-2); }
+  .schritt p strong { color: var(--ink); font-weight: 620; }
+
+  pre {
+    margin: 13px 0 0; padding: 13px 15px;
+    background: var(--raised); border: 1px solid var(--line);
+    border-radius: 11px; overflow-x: auto;
+    font-family: var(--mono); font-size: 13.5px; line-height: 1.55; color: var(--ink);
+  }
+  code { font-family: var(--mono); font-size: .93em; }
+  p code {
+    background: var(--raised); border: 1px solid var(--line);
+    border-radius: 5px; padding: 1px 5px;
+    /* Ein Dateipfad hat keine Leerzeichen und bricht deshalb nirgends um.
+       `docs/website/datenschutz.html` stand bei 320 px 10 px über den Rand. */
+    overflow-wrap: anywhere;
+  }
+
+  .wenn {
+    margin: 14px 0 0; padding: 12px 15px;
+    border-left: 3px solid var(--tint); background: var(--raised);
+    border-radius: 0 10px 10px 0; font-size: 14.5px; color: var(--ink-2);
+  }
+  .wenn b { color: var(--ink); font-weight: 620; }
+
+  .pause {
+    margin: 22px 0; padding: 15px 18px; text-align: center;
+    border: 1px dashed var(--line-2); border-radius: 14px;
+    color: var(--ink-2); font-size: 14.5px;
+  }
+  .pause b { color: var(--ink); font-weight: 620; }
+
+  ul.klein { margin: 12px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 7px; }
+  ul.klein li { color: var(--ink-2); padding-left: 17px; position: relative; }
+  ul.klein li::before {
+    content: ""; position: absolute; left: 0; top: .62em;
+    width: 6px; height: 6px; border-radius: 99px; background: var(--tint);
+  }
+
+  footer { margin: 60px 0 44px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--ink-3); font-size: 14px; }
+  footer a { color: var(--tint); }
+  a:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--tint); outline-offset: 3px; border-radius: 4px; }
+
+  @media (max-width: 460px) {
+    .schritt { grid-template-columns: 1fr; }
+    .nummer { grid-row: auto; }
+    .schritt .text { grid-column: 1; }
+  }
+</style>
+
+<div class="bahn">
+
+<header class="kopf">
+  <p class="augenbraue">PulseMeter · Anleitung</p>
+  <h1>Von hier in den App&nbsp;Store</h1>
+  <p class="vorspann">
+    Elf Schritte. Der erste dauert zwanzig Minuten und bringt die App auf dein
+    Telefon; danach läuft die Uhr für die zwei Wochen, auf die alles andere
+    wartet.
+  </p>
+
+  <div class="strecke">
+    <div class="strecke-zeile">
+      <b>Was schon steht</b>
+      <span>App, Texte, Bilder, Website, Sicherheit</span>
+    </div>
+    <div class="balken"><i></i></div>
+  </div>
+</header>
+
+<h2 class="abschnitt-titel">Heute, am Mac</h2>
+<p class="abschnitt-hinweis">Telefon mit Kabel anstecken, entsperren, „Diesem Computer vertrauen“.</p>
+
+<ol class="schritte">
+
+  <li class="schritt">
+    <div class="nummer">1</div>
+    <div class="text">
+      <h3>Entwicklermodus am iPhone einschalten</h3>
+      <div class="marken"><span class="marke">iPhone</span><span class="marke zeit">2 Min</span></div>
+      <p>Einstellungen › Datenschutz &amp; Sicherheit › <strong>Entwicklermodus</strong>. Das Telefon startet danach neu.</p>
+      <div class="wenn"><b>Der Punkt fehlt?</b> Er erscheint erst, nachdem der Mac das Telefon einmal gesehen hat. Also anstecken, entsperren, dann noch einmal nachsehen.</div>
+    </div>
+  </li>
+
+  <li class="schritt">
+    <div class="nummer">2</div>
+    <div class="text">
+      <h3>Den einen Befehl laufen lassen</h3>
+      <div class="marken"><span class="marke">Terminal</span><span class="marke zeit">15 Min</span></div>
+      <p>Er prüft alles, baut, signiert und installiert. Beim ersten Mal legt Xcode dabei die Kennungen im Entwicklerportal an — <strong>du musst dort nichts anklicken</strong>.</p>
+<pre>cd ~/PulseMeter
+git pull
+scripts/go-live.sh</pre>
+      <div class="wenn"><b>Bricht es beim Signieren ab?</b> Meistens ist das Programm noch nicht ganz freigeschaltet. Eine Stunde warten und noch einmal. Oder sofort weiter, ohne Widget und iCloud: <code>PULSE_OHNE_BERECHTIGUNGEN=1 scripts/aufs-handy.sh</code></div>
+    </div>
+  </li>
+
+  <li class="schritt">
+    <div class="nummer">3</div>
+    <div class="text">
+      <h3>Dem Entwickler vertrauen</h3>
+      <div class="marken"><span class="marke">iPhone</span><span class="marke zeit">1 Min</span></div>
+      <p>Beim ersten Start meldet iOS „Nicht vertrauenswürdiger Entwickler“. Einmal: Einstellungen › Allgemein › VPN &amp; Geräteverwaltung › Entwickler-App › <strong>Vertrauen</strong>.</p>
+    </div>
+  </li>
+
+  <li class="schritt">
+    <div class="nummer">4</div>
+    <div class="text">
+      <h3>Deine echten Zähler eintragen</h3>
+      <div class="marken"><span class="marke">iPhone</span><span class="marke zeit">10 Min</span></div>
+      <p>Strom, Gas, Wasser, was du hast. Preise von der letzten Rechnung dazu. <strong>Ab jetzt läuft die Uhr</strong> — und das ist der Schritt, der bisher am meisten gefunden hat.</p>
+      <p>Ab hier gilt: einmal im Monat ablesen, und alles aufschreiben, was dich stört. Auch Kleinigkeiten.</p>
+    </div>
+  </li>
+
+</ol>
+
+<div class="pause">
+  <b>Hier kannst du aufhören.</b> Die nächsten Schritte können warten, bis du Zeit hast — nur die zwei Wochen laufen weiter.
+</div>
+
+<h2 class="abschnitt-titel">Diese Woche, nebenher</h2>
+<p class="abschnitt-hinweis">Zwei Dinge, die niemanden aufhalten und am Ende die Einreichung blockieren würden.</p>
+
+<ol class="schritte" start="5">
+
+  <li class="schritt">
+    <div class="nummer">5</div>
+    <div class="text">
+      <h3>Die Website online stellen</h3>
+      <div class="marken"><span class="marke">Browser</span><span class="marke zeit">10 Min</span></div>
+      <p>Bei Cloudflare anmelden, <strong>Pages</strong> mit diesem Repository verbinden. Kein Framework, Ausgabeordner <code>docs/website</code>. Die Adresse wird <code>pulsemeter.pages.dev</code>.</p>
+      <p><strong>Das ist Pflicht, nicht Kür:</strong> App Store Connect verlangt eine erreichbare Datenschutz-URL. Ohne sie lässt sich nichts einreichen.</p>
+    </div>
+  </li>
+
+  <li class="schritt">
+    <div class="nummer">6</div>
+    <div class="text">
+      <h3>Den letzten Platzhalter schließen</h3>
+      <div class="marken"><span class="marke">Terminal</span><span class="marke zeit">2 Min</span></div>
+      <p>In <code>docs/website/datenschutz.html</code>, Abschnitt 7, stehen die eckigen Klammern um den Namen des Hosters. Bleibt es bei Cloudflare, nur die Klammern löschen. Dann:</p>
+<pre>PULSE_WEBSITE_LIVE=1 node scripts/check-website.mjs</pre>
+      <p>Der Lauf wird jetzt <strong>rot</strong>, wenn irgendwo noch ein Platzhalter steht.</p>
+    </div>
+  </li>
+
+</ol>
+
+<h2 class="abschnitt-titel">Wenn du eine ruhige Stunde hast</h2>
+<p class="abschnitt-hinweis">App Store Connect. Alles, was hier eingetippt wird, steht fertig in <code>docs/09-appstore.md</code> — Kopieren, nicht Erfinden.</p>
+
+<ol class="schritte" start="7">
+
+  <li class="schritt">
+    <div class="nummer">7</div>
+    <div class="text">
+      <h3>Die App anlegen</h3>
+      <div class="marken"><span class="marke">Browser</span><span class="marke zeit">15 Min</span></div>
+      <p>Neue App, Plattform iOS, Bundle-ID <code>com.pulsemeter.app</code>, Sprache Deutsch. Dann Name, Untertitel, Beschreibung und Schlagworte einfügen.</p>
+      <div class="wenn"><b>Beim Schlagwortfeld nichts umstellen.</b> Es ist auf 98 von 100 Zeichen ausgerechnet. Ein Wort dazu, und App Store Connect schneidet am Ende ab — stillschweigend.</div>
+    </div>
+  </li>
+
+  <li class="schritt">
+    <div class="nummer">8</div>
+    <div class="text">
+      <h3>Die fünf Käufe anlegen</h3>
+      <div class="marken"><span class="marke">Browser</span><span class="marke zeit">20 Min</span></div>
+      <p>Alle als <strong>nicht verbrauchbar</strong>. Die Kennungen müssen genau so lauten:</p>
+<pre>com.pulsemeter.app.additionalmeters
+com.pulsemeter.app.multipleregisters
+com.pulsemeter.app.costsandtariffs
+com.pulsemeter.app.pdfreport
+com.pulsemeter.app.everything</pre>
+      <div class="wenn"><b>Diese Kennungen dürfen sich nie wieder ändern.</b> Ein umbenanntes Produkt ist für jeden, der es gekauft hat, ein verlorener Kauf.</div>
+    </div>
+  </li>
+
+  <li class="schritt">
+    <div class="nummer">9</div>
+    <div class="text">
+      <h3>Bilder erzeugen und hochladen</h3>
+      <div class="marken"><span class="marke">Terminal</span><span class="marke">Browser</span><span class="marke zeit">15 Min</span></div>
+      <p>Erst jetzt, weil die Kaufseite mit echten Preisen anders aussieht:</p>
+<pre>node scripts/store-shots.mjs</pre>
+      <p>Die Bilder liegen dann in <code>build/appstore/</code>, im Pflichtmaß für 6,9 Zoll.</p>
+    </div>
+  </li>
+
+</ol>
+
+<h2 class="abschnitt-titel">Zum Schluss</h2>
+<p class="abschnitt-hinweis">Frühestens zwei Wochen nach Schritt 4 — nicht früher.</p>
+
+<ol class="schritte" start="10">
+
+  <li class="schritt">
+    <div class="nummer">10</div>
+    <div class="text">
+      <h3>TestFlight an ein paar Leute</h3>
+      <div class="marken"><span class="marke">Terminal</span><span class="marke">Browser</span><span class="marke zeit">2 Wochen</span></div>
+      <p>Fünf bis zehn Menschen, die selbst Zähler ablesen. Was sie im ersten Moment nicht verstehen, verstehen andere später auch nicht.</p>
+    </div>
+  </li>
+
+  <li class="schritt">
+    <div class="nummer">11</div>
+    <div class="text">
+      <h3>Einreichen</h3>
+      <div class="marken"><span class="marke">Browser</span><span class="marke zeit">1–2 Wochen Prüfung</span></div>
+      <p>Vorher einmal durchgehen:</p>
+      <ul class="klein">
+        <li>Datenschutz-URL zeigt auf die Seite aus Schritt 5</li>
+        <li>Bei den App-Datenschutzangaben überall <strong>„Keine Daten erfasst“</strong></li>
+        <li>Nichts beworben, was es nicht gibt — keine Foto-Belege, keine Siri-Kurzbefehle</li>
+      </ul>
+      <p><strong>Die erste Ablehnung ist normal.</strong> Sie kommt mit einem Grund, der Grund ist meistens klein, und die zweite Runde dauert Tage statt Wochen.</p>
+    </div>
+  </li>
+
+</ol>
+
+<footer>
+  <p>
+    Warum die Reihenfolge so ist und was dahintersteckt:
+    <a href="07-v1-plan.md">07 – Der Weg zum ersten Go-Live</a>.
+    Alle Texte und Angaben für den Store: <a href="09-appstore.md">09 – App Store</a>.
+  </p>
+  <p>
+    Hängt etwas: <code>scripts/go-live.sh --pruefen</code> sagt, wo du stehst, ohne etwas zu bauen.
+  </p>
+</footer>
+
+</div>
