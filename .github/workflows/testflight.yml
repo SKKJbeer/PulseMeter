@@ -89,6 +89,48 @@ jobs:
           cp ~/private_keys/AuthKey_$ASC_KEY_ID.p8 ~/.appstoreconnect/private_keys/
           chmod 600 ~/private_keys/AuthKey_$ASC_KEY_ID.p8
 
+      # **Das eigene Zertifikat, wenn es eins gibt.**
+      #
+      # Ohne diesen Schritt legt Xcode auf jedem frischen Läufer ein neues an,
+      # und nach dem dritten ist die Grenze erreicht — dann steht man vor
+      # Handarbeit im Portal, ausgerechnet an dem Weg, der Handarbeit sparen
+      # soll. Einmal `zertifikat.yml` laufen lassen, und ab da führt jeder Bau
+      # dasselbe Zertifikat mit sich.
+      #
+      # Der Schlüsselbund ist ein eigener, kein Anmeldebund: Der Läufer wird
+      # nach dem Lauf verworfen, aber ein Geheimnis gehört trotzdem nicht in
+      # den Bund, in dem alles andere liegt.
+      - name: Zertifikat einlesen
+        id: zertifikat
+        env:
+          P12: ${{ secrets.DIST_P12_BASE64 }}
+          P12_PASS: ${{ secrets.DIST_P12_PASSWORD }}
+        run: |
+          if [ -z "$P12" ]; then
+            echo "eigenes=0" >> "$GITHUB_OUTPUT"
+            echo "::warning::Kein eigenes Zertifikat hinterlegt — Xcode legt eins an. Erlaubt sind drei; danach 'Zertifikat anlegen' einmal laufen lassen."
+            exit 0
+          fi
+          BUND="$RUNNER_TEMP/signatur.keychain-db"
+          BUND_PASS=$(openssl rand -base64 24)
+          security create-keychain -p "$BUND_PASS" "$BUND"
+          security set-keychain-settings -lut 3600 "$BUND"
+          security unlock-keychain -p "$BUND_PASS" "$BUND"
+          echo "$P12" | base64 --decode > "$RUNNER_TEMP/signatur.p12"
+          # `-A` erlaubt allen Programmen den Zugriff; `-T` einzeln wäre
+          # sauberer, führt aber bei `codesign` zu einer Rückfrage, die auf
+          # einem Läufer niemand beantwortet.
+          security import "$RUNNER_TEMP/signatur.p12" -k "$BUND" \
+            -P "$P12_PASS" -A -t cert -f pkcs12
+          security list-keychain -d user -s "$BUND" login.keychain-db
+          # Ohne diese Zeile fragt `codesign` beim Signieren nach dem Kennwort
+          # des Bundes — und wartet, bis der Auftrag in die Zeitgrenze läuft.
+          security set-key-partition-list -S apple-tool:,apple:,codesign: \
+            -s -k "$BUND_PASS" "$BUND" >/dev/null
+          rm -f "$RUNNER_TEMP/signatur.p12"
+          echo "eigenes=1" >> "$GITHUB_OUTPUT"
+          security find-identity -v -p codesigning "$BUND"
+
       - name: Zeichenketten und Angriffsfläche
         run: |
           python3 scripts/check-strings.py

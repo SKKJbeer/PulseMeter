@@ -9,6 +9,68 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.59.0 — 2026-08-16
+
+**Das Zertifikat wird einmal angelegt und bleibt dann liegen.**
+
+In 0.58.0 stand die Zertifikatsgrenze noch als Unschönheit in der Anleitung:
+Jeder TestFlight-Lauf startet auf einem frischen Rechner, Xcode legt dort ein
+neues Signaturzertifikat an, und nach dem dritten ist Schluss. Der Gründer
+wollte nicht ständig wechseln müssen — zu Recht. Eine Automatisierung, die alle
+drei Läufe Handarbeit im Portal verlangt, ist keine.
+
+### Hinzugefügt
+
+- **`.github/workflows/zertifikat.yml`** — einmal starten, danach ein Jahr
+  Ruhe. Erzeugt Schlüsselpaar und Antrag, holt das Verteilzertifikat über die
+  Schnittstelle von App Store Connect, schnürt ein PKCS#12-Bündel und legt es
+  als Repository-Geheimnis ab. Läuft auf Linux, weil dabei nichts gebaut wird.
+
+- **`scripts/asc-zertifikat.py`** — der Teil, der mit Apple spricht. Zählt
+  vorher den Bestand und warnt, statt zu raten: Ob die Grenze bei drei liegt,
+  hängt an der Art der Mitgliedschaft, und Apple lehnt den vierten mit einer
+  eindeutigeren Meldung ab, als eine geratene Regel es könnte. Für die zwei
+  häufigsten Ablehnungen — Grenze erreicht, Schlüssel ohne Rechte — steht ein
+  ganzer Satz da, was zu tun ist.
+
+- **`scripts/gh-geheimnis.py`** — schreibt das Ergebnis direkt ins Repository.
+  Viertausend Zeichen Base64 aus einem Protokoll abzutippen, auf einem Telefon,
+  wäre keine Automatisierung; und ein privater Schlüssel, der durch die
+  Zwischenablage geht, liegt danach in der Zwischenablage. GitHub nimmt
+  Geheimnisse ohnehin nur **versiegelt** entgegen — der Klartext verlässt den
+  Lauf nie.
+
+- **`testflight.yml` liest das Zertifikat ein**, wenn eines hinterlegt ist, und
+  legt sonst weiter selbst eines an. Eigener Schlüsselbund, nicht der
+  Anmeldebund. Dazu die zwei Zeilen, ohne die es klemmt:
+  `set-key-partition-list`, sonst fragt `codesign` nach einem Kennwort und
+  wartet bis zur Zeitgrenze, und `-legacy` beim Schnüren, weil OpenSSL 3 sonst
+  ein Format erzeugt, das der Schlüsselbund von macOS je nach Version nicht
+  öffnet — mit der Meldung „MAC verification failed", die nach falschem
+  Kennwort aussieht und keins ist.
+
+### Geprüft, nicht behauptet
+
+Die ganze Kette lief hier durch, mit einem selbstsignierten Zertifikat
+anstelle von Apples: Antrag erzeugen, DER einlesen, PKCS#12 schnüren, mit dem
+Kennwort wieder öffnen — und mit einem falschen Kennwort scheitern. Die
+Versiegelung für GitHub wurde gegen ein selbst erzeugtes Schlüsselpaar geprüft:
+3.356 Zeichen hinein, 4.540 versiegelt, entsiegelt identisch.
+
+Was hier **nicht** prüfbar war: der Aufruf bei Apple und `security import` auf
+einem macOS-Läufer.
+
+### Ein Zugeständnis
+
+Damit der Lauf die Geheimnisse selbst schreiben darf, braucht er ein
+Personal Access Token als `GH_PAT` — fein granuliert, nur dieses Repository,
+nur „Secrets: Read and write". Wer das nicht vergeben will, bekommt die Werte
+als Artefakt und trägt sie von Hand ein; der Ablauf sagt das dann auch. Ein
+Token mit Schreibrecht auf Geheimnisse ist nicht nichts, und diese Wahl gehört
+dem Gründer, nicht mir.
+
+---
+
 ## 0.58.0 — 2026-08-16
 
 **Es geht doch ohne eigenen Mac. Ich hatte das zu schnell verneint.**

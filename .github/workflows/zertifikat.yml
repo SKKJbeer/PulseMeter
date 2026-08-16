@@ -1,0 +1,158 @@
+name: Zertifikat anlegen
+
+# **Einmal laufen lassen, danach nie wieder.**
+#
+# Das Problem, das dieser Ablauf löst: `testflight.yml` startet auf einem
+# frischen Rechner, findet dort keinen Signaturschlüssel und lässt Xcode einen
+# neuen anlegen. Erlaubt sind **drei** — nach dem dritten Bau ist Schluss, und
+# man widerruft im Portal von Hand welche. Das ist keine Automatisierung,
+# sondern eine Aufgabe mit Aufschub.
+#
+# Hier entsteht das Zertifikat **ein einziges Mal**, samt seinem privaten
+# Schlüssel, und beides landet als Geheimnis im Repository. Ab dann führt jeder
+# TestFlight-Lauf dasselbe Zertifikat mit sich und legt keins mehr an.
+#
+# **Der private Schlüssel entsteht hier und verlässt diesen Lauf nur
+# verschlüsselt.** Er wird nicht ins Protokoll geschrieben, nicht als Artefakt
+# abgelegt und nirgends zwischengespeichert — er geht direkt in das
+# Repository-Geheimnis, versiegelt mit dem öffentlichen Schlüssel des
+# Repositories.
+#
+# ---
+#
+# **Was vorher da sein muss:**
+#
+#   · Die vier Angaben aus `testflight.yml` (ASC_KEY_ID, ASC_ISSUER_ID,
+#     ASC_KEY_P8, ASC_TEAM_ID).
+#   · Ein **Personal Access Token** als Geheimnis `GH_PAT`, damit dieser Lauf
+#     die zwei neuen Geheimnisse selbst schreiben kann. Fein granuliert, nur
+#     dieses Repository, Berechtigung **Secrets: Read and write**.
+#     GitHub › Settings › Developer settings › Personal access tokens.
+#
+# Ohne `GH_PAT` läuft es trotzdem: Dann legt der Lauf die zwei Werte als
+# Artefakt ab, und sie sind von Hand einzutragen. Das ist der Weg für jemanden,
+# der kein Token vergeben will.
+
+on:
+  workflow_dispatch:
+    inputs:
+      bestaetigung:
+        description: "Zum Bestätigen 'neu' eintippen. Ein neues Zertifikat zählt gegen das Limit von drei."
+        required: true
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  anlegen:
+    # Kein macOS nötig: Hier wird nichts gebaut, nur gerechnet. Ein
+    # Linux-Läufer startet sofort und kostet einen Bruchteil.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Bestätigung prüfen
+        run: |
+          if [ "${{ inputs.bestaetigung }}" != "neu" ]; then
+            echo "::error::Nicht bestätigt. Im Feld 'neu' eintippen — ein Zertifikat zählt gegen ein Limit von drei."
+            exit 1
+          fi
+
+      - name: Zugang prüfen
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          fehlt=""
+          [ -n "$ASC_KEY_ID" ]    || fehlt="$fehlt ASC_KEY_ID"
+          [ -n "$ASC_ISSUER_ID" ] || fehlt="$fehlt ASC_ISSUER_ID"
+          [ -n "$ASC_KEY_P8" ]    || fehlt="$fehlt ASC_KEY_P8"
+          if [ -n "$fehlt" ]; then
+            echo "::error::Diese Geheimnisse fehlen:$fehlt — erst testflight.yml einrichten."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - name: Werkzeug
+        run: pip install --quiet "pyjwt[crypto]" pynacl requests
+
+      # Schlüsselpaar und Antrag entstehen hier. Der private Schlüssel ist ab
+      # jetzt das Wertvolle an der Sache: Ohne ihn nützt das Zertifikat
+      # niemandem, mit ihm kann jemand in deinem Namen signieren.
+      - name: Schlüssel und Antrag erzeugen
+        run: |
+          openssl req -new -newkey rsa:2048 -nodes \
+            -keyout signatur.key -out antrag.csr \
+            -subj "/CN=PulseMeter Distribution/O=PulseMeter/C=DE" 2>/dev/null
+          echo "Antrag erzeugt."
+
+      - name: Zertifikat bei Apple beantragen
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: python3 scripts/asc-zertifikat.py
+
+      # Zertifikat und privater Schlüssel zusammen in eine PKCS#12-Datei — das
+      # Format, das der Schlüsselbund von macOS einlesen kann.
+      - name: Bündel schnüren
+        run: |
+          PASS=$(openssl rand -base64 24)
+          echo "::add-mask::$PASS"
+          echo "P12_PASS=$PASS" >> "$GITHUB_ENV"
+          openssl x509 -inform DER -in zertifikat.cer -out zertifikat.pem
+          # **`-legacy` ist kein Schmuck.** OpenSSL 3 verschlüsselt
+          # PKCS#12-Dateien standardmäßig so, dass der Schlüsselbund von macOS
+          # sie je nach Version nicht öffnet — und die Fehlermeldung dort
+          # lautet nur „MAC verification failed", was nach falschem Kennwort
+          # aussieht und keins ist.
+          openssl pkcs12 -export -legacy \
+            -inkey signatur.key -in zertifikat.pem \
+            -name "PulseMeter Distribution" \
+            -out signatur.p12 -passout "pass:$PASS"
+          base64 -w0 signatur.p12 > signatur.p12.b64
+          echo "Bündel fertig, $(wc -c < signatur.p12) Bytes."
+
+      - name: Als Geheimnisse ablegen
+        id: ablegen
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          if [ -z "$GH_PAT" ]; then
+            echo "kein_token=1" >> "$GITHUB_OUTPUT"
+            echo "::warning::Kein GH_PAT hinterlegt — die zwei Werte kommen als Artefakt und sind von Hand einzutragen."
+            exit 0
+          fi
+          python3 scripts/gh-geheimnis.py DIST_P12_BASE64 "$(cat signatur.p12.b64)"
+          python3 scripts/gh-geheimnis.py DIST_P12_PASSWORD "$P12_PASS"
+          echo "kein_token=0" >> "$GITHUB_OUTPUT"
+
+      # Nur wenn kein Token da war. Das Artefakt enthält den privaten
+      # Schlüssel — deshalb kurze Aufbewahrung, und nach dem Eintragen löschen.
+      - name: Notausgang, falls kein Token
+        if: steps.ablegen.outputs.kein_token == '1'
+        uses: actions/upload-artifact@v4
+        with:
+          name: zertifikat-von-hand-eintragen
+          path: signatur.p12.b64
+          retention-days: 1
+
+      - name: Was jetzt gilt
+        run: |
+          echo "Kennwort für die Handeingabe: $P12_PASS" >> "$GITHUB_STEP_SUMMARY"
+          cat >> "$GITHUB_STEP_SUMMARY" <<'ENDE'
+
+          ## Fertig
+
+          Das Zertifikat ist angelegt und liegt als Geheimnis im Repository.
+          `testflight.yml` benutzt es ab dem nächsten Lauf und legt **kein**
+          neues mehr an. Damit ist die Grenze von drei kein Thema mehr.
+
+          Wiederholen muss man das erst, wenn Apple das Zertifikat auslaufen
+          lässt — nach **einem Jahr**. Dann diesen Ablauf noch einmal starten;
+          er überschreibt die zwei Geheimnisse.
+          ENDE

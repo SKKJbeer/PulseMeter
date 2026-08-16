@@ -62,6 +62,11 @@ Knopf im Browser, auch vom Telefon aus. Einmalig sind vier Angaben aus App
 Store Connect als Repository-Geheimnisse zu hinterlegen; der Kopf der
 Workflow-Datei sagt welche, die Anleitung führt hindurch.
 
+Davor einmal `.github/workflows/zertifikat.yml` laufen lassen: Es legt das
+Signaturzertifikat **ein einziges Mal** an und hinterlegt es als Geheimnis.
+Ohne das erzeugt jeder Bau ein neues, und nach dem dritten ist Schluss —
+Apple erlaubt nicht mehr.
+
 Der Preis: zwanzig Minuten je Bau statt zwei, und Apple prüft danach noch
 einmal. Dafür braucht es kein Kabel und kein Xcode.
 
@@ -87,7 +92,7 @@ iCloud-Abgleich wie Käufe lassen sich noch nicht ausprobieren.
 
 ## Status
 
-Version **0.58.0**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
+Version **0.59.0**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
 rechnet echt. Alle vier Bildschirme — Übersicht, Erfassung, Verlauf und Zähler —
 laufen als SwiftUI-App im Simulator und werden auf jedem Lauf fotografiert,
 hell und dunkel. Siehe [CHANGELOG.md](CHANGELOG.md).
