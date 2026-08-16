@@ -9,6 +9,39 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.54.0 — 2026-08-16
+
+**Der Go-Live-Plan stand noch auf dem Stand vom 10. August.**
+
+Auf die Frage „was fehlt noch für go live" war die ehrliche erste Antwort: Der
+Plan weiß es selbst nicht mehr. Dort stand „App-Store-Material: nicht
+angefangen" — geschrieben, bevor `09-appstore.md`, die Website, die
+Bildschirmfotos und die Sicherheitsprüfung existierten. Ein Plan, der die
+eigene Arbeit nicht kennt, führt in die falsche Reihenfolge.
+
+### Geändert
+
+- **`docs/07-v1-plan.md`** neu am Code nachgesehen, nicht fortgeschrieben.
+  Sechs Punkte fallen weg, keiner kommt dazu: Icon und Asset-Katalog,
+  App-Store-Texte, Bildschirmfotos im Pflichtmaß, Datenschutzerklärung und
+  Support-Seite als Text, die Sicherheitsprüfung.
+- **Die Reihenfolge ist geteilt** in „vor dem Programm" und „danach". Zwei
+  Punkte warten auf niemanden: die Veröffentlichung der Website (die
+  Datenschutz-URL ist ein Pflichtfeld in App Store Connect) und
+  `PrivacyInfo.xcprivacy` — eine Plist im Bündel, die kein Programm braucht.
+  Beide standen bisher hinter dem Engpass, obwohl sie nicht dahinter gehören.
+- **„Die App benutzen" steht jetzt vor StoreKit**, nicht daneben. Sie hat
+  bisher am meisten gefunden, und sie braucht das Telefon, nicht den Kauf.
+- **Der Zeitrahmen** geht von vier bis sechs auf **drei bis fünf Wochen ab
+  Freischaltung** — das Material fällt als Engpass weg. Der Vorbehalt bleibt
+  wörtlich derselbe: Die App lief noch nie auf einem echten Gerät.
+- **„Was am meisten unterschätzt wird"** ist nicht mehr das Material, sondern
+  der **iCloud-Abgleich**. Er ist nie gelaufen, trägt laut ADR-002 den
+  Einmalkauf, und eine SwiftData-Schemamigration über CloudKit ist keine
+  Einstellung, sondern eine eigene Testrunde.
+
+---
+
 ## 0.53.0 — 2026-08-16
 
 **Das Datenschutzversprechen steht jetzt vorn — und es ist geprüft.**

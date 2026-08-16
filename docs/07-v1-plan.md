@@ -1,6 +1,6 @@
 # 07 – Der Weg zum ersten Go-Live
 
-Stand: 2026-08-10, Version 0.36.0
+Stand: 2026-08-16, Version 0.54.0
 Ziel: **1.0 im App Store**, mit dem kleinsten Umfang, der das Produktversprechen einlöst.
 
 ---
@@ -40,23 +40,32 @@ Das ist mehr Umfang, als die meisten 1.0 haben.
 
 ## 3. Was für 1.0 noch hinein muss
 
-Diese Liste ist am 10. August **am Code nachgesehen** worden, nicht
-fortgeschrieben. Dabei kamen sechs Punkte dazu, die hier fehlten — zwei davon
-größer als alles, was vorher dastand.
+Diese Liste ist am 16. August erneut **am Code nachgesehen** worden, nicht
+fortgeschrieben. Sechs Punkte sind seit der letzten Fassung weggefallen, und
+kein neuer ist dazugekommen.
 
 | Was | Zustand | Wer |
 |---|---|---|
 | ~~Sperrlogik: dritter Zähler, zweites Zählwerk, Preise, Bericht~~ | **erledigt mit 0.35.0** | — |
-| StoreKit 2: Produkt, Kauf, Kaufwiederherstellung | offen, aber vorbereitet — `PurchaseGateway` ist eine Datei | Mac, nach dem Programm |
-| **CloudKit einschalten** — steht auf `false`, weil die Berechtigung fehlt | nie gelaufen | Mac, nach dem Programm |
-| **App-Icon und Asset-Katalog** — es gibt im Repo keine `.xcassets` | nicht angefangen | gemeinsam |
-| **`PrivacyInfo.xcprivacy`** — Apple verlangt es seit Mai 2024 | fehlt | Mac |
-| **`.entitlements`** — App-Gruppe fürs Widget, iCloud | fehlt | Mac, nach dem Programm |
 | ~~Barrierefreiheit: Widget und Erfassung~~ | **erledigt mit 0.36.0** | — |
-| **App-Store-Material** — Bilder je Gerätegröße, Texte, Datenschutzerklärung mit URL, Support-URL | **nicht angefangen** | gemeinsam |
-| App-Privacy-Angaben | offen | Nutzer |
-| 800 ms Kaltstart auf einem **Gerät** | nie gemessen | Nutzer |
-| **Zwei Wochen echte Eigennutzung** | offen | Nutzer |
+| ~~App-Icon und Asset-Katalog~~ | **erledigt** — `Assets.xcassets/AppIcon.appiconset`, erzeugt aus `scripts/icon.mjs` | — |
+| ~~App-Store-Texte, Kategorien, Datenschutzangaben~~ | **erledigt mit 0.44.0** — `09-appstore.md`, Beschreibung 3.844 von 4.000 Zeichen | — |
+| ~~Bildschirmfotos fürs Material~~ | **erledigt** — `scripts/store-shots.mjs` liefert 1320 × 2868, das Pflichtmaß für 6,9 Zoll | — |
+| ~~Datenschutzerklärung und Support-Seite als Text~~ | **erledigt mit 0.43.0** — `docs/website/`, es fehlt nur noch die Veröffentlichung | — |
+| ~~Sicherheitsprüfung~~ | **erledigt mit 0.47.0**, erweitert in 0.53.0 — `11-sicherheit.md`, acht Prüfungen bei jedem Lauf | — |
+| **`PrivacyInfo.xcprivacy`** — Apple verlangt es seit Mai 2024 | fehlt, hängt **nicht** am Programm | Mac oder Cloud |
+| **Website veröffentlichen** — Cloudflare Pages, Ausgabeordner `docs/website` | offen, hängt **nicht** am Programm | Nutzer |
+| StoreKit 2: fünf Produkte anlegen, `PurchaseGateway` implementieren | offen, aber vorbereitet — es ist eine Datei | Mac, nach dem Programm |
+| **CloudKit einschalten** — steht auf `false`, weil die Berechtigung fehlt | nie gelaufen | Mac, nach dem Programm |
+| **`.entitlements`** — App-Gruppe fürs Widget, iCloud | fehlt | Mac, nach dem Programm |
+| 800 ms Kaltstart auf einem **Gerät** | nie gemessen | Nutzer, nach dem Programm |
+| **Zwei Wochen echte Eigennutzung** | offen | Nutzer, nach dem Programm |
+
+**Zwei davon warten auf niemanden.** Das Privacy-Manifest ist eine
+Plist-Datei im Bündel und braucht kein Programm; die Website braucht nur ein
+Cloudflare-Konto. Beides lässt sich vorziehen, und beides blockiert am Ende
+die Einreichung — die Datenschutz-URL ist ein Pflichtfeld in App Store
+Connect.
 
 ### Die zwei, die vorher fehlten und wehtun
 
@@ -102,12 +111,18 @@ Zwei Wochen mit den eigenen Zählerständen finden mehr als jede weitere Runde
 Tests. Das Zeitfenster für die Reparaturen danach gehört fest eingeplant — es
 füllt sich zuverlässig.
 
-### Was am meisten unterschätzt wird
+### Was am meisten unterschätzt wurde — und was jetzt an seiner Stelle steht
 
-Das App-Store-Material. Icon, sechs bis acht Bilder je Gerätegröße, Kurz- und
-Langbeschreibung, Schlagworte, eine erreichbare Datenschutzerklärung und eine
-Support-Adresse. Das ist kein Nachmittag, und es blockiert am Ende die
-Einreichung, wenn man zu spät anfängt.
+Hier stand bis 0.53.0 das **App-Store-Material**: Icon, Bilder je Gerätegröße,
+Beschreibung, Schlagworte, Datenschutzerklärung, Support-Adresse. Die Warnung
+war richtig, und sie ist abgearbeitet — seit 0.44.0 steht alles in
+`09-appstore.md`, die Bilder erzeugt `scripts/store-shots.mjs` im Pflichtmaß.
+
+An seiner Stelle steht jetzt der **iCloud-Abgleich**. Er ist bis heute nie
+gelaufen, er trägt laut ADR-002 den Einmalkauf, und eine
+SwiftData-Schemamigration über CloudKit ist keine Einstellung, sondern eine
+eigene Testrunde. Wer ihn für einen Schalter hält, plant eine Woche zu wenig
+ein.
 
 ---
 
@@ -134,15 +149,29 @@ schlechte Bewertung.
 
 ## 5. Reihenfolge
 
-1. **Apple Developer Program kaufen.** Blockiert alles Weitere.
-2. **Die App benutzen** — ab sofort, parallel, mit echten Zählerständen.
-3. **StoreKit, CloudKit, Berechtigungen**, sobald das Programm da ist — die
-   drei hängen am selben Nagel. Die Sperrlogik steht bereits.
-4. **Reparieren, was Punkt 2 gefunden hat.** Dieses Fenster nicht wegplanen.
-5. **800 ms auf dem Gerät messen.** Die Barrierefreiheit steht seit 0.36.0.
-6. **App-Store-Material.** Früher anfangen, als es sich anfühlt.
-7. **TestFlight** an fünf bis zehn Leute, zwei Wochen.
-8. **Einreichen.** Die erste Ablehnung ist normal und eingeplant.
+**Vor dem Programm, ab sofort:**
+
+1. **Website veröffentlichen.** Cloudflare Pages auf dieses Repo, Ausgabeordner
+   `docs/website`. Danach den Namen des Hosters in der Datenschutzerklärung
+   bestätigen und mit `PULSE_WEBSITE_LIVE=1 node scripts/check-website.mjs`
+   gegenprüfen. Die Datenschutz-URL ist ein Pflichtfeld — ohne sie keine
+   Einreichung.
+2. **`PrivacyInfo.xcprivacy` anlegen.** Muss zu Abschnitt 3 von
+   `09-appstore.md` passen: keine erfassten Daten, kein Tracking.
+
+**Sobald das Programm da ist:**
+
+3. **Die App aufs eigene Telefon** und ab da benutzen, mit echten
+   Zählerständen. Nicht erst nach StoreKit — dieser Punkt hat bisher am
+   meisten gefunden.
+4. **StoreKit, CloudKit, `.entitlements`.** Die drei hängen am selben Nagel.
+   Die Sperrlogik steht seit 0.35.0; es fehlt nur der Kauf selbst.
+5. **Reparieren, was Punkt 3 gefunden hat.** Dieses Fenster nicht wegplanen.
+6. **800 ms auf dem Gerät messen.** Die Barrierefreiheit steht seit 0.36.0.
+7. **Bildschirmfotos neu erzeugen**, nachdem StoreKit steht — die Kaufseite
+   sieht dann anders aus.
+8. **TestFlight** an fünf bis zehn Leute, zwei Wochen.
+9. **Einreichen.** Die erste Ablehnung ist normal und eingeplant.
 
 ---
 
@@ -158,12 +187,19 @@ schlechte Bewertung.
 
 ## 7. Zeitrahmen, ehrlich
 
-**Vier bis sechs Wochen bis zur Einreichung**, wenn das Programm diese Woche
-gekauft und die App tatsächlich benutzt wird. Der Code ist nicht das Problem —
-Material, Eigennutzung und Review sind es.
+**Drei bis fünf Wochen ab dem Tag, an dem das Programm freigeschaltet ist.**
+Das Material ist seit 0.44.0 fertig und fällt damit als Engpass weg — geblieben
+sind StoreKit und CloudKit (eine Woche, wenn nichts dazwischenkommt), zwei
+Wochen Eigennutzung, die sich nicht abkürzen lassen, und ein bis zwei Wochen
+Prüfung bei Apple.
 
-Ein Vorbehalt gehört dazu: Die App lief noch nie auf einem echten Gerät. Das
-kann diesen Plan ändern — genau deshalb steht die Eigennutzung so weit vorn.
+Ein Vorbehalt gehört dazu, und er ist derselbe wie im August: **Die App lief
+noch nie auf einem echten Gerät.** Weder der Kaltstart noch das Widget noch der
+iCloud-Abgleich sind je gemessen worden. Genau deshalb steht die Eigennutzung
+so weit vorn — sie ist der Punkt, an dem sich dieser Zeitrahmen entscheidet,
+nicht StoreKit.
 
-Der zweite Vorbehalt ist inzwischen erledigt: Der PDF-Bericht war bis 0.33.3
-unsichtbar und wird seither auf jedem Lauf fotografiert, hell und dunkel.
+Zwei frühere Vorbehalte sind erledigt: Der PDF-Bericht war bis 0.33.3
+unsichtbar und wird seither auf jedem Lauf fotografiert, hell und dunkel. Und
+das App-Store-Material, das hier als „am meisten unterschätzt" stand, ist seit
+0.44.0 geschrieben und seither dreimal nachgezogen worden.
