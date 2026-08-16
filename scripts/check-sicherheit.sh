@@ -34,6 +34,17 @@ printf "\033[1mAngriffsfläche\033[0m\n"
 pruefe "Kein Netzverkehr"            'URLSession|URLRequest|https?://[a-z]'
 pruefe "Keine Zwischenablage"        'UIPasteboard'
 pruefe "Keine Protokollausgabe"      '(^|[^a-zA-Z])(print|NSLog|os_log)\(|Logger\('
+# **Der Satz auf der Website, als Prüfung.** Dort steht „kein Tracking, keine
+# Werbung, keine Absturzberichte" — und das ist keine Haltung, sondern eine
+# Tatsache, die genau so lange stimmt, wie niemand eine Zeile einbaut. Ein
+# Absturzmelder ist die wahrscheinlichste: Er wird eingebaut, weil er nützlich
+# ist, und er schickt Daten weg.
+pruefe "Keine Analyse, Werbung oder Absturzberichte" \
+       'AppTrackingTransparency|ATTrackingManager|AdSupport|ASIdentifierManager|SKAdNetwork|import (Firebase|Sentry|Mixpanel|Amplitude|Bugsnag|Crashlytics|TelemetryDeck|PostHog)'
+# **Nur die private iCloud-Datenbank.** `.automatic` legt in der privaten
+# Datenbank des Nutzers ab; `.public` wäre ein gemeinsamer Topf, in dem fremde
+# Zählerstände lesbar sind. Der Unterschied ist ein Wort im Quelltext.
+pruefe "iCloud nur privat" 'cloudKitDatabase: *\.(public|shared)|CKDatabase.*public|\.publicCloudDatabase'
 # `Startschalter.swift` ist die eine erlaubte Stelle: Sie schaltet die
 # Startargumente im Auslieferungsbau ab. Überall sonst wären sie wieder scharf.
 pruefe "Startschalter nur an einer Stelle" 'processInfo\.arguments' --exclude=Startschalter.swift

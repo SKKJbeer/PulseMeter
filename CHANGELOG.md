@@ -9,6 +9,65 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.53.0 — 2026-08-16
+
+**Das Datenschutzversprechen steht jetzt vorn — und es ist geprüft.**
+
+Der Gründer: „wichtig ist mir auch dass rüber kommt, dass keine daten erhoben
+werden […] stelle das sicher dass wir das auch wirklich machen wenn wir das
+versprechen." Der zweite Teil ist der wichtigere, und deshalb kam er zuerst.
+
+### Geprüft, bevor etwas versprochen wurde
+
+Die Zusagen halten. Nachgesehen, nicht angenommen:
+
+- **Kein Netzverkehr, keine fremden Pakete, keine Protokollausgabe** — die
+  bestehenden Prüfungen greifen und sind grün.
+- **Der Export hängt an keinem Kauf.** `ProductID` kennt keinen Eintrag dafür,
+  `AccessPolicy.canUse` gibt immer `true` zurück, die Ausgabezeile in
+  `HistoryView` ist an keine Berechtigung gebunden, und `AccessPolicyTests`
+  hält beides mit `testExportIsNeverForSale` fest.
+- **iCloud nutzt `.automatic`**, also die private Datenbank des Nutzers.
+
+### Hinzugefügt
+
+- **Zwei neue Prüfungen in `scripts/check-sicherheit.sh`** (jetzt acht):
+  - **Kein Analyse-, Werbe- oder Absturzberichtsbaustein** —
+    `AppTrackingTransparency`, `AdSupport`, `SKAdNetwork`, Firebase, Sentry,
+    Mixpanel, Amplitude, Bugsnag, Crashlytics, TelemetryDeck, PostHog.
+  - **iCloud nur privat** — `cloudKitDatabase` darf nie `.public` oder
+    `.shared` sein.
+
+  Beide sind **gegengeprüft**: `import Sentry` und `cloudKitDatabase: .public`
+  wurden absichtlich eingebaut, beide Prüfungen schlugen an, danach zurück.
+  Eine Prüfung, die nie ausschlägt, beweist nichts.
+
+### Geändert
+
+- **Die Startseite** sagt es jetzt zweimal. Unter den Knöpfen drei Zusagen
+  (kein Konto, keine Werbung und kein Tracking, deine Zahlen bleiben bei dir),
+  und weiter unten ein eigener Abschnitt mit sechs Karten: kein Konto, keine
+  Server, kein Tracking, deine eigene iCloud, Export dauerhaft kostenlos,
+  Löschen heißt gelöscht. Die Überschrift heißt „Wir sehen deine Zählerstände
+  nicht. Nie." — nicht „Datenschutz".
+- **Der Absatz nennt, warum man das glauben kann:** dass ein Skript im
+  Quelltext bei jeder Änderung mitprüft, und was es prüft.
+- **`docs/09-appstore.md`**: „Keine Daten erfasst" — die Kennzeichnung des
+  Stores — steht jetzt in der Beschreibung, dazu „Löschen heißt gelöscht".
+  3.844 von 4.000 Zeichen.
+- **`docs/11-sicherheit.md`** und die README-Tabelle führen die zwei neuen
+  Prüfungen.
+
+### Gelernt
+
+Ein Versprechen auf einer Website ist eine Aussage über den Quelltext. Wer es
+schreibt, ohne nachzusehen, hat geraten — und ein Absturzmelder wird nicht aus
+Böswilligkeit eingebaut, sondern weil er nützlich ist. Genau deshalb gehört
+jede solche Zusage an eine Prüfung, die den Tag überlebt, an dem sie
+geschrieben wurde.
+
+---
+
 ## 0.52.0 — 2026-08-16
 
 **Die Startseite erzählt nicht mehr, wie die Eingabe aussieht.**

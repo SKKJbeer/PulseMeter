@@ -1,6 +1,6 @@
 # 09 – Material für den App Store
 
-Stand: 2026-08-16, Version 0.52.0
+Stand: 2026-08-16, Version 0.53.0
 
 Alles, was App Store Connect zur Einreichung verlangt, fertig zum Einfügen.
 Was hier steht, ist geprüft gegen das, was die App **heute** kann — nicht
@@ -146,8 +146,13 @@ ansteht.
 WIR WISSEN NICHT, WIE VIEL STROM DU VERBRAUCHST
 
 Und das soll so bleiben. Kein Konto, keine Anmeldung, keine Werbung, kein
-Tracking. Deine Ablesungen liegen auf deinem Telefon und, wenn du magst, in
-deiner eigenen iCloud. Auf unseren Servern liegen sie nicht — wir haben keine.
+Tracking, keine Absturzberichte. Deine Ablesungen liegen auf deinem Telefon
+und, wenn du magst, in deiner eigenen iCloud. Auf unseren Servern liegen sie
+nicht — wir haben keine. Deshalb steht über dieser App im Store „Keine Daten
+erfasst", und nicht die lange Liste, die du sonst kennst.
+
+Du entfernst die App, und die Daten sind weg. Es gibt keine Kopie, die
+irgendwer behalten könnte.
 
 Und du kommst jederzeit wieder heraus. Der Export als Tabelle ist kostenlos und
 bleibt es, auch wenn du nie einen Cent ausgibst. Apps, die die eigenen Daten
@@ -170,7 +175,7 @@ Den Bericht kannst du dir immer ansehen und ausdrucken. Freischalten musst du
 ihn erst, wenn du ihn jemandem geben willst.
 ```
 
-Rund 3600 Zeichen. Aufbau mit Absicht: Die ersten zwei Zeilen stehen in der
+3844 Zeichen. Aufbau mit Absicht: Die ersten zwei Zeilen stehen in der
 Vorschau, bevor jemand „mehr" tippt — sie müssen allein tragen. Der Preis
 steht ganz unten, weil bis dorthin nur liest, wer die App ohnehin will.
 

@@ -242,6 +242,33 @@ h1 {
   color: var(--ink-3);
 }
 
+/* Die drei Zusagen direkt unter den Knöpfen. Sie stehen dort, weil sie für
+   viele der eigentliche Grund sind, diese App und nicht eine andere zu
+   nehmen — weiter unten liest sie nur, wer ohnehin schon überzeugt ist. */
+.zusagen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14.5px;
+  font-weight: 520;
+  color: var(--ink-2);
+}
+.zusagen li { display: flex; align-items: center; gap: 7px; }
+.zusagen li::before {
+  content: "";
+  width: 15px;
+  height: 15px;
+  flex: none;
+  background: var(--tint);
+  /* Häkchen als Maske statt als Zeichen: Ein „✓" aus der Schrift sitzt je
+     nach Gerät anders auf der Grundlinie. */
+  -webkit-mask: no-repeat center/15px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12.5 9.5 18 20 6'/%3E%3C/svg%3E");
+          mask: no-repeat center/15px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12.5 9.5 18 20 6'/%3E%3C/svg%3E");
+}
+
 /* -------------------------------------------------------------- Geräte */
 
 .geraet {

@@ -160,9 +160,22 @@ deshalb bei jedem Lauf mit — `scripts/pruefen.sh` prüft über
 - kein `URLSession`, kein `http://` im Programmcode,
 - keine fremden Pakete in einer `Package.swift`,
 - kein `print`/`NSLog` mit Nutzerdaten,
+- kein Analyse-, Werbe- oder Absturzberichtsbaustein
+  (`AppTrackingTransparency`, `AdSupport`, `SKAdNetwork`, Firebase, Sentry,
+  Mixpanel, Amplitude, Bugsnag, Crashlytics, TelemetryDeck, PostHog),
+- `cloudKitDatabase` nie `.public` oder `.shared` — nur die private Datenbank
+  des Nutzers,
 - kein direkter Zugriff auf `processInfo.arguments` außerhalb von
   `Startschalter.swift`,
 - keine Berechtigungstexte in `Info.plist` für Dinge, die es nicht gibt.
+
+**Die zwei letzten Zusagen sind seit 0.53.0 geprüft und nicht mehr nur wahr.**
+Auf der Startseite steht „keine Werbung, keine Analyse, keine Absturzberichte"
+und „deine eigene iCloud". Beides galt vorher nur, weil niemand die Zeile
+geschrieben hatte, die es bricht — und beides sind Zeilen, die aus guten
+Gründen geschrieben werden: Ein Absturzmelder ist nützlich, und `.public` ist
+ein Wort Unterschied zu `.automatic`. Beide Prüfungen sind gegengeprüft worden,
+indem der Verstoß absichtlich eingebaut wurde; beide haben angeschlagen.
 
 Der Rest — die Punkte aus Abschnitt 5 — wird von Hand nachgeholt, sobald es
 etwas zu prüfen gibt. Diese Datei bekommt dann eine neue Fassung, keine
