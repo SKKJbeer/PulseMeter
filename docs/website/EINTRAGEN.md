@@ -1,53 +1,35 @@
 # Was vor dem Onlinegehen noch eingetragen werden muss
 
-Drei Stellen, alle im Quelltext mit `PLATZHALTER n von 3` markiert. Suchen
-lassen sie sich in einem Zug:
+**Eine Stelle** ist noch offen, im Quelltext mit `PLATZHALTER 1 von 1`
+markiert. Finden lässt sie sich mit:
 
 ```bash
 grep -rn "PLATZHALTER" docs/website/
 ```
 
-**Solange auch nur eine davon offen ist, darf die Seite nicht online gehen.**
-Ein Impressum ohne ladungsfähige Anschrift ist in Deutschland abmahnfähig, und
-Apple prüft die Datenschutz-URL vor der Freigabe.
+---
+
+## Erledigt
+
+- **Die Kontaktadresse.** `geschult-atome.6r@icloud.com` aus Apples
+  „E-Mail-Adresse verbergen", eingetragen auf der Hilfeseite, im Impressum und
+  in der Datenschutzerklärung. Sie leitet weiter und lässt sich abschalten,
+  falls Werbung darüber kommt — die private Adresse erfährt dabei niemand.
+  Später mit eigener Domain wird daraus `hallo@…` über Cloudflare Email
+  Routing; es sind dieselben drei Stellen.
+- **Die Anschrift.** Steffen Karjoth, Corelliweg 28, 70195 Stuttgart — im
+  Impressum und in der Datenschutzerklärung, dort **wortgleich**. Dieselben
+  Angaben gehören später in App Store Connect.
+
+> **Noch einmal ansehen, bevor es online geht:** Im Impressum steht
+> „Kleinunternehmer im Sinne von § 19 Umsatzsteuergesetz". Das ist eine
+> Annahme. Trifft sie nicht zu, gehört dort die
+> Umsatzsteuer-Identifikationsnummer hin — und das betrifft auch die Preise in
+> `04-monetarisierung.md`, die als Bruttopreise gedacht sind.
 
 ---
 
-## Erledigt: die Kontaktadresse
-
-Eingetragen ist **`geschult-atome.6r@icloud.com`** — eine Adresse aus Apples
-„E-Mail-Adresse verbergen". Sie steht an drei Stellen: `hilfe.html`,
-`impressum.html` und `datenschutz.html`, und leitet an das Postfach des
-Gründers weiter. Kommt darüber Werbung, lässt sie sich in den
-iCloud-Einstellungen abschalten, ohne dass jemand die private Adresse erfährt.
-
-Später mit eigener Domain wird daraus `hallo@…` mit kostenloser Weiterleitung
-über Cloudflare Email Routing — dann sind es dieselben drei Stellen.
-
-## 1 — Anbieter im Impressum
-
-`impressum.html`, Abschnitt „Anbieter". Vier Zeilen:
-
-```
-[Vorname Nachname]
-[Straße und Hausnummer]
-[Postleitzahl und Ort]
-```
-
-Bei einer Privatperson die **Wohnanschrift**. Ein Postfach genügt nicht —
-verlangt ist eine Anschrift, an die sich zustellen lässt.
-
-Zu prüfen ist außerdem der Absatz zur **Umsatzsteuer**: Er steht heute auf
-Kleinunternehmer nach § 19 UStG. Trifft das nicht zu, gehört dort die
-Umsatzsteuer-Identifikationsnummer hin.
-
-## 2 — Verantwortlicher in der Datenschutzerklärung
-
-`datenschutz.html`, Abschnitt 1. **Dieselben** Angaben wie im Impressum, und
-dieselben wie später in App Store Connect. Weichen sie voneinander ab, fällt
-es genau dann auf, wenn es unangenehm ist.
-
-## 3 — Der Hosting-Anbieter
+## Offen: der Hosting-Anbieter
 
 `datenschutz.html`, Abschnitt 7. Dort steht heute Cloudflare, weil das der
 Plan ist. Wird es ein anderer, gehört dessen Name und Anschrift an diese

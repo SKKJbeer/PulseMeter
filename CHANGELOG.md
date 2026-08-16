@@ -9,6 +9,35 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.48.2 — 2026-08-16
+
+**Die Anschrift steht. Von den vier Platzhaltern ist noch einer übrig — und
+der wartet auf Cloudflare, nicht auf eine Entscheidung.**
+
+### Geändert
+
+- Impressum und Datenschutzerklärung tragen Name und ladungsfähige Anschrift,
+  an beiden Stellen wortgleich. Damit ist die Seite in dem Punkt vollständig,
+  an dem eine deutsche Website sonst abmahnfähig wäre.
+- `docs/website/EINTRAGEN.md` neu gefasst: Was erledigt ist, steht als
+  erledigt da; offen ist nur noch der Name des Hosters in Abschnitt 7 der
+  Datenschutzerklärung. Sobald Cloudflare Pages steht, sind dort die eckigen
+  Klammern zu entfernen — und dann prüft
+  `PULSE_WEBSITE_LIVE=1 node scripts/check-website.mjs` als **Fehlschlag**,
+  ob wirklich keiner mehr offen ist.
+
+### Offen und ausdrücklich vermerkt
+
+- Im Impressum steht „Kleinunternehmer im Sinne von § 19 Umsatzsteuergesetz".
+  Das ist eine **Annahme**, keine geprüfte Angabe. Trifft sie nicht zu, gehört
+  dort die Umsatzsteuer-Identifikationsnummer hin — und es betrifft dann auch
+  die Preise in `04-monetarisierung.md`, die als Bruttopreise gedacht sind.
+
+_231 Website-Prüfungen, 94 Prüfungen des Klick-Dummys, 198 Tests in PulseCore,
+6 Sicherheitsprüfungen — alle grün._
+
+---
+
 ## 0.48.1 — 2026-08-15
 
 **Die Kontaktadresse steht. Von drei offenen Stellen ist eine weg.**
