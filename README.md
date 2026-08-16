@@ -32,6 +32,7 @@ nur das Geänderte.
 | `scripts/pruefen.sh app` | nur App-Build und Oberflächentests | 1 min |
 | `scripts/pruefen.sh --nur zurueck` | eine einzelne Oberflächenprüfung | 20 s |
 | `scripts/run.sh` | App im Simulator starten, Screenshots ablegen | 40 s |
+| `scripts/go-live.sh` | die ganze Kette bis aufs Telefon, jeder Schritt geprüft | 3 min |
 | `scripts/aufs-handy.sh` | auf ein angestecktes iPhone bauen und installieren | 2 min |
 | `node scripts/check-website.mjs` | die Website prüfen, hell und dunkel, 320–1280 px | 20 s |
 | `node scripts/check-entwuerfe.mjs` | die Entwürfe unter `docs/entwuerfe/` durchklicken | 20 s |
@@ -75,7 +76,7 @@ iCloud-Abgleich wie Käufe lassen sich noch nicht ausprobieren.
 
 ## Status
 
-Version **0.55.0**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
+Version **0.56.0**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
 rechnet echt. Alle vier Bildschirme — Übersicht, Erfassung, Verlauf und Zähler —
 laufen als SwiftUI-App im Simulator und werden auf jedem Lauf fotografiert,
 hell und dunkel. Siehe [CHANGELOG.md](CHANGELOG.md).

@@ -52,7 +52,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.pulsemeter.app
         PRODUCT_NAME: PulseMeter
-        MARKETING_VERSION: "0.55.0"
+        MARKETING_VERSION: "0.56.0"
         CURRENT_PROJECT_VERSION: "1"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         # **Nur iPhone.** Stand bis 0.37.0 auf "1,2", also universal — und
@@ -68,6 +68,12 @@ targets:
         # Signieren ist für den Simulator nicht nötig. Auf einem echten Gerät
         # trägt Xcode das Team ein; dann gehört es hierher.
         CODE_SIGNING_ALLOWED: NO
+        # **Je Ziel, nicht auf der Kommandozeile.** Eine Bauvorgabe auf der
+        # Kommandozeile gilt für alle Ziele auf einmal — das Widget bekäme dann
+        # die iCloud-Berechtigung der App, die seine eigene Kennung nicht hat.
+        # Wirksam wird die Datei erst, wenn signiert wird, also beim Gerätebau
+        # über `scripts/aufs-handy.sh`; Simulator und CI signieren nicht.
+        CODE_SIGN_ENTITLEMENTS: App/PulseMeter.entitlements
 
   PulseWidgetExtension:
     type: app-extension
@@ -82,12 +88,15 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.pulsemeter.app.widget
         PRODUCT_NAME: PulseWidget
-        MARKETING_VERSION: "0.55.0"
+        MARKETING_VERSION: "0.56.0"
         CURRENT_PROJECT_VERSION: "1"
         GENERATE_INFOPLIST_FILE: NO
         INFOPLIST_FILE: Widget/Info.plist
         SKIP_INSTALL: YES
         CODE_SIGNING_ALLOWED: NO
+        # Nur die App-Gruppe. Die Erweiterung spricht nie mit CloudKit — sie
+        # liest, was die App zuletzt im gemeinsamen Ordner hinterlegt hat.
+        CODE_SIGN_ENTITLEMENTS: Widget/PulseWidget.entitlements
 
   PulseMeterUITests:
     type: bundle.ui-testing

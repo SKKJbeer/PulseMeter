@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Die Berechtigungen der Erweiterung. **Nur die App-Gruppe.**
+
+  Das Widget liest, es schreibt nicht und es rechnet nicht: Die App legt über
+  `Shared/WidgetBridge.swift` eine kleine JSON-Datei im gemeinsamen Ordner ab,
+  das Widget liest sie. Beide Seiten müssen dieselbe Gruppe nennen wie
+  `WidgetBridge.appGroup` — steht dort etwas anderes, bleibt das Widget leer,
+  ohne Fehlermeldung und ohne Absturz. Genau die Sorte Fehler, die kein Test
+  findet.
+
+  Kein iCloud hier: Die Erweiterung spricht nie mit CloudKit. Sie sieht nur,
+  was die App zuletzt hinterlegt hat.
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.com.pulsemeter.app</string>
+	</array>
+</dict>
+</plist>

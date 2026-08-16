@@ -1,6 +1,6 @@
 # 11 – Sicherheit: was angreifbar wäre und was nicht
 
-Stand: 2026-08-15, Version 0.47.0
+Stand: 2026-08-16, Version 0.56.0
 
 Durchsuchte Fläche: `App/`, `Widget/`, `Shared/`, `Packages/PulseCore`,
 `Packages/PulseData`, `Packages/PulseUI`, `project.yml`, `App/Info.plist`,
@@ -143,9 +143,9 @@ gibt.
 
 | Was | Worauf zu achten ist |
 |---|---|
-| **StoreKit** | Der Kaufzustand in `UserDefaults` darf **nie** die Wahrheit sein. Bei jedem Start ist `Transaction.currentEntitlements` zu lesen und der Zwischenspeicher daran anzugleichen — auch nach unten. Sonst genügt ein Häkchen auf dem Gerät. |
+| **StoreKit** | **Seit 0.56.0 umgesetzt.** `StoreKitGateway` liest `Transaction.currentEntitlements` beim Start, `Purchase.synchronise(with:)` **ersetzt** den Zwischenspeicher damit — auch nach unten. `apply(_:)` legt weiterhin zusammen, weil nach einem einzelnen Kauf nur das eben Bestätigte zurückkommt; die zwei dürfen nie vertauscht werden. `.unverified` wird verworfen. Am Sandkasten zu prüfen bleibt: Kauf, Wiederherstellung und eine **Rückerstattung**, die den Zugang wieder wegnehmen muss. |
 | **CloudKit** | Ausschließlich die **private** Datenbank. Eine öffentliche oder geteilte Datenbank würde aus „liegt bei dir" ein „liegt bei uns" machen und die Datenschutzerklärung zur Unwahrheit. |
-| **`.entitlements`** | Nur zwei Einträge: App-Gruppe und iCloud. Jede weitere Berechtigung ist zu begründen oder zu streichen. |
+| **`.entitlements`** | **Seit 0.56.0 vorhanden.** App: App-Gruppe, iCloud-Container, CloudKit — dazu `aps-environment`, weil SwiftData Änderungen aus iCloud über eine stille Mitteilung meldet; ohne sie gleicht die App nur beim Start ab. Das ist die eine Berechtigung über die zwei hinaus, und sie ist damit begründet. Es werden keine sichtbaren Mitteilungen verschickt, und es gibt keinen Server, der welche verschicken könnte. Widget: nur die App-Gruppe. Am Gerät zu prüfen bleibt, dass das Profil nicht mehr enthält als die Datei. |
 | ~~**`PrivacyInfo.xcprivacy`**~~ | **Seit 0.55.0 vorhanden und geprüft** — je eines für App und Widget, `check-sicherheit.sh` liest sie und verlangt kein Tracking, keine Tracking-Domänen und keine erfassten Daten. Offen bleibt nur, ob die Datei im gebauten Bündel landet; das zeigt der erste Gerätebau. |
 | **Gerätelauf** | Ein Blick in die Systemprotokolle, während Ablesungen eingetragen werden: Es darf kein Zählerstand auftauchen. Heute gibt es keine Protokollausgabe, aber SwiftData und StoreKit schreiben von sich aus. |
 

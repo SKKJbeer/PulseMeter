@@ -13,6 +13,13 @@ import PulseCore
 ///
 /// Der Zuschnitt ist mit Absicht klein: kaufen, wiederherstellen, und die
 /// Auskunft, ob überhaupt gekauft werden kann.
+///
+/// **Warum `@MainActor`.** Zwei der vier Mitglieder sind synchron —
+/// ``isAvailable`` und ``displayPrice(for:)`` beantworten Fragen, die eine
+/// Ansicht beim Zeichnen stellt, und ein `await` beim Zeichnen gibt es nicht.
+/// Ein Vermittler, der nebenher mit dem Store spricht, muss seinen Zustand
+/// deshalb auf dem Hauptakteur halten. `Purchase` liegt ohnehin dort.
+@MainActor
 protocol PurchaseGateway: Sendable {
 
     /// Ob der Kauf zur Verfügung steht.
@@ -162,5 +169,25 @@ final class Purchase {
         for product in confirmed.owned { merged.add(product) }
         entitlement = merged
         defaults.set(merged.storageValue, forKey: Self.storageKey)
+    }
+
+    /// Übernimmt, was der Store sagt — **auch nach unten**.
+    ///
+    /// **Der Unterschied zu ``apply(_:)`` ist der ganze Punkt.** Nach einem
+    /// einzelnen Kauf meldet der Vermittler nur das eben Bestätigte; würde das
+    /// den Bestand ersetzen, verlöre der Nutzer bei jedem weiteren Kauf alle
+    /// vorherigen. Beim Abgleich mit `Transaction.currentEntitlements` ist es
+    /// umgekehrt: Dort steht der **vollständige** Bestand, und was fehlt,
+    /// fehlt mit Grund — eine Rückerstattung, ein abgelaufener Familienzugang.
+    /// Wer hier zusammenlegt statt zu ersetzen, verschenkt dauerhaft, was
+    /// einmal erstattet wurde (`docs/11-sicherheit.md`, Abschnitt 5).
+    ///
+    /// Die Startschalter gewinnen weiterhin: Bildschirmfotos und
+    /// Oberflächenprüfungen sollen einen festen Zustand zeigen und nicht den
+    /// des Sandkastens, in dem sie gerade laufen.
+    func synchronise(with truth: Entitlement) {
+        guard !Startschalter.einerVon("-pulse-pro", "-pulse-frei") else { return }
+        entitlement = truth
+        defaults.set(truth.storageValue, forKey: Self.storageKey)
     }
 }

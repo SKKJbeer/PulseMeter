@@ -103,6 +103,26 @@ echo "Wird gebaut und signiert — beim ersten Mal legt Xcode dabei ein Profil a
 # Es darf das Profil und die App-Kennung selbst anlegen. Ohne den Schalter
 # bricht der Lauf mit „no profiles found" ab, und man sucht im Portal nach
 # etwas, das es noch gar nicht geben kann.
+#
+# **Und es legt mehr an als nur das Profil.** Mit einem Bezahlkonto registriert
+# derselbe Schalter auch die **App-Gruppe** und den **iCloud-Container** aus den
+# Berechtigungsdateien — beim ersten Bau, ohne einen einzigen Klick im
+# Entwicklerportal.
+#
+# Die Berechtigungen stehen je Ziel in `project.yml` und **nicht** hier auf der
+# Kommandozeile: Eine Bauvorgabe auf der Kommandozeile gilt für alle Ziele auf
+# einmal, und dann bekäme das Widget die iCloud-Berechtigung der App, die seine
+# eigene Kennung gar nicht hat.
+SIGNIERUNG=()
+if [ "${PULSE_OHNE_BERECHTIGUNGEN:-}" = "1" ]; then
+  # Notausgang, falls die Berechtigungen den Bau blockieren — dann ist die App
+  # auf dem Telefon, das Widget bleibt leer und iCloud aus. Besser als gar
+  # keine App: Die zwei Wochen Eigennutzung sind wichtiger als der Abgleich
+  # (docs/07-v1-plan.md).
+  echo "Ohne Berechtigungen — Widget und iCloud bleiben aus."
+  SIGNIERUNG=(CODE_SIGN_ENTITLEMENTS="")
+fi
+
 xcodebuild build \
   -project PulseMeter.xcodeproj \
   -scheme PulseMeter \
@@ -113,7 +133,8 @@ xcodebuild build \
   DEVELOPMENT_TEAM="$TEAM" \
   CODE_SIGN_STYLE=Automatic \
   CODE_SIGNING_ALLOWED=YES \
-  CODE_SIGNING_REQUIRED=YES
+  CODE_SIGNING_REQUIRED=YES \
+  "${SIGNIERUNG[@]}"
 
 APP=$(find "$DERIVED/Build/Products" -name "PulseMeter.app" -maxdepth 3 | head -1)
 [ -n "$APP" ] || { echo "PulseMeter.app nicht gefunden" >&2; exit 1; }

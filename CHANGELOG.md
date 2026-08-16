@@ -9,6 +9,81 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.56.0 — 2026-08-16
+
+**Alles, was sich automatisieren lässt, läuft jetzt aus einem Befehl.**
+
+Auf „ich will dass das alles automatisiert von dir passiert": Drei Dinge kann
+kein Skript — das Programm kaufen, die Käufe in App Store Connect anlegen und
+die App zwei Wochen benutzen. Der Rest ist jetzt Code, und der Weg durchs
+Entwicklerportal fällt ganz weg.
+
+### Hinzugefügt
+
+- **`scripts/go-live.sh`** — die Kette aus `07-v1-plan.md` Abschnitt 5, in
+  einem Befehl, jeder Schritt einzeln geprüft. Hält beim ersten echten Problem
+  an und sagt, was zu tun ist, statt weiterzulaufen. `--pruefen` sieht nur
+  nach. Läuft unter Linux so weit, wie es ohne Xcode geht, und benennt den
+  Rest.
+
+  Die nützlichste Prüfung darin ist die kleinste: **Die App-Gruppe steht an
+  drei Stellen** — `WidgetBridge.swift` und die zwei Berechtigungsdateien —
+  und muss überall gleich lauten. Läuft eine weg, bleibt das Widget dauerhaft
+  leer, ohne Fehlermeldung und ohne Absturz. Gegengeprüft.
+
+- **`App/PulseMeter.entitlements`** und **`Widget/PulseWidget.entitlements`**.
+  App: App-Gruppe, iCloud-Container, CloudKit — und `aps-environment`, weil
+  SwiftData Änderungen aus iCloud über eine stille Mitteilung meldet. Ohne die
+  gleicht die App nur beim Start ab, und das zweite Gerät zeigt tagelang alte
+  Zahlen. Das ist die eine Berechtigung über die zwei aus `11-sicherheit.md`
+  hinaus; sie ist dort jetzt begründet. Widget: nur die App-Gruppe.
+
+  **Der Gang ins Entwicklerportal entfällt damit.**
+  `-allowProvisioningUpdates` in `aufs-handy.sh` registriert App-ID,
+  App-Gruppe und iCloud-Container beim ersten Bau selbst.
+
+- **`App/StoreKitGateway.swift`** — der Kauf, hinter dem Protokoll, das seit
+  0.35.0 dasteht. Fünf Produkte laden, kaufen, wiederherstellen, Preise aus
+  dem Store, und ein Beobachter auf `Transaction.updates` für Käufe, die
+  woanders passiert sind.
+
+- **`Purchase.synchronise(with:)`** — und das ist der Punkt, an dem es hätte
+  falsch werden können. `apply(_:)` **legt zusammen**, weil nach einem
+  einzelnen Kauf nur das eben Bestätigte zurückkommt und der Nutzer sonst bei
+  jedem weiteren Kauf alle vorherigen verlöre. Der Abgleich mit
+  `Transaction.currentEntitlements` muss das Gegenteil tun und **ersetzen**:
+  Dort steht der vollständige Bestand, und was fehlt, fehlt mit Grund. Wer
+  hier zusammenlegt, verschenkt dauerhaft, was einmal erstattet wurde
+  (`11-sicherheit.md`, Abschnitt 5). Startschalter gewinnen weiterhin, damit
+  Bildschirmfotos einen festen Zustand zeigen.
+
+### Geändert
+
+- **iCloud ist an — in drei Stufen, nicht als Schalter.** `cloudKit: true`
+  einfach zu setzen wäre falsch gewesen: Im Simulator und in der CI gibt es
+  keine Berechtigung, der Aufbau schlüge fehl, und die alte zweite Stufe fiel
+  auf einen **flüchtigen** Speicher zurück. Die App liefe und würde nichts
+  sichern; jede Oberflächenprüfung, die eine Ablesung einträgt, wäre rot, und
+  der Grund stünde nirgends. Die zweite Stufe ist jetzt derselbe Speicher ohne
+  Abgleich.
+- **`PurchaseGateway` ist `@MainActor`.** Zwei der vier Mitglieder sind
+  synchron, weil eine Ansicht sie beim Zeichnen fragt, und beim Zeichnen gibt
+  es kein `await`.
+- **Die Berechtigungen stehen je Ziel in `project.yml`**, nicht auf der
+  Kommandozeile: Eine Bauvorgabe dort gilt für alle Ziele auf einmal, und das
+  Widget bekäme die iCloud-Berechtigung der App, die seine Kennung nicht hat.
+
+### Was hier nicht geprüft werden konnte
+
+**Unter Linux lief kein Compiler über diese Dateien** — nur `swiftc -parse`,
+und das prüft die Form, nicht die Namen. `StoreKitGateway` ruft eine
+Schnittstelle auf, die es hier nicht gibt. Der erste macOS-Lauf ist damit die
+erste echte Übersetzung, und die wahrscheinlichsten Stellen stehen in der
+Nachschau: die `@MainActor`-Umstellung des Protokolls, der Beobachter im
+Konstruktor und die Berechtigungen je Ziel im Simulatorbau.
+
+---
+
 ## 0.55.0 — 2026-08-16
 
 **Das Privacy-Manifest ist da — der einzige Pflichtpunkt, der nie am

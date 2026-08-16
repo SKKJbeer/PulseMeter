@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Die Berechtigungen der App.
+
+  **Diese Datei wird nur beim Gerätebau angezogen**, nicht im Simulator und
+  nicht in der CI. Eingehängt wird sie in `scripts/aufs-handy.sh` als
+  Bauvorgabe auf der Kommandozeile, nicht in `project.yml`. Der Grund ist
+  Erfahrung: Steht sie fest im Projekt, schleppt jeder Simulatorbau
+  Berechtigungen mit, die dort niemand erfüllen kann — und die CI, die ohne
+  Team und ohne Profil baut, bricht ab, ohne dass an der App etwas falsch wäre.
+
+  **Die Kennungen legt Xcode selbst an.** `-allowProvisioningUpdates` in
+  `aufs-handy.sh` registriert App-ID, App-Gruppe und iCloud-Container im
+  Entwicklerportal beim ersten Bau, wenn sie noch nicht existieren. Es ist
+  also kein Weg über die Website nötig.
+
+  Vier Einträge, jeder mit Grund:
+
+  1. `application-groups` — das Widget liest über
+     `Shared/WidgetBridge.swift` eine JSON-Datei aus dem gemeinsamen Ordner.
+     Ohne die Gruppe fällt es stillschweigend auf den app-eigenen Ordner
+     zurück und bleibt dauerhaft leer.
+  2. `icloud-container-identifiers` und
+  3. `icloud-services` = CloudKit — der Abgleich zwischen den Geräten eines
+     Nutzers, ausschließlich in dessen **privater** Datenbank (ADR-002). Ein
+     Einmalkauf, der nur auf einem Gerät gilt, wäre keiner.
+  4. `aps-environment` — SwiftData meldet Änderungen aus iCloud über eine
+     stille Mitteilung. **Ohne diesen Eintrag gleicht die App nur beim Start
+     ab**, und der zweite Gerät zeigt tagelang alte Zahlen. Das ist die eine
+     Berechtigung über die zwei aus `docs/11-sicherheit.md` hinaus, und sie
+     steht dort begründet. Es werden keine sichtbaren Mitteilungen verschickt
+     und es gibt keinen Server, der welche verschicken könnte.
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.com.pulsemeter.app</string>
+	</array>
+	<key>com.apple.developer.icloud-container-identifiers</key>
+	<array>
+		<string>iCloud.com.pulsemeter.app</string>
+	</array>
+	<key>com.apple.developer.icloud-services</key>
+	<array>
+		<string>CloudKit</string>
+	</array>
+	<key>aps-environment</key>
+	<string>development</string>
+</dict>
+</plist>

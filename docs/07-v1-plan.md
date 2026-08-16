@@ -1,6 +1,6 @@
 # 07 – Der Weg zum ersten Go-Live
 
-Stand: 2026-08-16, Version 0.54.0
+Stand: 2026-08-16, Version 0.56.0
 Ziel: **1.0 im App Store**, mit dem kleinsten Umfang, der das Produktversprechen einlöst.
 
 ---
@@ -55,9 +55,9 @@ kein neuer ist dazugekommen.
 | ~~Sicherheitsprüfung~~ | **erledigt mit 0.47.0**, erweitert in 0.53.0 — `11-sicherheit.md`, acht Prüfungen bei jedem Lauf | — |
 | ~~**`PrivacyInfo.xcprivacy`**~~ | **erledigt mit 0.55.0** — je eines für App und Widget, geprüft von `check-sicherheit.sh`. Auf dem Mac ist einmal nachzusehen, dass es im gebauten Bündel landet | — |
 | **Website veröffentlichen** — Cloudflare Pages, Ausgabeordner `docs/website` | offen, hängt **nicht** am Programm | Nutzer |
-| StoreKit 2: fünf Produkte anlegen, `PurchaseGateway` implementieren | offen, aber vorbereitet — es ist eine Datei | Mac, nach dem Programm |
-| **CloudKit einschalten** — steht auf `false`, weil die Berechtigung fehlt | nie gelaufen | Mac, nach dem Programm |
-| **`.entitlements`** — App-Gruppe fürs Widget, iCloud | fehlt | Mac, nach dem Programm |
+| StoreKit 2 | **Code steht seit 0.56.0** (`App/StoreKitGateway.swift`), nie übersetzt und nie gegen den Sandkasten geprüft. Offen bleibt: die fünf Produkte in App Store Connect anlegen | Nutzer + Mac |
+| **CloudKit** | **Seit 0.56.0 eingeschaltet**, mit Rückfall auf lokal ohne Abgleich. Nie gelaufen — die Schemamigration ist die eigentliche Unbekannte | Nutzer + Mac |
+| ~~**`.entitlements`**~~ | **erledigt mit 0.56.0.** Die Kennungen legt Xcode beim ersten Gerätebau selbst an — kein Weg über das Portal | — |
 | 800 ms Kaltstart auf einem **Gerät** | nie gemessen | Nutzer, nach dem Programm |
 | **Zwei Wochen echte Eigennutzung** | offen | Nutzer, nach dem Programm |
 
