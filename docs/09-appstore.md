@@ -1,6 +1,6 @@
 # 09 – Material für den App Store
 
-Stand: 2026-08-15, Version 0.44.0
+Stand: 2026-08-16, Version 0.51.0
 
 Alles, was App Store Connect zur Einreichung verlangt, fertig zum Einfügen.
 Was hier steht, ist geprüft gegen das, was die App **heute** kann — nicht
@@ -87,9 +87,9 @@ der sich etwas anfangen lässt.
 ABLESEN, BEVOR DAS LICHT AUSGEHT
 
 Der Ziffernblock ist groß genug, dass man ihn einhändig trifft. Im Keller, im
-Halbdunkel, mit klammen Fingern. Er sieht aus wie das Zählwerk an der Wand,
-Stelle für Stelle: Du vergleichst, statt zu übertragen. Das Datum steht schon
-auf heute.
+Halbdunkel, mit klammen Fingern. Die Ziffern laufen von rechts ein, so wie du
+sie am Zähler abliest; was noch fehlt, steht blass da, und die Nachkommastellen
+bleiben rot wie am Gerät. Das Datum steht schon auf heute.
 
 Und wenn du dich vertippst, merkt es die App sofort. Eine Zahl weit über dem
 Üblichen, eine Zahl unter dem letzten Stand — dann fragt sie nach. Im Keller,

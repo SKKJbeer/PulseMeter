@@ -9,6 +9,36 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.51.0 — 2026-08-16
+
+**Auf der Website stand noch der alte Zähler.**
+
+Die Ziffernwalzen sind seit 0.46.0 weg, die Bilder auf der Startseite zeigten
+sie trotzdem — sie stammten aus einem Lauf davor. Und weil die Bilder alt
+waren, war es der Text daneben auch: Er beschrieb ein Zählwerk an der Wand,
+das es in der App nicht mehr gibt. Dieselbe Beschreibung stand außerdem noch
+in der App-Store-Fassung. Vom Nutzer bemerkt, nicht von einer Prüfung.
+
+### Geändert
+
+- **Alle sechs Bilder** unter `docs/website/bilder/` neu aus dem Zweig
+  `screenshots` geholt (Stand 03fc1eb). Die Erfassung zeigt jetzt das, was die
+  App tatsächlich anzeigt: `00.000,000`, blasse Stellen für das, was noch
+  fehlt, rote Nachkommastellen und die Schreibmarke.
+- **Der Text auf der Startseite** und beide Bildbeschreibungen beschreiben die
+  Eingabe von rechts nach links statt der Walzen.
+- **`docs/09-appstore.md`**: derselbe Satz in der Beschreibung ersetzt. Die
+  Beschreibung liegt damit bei 3.633 von 4.000 Zeichen.
+
+### Gelernt
+
+Ein Screenshot altert lautlos. Er wird nicht rot, er bricht nichts, und je
+länger er liegt, desto selbstverständlicher sieht er aus. Der Text daneben
+altert mit — wer die Bilder tauscht, muss die Sätze mitlesen, sonst beschreibt
+die Seite weiter ein Gerät, das niemand mehr sieht.
+
+---
+
 ## 0.50.0 — 2026-08-16
 
 **Die Website beantwortet jetzt Fragen, die Leute wirklich eintippen.**
