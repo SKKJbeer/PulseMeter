@@ -9,6 +9,36 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.62.1 — 2026-08-17
+
+**Die Einheit ist keine Zeichenkette.**
+
+Der Bau von 0.62.0 ist nach 52 Sekunden gescheitert, an einer Zeile:
+
+```
+App/HistoryView.swift:719:38: error: binary operator '??' cannot be applied
+to operands of type 'MeasurementUnit?' and 'String'
+```
+
+Beim Umbau auf die verzögerte Ausgabe war aus `register?.unit.symbol ?? ""`
+ein `register?.unit ?? ""` geworden. `TableExport.breakdown` nimmt keine
+Zeichenkette, sondern eine `MeasurementUnit`. Jetzt behält die Auswertung
+Zählwerk und Zähler als Ganzes und prüft sie erst in der Ausgabe — dasselbe
+Muster, das die Ablesungen schon verwenden.
+
+### Was daran zu lernen war
+
+`swiftc -parse` über die geänderten Dateien ist **keine Übersetzung**. Es liest
+die Datei, es prüft keine Typen — und die CI-Stufe „Syntax der iOS-Quellen"
+tut genau dasselbe. Ein Fehler dieser Art kann in einem Linux-Container nicht
+auffallen; SwiftUI und SwiftData gibt es hier nicht. Der erste echte Übersetzer
+läuft auf dem macOS-Läufer, und das bleibt so.
+
+Was die Oberflächentests zum neuen Menü sagen, ist damit weiterhin offen: Der
+Bau ist gescheitert, bevor ein Test gelaufen ist.
+
+---
+
 ## 0.62.0 — 2026-08-17
 
 **Der Export ist ein Knopf mit Auswahl — und schreibt keine Dateien mehr beim

@@ -716,10 +716,13 @@ struct HistoryView: View {
     /// Verbrauch. Nicht die Zählerstände, sondern was daraus geworden ist.
     private var auswertungAusgabe: CSVAusgabe {
         let abschnitte = buckets
-        let einheit = register?.unit ?? ""
-        let name = meter?.name ?? ""
+        // Die Einheit kommt aus dem Zählwerk und ist keine Zeichenkette — ein
+        // `?? ""` daneben sieht harmlos aus und übersetzt nicht.
+        let werk = register
+        let punkt = meter
         return CSVAusgabe(dateiname: "\(exportBaseName)-Auswertung.csv") {
-            TableExport.breakdown(abschnitte, unit: einheit, meterName: name)
+            guard let werk, let punkt else { return "" }
+            return TableExport.breakdown(abschnitte, unit: werk.unit, meterName: punkt.name)
         }
     }
 
