@@ -174,6 +174,15 @@ struct CaptureView: View {
         DatePicker("Abgelesen", selection: $moment, in: ...Date(),
                    displayedComponents: [.date, .hourAndMinute])
             .datePickerStyle(.compact)
+            // **Deutsch, wie jedes andere Datum in dieser App.**
+            //
+            // Der Wähler nimmt sonst die Einstellung des Geräts, und im
+            // Bildschirmfoto des Laufs zu `e864906` stand darum „8/17/26" und
+            // „5:46 PM" neben lauter deutschen Zahlen. Jede andere Datumsangabe
+            // hier wird ausdrücklich mit `de_DE` gesetzt; dieser eine Ort war
+            // die Ausnahme, und Ausnahmen dieser Art fallen dem Nutzer als
+            // Schlamperei auf, nicht als Einstellung.
+            .environment(\.locale, Locale(identifier: "de_DE"))
             .font(PulseText.caption)
             .foregroundStyle(PulseColor.inkTertiary)
             .tint(accent)

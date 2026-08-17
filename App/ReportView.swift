@@ -319,22 +319,6 @@ struct ReportView: View {
             // zweiten Fehlversuch nicht weiterraten, sondern die Ansicht ihre
             // eigenen Zahlen berichten lassen. Vier Vermutungen hatten je einen
             // Lauf gekostet und nichts geklärt; die eine Messung klärte alles.
-            // **Eine Messzeile, nur im Bildschirmfoto-Lauf.**
-            //
-            // Das Bild aus dem Lauf zu `9445365` zeigt die sechs Seiten wieder
-            // als schmale Rahmen in der Mitte — dieselbe Erscheinung wie in
-            // 0.33.4, obwohl der damalige Grund behoben ist. Die Lehre von
-            // damals steht in `docs/08-baukasten.md`: nicht weiterraten,
-            // sondern die Ansicht ihre eigenen Zahlen berichten lassen. Der
-            // Startschalter setzt nur die CI; im TestFlight-Bau sieht das
-            // niemand.
-            if Startschalter.gesetzt("-pulse-bericht") {
-                Text(String(format: "breite=%.0f maßstab=%.3f rahmen=%.0f×%.0f",
-                            contentWidth, scale,
-                            ReportPaper.pageWidth * scale, ReportPaper.pageHeight * scale))
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(.red)
-            }
             ForEach(Array(pages.enumerated()), id: \.element.id) { index, page in
                 ReportPageView(page: page, pageNumber: index + 1, pageCount: pages.count,
                                watermarked: purchase.reportIsWatermarked)

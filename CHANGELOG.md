@@ -9,6 +9,28 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.64.1 — 2026-08-17
+
+**Die Messung hat geantwortet, und der Wähler spricht jetzt Deutsch.**
+
+`breite=404 maßstab=0.679 rahmen=404×572` — das steht im Bildschirmfoto des
+Laufs zu `e864906`, auf demselben 440 Punkte breiten Gerät, auf dem vorher 237
+gemessen wurden. Der `GeometryReader` um die Bildlaufansicht misst, was das Blatt
+hergibt, und nichts, was er selbst bestimmt. Die Vorschau des Berichts ist damit
+so breit wie der Schirm und lesbar.
+
+Die Messzeile ist wieder heraus. Sie hat in zwei Läufen mehr geklärt als vier
+Vermutungen davor — dieselbe Erfahrung wie in 0.33.4, und deshalb steht sie in
+`docs/08-baukasten.md`.
+
+**Und ein Fehler, den erst das Bild gezeigt hat:** Unter dem Ziffernblock stand
+„8/17/26" und „5:46 PM". Der Datumswähler nimmt die Einstellung des Geräts, und
+im Prüflauf ist die amerikanisch. Jede andere Datumsangabe dieser App wird
+ausdrücklich mit `de_DE` gesetzt; dieser eine Ort war die Ausnahme. Jetzt nicht
+mehr — „17.08.26" und „17:46".
+
+---
+
 ## 0.64.0 — 2026-08-17
 
 **Datum und Uhrzeit beim Eintippen — und damit mehr als eine Ablesung am Tag.**
