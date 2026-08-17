@@ -33,6 +33,15 @@ public struct Reading: Identifiable, Hashable, Codable, Sendable {
     /// Gerät, an dem abgelesen wurde. `nil`, wenn keine Wechselhistorie geführt wird.
     public var deviceID: MeterDevice.ID?
     public var day: CalendarDay
+    /// Die Uhrzeit, zu der abgelesen wurde — `nil` bei allem, was vor 0.64.0
+    /// erfasst wurde, und bei allem, wo sie niemand angegeben hat.
+    ///
+    /// **Sie entscheidet die Reihenfolge, nicht die Rechnung.** Verbräuche
+    /// entstehen zwischen Tagen (ADR-004); zwei Ablesungen desselben Tages
+    /// tragen beide bei, und die Uhrzeit sagt nur, welche die spätere ist. Wer
+    /// morgens und abends abliest, bekommt damit zwei brauchbare Einträge statt
+    /// zweier, deren Reihenfolge am Erfassungszeitpunkt hängt.
+    public var time: TimeOfDay?
     public var value: Decimal
     public var origin: ReadingOrigin
     public var note: String?
@@ -47,6 +56,7 @@ public struct Reading: Identifiable, Hashable, Codable, Sendable {
         registerID: Register.ID,
         deviceID: MeterDevice.ID? = nil,
         day: CalendarDay,
+        time: TimeOfDay? = nil,
         value: Decimal,
         origin: ReadingOrigin = .manual,
         note: String? = nil,
@@ -57,6 +67,7 @@ public struct Reading: Identifiable, Hashable, Codable, Sendable {
         self.registerID = registerID
         self.deviceID = deviceID
         self.day = day
+        self.time = time
         self.value = value
         self.origin = origin
         self.note = note
@@ -69,12 +80,26 @@ public struct Reading: Identifiable, Hashable, Codable, Sendable {
 }
 
 extension Array where Element == Reading {
-    /// Chronologisch sortiert. Bei gleichem Tag entscheidet der Erfassungszeitpunkt —
-    /// das ist der Fall am Tag eines Zählerwechsels, an dem zwei Ablesungen
-    /// zulässig und notwendig sind.
+    /// Chronologisch sortiert.
+    ///
+    /// Bei gleichem Tag entscheidet die **angegebene Uhrzeit**, wenn beide
+    /// Ablesungen eine tragen. Sonst der Erfassungszeitpunkt — das ist der Fall
+    /// am Tag eines Zählerwechsels und bei allem, was vor 0.64.0 gespeichert
+    /// wurde.
+    ///
+    /// **Warum nicht die Uhrzeit gegen den Erfassungszeitpunkt.** Eine
+    /// nachgetragene Ablesung von gestern Abend wurde heute erfasst; ihre
+    /// Uhrzeit und ihr Erfassungszeitpunkt beschreiben verschiedene Dinge, und
+    /// beide gegeneinander zu vergleichen wäre wieder das Gegenüberstellen
+    /// zweier verschiedener Zeitausschnitte. Trägt nur eine Ablesung eine
+    /// Uhrzeit, ist der Erfassungszeitpunkt das Einzige, was beide haben.
     public func chronological() -> [Reading] {
         sorted { lhs, rhs in
-            lhs.day == rhs.day ? lhs.createdAt < rhs.createdAt : lhs.day < rhs.day
+            guard lhs.day == rhs.day else { return lhs.day < rhs.day }
+            if let links = lhs.time, let rechts = rhs.time, links != rechts {
+                return links < rechts
+            }
+            return lhs.createdAt < rhs.createdAt
         }
     }
 

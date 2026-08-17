@@ -111,44 +111,42 @@ struct ReportView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    if let problem {
-                        StatusBanner(tone: .notice, message: AttributedString(problem))
-                    }
-                    if let report {
-                        preview(report)
-                    } else {
-                        chooser
-                    }
-                }
-                .padding(.horizontal, 18)
-                .padding(.bottom, 28)
-            }
-            // **Der Messfühler darf nicht messen, was er selbst bestimmt.**
-            // Vorher hing der `GeometryReader` am Hintergrund genau des
-            // Stapels, dessen Breite von den Seiten kommt — und deren Breite
-            // kommt aus dieser Messung. Ein Kreisschluss: Die Vorschau blieb
-            // bei einer viel zu kleinen Breite stehen, und die sechs Seiten
-            // standen als schmale, praktisch leere Rahmen in der Mitte des
-            // Schirms. Der Inhalt war die ganze Zeit da — die
-            // Oberflächenprüfungen finden „Arbeitspreis Hochtarif“ im Baum —,
-            // nur unlesbar klein gezeichnet.
+            // **Gemessen wird außerhalb der Bildlaufansicht.**
             //
-            // Gemessen wird jetzt die **Bildlaufansicht**. Ihre Breite kommt
-            // von außen und hängt an nichts, was von `contentWidth` abhängt.
-            // Die seitliche Polsterung wird abgezogen, weil die Seiten
-            // innerhalb davon stehen. `onChange` zieht bei Drehung oder
-            // geteiltem Bildschirm nach; `onAppear` allein feuert einmal und
-            // bleibt danach falsch stehen.
-            .background {
-                GeometryReader { geometry in
-                    Color.clear
-                        .onAppear { contentWidth = geometry.size.width - 36 }
-                        .onChange(of: geometry.size.width) { _, neu in
-                            contentWidth = neu - 36
+            // Der Messfühler saß bis 0.63.0 am Hintergrund der `ScrollView`.
+            // Deren Breite hängt aber am Inhalt — und der Inhalt sind die
+            // Seiten, deren Breite aus dieser Messung kommt. Ein Kreisschluss
+            // mit zwei Ruhelagen: Im Lauf zu `9445365` blieb er bei rund 50
+            // Punkten stehen, die Seiten waren unlesbar; im Lauf zu `6d0939d`
+            // bei 237 von 440 verfügbaren, also lesbar, aber halb so breit wie
+            // möglich. Dieselbe Fassung, zwei Ergebnisse — das ist das Erkennen
+            // eines Kreisschlusses, nicht zweier Fehler.
+            //
+            // Ein `GeometryReader` **um** die Bildlaufansicht bekommt seine
+            // Breite vom Blatt und hängt an nichts, was hier drin entschieden
+            // wird. Die seitliche Polsterung wird abgezogen, weil die Seiten
+            // innerhalb davon stehen.
+            GeometryReader { geometry in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        if let problem {
+                            StatusBanner(tone: .notice, message: AttributedString(problem))
                         }
+                        if let report {
+                            preview(report)
+                        } else {
+                            chooser
+                        }
+                    }
+                    .padding(.horizontal, 18)
+                    .padding(.bottom, 28)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                .onAppear { contentWidth = geometry.size.width - 36 }
+                // `onChange` zieht bei Drehung und geteiltem Bildschirm nach;
+                // `onAppear` allein feuert einmal und bleibt danach falsch
+                // stehen.
+                .onChange(of: geometry.size.width) { _, neu in contentWidth = neu - 36 }
             }
             .background(PulseColor.ground)
             .navigationTitle("Verbrauchsbericht")

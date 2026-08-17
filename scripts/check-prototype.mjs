@@ -136,6 +136,71 @@ for (const scheme of ["light", "dark"]) {
          `Beide Zählwerke erfasst (${vorher} → ${nachher})`);
   }
 
+  // --- Datum und Uhrzeit: zwei Ablesungen an einem Tag, rückwirkend eintragen
+  //
+  // Der Wunsch dahinter: morgens und abends ablesen und beides behalten. Geprüft
+  // wird deshalb nicht der Eingabeknopf, sondern was danach in der Reihe steht —
+  // die Reihenfolge entscheidet über jeden gerechneten Verbrauch.
+  await page.locator('[data-pane="home"]').first().click();
+  await page.waitForTimeout(200);
+  const zeitId = await page.evaluate(() =>
+    (METERS.find(m => m.registers.length === 1 && m.registers[0].readings.length > 2) || {}).id || null);
+  if (zeitId) {
+    // **Einen Tag vor der letzten vorhandenen Ablesung**, nicht einfach
+    // „gestern": Läge das Datum nach der letzten, stünde der Eintrag zu Recht
+    // hinten, und die Prüfung würde nichts prüfen.
+    const stand = await page.evaluate(id => {
+      const rs = METERS.find(m => m.id === id).registers[0].readings;
+      const letzte = rs[rs.length - 1];
+      const tag = new Date(Date.UTC(letzte.y, letzte.m - 1, letzte.d - 1));
+      return {
+        anzahl: rs.length,
+        davor: tag.toISOString().slice(0, 10),
+        letzterTag: letzte.y * 10000 + letzte.m * 100 + letzte.d
+      };
+    }, zeitId);
+    const vorher = stand.anzahl;
+    await page.locator(`[data-capture="${zeitId}"]`).first().click();
+    await page.waitForTimeout(250);
+    note(await page.locator("#cap-date").isVisible() && await page.locator("#cap-time").isVisible(),
+         "Datum und Uhrzeit stehen unter dem Sichern-Knopf");
+    await page.locator("#cap-date").fill(stand.davor);
+    await page.locator("#cap-time").fill("07:00");
+    await page.locator("#prefill").click();
+    await page.locator("#save").click();
+    await page.waitForTimeout(400);
+    const reihe = await page.evaluate(id => {
+      const rs = METERS.find(m => m.id === id).registers[0].readings;
+      const tage = rs.map(r => r.y * 10000 + r.m * 100 + r.d);
+      return {
+        anzahl: rs.length,
+        sortiert: tage.every((t, i) => i === 0 || tage[i - 1] <= t),
+        mitZeit: rs.filter(r => r.t != null).length,
+        letzter: tage[tage.length - 1]
+      };
+    }, zeitId);
+    note(reihe.anzahl === vorher + 1, `Die nachgetragene Ablesung ist gespeichert (${reihe.anzahl})`);
+    note(reihe.sortiert, "Die Reihe bleibt nach Tagen geordnet — sonst rechnet jeder Abschnitt danach falsch");
+    note(reihe.mitZeit === 1, `Genau die neue Ablesung trägt eine Uhrzeit (${reihe.mitZeit})`);
+    note(reihe.letzter === stand.letzterTag,
+         "Ein nachgetragener Eintrag hängt nicht hinten an, sondern rückt an seinen Platz");
+
+    // Und die Uhrzeit steht auch da, wo jemand sie sucht. Der Verlauf steht an
+    // dieser Stelle in der Tabellenansicht; „Alle Ablesungen" hängt am Diagramm.
+    await page.locator('[data-pane="history"]').first().click();
+    await page.waitForTimeout(250);
+    await page.locator(`#picker [data-pick="${zeitId}"]`).first().click();
+    await page.waitForTimeout(250);
+    await page.locator('[data-mode="chart"]').first().click();
+    await page.waitForTimeout(300);
+    await page.locator('[data-open="readings"]').first().click();
+    await page.waitForTimeout(300);
+    const liste = await page.evaluate(() => document.getElementById("readings").innerText);
+    note(/07:00 Uhr/.test(liste), "Die Uhrzeit steht in der Liste der Ablesungen");
+    await page.locator("#sheet-readings [data-close]").first().click();
+    await page.waitForTimeout(250);
+  }
+
   // --- Export: Ein Zähler mit zwei Zahlen darf keine davon verlieren
   const csv = await page.evaluate(() => {
     const m = METERS.find(x => x.registers.length > 1);

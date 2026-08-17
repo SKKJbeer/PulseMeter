@@ -20,15 +20,23 @@ public enum TableExport {
         register: Register,
         meterName: String
     ) -> String {
-        var lines = ["Zähler\(separator)Datum\(separator)Stand\(separator)Einheit\(separator)Art"]
-        for reading in readings.sorted(by: { $0.day < $1.day }) {
-            lines.append([
-                escape(meterName),
-                isoDate(reading.day),
+        // Die Spalte „Uhrzeit" steht nur da, wenn wenigstens eine Ablesung eine
+        // trägt — wie „Bezeichnung" weiter unten. Eine leere Spalte ist eine
+        // Frage ohne Anlass: Der Leser weiß nicht, ob dort nichts steht oder
+        // etwas fehlt.
+        let mitUhrzeit = readings.contains { $0.time != nil }
+        var lines = ["Zähler\(separator)Datum"
+            + (mitUhrzeit ? "\(separator)Uhrzeit" : "")
+            + "\(separator)Stand\(separator)Einheit\(separator)Art"]
+        for reading in readings.chronological() {
+            var felder = [escape(meterName), isoDate(reading.day)]
+            if mitUhrzeit { felder.append(reading.time?.description ?? "") }
+            felder.append(contentsOf: [
                 decimal(reading.value, digits: register.fractionDigits),
                 escape(register.unit.symbol),
                 origin(reading.origin)
-            ].joined(separator: separator))
+            ])
+            lines.append(felder.joined(separator: separator))
         }
         return lines.joined(separator: "\r\n") + "\r\n"
     }
@@ -61,22 +69,28 @@ public enum TableExport {
         // untereinanderstehen wie sie abgelesen wurden.
         let order = Dictionary(uniqueKeysWithValues: registers.enumerated().map { ($0.element.id, $0.offset) })
 
-        var lines = ["Zähler\(separator)Bezeichnung\(separator)Datum\(separator)Stand\(separator)Einheit\(separator)Art"]
+        let mitUhrzeit = readings.contains { $0.time != nil }
+        var lines = ["Zähler\(separator)Bezeichnung\(separator)Datum"
+            + (mitUhrzeit ? "\(separator)Uhrzeit" : "")
+            + "\(separator)Stand\(separator)Einheit\(separator)Art"]
+        // Tag, dann Uhrzeit, dann Reihenfolge am Gerät. Die Zählwerke einer
+        // Ablesung bleiben damit beieinander, und zwei Ablesungen desselben
+        // Tages stehen in der Reihenfolge, in der sie abgelesen wurden.
         let sorted = readings.sorted {
-            $0.day != $1.day
-                ? $0.day < $1.day
-                : (order[$0.registerID] ?? 0) < (order[$1.registerID] ?? 0)
+            if $0.day != $1.day { return $0.day < $1.day }
+            if let links = $0.time, let rechts = $1.time, links != rechts { return links < rechts }
+            return (order[$0.registerID] ?? 0) < (order[$1.registerID] ?? 0)
         }
         for reading in sorted {
             let register = byID[reading.registerID] ?? first
-            lines.append([
-                escape(meterName),
-                escape(name(of: register)),
-                isoDate(reading.day),
+            var felder = [escape(meterName), escape(name(of: register)), isoDate(reading.day)]
+            if mitUhrzeit { felder.append(reading.time?.description ?? "") }
+            felder.append(contentsOf: [
                 decimal(reading.value, digits: register.fractionDigits),
                 escape(register.unit.symbol),
                 origin(reading.origin)
-            ].joined(separator: separator))
+            ])
+            lines.append(felder.joined(separator: separator))
         }
         return lines.joined(separator: "\r\n") + "\r\n"
     }

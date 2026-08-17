@@ -141,6 +141,12 @@ public final class ReadingRecord {
     public var deviceID: UUID?
 
     public var day: Int = 0
+    /// Minuten seit Mitternacht, wenn eine Uhrzeit angegeben wurde.
+    ///
+    /// Optional und ohne Vorgabewert, damit CloudKit und SwiftData den Zusatz
+    /// leichtgewichtig übernehmen: Alles, was vor 0.64.0 gespeichert wurde,
+    /// bleibt gültig und trägt hier `nil` — „an diesem Tag", ohne Uhrzeit.
+    public var timeMinutes: Int?
 
     /// Ganzzahliger Zählerstand mit mitgeführtem Dezimalfaktor.
     /// Niemals `Double`: CloudKit überträgt sonst 49157.399999999994

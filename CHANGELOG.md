@@ -9,6 +9,77 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.64.0 — 2026-08-17
+
+**Datum und Uhrzeit beim Eintippen — und damit mehr als eine Ablesung am Tag.**
+
+Bis 0.63.0 stand unter dem Sichern-Knopf ein Satz: „Datum: heute, 17. August
+2026". Unveränderlich. Eine Ablesung von gestern ging nicht, und zwei am selben
+Tag unterschieden sich nur im Erfassungszeitpunkt — einer Zahl, die niemand
+sieht.
+
+Jetzt steht dort eine Zeile mit Datum und Uhrzeit, vorbelegt auf jetzt. Wer
+nichts anfasst, merkt von ihr nichts; die 60 Sekunden und die drei Berührungen
+bleiben. Wer morgens und abends abliest, bekommt zwei Einträge, die sich
+unterscheiden — und wer eine Ablesung nachträgt, wählt den Tag, an dem sie
+entstanden ist.
+
+### Der Tag rechnet, die Uhrzeit ordnet
+
+`TimeOfDay` ist neu in PulseCore: Stunde und Minute, ohne Sekunden, ohne
+Zeitzone, gespeichert als Minuten seit Mitternacht. Getrennt von `CalendarDay`,
+weil beide verschiedene Fragen beantworten — der Tag ist die Grundlage jeder
+Berechnung (ADR-004), die Uhrzeit sagt nur, welche von zwei Ablesungen desselben
+Tages die spätere ist.
+
+`chronological()` benutzt sie: Bei gleichem Tag entscheidet die Uhrzeit, wenn
+**beide** eine tragen. Sonst weiter der Erfassungszeitpunkt. Die Uhrzeit der
+einen gegen die Erfassung der anderen zu stellen wäre wieder ein Vergleich
+zweier verschiedener Dinge — eine nachgetragene Ablesung von gestern Abend wurde
+heute erfasst.
+
+An der Rechnung ändert sich nichts: Zwei Ablesungen an einem Tag tragen **beide**
+bei, so wie am Tag eines Zählerwechsels. Eine Prüfung hält das ausdrücklich fest
+— 10 kWh morgens und 15 kWh abends sind 25 kWh.
+
+### Was noch mitmusste
+
+- **Die Plausibilitätsprüfung urteilt über den gewählten Tag**, nicht über heute.
+  Eine Zahl von vor drei Tagen gegen den heutigen Zeitraum zu bewerten wäre die
+  wiederkehrende Fehlerklasse dieses Projekts, hier in der Eingabe.
+- **Die Gerätekennung kommt vom gewählten Tag.** Bei einer nachgetragenen
+  Ablesung von vor einem Zählerwechsel wäre die heutige die falsche, und der
+  Rechenkern hielte den erklärten Rücksprung für einen Fehler.
+- **Die Liste der Ablesungen zeigt die Uhrzeit**, wo eine angegeben wurde. Zwei
+  Zeilen mit demselben Datum und verschiedenen Zahlen sähen sonst nach einem
+  doppelten Eintrag aus.
+- **Der CSV-Export bekommt eine Spalte „Uhrzeit"** — aber nur, wenn wenigstens
+  eine Ablesung eine trägt. Eine leere Spalte ist eine Frage ohne Anlass.
+- **Der Klick-Dummy hat die Zeile ebenfalls**, mit echten Feldern statt des alten
+  Satzes „antippen zum Ändern", der nichts tat. Und er sortiert die Reihe nach
+  dem Einfügen: Eine nachgetragene Ablesung hing sonst hinten und hätte jeden
+  Abschnitt danach falsch gerechnet.
+- **Ein Feld in der Speicherung**, optional und ohne Vorgabe, damit SwiftData und
+  CloudKit es leichtgewichtig übernehmen. Alles, was vorher gespeichert wurde,
+  bleibt gültig und trägt keine Uhrzeit — „an diesem Tag".
+
+### Die Vorschau des Berichts: der Kreisschluss ist gefunden
+
+Die Messzeile aus 0.63.0 hat geantwortet: `breite=237 maßstab=0.399` auf einem
+440 Punkte breiten Gerät. Zusammen mit dem Lauf davor — dort standen rund 50
+Punkte, die Seiten waren unlesbar — ergibt das das Bild: **dieselbe Fassung, zwei
+Ergebnisse.** Ein Kreisschluss mit zwei Ruhelagen, keine zwei Fehler.
+
+Der Messfühler saß am Hintergrund der Bildlaufansicht, und deren Breite hängt am
+Inhalt — der Inhalt sind die Seiten, deren Breite aus der Messung kommt. Jetzt
+liegt der `GeometryReader` **um** die Bildlaufansicht: Seine Breite kommt vom
+Blatt und hängt an nichts, was darin entschieden wird.
+
+Die Messzeile bleibt diesen einen Lauf noch stehen — sie soll bestätigen, dass
+dort nun rund 404 Punkte ankommen. Danach geht sie heraus.
+
+---
+
 ## 0.63.0 — 2026-08-17
 
 **Der Bericht ist jetzt eine Datei.**

@@ -53,12 +53,14 @@ enum Fixture {
         _ value: Decimal,
         device: MeterDevice? = nil,
         origin: ReadingOrigin = .manual,
-        sequence: Int = 0
+        sequence: Int = 0,
+        time: TimeOfDay? = nil
     ) -> Reading {
         Reading(
             registerID: register.id,
             deviceID: device?.id,
             day: readingDay,
+            time: time,
             value: value,
             origin: origin,
             createdAt: Date(timeIntervalSince1970: TimeInterval(sequence))

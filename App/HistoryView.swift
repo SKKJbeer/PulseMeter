@@ -915,7 +915,13 @@ struct ReadingsList: View {
                 ForEach(readings.reversed()) { reading in
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(germanDate(reading.day))
+                            // Die Uhrzeit steht dabei, wenn eine angegeben
+                            // wurde. Zwei Zeilen mit demselben Datum und
+                            // verschiedenen Zahlen sehen sonst aus wie ein
+                            // doppelter Eintrag — und genau das sollten sie
+                            // nicht: Es sind Morgen und Abend.
+                            Text(reading.time.map { "\(germanDate(reading.day)), \($0) Uhr" }
+                                 ?? germanDate(reading.day))
                                 .font(PulseText.detail)
                                 .foregroundStyle(PulseColor.inkSecondary)
                             if let label = labels[reading.registerID] {

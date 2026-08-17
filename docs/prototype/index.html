@@ -408,6 +408,21 @@ h2.large {
   text-align: center; font-size: var(--fs-cap); color: var(--ink-3);
   margin-top: 9px;
 }
+/* Datum und Uhrzeit der Ablesung. Eine Zeile, kein Formular — im Keller tippt
+   niemand ein Datum ein, er tippt eine Zahl und drückt Sichern. */
+.momentrow {
+  display: flex; align-items: center; gap: 8px; margin-top: 11px;
+  font-size: var(--fs-cap); color: var(--ink-3);
+}
+.momentrow label { flex: none; }
+.momentrow input {
+  font: inherit; font-size: var(--fs-cap); color: var(--ink);
+  background: var(--surface-2); border: 1px solid var(--hairline-2);
+  border-radius: 9px; padding: 6px 8px; min-width: 0;
+}
+.momentrow input:focus-visible { outline: 2px solid var(--tint); outline-offset: 1px; }
+#cap-date { flex: 1 1 auto; }
+#cap-time { flex: 0 0 auto; }
 
 /* Bestätigung */
 .toast {
@@ -690,7 +705,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.63.0</p>
+  <p>Klickbarer Entwurf · v0.64.0</p>
 </div>
 
 <div class="device">
@@ -848,7 +863,16 @@ select.field { cursor: pointer; }
       <div class="verdict idle" id="verdict" aria-live="polite">Zählerstand eintippen</div>
       <div class="keys" id="keys"></div>
       <button type="button" class="save" id="save" disabled>Sichern</button>
-      <div class="save-note">Datum: heute, 4. August 2026 · antippen zum Ändern</div>
+      <!-- Datum **und** Uhrzeit, vorbelegt auf jetzt. Hier stand bis 0.63.0 ein
+           Satz „Datum: heute · antippen zum Ändern" — antippen ließ sich nichts,
+           und rückwirkend eintragen ging gar nicht. Mit der Uhrzeit sind zwei
+           Ablesungen an einem Tag unterscheidbar, ohne dass eine unsichtbare
+           Zahl über die Reihenfolge entscheidet. -->
+      <div class="momentrow">
+        <label for="cap-date">Abgelesen</label>
+        <input type="date" id="cap-date" max="2026-08-04">
+        <input type="time" id="cap-time" step="60">
+      </div>
     </div>
   </div>
 
@@ -1490,6 +1514,11 @@ const money = v => v.toLocaleString("de-DE", { style: "currency", currency: "EUR
 const moneyRound = v => Math.round(v).toLocaleString("de-DE", { style: "currency", currency: "EUR", minimumFractionDigits: 0, maximumFractionDigits: 0 });
 const pct = v => (v > 0 ? "+" : "−") + nf(Math.abs(v * 100), 0) + " %";
 const dateLabel = r => `${r.d}. ${MONTHS_LONG[r.m - 1]} ${r.y}`;
+/* Mit Uhrzeit, wo eine angegeben wurde. Zwei Zeilen mit demselben Datum und
+   verschiedenen Zahlen sehen sonst aus wie ein doppelter Eintrag — dabei sind
+   es Morgen und Abend. */
+const timeLabel = t => `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
+const momentLabel = r => r.t == null ? dateLabel(r) : `${dateLabel(r)}, ${timeLabel(r.t)} Uhr`;
 const dateShort = r => `${r.d}. ${MONTHS[r.m - 1]}`;
 /* Ohne Jahr, solange es das laufende ist — in einer Beschriftung wäre
    „1. Mai 2026" zu lang, und das Jahr steht ohnehin über dem Schirm. */
@@ -1908,7 +1937,7 @@ function renderChart() {
     const diff = before ? r.value - before.value : null;
     const days = before ? between(before, r) : null;
     return `<div class="row">
-      <div class="rl">${dateLabel(r)}
+      <div class="rl">${momentLabel(r)}
         <small>${diff !== null ? nf(diff, m.frac >= 3 ? 1 : 0) + " " + m.unit + " in " + days + " Tagen" : "Erster Stand"}</small></div>
       ${r.origin === "estimated" ? '<span class="tag">geschätzt</span>' : ""}
       <div class="rv">${nf(r.value, m.frac)}<small>${m.unit}</small></div>
@@ -2179,28 +2208,34 @@ function buildCsv(kind) {
     // vollständig aus. Die Spalte „Bezeichnung" steht nur da, wo es mehr als
     // eine Zahl gibt; sonst wäre sie eine Frage ohne Anlass.
     const many = m.registers.length > 1;
-    const lines = [many ? "Zähler;Bezeichnung;Datum;Stand;Einheit;Art"
-                        : "Zähler;Datum;Stand;Einheit;Art"];
+    // Die Spalte „Uhrzeit" steht nur da, wenn wenigstens eine Ablesung eine
+    // trägt — wie „Bezeichnung". Eine leere Spalte ist eine Frage ohne Anlass.
+    const mitZeit = m.registers.some(r => r.readings.some(a => a.t != null));
+    const lines = ["Zähler" + (many ? ";Bezeichnung" : "") + ";Datum"
+                   + (mitZeit ? ";Uhrzeit" : "") + ";Stand;Einheit;Art"];
     const zeilen = [];
     m.registers.forEach((r, i) => {
       for (const a of r.readings) {
         zeilen.push({ reg: r, order: i, a });
       }
     });
-    // Nach Tag, bei gleichem Tag in der Reihenfolge am Gerät — so, wie sie
-    // abgelesen wurden.
+    // Tag, dann Uhrzeit, dann Reihenfolge am Gerät — so, wie sie abgelesen
+    // wurden. Wie `TableExport` in PulseCore.
     zeilen.sort((x, y) => {
       const dx = x.a.y * 10000 + x.a.m * 100 + x.a.d;
       const dy = y.a.y * 10000 + y.a.m * 100 + y.a.d;
-      return dx !== dy ? dx - dy : x.order - y.order;
+      if (dx !== dy) return dx - dy;
+      if (x.a.t != null && y.a.t != null && x.a.t !== y.a.t) return x.a.t - y.a.t;
+      return x.order - y.order;
     });
     for (const z of zeilen) {
       const felder = [csvField(m.name)];
       // Ohne eigenen Namen ergibt er sich aus der Richtung — ein leeres Feld
       // neben „Einspeisung" wäre eine Frage statt einer Angabe.
       if (many) felder.push(csvField(z.reg.label || (z.reg.feedIn ? "Einspeisung" : "Bezug")));
+      felder.push(`${z.a.y}-${String(z.a.m).padStart(2, "0")}-${String(z.a.d).padStart(2, "0")}`);
+      if (mitZeit) felder.push(z.a.t == null ? "" : timeLabel(z.a.t));
       felder.push(
-        `${z.a.y}-${String(z.a.m).padStart(2, "0")}-${String(z.a.d).padStart(2, "0")}`,
         csvNum(z.a.value, z.reg.frac), z.reg.unit,
         z.a.origin === "estimated" ? "geschätzt" : "abgelesen"
       );
@@ -2817,8 +2852,33 @@ function openCapture(id) {
   capMeter = METERS.find(m => m.id === id);
   capIndex = 0;
   capEntered = {};
+  // Vorbelegt auf den heutigen Tag dieses Entwurfs und die Uhrzeit der Uhr, die
+  // gerade läuft. Wer nichts anfasst, merkt von der Zeile nichts.
+  document.getElementById("cap-date").value =
+    `${TODAY.y}-${String(TODAY.m).padStart(2, "0")}-${String(TODAY.d).padStart(2, "0")}`;
+  const jetzt = new Date();
+  document.getElementById("cap-time").value =
+    `${String(jetzt.getHours()).padStart(2, "0")}:${String(jetzt.getMinutes()).padStart(2, "0")}`;
   showCaptureStep();
   openSheet("sheet-capture");
+}
+
+/* Der gewählte Zeitpunkt der Ablesung.
+
+   Der Tag ist die Grundlage der Rechnung, die Uhrzeit ordnet nur — genau wie
+   `CalendarDay` und `TimeOfDay` in PulseCore. Ein leeres oder unmögliches Feld
+   fällt auf heute zurück: Ein Entwurf, der bei einer halben Eingabe nichts
+   sichert, prüft eine Frage, die niemand gestellt hat. */
+function capMoment() {
+  const datum = (document.getElementById("cap-date").value || "").split("-").map(Number);
+  const zeit = (document.getElementById("cap-time").value || "").split(":").map(Number);
+  const tag = datum.length === 3 && datum.every(n => Number.isFinite(n))
+    ? { y: datum[0], m: datum[1], d: datum[2] }
+    : { y: TODAY.y, m: TODAY.m, d: TODAY.d };
+  const t = zeit.length === 2 && zeit.every(n => Number.isFinite(n))
+    ? zeit[0] * 60 + zeit[1]
+    : null;
+  return { ...tag, t };
 }
 
 /* Einen Schritt zurück zum vorigen Zählwerk.
@@ -3033,10 +3093,23 @@ function commitReadings() {
   // nächste Rücksprung wäre wieder unerklärt.
   const prev = reg.readings[reg.readings.length - 1];
   const dev = prev ? prev.dev : undefined;
+  const moment = capMoment();
   for (const r of capMeter.registers) {
     const value = capEntered[r.id];
     if (value === undefined) continue;
-    r.readings.push({ y: TODAY.y, m: TODAY.m, d: TODAY.d, value, dev, origin: "manual" });
+    r.readings.push({ y: moment.y, m: moment.m, d: moment.d, t: moment.t,
+                      value, dev, origin: "manual" });
+    // **Nach dem Einfügen sortieren.** Der Rechenkern setzt eine geordnete
+    // Reihe voraus — `series()` läuft von vorn nach hinten durch. Eine
+    // nachgetragene Ablesung von vorgestern hängt hinten und würde jeden
+    // Abschnitt danach falsch rechnen. Tag, dann Uhrzeit, wie
+    // `chronological()` in PulseCore.
+    r.readings.sort((a, b) => {
+      const da = serial(a.y, a.m, a.d), db = serial(b.y, b.m, b.d);
+      if (da !== db) return da - db;
+      if (a.t != null && b.t != null) return a.t - b.t;
+      return 0;
+    });
   }
   const name = capMeter.name;
   closeSheets();

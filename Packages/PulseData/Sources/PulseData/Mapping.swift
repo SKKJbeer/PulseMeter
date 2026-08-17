@@ -198,6 +198,10 @@ extension ReadingRecord {
             registerID: register?.id ?? registerID,
             deviceID: deviceID,
             day: Mapping.day(day),
+            // `flatMap`, nicht `map`: Ein unmöglicher Wert — etwa 1500 Minuten
+            // aus einem beschädigten Satz — soll „keine Uhrzeit" heißen und
+            // nicht die Ablesung mitnehmen.
+            time: timeMinutes.flatMap(TimeOfDay.init(minuteOfDay:)),
             value: ScaledDecimal(scaled: scaledValue, scale: valueScale).value,
             origin: ReadingOrigin(rawValue: originID) ?? .manual,
             note: note,
@@ -211,6 +215,7 @@ extension ReadingRecord {
         registerID = value.registerID
         deviceID = value.deviceID
         day = value.day.rawValue
+        timeMinutes = value.time?.minuteOfDay
         let stored = ScaledDecimal(value.value, scale: scale)
         scaledValue = stored.scaled
         valueScale = stored.scale

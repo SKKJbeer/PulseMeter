@@ -30,6 +30,19 @@ struct CaptureView: View {
     @State private var problem: String?
     @State private var changingMeter = false
 
+    /// Wann abgelesen wurde. Vorbelegt auf **jetzt**, mit Uhrzeit.
+    ///
+    /// **Warum die Uhrzeit dazugehört.** Bis 0.63.0 stand hier „Datum: heute"
+    /// als Satz, unveränderlich. Damit ging eine Ablesung von gestern nicht, und
+    /// zwei am selben Tag unterschieden sich nur im Erfassungszeitpunkt — einer
+    /// Zahl, die der Nutzer nie sieht. Wer morgens und abends abliest, um zu
+    /// sehen, was der Tag verbraucht, braucht die Uhrzeit sichtbar.
+    ///
+    /// Ein `Date` und nicht Tag und Uhrzeit getrennt: `DatePicker` liefert
+    /// genau das, und die Zerlegung in ``CalendarDay`` und ``TimeOfDay``
+    /// passiert an einer Stelle, mit einer Zeitzone.
+    @State private var moment = Date()
+
     /// Welches Zählwerk gerade dran ist.
     ///
     /// **Nacheinander statt zur Auswahl.** Ein Zweirichtungszähler zeigt beide
@@ -51,6 +64,11 @@ struct CaptureView: View {
     private var isLastRegister: Bool { index >= registers.count - 1 }
     private var accent: Color { PulseColor.resource(meteringPoint.appearance.colorToken) }
     private var today: CalendarDay { CalendarDay.containing(Date(), in: .current) }
+
+    /// Der gewählte Tag — die Grundlage jeder Rechnung (ADR-004).
+    private var chosenDay: CalendarDay { CalendarDay.containing(moment, in: .current) }
+    /// Die gewählte Uhrzeit. Sie ordnet, sie rechnet nicht.
+    private var chosenTime: TimeOfDay { TimeOfDay.containing(moment, in: .current) }
 
     var body: some View {
         NavigationStack {
@@ -95,10 +113,7 @@ struct CaptureView: View {
                         Spacer(minLength: 18)
                         NumberPad(onKey: handle)
                         saveButton
-                        Text("Datum: heute, \(germanDate(today))")
-                            .font(PulseText.caption)
-                            .foregroundStyle(PulseColor.inkTertiary)
-                            .padding(.top, 9)
+                        momentPicker
                     }
                     .padding(.horizontal, 16)
                     .padding(.bottom, 20)
@@ -142,6 +157,33 @@ struct CaptureView: View {
     }
 
     // MARK: - Bausteine
+
+    /// Wann abgelesen wurde — unter dem Sichern-Knopf, nicht darüber.
+    ///
+    /// **Es bleibt eine Zeile, kein Formular.** Im Keller tippt niemand ein
+    /// Datum ein; er tippt eine Zahl und drückt Sichern. Voreingestellt ist
+    /// jetzt, und wer nichts anfasst, merkt von dieser Zeile nichts (60 Sekunden,
+    /// 3 Berührungen). Sie steht trotzdem sichtbar da, weil ungefragt eine
+    /// Uhrzeit mitzuspeichern, die niemand gesehen hat, eine stille Behauptung
+    /// wäre (Produktprinzip 7).
+    ///
+    /// `in: ...Date()` schneidet die Zukunft ab: Ein Zählerstand von morgen ist
+    /// keine Ablesung. Die Prüfung auf ein künftiges Datum bleibt trotzdem im
+    /// Rechenkern — dort kommen auch Ablesungen aus einem Import an.
+    private var momentPicker: some View {
+        DatePicker("Abgelesen", selection: $moment, in: ...Date(),
+                   displayedComponents: [.date, .hourAndMinute])
+            .datePickerStyle(.compact)
+            .font(PulseText.caption)
+            .foregroundStyle(PulseColor.inkTertiary)
+            .tint(accent)
+            .padding(.top, 12)
+            // Der Spruch bewertet den Zählerstand für **diesen** Tag. Bleibt er
+            // beim Tageswechsel stehen, vergleicht er eine Zahl mit einem
+            // Zeitraum, den sie nicht beschreibt — die wiederkehrende
+            // Fehlerklasse dieses Projekts, hier in der Eingabe.
+            .onChange(of: moment) { _, _ in judge() }
+    }
 
     private var header: some View {
         VStack(spacing: 8) {
@@ -271,7 +313,7 @@ struct CaptureView: View {
         }
         do {
             let readings = try PulseRepository(context: context).readings(for: register.id)
-            verdict = ConsumptionEngine.plausibility(of: value, on: today, register: register,
+            verdict = ConsumptionEngine.plausibility(of: value, on: chosenDay, register: register,
                                                      readings: readings, today: today)
         } catch {
             verdict = .noReference
@@ -397,13 +439,17 @@ struct CaptureView: View {
         // den erklärten Rücksprung nur, wenn **beide** benachbarten Ablesungen
         // wissen, auf welchem Gerät sie entstanden sind. Vor dem ersten
         // Wechsel ist sie `nil`, und das ist richtig so.
-        let deviceID = meteringPoint.device(on: today)?.id
+        // Das Gerät, das **am gewählten Tag** verbaut war — nicht das heutige.
+        // Bei einer nachgetragenen Ablesung von vor dem Wechsel wäre das sonst
+        // das falsche, und der Rechenkern hielte den erklärten Rücksprung für
+        // einen Fehler.
+        let deviceID = meteringPoint.device(on: chosenDay)?.id
 
         var batch: [(reading: Reading, fractionDigits: Int)] = []
         for register in registers {
             guard let value = entered[register.id] else { continue }
             batch.append((Reading(registerID: register.id, deviceID: deviceID,
-                                  day: today, value: value),
+                                  day: chosenDay, time: chosenTime, value: value),
                           register.fractionDigits))
         }
         do {
