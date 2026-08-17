@@ -504,7 +504,9 @@ table.data tr.est td:first-child::after {
   flex: 1; font: inherit; font-size: 14.5px; font-weight: 600; letter-spacing: -0.01em;
   padding: 12px; border-radius: 12px; cursor: pointer;
   background: var(--surface); color: var(--tint); border: 1px solid var(--hairline-2);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
 }
+.exportbar button svg { width: 17px; height: 17px; flex: none; }
 .exportbar button:active { background: var(--surface-2); }
 .exportbar button:focus-visible { outline: 2px solid var(--tint); outline-offset: 2px; }
 .preview {
@@ -688,7 +690,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.62.1</p>
+  <p>Klickbarer Entwurf · v0.62.2</p>
 </div>
 
 <div class="device">
@@ -771,10 +773,19 @@ select.field { cursor: pointer; }
           <div class="tablewrap" id="table"></div>
           <div class="footnote" id="tablenote"></div>
         </div>
-        <div class="exportbar">
-          <button type="button" data-export="readings">Ablesungen</button>
-          <button type="button" data-export="analysis">Auswertung</button>
-        </div>
+      </div>
+
+      <!-- Ein Knopf statt zweier Marken. Zwei Marken mit „Ablesungen" und
+           „Auswertung" haben beim ersten echten Gebrauch niemandem gesagt, dass
+           dahinter ein Download steckt — der Gründer hat genau das gemeldet. -->
+      <div class="exportbar">
+        <button type="button" data-open="download">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M4 20h16"/>
+          </svg>
+          Herunterladen
+        </button>
       </div>
     </section>
 
@@ -882,6 +893,16 @@ select.field { cursor: pointer; }
       <button type="button" class="sheet-close" data-close>Fertig</button>
     </div>
     <div class="sheet-body"><div class="list" id="readings"></div></div>
+  </div>
+
+  <!-- Herunterladen -->
+  <div class="sheet" id="sheet-download" role="dialog" aria-modal="true" aria-label="Herunterladen">
+    <div class="grabber"></div>
+    <div class="sheet-head">
+      <div class="sheet-title">Herunterladen</div>
+      <button type="button" class="sheet-close" data-close>Fertig</button>
+    </div>
+    <div class="sheet-body" id="dl-body"></div>
   </div>
 
   <!-- Export -->
@@ -2459,6 +2480,35 @@ function renderReport() {
   doc.innerHTML = head + summary + sections + note + mark;
 }
 
+/* Der Bogen hinter „Herunterladen" — die Auswahl, die in der App das Menü am
+   Knopf ist. Drei Einträge, und der Bericht steht mit dabei: Er ist genauso ein
+   Download wie die zwei Tabellen, nur ungekauft mit Wasserzeichen. */
+function openDownload() {
+  const scope = histMeter === "all" ? "Alle Zähler" : METERS.find(x => x.id === histMeter).name;
+  document.getElementById("dl-body").innerHTML = `
+    <div class="capture-meta" style="margin-bottom:10px">${scope} · 2024 bis 2026</div>
+    <button type="button" class="rowbtn" data-export="readings" style="padding-left:0;padding-right:0">
+      <div class="rl">Ablesungen als CSV<small>Eine Zeile je eingetippter Zahl</small></div>
+      <span class="freebadge">frei</span>
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+    </button>
+    <button type="button" class="rowbtn" data-export="analysis" style="padding-left:0;padding-right:0">
+      <div class="rl">Auswertung als CSV<small>Eine Zeile je Zeitraum, mit gerechnetem Verbrauch</small></div>
+      <span class="freebadge">frei</span>
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+    </button>
+    <button type="button" class="rowbtn" data-open="report" style="padding-left:0;padding-right:0">
+      <div class="rl">Verbrauchsbericht als PDF${reportIsWatermarked() ? " (mit Wasserzeichen)" : ""}<small>${reportIsWatermarked()
+        ? "Ansehen, drucken und weitergeben frei — ohne Wasserzeichen gekauft"
+        : "Gestaltetes Dokument zum Prüfen der Jahresabrechnung"}</small></div>
+      ${reportIsWatermarked() ? `<span class="freebadge pro">${price("pdfReport")}</span>` : ""}
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+    </button>
+    <div class="note">Der Datenexport bleibt dauerhaft kostenlos. Deine Ablesungen sind deine Daten —
+    sie sind kein Druckmittel, mit dem wir dich in der App halten.</div>`;
+  openSheet("sheet-download");
+}
+
 function openExport(kind) {
   const csv = buildCsv(kind);
   const name = kind === "readings" ? "Ablesungen" : "Auswertung";
@@ -2471,13 +2521,6 @@ function openExport(kind) {
       <div class="rl">CSV, Semikolon getrennt<small>${rows} Zeilen · öffnet sich in Excel und Numbers</small></div>
       <span class="freebadge">frei</span>
     </div>
-    <button type="button" class="rowbtn" data-open="report" style="padding-left:0;padding-right:0">
-      <div class="rl">Verbrauchsbericht<small>${reportIsWatermarked()
-        ? "Ansehen und drucken frei — ohne Wasserzeichen weitergeben"
-        : "Gestaltetes Dokument zum Prüfen der Jahresabrechnung"}</small></div>
-      ${reportIsWatermarked() ? `<span class="freebadge pro">${price("pdfReport")}</span>` : ""}
-      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
-    </button>
     <div class="preview">${csv.split("\n").slice(0, 14).join("\n")
       .replace(/&/g, "&amp;").replace(/</g, "&lt;")}${rows > 13 ? "\n…" : ""}</div>
     <button type="button" class="save" id="dl" style="--c:var(--tint)">CSV sichern</button>
@@ -3245,6 +3288,7 @@ document.addEventListener("click", e => {
     return renderTable();
   }
   if (t.dataset.open === "readings") return openSheet("sheet-readings");
+  if (t.dataset.open === "download") return openDownload();
   // Der Bericht ist nie gesperrt — ungekauft trägt er ein Wasserzeichen.
   if (t.dataset.open === "report") return openReportConfig();
   if (t.dataset.scope) { repScope = t.dataset.scope; return openReportConfig(); }

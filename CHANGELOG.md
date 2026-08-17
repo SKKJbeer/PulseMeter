@@ -9,6 +9,34 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.62.2 — 2026-08-17
+
+**Der Entwurf hat den Knopf jetzt auch.**
+
+0.62.0 hat die zwei Marken „Ablesungen" und „Auswertung" in der App durch einen
+Knopf „Herunterladen" mit Auswahl ersetzt — im Klick-Dummy standen sie noch da.
+Zwei Oberflächen, die dasselbe anders zeigen, sind nach Regel 2 ein Fehler und
+kein Zustand.
+
+Im Entwurf ist es jetzt derselbe Weg: ein Knopf mit Pfeil-nach-unten unter dem
+Diagramm **und** unter der Tabelle, dahinter ein Bogen mit drei Einträgen —
+Ablesungen als CSV, Auswertung als CSV, Verbrauchsbericht als PDF. Ungekauft
+steht „(mit Wasserzeichen)" dahinter und der Preis daneben; der Bericht bleibt
+offen, er ist nur gezeichnet.
+
+Der Bericht stand vorher **im** Exportbogen, also hinter einer der beiden
+Marken. Wer den Bericht wollte, musste eine Tabelle antippen. Diese Zeile ist
+weg, der Bericht steht jetzt gleichberechtigt in der Auswahl.
+
+### Geprüft
+
+`scripts/check-prototype.mjs` prüft die drei Einträge namentlich und geht auf
+dem neuen Weg zum Bericht — 96 statt 94 Prüfungen, hell und dunkel. Die alte
+Wegbeschreibung wäre stumm grün geblieben: Sie klickte `[data-export]`, und das
+gibt es auf dem Blatt nicht mehr. Erst der Zeitablauf hat es gezeigt.
+
+---
+
 ## 0.62.1 — 2026-08-17
 
 **Die Einheit ist keine Zeichenkette.**

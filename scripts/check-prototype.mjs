@@ -209,9 +209,16 @@ for (const scheme of ["light", "dark"]) {
   await page.waitForTimeout(250);
   await page.locator('[data-pane="history"]').first().click();
   await page.waitForTimeout(250);
-  await page.locator('[data-export]').first().click();
+  // Der Weg zum Bericht führt über „Herunterladen". Ein Knopf, drei Einträge —
+  // und der Bericht ist einer davon, weil er genauso ein Download ist.
+  await page.locator('[data-open="download"]').first().click();
   await page.waitForTimeout(300);
-  await page.locator('#sheet-export [data-open="report"]').first().click();
+  const auswahl = await page.evaluate(() =>
+    [...document.querySelectorAll("#sheet-download .rowbtn .rl")]
+      .map(x => x.childNodes[0].textContent.trim()));
+  note(auswahl.length === 3 && auswahl.every(x => /CSV|PDF/.test(x)),
+       `Hinter „Herunterladen" stehen drei Dateien: ${auswahl.join(", ")}`);
+  await page.locator('#sheet-download [data-open="report"]').first().click();
   await page.waitForTimeout(250);
   await page.locator("#makereport").click();
   await page.waitForTimeout(350);
