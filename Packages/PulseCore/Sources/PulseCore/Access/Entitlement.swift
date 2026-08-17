@@ -47,7 +47,7 @@ public enum ProductID: String, Hashable, Codable, Sendable, CaseIterable {
     /// Store Connect und dürfen sich nie ändern — ein umbenanntes Produkt ist
     /// für jeden, der es gekauft hat, ein verlorener Kauf.
     public var storeIdentifier: String {
-        "com.pulsemeter.app." + rawValue.lowercased()
+        "de.karjoth.pulsemeter." + rawValue.lowercased()
     }
 
     /// Was der Kauf freischaltet, in der Sprache des Nutzers.

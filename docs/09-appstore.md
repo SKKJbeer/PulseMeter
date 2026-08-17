@@ -342,14 +342,14 @@ verkürzt:
 
 - [ ] **Apple Developer Program** (99 €) — blockiert alles Weitere
 - [ ] **StoreKit**: fünf Produkte in App Store Connect anlegen —
-      `com.pulsemeter.app.additionalmeters`, `.multipleregisters`,
+      `de.karjoth.pulsemeter.additionalmeters`, `.multipleregisters`,
       `.costsandtariffs`, `.pdfreport`, `.everything` — und `PurchaseGateway`
       dagegen implementieren. Die Kennungen stehen in `ProductID` und dürfen
       sich nie ändern: Ein umbenanntes Produkt ist für jeden Käufer ein
       verlorener Kauf.
 - [ ] **CloudKit einschalten** (`PulseStore.container(cloudKit:)` steht auf
       `false`) und die Berechtigung eintragen
-- [ ] **`.entitlements`**: App-Gruppe `group.com.pulsemeter.app` fürs Widget,
+- [ ] **`.entitlements`**: App-Gruppe `group.de.karjoth.pulsemeter` fürs Widget,
       iCloud für die Synchronisation
 - [x] **`PrivacyInfo.xcprivacy`** — liegt seit 0.55.0 in `App/` und `Widget/`,
       je eines. Inhalt: kein Tracking, keine Tracking-Domänen, keine erfassten

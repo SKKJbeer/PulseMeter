@@ -95,7 +95,7 @@ ein Versprechen.** Bei der nächsten Durchsicht vor der Einreichung gehört
 danach gesucht.
 
 **Das Widget bleibt ohne Berechtigungsdatei still leer.**
-`Shared/WidgetBridge.swift` erwartet die App-Gruppe `group.com.pulsemeter.app`
+`Shared/WidgetBridge.swift` erwartet die App-Gruppe `group.de.karjoth.pulsemeter`
 und fällt ohne sie auf den app-eigenen Ordner zurück — mit Absicht, damit die
 App in der CI läuft. Auf einem Gerät hieße das: Das Widget zeigt dauerhaft
 nichts, ohne Fehlermeldung, ohne Absturz. Genau die Sorte Fehler, die kein Test
@@ -161,8 +161,8 @@ schlechte Bewertung.
 Reihenfolge ist nicht beliebig: Jeder Schritt setzt voraus, dass der vorige
 steht, und Schritt 2 ist der, der die anderen erst prüfbar macht.
 
-2. **Kennungen im Entwicklerportal anlegen** — die App-ID `com.pulsemeter.app`,
-   die App-Gruppe `group.com.pulsemeter.app` (fürs Widget) und den
+2. **Kennungen im Entwicklerportal anlegen** — die App-ID `de.karjoth.pulsemeter`,
+   die App-Gruppe `group.de.karjoth.pulsemeter` (fürs Widget) und den
    iCloud-Container. **Erst danach** die `.entitlements` schreiben: Eine
    Berechtigungsdatei, die auf eine nicht angelegte Kennung zeigt, lässt die
    Signierung scheitern, und die Fehlermeldung sagt nicht, welche der drei

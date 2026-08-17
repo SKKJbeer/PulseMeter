@@ -82,7 +82,7 @@ eine Datei hinzufügt, verliert sie beim nächsten Erzeugen.
 Vorerst aus, damit die App ohne Konfiguration startet. Zum Einschalten:
 
 1. In `project.yml` beim Target die Berechtigung ergänzen (iCloud mit CloudKit,
-   Container `iCloud.com.pulsemeter.app`, dazu Background Modes → Remote
+   Container `iCloud.de.karjoth.pulsemeter`, dazu Background Modes → Remote
    notifications), `xcodegen generate`
 2. In `App/PulseMeterApp.swift` `cloudKit: false` entfernen
 3. Mit zwei Geräten oder Simulatoren am selben iCloud-Konto prüfen

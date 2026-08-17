@@ -53,13 +53,13 @@ shoot() {
   local mode="$1" name="$2"
   shift 2
   xcrun simctl ui "$DEVICE" appearance "$mode" >/dev/null 2>&1 || true
-  xcrun simctl terminate "$DEVICE" com.pulsemeter.app >/dev/null 2>&1 || true
+  xcrun simctl terminate "$DEVICE" de.karjoth.pulsemeter >/dev/null 2>&1 || true
   # `-pulse-pro` gehört zum Ausgangszustand wie `-pulse-reset`: Die
   # Beispieldaten führen vier Zähler mit Preisen, Abschlag und Einspeisung —
   # also lauter Dinge, die seit 0.35.0 Pro sind. Ohne den Schalter zeigten
   # sämtliche Bilder eine App voller Schlösser und wären als Beleg wertlos.
   # Der Zustand *vor* dem Kauf bekommt eigene Bilder, weiter unten.
-  xcrun simctl launch "$DEVICE" com.pulsemeter.app -pulse-reset -pulse-pro "$@" >/dev/null
+  xcrun simctl launch "$DEVICE" de.karjoth.pulsemeter -pulse-reset -pulse-pro "$@" >/dev/null
   sleep "${PULSE_WARTEN:-4}"
   xcrun simctl io "$DEVICE" screenshot "$OUTDIR/$name.png"
   echo "Screenshot: $OUTDIR/$name.png (nach ${PULSE_WARTEN:-4}s)"

@@ -9,7 +9,7 @@
 
 name: PulseMeter
 options:
-  bundleIdPrefix: com.pulsemeter
+  bundleIdPrefix: de.karjoth
   deploymentTarget:
     iOS: "18.0"
   createIntermediateGroups: true
@@ -28,6 +28,16 @@ settings:
     SWIFT_VERSION: "6.0"
     SWIFT_STRICT_CONCURRENCY: complete
     ENABLE_USER_SCRIPT_SANDBOXING: YES
+    # Die Push-Umgebung für `aps-environment` in den Berechtigungsdateien.
+    # SwiftData meldet Änderungen aus iCloud über eine stille Mitteilung, und
+    # der Wert muss zur Art des Profils passen: Ein Gerätebau signiert mit
+    # einem Entwicklungsprofil und braucht `development`, ein Store-Bau ein
+    # Verteilprofil und `production`. Fest eingetragen wäre einer von beiden
+    # immer falsch — der erste TestFlight-Lauf ist genau daran vorbeigelaufen.
+    APS_ENVIRONMENT: development
+  configs:
+    Release:
+      APS_ENVIRONMENT: production
 
 targets:
   PulseMeter:
@@ -50,9 +60,9 @@ targets:
       - target: PulseWidgetExtension
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.pulsemeter.app
+        PRODUCT_BUNDLE_IDENTIFIER: de.karjoth.pulsemeter
         PRODUCT_NAME: PulseMeter
-        MARKETING_VERSION: "0.59.1"
+        MARKETING_VERSION: "0.60.0"
         CURRENT_PROJECT_VERSION: "1"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         # **Nur iPhone.** Stand bis 0.37.0 auf "1,2", also universal — und
@@ -86,9 +96,9 @@ targets:
       - package: PulseUI
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.pulsemeter.app.widget
+        PRODUCT_BUNDLE_IDENTIFIER: de.karjoth.pulsemeter.widget
         PRODUCT_NAME: PulseWidget
-        MARKETING_VERSION: "0.59.1"
+        MARKETING_VERSION: "0.60.0"
         CURRENT_PROJECT_VERSION: "1"
         GENERATE_INFOPLIST_FILE: NO
         INFOPLIST_FILE: Widget/Info.plist
@@ -107,7 +117,7 @@ targets:
       - target: PulseMeter
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.pulsemeter.app.uitests
+        PRODUCT_BUNDLE_IDENTIFIER: de.karjoth.pulsemeter.uitests
         CODE_SIGNING_ALLOWED: NO
 
 schemes:

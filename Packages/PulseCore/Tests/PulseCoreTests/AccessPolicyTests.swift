@@ -143,12 +143,12 @@ final class AccessPolicyTests: XCTestCase {
     func testStoreIdentifiersAreStableAndUnique() {
         var seen: Set<String> = []
         for product in ProductID.allCases {
-            XCTAssertTrue(product.storeIdentifier.hasPrefix("com.pulsemeter.app."))
+            XCTAssertTrue(product.storeIdentifier.hasPrefix("de.karjoth.pulsemeter."))
             XCTAssertTrue(seen.insert(product.storeIdentifier).inserted,
                           "Zwei Produkte mit derselben Kennung")
         }
-        XCTAssertEqual(ProductID.pdfReport.storeIdentifier, "com.pulsemeter.app.pdfreport")
-        XCTAssertEqual(ProductID.everything.storeIdentifier, "com.pulsemeter.app.everything")
+        XCTAssertEqual(ProductID.pdfReport.storeIdentifier, "de.karjoth.pulsemeter.pdfreport")
+        XCTAssertEqual(ProductID.everything.storeIdentifier, "de.karjoth.pulsemeter.everything")
     }
 
     // MARK: - Sprache

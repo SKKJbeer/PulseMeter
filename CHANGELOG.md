@@ -9,6 +9,56 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.60.0 — 2026-08-17
+
+**`com.pulsemeter.app` war bei Apple schon vergeben.**
+
+Der erste TestFlight-Lauf ist gescheitert, und die Meldung ließ keinen Zweifel:
+„The app identifier `com.pulsemeter.app` cannot be registered to your
+development team because it is not available." Ein anderes Team hält die
+Kennung. Kein Schalter hilft da — sie muss eine andere werden.
+
+**Der Zeitpunkt ist der glücklichste, den es dafür gibt.** In App Store Connect
+existiert noch keine App und kein Kauf; ab dem Moment, in dem der erste Kauf
+angelegt ist, wäre dieselbe Änderung nicht mehr möglich, ohne jeden Käufer zu
+verlieren (`10-sichtbarkeit.md`, Abschnitt 4).
+
+### Geändert
+
+- **Die Kennung heißt jetzt `de.karjoth.pulsemeter`** — an 27 Stellen in einem
+  Zug: `project.yml` (App, Widget, Oberflächentests, Präfix), beide
+  Berechtigungsdateien, `WidgetBridge.appGroup`,
+  `ProductID.storeIdentifier`, `AccessPolicyTests`, `scripts/run.sh` und fünf
+  Dokumente. Daraus folgen App-Gruppe `group.de.karjoth.pulsemeter`,
+  iCloud-Container `iCloud.de.karjoth.pulsemeter` und fünf neue
+  Kauf-Kennungen.
+
+  Umgekehrte Namensschreibweise auf den Gründer statt auf eine Domäne: Wer
+  `pulsemeter.de` nicht besitzt, sollte die Kennung nicht darauf bauen — genau
+  daran ist die alte gescheitert.
+
+- **`-configuration Release` beim Archivieren.** Ohne die Angabe nahm der Lauf
+  `Debug`, und Xcode suchte daraufhin ein **Development**-Profil. Die zweite
+  Meldung des Fehlschlags sagte das auch, nur nicht offensichtlich: „Your team
+  has no devices from which to generate a provisioning profile." Für einen
+  Store-Bau braucht es kein Gerät, sondern ein Verteilprofil — und das gibt es
+  nur zur Release-Konfiguration.
+
+- **`aps-environment` kommt aus `$(APS_ENVIRONMENT)`**, gesetzt je
+  Konfiguration in `project.yml`: `development` normal, `production` in
+  Release. Fest eingetragen wäre einer der beiden Wege immer falsch — der
+  Gerätebau braucht das eine, der Store-Bau das andere.
+
+### Was der Fehlschlag wert war
+
+Er hat zwei Dinge gezeigt, die kein Nachdenken gezeigt hätte: dass die Kennung
+belegt ist, und dass die Archivkonfiguration fehlte. **Und er hat bewiesen,
+was funktioniert** — „Zertifikat einlesen" lief durch. Das PKCS#12-Bündel aus
+`zertifikat.yml`, `security import`, `set-key-partition-list`: alles drei hielt
+beim ersten Versuch auf echter Hardware.
+
+---
+
 ## 0.59.1 — 2026-08-16
 
 **Die Anleitung verlinkt jetzt, wohin sie schickt.**

@@ -21,7 +21,7 @@ import WidgetKit
 enum WidgetBridge {
 
     /// Muss mit der App-Gruppe im Zielprofil übereinstimmen.
-    static let appGroup = "group.com.pulsemeter.app"
+    static let appGroup = "group.de.karjoth.pulsemeter"
     static let fileName = "widget-summary.json"
 
     /// Wohin geschrieben und woher gelesen wird.

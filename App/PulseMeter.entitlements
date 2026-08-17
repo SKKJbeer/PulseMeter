@@ -30,23 +30,28 @@
      Berechtigung über die zwei aus `docs/11-sicherheit.md` hinaus, und sie
      steht dort begründet. Es werden keine sichtbaren Mitteilungen verschickt
      und es gibt keinen Server, der welche verschicken könnte.
+
+  Der Wert kommt aus `$(APS_ENVIRONMENT)` und **nicht** fest aus dieser
+  Datei: Ein Gerätebau braucht `development`, ein Store-Bau `production`, und
+  wer eines von beiden hart einträgt, bekommt beim anderen eine
+  Profilabweichung. Gesetzt wird es je Konfiguration in `project.yml`.
 -->
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.com.pulsemeter.app</string>
+		<string>group.de.karjoth.pulsemeter</string>
 	</array>
 	<key>com.apple.developer.icloud-container-identifiers</key>
 	<array>
-		<string>iCloud.com.pulsemeter.app</string>
+		<string>iCloud.de.karjoth.pulsemeter</string>
 	</array>
 	<key>com.apple.developer.icloud-services</key>
 	<array>
 		<string>CloudKit</string>
 	</array>
 	<key>aps-environment</key>
-	<string>development</string>
+	<string>$(APS_ENVIRONMENT)</string>
 </dict>
 </plist>

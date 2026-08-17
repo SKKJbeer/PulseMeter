@@ -156,7 +156,7 @@ Fehler, den niemand sieht.
 ## 4. Die In-App-Käufe als fünf zusätzliche Suchfelder
 
 Anzeigenamen sind durchsuchbar und dürfen sich ändern — **die Kennungen
-nicht.** `com.pulsemeter.app.pdfreport` bleibt für immer, wie sie ist; was im
+nicht.** `de.karjoth.pulsemeter.pdfreport` bleibt für immer, wie sie ist; was im
 Store darübersteht, ist frei.
 
 | Produkt | Name in der App (`ProductID.title`) | Name in App Store Connect |
