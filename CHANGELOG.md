@@ -9,6 +9,37 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.60.3 — 2026-08-17
+
+**Drei übersetzte Zwischendateien waren mitgewandert.**
+
+`scripts/__pycache__/*.pyc` landete in 0.60.1 im Commit — Nebenprodukt der
+Übersetzungsprüfung, die ich zum Aufspüren der Anführungszeichen-Fehler von
+Hand aufgerufen hatte. Erzeugte Dateien gehören nicht ins Repository; dieselbe
+Regel, aus der `PulseMeter.xcodeproj` draußen bleibt.
+
+### Behoben
+
+- Die drei Dateien sind aus der Verwaltung genommen, `__pycache__/` und `*.pyc`
+  stehen in `.gitignore`.
+- `check-strings.py` übersetzt jetzt in einen Ordner, der sich danach selbst
+  auflöst, statt in einen Pfad aus `tempfile.mktemp()`. Der ließ bei jedem Lauf
+  eine Datei liegen.
+
+### Und der rote Lauf zu 0.60.0 ist geklärt
+
+Es war ein **Wackler**, kein Rückschritt: `testAddingAMeterFromTheMetersTab`
+fiel am Tabwechsel, und der Lauf zu 0.60.1 — derselbe Code, dieselben
+Berechtigungen — ist grün. Damit sind 0.60.0 und 0.60.1 in `main`.
+
+**Dieser Test ist jetzt zum fünften Mal gefallen** (0.34.0, 0.36.0, 0.53.0,
+0.54.1, 0.60.0). Der Helfer `wechsel(zu:in:)` tippt zweimal; unter drei
+parallelen Simulatoren reicht das offenbar nicht immer. Das ist die nächste
+Kleinigkeit, die Geld kostet, und sie gehört behoben — nicht wieder mit einer
+längeren Uhr, sondern mit einem dritten Versuch.
+
+---
+
 ## 0.60.2 — 2026-08-17
 
 **Apple nimmt kein iOS-18-SDK mehr an.**

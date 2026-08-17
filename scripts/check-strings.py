@@ -87,11 +87,17 @@ import py_compile
 import subprocess
 import tempfile
 
-for datei in sorted(pathlib.Path("scripts").glob("*.py")):
-    try:
-        py_compile.compile(str(datei), cfile=tempfile.mktemp(), doraise=True)
-    except py_compile.PyCompileError as fehler:
-        problems.append(f"{datei}: uebersetzt nicht\n    {fehler.msg.strip().splitlines()[-1]}")
+with tempfile.TemporaryDirectory() as ablage:
+    # In einen Ordner, der danach verschwindet — nicht neben die Quelle. Sonst
+    # entsteht bei jedem Lauf ein `__pycache__`, und in 0.60.1 sind drei davon
+    # versehentlich in den Commit gewandert.
+    for datei in sorted(pathlib.Path("scripts").glob("*.py")):
+        ziel = pathlib.Path(ablage) / (datei.stem + ".pyc")
+        try:
+            py_compile.compile(str(datei), cfile=str(ziel), doraise=True)
+        except py_compile.PyCompileError as fehler:
+            problems.append(f"{datei}: uebersetzt nicht\n"
+                            f"    {fehler.msg.strip().splitlines()[-1]}")
 
 try:
     import yaml

@@ -13,3 +13,10 @@ node_modules/
 # Persönliche Claude-Code-Einstellungen. Die gemeinsamen stehen in
 # .claude/settings.json und sind eingecheckt.
 .claude/settings.local.json
+
+# Übersetzte Python-Zwischendateien. Sie entstehen seit 0.60.2, weil
+# `check-strings.py` jedes Skript unter `scripts/` übersetzt, um einen
+# Syntaxfehler zu finden, bevor er einen Lauf kostet. Drei davon sind in
+# 0.60.1 versehentlich mitgewandert.
+__pycache__/
+*.pyc
