@@ -9,6 +9,70 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.63.0 — 2026-08-17
+
+**Der Bericht ist jetzt eine Datei.**
+
+Der Gründer über das neue Herunterladen-Menü: „gar kein Weg zur Datei". Er hatte
+recht. Zwei Einträge lieferten eine CSV-Datei ins Teilen-Blatt, der dritte machte
+einen Schirm mit Auswahl und Vorschau auf — in einem Menü, das „Herunterladen"
+heißt, ist das ein Bruch im Versprechen.
+
+„Verbrauchsbericht als PDF" gibt jetzt die PDF-Datei heraus, genau wie die zwei
+Tabellen daneben: `PulseMeter-Bericht-Gas-2026-08-16.pdf`, sechs Seiten,
+ungekauft mit Wasserzeichen und mit „(mit Wasserzeichen)" im Eintrag, bevor
+jemand sie verschickt. Genommen wird der Zeitraum, den der Berichtsschirm auch
+voreinstellt — der erste zum Abrechnungsrhythmus dieses Zählers.
+
+Die Zeile „Verbrauchsbericht" unter dem Menü bleibt: Dort steht die Wahl von
+Zeitraum und Umfang, und dort ist die Vorschau. Wer nur die Datei will, braucht
+sie nicht mehr.
+
+### Eine Zusammenstellung, zwei Ausgänge
+
+`ReportComposer` ist neu und enthält, was vorher in `ReportView.build()` stand:
+Ablesungen, Tarife und Abschläge einsammeln und `ReportBuilder` füttern. Der
+Kommentar an der alten Stelle warnte davor, das zu verdoppeln — „zwei Fassungen,
+die früher oder später verschiedene PDFs liefern" —, und diese Warnung war der
+Grund, warum der Eintrag überhaupt einen Schirm aufmachte. Eine gemeinsame
+Stelle löst beides.
+
+Dazu `ReportPDF.data(_:watermarked:)`: dasselbe Dokument ohne Umweg über eine
+Datei im Zwischenordner. `write(to:)` und `data(_:)` zeichnen durch dieselbe
+private Funktion, es gibt also weiterhin genau einen Zeichenweg.
+
+### Gerechnet beim Laden, gezeichnet beim Teilen
+
+Der Bericht wird zusammengestellt, wenn der Verlauf lädt — das ist Lesen aus dem
+Speicher und dauert Millisekunden. Gezeichnet werden die sechs A4-Seiten erst,
+wenn ein Ziel für die Datei gewählt ist. Wäre es umgekehrt, hätte das Menü beim
+Aufklappen gestockt, und das war genau der Fehler aus 0.62.0.
+
+Liegt für den Zeitraum keine Ablesung vor, bleibt der Eintrag ein Knopf zum
+Berichtsschirm — dort steht der Satz, warum es nichts zu berichten gibt. Ein
+Eintrag, der je nach Datenlage da ist oder fehlt, erklärt sich nicht mehr selbst
+(Produktprinzip 4).
+
+### Eine Messzeile für die Vorschau
+
+Auf dem Bildschirmfoto aus dem Lauf zu `9445365` stehen die sechs Seiten der
+Vorschau wieder als schmale Rahmen mitten auf dem Schirm — dieselbe Erscheinung
+wie in 0.33.4, obwohl der damalige Grund behoben ist. Statt zu raten schreibt
+die Ansicht jetzt Breite, Maßstab und Rahmengröße ins Bild, so wie damals; nur
+im Bildschirmfoto-Lauf, hinter `-pulse-bericht`. Der nächste CI-Lauf sagt, was
+wirklich gemessen wird. Diese Zeile geht wieder heraus, sobald die Zahl bekannt
+ist.
+
+### Was hier nicht geprüft ist
+
+Dass aus dem Menü wirklich eine lesbare PDF-Datei herauskommt, kann keine
+Prüfung dieses Projekts zeigen: Der Rechenkern kennt kein Papier, und die
+Oberflächenprüfung klappt das Menü absichtlich nicht auf — was darin steht,
+zeichnet iOS in einem eigenen Fenster. Die Gegenprobe ist der nächste
+TestFlight-Bau auf dem Gerät des Gründers.
+
+---
+
 ## 0.62.2 — 2026-08-17
 
 **Der Entwurf hat den Knopf jetzt auch.**

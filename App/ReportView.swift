@@ -18,10 +18,29 @@ enum ReportPDF {
     ///   am meisten.
     static func write(_ report: ReportBuilder.Report, to url: URL,
                       watermarked: Bool = false) -> Bool {
-        let pages = ReportPage.pages(for: report)
         var box = CGRect(x: 0, y: 0, width: ReportPaper.pageWidth, height: ReportPaper.pageHeight)
         guard let context = CGContext(url as CFURL, mediaBox: &box, nil) else { return false }
+        draw(report, in: context, watermarked: watermarked)
+        return true
+    }
 
+    /// Dasselbe Dokument, nur ohne Umweg über die Platte.
+    ///
+    /// Das Herunterladen-Menü im Verlauf gibt die Datei direkt weiter, und was
+    /// weitergegeben wird, sind Bytes. Eine Datei im Zwischenordner wäre ein
+    /// zweiter Ort für dasselbe Dokument — und einer, der liegen bleibt.
+    static func data(_ report: ReportBuilder.Report, watermarked: Bool = false) -> Data? {
+        let sammler = NSMutableData()
+        guard let consumer = CGDataConsumer(data: sammler as CFMutableData) else { return nil }
+        var box = CGRect(x: 0, y: 0, width: ReportPaper.pageWidth, height: ReportPaper.pageHeight)
+        guard let context = CGContext(consumer: consumer, mediaBox: &box, nil) else { return nil }
+        draw(report, in: context, watermarked: watermarked)
+        return sammler as Data
+    }
+
+    private static func draw(_ report: ReportBuilder.Report, in context: CGContext,
+                             watermarked: Bool) {
+        let pages = ReportPage.pages(for: report)
         for (index, page) in pages.enumerated() {
             let view = ReportPageView(page: page, pageNumber: index + 1,
                                       pageCount: pages.count, watermarked: watermarked)
@@ -31,14 +50,13 @@ enum ReportPDF {
             // zu verschieben.
             renderer.proposedSize = ProposedViewSize(width: ReportPaper.pageWidth,
                                                      height: ReportPaper.pageHeight)
-            renderer.render { _, draw in
+            renderer.render { _, zeichne in
                 context.beginPDFPage(nil)
-                draw(context)
+                zeichne(context)
                 context.endPDFPage()
             }
         }
         context.closePDF()
-        return true
     }
 
     /// Dateiname ohne Zeichen, die einem Dateisystem oder einem Mailprogramm
@@ -303,6 +321,22 @@ struct ReportView: View {
             // zweiten Fehlversuch nicht weiterraten, sondern die Ansicht ihre
             // eigenen Zahlen berichten lassen. Vier Vermutungen hatten je einen
             // Lauf gekostet und nichts geklärt; die eine Messung klärte alles.
+            // **Eine Messzeile, nur im Bildschirmfoto-Lauf.**
+            //
+            // Das Bild aus dem Lauf zu `9445365` zeigt die sechs Seiten wieder
+            // als schmale Rahmen in der Mitte — dieselbe Erscheinung wie in
+            // 0.33.4, obwohl der damalige Grund behoben ist. Die Lehre von
+            // damals steht in `docs/08-baukasten.md`: nicht weiterraten,
+            // sondern die Ansicht ihre eigenen Zahlen berichten lassen. Der
+            // Startschalter setzt nur die CI; im TestFlight-Bau sieht das
+            // niemand.
+            if Startschalter.gesetzt("-pulse-bericht") {
+                Text(String(format: "breite=%.0f maßstab=%.3f rahmen=%.0f×%.0f",
+                            contentWidth, scale,
+                            ReportPaper.pageWidth * scale, ReportPaper.pageHeight * scale))
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(.red)
+            }
             ForEach(Array(pages.enumerated()), id: \.element.id) { index, page in
                 ReportPageView(page: page, pageNumber: index + 1, pageCount: pages.count,
                                watermarked: purchase.reportIsWatermarked)
@@ -393,36 +427,10 @@ struct ReportView: View {
     private func build() {
         guard let period else { return }
         do {
-            let repository = PulseRepository(context: context)
-            let chosen = scope.map { id in meters.filter { $0.id == id } } ?? meters
-            var readings: [MeteringPoint.ID: [Reading]] = [:]
-            var tariffs: [MeteringPoint.ID: [Tariff]] = [:]
-            var prepayments: [MeteringPoint.ID: Decimal] = [:]
-            for meter in chosen {
-                readings[meter.id] = try repository.readings(for: meter)
-                tariffs[meter.id] = try repository.tariffs(for: meter.id)
-                // Der Abschlag des Zeitraums, in dem der Bericht liegt — nicht
-                // irgendeiner. Ein Abschlag aus einem anderen Jahr gegen die
-                // Kosten dieses Jahres zu rechnen wäre wieder der Vergleich
-                // zweier verschiedener Zeitausschnitte.
-                let periods = try repository.billingPeriods(for: meter.id)
-                if let match = periods.first(where: { $0.range.contains(period.range.start) })
-                    ?? periods.last,
-                   let amount = match.monthlyPrepayment {
-                    prepayments[meter.id] = amount
-                }
-            }
-
-            let built = ReportBuilder.build(
-                meteringPoints: chosen, readings: readings, tariffs: tariffs,
-                prepayments: prepayments, period: period,
-                propertyName: (try? repository.ensureDefaultProperty().name) ?? "Zuhause",
-                today: today)
-
-            guard !built.isEmpty else {
-                problem = "Für \(period.label.lowercased()) liegen keine Ablesungen vor."
-                return
-            }
+            // Zusammengestellt wird in ``ReportComposer`` — dieselbe Stelle, die
+            // auch das Herunterladen-Menü im Verlauf benutzt.
+            let built = try ReportComposer(context: context)
+                .report(scope: scope, period: period, today: today)
             problem = nil
             report = built
 
@@ -434,6 +442,10 @@ struct ReportView: View {
             if file == nil {
                 problem = "Das PDF ließ sich nicht erzeugen."
             }
+        } catch let lage as ReportComposer.Problem {
+            // Eine Lage, kein Fehler: Der Satz steht am Fehlertyp und wird hier
+            // nicht noch einmal in „ließ sich nicht erstellen" eingewickelt.
+            problem = lage.errorDescription
         } catch {
             problem = "Der Bericht ließ sich nicht erstellen: \(error.localizedDescription)"
         }
