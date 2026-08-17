@@ -35,6 +35,16 @@ settings:
     # Verteilprofil und `production`. Fest eingetragen wäre einer von beiden
     # immer falsch — der erste TestFlight-Lauf ist genau daran vorbeigelaufen.
     APS_ENVIRONMENT: development
+    # Die Berechtigungsdateien hängen an Variablen, damit ein Lauf sie
+    # abschalten kann. Der erste TestFlight-Bau tut das: App-Gruppe, iCloud
+    # und Push müssen an der App-ID im Portal freigeschaltet sein, sonst lehnt
+    # Apple das Profil ab — und die zwei Wochen Eigennutzung sind wichtiger
+    # als der Abgleich (docs/07-v1-plan.md).
+    PULSE_ENTITLEMENTS_APP: App/PulseMeter.entitlements
+    PULSE_ENTITLEMENTS_WIDGET: Widget/PulseWidget.entitlements
+    # Leer = automatische Signierung, wie im Simulator und in der CI.
+    PULSE_PROFILE_APP: ""
+    PULSE_PROFILE_WIDGET: ""
   configs:
     Release:
       APS_ENVIRONMENT: production
@@ -62,7 +72,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: de.karjoth.pulsemeter
         PRODUCT_NAME: PulseMeter
-        MARKETING_VERSION: "0.60.0"
+        MARKETING_VERSION: "0.60.1"
         CURRENT_PROJECT_VERSION: "1"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         # **Nur iPhone.** Stand bis 0.37.0 auf "1,2", also universal — und
@@ -83,7 +93,16 @@ targets:
         # die iCloud-Berechtigung der App, die seine eigene Kennung nicht hat.
         # Wirksam wird die Datei erst, wenn signiert wird, also beim Gerätebau
         # über `scripts/aufs-handy.sh`; Simulator und CI signieren nicht.
-        CODE_SIGN_ENTITLEMENTS: App/PulseMeter.entitlements
+        CODE_SIGN_ENTITLEMENTS: $(PULSE_ENTITLEMENTS_APP)
+        # **Manuelle Signierung je Ziel.** `xcodebuild archive` mit
+        # automatischer Signierung besorgt sich ein *Development*-Profil und
+        # verlangt dafür ein registriertes Gerät — ein Konto ohne Gerät bekommt
+        # keins, und daran sind die TestFlight-Läufe 1 und 2 gescheitert. Der
+        # Name kommt aus einer Variablen, weil er je Ziel ein anderer ist und
+        # eine Bauvorgabe auf der Kommandozeile für alle Ziele gälte.
+        # Leer heißt: automatisch, wie bisher — Simulator und CI bleiben
+        # unberührt.
+        PROVISIONING_PROFILE_SPECIFIER: $(PULSE_PROFILE_APP)
 
   PulseWidgetExtension:
     type: app-extension
@@ -98,7 +117,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: de.karjoth.pulsemeter.widget
         PRODUCT_NAME: PulseWidget
-        MARKETING_VERSION: "0.60.0"
+        MARKETING_VERSION: "0.60.1"
         CURRENT_PROJECT_VERSION: "1"
         GENERATE_INFOPLIST_FILE: NO
         INFOPLIST_FILE: Widget/Info.plist
@@ -106,7 +125,8 @@ targets:
         CODE_SIGNING_ALLOWED: NO
         # Nur die App-Gruppe. Die Erweiterung spricht nie mit CloudKit — sie
         # liest, was die App zuletzt im gemeinsamen Ordner hinterlegt hat.
-        CODE_SIGN_ENTITLEMENTS: Widget/PulseWidget.entitlements
+        CODE_SIGN_ENTITLEMENTS: $(PULSE_ENTITLEMENTS_WIDGET)
+        PROVISIONING_PROFILE_SPECIFIER: $(PULSE_PROFILE_WIDGET)
 
   PulseMeterUITests:
     type: bundle.ui-testing

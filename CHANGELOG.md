@@ -9,6 +9,57 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.60.1 — 2026-08-17
+
+**Ohne Gerät gibt es kein Entwicklungsprofil — und `archive` will genau das.**
+
+Lauf 2 scheiterte an derselben Meldung wie Lauf 1: „Your team has no devices
+from which to generate a provisioning profile." Die Kennung war diesmal in
+Ordnung, `-configuration Release` war übergeben — und es half nichts. Meine
+Erklärung in 0.60.0 war falsch.
+
+**Der wirkliche Grund.** `xcodebuild archive` mit `CODE_SIGN_STYLE=Automatic`
+besorgt sich ein **Development**-Profil und signiert erst beim Ausführen auf
+Verteilung um. Die Profilart hängt nicht an der Konfiguration. Und ein
+Entwicklungsprofil verlangt mindestens ein registriertes Gerät — das Konto hat
+keins, weil es kein Kabel gibt. Dieser Weg konnte nie durchgehen.
+
+### Hinzugefügt
+
+- **`scripts/asc-profil.py`** — legt App-Store-Profile für App und Widget über
+  dieselbe Schnittstelle an, über die auch das Zertifikat kam, und legt sie in
+  den Ordner, den `xcodebuild` liest. Kein Gerät, kein Anmeldefenster, kein
+  Klick im Portal.
+
+  Eine Falle steckt schon drin: **Apple filtert `filter[identifier]` als
+  Präfix.** Die Abfrage nach `de.karjoth.pulsemeter` liefert auch
+  `de.karjoth.pulsemeter.widget` mit — wer das erste Ergebnis nimmt, signiert
+  die App mit dem Profil des Widgets. Es wird deshalb genau verglichen.
+
+### Geändert
+
+- **Manuelle Signierung**, `PROVISIONING_PROFILE_SPECIFIER` je Ziel über
+  `$(PULSE_PROFILE_APP)` und `$(PULSE_PROFILE_WIDGET)`. Leer als Vorgabe, damit
+  Simulator und CI wie bisher automatisch signieren.
+- **Die Berechtigungen bleiben bei diesem Bau leer**, gesteuert über
+  `$(PULSE_ENTITLEMENTS_APP)` und `$(PULSE_ENTITLEMENTS_WIDGET)`. App-Gruppe,
+  iCloud und Push müssten an der App-ID im Portal freigeschaltet sein, sonst
+  lehnt Apple das Profil ab. **Das ist eine bewusste Verkürzung, keine
+  Nachlässigkeit:** Ohne sie läuft die App vollständig, nur das Widget bleibt
+  leer und der Abgleich aus — und für beides gibt es im Code einen Rückfall,
+  der genau dafür gebaut wurde. Die zwei Wochen Eigennutzung, an denen alles
+  hängt, können sofort anfangen (`07-v1-plan.md`, Abschnitt 5).
+- Die Ausfuhrvorgaben nennen die Profile namentlich und stehen auf `manual`.
+
+### Nebenbei, dieselbe Fehlerklasse wie schon zweimal
+
+Ein deutsches Anführungszeichen mit **geradem** Schlusszeichen —
+`„Zertifikat anlegen"` — hat die Python-Zeichenkette beendet. Genau davor warnt
+`CLAUDE.md`, und es ist das dritte Mal. `check-strings.py` sieht nur
+Swift-Quellen; hier hat der Übersetzer es gefangen.
+
+---
+
 ## 0.60.0 — 2026-08-17
 
 **`com.pulsemeter.app` war bei Apple schon vergeben.**
