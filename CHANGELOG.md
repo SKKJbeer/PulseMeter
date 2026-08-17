@@ -9,6 +9,62 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.61.0 — 2026-08-17
+
+**PulseMeter läuft in TestFlight — und der Weg dorthin ist aufgeschrieben.**
+
+Am 17. August um 10:28 UTC: „UPLOAD SUCCEEDED with no errors". Kein Kabel, kein
+Xcode auf dem Rechner des Gründers, kein Klick im Entwicklerportal. Gebaut,
+signiert und hochgeladen hat ein macOS-Läufer bei GitHub, gestartet mit einem
+Knopf im Browser.
+
+Gebraucht hat das **fünf Läufe**. Vier sind an je einem echten Befund
+gescheitert, und keiner davon stand in einer Anleitung, die vorher gelesen
+worden wäre.
+
+### Hinzugefügt
+
+- **`docs/12-auslieferung.md`** — das Gegenstück zum Baukasten. Der Baukasten
+  beschreibt, wie geprüft wird; dieses Dokument, wie ausgeliefert wird. Inhalt:
+  die Reihenfolge, die funktioniert (mit gemessenen Zeiten), die sechs Befunde
+  in der Reihenfolge, in der sie zuschlagen, sechs Kleinigkeiten, die je einen
+  Lauf kosten, und die fünf Dateien, die das Ganze tragen.
+
+  Die Befunde, kurz:
+  1. **Die Bundle-ID gehört nicht auf eine fremde Domain.**
+     `com.pulsemeter.app` war belegt. Und die Entscheidung fällt **vor** allem
+     anderen — danach kostet sie jeden Käufer seinen Kauf.
+  2. **`xcodebuild archive` mit automatischer Signierung holt ein
+     *Development*-Profil**, und das braucht ein registriertes Gerät. Ohne
+     Kabel kann dieser Weg nie durchgehen. Ausweg: manuelle Signierung mit
+     App-Store-Profilen aus der Schnittstelle.
+  3. **Bauvorgaben auf der Kommandozeile gelten für alle Ziele** — also je
+     Ziel in der Projektdatei, über Variablen.
+  4. **Berechtigungen brauchen Häkchen an der App-ID.** Die erste Auslieferung
+     darf ohne sie fahren, wenn der Code den Ausfall aushält.
+  5. **Nie das voreingestellte Xcode nehmen.** 16.4 war gesetzt, 26.3 lag
+     daneben, und Apple verlangt 26.
+  6. **Hochgeladen ist nicht testbar.** Exportbestimmungen, Gruppe, Tester,
+     Zuweisung — vier Dinge, jedes hält den Bau unsichtbar. Sich selbst als
+     Tester einzutragen war der letzte Stolperstein.
+
+- Verweise aufeinander in `08-baukasten.md` und in der README.
+
+### Was das Vorgehen gelehrt hat, und es steht dort auch so
+
+**Zweimal war meine Vermutung falsch und das Protokoll richtig** — einmal bei
+`-configuration Release`, einmal bei der Ursache des roten Oberflächentests. Aus
+einer Meldung eine Erklärung zu bauen und danach zu handeln hat mehr gekostet
+als das Lesen.
+
+**Ein schneller Fehlschlag ist billig.** 80 bis 130 Sekunden je Lauf — da lohnt
+Probieren statt Grübeln. Deshalb steht die Zugangsprüfung als erster Schritt.
+
+**Zwei rote Läufe mit derselben Meldung sind kein Fortschritt.** Dann ist die
+Ursache nicht im Code.
+
+---
+
 ## 0.60.3 — 2026-08-17
 
 **Drei übersetzte Zwischendateien waren mitgewandert.**

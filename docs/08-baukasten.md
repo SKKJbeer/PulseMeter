@@ -9,6 +9,10 @@ mit allem drauf und eine Sitzung in der Cloud, die einander nicht sehen.
 Dieses Dokument sagt, woraus es besteht, was daran allgemein ist und was
 ausgetauscht werden muss.
 
+> **Das Gegenstück ist [`12-auslieferung.md`](12-auslieferung.md).** Hier steht,
+> wie geprüft wird; dort, wie ausgeliefert wird — ohne Mac, über einen
+> macOS-Läufer. Beide sind unabhängig voneinander übertragbar.
+
 ---
 
 ## Die vier Ideen dahinter

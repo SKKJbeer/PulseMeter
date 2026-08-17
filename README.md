@@ -92,7 +92,7 @@ iCloud-Abgleich wie Käufe lassen sich noch nicht ausprobieren.
 
 ## Status
 
-Version **0.60.3**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
+Version **0.61.0**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
 rechnet echt. Alle vier Bildschirme — Übersicht, Erfassung, Verlauf und Zähler —
 laufen als SwiftUI-App im Simulator und werden auf jedem Lauf fotografiert,
 hell und dunkel. Siehe [CHANGELOG.md](CHANGELOG.md).
@@ -163,6 +163,7 @@ Siehe [CLAUDE.md](CLAUDE.md), Regel 1.
 | [09 – App Store](docs/09-appstore.md) | Texte, Icon, Bilder, Datenschutzangaben — fertig zum Einreichen |
 | [10 – Sichtbarkeit](docs/10-sichtbarkeit.md) | Gefunden werden ohne Werbebudget: Suchwörter, Bewertungen, Zeitpunkt |
 | [11 – Sicherheit](docs/11-sicherheit.md) | Was angreifbar wäre, was behoben ist, was erst am Gerät prüfbar wird |
+| [12 – Auslieferung](docs/12-auslieferung.md) | Vom Code in den App Store ohne Mac — die sechs Befunde aus fünf Fehlläufen |
 | [Website](docs/website/) | Startseite, Hilfe, Datenschutz, Impressum — statisch, ohne fremde Server |
 | [Entwürfe](docs/entwuerfe/) | Vorschläge zum Anfassen, solange noch nicht entschieden ist |
 | [Website: was noch fehlt](docs/website/EINTRAGEN.md) | Die vier Stellen, die vor dem Onlinegehen ausgefüllt werden müssen |
