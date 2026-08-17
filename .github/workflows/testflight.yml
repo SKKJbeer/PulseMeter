@@ -56,6 +56,41 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # **Das neueste Xcode wählen, nicht das voreingestellte.**
+      #
+      # Lauf 4 wurde von Apple angenommen und dann abgelehnt: „This app was
+      # built with the iOS 18.5 SDK. All iOS and iPadOS apps must be built with
+      # the iOS 26 SDK or later." Der Läufer stand auf Xcode 16.4. Apple lässt
+      # ältere SDKs für neue Uploads nicht mehr durch — das ist eine Frist, die
+      # verstrichen ist, kein Fehler im Projekt.
+      #
+      # Gewählt wird deshalb die höchste vorhandene Fassung. Reicht keine, hält
+      # der Lauf hier an und **listet auf, was es gibt** — sonst rät man beim
+      # nächsten Versuch am Läuferbild vorbei.
+      - name: Xcode wählen
+        run: |
+          echo "Vorhanden:"
+          ls -d /Applications/Xcode*.app 2>/dev/null || echo "  (keins)"
+          neuste=""; hoechste=0; version=""
+          for app in /Applications/Xcode*.app; do
+            [ -d "$app" ] || continue
+            v=$(defaults read "$app/Contents/Info" CFBundleShortVersionString 2>/dev/null || echo 0)
+            haupt=${v%%.*}
+            case "$haupt" in ''|*[!0-9]*) continue ;; esac
+            if [ "$haupt" -ge "$hoechste" ]; then
+              hoechste=$haupt; neuste="$app"; version=$v
+            fi
+          done
+          [ -n "$neuste" ] || { echo "::error::Kein Xcode auf dem Laeufer."; exit 1; }
+          echo "Gewaehlt: $neuste ($version)"
+          sudo xcode-select -s "$neuste/Contents/Developer"
+          xcodebuild -version
+          xcodebuild -showsdks | grep -i iphoneos || true
+          if [ "$hoechste" -lt 26 ]; then
+            echo "::error::Nur Xcode $version vorhanden, Apple verlangt 26 oder neuer fuer neue Uploads. Der Laeufer braucht ein anderes Bild - in runs-on auf macos-26 wechseln."
+            exit 1
+          fi
+
       # **Zuerst prüfen, ob überhaupt eingerichtet ist.** Ohne das läuft der
       # Auftrag zwanzig Minuten und scheitert am Ende mit einer Meldung von
       # `altool`, die nicht sagt, welches der vier Geheimnisse fehlt.

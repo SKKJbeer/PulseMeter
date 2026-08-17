@@ -71,9 +71,56 @@ for path in sorted(pathlib.Path(".").rglob("*.swift")):
         if problem := check(line):
             problems.append(f"{path}:{number}: {problem}\n    {line.strip()}")
 
+# **Was in Python, Shell und YAML wirklich bricht.**
+#
+# Ein erster Versuch suchte hier nach demselben Muster wie oben — „ gefolgt von
+# einem geraden " — und fand 24 Stellen, von denen keine einzige schadete: In
+# einem Kommentar ist das Zeichen harmlos. Eine Pruefung, die so oft grundlos
+# anschlaegt, liest nach drei Tagen niemand mehr, und dann ist sie schlechter
+# als keine.
+#
+# Geprueft wird deshalb nicht das Zeichen, sondern die **Folge**: Uebersetzt das
+# Python noch? Laedt das YAML noch? Und — der Fall, der zwanzig Minuten
+# Laeuferzeit kostet — ist jeder `run:`-Block noch gueltige Shell? Genau daran
+# ist der TestFlight-Ablauf zweimal vorbeigelaufen.
+import py_compile
+import subprocess
+import tempfile
+
+for datei in sorted(pathlib.Path("scripts").glob("*.py")):
+    try:
+        py_compile.compile(str(datei), cfile=tempfile.mktemp(), doraise=True)
+    except py_compile.PyCompileError as fehler:
+        problems.append(f"{datei}: uebersetzt nicht\n    {fehler.msg.strip().splitlines()[-1]}")
+
+try:
+    import yaml
+except ImportError:
+    yaml = None
+
+for datei in sorted(pathlib.Path(".github/workflows").glob("*.yml")):
+    if yaml is None:
+        break
+    try:
+        beschreibung = yaml.safe_load(datei.read_text(encoding="utf-8"))
+    except yaml.YAMLError as fehler:
+        problems.append(f"{datei}: kein gueltiges YAML\n    {str(fehler).splitlines()[0]}")
+        continue
+    for auftrag in (beschreibung.get("jobs") or {}).values():
+        for nummer, schritt in enumerate(auftrag.get("steps") or [], 1):
+            skript = schritt.get("run")
+            if not skript:
+                continue
+            fertig = subprocess.run(["bash", "-n"], input=skript, text=True,
+                                    capture_output=True)
+            if fertig.returncode != 0:
+                name = schritt.get("name", f"Schritt {nummer}")
+                problems.append(f"{datei}: {name} ist keine gueltige Shell\n"
+                                f"    {fertig.stderr.strip().splitlines()[0]}")
+
 if problems:
     print("\n".join(problems))
     print(f"\n{len(problems)} Fund(e).")
     sys.exit(1)
 
-print("Zeichenketten in Swift-Quellen sind in Ordnung.")
+print("Zeichenketten, Python, YAML und die Shell in den Abläufen sind in Ordnung.")

@@ -9,6 +9,51 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.60.2 — 2026-08-17
+
+**Apple nimmt kein iOS-18-SDK mehr an.**
+
+Lauf 4 kam weiter als alle davor: Der App-Eintrag stand, Apple hat die IPA
+**angenommen** und dann bei der Prüfung abgelehnt.
+
+    Validation failed (409) SDK version issue. This app was built with the
+    iOS 18.5 SDK. All iOS and iPadOS apps must be built with the iOS 26 SDK
+    or later, included in Xcode 26 or later.
+
+Der Läufer stand auf Xcode 16.4. Das ist kein Fehler im Projekt, sondern eine
+Frist, die verstrichen ist.
+
+### Geändert
+
+- **Neuer erster Schritt „Xcode wählen"** in `testflight.yml`: listet auf, was
+  auf dem Läufer liegt, wählt die höchste Fassung und setzt sie über
+  `xcode-select`. Reicht keine, hält der Lauf **dort** an und nennt die
+  vorhandenen Versionen — sonst rät man beim nächsten Versuch am Läuferbild
+  vorbei und verbrennt weitere zwanzig Minuten.
+
+### Und die Fehlerklasse, die heute viermal zugeschlagen hat
+
+Ein deutsches Anführungszeichen unten, ein **gerades** oben. Zweimal in einem
+Python-Skript, zweimal in einem Workflow — und im YAML fällt es erst auf dem
+Läufer auf.
+
+**Der erste Versuch, das zu prüfen, war falsch.** Eine Suche nach dem Muster
+fand 24 Stellen, von denen keine einzige schadete: In einem Kommentar ist das
+Zeichen harmlos. Eine Prüfung, die so oft grundlos anschlägt, liest nach drei
+Tagen niemand mehr — dieselbe Lehre wie bei den wackligen Oberflächentests.
+
+`check-strings.py` prüft deshalb nicht das Zeichen, sondern die **Folge**:
+
+- übersetzt jedes Skript unter `scripts/*.py`,
+- lädt jede Workflow-Datei als YAML,
+- und schickt **jeden `run:`-Block durch `bash -n`**.
+
+Gegengeprüft mit je einem echten Bruch in beiden Sprachen; beide wurden
+gefangen. Der zweite Fall ist der teure: Er hätte sonst wieder einen Lauf
+gekostet.
+
+---
+
 ## 0.60.1 — 2026-08-17
 
 **Ohne Gerät gibt es kein Entwicklungsprofil — und `archive` will genau das.**
