@@ -192,11 +192,14 @@ final class PeriodEngineTests: XCTestCase {
             slot: 2, granularity: .month, referenceYear: 2026, yearsBack: 1
         )
 
-        XCTAssertEqual(comparison?.entries[0].isComparable, true)
-        XCTAssertEqual(comparison?.entries[1].isComparable, false,
-                       "2025 deckt den Februar nur bis zum 14. ab")
         XCTAssertNil(comparison?.relativeChange,
-                     "Ohne vergleichbares Vorjahr darf keine Veränderung gemeldet werden")
+                     "Als harte Zahl darf die Veränderung nicht gemeldet werden")
+        // Seit 0.65.0 verschweigt die Karte sie trotzdem nicht, sondern zeigt
+        // sie gekennzeichnet — der Ausschnitt ist dafür auf das gekürzt, was
+        // beide Jahre abdecken.
+        XCTAssertEqual(comparison?.isNarrowed, true)
+        XCTAssertNotNil(comparison?.approximateChange)
+        XCTAssertEqual(comparison?.changeIsApproximate, true)
     }
 
     /// Das Bezugsjahr rechnet über sein eigenes Fenster und ist darin immer
@@ -238,4 +241,88 @@ final class PeriodEngineTests: XCTestCase {
         XCTAssertFalse(comparison?.entries[2].hasData ?? true,
                        "2024 liegt vor der ersten Ablesung")
     }
+    // MARK: - Ein angebrochenes Vorjahr
+
+    /// **Der häufigste Fall bei einem neuen Nutzer.** Wer im Mai anfängt, hat
+    /// vom Vorjahr nie einen vollen Monat — und bekam bis 0.64.1 „keine Daten"
+    /// statt eines Vergleichs. Jetzt wird der Ausschnitt auf das gekürzt, was
+    /// beide Jahre abdecken: gleicher Zeitausschnitt, nur ein kürzerer.
+    func testACurtailedPreviousYearStillComparesOnTheSharedWindow() {
+        let register = Fixture.electricityRegister()
+        let readings = [
+            // 2025 reicht nur bis zum 12. Mai: 120 in 11 Tagen.
+            Fixture.reading(register, day(2025, 5, 1), 1000, sequence: 0),
+            Fixture.reading(register, day(2025, 5, 12), 1120, sequence: 1),
+            // 2026 deckt den ganzen Mai: 300 in 30 Tagen, also 10 am Tag.
+            Fixture.reading(register, day(2026, 5, 1), 3000, sequence: 2),
+            Fixture.reading(register, day(2026, 5, 31), 3300, sequence: 3)
+        ]
+
+        let comparison = PeriodEngine.compareAcrossYears(
+            register: register, readings: readings,
+            slot: 5, granularity: .month, referenceYear: 2026, yearsBack: 1
+        )
+
+        XCTAssertEqual(comparison?.isNarrowed, true,
+                       "Der Ausschnitt wurde gekürzt, damit 2025 mitkommt")
+        XCTAssertEqual(comparison?.window.start, day(2026, 5, 1))
+        XCTAssertEqual(comparison?.window.end, day(2026, 5, 12))
+        assertClose(comparison?.entries[0].value ?? 0, 110, "11 Tage à 10")
+        XCTAssertEqual(comparison?.entries[1].value, 120)
+        XCTAssertEqual(comparison?.entries[1].isComparable, true,
+                       "Auf dem gemeinsamen Ausschnitt ruht das Vorjahr auf eigenen Ablesungen")
+        XCTAssertNotNil(comparison?.approximateChange,
+                        "Und damit gibt es endlich eine Veränderung zu zeigen")
+        XCTAssertEqual(comparison?.entries[0].isApproximate, true,
+                       "2026 ist hier aus einem Monatsschritt herausgeschnitten — gekennzeichnet, nicht verschwiegen")
+    }
+
+    /// Ein Jahr ganz ohne Ablesungen kürzt nichts. Sonst wäre der Vergleich mit
+    /// dem Vorjahr davon abhängig, ob es ein Jahr davor gibt.
+    func testAYearWithoutAnyReadingsDoesNotCurtailTheWindow() {
+        let register = Fixture.electricityRegister()
+        let readings = [
+            Fixture.reading(register, day(2025, 5, 1), 1000, sequence: 0),
+            Fixture.reading(register, day(2025, 6, 1), 1300, sequence: 1),
+            Fixture.reading(register, day(2026, 5, 1), 3000, sequence: 2),
+            Fixture.reading(register, day(2026, 6, 1), 3300, sequence: 3)
+        ]
+
+        // 2024 gibt es nicht — und darf den Vergleich 2026 gegen 2025 nicht
+        // anfassen.
+        let comparison = PeriodEngine.compareAcrossYears(
+            register: register, readings: readings,
+            slot: 5, granularity: .month, referenceYear: 2026, yearsBack: 2
+        )
+
+        XCTAssertEqual(comparison?.isNarrowed, false)
+        XCTAssertEqual(comparison?.window.start, day(2026, 5, 1))
+        XCTAssertEqual(comparison?.window.end, day(2026, 6, 1))
+        XCTAssertEqual(comparison?.entries.count, 3)
+        XCTAssertEqual(comparison?.entries[2].hasData, false, "2024 bleibt leer")
+        XCTAssertEqual(comparison?.relativeChange, 0)
+    }
+
+    /// Aber ein Stummel kürzt auch nicht: Vier Tage, die „Mai" heißen, sind
+    /// wieder eine Aussage über einen Zeitraum, den die Zahlen nicht beschreiben.
+    func testATinyOverlapIsNotWorthCurtailingFor() {
+        let register = Fixture.electricityRegister()
+        let readings = [
+            Fixture.reading(register, day(2025, 5, 1), 1000, sequence: 0),
+            Fixture.reading(register, day(2025, 5, 4), 1030, sequence: 1),
+            Fixture.reading(register, day(2026, 5, 1), 3000, sequence: 2),
+            Fixture.reading(register, day(2026, 5, 31), 3300, sequence: 3)
+        ]
+
+        let comparison = PeriodEngine.compareAcrossYears(
+            register: register, readings: readings,
+            slot: 5, granularity: .month, referenceYear: 2026, yearsBack: 1
+        )
+
+        XCTAssertEqual(comparison?.isNarrowed, false)
+        XCTAssertEqual(comparison?.window.end, day(2026, 5, 31), "Der volle Mai bleibt stehen")
+        XCTAssertEqual(comparison?.entries[1].isComparable, false,
+                       "Und 2025 sagt weiterhin: dazu liegt nichts vor")
+    }
+
 }

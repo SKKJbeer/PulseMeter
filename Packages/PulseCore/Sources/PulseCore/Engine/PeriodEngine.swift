@@ -147,6 +147,18 @@ public enum PeriodEngine {
             /// ist der Ausschnitt formal gedeckt und die Zahl trotzdem nur ein
             /// anteilig ausgeschnittener Jahresschnitt.
             public var isComparable: Bool { result.isComplete && result.restsOnOwnReadings }
+
+            /// Es gibt eine Zahl, aber sie ruht nicht auf Ablesungen aus diesem
+            /// Ausschnitt — sie ist aus einer Geraden herausgeschnitten.
+            ///
+            /// **Warum das nicht mehr „keine Daten" heißt.** Bis 0.64.1 zeigte
+            /// die Karte für so ein Jahr gar nichts, und beim ersten echten
+            /// Gebrauch stand dreimal „keine Daten" untereinander — auch beim
+            /// laufenden Jahr, dessen Ablesungen einen Monat auseinanderlagen.
+            /// Produktprinzip 7 verlangt, geschätzte Werte zu **kennzeichnen**,
+            /// nicht sie zu verschweigen. Die Ansicht zeigt sie jetzt mit einem
+            /// ≈ davor.
+            public var isApproximate: Bool { hasData && !isComparable }
         }
 
         public let slot: Int
@@ -159,12 +171,47 @@ public enum PeriodEngine {
         /// der laufende Monat gemeint und die Beschriftung muss das sagen.
         public let isPartial: Bool
 
-        /// Veränderung des Bezugsjahres gegenüber dem Jahr davor, `nil`, wenn
-        /// eines von beiden keine Daten hat.
+        /// Ob der Ausschnitt zusätzlich gekürzt wurde, damit ein Vorjahr
+        /// mitkommt, das nur einen Teil davon abdeckt.
+        ///
+        /// Die Alternative wäre gewesen, gar nicht zu vergleichen — und genau
+        /// das hat der Gründer im ersten Gebrauch als Mangel gemeldet. Die
+        /// Beschriftung muss den Ausschnitt dann nennen: Wer „Mai" liest und
+        /// „1. bis 12. Mai" bekommt, soll es sehen, nicht erraten.
+        public let isNarrowed: Bool
+
+        public init(slot: Int, granularity: Granularity, entries: [Entry],
+                    window: DayRange, isPartial: Bool, isNarrowed: Bool = false) {
+            self.slot = slot
+            self.granularity = granularity
+            self.entries = entries
+            self.window = window
+            self.isPartial = isPartial
+            self.isNarrowed = isNarrowed
+        }
+
+        /// Veränderung des Bezugsjahres gegenüber dem Jahr davor — nur, wenn
+        /// **beide** Seiten auf eigenen Ablesungen ruhen. Die harte Zahl.
         public var relativeChange: Decimal? {
+            guard let roh = rawChange else { return nil }
+            let current = entries[0], previous = entries[1]
+            guard current.isComparable, previous.isComparable else { return nil }
+            return roh
+        }
+
+        /// Dieselbe Veränderung, auch wenn eine Seite zwischen zwei Ablesungen
+        /// gerechnet ist. Zum Anzeigen **mit** Kennzeichnung, nie ohne.
+        public var approximateChange: Decimal? { rawChange }
+
+        /// Ob eine angezeigte Veränderung eine geschätzte ist.
+        public var changeIsApproximate: Bool {
+            approximateChange != nil && relativeChange == nil
+        }
+
+        private var rawChange: Decimal? {
             guard entries.count >= 2 else { return nil }
             let current = entries[0], previous = entries[1]
-            guard current.isComparable, previous.isComparable, previous.value != 0 else { return nil }
+            guard current.hasData, previous.hasData, previous.value != 0 else { return nil }
             return (current.value - previous.value) / previous.value
         }
     }
@@ -181,6 +228,92 @@ public enum PeriodEngine {
     ///
     /// - Returns: `nil`, wenn das Bezugsjahr in diesem Abschnitt gar keine
     ///   Daten hat — dann gibt es nichts zu vergleichen.
+
+    /// Der gemeinsame Kern der drei Fassungen unten.
+    ///
+    /// **Warum der Ausschnitt gekürzt wird, wenn ein Vorjahr nicht mitkommt.**
+    /// Bis 0.64.1 stand bei einem Vorjahr, das den Ausschnitt nur zum Teil
+    /// abdeckte, „keine Daten" — und der Vergleich fiel aus. Das ist der
+    /// häufigste Fall überhaupt: Wer im Mai anfängt, hat vom Vorjahr nie einen
+    /// vollen Monat. Der Gründer beim ersten Gebrauch: „ich will schon auch
+    /// einen Vergleich haben, wenn es nur ein angebrochenes vorheriges Jahr
+    /// gibt."
+    ///
+    /// Die Lösung darf die Regel nicht brechen, sondern muss sie **einhalten**:
+    /// Beide Seiten müssen denselben Zeitausschnitt beschreiben. Also wird nicht
+    /// der halbe Mai gegen den ganzen gestellt, sondern der Ausschnitt auf das
+    /// gekürzt, was **beide** Jahre abdecken — und ``SlotComparison/isNarrowed``
+    /// sagt es, damit die Beschriftung es sagen kann.
+    ///
+    /// Ein Jahr, das gar nichts beisteuert, kürzt nichts: Es bekommt weiter
+    /// „keine Daten". Und gekürzt wird nur, solange ein Viertel des
+    /// ursprünglichen Ausschnitts übrig bleibt — ein Vergleich über drei Tage,
+    /// der „Mai" heißt, wäre wieder eine Aussage über einen Zeitraum, den die
+    /// Zahlen nicht beschreiben.
+    /// - Parameter readingDays: Die Tage, an denen wirklich abgelesen wurde.
+    ///   **Nicht** ``ConsumptionResult/coveredRange``: Das sagt nur, dass ein
+    ///   Ausschnitt innerhalb der Reihe liegt. Zwischen dem 12. Mai 2025 und dem
+    ///   1. Mai 2026 liegt formal alles „innerhalb", und der Ausschnitt bis zum
+    ///   31. Mai 2025 wäre damit gedeckt — aus einer Geraden über elf Monate.
+    ///   Die Ablesungstage sagen dagegen, wo die Reihe wirklich etwas weiß.
+    private static func comparison(
+        slot: Int,
+        granularity: Granularity,
+        referenceYear: Int,
+        yearsBack: Int,
+        readingDays: [CalendarDay],
+        consumption: (DayRange) -> ConsumptionResult
+    ) -> SlotComparison? {
+        guard let full = range(year: referenceYear, slot: slot, granularity: granularity) else { return nil }
+        let probe = consumption(full)
+        guard let window = probe.coveredRange, window.spanInDays > 0 else { return nil }
+
+        let steps = 0...Swift.max(0, yearsBack)
+
+        // Was deckt jedes Jahr von diesem Ausschnitt selbst ab — zurückgerechnet
+        // in den Rahmen des Bezugsjahres, damit sich die Stücke schneiden lassen.
+        var deckung: [Int: DayRange] = [:]
+        for step in steps where step > 0 {
+            guard let verschoben = shift(window, byYears: -step) else { continue }
+            let tage = readingDays.filter { verschoben.contains($0) }.sorted()
+            guard let erste = tage.first, let letzte = tage.last, erste < letzte,
+                  let eigen = DayRange(start: erste, end: letzte),
+                  let zurueck = shift(eigen, byYears: step) else { continue }
+            deckung[referenceYear - step] = zurueck
+        }
+
+        var gemeinsam = window
+        for (_, teil) in deckung.sorted(by: { $0.key > $1.key }) {
+            guard let schnitt = gemeinsam.intersection(with: teil) else { continue }
+            // Vier Tage von sechzehn sind kein Mai mehr.
+            guard schnitt.dayCount * 4 >= window.dayCount else { continue }
+            gemeinsam = schnitt
+        }
+
+        var entries: [SlotComparison.Entry] = []
+        for step in steps {
+            guard let verschoben = shift(gemeinsam, byYears: -step) else { continue }
+            entries.append(SlotComparison.Entry(year: referenceYear - step,
+                                                result: consumption(verschoben)))
+        }
+
+        return SlotComparison(
+            slot: slot,
+            granularity: granularity,
+            entries: entries,
+            window: gemeinsam,
+            isPartial: gemeinsam.start != full.start || gemeinsam.end != full.end,
+            isNarrowed: gemeinsam != window
+        )
+    }
+
+    /// Verschiebt einen ganzen Ausschnitt um volle Jahre.
+    static func shift(_ range: DayRange, byYears years: Int) -> DayRange? {
+        guard let start = shifted(range.start, byYears: years),
+              let end = shifted(range.end, byYears: years) else { return nil }
+        return DayRange(start: start, end: end)
+    }
+
     public static func compareAcrossYears(
         series: ConsumptionSeries,
         slot: Int,
@@ -188,37 +321,17 @@ public enum PeriodEngine {
         referenceYear: Int,
         yearsBack: Int
     ) -> SlotComparison? {
-        guard let full = range(year: referenceYear, slot: slot, granularity: granularity) else { return nil }
-        let probe = ConsumptionEngine.consumption(series: series, in: full)
-        guard let window = probe.coveredRange, window.spanInDays > 0 else { return nil }
-
         // Jedes Jahr wird über sein *eigenes* verschobenes Fenster gerechnet,
         // auch das Bezugsjahr. Dadurch bedeutet `isComplete` bei jedem Eintrag
         // dasselbe: „deckt genau diesen Ausschnitt ab". Würde das Bezugsjahr
         // über den vollen Monat gerechnet, wäre es bei einem laufenden Monat
         // unvollständig — und ließe sich nicht mehr von einem Jahr mit
         // fehlenden Ablesungen unterscheiden.
-        var entries: [SlotComparison.Entry] = []
-        for step in 0...Swift.max(0, yearsBack) {
-            guard let start = shifted(window.start, byYears: -step),
-                  let end = shifted(window.end, byYears: -step),
-                  let shiftedWindow = DayRange(start: start, end: end)
-            else { continue }
-            entries.append(
-                SlotComparison.Entry(
-                    year: referenceYear - step,
-                    result: ConsumptionEngine.consumption(series: series, in: shiftedWindow)
-                )
-            )
+        comparison(slot: slot, granularity: granularity,
+                   referenceYear: referenceYear, yearsBack: yearsBack,
+                   readingDays: series.points.map(\.day)) { fenster in
+            ConsumptionEngine.consumption(series: series, in: fenster)
         }
-
-        return SlotComparison(
-            slot: slot,
-            granularity: granularity,
-            entries: entries,
-            window: window,
-            isPartial: window.start != full.start || window.end != full.end
-        )
     }
 
     public static func compareAcrossYears(
@@ -246,32 +359,11 @@ public enum PeriodEngine {
         referenceYear: Int,
         yearsBack: Int
     ) -> SlotComparison? {
-        guard let full = range(year: referenceYear, slot: slot, granularity: granularity) else { return nil }
-        let probe = ConsumptionEngine.consumption(meteringPoint: meteringPoint, readings: readings, in: full)
-        guard let window = probe.coveredRange, window.spanInDays > 0 else { return nil }
-
-        var entries: [SlotComparison.Entry] = []
-        for step in 0...Swift.max(0, yearsBack) {
-            guard let start = shifted(window.start, byYears: -step),
-                  let end = shifted(window.end, byYears: -step),
-                  let shiftedWindow = DayRange(start: start, end: end)
-            else { continue }
-            entries.append(
-                SlotComparison.Entry(
-                    year: referenceYear - step,
-                    result: ConsumptionEngine.consumption(meteringPoint: meteringPoint,
-                                                          readings: readings, in: shiftedWindow)
-                )
-            )
+        comparison(slot: slot, granularity: granularity,
+                   referenceYear: referenceYear, yearsBack: yearsBack,
+                   readingDays: readings.map(\.day)) { fenster in
+            ConsumptionEngine.consumption(meteringPoint: meteringPoint, readings: readings, in: fenster)
         }
-
-        return SlotComparison(
-            slot: slot,
-            granularity: granularity,
-            entries: entries,
-            window: window,
-            isPartial: window.start != full.start || window.end != full.end
-        )
     }
 
     /// Verschiebt einen Tag um volle Jahre. Der 29. Februar rutscht auf den

@@ -105,6 +105,21 @@ public struct PeriodBars: View {
         let selected = selection == column.id
         return GeometryReader { geometry in
             let height = geometry.size.height
+            // **Der Stapel muss die ganze Höhe einnehmen, sonst hängen die
+            // Balken oben.**
+            //
+            // Ein `GeometryReader` setzt seinen Inhalt oben links ab, in dessen
+            // *eigener* Größe. Der Stapel ist aber nur so hoch wie sein
+            // höchstes Kind — bei einem Balken von 30 Punkten also 30 —, und
+            // `alignment: .bottom` richtet dann innerhalb dieser 30 Punkte aus,
+            // nicht innerhalb der 140. Ergebnis: Der Balken schwebt am oberen
+            // Rand statt auf der Grundlinie zu stehen.
+            //
+            // Sichtbar wurde es erst im echten Gebrauch, und zwar an einer
+            // Merkwürdigkeit: Der **ausgewählte** Abschnitt sah richtig aus.
+            // Dessen blasse Fläche hat keine feste Höhe, füllt also die 140
+            // Punkte, und damit stand sein Balken plötzlich unten. Ein Bild mit
+            // einem richtigen und elf falschen Balken — das war der Hinweis.
             ZStack(alignment: .bottom) {
                 // Der ausgewählte Abschnitt bekommt eine blasse Fläche. Ohne
                 // Spur wäre ein Tipp auf einen leeren Monat sonst folgenlos
@@ -128,9 +143,9 @@ public struct PeriodBars: View {
                         .fill(PulseColor.inkTertiary)
                         .frame(height: 2)
                         .offset(y: -(height * reference / upperBound) + 1)
-                        .frame(maxHeight: .infinity, alignment: .bottom)
                 }
             }
+            .frame(width: geometry.size.width, height: height, alignment: .bottom)
         }
         .frame(maxWidth: .infinity)
         .contentShape(Rectangle())
@@ -168,6 +183,9 @@ public struct YearBars: View {
     private let rows: [Row]
     private let accent: Color
 
+    /// Wächst mit der eingestellten Schriftgröße mit.
+    @ScaledMetric(relativeTo: .subheadline) private var yearColumnWidth: CGFloat = 38
+
     public init(rows: [Row], accent: Color) {
         self.rows = rows
         self.accent = accent
@@ -181,10 +199,18 @@ public struct YearBars: View {
         VStack(spacing: 9) {
             ForEach(rows) { row in
                 HStack(spacing: 11) {
+                    // **Die Jahreszahl bricht nicht um.**
+                    //
+                    // 38 Punkte reichen für „2026" — bei kleiner Schrift. Wer
+                    // die Schrift größer stellt, bekam „202" und darunter „6".
+                    // Die Breite wächst jetzt mit der Schrift mit, und wenn das
+                    // nicht genügt, wird die Zahl kleiner statt zweizeilig.
                     Text(row.year)
                         .font(.system(.subheadline, weight: row.isCurrent ? .bold : .regular))
                         .foregroundStyle(row.isCurrent ? PulseColor.ink : PulseColor.inkSecondary)
-                        .frame(width: 38, alignment: .leading)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                        .frame(width: yearColumnWidth, alignment: .leading)
 
                     GeometryReader { geometry in
                         ZStack(alignment: .leading) {

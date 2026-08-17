@@ -705,7 +705,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.64.1</p>
+  <p>Klickbarer Entwurf · v0.65.0</p>
 </div>
 
 <div class="device">
@@ -1772,13 +1772,51 @@ function renderCompare(m, reg, idx) {
   const win = probe ? { from: probe.cfrom, to: probe.cto } : null;
   const partial = probe ? !probe.complete : false;
 
+  // **Den Ausschnitt kürzen, damit ein angebrochenes Vorjahr mitkommt.**
+  //
+  // Wer im Mai anfängt, hat vom Vorjahr nie einen vollen Monat. Bis 0.64.1
+  // stand dann „keine Daten", und der Vergleich fiel aus — genau das hat der
+  // Gründer im ersten Gebrauch gemeldet. Gekürzt wird auf das, was beide Jahre
+  // abdecken; die Regel „beide Seiten, derselbe Zeitausschnitt" bleibt damit
+  // erfüllt. Ein Stummel kürzt nicht: Vier Tage, die „Mai" heißen, wären wieder
+  // eine Aussage über einen Zeitraum, den die Zahlen nicht beschreiben.
+  // Spiegelt `PeriodEngine.comparison`.
+  let fenster = win;
+  if (win) {
+    const volleTage = between(win.from, win.to);
+    for (let step = 1; step < YEARS.length; step++) {
+      const von = shiftYear(fenster.from, -step), bis = shiftYear(fenster.to, -step);
+      const tage = reg.readings
+        .filter(r => serial(r.y, r.m, r.d) >= serial(von.y, von.m, von.d)
+                  && serial(r.y, r.m, r.d) <= serial(bis.y, bis.m, bis.d))
+        .sort((a, b) => serial(a.y, a.m, a.d) - serial(b.y, b.m, b.d));
+      if (tage.length < 2) continue;
+      const erste = shiftYear({ y: tage[0].y, m: tage[0].m, d: tage[0].d }, step);
+      const letzte = shiftYear({ y: tage[tage.length - 1].y, m: tage[tage.length - 1].m,
+                                 d: tage[tage.length - 1].d }, step);
+      const von2 = serial(erste.y, erste.m, erste.d) > serial(fenster.from.y, fenster.from.m, fenster.from.d)
+        ? erste : fenster.from;
+      const bis2 = serial(letzte.y, letzte.m, letzte.d) < serial(fenster.to.y, fenster.to.m, fenster.to.d)
+        ? letzte : fenster.to;
+      const kurz = between(von2, bis2);
+      if (kurz <= 0 || kurz * 4 < volleTage) continue;
+      fenster = { from: von2, to: bis2 };
+    }
+  }
+  const gekuerzt = !!win && (serial(fenster.from.y, fenster.from.m, fenster.from.d)
+      !== serial(win.from.y, win.from.m, win.from.d)
+    || serial(fenster.to.y, fenster.to.m, fenster.to.d)
+      !== serial(win.to.y, win.to.m, win.to.d));
+
   const rows = YEARS.map((y, step) => {
-    if (!win) return { y, v: null, days: monthDays(y, month) };
-    const c = consumption(reg, shiftYear(win.from, -step), shiftYear(win.to, -step));
-    // Nur zählen, wenn das Jahr den Ausschnitt wirklich abdeckt. Ein Jahr mit
-    // halben Daten hätte sonst einen halben Balken und sähe sparsam aus.
-    const usable = c && c.complete && restsOnOwnReadings(c);
-    return { y, v: usable ? c.value : null, days: c ? c.days : monthDays(y, month) };
+    if (!fenster) return { y, v: null, days: monthDays(y, month), ca: false };
+    const c = consumption(reg, shiftYear(fenster.from, -step), shiftYear(fenster.to, -step));
+    // **Geschätzt heißt gekennzeichnet, nicht verschwiegen** (Produktprinzip 7).
+    // Vorher fiel eine Zahl, die zwischen zwei weit auseinanderliegenden
+    // Ablesungen herausgeschnitten ist, ganz weg — auch beim laufenden Jahr.
+    const belastbar = c && c.complete && restsOnOwnReadings(c);
+    return { y, v: c && c.value !== null ? c.value : null,
+             days: c ? c.days : monthDays(y, month), ca: !!c && !belastbar };
   });
 
   const max = Math.max(...rows.map(r => r.v ?? 0), 0.0001);
@@ -1787,13 +1825,13 @@ function renderCompare(m, reg, idx) {
   const delta = cur.v !== null && prev.v !== null && prev.v !== 0 ? (cur.v - prev.v) / prev.v : null;
 
   const head = delta !== null
-    ? `<div class="cmp-delta ${delta < 0 ? "down" : "up"}">${pct(delta)} ggü. ${prev.y}</div>`
+    ? `<div class="cmp-delta ${delta < 0 ? "down" : "up"}">${cur.ca || prev.ca ? "≈ " : ""}${pct(delta)} ggü. ${prev.y}</div>`
     : `<div class="cmp-delta none">${cur.v === null ? "noch keine Ablesung" : "kein Vorjahreswert"}</div>`;
 
   const body = rows.map(r => `<div class="cmp-row ${r.y === YEARS[0] ? "current" : ""}">
       <span class="yr">${r.y}</span>
       <div class="track">${r.v === null ? "" : `<i style="width:${Math.max(2, r.v / max * 100)}%"></i>`}</div>
-      <span class="num">${r.v === null ? "—" : nf(r.v, dp) + " " + m.unit}</span>
+      <span class="num">${r.v === null ? "—" : (r.ca ? "≈ " : "") + nf(r.v, dp) + " " + m.unit}</span>
     </div>`).join("");
 
   let foot = "";
@@ -1806,9 +1844,13 @@ function renderCompare(m, reg, idx) {
     }
     // Der Satz ist der Grund, warum diese Karte richtig rechnet — und er muss
     // dastehen, sonst hält der Leser die Zahl für einen ganzen Monat.
-    if (partial && win) {
-      foot += ` Verglichen wird <b>${dateMedium(win.from)} bis ${dateMedium(win.to)}</b> —
-        in jedem Jahr derselbe Ausschnitt.`;
+    if (partial && fenster) {
+      foot += ` Verglichen wird <b>${dateMedium(fenster.from)} bis ${dateMedium(fenster.to)}</b> —
+        ${gekuerzt ? "so weit reichen die Ablesungen der Vorjahre; " : ""}in jedem Jahr
+        derselbe Ausschnitt.`;
+    }
+    if (rows.some(r => r.ca)) {
+      foot += ` ≈ heißt: zwischen zwei Ablesungen gerechnet, nicht gemessen.`;
     }
     foot += `</div>`;
   } else if (cur.v === null) {

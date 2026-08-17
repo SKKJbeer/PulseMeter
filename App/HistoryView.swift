@@ -528,8 +528,8 @@ struct HistoryView: View {
                         .font(PulseText.cardTitle)
                         .foregroundStyle(PulseColor.ink)
                     Spacer(minLength: 8)
-                    if let change = comparison.relativeChange {
-                        Text(percentText(change))
+                    if let change = comparison.approximateChange {
+                        Text("\(comparison.changeIsApproximate ? "≈ " : "")\(percentText(change))")
                             .font(.system(.subheadline, weight: .semibold))
                             .foregroundStyle(change < 0 ? PulseColor.favourable : PulseColor.adverse)
                     } else {
@@ -549,10 +549,19 @@ struct HistoryView: View {
                 // denselben Ausschnitt beschnitten — und das muss dastehen,
                 // sonst hält der Leser die Zahl für einen ganzen Monat.
                 if comparison.isPartial {
-                    Text("Verglichen wird \(germanDate(comparison.window.start)) bis \(germanDate(comparison.window.end)) — in jedem Jahr derselbe Ausschnitt.")
+                    Text(comparison.isNarrowed
+                         ? "Verglichen wird \(germanDate(comparison.window.start)) bis \(germanDate(comparison.window.end)) — so weit reichen die Ablesungen der Vorjahre. In jedem Jahr derselbe Ausschnitt."
+                         : "Verglichen wird \(germanDate(comparison.window.start)) bis \(germanDate(comparison.window.end)) — in jedem Jahr derselbe Ausschnitt.")
                         .font(PulseText.caption)
                         .foregroundStyle(PulseColor.inkSecondary)
                         .padding(.top, 2)
+                }
+                // Das ≈ steht an den Zahlen; hier steht, was es heißt. Ohne
+                // diesen Satz ist es ein Zeichen, das jeder anders deutet.
+                if comparison.entries.contains(where: \.isApproximate) {
+                    Text("≈ heißt: zwischen zwei Ablesungen gerechnet, nicht gemessen.")
+                        .font(PulseText.caption)
+                        .foregroundStyle(PulseColor.inkTertiary)
                 }
             }
             .padding(15)
@@ -715,15 +724,22 @@ struct HistoryView: View {
     }
 
     private func comparisonRows(_ comparison: PeriodEngine.SlotComparison) -> [YearBars.Row] {
-        // `isComparable` statt `hasData`: Ein Jahr, das den Ausschnitt nur
-        // halb abdeckt, bekäme sonst einen halben Balken und sähe sparsam aus,
-        // statt unvollständig.
+        // **Geschätzt heißt gekennzeichnet, nicht verschwiegen.**
+        //
+        // Bis 0.64.1 stand hier `isComparable`: Ein Jahr, dessen Zahl zwischen
+        // zwei weit auseinanderliegenden Ablesungen herausgeschnitten ist,
+        // bekam „keine Daten" und keinen Balken. Beim ersten echten Gebrauch
+        // standen dadurch drei leere Zeilen untereinander — auch für das
+        // laufende Jahr. Produktprinzip 7 verlangt eine Kennzeichnung, und die
+        // ist das ≈; ein Verschweigen verlangt es nicht.
         comparison.entries.map { entry in
             YearBars.Row(
                 id: entry.year,
                 year: String(entry.year),
-                value: entry.isComparable ? double(entry.value) : nil,
-                text: entry.isComparable ? "\(number(entry.value, digits: 0)) \(unit)" : "keine Daten",
+                value: entry.hasData ? double(entry.value) : nil,
+                text: entry.hasData
+                    ? "\(entry.isApproximate ? "≈ " : "")\(number(entry.value, digits: 0)) \(unit)"
+                    : "keine Daten",
                 isCurrent: entry.year == comparison.entries.first?.year
             )
         }

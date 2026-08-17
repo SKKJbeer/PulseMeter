@@ -9,6 +9,73 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.65.0 — 2026-08-17
+
+**Drei Funde aus dem ersten echten Gebrauch — und der erste ist der schlimmste.**
+
+### Die Balken hingen an der Decke
+
+Auf den Bildschirmfotos des Gründers steht kein einziger Balken auf der
+Grundlinie. Sie hängen am oberen Rand und wachsen nach unten; im Jahresdiagramm
+schwebt der 2025-Balken frei in der Luft. Ein Diagramm, das so aussieht, ist
+keine Auskunft, sondern eine Irreführung.
+
+Der Grund ist eine Zeile Layout: Ein `GeometryReader` setzt seinen Inhalt oben
+links ab, **in dessen eigener Größe**. Der Stapel mit dem Balken ist aber nur so
+hoch wie der Balken — bei 30 von 140 Punkten also 30 —, und `alignment: .bottom`
+richtet dann innerhalb dieser 30 Punkte aus. Der Balken steht also unten in
+seiner eigenen kleinen Kiste, und die Kiste klebt oben.
+
+Den Hinweis gab eine Merkwürdigkeit im Bild: Der **ausgewählte** Abschnitt sah
+richtig aus. Dessen blasse Fläche hat keine feste Höhe, füllt die 140 Punkte —
+und damit stand sein Balken plötzlich unten. Ein Bild mit einem richtigen und
+elf falschen Balken.
+
+Warum das keine Prüfung gefunden hat: Die Oberflächenprüfungen lesen den Baum,
+nicht die Geometrie, und auf den CI-Bildern sind die Balken fast so hoch wie das
+Diagramm — da fällt der Unterschied zwischen „oben verankert" und „unten
+verankert" kaum auf. Bei vier Ablesungen mit sehr verschiedenen Höhen fällt er
+sofort auf.
+
+### „2026" stand zweizeilig
+
+„202" und darunter „6". Die Jahresspalte war 38 Punkte breit, und das reicht nur
+bei kleiner Schrift. Sie wächst jetzt mit der Schriftgröße mit, und wenn das
+nicht genügt, wird die Zahl kleiner statt zweizeilig.
+
+### Ein angebrochenes Vorjahr ist jetzt ein Vergleich
+
+„Ich will schon auch einen Vergleich haben, wenn es nur ein angebrochenes
+vorheriges Jahr gibt" — und das ist der Normalfall: Wer im Mai anfängt, hat vom
+Vorjahr nie einen vollen Monat. Bisher stand dann dreimal „keine Daten"
+untereinander, beim laufenden Jahr eingeschlossen.
+
+Zwei Änderungen, und beide halten die Grundregel dieses Projekts ein:
+
+1. **Der Ausschnitt wird gekürzt, statt den Vergleich abzusagen.** Verglichen
+   wird, was *beide* Jahre abdecken — 1. bis 12. Mai gegen 1. bis 12. Mai, und
+   darunter steht, welcher Ausschnitt gemeint ist. Nicht gekürzt wird für einen
+   Stummel: Bleibt weniger als ein Viertel des Abschnitts übrig, hieße „Mai"
+   plötzlich vier Tage.
+2. **Geschätzte Zahlen werden gekennzeichnet, nicht verschwiegen.** Eine Zahl,
+   die zwischen zwei weit auseinanderliegenden Ablesungen herausgeschnitten ist,
+   verschwand bisher ganz. Jetzt steht sie mit einem ≈ davor da, und ein Satz
+   sagt, was das Zeichen heißt. Produktprinzip 7 verlangt die Kennzeichnung —
+   das Verschweigen verlangt es nicht.
+
+Dazu kommt, was die Ablesungstage angeht, eine Berichtigung im Rechenkern: Wie
+weit ein Jahr einen Ausschnitt abdeckt, lässt sich **nicht** an
+`coveredRange` ablesen. Zwischen dem 12. Mai 2025 und dem 1. Mai 2026 liegt
+formal alles „innerhalb der Reihe", und der halbe Mai 2025 wäre damit gedeckt —
+aus einer Geraden über elf Monate. Gefragt werden jetzt die Ablesungstage selbst.
+
+`compareAcrossYears` gibt es weiterhin dreimal, aber nur noch eine Rechnung
+dahinter; die drei Fassungen reichen ihre Zeitreihe durch. Drei neue Prüfungen
+halten die Fälle fest: gekürzt, nicht gekürzt wegen eines leeren Jahres, nicht
+gekürzt wegen eines Stummels. 211 Prüfungen in PulseCore, 108 im Entwurf.
+
+---
+
 ## 0.64.1 — 2026-08-17
 
 **Die Messung hat geantwortet, und der Wähler spricht jetzt Deutsch.**
