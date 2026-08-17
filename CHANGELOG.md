@@ -9,6 +9,78 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.62.0 — 2026-08-17
+
+**Der Export ist ein Knopf mit Auswahl — und schreibt keine Dateien mehr beim
+Zeichnen.**
+
+Zwei Rückmeldungen aus dem ersten echten Gebrauch, beide am selben Bildschirm.
+Das ist der Punkt, den `07-v1-plan.md` als produktivsten benennt, und er hat
+beim ersten Anlauf geliefert.
+
+### Behoben — „lädt ziemlich lange"
+
+`readingsFile` und `breakdownFile` waren **berechnete Eigenschaften im
+Bildaufbau**. Jede Neuauswertung des Verlaufsschirms hat damit zwei CSV-Dateien
+gebaut **und atomar auf die Platte geschrieben** — beim Blättern, beim
+Umschalten von Monat auf Quartal, und beim Antippen von „Alle Ablesungen", weil
+auch das nur einen Zustand umsetzt. Zwei Dateisystemschreibvorgänge, bevor das
+Blatt aufging.
+
+Dateien als Nebenwirkung des Zeichnens zu schreiben ist unabhängig von der
+Geschwindigkeit falsch gebaut. Der neue Typ `CSVAusgabe` ist `Transferable`:
+Die Beschreibung ist billig, der Inhalt entsteht erst, wenn das Teilen-Blatt
+ihn anfordert.
+
+⚠️ **Nicht gemessen.** Das ist eine Diagnose aus dem Quelltext; ein Linux-Container
+hat keinen Simulator. Ob die Verzögerung ganz daran hing, sagt erst das Gerät.
+
+### Geändert — „verstehe nicht, was dahinter ist"
+
+Zwei gleich aussehende Kacheln „Ablesungen" und „Auswertung", ohne einen Satz
+dazu, und beim Antippen kam unerwartet ein Teilen-Blatt. Produktprinzip 4
+verlangt, dass sich jede Fläche erklärt — diese zwei taten es nicht. Dazu hieß
+„Ablesungen" auf demselben Schirm zweierlei: eine Liste zum Ansehen und eine
+Datei zum Verschicken.
+
+An ihrer Stelle steht **ein** Knopf, **Herunterladen**, mit Pfeilsymbol und
+einer Auswahl:
+
+- **Ablesungen als CSV** — eine Zeile je eingetippter Zahl
+- **Auswertung als CSV** — eine Zeile je Zeitraum, der gerechnete Verbrauch
+- **Verbrauchsbericht als PDF** — mit dem Zusatz „(mit Wasserzeichen)", solange
+  er nicht freigeschaltet ist
+
+Die Dateiart steht jetzt **im Eintrag**, nicht nur in der Endung. Und
+`exportedContentType: .commaSeparatedText` sagt es auch dem System — vorher hing
+das allein am Dateinamen, und je nach Ziel kam die Tabelle als Textdatei an.
+
+### Zwei Dinge, die schon stimmten
+
+Bei der Durchsicht geprüft, statt sie neu zu bauen:
+
+- **Die Endung war schon `.csv`** — `PulseMeter-<Zähler>-Ablesungen.csv`. Neu
+  ist der ausdrückliche Dateityp, nicht die Endung.
+- **Der Bericht war schon herunterladbar, mit Wasserzeichen, und der Kauf nimmt
+  es weg** — samt Neuschreiben der Datei nach dem Kauf. Gefehlt hat nur, dass
+  er im Ausgang auftauchte.
+
+### Warum der Bericht den Schirm öffnet statt hier ein PDF zu bauen
+
+Er braucht eine Wahl: Zeitraum und Zähler. Die Logik dafür steht vollständig in
+`ReportView` — Wasserzeichen, Neuschreiben nach dem Kauf, Teilen. Sie im Menü
+zu wiederholen hieße, zwei Fassungen zu pflegen, die früher oder später
+verschiedene PDFs liefern.
+
+### Nachgezogen
+
+`testTheReportIsWatermarkedAndTheExportNeverCosts` prüft jetzt den Zugang
+(`Herunterladen`) statt der zwei Einträge. Was im Menü steht, zeigt iOS in einem
+eigenen Fenster; eine Prüfung, die es aufklappt, prüft die Menüdarstellung von
+iOS und nicht diese App.
+
+---
+
 ## 0.61.0 — 2026-08-17
 
 **PulseMeter läuft in TestFlight — und der Weg dorthin ist aufgeschrieben.**

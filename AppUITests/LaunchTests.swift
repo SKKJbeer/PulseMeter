@@ -1081,7 +1081,13 @@ final class LaunchTests: XCTestCase {
                       "Die Berichtszeile fehlt im Verlauf")
 
         // Der Export steht darüber und ist offen — dauerhaft und ohne Kauf.
-        XCTAssertTrue(app.buttons["Ablesungen"].exists || app.buttons["Auswertung"].exists,
+        //
+        // **Seit 0.61.0 ist es ein Knopf mit Auswahl**, nicht mehr zwei Kacheln
+        // „Ablesungen" und „Auswertung". Geprüft wird deshalb der Zugang, nicht
+        // die Einträge dahinter: Was im Menü steht, entscheidet iOS in einem
+        // eigenen Fenster, und eine Prüfung, die es aufklappt, prüft dann die
+        // Menüdarstellung von iOS statt unsere App.
+        XCTAssertTrue(app.buttons["Herunterladen"].exists,
                       "Der Export muss ohne Kauf erreichbar sein — dauerhaft")
 
         bericht.tap()

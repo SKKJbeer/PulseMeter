@@ -3,6 +3,7 @@ import SwiftData
 import PulseCore
 import PulseData
 import PulseUI
+import UniformTypeIdentifiers
 
 /// Der Verlauf: ein Zähler, ein Zeitraum.
 ///
@@ -300,19 +301,46 @@ struct HistoryView: View {
 
     /// Produktprinzip 5 — Datenfreiheit. Der Export bleibt kostenlos, auch
     /// wenn später eine Bezahlschranke kommt.
+    ///
+    /// **Ein Knopf mit Auswahl statt zwei Kacheln.** Bis 0.61.0 standen hier
+    /// „Ablesungen" und „Auswertung" nebeneinander — zwei gleich aussehende
+    /// Felder ohne einen Satz dazu, und beim Antippen kam unerwartet ein
+    /// Teilen-Blatt. Der Gründer beim ersten Gebrauch: „verstehe nicht, was
+    /// dahinter ist". Produktprinzip 4 verlangt, dass sich jede Fläche
+    /// erklärt; diese zwei taten es nicht.
+    ///
+    /// Jetzt sagt das Symbol, dass etwas herauskommt, und die Auswahl sagt
+    /// **was** — mit Dateiart und einem Halbsatz, was drinsteht.
     private var exportRow: some View {
-        HStack(spacing: 9) {
-            if let readingsFile {
-                ShareLink(item: readingsFile) {
-                    exportLabel("Ablesungen")
-                }
+        Menu {
+            ShareLink(item: ablesungenAusgabe,
+                      preview: SharePreview(ablesungenAusgabe.dateiname)) {
+                Label("Ablesungen als CSV", systemImage: "list.number")
             }
-            if let breakdownFile {
-                ShareLink(item: breakdownFile) {
-                    exportLabel("Auswertung")
-                }
+            ShareLink(item: auswertungAusgabe,
+                      preview: SharePreview(auswertungAusgabe.dateiname)) {
+                Label("Auswertung als CSV", systemImage: "tablecells")
             }
+            Divider()
+            // **Der Bericht öffnet den Schirm, statt hier ein PDF zu bauen.**
+            // Er braucht eine Wahl — Zeitraum und Zähler —, und die Logik dafür
+            // steht vollständig in `ReportView`: Wasserzeichen, Neuschreiben
+            // nach dem Kauf, Teilen. Sie hier zu wiederholen hieße, zwei
+            // Fassungen zu pflegen, die früher oder später verschiedene PDFs
+            // liefern.
+            Button {
+                showingReport = true
+            } label: {
+                Label(purchase.reportIsWatermarked
+                      ? "Verbrauchsbericht als PDF (mit Wasserzeichen)"
+                      : "Verbrauchsbericht als PDF",
+                      systemImage: "doc.richtext")
+            }
+        } label: {
+            exportLabel("Herunterladen", symbol: "square.and.arrow.down")
         }
+        .accessibilityLabel("Herunterladen")
+        .accessibilityHint("Ablesungen oder Auswertung als CSV, oder den Verbrauchsbericht als PDF")
     }
 
     /// Der Bericht steht unter dem Export und nicht daneben.
@@ -368,9 +396,14 @@ struct HistoryView: View {
         .accessibilityHint("Öffnet den Bericht")
     }
 
-    private func exportLabel(_ text: String) -> some View {
-        Text(text)
-            .font(.system(.subheadline, weight: .semibold))
+    private func exportLabel(_ text: String, symbol: String) -> some View {
+        HStack(spacing: 7) {
+            Image(systemName: symbol)
+                .font(.system(size: 15, weight: .semibold))
+                .accessibilityHidden(true)
+            Text(text)
+                .font(.system(.subheadline, weight: .semibold))
+        }
             .foregroundStyle(PulseColor.tint)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
@@ -658,25 +691,6 @@ struct HistoryView: View {
 
     // MARK: - Export
 
-    /// Schreibt die Tabelle in eine Datei und gibt deren Ort zurück.
-    ///
-    /// `ShareLink` braucht etwas Übertragbares; eine Datei mit sprechendem
-    /// Namen ist das, was in Mail, Dateien oder einer Tabellenkalkulation
-    /// ankommt — eine nackte Zeichenkette landet als „Text.txt".
-    private func exportFile(named name: String, content: String) -> URL? {
-        let folder = FileManager.default.temporaryDirectory
-        let url = folder.appendingPathComponent(name)
-        do {
-            // Mit Steuerzeichen für Excel: Ohne die Kennung öffnet es eine
-            // UTF-8-Datei mit Umlauten als Buchstabensalat.
-            let withMarker = "\u{FEFF}" + content
-            try withMarker.write(to: url, atomically: true, encoding: .utf8)
-            return url
-        } catch {
-            return nil
-        }
-    }
-
     private var exportBaseName: String {
         let name = (meter?.name ?? "Zaehler")
             .replacingOccurrences(of: " ", with: "-")
@@ -684,20 +698,29 @@ struct HistoryView: View {
         return "PulseMeter-\(name)"
     }
 
-    private var readingsFile: URL? {
-        guard let register, let meter, !readings.isEmpty else { return nil }
-        return exportFile(
-            named: "\(exportBaseName)-Ablesungen.csv",
-            content: TableExport.readings(readings, meteringPoint: meter, meterName: meter.name)
-        )
+    /// Die Ablesungen als Tabelle — eine Zeile je eingetippter Zahl.
+    ///
+    /// **Hier wird nichts erzeugt.** Es entsteht nur die Beschreibung dessen,
+    /// was beim Teilen entstehen soll; die Zeichenkette baut ``CSVAusgabe``
+    /// erst, wenn jemand wirklich teilt.
+    private var ablesungenAusgabe: CSVAusgabe {
+        let inhalt = readings
+        let punkt = meter
+        return CSVAusgabe(dateiname: "\(exportBaseName)-Ablesungen.csv") {
+            guard let punkt else { return "" }
+            return TableExport.readings(inhalt, meteringPoint: punkt, meterName: punkt.name)
+        }
     }
 
-    private var breakdownFile: URL? {
-        guard let register, let meter, !buckets.isEmpty else { return nil }
-        return exportFile(
-            named: "\(exportBaseName)-Auswertung.csv",
-            content: TableExport.breakdown(buckets, unit: register.unit, meterName: meter.name)
-        )
+    /// Die Auswertung als Tabelle — eine Zeile je Zeitraum, mit dem gerechneten
+    /// Verbrauch. Nicht die Zählerstände, sondern was daraus geworden ist.
+    private var auswertungAusgabe: CSVAusgabe {
+        let abschnitte = buckets
+        let einheit = register?.unit ?? ""
+        let name = meter?.name ?? ""
+        return CSVAusgabe(dateiname: "\(exportBaseName)-Auswertung.csv") {
+            TableExport.breakdown(abschnitte, unit: einheit, meterName: name)
+        }
     }
 
     private func cellText(for bucket: PeriodEngine.Bucket) -> String {
@@ -874,5 +897,37 @@ struct ReadingsList: View {
 private extension Array {
     subscript(safe index: Int) -> Element? {
         indices.contains(index) ? self[index] : nil
+    }
+}
+
+/// Eine Tabelle, die **erst beim Teilen** entsteht.
+///
+/// **Der Grund, warum dieser Typ existiert.** Bis 0.61.0 waren die zwei
+/// Exportdateien berechnete Eigenschaften, die im Bildaufbau standen. Jede
+/// Neuauswertung des Verlaufsschirms hat damit zwei CSV-Dateien gebaut **und
+/// auf die Platte geschrieben** — beim Blättern, beim Umschalten von Monat auf
+/// Quartal, und beim Antippen von „Alle Ablesungen", weil auch das den Zustand
+/// ändert. Der Gründer beim ersten Gebrauch: „lädt ziemlich lange".
+///
+/// Dateien als Nebenwirkung des Zeichnens zu schreiben ist unabhängig von der
+/// Geschwindigkeit falsch. `Transferable` löst beides: Die Beschreibung ist
+/// billig, `inhalt` läuft erst, wenn das Teilen-Blatt die Daten anfordert.
+///
+/// `exportedContentType: .commaSeparatedText` sagt dem System ausdrücklich,
+/// dass es eine Tabelle ist — vorher hing das allein an der Dateiendung, und
+/// je nach Ziel kam sie als Textdatei an.
+struct CSVAusgabe: Transferable {
+
+    let dateiname: String
+    /// Wird genau einmal aufgerufen, und nur beim Teilen.
+    let inhalt: () -> String
+
+    static var transferRepresentation: some TransferRepresentation {
+        DataRepresentation(exportedContentType: .commaSeparatedText) { ausgabe in
+            // Byte-Reihenfolge-Marke für Excel: Ohne sie öffnet es eine
+            // UTF-8-Datei mit Umlauten als Buchstabensalat.
+            Data("\u{FEFF}\(ausgabe.inhalt())".utf8)
+        }
+        .suggestedFileName { $0.dateiname }
     }
 }
