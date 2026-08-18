@@ -220,7 +220,7 @@ struct ReportView: View {
                                 Image(systemName: "checkmark")
                                     .accessibilityHidden(true)
                                     .font(.system(.subheadline, weight: .semibold))
-                                    .foregroundStyle(PulseColor.tint)
+                                    .foregroundStyle(PulseColor.tintInk)
                                     .opacity(option.id == period?.id ? 1 : 0)
                             }
                             .padding(.vertical, 11)

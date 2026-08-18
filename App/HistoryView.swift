@@ -378,7 +378,7 @@ struct HistoryView: View {
                 Image(systemName: "doc.text")
                     .accessibilityHidden(true)
                     .font(.system(.subheadline, weight: .semibold))
-                    .foregroundStyle(PulseColor.tint)
+                    .foregroundStyle(PulseColor.tintInk)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Verbrauchsbericht")
                         .font(.system(.subheadline, weight: .semibold))
@@ -422,7 +422,7 @@ struct HistoryView: View {
             Text(text)
                 .font(.system(.subheadline, weight: .semibold))
         }
-            .foregroundStyle(PulseColor.tint)
+            .foregroundStyle(PulseColor.tintInk)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
             .background(PulseColor.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))

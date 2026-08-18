@@ -11,12 +11,23 @@
   --surface:     #FFFFFF;
   --surface-2:   #F4F1EB;
   --ink:         #17150F;
-  --ink-2:       #6B6659;
-  --ink-3:       #9A9384;
+  /* **Gemessen, nicht gewählt.** Die nicht-funktionale Prüfung hat 69 Stellen
+     gefunden, an denen Beschriftungen unter dem Kontrast liegen, den WCAG 2.2
+     AA für Text dieser Größe verlangt: #9A9384 auf Weiß ergibt 3,0:1 statt
+     4,5:1. Die neuen Werte sind ausgerechnet — gleicher Farbton, nur so weit
+     abgedunkelt, dass 4,6:1 herauskommt. Die drei Stufen bleiben
+     unterscheidbar: 16:1, 7,9:1, 5,2:1. */
+  --ink-2:       #555147;
+  --ink-3:       #6B6457;
   --hairline:    #E7E3DA;
   --hairline-2:  #D8D2C6;
   --tint:        #C77A0E;
+  /* Derselbe Akzent, aber für **Schrift**: #C77A0E auf Weiß sind 3,4:1 und
+     damit zu blass für 15 Punkte. Flächen und Balken behalten den hellen Ton —
+     dort gilt die Textregel nicht. */
+  --tint-ink:    #9B5F0B;
   --good:        #2F7F52;
+  --good-ink:    #2A7049;
   --warn-bg:     #FBF0DA;
   --warn-ink:    #8A5A08;
   --shadow-card: 0 1px 2px rgba(23,21,15,.05), 0 6px 18px rgba(23,21,15,.05);
@@ -28,6 +39,16 @@
   --orange: #C25C22;
   --red:    #B03A38;
   --teal:   #2A7F7A;
+  /* Dieselben Farben für **Schrift**. Ein Balken darf leuchten; ein Satz in
+     derselben Farbe ist bei 14 Punkten nicht mehr lesbar — #C98410 auf Weiß
+     sind 3,3:1. Ausgerechnet auf 4,6:1, gleicher Farbton. Im Dunkeln sind die
+     hellen Töne ohnehin kontraststark, dort bleibt es beim selben Wert. */
+  --amber-ink:  #8B5B0B;
+  --green-ink:  #267247;
+  --blue-ink:   #2766A9;
+  --orange-ink: #A14D1C;
+  --red-ink:    #B03A38;
+  --teal-ink:   #256F6B;
   --on-accent: #FFFFFF;
 
   --r-card: 18px;
@@ -47,16 +68,20 @@
     --surface:    #1B1917;
     --surface-2:  #262320;
     --ink:        #F5F2EC;
-    --ink-2:      #A39C8D;
-    --ink-3:      #756F62;
+    --ink-2:      #B3AEA1;
+    --ink-3:      #928B7C;
     --hairline:   #2B2822;
     --hairline-2: #383430;
     --tint:       #E0A040;
-    --good:       #5CBF85;
+    /* Im Dunkeln trägt derselbe helle Ton auch als Schrift: 8,3:1. */
+    --tint-ink:   #E0A040;
+    --good:       #5CBF85;  --good-ink:   #5CBF85;
     --warn-bg:    #33290F;
     --warn-ink:   #E8C070;
     --shadow-card: 0 1px 2px rgba(0,0,0,.4);
     --shadow-dev:  0 40px 80px -20px rgba(0,0,0,.8), 0 0 0 1px rgba(255,255,255,.06);
+    --amber-ink:  #E8A945;  --green-ink:  #5CBF85;  --blue-ink:   #6FA8E0;
+    --orange-ink: #E08A55;  --red-ink:    #E07A78;  --teal-ink:   #5CB8B2;
     --amber:  #E8A945;
     --dec-ink: #F0736B;
     --green:  #5CBF85;
@@ -70,12 +95,14 @@
 :root[data-theme="dark"] {
   --ground:     #0A0908;  --frame:      #2A2620;  --app-bg:     #100F0D;
   --surface:    #1B1917;  --surface-2:  #262320;  --ink:        #F5F2EC;
-  --ink-2:      #A39C8D;  --ink-3:      #756F62;  --hairline:   #2B2822;
-  --hairline-2: #383430;  --tint:       #E0A040;  --good:       #5CBF85;
+  --ink-2:      #B3AEA1;  --ink-3:      #928B7C;  --hairline:   #2B2822;
+  --hairline-2: #383430;  --tint:       #E0A040;  --tint-ink:   #E0A040;  --good:       #5CBF85;
   --warn-bg:    #33290F;  --warn-ink:   #E8C070;
   --shadow-card: 0 1px 2px rgba(0,0,0,.4);
   --shadow-dev:  0 40px 80px -20px rgba(0,0,0,.8), 0 0 0 1px rgba(255,255,255,.06);
   --amber: #E8A945; --green: #5CBF85; --blue: #5C9EE0; --orange: #E08551; --red: #DC6E6C; --teal: #63BAB4; --on-accent: #100F0D;
+  --amber-ink:  #E8A945;  --green-ink:  #5CBF85;  --blue-ink:   #6FA8E0;
+  --orange-ink: #E08A55;  --red-ink:    #E07A78;  --teal-ink:   #5CB8B2;
 }
 :root[data-theme="light"] {
   --ground:     #E8E4DC;  --frame:      #C4BEB2;  --app-bg:     #FBFAF8;
@@ -199,14 +226,14 @@ h2.large {
   width: 27px; height: 27px; border-radius: 8px; flex: none;
   display: grid; place-items: center;
   background: color-mix(in srgb, var(--c) 15%, transparent);
-  color: var(--c);
+  color: var(--c-ink, var(--c));
 }
 .chip-icon svg { width: 15px; height: 15px; }
 .card-name { font-weight: 620; font-size: 16px; letter-spacing: -0.012em; flex: 1; }
 .due-pill {
   font-size: 11px; font-weight: 660; letter-spacing: .02em; text-transform: uppercase;
   padding: 4px 8px; border-radius: 999px;
-  background: color-mix(in srgb, var(--c) 16%, transparent); color: var(--c);
+  background: color-mix(in srgb, var(--c) 16%, transparent); color: var(--c-ink, var(--c));
 }
 .card-body { padding: 8px 15px 15px; display: flex; align-items: flex-end; gap: 14px; }
 .card-figure { flex: 1; min-width: 0; }
@@ -241,9 +268,9 @@ h2.large {
 .reg-name { display: block; font-weight: 600; font-size: 14px; }
 .reg-step { display: block; font-size: 11px; color: var(--ink-3); margin-bottom: 4px; }
 .linklike { display: block; margin-top: 7px; background: none; border: 0; padding: 0;
-  font: inherit; font-weight: 600; color: var(--tint); cursor: pointer; text-align: left; }
+  font: inherit; font-weight: 600; color: var(--tint-ink); cursor: pointer; text-align: left; }
 .explain {
-  font: inherit; font-size: var(--fs-sub); color: var(--c);
+  font: inherit; font-size: var(--fs-sub); color: var(--c-ink, var(--c));
   background: none; border: 0; padding: 0; cursor: pointer;
   display: inline-flex; align-items: center; gap: 4px; font-weight: 560;
 }
@@ -251,7 +278,7 @@ h2.large {
 .card-actions { border-top: 1px solid var(--hairline); display: flex; }
 .card-actions button {
   flex: 1; font: inherit; font-size: 15px; font-weight: 600; letter-spacing: -0.01em;
-  color: var(--c); background: none; border: 0; padding: 13px 0; cursor: pointer;
+  color: var(--c-ink, var(--c)); background: none; border: 0; padding: 13px 0; cursor: pointer;
 }
 .card-actions button:active { background: var(--surface-2); }
 .card-actions button:focus-visible { outline: 2px solid var(--tint); outline-offset: -3px; }
@@ -270,7 +297,7 @@ h2.large {
   padding: 3px 0;
 }
 .tabbar button svg { width: 25px; height: 25px; }
-.tabbar button[aria-selected="true"] { color: var(--tint); }
+.tabbar button[aria-selected="true"] { color: var(--tint-ink); }
 .tabbar button:focus-visible { outline: 2px solid var(--tint); outline-offset: -4px; border-radius: 8px; }
 
 /* ---------- Bogen (Sheet) ---------- */
@@ -300,7 +327,7 @@ h2.large {
 }
 .sheet-title { font-size: 17px; font-weight: 660; letter-spacing: -0.015em; }
 .sheet-close {
-  font: inherit; font-size: 15px; font-weight: 560; color: var(--tint);
+  font: inherit; font-size: 15px; font-weight: 560; color: var(--tint-ink);
   background: none; border: 0; cursor: pointer; padding: 4px;
 }
 .sheet-close:focus-visible { outline: 2px solid var(--tint); outline-offset: 2px; border-radius: 6px; }
@@ -393,7 +420,11 @@ h2.large {
   width: 100%; margin-top: 14px; font: inherit;
   font-size: 17px; font-weight: 640; letter-spacing: -0.015em;
   color: var(--on-accent); background: var(--c);
-  border: 0; border-radius: 14px; padding: 15px; cursor: pointer;
+  border: 0; border-radius: 14px; padding: 16px; cursor: pointer;
+  /* 44 Punkte, nicht 43. Die nicht-funktionale Prüfung hat den einen Punkt
+     gemeldet, der fehlte — Apples Mindestmaß für eine Fläche, die man im
+     Keller einhändig trifft. */
+  min-height: 44px;
 }
 /* Eigene Farben statt durchscheinender Akzentfläche: Mit `opacity` stand im
    dunklen Erscheinungsbild dunkelbraun auf braun — auf dem Bildschirmfoto der
@@ -443,6 +474,9 @@ h2.large {
   background: var(--surface-2); margin-bottom: 16px;
 }
 .segmented button {
+  /* iOS zeichnet einen Segmentwähler 32 Punkte hoch; darunter wird das Tippen
+     zur Zielübung. Gemessen wurden 29. */
+  min-height: 32px;
   flex: 1; font: inherit; font-size: 13.5px; font-weight: 570; letter-spacing: -0.008em;
   border: 0; border-radius: 8px; padding: 7px 0; cursor: pointer;
   background: none; color: var(--ink-2);
@@ -463,7 +497,7 @@ h2.large {
 .pick[aria-selected="true"] {
   background: color-mix(in srgb, var(--c) 13%, transparent);
   border-color: color-mix(in srgb, var(--c) 40%, transparent);
-  color: var(--c);
+  color: var(--c-ink, var(--c));
 }
 .pick:focus-visible { outline: 2px solid var(--tint); outline-offset: 2px; }
 
@@ -518,7 +552,7 @@ table.data tr.est td:first-child::after {
 .exportbar button {
   flex: 1; font: inherit; font-size: 14.5px; font-weight: 600; letter-spacing: -0.01em;
   padding: 12px; border-radius: 12px; cursor: pointer;
-  background: var(--surface); color: var(--tint); border: 1px solid var(--hairline-2);
+  background: var(--surface); color: var(--tint-ink); border: 1px solid var(--hairline-2);
   display: flex; align-items: center; justify-content: center; gap: 8px;
 }
 .exportbar button svg { width: 17px; height: 17px; flex: none; }
@@ -535,7 +569,7 @@ table.data tr.est td:first-child::after {
   text-transform: uppercase; color: var(--good); background: color-mix(in srgb, var(--good) 14%, transparent);
   padding: 3px 7px; border-radius: 5px; margin-left: 7px;
 }
-.pro { color: var(--tint); background: color-mix(in srgb, var(--tint) 14%, transparent); }
+.pro { color: var(--tint-ink); background: color-mix(in srgb, var(--tint) 14%, transparent); }
 
 /* ---------- Vergleich desselben Monats über die Jahre ----------
    Die eigentlich interessante Frage: Februar 2026 gegen Februar 2025.
@@ -705,7 +739,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.65.1</p>
+  <p>Klickbarer Entwurf · v0.66.0</p>
 </div>
 
 <div class="device">
@@ -809,7 +843,7 @@ select.field { cursor: pointer; }
       <h2 class="large">Zähler</h2>
       <p class="datum">4 Zähler · Zuhause</p>
       <div class="list" id="meterlist"></div>
-      <button type="button" class="save" id="add-meter" style="--c:var(--tint);margin-top:14px">
+      <button type="button" class="save" id="add-meter" style="--c:var(--tint);--c-ink:var(--tint-ink);margin-top:14px">
         Zähler hinzufügen
       </button>
       <div class="note" id="limit-note" style="text-align:center"></div>
@@ -819,7 +853,11 @@ select.field { cursor: pointer; }
         <div class="row"><div class="rl">Gas<small>Monatlich am 1.</small></div><div class="rv" style="color:var(--good)">An</div></div>
       </div>
       <div class="section-label">Nur im Entwurf</div>
-      <div class="list">
+      <!-- `data-entwurf` markiert, was es in der App nicht gibt. Die
+           nicht-funktionale Prüfung lässt diesen Block aus: Sie soll das
+           Produkt bewerten, nicht die Schalter, mit denen man den Entwurf
+           umstellt. -->
+      <div class="list" data-entwurf="1">
         <div class="row">
           <div class="rl">Kaufzustand<small>Zum Ansehen beider Seiten der Grenze — in der App gibt es diesen Schalter nicht</small></div>
           <div class="segmented" style="flex:0 0 auto;width:170px">
@@ -965,7 +1003,8 @@ select.field { cursor: pointer; }
   </div>
 </div>
 
-<div class="controls">
+<!-- Die Bedienleiste des Entwurfs, nicht der App: siehe `data-entwurf`. -->
+<div class="controls" data-entwurf="1">
   <button type="button" class="ctl" id="theme">Dunkel / Hell</button>
   <button type="button" class="ctl" id="reset">Entwurf zurücksetzen</button>
 </div>
@@ -989,6 +1028,11 @@ function serial(y, m, d) {
   return d + (((153 * mm + 2) / 5) | 0) + 365 * yy + ((yy / 4) | 0) - ((yy / 100) | 0) + ((yy / 400) | 0) - 32045;
 }
 const between = (a, b) => serial(b.y, b.m, b.d) - serial(a.y, a.m, a.d);
+/* Die Schriftfassung einer Zählerfarbe. Flächen leuchten, Sätze nicht — siehe
+   die Farbtafel oben. Kennt die Farbe keine Schriftfassung, bleibt sie, wie sie
+   ist; das ist besser als eine Farbe zu erfinden. */
+const textFarbe = farbe => /var\(--(amber|green|blue|orange|red|teal|tint)\)/.test(farbe)
+  ? farbe.replace(/\)$/, "-ink)") : farbe;
 
 /* Monatliche Verbräuche eines Eigenheims mit Gasheizung, PV und Wallbox.
    Saisonale Kurven, wie sie ein echter Haushalt hat. Die 2026er Reihen enden
@@ -1630,7 +1674,7 @@ function renderCards() {
       <div style="font-size:14px;color:var(--ink-2);line-height:1.5;margin-bottom:16px">
         Leg deinen ersten Zähler an — Name und Art genügen. Danach trägst du den
         Stand ein, und der Rest ergibt sich.</div>
-      <button type="button" class="save" id="first-meter" style="--c:var(--tint)">Ersten Zähler anlegen</button>
+      <button type="button" class="save" id="first-meter" style="--c:var(--tint);--c-ink:var(--tint-ink)">Ersten Zähler anlegen</button>
     </div></article>`;
     return;
   }
@@ -1692,8 +1736,8 @@ function renderCards() {
     if (due) {
       const days = daysSinceReading(m);
       sub = days === null
-        ? `<span style="color:${m.color};font-weight:600">Noch nie abgelesen</span>`
-        : `<span style="color:${m.color};font-weight:600">Seit ${days} Tagen fällig</span>`;
+        ? `<span style="color:${textFarbe(m.color)};font-weight:600">Noch nie abgelesen</span>`
+        : `<span style="color:${textFarbe(m.color)};font-weight:600">Seit ${days} Tagen fällig</span>`;
     } else if (yoy !== null) {
       const dir = yoy < 0 ? "down" : "up";
       sub = `<span class="delta ${dir}">${pct(yoy)}</span> gegenüber Vorjahr`;
@@ -1701,7 +1745,7 @@ function renderCards() {
       sub = "Noch kein Vergleichswert";
     }
 
-    return `<article class="card ${due ? "flagged" : ""}" style="--c:${m.color}">
+    return `<article class="card ${due ? "flagged" : ""}" style="--c:${m.color};--c-ink:${textFarbe(m.color)}">
       <div class="card-top">
         <span class="chip-icon">${icon(m)}</span>
         <span class="card-name">${m.name}</span>
@@ -1733,7 +1777,7 @@ function renderPicker() {
   // kWh und m³ lassen sich nicht addieren, Euro schon.
   if (histMode === "table") items.push({ id: "all", name: "Alle Zähler", color: "var(--tint)" });
   document.getElementById("picker").innerHTML = items.map(m =>
-    `<button type="button" class="pick" style="--c:${m.color}" data-pick="${m.id}"
+    `<button type="button" class="pick" style="--c:${m.color};--c-ink:${textFarbe(m.color)}" data-pick="${m.id}"
       aria-selected="${m.id === histMeter}">${m.name}</button>`).join("");
 }
 
@@ -1863,7 +1907,7 @@ function renderCompare(m, reg, idx) {
 
   document.getElementById("compare").innerHTML =
     `<div class="cmp-head"><div class="cmp-title">${MONTHS_LONG[idx]}</div>${head}</div>
-     <div class="cmp-rows" style="--c:${m.color}">${body}</div>${foot}`;
+     <div class="cmp-rows" style="--c:${m.color};--c-ink:${textFarbe(m.color)}">${body}</div>${foot}`;
 }
 
 const readingOn = (reg, y, m, d) => reg.readings.find(r => r.y === y && r.m === m && r.d === d);
@@ -2431,18 +2475,18 @@ function openReportConfig() {
   document.getElementById("repcfg-body").innerHTML = `
     <div class="section-label" style="margin-top:4px">Umfang</div>
     <div class="picker" style="padding-bottom:4px">${scopes.map(x =>
-      `<button type="button" class="pick" style="--c:var(--tint)" data-scope="${x.id}"
+      `<button type="button" class="pick" style="--c:var(--tint);--c-ink:var(--tint-ink)" data-scope="${x.id}"
         aria-selected="${x.id === repScope}">${x.name}</button>`).join("")}</div>
     <div class="section-label">Zeitraum</div>
     <div class="list" style="margin-top:0">${reportPeriods().map(p =>
       `<button type="button" class="rowbtn" data-period="${p.key}">
         <div class="rl">${p.label}<small>${rangeLabel(p.from, p.to, p.openEnd)}</small></div>
-        <span style="color:var(--tint);${p.key === repPeriod ? "" : "visibility:hidden"}">${check}</span>
+        <span style="color:var(--tint-ink);${p.key === repPeriod ? "" : "visibility:hidden"}">${check}</span>
       </button>`).join("")}</div>
     ${repScope === "all"
       ? `<div class="note">Der Abrechnungszeitraum des Versorgers beginnt bei Strom im April, bei Gas im Oktober. Für einen gemeinsamen Bericht gibt es deshalb keinen. Wähle einen einzelnen Zähler, um nach seinem Abrechnungsjahr zu berichten.</div>`
       : ""}
-    <button type="button" class="save" id="makereport" style="--c:var(--tint)">Bericht erstellen</button>`;
+    <button type="button" class="save" id="makereport" style="--c:var(--tint);--c-ink:var(--tint-ink)">Bericht erstellen</button>`;
   openSheet("sheet-repcfg");
   document.getElementById("makereport").onclick = () => { renderReport(); openSheet("sheet-report"); };
 }
@@ -2598,7 +2642,7 @@ function openExport(kind) {
     </div>
     <div class="preview">${csv.split("\n").slice(0, 14).join("\n")
       .replace(/&/g, "&amp;").replace(/</g, "&lt;")}${rows > 13 ? "\n…" : ""}</div>
-    <button type="button" class="save" id="dl" style="--c:var(--tint)">CSV sichern</button>
+    <button type="button" class="save" id="dl" style="--c:var(--tint);--c-ink:var(--tint-ink)">CSV sichern</button>
     <div class="note">Der Datenexport bleibt dauerhaft kostenlos. Deine Ablesungen sind deine Daten —
     sie sind kein Druckmittel, mit dem wir dich in der App halten.</div>`;
   openSheet("sheet-export");
@@ -2679,7 +2723,7 @@ function openPaywall(id) {
     <div class="capture-meta" style="margin-bottom:12px">${p.text}<br><br>
     <b>Einmal kaufen, für immer behalten.</b> Kein Abo, keine laufenden Kosten —
     auf allen deinen Geräten.</div>
-    <button type="button" class="save" id="pro-buy" style="--c:var(--tint)">
+    <button type="button" class="save" id="pro-buy" style="--c:var(--tint);--c-ink:var(--tint-ink)">
       Freischalten · ${money(p.price)}</button>
     ${rest.length && !owns("everything") ? `
       <div class="section-label">Oder gleich alles</div>
@@ -2746,7 +2790,7 @@ function renderMeterList() {
     // Antippbar wie in der App: Jede Zeile führt zum Bearbeiten.
     return `<button type="button" class="rowbtn" data-meter="${m.id}"
       style="${m.archived ? "opacity:.55" : ""}">
-      <span class="chip-icon" style="--c:${m.color}">${icon(m)}</span>
+      <span class="chip-icon" style="--c:${m.color};--c-ink:${textFarbe(m.color)}">${icon(m)}</span>
       <div class="rl">${m.name}${m.archived ? ' <span class="tag">Archiviert</span>' : ""}<small>${regInfo}</small></div>
       <div class="rv">${value}</div>
       <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
@@ -2866,7 +2910,7 @@ function openMeterEditor(id) {
       Löschen entfernt auch die ${readingCount} Ablesungen — das lässt sich nicht
       rückgängig machen.</div>` : ""}
 
-    <button type="button" class="save" id="ed-save" style="--c:var(--tint)">Sichern</button>`;
+    <button type="button" class="save" id="ed-save" style="--c:var(--tint);--c-ink:var(--tint-ink)">Sichern</button>`;
 
   if (editMeter) {
     document.getElementById("ed-interval").value = String(editMeter.interval || 30);
@@ -2955,7 +2999,7 @@ function showCaptureStep() {
   // Der Name des Zählwerks steht nur da, wenn es mehr als eines gibt. Bei
   // einem einzelnen wäre „Bezug" ein Wort, das der Nutzer nie gebraucht hat.
   const head = many
-    ? `<span class="reg-name" style="color:${capMeter.color}">${reg.label || "Bezug"}</span>
+    ? `<span class="reg-name" style="color:${textFarbe(capMeter.color)}">${reg.label || "Bezug"}</span>
        <span class="reg-step">Zählwerk ${capIndex + 1} von ${capMeter.registers.length}</span><br>`
     : "";
   document.getElementById("cap-meta").innerHTML = head + (last
@@ -3187,7 +3231,7 @@ function openExplain(id) {
       <div class="calc-row total"><span class="k">Erwartete Kosten</span><span class="v">${money(cost)}</span></div>
       <div class="calc-row"><span class="k">Abschläge ${money(m.prepay)} × 12</span><span class="v">${money(paid)}</span></div>
       <div class="calc-row total"><span class="k">${bal >= 0 ? "Voraussichtliches Guthaben" : "Voraussichtliche Nachzahlung"}</span>
-        <span class="v" style="color:${bal >= 0 ? "var(--good)" : "var(--red)"}">${money(Math.abs(bal))}</span></div>
+        <span class="v" style="color:${bal >= 0 ? "var(--good-ink)" : "var(--red-ink)"}">${money(Math.abs(bal))}</span></div>
     </div>
     <div class="note">Eine Hochrechnung ist nie eine gemessene Zahl. Sie wird genauer, je aktueller dein letzter Stand ist —
     und sie ersetzt die Abrechnung deines Versorgers nicht.</div>`;

@@ -24,9 +24,21 @@ public enum PulseColor {
     /// Haupttext.
     public static var ink: Color { .adaptive(light: 0x17150F, dark: 0xF5F2EC) }
     /// Beschreibender Text.
-    public static var inkSecondary: Color { .adaptive(light: 0x6B6659, dark: 0xA39C8D) }
+    public static var inkSecondary: Color { .adaptive(light: 0x555147, dark: 0xB3AEA1) }
     /// Nebensächliches, Einheiten, Zeitangaben.
-    public static var inkTertiary: Color { .adaptive(light: 0x9A9384, dark: 0x756F62) }
+    ///
+    /// **Diese Werte sind gemessen, nicht gewählt.** Die nicht-funktionale
+    /// Prüfung hat im Entwurf 69 Stellen gefunden, an denen Beschriftungen in
+    /// dieser Farbe unter dem Kontrast liegen, den WCAG 2.2 AA für Text dieser
+    /// Größe verlangt: Der alte Wert ergab auf Weiß 3,0:1 statt 4,5:1. Beide
+    /// Stufen sind so weit abgedunkelt beziehungsweise aufgehellt, dass 4,6:1
+    /// herauskommt — gleicher Farbton, nur lesbar. Die Hierarchie bleibt
+    /// erkennbar: 16:1, 7,9:1, 5,2:1.
+    ///
+    /// Es geht dabei nicht um eine Norm, sondern um den Keller: schlechtes
+    /// Licht, Telefon in einer Hand, und die Zeitangabe unter der Zahl ist
+    /// genau das, was man dort lesen will.
+    public static var inkTertiary: Color { .adaptive(light: 0x6B6457, dark: 0x928B7C) }
 
     public static var hairline: Color { .adaptive(light: 0xE7E3DA, dark: 0x2B2822) }
 
@@ -40,6 +52,13 @@ public enum PulseColor {
 
     /// Akzent der App. Wird sparsam eingesetzt — die Zählerfarben führen.
     public static var tint: Color { .adaptive(light: 0xC77A0E, dark: 0xE0A040) }
+
+    /// Derselbe Akzent, aber für **Schrift**.
+    ///
+    /// Der helle Ton trägt als Fläche und als Balken; als Text bei 15 Punkten
+    /// ergibt er auf Weiß 3,4:1 und ist damit zu blass. Im Dunkeln stellt sich
+    /// die Frage nicht — dort steht Hell auf Dunkel.
+    public static var tintInk: Color { .adaptive(light: 0x9B5F0B, dark: 0xE0A040) }
 
     // MARK: - Bedeutung
 
@@ -64,6 +83,25 @@ public enum PulseColor {
     ///
     /// Die Zuordnung liegt hier und nicht in der Domäne: `PulseCore` speichert
     /// nur einen Namen, damit es keine Darstellung kennen muss (ADR-003).
+    /// Dieselbe Zuordnung für **Schrift**: dunkler, damit ein Satz in der Farbe
+    /// des Zählers lesbar bleibt. Flächen, Balken und Symbole nehmen weiter
+    /// ``resource(_:)`` — dort gilt die Textregel nicht.
+    public static func resourceInk(_ token: String) -> Color {
+        switch token {
+        case "amber":    return .adaptive(light: 0x8B5B0B, dark: 0xE8A945)
+        case "green":    return .adaptive(light: 0x267247, dark: 0x5CBF85)
+        case "blue":     return .adaptive(light: 0x2766A9, dark: 0x5C9EE0)
+        case "rose":     return .adaptive(light: 0x9A466A, dark: 0xE08AAE)
+        case "orange":   return .adaptive(light: 0xA14D1C, dark: 0xE08551)
+        case "red":      return .adaptive(light: 0xB03A38, dark: 0xDC6E6C)
+        case "teal":     return .adaptive(light: 0x256F6B, dark: 0x63BAB4)
+        case "mint":     return .adaptive(light: 0x27765E, dark: 0x62C6A5)
+        case "indigo":   return .adaptive(light: 0x434B96, dark: 0x8B92E0)
+        case "brown":    return .adaptive(light: 0x6B4F35, dark: 0xC0A183)
+        default:         return .adaptive(light: 0x555147, dark: 0xA8A197)
+        }
+    }
+
     public static func resource(_ token: String) -> Color {
         switch token {
         case "amber":    return .adaptive(light: 0xC98410, dark: 0xE8A945)

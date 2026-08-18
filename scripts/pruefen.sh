@@ -138,6 +138,8 @@ PROTO_PID=""
 PROTO_LOG="build/pruefen-entwurf.log"
 WEB_PID=""
 WEB_LOG="build/pruefen-website.log"
+NF_PID=""
+NF_LOG="build/pruefen-nichtfunktional.log"
 if [ "$SCOPE" != "bilder" ] && [ "$SCOPE" != "app" ]; then
   mkdir -p build
   if [ ! -d node_modules/playwright ]; then
@@ -157,6 +159,13 @@ if [ "$SCOPE" != "bilder" ] && [ "$SCOPE" != "app" ]; then
   # daran denken muss. Genau daran ist der Klick-Dummy vorher gescheitert.
   ( node scripts/check-website.mjs > "$WEB_LOG" 2>&1 ) &
   WEB_PID=$!
+  # Bedienbarkeit und Geschwindigkeit hängen am selben Chromium und laufen
+  # ebenfalls nebenher. Sie prüfen nicht, ob die App das Richtige tut, sondern
+  # ob man es auch kann: Trefferflächen, Kontrast, Namen für die
+  # Vorlesefunktion, Zeiten — und die Produktprinzipien 2 bis 4, gezählt statt
+  # behauptet.
+  ( node scripts/check-nichtfunktional.mjs > "$NF_LOG" 2>&1 ) &
+  NF_PID=$!
 fi
 
 # ------------------------------------------------------------- 3. Die Pakete
@@ -300,6 +309,18 @@ if [ -n "$WEB_PID" ]; then
   fi
 fi
 
+if [ -n "$NF_PID" ]; then
+  step "Bedienbarkeit und Geschwindigkeit"
+  if wait "$NF_PID"; then
+    GRUEN=$(grep -c '  ok   ' "$NF_LOG" || true)
+    ok "$GRUEN Prüfungen — Trefferflächen, Kontrast, Zeiten, Prinzipien" "—"
+    grep -E '  ok   (Verbrauchsbericht bauen|Folge-Ablesung)' "$NF_LOG" | sed 's/^  ok   /    /' || true
+  else
+    bad "Bedienbarkeit und Geschwindigkeit" "—"
+    grep "FEHL" "$NF_LOG" | sed 's/^/    /'
+  fi
+fi
+
 # ------------------------------------------------------------------- Ergebnis
 
 DAUER=$(( $(date +%s) - START ))
@@ -311,7 +332,7 @@ if [ ${#FAILED[@]} -eq 0 ]; then
   exit 0
 fi
 printf "%s%s Schritt(e) gefallen: %s — nach %ss.%s\n" "$RED" "${#FAILED[@]}" "${FAILED[*]}" "$DAUER" "$RESET"
-printf "%sVollständige Protokolle: build/xcodebuild-test.log, %s, %s%s\n" "$DIM" "$PROTO_LOG" "$WEB_LOG" "$RESET"
+printf "%sVollständige Protokolle: build/xcodebuild-test.log, %s, %s, %s%s\n" "$DIM" "$PROTO_LOG" "$WEB_LOG" "$NF_LOG" "$RESET"
 # Auch ein Fehlschlag wird gemeldet. Ein Zweig, in dem nur die grünen Läufe
 # stehen, sagt genau das Falsche: Er sieht aus wie eine lückenlose Erfolgsreihe.
 [ "$REPORT" = "1" ] && scripts/melden.sh "gefallen" "$DAUER" "$SCOPE" "${FAILED[*]}" || true

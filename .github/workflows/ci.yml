@@ -69,6 +69,12 @@ jobs:
       - name: Klick-Dummy prüfen
         run: node scripts/check-prototype.mjs
 
+      # Bedienbarkeit und Geschwindigkeit: Trefferflächen, Kontrast, Namen für
+      # die Vorlesefunktion, gemessene Zeiten — und die Produktprinzipien 2 bis
+      # 4, gezählt statt behauptet. Braucht dasselbe Chromium wie der Entwurf.
+      - name: Bedienbarkeit und Geschwindigkeit
+        run: node scripts/check-nichtfunktional.mjs
+
       # Dieselbe Maschine, dasselbe Chromium, kein zusätzlicher Auftrag: Die
       # Website ist statisch und in zwanzig Sekunden geprüft. Der erste Lauf
       # nach 0.43.0 hat gezeigt, warum das hier stehen muss — lokal hängt die

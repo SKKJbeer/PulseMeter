@@ -307,11 +307,25 @@ public enum PeriodEngine {
         )
     }
 
-    /// Verschiebt einen ganzen Ausschnitt um volle Jahre.
+    /// Verschiebt einen ganzen Ausschnitt um volle Jahre — **gleicher Anfang im
+    /// Jahr, gleiche Länge in Tagen**.
+    ///
+    /// **Warum nicht einfach beide Enden verschieben.** Weil dabei verschieden
+    /// lange Fenster herauskommen, und zwar immer dann, wenn ein Schalttag in
+    /// einem der beiden Jahre liegt oder auf den 29. Februar geschoben wird
+    /// (der auf den 28. rutscht). Der Szenarien-Test hat es beim ersten Lauf
+    /// gemeldet: „vergleicht verschieden lange Zeiträume: [30, 29]" beim
+    /// Februar, „[149, 150]" beim Jahr. Ein Tag von dreißig sind drei Prozent —
+    /// mehr als die Veränderungen, die diese App anzeigt.
+    ///
+    /// Das ist die wiederkehrende Fehlerklasse aus CLAUDE.md im Kleinen: zwei
+    /// Zeiträume verglichen, die nicht denselben Ausschnitt beschreiben. Also
+    /// bleibt der **Anfang** kalendarisch verankert — sonst verglichen wir bei
+    /// einem saisonalen Zähler Januar gegen Februar — und das Ende ergibt sich
+    /// aus der Länge.
     static func shift(_ range: DayRange, byYears years: Int) -> DayRange? {
-        guard let start = shifted(range.start, byYears: years),
-              let end = shifted(range.end, byYears: years) else { return nil }
-        return DayRange(start: start, end: end)
+        guard let start = shifted(range.start, byYears: years) else { return nil }
+        return DayRange(start: start, end: start.adding(days: range.spanInDays))
     }
 
     public static func compareAcrossYears(

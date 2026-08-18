@@ -9,6 +9,103 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.66.0 — 2026-08-18
+
+**Prüfen, bevor jemand von Hand prüft — und zwar breit.**
+
+Bisher rechnete jede Prüfung einen Fall von Hand nach. Das ist genau, deckt aber
+nur ab, woran jemand gedacht hat. Diese Fassung dreht das um: Sie erzeugt
+**hunderte Zähler** aus allen Kombinationen, die das Modell zulässt, und prüft an
+jedem dieselben Sätze, die für jede richtige Rechnung gelten müssen.
+
+### Der Fund, für den sich das schon gelohnt hat
+
+Beim **ersten Lauf** meldete die neue Prüfung:
+
+```
+Szenario 1: month 2 vergleicht verschieden lange Zeiträume: [30, 29]
+Szenario 1: year 1  vergleicht verschieden lange Zeiträume: [149, 150]
+```
+
+Ein Vergleich stellte 30 Tage gegen 29. Ursache ist der Schalttag: Wurden beide
+Enden eines Ausschnitts um ein Jahr verschoben, kam je nach Jahr ein Tag mehr
+oder weniger heraus — und der 29. Februar rutscht dabei auf den 28. Ein Tag von
+dreißig sind drei Prozent, mehr als die Veränderungen, die diese App anzeigt.
+
+Das ist die wiederkehrende Fehlerklasse aus CLAUDE.md im Kleinen. Jetzt bleibt
+der **Anfang** kalendarisch verankert — sonst verglichen wir bei einem saisonalen
+Zähler Januar gegen Februar — und das **Ende ergibt sich aus der Länge**.
+
+### Was der Szenarien-Generator abdeckt
+
+Sparte, ein bis drei Zählwerke, Doppeltarif, Einspeisung, Zähl- und
+Intervallmodus, vier bis sieben Stellen, null bis drei Nachkommastellen,
+Ablesetakte von täglich bis vierteljährlich, Lücken bis 25 %, Zählerwechsel
+mitten in der Reihe, Überlauf am Kapazitätsende, geschätzte Ablesungen,
+Uhrzeiten, drei Jahre samt Schaltjahr. Der Zufall ist gesät: Ein Fehlschlag
+wiederholt sich und nennt den Fall beim Namen.
+
+Geprüft werden Invarianten, keine ausgedachten Zahlen: kein negativer Verbrauch;
+zwölf volle Monate ergeben das Jahr; drei volle Monate ein Quartal; ein
+Abschnitt ohne Daten trägt keine Menge; die Eingabereihenfolge ändert nichts;
+der Export verliert keine Zeile; **jeder** Vergleich stellt gleich lange
+Ausschnitte an derselben Stelle des Jahres gegenüber; und eine Ablesung, die
+genau auf der Interpolationslinie liegt, verschiebt den Verbrauch nicht.
+
+### Nicht-funktional: Bedienbarkeit und Geschwindigkeit
+
+Neu ist `scripts/check-nichtfunktional.mjs`. Es misst am Klick-Dummy, was keine
+Zusicherung über Zahlen abdeckt:
+
+- **Trefferflächen.** 44 × 44 Punkte für alles, was für sich steht; 30 für
+  Bedienelemente in einer Gruppe — Apples eigener Segmentwähler ist 32 hoch, und
+  eine Prüfung, die das als Fehler meldet, meldet einen Fehler an iOS.
+- **Kontrast** nach WCAG 2.2 AA, in Hell **und** Dunkel, gegen den tatsächlich
+  gezeichneten Untergrund.
+- **Namen für die Vorlesefunktion** an jeder Fläche.
+- **Zeiten**, im Browser gemessen: erster Schirm, Verlauf zeichnen, Zähler
+  wechseln, Tabelle, Bericht.
+- **Die Produktprinzipien 2 bis 4, gezählt statt behauptet:** drei Berührungen
+  bis zur gesicherten Ablesung, erste Karte ohne Scrollen im Bild, keine Karte
+  ohne Weg.
+
+Dazu Zeitgrenzen im Rechenkern gegen zehn Jahre tägliche Ablesungen an einem
+Doppeltarifzähler — 7.306 Stück. Alles bleibt weit darunter (Verlauf 172 ms,
+Bericht 14 ms, Export 96 ms), und ein zusätzlicher Widerhaken fängt
+quadratisches Wachstum: Vierfache Datenmenge kostet das 3,3-fache, nicht das
+Sechzehnfache.
+
+### Was die Messung gefunden hat
+
+**102 Stellen unter dem Kontrastmaß in Hell, 83 in Dunkel** — und 80 % davon
+waren *eine* Farbe: die Beschriftungsfarbe `--ink-3`, mit 3,0:1 statt 4,5:1 auf
+Weiß. Dazu der Akzentton als Schrift (3,4:1) und die Zählerfarben in Sätzen wie
+„Seit 12 Tagen fällig".
+
+Behoben, und zwar ausgerechnet statt geschätzt: Beide Textstufen sind so weit
+verschoben, dass 4,6:1 herauskommt, bei gleichem Farbton; die Hierarchie bleibt
+mit 16:1, 7,9:1 und 5,2:1 erkennbar. Für Akzent und Zählerfarben gibt es jetzt
+eine **Schriftfassung** neben der Flächenfassung — ein Balken darf leuchten, ein
+Satz bei 14 Punkten nicht. In der App genauso: `PulseColor.tintInk` und
+`PulseColor.resourceInk(_:)`.
+
+Dazu zwei kleine Maße: Der Sichern-Knopf war 43 Punkte hoch statt 44, der
+Segmentwähler 29 statt 32.
+
+### Und ein Fund an der Prüfung selbst
+
+Der erste Anlauf der Berührungszählung meldete einen Fehler, wo keiner war: Er
+nahm den erstbesten Zähler, und das war ein Doppeltarifzähler — der braucht zu
+Recht zwei Eingaben. Prinzip 2 spricht vom Normalfall. Ebenso hat die Messung
+der Trefferflächen zuerst Knöpfe in **geschlossenen** Bögen mitgemessen und den
+Entwurfs-Umschalter, den es in der App nicht gibt.
+
+Das ist der Preis dieser Art Prüfung und der Grund, warum jede Grenze hier
+begründet dasteht: Eine Prüfung, die grundlos anschlägt, liest nach drei Tagen
+niemand mehr.
+
+---
+
 ## 0.65.1 — 2026-08-17
 
 **Sechs Läufe lang die falsche Ursache vermutet.**

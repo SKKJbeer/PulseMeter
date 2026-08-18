@@ -194,7 +194,7 @@ struct ProLockRow: View {
                 Image(systemName: "lock")
                     .accessibilityHidden(true)
                     .font(.system(.subheadline, weight: .semibold))
-                    .foregroundStyle(PulseColor.tint)
+                    .foregroundStyle(PulseColor.tintInk)
                     .frame(width: 20, height: 22)
 
                 VStack(alignment: .leading, spacing: 2) {
