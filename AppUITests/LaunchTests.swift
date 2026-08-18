@@ -129,6 +129,48 @@ final class LaunchTests: XCTestCase {
         return false
     }
 
+    /// Tippt in ein Feld — und wartet, bis das Feld den Fokus wirklich hat.
+    ///
+    /// **Der siebte Fehlschlag von `testAddingAMeterFromTheMetersTab` hat
+    /// endlich gesagt, woran es liegt:**
+    ///
+    /// ```
+    /// Failed to synthesize event: Neither element nor any descendant has
+    /// keyboard focus. TextField, placeholderValue: 'Name'
+    /// ```
+    ///
+    /// Das Feld war da, der Tipp kam an — nur der Fokus stand noch nicht, als
+    /// `typeText` losschrieb. Sechs Läufe lang stand als Vermutung „der Wechsel
+    /// des Tabs hakt", und die offene Rechnung hieß „einen dritten Versuch beim
+    /// Wechseln". Beides war falsch: Der Wechsel hat funktioniert, das Blatt
+    /// stand offen, und die Meldung kam aus einer ganz anderen Zeile.
+    ///
+    /// Gewartet wird auf die **Tastatur**, nicht auf das Feld: Sie erscheint
+    /// genau dann, wenn der Fokus steht. Kommt sie nicht, wird noch einmal
+    /// getippt — mehr Wiederholungen helfen nicht, sondern verlängern nur den
+    /// Fehlschlag.
+    private func tippe(_ text: String,
+                       in feld: XCUIElement,
+                       app: XCUIApplication,
+                       datei: StaticString = #filePath,
+                       zeile: UInt = #line) -> Bool {
+        guard feld.waitForExistence(timeout: erscheint) else {
+            XCTFail("Das Feld ist nicht da", file: datei, line: zeile)
+            return false
+        }
+        for versuch in 1...2 {
+            feld.tap()
+            if app.keyboards.element.waitForExistence(timeout: erscheint) {
+                feld.typeText(text)
+                return true
+            }
+            if versuch == 1 { print("Der Fokus stand noch nicht, zweiter Versuch.") }
+        }
+        XCTFail("Das Feld bekommt keinen Fokus — die Tastatur erscheint nicht",
+                file: datei, line: zeile)
+        return false
+    }
+
     /// Wechselt den Tab und **prüft nach, dass er auch gewechselt hat**.
     ///
     /// **Warum das nötig ist.** `testAddingAMeterFromTheMetersTab` ist zweimal
@@ -213,9 +255,7 @@ final class LaunchTests: XCTestCase {
                      "Ersten Zähler anlegen") else { return }
 
         let field = app.textFields["Name"]
-        XCTAssertTrue(field.waitForExistence(timeout: erscheint), "Das Namensfeld fehlt")
-        field.tap()
-        field.typeText("Keller")
+        guard tippe("Keller", in: field, app: app) else { return }
         app.buttons["Sichern"].tap()
 
         // Die Karte steht und sagt, dass noch nichts abgelesen wurde.
@@ -387,11 +427,9 @@ final class LaunchTests: XCTestCase {
         app.buttons["Ersten Zähler anlegen"].tap()
 
         let field = app.textFields["Name"]
-        XCTAssertTrue(field.waitForExistence(timeout: erscheint))
-        field.tap()
         // Mit Zeilenschaltung: Die Tastatur verdeckt sonst die untere Hälfte
         // des Formulars, und das Preisfeld ist genau dort.
-        field.typeText("Strom\n")
+        guard tippe("Strom\n", in: field, app: app) else { return }
 
         // Gescrollt, bevor geprüft wird: Ein `Form` baut nur, was sichtbar
         // ist. Was unten steht, existiert im Zugänglichkeitsbaum schlicht
@@ -498,9 +536,7 @@ final class LaunchTests: XCTestCase {
                      "Zähler anlegen") else { return }
 
         let field = app.textFields["Name"]
-        XCTAssertTrue(field.waitForExistence(timeout: erscheint), "Das Namensfeld fehlt")
-        field.tap()
-        field.typeText("Gartenwasser")
+        guard tippe("Gartenwasser", in: field, app: app) else { return }
 
         app.buttons["Sichern"].tap()
 
@@ -731,11 +767,9 @@ final class LaunchTests: XCTestCase {
         add.tap()
 
         let field = app.textFields["Name"]
-        XCTAssertTrue(field.waitForExistence(timeout: erscheint), "Das Namensfeld fehlt")
-        field.tap()
         // Mit Zeilenschaltung: Sonst steht die Tastatur über dem Formular, und
         // der Schalter weiter unten ist nicht antippbar.
-        field.typeText("Nachtspeicher\n")
+        guard tippe("Nachtspeicher\n", in: field, app: app) else { return }
 
         let toggle = app.switches["Zwei Preise: Tag und Nacht"]
         XCTAssertTrue(toggle.waitForExistence(timeout: erscheint),

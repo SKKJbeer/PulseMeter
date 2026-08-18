@@ -9,6 +9,36 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.65.1 — 2026-08-17
+
+**Sechs Läufe lang die falsche Ursache vermutet.**
+
+`testAddingAMeterFromTheMetersTab` ist zum siebten Mal gefallen — und diesmal
+stand die Ursache in der Meldung:
+
+```
+LaunchTests.swift:503: Failed to synthesize event: Neither element nor any
+descendant has keyboard focus. TextField, placeholderValue: 'Name'
+```
+
+Das Feld war da, der Tipp kam an, das Blatt stand offen. Nur der **Fokus** stand
+noch nicht, als `typeText` losschrieb. Die Vermutung hieß sechs Läufe lang „der
+Tabwechsel hakt", und als offene Rechnung stand seit 0.60.3 „dem Wechsel einen
+dritten Versuch geben". Beides hätte nichts geändert.
+
+Getippt wird jetzt über einen Helfer, der auf die **Tastatur** wartet statt auf
+das Feld: Sie erscheint genau dann, wenn der Fokus steht. Kommt sie nicht, wird
+noch einmal getippt — mehr Wiederholungen verlängern nur den Fehlschlag. Vier
+Stellen im Test benutzen ihn, nicht nur die eine, die gefallen ist.
+
+Was daran zu lernen war: Ein Wackler, der siebenmal auftritt, ist keiner. Die
+ersten sechs Male stand in der Meldung „Die Schaltfläche ist nicht da" — eine
+Folge, keine Ursache. Erst der Lauf, der bis zur Tastatur kam, hat die Ursache
+benannt. Eine Wiederholung, die den Fehlschlag nur verschiebt, verdeckt genau
+diese Meldung.
+
+---
+
 ## 0.65.0 — 2026-08-17
 
 **Drei Funde aus dem ersten echten Gebrauch — und der erste ist der schlimmste.**
