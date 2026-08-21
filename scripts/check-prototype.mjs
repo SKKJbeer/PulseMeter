@@ -136,6 +136,48 @@ for (const scheme of ["light", "dark"]) {
          `Beide Zählwerke erfasst (${vorher} → ${nachher})`);
   }
 
+  // --- Der laufende Monat: was voraussichtlich zusammenkommt
+  //
+  // Der Wunsch dahinter: „ich will sehen, wie viel man wahrscheinlich im
+  // laufenden Monat verbrauchen wird." Geprüft wird nicht nur, dass eine Zahl
+  // dasteht, sondern dass sie **gekennzeichnet** ist und ihre Grundlage nennt —
+  // Produktprinzip 7. Eine Hochrechnung ohne ≈ wäre schlimmer als keine.
+  await page.locator('[data-pane="history"]').first().click();
+  await page.waitForTimeout(300);
+  await page.locator('[data-mode="chart"]').first().click();
+  await page.waitForTimeout(300);
+  const prognose = await page.evaluate(`(() => {
+    const zeile = document.getElementById("chart-forecast");
+    const m = METERS.find(x => x.id === histMeter);
+    const f = monthForecast(m, TODAY.y, TODAY.m);
+    const gemessen = meterConsumption(m, { y: TODAY.y, m: TODAY.m, d: 1 }, TODAY);
+    return {
+      sichtbar: zeile.style.display !== "none" && zeile.innerText.trim().length > 0,
+      text: zeile.innerText.trim(),
+      erwartet: f ? f.value : null,
+      gemessen: gemessen ? gemessen.value : null
+    };
+  })()`);
+  note(prognose.sichtbar, `Der laufende Monat sagt, was voraussichtlich zusammenkommt`);
+  note(/≈/.test(prognose.text), `Die Zahl trägt ein ≈ — sie ist gerechnet, nicht gemessen`);
+  note(/von \d+ Tagen/.test(prognose.text),
+       `Und sie nennt, auf wie vielen Tagen sie steht („${prognose.text.slice(-32)}")`);
+  note(/Vorjahres|Tagesschnitt/.test(prognose.text),
+       "Die Grundlage der Hochrechnung steht dabei");
+  note(prognose.erwartet !== null && prognose.gemessen !== null
+       && prognose.erwartet >= prognose.gemessen,
+       `Die Erwartung liegt nicht unter dem Gemessenen `
+       + `(${Math.round(prognose.erwartet)} zu ${Math.round(prognose.gemessen)})`);
+
+  // In der Jahresansicht hat die Zeile keinen Ort: Dort stehen drei Jahre
+  // nebeneinander, und die Hochrechnung steckt schon im Balken von 2026.
+  await page.locator('[data-scale="year"]').first().click();
+  await page.waitForTimeout(300);
+  note(await page.evaluate(`document.getElementById("chart-forecast").style.display === "none"`),
+       "In der Jahresansicht steht die Monatszeile nicht");
+  await page.locator('[data-scale="month"]').first().click();
+  await page.waitForTimeout(250);
+
   // --- Datum und Uhrzeit: zwei Ablesungen an einem Tag, rückwirkend eintragen
   //
   // Der Wunsch dahinter: morgens und abends ablesen und beides behalten. Geprüft

@@ -337,4 +337,75 @@ final class ForecastEngineTests: XCTestCase {
         XCTAssertEqual(forecast?.method, .linear)
         assertClose(forecast?.projected.value ?? 0, 121.667, accuracy: 0.01)
     }
+    // MARK: - Der ganze Zähler
+
+    /// **Bei Doppeltarif zählt die Summe, nicht das erste Zählwerk.**
+    ///
+    /// Der Verlauf zeichnet einen Balken je Zähler. Eine Hochrechnung, die nur
+    /// das erste Zählwerk fortschreibt, stünde daneben und wäre systematisch zu
+    /// klein — bei zwei gleich großen Zählwerken um die Hälfte.
+    func testForecastForAWholeMeterAddsUpItsRegisters() {
+        let hoch = Register(label: "Hochtarif", unit: .kilowattHour, integerDigits: 6, fractionDigits: 1)
+        let nieder = Register(label: "Niedertarif", unit: .kilowattHour, integerDigits: 6, fractionDigits: 1)
+        let point = MeteringPoint(propertyID: Fixture.property.id, name: "Strom",
+                                  kind: .electricity, registers: [hoch, nieder])
+
+        // Beide Zählwerke: 10 je Tag, vom 1. bis zum 15. August.
+        var readings: [Reading] = []
+        var folge = 0
+        for werk in [hoch, nieder] {
+            readings.append(Fixture.reading(werk, day(2026, 8, 1), 1_000, sequence: folge)); folge += 1
+            readings.append(Fixture.reading(werk, day(2026, 8, 15), 1_140, sequence: folge)); folge += 1
+        }
+
+        let august = span(day(2026, 8, 1), day(2026, 9, 1))
+        let prognose = ForecastEngine.forecast(meteringPoint: point, readings: readings,
+                                               period: august, today: day(2026, 8, 15))
+
+        XCTAssertNotNil(prognose)
+        // Gemessen sind 280 (zweimal 140) in 14 Tagen; der August hat 31.
+        XCTAssertEqual(prognose?.actual.quantity.value, 280)
+        assertClose(prognose?.projected.value ?? 0, 620, accuracy: 1,
+                    "Zwei Zählwerke à 10 kWh am Tag ergeben rund 620 kWh im August")
+
+        // Und die Gegenprobe: Ein einzelnes Zählwerk kommt auf die Hälfte.
+        let einzeln = ForecastEngine.forecast(register: hoch, readings: readings,
+                                              period: august, today: day(2026, 8, 15),
+                                              kind: .electricity)
+        assertClose(einzeln?.projected.value ?? 0, 310, accuracy: 1)
+    }
+
+    /// Eine Hochrechnung darf nie unter dem liegen, was schon gemessen ist.
+    func testAForecastIsNeverBelowWhatIsAlreadyMeasured() {
+        let werk = Fixture.electricityRegister()
+        let point = MeteringPoint(propertyID: Fixture.property.id, name: "Strom",
+                                  kind: .electricity, registers: [werk])
+        let readings = [
+            Fixture.reading(werk, day(2026, 8, 1), 1_000, sequence: 0),
+            Fixture.reading(werk, day(2026, 8, 20), 1_900, sequence: 1)
+        ]
+        let august = span(day(2026, 8, 1), day(2026, 9, 1))
+        let prognose = ForecastEngine.forecast(meteringPoint: point, readings: readings,
+                                               period: august, today: day(2026, 8, 20))
+        XCTAssertNotNil(prognose)
+        XCTAssertGreaterThanOrEqual(prognose!.projected.value, prognose!.actual.quantity.value,
+                                    "Die Hochrechnung liegt unter dem Ist")
+    }
+
+    /// Ein abgeschlossener Monat wird nicht hochgerechnet — da gibt es nichts
+    /// mehr zu erwarten.
+    func testNoForecastForAFinishedPeriod() {
+        let werk = Fixture.electricityRegister()
+        let point = MeteringPoint(propertyID: Fixture.property.id, name: "Strom",
+                                  kind: .electricity, registers: [werk])
+        let readings = [
+            Fixture.reading(werk, day(2026, 7, 1), 1_000, sequence: 0),
+            Fixture.reading(werk, day(2026, 8, 1), 1_310, sequence: 1)
+        ]
+        let juli = span(day(2026, 7, 1), day(2026, 8, 1))
+        XCTAssertNil(ForecastEngine.forecast(meteringPoint: point, readings: readings,
+                                             period: juli, today: day(2026, 8, 21)),
+                     "Der Juli ist vorbei")
+    }
+
 }

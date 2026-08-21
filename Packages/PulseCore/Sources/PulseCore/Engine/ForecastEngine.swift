@@ -93,6 +93,77 @@ public enum ForecastEngine {
 
     // MARK: - Verbrauchsprognose
 
+    /// Dieselbe Hochrechnung für einen **ganzen Zähler**.
+    ///
+    /// **Warum es die zweite Fassung braucht.** Der Verlauf zeigt die Balken
+    /// eines Zählers, nicht eines Zählwerks: Bei Doppeltarif ist der Balken die
+    /// Summe aus Hoch- und Niedertarif. Eine Prognose, die nur das erste
+    /// Zählwerk hochrechnet, stünde neben einem Balken, der beide zeigt — und
+    /// wäre systematisch zu klein. Das ist die wiederkehrende Fehlerklasse
+    /// dieses Projekts in ihrer zweiten Gestalt: nicht zwei Zeiträume, sondern
+    /// zwei verschiedene Sachverhalte nebeneinander.
+    ///
+    /// Das Gemessene kommt deshalb aus ``ConsumptionEngine/consumption(meteringPoint:readings:in:)``
+    /// — genau die Zahl, die auch der Balken zeichnet. Hochgerechnet wird je
+    /// Zählwerk, weil Hoch- und Niedertarif verschiedene Jahresformen haben.
+    ///
+    /// Genannt wird die **schwächste** Grundlage aller Zählwerke: Sie bestimmt,
+    /// wie sehr man der Summe trauen darf.
+    ///
+    /// - Returns: `nil`, wenn der Zeitraum abgeschlossen ist oder nichts
+    ///   vorliegt, worauf sich eine Hochrechnung stützen ließe.
+    public static func forecast(
+        meteringPoint: MeteringPoint,
+        readings: [Reading],
+        period: DayRange,
+        today: CalendarDay
+    ) -> Forecast? {
+        let draws = meteringPoint.registers.filter { $0.direction == .consumption }
+        guard !draws.isEmpty else { return nil }
+
+        let elapsedEnd = Swift.min(today, period.end)
+        guard let elapsedRange = DayRange(start: period.start, end: elapsedEnd),
+              elapsedRange.spanInDays > 0 else { return nil }
+
+        let actual = ConsumptionEngine.consumption(meteringPoint: meteringPoint,
+                                                   readings: readings, in: elapsedRange)
+        guard actual.hasData, let covered = actual.coveredRange, covered.spanInDays > 0 else {
+            return nil
+        }
+
+        let daysElapsed = covered.spanInDays
+        let daysRemaining = Swift.max(0, period.spanInDays - daysElapsed)
+        guard daysRemaining > 0 else { return nil }
+
+        var projected = Decimal(0)
+        var weakest: Method = .ownHistory
+        var sawOne = false
+
+        for register in draws {
+            guard let teil = forecast(register: register, readings: readings,
+                                      period: period, today: today,
+                                      kind: meteringPoint.kind) else { continue }
+            sawOne = true
+            if teil.method.rank < weakest.rank { weakest = teil.method }
+            projected += teil.projected.value
+        }
+        guard sawOne, projected > 0 else { return nil }
+
+        // Die Summe der Zählwerke darf nicht unter dem liegen, was der Zähler
+        // schon gemessen hat: Beide Wege schneiden den Ausschnitt verschieden
+        // zu — der Zähler auf das, was **alle** Zählwerke abdecken, jedes
+        // Zählwerk auf sein eigenes. Eine Prognose unter dem Ist wäre keine.
+        projected = Swift.max(projected, actual.quantity.value)
+
+        return Forecast(
+            actual: actual,
+            projected: Quantity(projected, actual.quantity.unit),
+            method: weakest,
+            daysElapsed: daysElapsed,
+            daysRemaining: daysRemaining
+        )
+    }
+
     /// - Parameter kind: Die Zählerart. Wird nur gebraucht, um ein
     ///   veröffentlichtes Referenzprofil zu wählen, wenn noch kein eigenes
     ///   Jahr vorliegt. Ohne Angabe bleibt es beim linearen Rückfall — das ist

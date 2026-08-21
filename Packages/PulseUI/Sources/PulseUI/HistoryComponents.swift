@@ -17,13 +17,19 @@ public struct PeriodBars: View {
         /// Nicht vollständig durch Ablesungen gedeckt — wird schraffiert
         /// gezeichnet, damit eine Teilmenge nicht wie ein voller Monat aussieht.
         public let isPartial: Bool
+        /// Was am Ende des Abschnitts voraussichtlich dasteht — nur beim
+        /// laufenden. Gezeichnet als blasse Verlängerung über dem Gemessenen,
+        /// nicht als eigener Balken: Es ist derselbe Monat, nur sein Rest.
+        public let projection: Double?
 
-        public init(id: Int, label: String, value: Double?, reference: Double?, isPartial: Bool) {
+        public init(id: Int, label: String, value: Double?, reference: Double?,
+                    isPartial: Bool, projection: Double? = nil) {
             self.id = id
             self.label = label
             self.value = value
             self.reference = reference
             self.isPartial = isPartial
+            self.projection = projection
         }
     }
 
@@ -55,6 +61,11 @@ public struct PeriodBars: View {
         guard let value = column.value else { return "keine Ablesung" }
         var text = unit.isEmpty ? "\(Int(value.rounded()))" : "\(Int(value.rounded())) \(unit)"
         if column.isPartial { text += ", unvollständiger Abschnitt" }
+        if let projection = column.projection {
+            text += unit.isEmpty
+                ? ", voraussichtlich \(Int(projection.rounded()))"
+                : ", voraussichtlich \(Int(projection.rounded())) \(unit)"
+        }
         if let reference = column.reference {
             text += unit.isEmpty ? ", Vorjahr \(Int(reference.rounded()))"
                                  : ", Vorjahr \(Int(reference.rounded())) \(unit)"
@@ -63,7 +74,10 @@ public struct PeriodBars: View {
     }
 
     private var upperBound: Double {
-        let values = columns.flatMap { [$0.value, $0.reference].compactMap { $0 } }
+        // Die Hochrechnung gehört in den Maßstab. Ohne sie ragte die
+        // Verlängerung des laufenden Monats über den Rand hinaus und wäre
+        // abgeschnitten — also gerade dort falsch, wo sie etwas sagen soll.
+        let values = columns.flatMap { [$0.value, $0.reference, $0.projection].compactMap { $0 } }
         return Swift.max(values.max() ?? 1, 0.0001)
     }
 
@@ -127,6 +141,28 @@ public struct PeriodBars: View {
                 if selected {
                     RoundedRectangle(cornerRadius: 3, style: .continuous)
                         .fill(accent.opacity(0.12))
+                }
+
+                // **Erst die Erwartung, dann das Gemessene darüber.**
+                //
+                // Die Verlängerung reicht vom Boden bis zur hochgerechneten
+                // Menge und liegt *hinter* dem gemessenen Balken. Zwei Stücke
+                // übereinanderzusetzen wäre das Naheliegende und das Falsche:
+                // Beim geringsten Rundungsunterschied klaffte eine Fuge, und
+                // eine Fuge in einem Balken liest sich als Lücke in den Daten.
+                if let projection = column.projection, let value = column.value,
+                   projection > value {
+                    RoundedRectangle(cornerRadius: 3, style: .continuous)
+                        .fill(accent.opacity(0.22))
+                        .frame(height: Swift.max(2, height * projection / upperBound))
+                        .overlay(alignment: .top) {
+                            // Der Deckel sagt, wo die Erwartung endet. Ohne ihn
+                            // sieht eine blasse Fläche nach Unschärfe aus statt
+                            // nach einer Zahl.
+                            Rectangle()
+                                .fill(accent.opacity(0.55))
+                                .frame(height: 1.5)
+                        }
                 }
 
                 if let value = column.value {

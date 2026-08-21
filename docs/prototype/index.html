@@ -596,6 +596,10 @@ table.data tr.est td:first-child::after {
 .cmp-foot { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--hairline);
   font-size: var(--fs-cap); color: var(--ink-2); line-height: 1.5; }
 .cmp-foot b { color: var(--ink); font-weight: 620; }
+.chart-forecast {
+  font-size: var(--fs-cap); color: var(--ink-2); margin: 2px 0 10px;
+}
+.chart-forecast b { color: var(--ink); font-weight: 640; }
 .chart-hint { text-align: center; font-size: var(--fs-cap); color: var(--ink-3); margin-top: 10px; }
 #chart rect[data-month] { cursor: pointer; }
 
@@ -739,7 +743,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.66.0</p>
+  <p>Klickbarer Entwurf · v0.67.0</p>
 </div>
 
 <div class="device">
@@ -780,6 +784,7 @@ select.field { cursor: pointer; }
             <div><div class="big" id="chart-total"></div><div class="lbl" id="chart-label"></div></div>
             <div class="lbl" id="chart-delta"></div>
           </div>
+          <div class="chart-forecast" id="chart-forecast" style="display:none"></div>
           <div id="chart"></div>
           <div class="legend">
             <span><i id="lg-now"></i>2026</span>
@@ -1096,10 +1101,15 @@ const METERS = [
       // Beschriftet, weil daneben die Einspeisung steht: „Bezug" allein wäre
       // nichtssagend, „Bezug" neben „Einspeisung" sagt alles. So legt die App
       // einen Zweirichtungszähler auch an.
+      // Der letzte Stand liegt **im laufenden Monat**, nicht auf seinem ersten
+      // Tag. Sonst hätte der August null gemessene Tage, und die Erwartung für
+      // den laufenden Monat — der Grund, warum jemand diesen Schirm öffnet —
+      // hätte nichts, worauf sie sich stützen könnte. So liest der Nutzer wie
+      // im echten Leben: am dritten, nicht auf die Minute am Monatsersten.
       { id: "strom-bezug", label: "Bezug", unit: "kWh", int: 6, frac: 2,
-        readings: buildReadings(41231.4, SHAPE.strom, { frac: 2 }) },
+        readings: buildReadings(41231.4, SHAPE.strom, { frac: 2, partialInto: { m: 8, d: 3 } }) },
       { id: "strom-eins", label: "Einspeisung", unit: "kWh", int: 6, frac: 2, feedIn: true,
-        readings: buildReadings(7170.2, SHAPE.einsp, { frac: 2 }) }
+        readings: buildReadings(7170.2, SHAPE.einsp, { frac: 2, partialInto: { m: 8, d: 3 } }) }
     ]
   },
   {
@@ -1479,6 +1489,44 @@ function profileShare(profile, from, to) {
 
    Maßgeblich ist der Zeitraum, den die Daten abdecken, nicht der bis heute:
    Sonst würde ein veralteter Zählerstand die Prognose systematisch drücken. */
+/* **Was der laufende Monat voraussichtlich wird.**
+
+   Der Gründer beim Gebrauch: „ich will sehen, wie viel man wahrscheinlich im
+   laufenden Monat verbrauchen wird." Am 21. August sagt ein Balken über drei
+   Wochen nichts darüber, ob der Monat teuer wird.
+
+   Gerechnet wie `ForecastEngine.forecast(meteringPoint:)`: Der Anteil, den das
+   Vorjahr bis zum selben Tag des Monats hatte, wird auf dieses Jahr übertragen
+   — die Form des Monats bleibt damit erhalten. Fehlt das Vorjahr, wird der
+   Tagesschnitt gleichmäßig fortgeschrieben; das ist gröber und wird als solches
+   benannt.
+
+   Über den ganzen Zähler, nicht über ein Zählwerk: Der Balken daneben ist die
+   Summe. */
+function monthForecast(meter, y, mo) {
+  if (y !== TODAY.y || mo !== TODAY.m) return null;
+  const monatsende = { y: mo === 12 ? y + 1 : y, m: mo === 12 ? 1 : mo + 1, d: 1 };
+  const bisher = meterConsumption(meter, { y, m: mo, d: 1 }, TODAY);
+  if (!bisher || bisher.value <= 0 || !bisher.days) return null;
+
+  const vollerMonat = between({ y, m: mo, d: 1 }, monatsende);
+  const vorjahrTeil = meterConsumption(meter, { y: y - 1, m: mo, d: 1 },
+                                       { y: y - 1, m: TODAY.m, d: TODAY.d });
+  const vorjahrGanz = meterMonthConsumption(meter, y - 1, mo);
+  if (vorjahrTeil && vorjahrGanz && vorjahrGanz.complete && vorjahrGanz.value > 0
+      && vorjahrTeil.value > 0) {
+    const anteil = vorjahrTeil.value / vorjahrGanz.value;
+    if (anteil > 0 && anteil <= 1) {
+      return { value: Math.max(bisher.value / anteil, bisher.value),
+               gemessen: bisher.value, method: "previousYear",
+               tage: bisher.days, tageGesamt: vollerMonat };
+    }
+  }
+  return { value: bisher.value / bisher.days * vollerMonat,
+           gemessen: bisher.value, method: "linear",
+           tage: bisher.days, tageGesamt: vollerMonat };
+}
+
 function forecast(reg, meter) {
   const now = yearToDate(reg);
   if (!now) return null;
@@ -1943,7 +1991,14 @@ function renderChart() {
       prev.push(p && p.complete ? p.value : null);
       est.push(monthEstimated(reg, 2026, i));
     }
-    const max = Math.max(...[...now, ...prev].filter(v => v !== null), 1);
+    // Der laufende Monat: gemessen plus Erwartung. Bis 0.66.0 stand dort gar
+    // nichts — `complete` ist erst am Monatsende wahr —, und damit fehlte
+    // ausgerechnet der Monat, der den Nutzer am meisten angeht.
+    const mf = monthForecast(m, TODAY.y, TODAY.m);
+    const laufend = TODAY.m - 1;
+    if (mf) now[laufend] = mf.gemessen;
+    const max = Math.max(...[...now, ...prev].filter(v => v !== null),
+                         mf ? mf.value : 0, 1);
     const bw = W / 12;
     let svg = svgOpen(W, H + 18, "Monatsverbrauch 2026 im Vergleich zu 2025");
     for (let g = 0; g <= 2; g++) {
@@ -1960,9 +2015,23 @@ function renderChart() {
         const h = (prev[i] / max) * (H - 12);
         svg += `<rect x="${cx + bw * .16}" y="${H - h}" width="${bw * .68}" height="${h}" rx="2.5" fill="var(--hairline-2)" opacity=".85"/>`;
       }
+      // Die Erwartung liegt **hinter** dem Gemessenen und reicht vom Boden bis
+      // zur hochgerechneten Menge. Zwei Stücke übereinanderzusetzen wäre das
+      // Naheliegende und das Falsche: Beim kleinsten Rundungsunterschied
+      // klaffte eine Fuge, und eine Fuge in einem Balken liest sich als Lücke
+      // in den Daten.
+      if (mf && i === laufend && mf.value > (now[i] ?? 0)) {
+        const hp = (mf.value / max) * (H - 12);
+        svg += `<rect x="${cx + bw * .28}" y="${H - hp}" width="${bw * .44}" height="${hp}"
+          rx="2.5" fill="${m.color}" opacity=".22"/>`;
+        svg += `<rect x="${cx + bw * .28}" y="${H - hp}" width="${bw * .44}" height="1.5"
+          fill="${m.color}" opacity=".55"/>`;
+      }
       if (now[i] !== null) {
         const h = (now[i] / max) * (H - 12);
-        svg += `<rect x="${cx + bw * .28}" y="${H - h}" width="${bw * .44}" height="${h}" rx="2.5" fill="${est[i] ? "url(#hatch)" : m.color}"/>`;
+        const teil = mf && i === laufend;
+        svg += `<rect x="${cx + bw * .28}" y="${H - h}" width="${bw * .44}" height="${h}" rx="2.5"
+          fill="${est[i] ? "url(#hatch)" : m.color}"${teil ? ' opacity=".55"' : ""}/>`;
       }
       svg += `<text x="${cx + bw / 2}" y="${H + 13}" text-anchor="middle" font-size="9"
         fill="${i === selMonth ? "var(--ink)" : "var(--ink-3)"}"
@@ -1975,6 +2044,24 @@ function renderChart() {
     host.innerHTML = svg + "</svg>";
     document.getElementById("chart-total").textContent = nf(ytd.value, dp) + " " + m.unit;
     document.getElementById("chart-label").textContent = "seit 1. Januar 2026";
+    // Die Zahl zum blassen Balken. Sie steht als Satz unter der großen Zahl und
+    // nicht als zweite große Zahl daneben: Gemessen bleibt die Hauptaussage,
+    // die Erwartung ist eine Ableitung daraus — mit ≈ und mit der Grundlage,
+    // auf der sie beruht (Produktprinzip 7).
+    const fz = document.getElementById("chart-forecast");
+    if (mf) {
+      // **Wie viele Tage dahinterstehen, gehört dazu.** Drei gemessene Tage
+      // ergeben eine Zahl, die sich liest wie ein Monat — und die sich morgen
+      // deutlich verschiebt. Wer die Grundlage sieht, kann das einordnen.
+      fz.innerHTML = `Voraussichtlich <b>≈ ${nf(mf.value, dp)} ${m.unit}</b> bis Ende
+        ${MONTHS_LONG[laufend]} — ${mf.method === "previousYear"
+          ? "nach dem Verlauf deines Vorjahres"
+          : "gleichmäßig aus dem bisherigen Tagesschnitt"},
+        gerechnet aus ${mf.tage} von ${mf.tageGesamt} Tagen.`;
+      fz.style.display = "";
+    } else {
+      fz.style.display = "none";
+    }
   } else {
     // Jahresansicht: gemessen fest, hochgerechnet schraffiert — die Prognose
     // sieht anders aus als eine Messung, weil sie etwas anderes ist.
@@ -2000,6 +2087,7 @@ function renderChart() {
     document.getElementById("chart-total").textContent = nf(projected, dp) + " " + m.unit;
     document.getElementById("chart-label").textContent =
       fc && fc.method === "seasonal" ? "erwartet 2026 · nach Vorjahresverlauf" : "erwartet 2026 · aus dem Tagesschnitt";
+    document.getElementById("chart-forecast").style.display = "none";
   }
 
   document.getElementById("lg-hatch").textContent =

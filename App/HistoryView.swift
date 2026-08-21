@@ -35,6 +35,10 @@ struct HistoryView: View {
     /// Der Bericht für den voreingestellten Zeitraum — gerechnet, nicht
     /// gezeichnet. Siehe ``recomputeReport``.
     @State private var bericht: ReportBuilder.Report?
+    /// Was im laufenden Abschnitt voraussichtlich zusammenkommt. `nil`, sobald
+    /// der Abschnitt abgeschlossen ist oder nichts vorliegt, worauf sich eine
+    /// Hochrechnung stützen ließe.
+    @State private var vorschau: ForecastEngine.Forecast?
 
     /// Menge oder Geld.
     ///
@@ -454,6 +458,8 @@ struct HistoryView: View {
                 // 0.27.0.
                 .accessibilityElement(children: .combine)
 
+                forecastLine
+
                 PeriodBars(columns: chartColumns, accent: accent, selection: selectedSlot,
                            unit: unit) { slot in
                     selectedSlot = selectedSlot == slot ? nil : slot
@@ -491,6 +497,45 @@ struct HistoryView: View {
             }
             .padding(15)
         }
+    }
+
+    /// Die erwartete Menge des laufenden Abschnitts, in einem Satz.
+    ///
+    /// **Warum eine Zeile und keine zweite große Zahl.** Oben steht, was
+    /// gemessen ist; das bleibt die Hauptaussage. Die Erwartung ist eine
+    /// Ableitung daraus und steht darunter — mit ≈, mit dem Zeitraum, den sie
+    /// meint, und mit der Grundlage, auf der sie beruht. Produktprinzip 7
+    /// verlangt genau das: Eine hochgerechnete Zahl darf da sein, aber niemals
+    /// aussehen wie eine gemessene.
+    ///
+    /// Die Grundlage steht dabei ausgeschrieben („nach dem Verlauf deines
+    /// Vorjahres"), weil sie den Unterschied zwischen einer Beobachtung an dir
+    /// und einer Annahme über dich benennt — und den Text dafür liefert der
+    /// Rechenkern, damit App, Bericht und Entwurf dieselben Wörter benutzen.
+    @ViewBuilder
+    private var forecastLine: some View {
+        if let vorschau, vorschau.daysRemaining > 0 {
+            HStack(alignment: .firstTextBaseline, spacing: 5) {
+                Image(systemName: "chart.line.uptrend.xyaxis")
+                    .accessibilityHidden(true)
+                    .font(.system(.caption, weight: .semibold))
+                    .foregroundStyle(accent)
+                Text("Voraussichtlich ≈ \(number(vorschau.projected.value, digits: 0)) \(unit) "
+                     + "bis Ende \(laufenderAbschnittName) — \(vorschau.method.explanation), "
+                     + "gerechnet aus \(vorschau.daysElapsed) von "
+                     + "\(vorschau.daysElapsed + vorschau.daysRemaining) Tagen.")
+                    .font(PulseText.caption)
+                    .foregroundStyle(PulseColor.inkSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .accessibilityElement(children: .combine)
+        }
+    }
+
+    /// „August" oder „3. Quartal" — der Abschnitt, in dem heute liegt.
+    private var laufenderAbschnittName: String {
+        guard let laufend = buckets.first(where: { $0.range.contains(today) }) else { return "" }
+        return slotName(laufend)
     }
 
     private func legendDot(color: Color, text: String) -> some View {
@@ -640,9 +685,33 @@ struct HistoryView: View {
             recomputeCosts(meter: meter)
             recomputeComparison()
             recomputeReport()
+            recomputeForecast(meter: meter)
         } catch {
             problem = "Die Ablesungen ließen sich nicht laden: \(error.localizedDescription)"
         }
+    }
+
+    /// Rechnet hoch, was im **laufenden** Abschnitt zusammenkommen wird.
+    ///
+    /// Der Gründer beim Gebrauch: „ich will sehen, wie viel man wahrscheinlich
+    /// im laufenden Monat verbrauchen wird." Am 21. August sagt ein Balken über
+    /// 580 kWh nichts darüber, ob der Monat teuer wird — er zeigt drei Wochen.
+    ///
+    /// Gerechnet wird über den ganzen Zähler, nicht über ein Zählwerk: Der
+    /// Balken daneben ist die Summe, und eine Zahl, die eine andere Sache meint
+    /// als der Balken, neben dem sie steht, ist schlimmer als keine.
+    ///
+    /// Nur beim Monat und beim Quartal. Bei „Jahr" stehen drei Jahre
+    /// nebeneinander; eine Verlängerung am letzten wäre dort ein vierter
+    /// Balken, den es nicht gibt.
+    private func recomputeForecast(meter: MeteringPoint) {
+        guard granularity != .year,
+              let laufend = buckets.first(where: { $0.range.contains(today) }) else {
+            vorschau = nil
+            return
+        }
+        vorschau = ForecastEngine.forecast(meteringPoint: meter, readings: readings,
+                                           period: laufend.range, today: today)
     }
 
     /// Stellt den Bericht zusammen, den das Herunterladen-Menü ausgibt.
@@ -713,12 +782,18 @@ struct HistoryView: View {
     private var chartColumns: [PeriodBars.Column] {
         buckets.map { bucket in
             let reference = previousYear.first { $0.slot == bucket.slot }
+            // Die Verlängerung gehört an den Abschnitt, in dem heute liegt —
+            // und an keinen anderen. Ein abgeschlossener Monat erwartet nichts
+            // mehr, und ein künftiger hat noch nichts, worauf sich etwas
+            // stützen ließe.
+            let laufend = bucket.range.contains(today)
             return PeriodBars.Column(
                 id: columnID(bucket),
                 label: shortSlotName(bucket),
                 value: bucket.hasData ? double(bucket.value) : nil,
                 reference: (reference?.hasData ?? false) ? double(reference!.value) : nil,
-                isPartial: bucket.hasData && !bucket.isComplete
+                isPartial: bucket.hasData && !bucket.isComplete,
+                projection: laufend ? vorschau.map { double($0.projected.value) } : nil
             )
         }
     }

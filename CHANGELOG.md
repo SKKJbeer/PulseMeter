@@ -9,6 +9,75 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.67.0 — 2026-08-18
+
+**Der laufende Monat sagt, was voraussichtlich zusammenkommt.**
+
+Der Gründer, mit einem Bildschirmfoto vom 21. August: „ich will dass man da so
+gar sieht, wie viel man wahrscheinlich im laufenden Monat verbrauchen wird."
+
+Er hat recht, und der Mangel war größer als er aussah. Auf dem Bild steht für
+August ein Balken über 580 kWh — drei Wochen. Ob der Monat teuer wird, sagt er
+nicht. Und im Klick-Dummy fehlte der laufende Monat ganz: Ein Balken entstand
+erst, wenn der Monat abgeschlossen war. Ausgerechnet der Monat, wegen dem man
+den Schirm öffnet, war leer.
+
+### Im Diagramm
+
+Der laufende Abschnitt bekommt eine blasse Verlängerung bis zur erwarteten
+Menge, mit einem Deckel obendrauf, der sagt, wo die Erwartung endet. Das
+Gemessene bleibt kräftig davor stehen — man sieht auf einen Blick, wie viel
+schon feststeht und wie viel noch kommt.
+
+Gezeichnet wird die Erwartung **hinter** dem Gemessenen, vom Boden an. Zwei
+Stücke übereinanderzusetzen wäre das Naheliegende und das Falsche: Beim
+kleinsten Rundungsunterschied klaffte eine Fuge, und eine Fuge in einem Balken
+liest sich als Lücke in den Daten.
+
+### Und als Satz darunter
+
+> Voraussichtlich ≈ 115 kWh bis Ende August — nach dem Verlauf deines
+> Vorjahres, gerechnet aus 3 von 31 Tagen.
+
+Drei Angaben, und jede hat einen Grund. Das **≈**, weil die Zahl gerechnet ist
+und nicht gemessen (Produktprinzip 7). Die **Grundlage**, weil es einen
+Unterschied macht, ob da eine Beobachtung an dir steht oder eine Annahme über
+dich. Und die **Tage**, weil eine Hochrechnung aus drei Tagen sich morgen
+deutlich verschiebt — wer die Grundlage sieht, kann das einordnen. Ohne diesen
+Halbsatz liest sich „115 kWh" so fest wie eine Ablesung.
+
+### Über den ganzen Zähler, nicht über ein Zählwerk
+
+`ForecastEngine.forecast(meteringPoint:readings:period:today:)` ist neu. Die
+bestehende Fassung rechnet ein **Zählwerk** hoch; der Balken daneben ist bei
+Doppeltarif aber die **Summe** aus Hoch- und Niedertarif. Eine Prognose, die nur
+das erste Zählwerk fortschreibt, stünde neben einem Balken, der beide zeigt, und
+wäre bei zwei gleich großen Zählwerken um die Hälfte zu klein. Das ist die
+wiederkehrende Fehlerklasse dieses Projekts in ihrer zweiten Gestalt: nicht zwei
+Zeiträume nebeneinander, sondern zwei verschiedene Sachverhalte.
+
+Genannt wird die **schwächste** Grundlage aller Zählwerke — sie bestimmt, wie
+sehr man der Summe trauen darf. Und die Summe darf nie unter dem liegen, was
+schon gemessen ist; eine Prognose unter dem Ist wäre keine.
+
+Nur bei Monat und Quartal. Bei „Jahr" stehen drei Jahre nebeneinander, und eine
+Verlängerung am letzten wäre dort ein vierter Balken, den es nicht gibt.
+
+### Geprüft
+
+Drei neue Prüfungen im Rechenkern: Doppeltarif summiert sich (620 statt 310),
+die Hochrechnung liegt nie unter dem Gemessenen, ein abgeschlossener Monat wird
+nicht hochgerechnet. Sechs im Entwurf: Die Zeile steht da, trägt ein ≈, nennt
+ihre Tage und ihre Grundlage, liegt nicht unter dem Ist — und erscheint in der
+Jahresansicht nicht. 120 Prüfungen im Entwurf statt 114.
+
+Dazu eine Änderung an den Beispieldaten: Der Stromzähler wird jetzt am 3. August
+abgelesen statt am 1. Ohne einen gemessenen Tag im laufenden Monat hätte die
+Erwartung nichts, worauf sie sich stützt — und der Entwurf hätte gezeigt, wie es
+aussieht, wenn es die Sache nicht gibt.
+
+---
+
 ## 0.66.0 — 2026-08-18
 
 **Prüfen, bevor jemand von Hand prüft — und zwar breit.**
