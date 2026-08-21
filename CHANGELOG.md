@@ -9,6 +9,33 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.67.2 — 2026-08-21
+
+**Der Wachstumstest hat sich selbst gemessen statt den Rechenkern.**
+
+Der Lauf zu 0.67.1 stand rot, und zwar an einer Prüfung, die mit 0.67.1 nichts
+zu tun hatte: „Vierfache Datenmenge kostet das 10,1-fache" — Grenze 10,0.
+Daneben, auf demselben Stand, kam derselbe Test auf 3,3.
+
+Der Fehler saß in der Messung. Verglichen wurden zwei **einzelne** Zeitnahmen,
+und die kleinere lag bei einer halben Millisekunde — da misst man den Taktgeber
+mit. Kommt dem Prüfrechner in der größeren Messung irgendetwas dazwischen,
+schnellt das Verhältnis hoch, ohne dass sich am Code etwas geändert hätte.
+
+Jetzt wird jede Größe fünfmal gemessen und die **Bestzeit** genommen. Nicht der
+Mittelwert: Eine Messung kann durch fremde Last nur größer werden, nie kleiner
+— der Mittelwert bildet also die Auslastung des Rechners ab, das Minimum die
+Arbeit des Codes. Und gemessen wird an 2.000 gegen 8.000 Ablesungen statt an
+500 gegen 2.000, damit auch die kleinere Zahl deutlich über dem Rauschen liegt.
+
+Damit steht das Verhältnis bei 4,0 bis 4,1 — bei vierfacher Datenmenge also
+genau linear. Die Grenze konnte von 10 auf **6** runter: linear ist vier,
+`n log n` knapp fünf, quadratisch sechzehn. Eine Grenze, die zu hoch liegt,
+findet nichts; eine, die zu knapp liegt, schlägt grundlos an. Beides führt
+dazu, dass die Prüfung nach drei Tagen niemand mehr liest.
+
+Am Rechenkern selbst ist nichts geändert.
+
 ## 0.67.1 — 2026-08-21
 
 **Die Beispieldaten lesen den Zähler auch im laufenden Monat ab.**

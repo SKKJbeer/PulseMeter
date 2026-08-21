@@ -153,14 +153,32 @@ final class PerformanceBudgetTests: XCTestCase {
             return Double(DispatchTime.now().uptimeNanoseconds - beginn.uptimeNanoseconds) / 1_000_000_000
         }
 
+        // **Bestzeit statt Einzelmessung.**
+        //
+        // Eine Messung kann durch fremde Last auf demselben Rechner nur größer
+        // werden, nie kleiner. Der Mittelwert bildet damit die Auslastung des
+        // Prüfrechners ab, das Minimum die Arbeit des Codes. Genau daran ist
+        // diese Prüfung in 0.67.1 gescheitert: 10,1 auf dem Prüfrechner gegen
+        // 3,3 auf demselben Stand daneben — ein Ausreißer in einer einzigen
+        // Messung, kein Fund am Rechenkern.
+        func bestzeit(tage: Int) -> Double {
+            (0..<5).map { _ in dauer(tage: tage) }.min() ?? 0
+        }
+
         // Aufwärmen: Der erste Durchgang zahlt für Zwischenspeicher, die mit der
         // Sache nichts zu tun haben.
-        _ = dauer(tage: 200)
-        let klein = Swift.max(dauer(tage: 500), 0.0005)
-        let gross = dauer(tage: 2_000)
-        let faktor = gross / klein
-        print(String(format: "  ⏱  Vervierfachte Menge kostet das %.1f-fache", faktor))
-        XCTAssertLessThan(faktor, 10,
+        _ = dauer(tage: 500)
+        // Größer als vorher (500/2.000), damit die kleinere Messung deutlich
+        // über der Auflösung der Uhr liegt. Bei einer halben Millisekunde misst
+        // man den Taktgeber mit.
+        let klein = bestzeit(tage: 2_000)
+        let gross = bestzeit(tage: 8_000)
+        let faktor = gross / Swift.max(klein, 0.0001)
+        print(String(format: "  ⏱  Vervierfachte Menge kostet das %.1f-fache (%.1f ms → %.1f ms)",
+                     faktor, klein * 1000, gross * 1000))
+        // Linear wäre vier, `n log n` knapp fünf, quadratisch sechzehn. Sechs
+        // trennt das, was tragen wird, von dem, was bei zehn Jahren umkippt.
+        XCTAssertLessThan(faktor, 6,
                           "Vierfache Datenmenge kostet das \(String(format: "%.1f", faktor))-fache — "
                           + "das wächst zu schnell, um bei zehn Jahren noch zu tragen")
     }
