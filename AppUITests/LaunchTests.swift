@@ -520,6 +520,39 @@ final class LaunchTests: XCTestCase {
                       "Die Gegenüberstellung wurde nicht geöffnet")
     }
 
+    /// Der laufende Monat sagt, worauf er voraussichtlich hinausläuft.
+    ///
+    /// Geprüft wird am Stromzähler und nicht an dem, der beim Öffnen vorn
+    /// steht: Gas ist in den Beispieldaten absichtlich drei Monate überfällig,
+    /// und an einem überfälligen Zähler gibt es nichts hochzurechnen. Das ist
+    /// kein Umweg um den Fehler herum, sondern der Unterschied zwischen „keine
+    /// Prognose" und „keine Daten".
+    func testTheRunningMonthNamesItsExpectedTotal() {
+        let app = launchWithData()
+        wechsel(zu: "Verlauf", in: app)
+        XCTAssertTrue(app.buttons["Monat"].waitForExistence(timeout: erscheint))
+
+        let strom = app.buttons["Strom"].firstMatch
+        XCTAssertTrue(strom.waitForExistence(timeout: erscheint),
+                      "Der Stromzähler fehlt in der Auswahl")
+        strom.tap()
+
+        let vorschau = app.staticTexts
+            .matching(NSPredicate(format: "label BEGINSWITH %@", "Voraussichtlich"))
+            .firstMatch
+        XCTAssertTrue(vorschau.waitForExistence(timeout: erscheint),
+                      "Der laufende Monat nennt seinen voraussichtlichen Verbrauch nicht")
+
+        // Produktprinzip 7: Die Zahl ist gerechnet, nicht gemessen, und muss
+        // das auch sagen. Und sie muss dazusagen, aus wie vielen Tagen — eine
+        // Hochrechnung aus drei Tagen liest sich sonst so fest wie eine
+        // Ablesung.
+        XCTAssertTrue(vorschau.label.contains("≈"),
+                      "Der hochgerechneten Zahl fehlt das Ungefähr-Zeichen: \(vorschau.label)")
+        XCTAssertTrue(vorschau.label.contains(" von ") && vorschau.label.contains("Tagen"),
+                      "Die Prognose nennt ihre Tagesgrundlage nicht: \(vorschau.label)")
+    }
+
     /// Ein Zähler lässt sich anlegen, ohne dass vorher Beispieldaten nötig
     /// wären. Erst damit ist die App für einen echten Nutzer brauchbar —
     /// vorher kam man nur über „Beispieldaten anlegen" zu einem Zähler.

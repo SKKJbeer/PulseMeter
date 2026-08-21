@@ -9,6 +9,34 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.67.1 — 2026-08-21
+
+**Die Beispieldaten lesen den Zähler auch im laufenden Monat ab.**
+
+0.67.0 war grün, und auf dem Bildschirmfoto aus der Prüfung war von der neuen
+Prognose trotzdem nichts zu sehen. Nicht weil sie fehlte, sondern weil die
+Beispieldaten sie nicht auslösen konnten: Jeder Zähler wurde dort am Ersten
+jedes Monats abgelesen und danach nicht mehr. Im laufenden Monat stand damit
+genau ein Zählerstand — und ein einzelner Stand ergibt keinen Verbrauch, also
+auch keine Strecke, auf der eine Hochrechnung stehen könnte.
+
+Derselbe Fehler, der im Klick-Dummy schon gefunden war, saß auch in den Daten
+der App. Er ist harmlos für den Nutzer und gefährlich für die Prüfung: Ein Bild
+ohne Prognose sieht genauso aus wie ein Bild, auf dem die Prognose kaputt ist.
+
+Die Beispielzähler werden jetzt zusätzlich **gestern** abgelesen — anteilig zum
+Monatsverlauf, mit denselben sieben Prozent unter dem Vorjahr wie der Rest der
+Reihe. Am Monatsersten und -zweiten entfällt es, dann gibt es noch keine
+Strecke. Der überfällige Gaszähler bleibt überfällig; er ist der Fall, an dem
+sich der Fällig-Zustand zeigt.
+
+### Geprüft statt bebildert
+
+Neu ist ein Oberflächentest, der den Stromzähler im Verlauf auswählt und den
+Prognosesatz nachweist — samt „≈" und samt der Tagesangabe, aus der er
+gerechnet ist (Produktprinzip 7). Das ist die stärkere Prüfung: Das
+Bildschirmfoto vom Verlauf zeigt den Gaszähler, und der wird dort auch bleiben.
+
 ## 0.67.0 — 2026-08-18
 
 **Der laufende Monat sagt, was voraussichtlich zusammenkommt.**

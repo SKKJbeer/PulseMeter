@@ -155,11 +155,16 @@ enum LaunchFixture {
             var lowValue = profile.lowTariff?.start ?? 0
             let feedRegister = point.registers.first { $0.direction == .feedIn }
             let lowRegister = point.registers.filter { $0.direction == .consumption }.dropFirst().first
+            // Stand am Ersten des laufenden Monats, für die Teilablesung
+            // darunter. Gesetzt nur bei Zählern, die bis heute abgelesen sind.
+            var laufenderStand: (day: CalendarDay, wert: Decimal,
+                                 einspeisung: Decimal, niedrig: Decimal)?
             for offset in stride(from: 25, through: profile.staleMonths, by: -1) {
                 var month = today.month - offset
                 var year = today.year
                 while month < 1 { month += 12; year -= 1 }
                 guard let day = CalendarDay(year: year, month: month, day: 1) else { continue }
+                if offset == 0 { laufenderStand = (day, value, feedValue, lowValue) }
                 try repository.save(
                     Reading(registerID: register.id, day: day, value: value),
                     fractionDigits: register.fractionDigits
@@ -186,6 +191,46 @@ enum LaunchFixture {
                 // Das laufende Jahr liegt sieben Prozent unter dem Vorjahr.
                 let seasonal = profile.monthly[month - 1]
                 value += year == today.year ? seasonal * Decimal(string: "0.93")! : seasonal
+            }
+
+            // Eine Ablesung mitten im laufenden Monat.
+            //
+            // Ohne sie steht im laufenden Monat genau ein Zählerstand, nämlich
+            // der vom Ersten — und ein einzelner Stand ergibt keinen Verbrauch.
+            // Der Balken für diesen Monat bliebe leer und die Hochrechnung
+            // hätte nichts, worauf sie sich stützt. Ausgerechnet der Monat, für
+            // den man den Schirm aufmacht, wäre der einzige ohne Aussage.
+            // Derselbe Fehler steckte im Klick-Dummy (0.67.0).
+            //
+            // Abgelesen wird gestern: So sieht das Bild aus, wie es bei jemandem
+            // aussieht, der seinen Zähler im Blick hat. Am Monatsersten und
+            // -zweiten entfällt es — dann gibt es schlicht noch keine Strecke.
+            if let stand = laufenderStand, today.day > 2,
+               let gestern = CalendarDay(year: today.year, month: today.month, day: today.day - 1) {
+                let tageImMonat = CalendarDay.daysInMonth(year: today.year, month: today.month)
+                let anteil = Decimal(gestern.days(since: stand.day)) / Decimal(tageImMonat)
+                // Dieselben sieben Prozent unter dem Vorjahr wie in der Schleife
+                // — die Einspeisung ausgenommen, die dort auch ungedämpft läuft.
+                let gedaempft = anteil * Decimal(string: "0.93")!
+                try repository.save(
+                    Reading(registerID: register.id, day: gestern,
+                            value: stand.wert + profile.monthly[today.month - 1] * gedaempft),
+                    fractionDigits: register.fractionDigits
+                )
+                if let feedRegister, let feed = profile.feedIn {
+                    try repository.save(
+                        Reading(registerID: feedRegister.id, day: gestern,
+                                value: stand.einspeisung + feed.monthly[today.month - 1] * anteil),
+                        fractionDigits: feedRegister.fractionDigits
+                    )
+                }
+                if let lowRegister, let low = profile.lowTariff {
+                    try repository.save(
+                        Reading(registerID: lowRegister.id, day: gestern,
+                                value: stand.niedrig + low.monthly[today.month - 1] * gedaempft),
+                        fractionDigits: lowRegister.fractionDigits
+                    )
+                }
             }
 
             guard let yearStart = CalendarDay(year: today.year - 2, month: 1, day: 1) else { continue }
