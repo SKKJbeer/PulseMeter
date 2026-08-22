@@ -64,6 +64,29 @@ for (const scheme of ["light", "dark"]) {
   note(!!neu, "Zähler lässt sich anlegen");
   note(!!neu && neu.hatStellen, "Das neue Zählwerk kennt seine Stellen");
 
+  // --- Eine Zählerzeile geht überall auf, wo sie wie eine Zeile aussieht
+  //
+  // Nicht in die Mitte geklickt, sondern kurz vor den rechten Rand: In der App
+  // war genau diese Fläche tot, weil der Knopf dort nichts zeichnete, und ein
+  // Nutzer hat es beim dritten Tippversuch gemerkt (0.72.2). Der Entwurf hat es
+  // richtig gemacht — ein echter Knopf über der ganzen Zeile —, und diese
+  // Prüfung hält ihn dabei. Regel 2 gilt in beide Richtungen.
+  await page.locator('[data-pane="meters"]').first().click();
+  await page.waitForTimeout(200);
+  const zeile = page.locator("[data-meter]").first();
+  const kasten = await zeile.boundingBox();
+  note(!!kasten && kasten.height >= 44,
+       `Zählerzeile ist mindestens 44 Punkt hoch (${kasten ? Math.round(kasten.height) : 0})`);
+  if (kasten) {
+    await page.mouse.click(kasten.x + kasten.width * 0.85, kasten.y + kasten.height / 2);
+    await page.waitForTimeout(300);
+  }
+  note(await page.locator("#ed-name").isVisible().catch(() => false),
+       "Ein Klick neben den Namen öffnet den Zähler");
+  await page.locator("#sheet-editor .sheet-close, .sheet-close[data-close]").first()
+            .click().catch(() => {});
+  await page.waitForTimeout(250);
+
   if (neu) {
     await page.locator('[data-pane="home"]').first().click();
     await page.waitForTimeout(250);

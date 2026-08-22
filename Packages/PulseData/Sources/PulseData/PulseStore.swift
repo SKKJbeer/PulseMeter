@@ -166,6 +166,21 @@ public final class PulseRepository {
         try point.registers.flatMap { try readings(for: $0.id) }
     }
 
+    /// Wie viele Ablesungen an einem Zählwerk hängen.
+    ///
+    /// **Zählen, ohne zu laden.** Die Zählerliste braucht diese Zahl für jeden
+    /// Zähler, und sie hat sie sich bis 0.72.1 über `readings(for:).count`
+    /// geholt — also alle Sätze aus dem Speicher gefischt und in Domänenwerte
+    /// übersetzt, um sie danach wegzuwerfen. Bei drei Jahren täglicher
+    /// Ablesungen sind das über tausend Übersetzungen je Zähler, jedes Mal,
+    /// wenn der Schirm erscheint. `fetchCount` fragt den Speicher nach der
+    /// Zahl und lädt nichts.
+    public func readingCount(for registerID: Register.ID) throws -> Int {
+        try context.fetchCount(FetchDescriptor<ReadingRecord>(
+            predicate: #Predicate { $0.registerID == registerID }
+        ))
+    }
+
     /// Letzte Ablesung eines Zählwerks — der Wert, gegen den die
     /// Plausibilitätsprüfung bei der Eingabe rechnet.
     public func lastReading(for registerID: Register.ID) throws -> Reading? {

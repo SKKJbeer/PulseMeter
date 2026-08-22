@@ -9,6 +9,66 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.72.2 — 2026-08-22
+
+**„Geht erst beim 3. Mal tippen."**
+
+Vom Gerät gemeldet, Zähler-Schirm: ein hartes Zögern beim Öffnen eines Zählers,
+und die Zeile ging erst nach mehreren Versuchen auf. Zwei Ursachen, beide echt.
+
+### Behoben
+- **Eine Zeile war nur dort antippbar, wo sie etwas zeichnete.** Der Knopf
+  spannt sich über die ganze Breite, aber `.buttonStyle(.plain)` reicht nur so
+  weit wie sein Inhalt — und zwischen „Strom" und dem Pfeil steht nichts.
+  Getroffen hat also, wer den Namen traf; wer auf die Mitte der Zeile tippte,
+  tippte ins Leere. Sechs Knöpfe hatten das, darunter der meistbenutzte der
+  App: **„Stand eintragen"**, wo nur der Schriftzug reagierte, nicht die Zeile,
+  und die **Löschtaste** im Ziffernblock, wo nur das Symbol reagierte, nicht
+  die Taste. Alle sechs haben jetzt eine Trefferfläche in ihrer vollen Größe.
+- **Die Plausibilitätsprüfung holte bei jedem Tastendruck die gesamte
+  Ablesehistorie aus dem Speicher.** Bei drei Jahren täglicher Werte sind das
+  über tausend Sätze, zwischen dem Druck auf eine Ziffer und ihrem Erscheinen.
+  Sie wird jetzt einmal je Zählwerk geholt und behalten — sie ändert sich
+  während des Tippens nicht.
+- **Der Zähler-Schirm lud jede Ablesung jedes Zählers, um sie zu zählen.**
+  Gebraucht werden eine Zahl und ein Datum je Zähler. Neu holt er beides direkt
+  (`readingCount`, `lastReading`) und lädt nichts. Dasselbe beim Öffnen eines
+  Zählers: Ob für Einspeisung oder Nachtstrom Werte vorliegen, war die Frage —
+  geladen wurden sie alle. Der Schirm wurde damit langsamer, je länger jemand
+  die App benutzt; genau so hat es sich angefühlt.
+
+### Hinzugefügt
+- `scripts/check-trefferflaechen.py`, mitgeprüft von `scripts/pruefen.sh`:
+  Findet Knöpfe, die sich über mehr Fläche spannen, als sie zeichnen, und weder
+  einen eigenen Hintergrund noch `.contentShape(Rectangle())` haben. Gegen den
+  ausgelieferten Stand von Build 13 meldet sie **genau die sechs**, die dieser
+  Eintrag behandelt. Sichtbar war der Fehler nicht — der Knopf sieht richtig
+  aus, VoiceOver liest ihn richtig vor, die Trefferflächenmessung misst den
+  Klick-Dummy. Gefunden hat ihn ein Mensch mit einem Daumen.
+- Eine Oberflächenprüfung, die eine Zählerzeile **nicht** in der Mitte antippt,
+  sondern kurz vor dem rechten Rand — in der Fläche, die tot war. Ein Test, der
+  die Mitte trifft, hätte den gemeldeten Fehler nie gesehen. Sie schreibt die
+  Öffnungsdauer ins Protokoll, ohne Schranke: eine Zahl, aus der ein Verlauf
+  wird, wie beim Startzeit-Test.
+- `PulseData` wird jetzt mitgeparst. Unter Linux ist es nicht baubar — deshalb
+  war eine falsche Klammer darin bis hierher erst auf dem gemieteten Mac zu
+  sehen.
+
+### Geändert
+- Der Kommentar im Klick-Dummy, „Antippbar wie in der App: Jede Zeile führt zum
+  Bearbeiten", stimmt wieder. Der Entwurf hatte von Anfang an einen echten
+  Knopf über der ganzen Zeile; die App hatte ihn nur zum Schein. Eine Abweichung
+  zwischen beiden ist ein Fehler, kein Zustand (Regel 2) — hier war der Entwurf
+  im Recht. Zwei Prüfungen halten ihn dabei: Die Zeile muss 44 Punkt hoch sein,
+  und ein Klick kurz vor ihrem rechten Rand muss den Zähler öffnen.
+
+_146 Prüfungen im Klick-Dummy, 393 auf der Website, 27 zur Bedienbarkeit,
+PulseCore vollständig grün. Die neue Trefferflächenprüfung läuft mit. Was unter
+Linux nicht geht: `PulseData` bauen und die App im Simulator — die neue
+Oberflächenprüfung läuft erst auf dem macOS-Läufer._
+
+---
+
 ## 0.72.1 — 2026-08-22
 
 ### Geändert

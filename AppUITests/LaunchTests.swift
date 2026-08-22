@@ -592,6 +592,52 @@ final class LaunchTests: XCTestCase {
                       "Der neue Zähler taucht nicht in der Liste auf")
     }
 
+    /// Eine Zeile geht überall auf, wo sie aussieht wie eine Zeile.
+    ///
+    /// **Vom Gerät gemeldet:** „wenn ich bei zähler auf zähler gehe ist da
+    /// irgendwie ein hartes delay oder geht erst beim 3. mal tippen."
+    ///
+    /// Beides stimmte, und beides hatte dieselbe Ursache an zwei Stellen. Der
+    /// Knopf war die ganze Zeile breit, aber `.buttonStyle(.plain)` reicht nur
+    /// so weit wie das, was er zeichnet — zwischen „Strom" und dem Pfeil
+    /// zeichnet er nichts. Wer dort tippt, tippt ins Leere, noch einmal, und
+    /// beim dritten Mal trifft er den Namen.
+    ///
+    /// Deshalb wird hier **nicht** in die Mitte des Elements getippt, wie
+    /// `tap()` es täte, sondern auf zwei Siebtel vor den rechten Rand: genau
+    /// in die Fläche, die vorher tot war. Ein Test, der die Mitte trifft,
+    /// hätte den gemeldeten Fehler nie gesehen.
+    func testAMeterRowOpensWhereverItIsTapped() {
+        let app = launchWithData()
+        guard wechsel(zu: "Zähler", in: app) else { return }
+
+        let zeile = app.buttons.matching(
+            NSPredicate(format: "label BEGINSWITH 'Strom'")
+        ).firstMatch
+        XCTAssertTrue(zeile.waitForExistence(timeout: erscheint),
+                      "Die Zeile für Strom steht nicht im Zähler-Schirm")
+
+        let begonnen = Date()
+        zeile.coordinate(withNormalizedOffset: CGVector(dx: 0.72, dy: 0.5)).tap()
+
+        // Anker ist „Abbrechen": Die Navigationsleiste des Blatts heißt
+        // „Zähler" — genau wie der Schirm darunter — und wäre damit schon vor
+        // dem Tipp da.
+        let abbrechen = app.buttons["Abbrechen"]
+        XCTAssertTrue(abbrechen.waitForExistence(timeout: erscheint),
+                      "Ein Tipp neben den Namen öffnet den Zähler nicht — "
+                      + "die Zeile ist nur dort antippbar, wo sie zeichnet")
+
+        // Wie beim Startzeit-Test keine Schranke, sondern eine Zahl fürs
+        // Protokoll: Sie ergibt einen Verlauf, und ein Verlauf zeigt eine
+        // Verschlechterung, die keine einzelne Grenze auf einem ausgelasteten
+        // Läufer zuverlässig fände.
+        print("ÖFFNEN eines Zählers: "
+              + String(format: "%.2f", Date().timeIntervalSince(begonnen)) + " s")
+
+        abbrechen.tap()
+    }
+
     /// Der Fluss, an dem das Produkt hängt: eintragen, Stand übernehmen,
     /// sichern — und der Hinweis auf den überfälligen Zähler ist weg.
     ///

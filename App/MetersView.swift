@@ -191,6 +191,12 @@ struct MetersView: View {
             }
             .padding(.horizontal, 15)
             .padding(.vertical, 12)
+            // **Ohne das ist nur die Schrift antippbar.** Ein Knopf mit
+            // `.plain` reicht so weit wie das, was er zeichnet — der Abstand
+            // zwischen Name und Pfeil zeichnet nichts. Bei „Strom" sind das
+            // zwei Drittel der Zeile, die nicht reagieren, und wer dort tippt,
+            // tippt ein zweites und drittes Mal. Genau so gemeldet.
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         // Name und letzter Stand als ein Satz; die beiden Symbole tragen
@@ -276,6 +282,7 @@ struct MetersView: View {
                         .foregroundStyle(PulseColor.inkTertiary)
                     Spacer()
                 }
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             // Ob die Klappe offen ist, sagte allein der Pfeil — und der ist
@@ -310,11 +317,14 @@ struct MetersView: View {
             archived = try repository.meteringPoints(includeArchived: true).filter(\.isArchived)
             readingCounts = [:]
             lastReadings = [:]
+            // Zählen und den letzten Stand holen, statt alles zu laden: Die
+            // Liste zeigt je Zähler eine Zahl und ein Datum. Bis 0.72.1 lud
+            // sie dafür jede Ablesung jedes Zählers — der Schirm wurde
+            // langsamer, je länger jemand die App benutzt.
             for point in meters + archived {
                 guard let register = point.primaryRegister else { continue }
-                let readings = try repository.readings(for: register.id)
-                readingCounts[point.id] = readings.count
-                lastReadings[point.id] = readings.last
+                readingCounts[point.id] = try repository.readingCount(for: register.id)
+                lastReadings[point.id] = try repository.lastReading(for: register.id)
             }
         } catch {
             problem = "Die Zähler ließen sich nicht laden: \(error.localizedDescription)"
@@ -834,6 +844,10 @@ struct MeterEditor: View {
 
     private func fill() {
         guard let existing = draft.existing else { return }
+        // Ein Zugriff für den ganzen Vorgang. Vier eigene kosteten nichts an
+        // Rechenzeit, aber sie verdecken, dass hier alles aus derselben Quelle
+        // kommt.
+        let repository = PulseRepository(context: context)
         name = existing.name
         kind = existing.kind
         interval = existing.readingInterval
@@ -843,22 +857,24 @@ struct MeterEditor: View {
         }
         if let feed = existing.registers.first(where: { $0.direction == .feedIn }) {
             hasFeedIn = true
-            let count = (try? PulseRepository(context: context).readings(for: feed.id))?.count ?? 0
-            feedInHasReadings = count > 0
+            // Gefragt ist nur, **ob** Werte vorliegen. Sie dafür zu laden hieß,
+            // beim Öffnen eines Zählers mit Photovoltaik jede Einspeisezahl
+            // aus drei Jahren durchzureichen — sichtbar als Verzögerung, bevor
+            // der Schirm überhaupt erschien.
+            feedInHasReadings = ((try? repository.readingCount(for: feed.id)) ?? 0) > 0
         }
         // Zwei Bezugs-Zählwerke heißen: Tag und Nacht getrennt.
         let draws = existing.registers.filter { $0.direction == .consumption }
         if draws.count > 1 {
             hasDualTariff = true
-            let count = (try? PulseRepository(context: context).readings(for: draws[1].id))?.count ?? 0
-            lowTariffHasReadings = count > 0
+            lowTariffHasReadings = ((try? repository.readingCount(for: draws[1].id)) ?? 0) > 0
         }
         fillBilling(existing)
 
         // Der zuletzt gültige Tarif. Mehrere Tarife über die Zeit kann der
         // Rechenkern längst; die Oberfläche bearbeitet vorerst nur den
         // aktuellen — ein Preisverlauf ist eine eigene Ansicht.
-        let all = (try? PulseRepository(context: context).tariffs(for: existing.id)) ?? []
+        let all = (try? repository.tariffs(for: existing.id)) ?? []
         existingTariffs = all
 
         // Der Tarif des ersten Bezugs-Zählwerks führt Arbeitspreis, Grundpreis

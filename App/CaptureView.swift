@@ -26,6 +26,9 @@ struct CaptureView: View {
 
     @State private var digits = ""
     @State private var previous: Reading?
+    /// Die Ablesungen je Zählwerk, einmal geholt und behalten — die Grundlage
+    /// der Plausibilitätsprüfung bei jedem Tastendruck.
+    @State private var history: [Register.ID: [Reading]] = [:]
     @State private var verdict: ConsumptionEngine.Plausibility = .noReference
     @State private var problem: String?
     @State private var changingMeter = false
@@ -320,13 +323,12 @@ struct CaptureView: View {
             verdict = .noReference
             return
         }
-        do {
-            let readings = try PulseRepository(context: context).readings(for: register.id)
-            verdict = ConsumptionEngine.plausibility(of: value, on: chosenDay, register: register,
-                                                     readings: readings, today: today)
-        } catch {
-            verdict = .noReference
-        }
+        // Aus dem Gedächtnis, nicht aus dem Speicher: Was hier geprüft wird,
+        // ist die eingetippte Zahl gegen eine Historie, die sich während des
+        // Tippens nicht ändert.
+        let readings = history[register.id] ?? []
+        verdict = ConsumptionEngine.plausibility(of: value, on: chosenDay, register: register,
+                                                 readings: readings, today: today)
     }
 
     private var verdictTone: VerdictBanner.Tone {
@@ -374,7 +376,16 @@ struct CaptureView: View {
 
     private func loadPrevious() {
         guard let register else { return }
-        previous = try? PulseRepository(context: context).lastReading(for: register.id)
+        let repository = PulseRepository(context: context)
+        previous = try? repository.lastReading(for: register.id)
+        // Einmal je Zählwerk, nicht einmal je Ziffer. Die Prüfung unten läuft
+        // bei jedem Tastendruck, und bis 0.72.2 holte sie dafür jedes Mal die
+        // gesamte Ablesehistorie aus dem Speicher — bei drei Jahren täglicher
+        // Werte über tausend Sätze, zwischen Tastendruck und Ziffer auf dem
+        // Schirm. Genau das fühlt sich an wie ein Zähler, der hakt.
+        if history[register.id] == nil {
+            history[register.id] = (try? repository.readings(for: register.id)) ?? []
+        }
     }
 
     /// Öffnet den Schirm gleich beim zweiten Zählwerk — nur für die Bilder.

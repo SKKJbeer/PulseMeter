@@ -111,6 +111,10 @@ fi
 if [ "$SCOPE" != "bilder" ]; then
   step "Sofortprüfungen"
   run "Zeichenketten" python3 scripts/check-strings.py || true
+  # Ein Knopf, der breiter ist als sein Inhalt, reagiert ohne `contentShape`
+  # nur dort, wo er zeichnet. Das sieht man ihm nicht an — es hat einen
+  # Fehlerbericht vom Gerät gebraucht (0.72.2).
+  run "Trefferflächen" python3 scripts/check-trefferflaechen.py || true
   # Kostet nichts und hält die Fläche klein, auf der überhaupt etwas
   # schiefgehen kann — siehe docs/11-sicherheit.md, Abschnitt 6.
   run "Angriffsfläche" scripts/check-sicherheit.sh || true
@@ -126,8 +130,13 @@ if [ "$SCOPE" != "bilder" ]; then
     # Ein Tippfehler in einer Oberflächenprüfung fällt sonst erst nach dem
     # vollständigen App-Build auf — also nach der teuersten Minute des Laufs,
     # für einen Fehler, der drei Sekunden zum Finden braucht.
+    # `PulseData` gehört dazu, obwohl es unter Linux nicht baubar ist — genau
+    # deshalb. Für alles andere gibt es hier einen Bau, für den Speicher gar
+    # nichts; ohne diese Zeile wäre eine falsche Klammer darin unter Linux
+    # unsichtbar und käme erst auf dem gemieteten Mac heraus.
     run "Syntax der iOS-Quellen" swiftc -parse \
       App/*.swift Packages/PulseUI/Sources/PulseUI/*.swift Widget/*.swift \
+      Packages/PulseData/Sources/PulseData/*.swift \
       AppUITests/*.swift || true
   fi
 fi

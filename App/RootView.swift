@@ -277,6 +277,10 @@ struct OverviewView: View {
                         .foregroundStyle(accent)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 13)
+                        // Der Schriftzug ist schmal, die Zeile breit. Ohne
+                        // diese Zeile reagiert nur die Schrift — beim
+                        // meistbenutzten Knopf der App.
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 // **Der Knopf sagt, für welchen Zähler er gilt.**

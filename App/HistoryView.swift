@@ -667,6 +667,7 @@ struct HistoryView: View {
                         .foregroundStyle(PulseColor.inkTertiary)
                 }
                 .padding(15)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
         }

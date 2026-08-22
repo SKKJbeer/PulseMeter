@@ -271,6 +271,11 @@ public struct NumberPad: View {
                 .font(.system(size: 20))
                 .foregroundStyle(PulseColor.inkSecondary)
                 .frame(maxWidth: .infinity, minHeight: keyHeight)
+                // Die Zifferntasten haben eine Fläche und sind deshalb überall
+                // zu treffen. Löschen hat keine — ohne diese Zeile reagiert nur
+                // das 20 Punkt große Symbol in der Mitte einer Taste, die
+                // dreimal so groß aussieht.
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityLabel(label)

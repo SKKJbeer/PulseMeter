@@ -211,6 +211,7 @@ struct ProLockRow: View {
                 PriceBadge(product: product)
             }
             .padding(.vertical, 4)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         // Ein Element, ein Satz, ein klarer Hinweis. Ohne das läse VoiceOver
