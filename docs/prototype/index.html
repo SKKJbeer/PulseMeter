@@ -743,7 +743,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.68.2</p>
+  <p>Klickbarer Entwurf · v0.68.3</p>
 </div>
 
 <div class="device">
@@ -2013,7 +2013,7 @@ function renderChart() {
     // Über dem Deckel der Hochrechnung steht die erwartete Zahl. Sie braucht
     // Luft; ohne sie säße sie über dem Kartenrand. Ohne Hochrechnung bleibt es
     // beim knappen Rand von vorher.
-    const kopf = mf ? 26 : 12;
+    const kopf = mf ? 32 : 12;
     let svg = svgOpen(W, H + 18, "Monatsverbrauch 2026 im Vergleich zu 2025");
     for (let g = 0; g <= 2; g++) {
       const yy = H - (g / 2) * (H - kopf);
@@ -2053,15 +2053,30 @@ function renderChart() {
         // Erwartung, dafür braucht es keine zweite Marke.
         svg += `<rect x="${cx + bw * .28}" y="${H - hp}" width="${bw * .44}" height="${hp}"
           rx="2.5" fill="url(#hatch)"/>`;
-        // Die Zahl dazu, und zwar **innerhalb** der Zeichenfläche: Am Rand
-        // rutscht sie herein statt hinaus („es soll alles in den grafiken sein
-        // und nicht außerhalb rausgehen oder so"). Mit ≈, weil sie gerechnet
-        // ist und nicht gemessen (Produktprinzip 7); ohne Einheit, die steht
-        // groß über der Karte.
+        // **Die Zahl als Schild, nicht als schwebende Beschriftung.**
+        //
+        // Ein Balken ist zwölf Punkte breit, die Zahl dreißig. Frei über der
+        // Fläche traf sie Gitterlinien und Nachbarbalken und sah aus, als sei
+        // sie dort liegengeblieben: „Das geht außerhalb der boxen und passt
+        // nicht stimmig ins bild."
+        //
+        // Als Schild — Fläche in der Farbe der Karte, ein Hauch vom Ton des
+        // Zählers, ein Zeiger nach unten auf seinen Balken — ist derselbe
+        // Überhang keine Panne mehr, sondern eine Beschriftung. Sie deckt ab,
+        // was hinter ihr liegt, statt sich damit zu überschneiden. Am Rand
+        // rutscht das Schild herein; der Zeiger bleibt über seinem Balken.
         const zahl = `≈ ${nf(mf.value, dp)}`;
-        const halb = zahl.length * 2.9 + 2;
-        const zx = Math.min(Math.max(halb, cx + bw / 2), W - halb);
-        svg += `<text x="${zx}" y="${Math.max(9, H - hp - 7)}" text-anchor="middle"
+        const sb = zahl.length * 5.8 + 10, sh = 15;
+        const mitte = cx + bw / 2;
+        const sx = Math.min(Math.max(0, mitte - sb / 2), W - sb);
+        const sy = Math.max(0, H - hp - sh - 6);
+        svg += `<rect x="${sx}" y="${sy}" width="${sb}" height="${sh}" rx="4"
+          fill="var(--surface)"/>`;
+        svg += `<rect x="${sx}" y="${sy}" width="${sb}" height="${sh}" rx="4"
+          fill="${m.color}" opacity=".1"/>`;
+        svg += `<rect x="${mitte - .5}" y="${sy + sh}" width="1" height="4"
+          fill="${m.color}" opacity=".45"/>`;
+        svg += `<text x="${sx + sb / 2}" y="${sy + 11}" text-anchor="middle"
           font-size="10" font-weight="650" fill="var(--ink-2)"
           font-family="-apple-system,sans-serif">${zahl}</text>`;
       }

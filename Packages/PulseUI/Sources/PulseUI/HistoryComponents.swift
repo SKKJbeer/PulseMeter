@@ -122,19 +122,23 @@ public struct PeriodBars: View {
         return text
     }
 
-    /// Die erwartete Zahl über dem Deckel — und zwar **innerhalb** der
-    /// Zeichenfläche.
+    /// Die erwartete Zahl als **Schild** über der Schraffur.
     ///
-    /// **Warum sie nicht am Balken selbst hängt.** Dort müsste sie über ihre
-    /// Spalte hinausragen: Bei zwölf Monaten ist eine Spalte gut zwanzig Punkte
-    /// breit, da steht keine dreistellige Zahl drin. Genau das wollte der
-    /// Gründer nicht — „es soll alles in den grafiken sein und nicht außerhalb
-    /// rausgehen oder so."
+    /// **Warum ein Schild und keine nackte Zahl.** Ein Balken ist elf Punkte
+    /// breit, die Zahl dreißig. Frei über der Fläche schwebend traf sie
+    /// Gitterlinien und Nachbarbalken und sah aus, als sei sie dort
+    /// liegengeblieben: „Das geht außerhalb der boxen und passt nicht stimmig
+    /// ins bild."
     ///
-    /// Sie liegt deshalb über der ganzen Fläche und bekommt einen Platz von
-    /// drei Spalten, der an den Rändern hineingeschoben wird. Am Rand steht sie
-    /// dann leicht neben der Mitte ihrer Spalte — dafür nie außerhalb des
-    /// Bildes.
+    /// Als Schild — Fläche in der Farbe der Karte, ein Hauch vom Ton des
+    /// Zählers, ein Zeiger nach unten auf seinen Balken — ist derselbe Überhang
+    /// kein Fehler mehr, sondern eine Beschriftung. Sie deckt ab, was hinter
+    /// ihr liegt, statt sich damit zu überschneiden, und der Zeiger sagt, zu
+    /// welchem Balken sie gehört.
+    ///
+    /// An den Rändern rutscht das Schild herein, damit nichts aus dem Bild
+    /// ragt; der Zeiger bleibt dabei über seinem Balken stehen und wandert
+    /// innerhalb des Schilds mit.
     @ViewBuilder
     private var erwartungsSchild: some View {
         if let treffer = columns.firstIndex(where: { spalte in
@@ -144,23 +148,56 @@ public struct PeriodBars: View {
             GeometryReader { geometry in
                 let anzahl = CGFloat(columns.count)
                 let spaltenbreite = (geometry.size.width - 4 * (anzahl - 1)) / anzahl
-                let platz = Swift.min(geometry.size.width, spaltenbreite * 3 + 8)
                 let mitte = CGFloat(treffer) * (spaltenbreite + 4) + spaltenbreite / 2
-                let x = Swift.min(Swift.max(0, mitte - platz / 2), geometry.size.width - platz)
+                let breite = schildbreite(projection)
+                let x = Swift.min(Swift.max(0, mitte - breite / 2), geometry.size.width - breite)
                 let deckel = geometry.size.height
                     - geometry.size.height * projection / upperBound
-                Text(erwartungsZahl(projection))
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundStyle(PulseColor.inkSecondary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.75)
-                    .frame(width: platz, alignment: .center)
-                    .offset(x: x, y: Swift.max(0, deckel - 14))
-                    // Steckt schon in der Ansage des Balkens; zweimal
-                    // vorgelesen wäre einmal zu viel.
-                    .accessibilityHidden(true)
+                schild(projection, zeigerBei: mitte - x, breite: breite)
+                    .offset(x: x, y: Swift.max(0, deckel - 21))
             }
         }
+    }
+
+    /// Breite des Schilds: so viel, wie die Zahl braucht, und keinen Punkt mehr.
+    ///
+    /// Geschätzt statt gemessen — eine Messung im Layout hieße, die Zahl zweimal
+    /// zu setzen. Bei zehn Punkt Schriftgröße ist eine Ziffer gut sechs Punkte
+    /// breit; das Zeichen und die Ränder kommen dazu.
+    private func schildbreite(_ wert: Double) -> CGFloat {
+        CGFloat(erwartungsZahl(wert).count) * 6 + 10
+    }
+
+    private func schild(_ wert: Double, zeigerBei: CGFloat, breite: CGFloat) -> some View {
+        VStack(spacing: 0) {
+            Text(erwartungsZahl(wert))
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundStyle(PulseColor.inkSecondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .padding(.horizontal, 5)
+                .padding(.vertical, 2)
+                .frame(width: breite)
+                // Reihenfolge zählt: `background` legt nach hinten. Der Hauch
+                // Zählerfarbe muss direkt hinter der Schrift liegen, die
+                // deckende Kartenfarbe dahinter — andersherum verschluckt sie
+                // ihn, und das Schild wäre farblos.
+                .background(
+                    RoundedRectangle(cornerRadius: 4, style: .continuous)
+                        .fill(accent.opacity(0.1))
+                )
+                .background(PulseColor.surface,
+                            in: RoundedRectangle(cornerRadius: 4, style: .continuous))
+            // Der Zeiger. Zwei Punkte hoch, sonst wirkt er wie ein Strich im
+            // Diagramm — und Striche haben hier schon eine Bedeutung.
+            Rectangle()
+                .fill(accent.opacity(0.45))
+                .frame(width: 1, height: 4)
+                .offset(x: zeigerBei - breite / 2)
+        }
+        // Steckt schon in der Ansage des Balkens; zweimal vorgelesen wäre
+        // einmal zu viel.
+        .accessibilityHidden(true)
     }
 
     /// Die erwartete Menge, wie sie über dem Balken steht.
@@ -178,11 +215,12 @@ public struct PeriodBars: View {
         // abgeschnitten — also gerade dort falsch, wo sie etwas sagen soll.
         let values = columns.flatMap { [$0.value, $0.reference, $0.projection].compactMap { $0 } }
         let hoechster = Swift.max(values.max() ?? 1, 0.0001)
-        // Über dem Deckel steht die erwartete Zahl, und die braucht Luft. Ist
-        // die Hochrechnung der höchste Wert im Bild, säße sie sonst über dem
-        // Kartenrand. Ein Sechstel der Höhe reicht für eine Zeile in zehn
-        // Punkt; ist ein anderer Abschnitt ohnehin höher, ändert sich nichts.
-        let mitPlatzFuerDieZahl = (columns.compactMap(\.projection).max() ?? 0) * 1.18
+        // Über der Schraffur steht das Schild mit der erwarteten Zahl, und das
+        // braucht Luft: Zeile, Ränder und Zeiger sind gut zwanzig Punkte. Ist
+        // die Hochrechnung der höchste Wert im Bild, säße es sonst über dem
+        // Kartenrand. Ist ein anderer Abschnitt ohnehin höher, ändert sich
+        // nichts am Bild.
+        let mitPlatzFuerDieZahl = (columns.compactMap(\.projection).max() ?? 0) * 1.2
         return Swift.max(hoechster, mitPlatzFuerDieZahl)
     }
 

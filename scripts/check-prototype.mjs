@@ -190,17 +190,33 @@ for (const scheme of ["light", "dark"]) {
   // und nicht außerhalb rausgehen oder so." Eine Zahl, die über den Rand
   // hinaussteht, ist auf einem schmalen Telefon halb abgeschnitten — und ein
   // halb abgeschnittener Wert ist schlimmer als keiner.
+  // Gemessen wird das **Schild**, nicht die Schrift darin: Die Fläche ist das
+  // Breiteste am Ganzen, und sie ist es, die am Rand anstoßen würde.
   const drin = await page.evaluate(`(() => {
     const svg = document.querySelector("#chart svg").getBoundingClientRect();
     const zahl = [...document.querySelectorAll("#chart svg text")]
       .find(t => t.textContent.trim().startsWith("≈"));
     if (!zahl) return null;
-    const b = zahl.getBoundingClientRect();
-    return { links: b.left - svg.left, rechts: svg.right - b.right, oben: b.top - svg.top };
+    const t = zahl.getBoundingClientRect();
+    // Das Schild ist das Rechteck, das die Zahl umschließt.
+    const flaeche = [...document.querySelectorAll("#chart svg rect")]
+      .map(r => r.getBoundingClientRect())
+      .filter(r => r.left <= t.left + 1 && r.right >= t.right - 1
+                && r.top <= t.top + 1 && r.bottom >= t.bottom - 1)
+      .sort((a, b) => (a.width * a.height) - (b.width * b.height))[0];
+    if (!flaeche) return null;
+    return {
+      links: flaeche.left - svg.left,
+      rechts: svg.right - flaeche.right,
+      oben: flaeche.top - svg.top,
+      schild: Math.round(flaeche.width)
+    };
   })()`);
   note(drin !== null && drin.links >= 0 && drin.rechts >= 0 && drin.oben >= 0,
-       `Die Zahl bleibt im Bild (links ${drin ? drin.links.toFixed(0) : "?"}, `
-       + `rechts ${drin ? drin.rechts.toFixed(0) : "?"}, oben ${drin ? drin.oben.toFixed(0) : "?"})`);
+       `Das Schild bleibt im Bild (${drin ? drin.schild : "?"} breit; links `
+       + `${drin ? drin.links.toFixed(0) : "?"}, rechts ${drin ? drin.rechts.toFixed(0) : "?"}, `
+       + `oben ${drin ? drin.oben.toFixed(0) : "?"})`);
+  note(drin !== null, "Die Zahl steht auf einer Fläche und nicht frei im Diagramm");
 
   // **Voll heißt gemessen, schraffiert heißt nicht gemessen.**
   //

@@ -9,6 +9,31 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.68.3 — 2026-08-22
+
+**Die erwartete Zahl bekommt ein Schild.**
+
+Die Schraffur saß, die Zahl nicht: „besser nur sieht das noch nicht gut aus mit
+dem ungefähr zahl. Das geht außerhalb der boxen und passt nicht stimmig ins
+bild."
+
+Das Maßverhältnis war das Problem. Ein Monatsbalken ist elf Punkte breit, die
+Zahl dreißig. Frei über der Fläche gesetzt, überschnitt sie Gitterlinien und den
+Nachbarbalken und sah aus, als sei sie dort liegengeblieben — richtig platziert
+und trotzdem falsch.
+
+Ein Überhang von zwanzig Punkten lässt sich nicht wegrechnen. Er lässt sich nur
+zu etwas machen, das aussieht, als sei es so gemeint. Die Zahl steht jetzt auf
+einem **Schild**: Fläche in der Farbe der Karte, ein Hauch vom Ton des Zählers,
+darunter ein kurzer Zeiger auf seinen Balken. Damit deckt sie ab, was hinter ihr
+liegt, statt sich damit zu überschneiden, und der Zeiger sagt, wozu sie gehört.
+An den Rändern rutscht das Schild ins Bild hinein; der Zeiger bleibt über seinem
+Balken stehen und wandert innerhalb des Schilds mit.
+
+Die Prüfung misst jetzt das Schild statt der Schrift — die Fläche ist das
+Breiteste am Ganzen und das, was am Rand anstoßen würde. Dazu eine zweite: dass
+die Zahl überhaupt auf einer Fläche steht und nicht frei im Diagramm.
+
 ## 0.68.2 — 2026-08-22
 
 **Schraffiert heißt: hier wurde nichts abgelesen.**
