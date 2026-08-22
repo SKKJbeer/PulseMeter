@@ -674,7 +674,7 @@ final class LaunchTests: XCTestCase {
         // Protokoll: Sie ergibt einen Verlauf, und ein Verlauf zeigt eine
         // Verschlechterung, die keine einzelne Grenze auf einem ausgelasteten
         // Läufer zuverlässig fände.
-        print("ÖFFNEN eines Zählers: "
+        print("MESSUNG Öffnen eines Zählers: "
               + String(format: "%.2f", Date().timeIntervalSince(begonnen)) + " s")
 
         abbrechen.tap()
@@ -862,8 +862,13 @@ final class LaunchTests: XCTestCase {
                       "Die Übersicht kam nicht hoch")
         let elapsed = Date().timeIntervalSince(started)
 
-        // Landet im Protokoll und damit im Artefakt — daraus wird ein Verlauf.
-        print("STARTZEIT bis zur ersten Zahl: \(String(format: "%.2f", elapsed)) s")
+        // **`MESSUNG` ist kein Zierrat, sondern das Wort, auf das `test.sh`
+        // filtert.** Ohne es stand diese Zahl nur in `build/xcodebuild-test.log`
+        // und damit im Artefakt — sichtbar erst, wer den Lauf herunterlädt und
+        // entpackt. Nachgesehen habe ich es, weil im Protokoll von Lauf 213
+        // keine der beiden Zeiten stand; die Konsole zeigt nur, was der Filter
+        // durchlässt.
+        print("MESSUNG Startzeit bis zur ersten Zahl: \(String(format: "%.2f", elapsed)) s")
 
         // **Keine Schranke auf die Zeit.** Hier stand `XCTAssertLessThan(elapsed, 15)`
         // mit der Begründung, die Grenze sei „bewusst weit" und fange nur einen

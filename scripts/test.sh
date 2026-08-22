@@ -47,7 +47,7 @@ if [ "$SCOPE" = "all" ] || [ "$SCOPE" = "app" ]; then
       -derivedDataPath "${PULSE_DERIVED_DATA:-build/DerivedData}" \
       CODE_SIGNING_ALLOWED=NO 2>&1 \
     | tee "$LOG" \
-    | grep --line-buffered -E "Test Case .*(started|passed|failed)|Test Suite .*(passed|failed)|Executed [0-9]+ test|error:|Assertion Failure|\*\* TEST"
+    | grep --line-buffered -E "Test Case .*(started|passed|failed)|Test Suite .*(passed|failed)|Executed [0-9]+ test|error:|Assertion Failure|\*\* TEST|^MESSUNG "
   status=${PIPESTATUS[0]}
   set -e
 
