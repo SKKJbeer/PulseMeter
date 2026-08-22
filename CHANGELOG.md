@@ -9,6 +9,21 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.72.1 — 2026-08-22
+
+### Geändert
+- Build 13 (0.72.0) steht seit 17:47 UTC in TestFlight, verarbeitet und mit
+  Testhinweisen. Die Zeile dazu steht in `docs/12-auslieferung.md` — ohne sie
+  ließe sich eine Rückmeldung vom Gerät später keinem Stand mehr zuordnen.
+- Im selben Dokument war der Absatz über die Testhinweise mitten im Codeblock
+  weitergelaufen; jetzt steht der Text wieder außerhalb.
+
+_Nur Dokumente. 236 Tests in PulseCore und 142 Prototyp-Prüfungen unverändert
+grün, Prototyp in Hell und Dunkel geprüft. Kein neuer TestFlight-Lauf: An der
+App ändert sich nichts, Build 13 bleibt der aktuelle._
+
+---
+
 ## 0.72.0 — 2026-08-22
 
 **Acht Monate gegen zwei Tage sind kein Prozentwert.**

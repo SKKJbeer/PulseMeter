@@ -201,6 +201,7 @@ Store Connect deshalb nie gesehen.
 | 10 | 0.69.2 | 22.08. 11:43 | ✓ | Der laufende Monat als eigene Leiste unter dem Verlauf |
 | 11 | 0.69.2 | 22.08. 14:57 | ✗ | Abgebrochen: derselbe Stand ein zweites Mal geschickt, weil ich nicht nachgesehen hatte, ob Build 10 schon lief |
 | 12 | 0.71.0 | 22.08. 14:59 | ✓ | Vergleichskarte nennt ihren Ausschnitt, Vorschau bei allen Zählern — **erster Bau mit Testhinweisen** |
+| 13 | 0.72.0 | 22.08. 17:41 | ✓ | Kein Prozentwert mehr, wo zwei Tage gegen acht Monate stehen; knappe Zeilen nennen ihre Tage |
 
 Zeitangaben in UTC. Ein ✗ heißt: hochgeladen wurde nichts, die Nummer ist
 trotzdem verbraucht.
@@ -223,9 +224,12 @@ Minuten für Warten und Eintragen, und im Protokoll steht:
 ```
 Bau 12: VALID
 Bau 12 steht bereit, die Testhinweise sind eingetragen.
-``` Dauert die Verarbeitung länger als zwanzig Minuten, endet
-das Skript grün mit einem Hinweis — der Bau kommt trotzdem an, und ein roter
-Lauf für etwas, das niemand beheben kann, wäre eine Meldung ohne Handlung.
+```
+
+Build 13 lief genauso: zwei Minuten von „hochgeladen" bis „bereit". Dauert die
+Verarbeitung länger als zwanzig Minuten, endet das Skript grün mit einem Hinweis
+— der Bau kommt trotzdem an, und ein roter Lauf für etwas, das niemand beheben
+kann, wäre eine Meldung ohne Handlung.
 
 **Was der Ablauf bewusst nicht tut:** Er gibt nichts für **externe** Tester
 frei. Das verlangt eine Beta-Prüfung durch Apple und ist eine Entscheidung,
