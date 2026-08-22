@@ -1,6 +1,6 @@
 # 12 – Auslieferung: vom Code in den App Store, ohne Mac
 
-Stand: 2026-08-22, Version 0.69.2
+Stand: 2026-08-22, Version 0.70.0
 
 Am 17. August ist PulseMeter zum ersten Mal in TestFlight gelandet — **ohne
 Kabel, ohne Xcode auf dem Rechner des Gründers, ohne einen Klick im
@@ -202,6 +202,25 @@ Store Connect deshalb nie gesehen.
 
 Zeitangaben in UTC. Ein ✗ heißt: hochgeladen wurde nichts, die Nummer ist
 trotzdem verbraucht.
+
+### Was bei den Testern steht
+
+`altool --upload-app` lädt nur hoch. Die Testhinweise — „Was ist neu" — hängen
+nicht am Paket, sondern am Bau in App Store Connect, und dorthin führt nur die
+Schnittstelle. Erreichbar sind sie erst, wenn Apple den Bau verarbeitet hat.
+
+Der Ablauf fragte von Anfang an nach diesem Text und schrieb ihn nirgends hin.
+Zehn Bauten lang stand bei den Testern nichts. Seit 0.70.0 trägt
+`scripts/asc-testflight.py` ihn nach dem Hochladen ein: Es wartet auf die
+Verarbeitung, legt die Lokalisierung `de-DE` an oder ändert sie und meldet, wann
+der Bau bereitsteht. Dauert die Verarbeitung länger als zwanzig Minuten, endet
+das Skript grün mit einem Hinweis — der Bau kommt trotzdem an, und ein roter
+Lauf für etwas, das niemand beheben kann, wäre eine Meldung ohne Handlung.
+
+**Was der Ablauf bewusst nicht tut:** Er gibt nichts für **externe** Tester
+frei. Das verlangt eine Beta-Prüfung durch Apple und ist eine Entscheidung,
+keine Automatisierung. Für die interne Gruppe steht der Bau nach der
+Verarbeitung sofort bereit.
 
 **Die Zeile kommt nach jedem Lauf dazu, auch nach einem gescheiterten.** Ohne
 sie lässt sich eine Rückmeldung vom Gerät nicht zuordnen: „bei mir sieht das

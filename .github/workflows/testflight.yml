@@ -321,6 +321,30 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+      # **Der Hinweistext gehört an den Bau, nicht ins Protokoll.**
+      #
+      # Die Eingabe oben verspricht „Steht später bei den Testern". Zehn Bauten
+      # lang stimmte das nicht: Der Text wurde entgegengenommen und nirgends
+      # verwendet. `altool` lädt nur hoch; die Testhinweise hängen am Bau in
+      # App Store Connect und sind erst nach dessen Verarbeitung erreichbar.
+      #
+      # Läuft nach dem Hochladen und wartet dabei — deshalb steht es hier unten
+      # und nicht mittendrin.
+      - name: Testhinweise eintragen
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+          PULSE_BUNDLE_ID: de.karjoth.pulsemeter
+          PULSE_BUILD: ${{ github.run_number }}
+          PULSE_HINWEIS: ${{ inputs.hinweis }}
+        run: |
+          # Noch einmal, obwohl der Profilschritt es schon getan hat: Dieser
+          # Schritt soll auch dann stehen, wenn die Reihenfolge sich einmal
+          # ändert. Ist alles da, kostet es zwei Sekunden.
+          pip3 install --quiet --break-system-packages "pyjwt[crypto]" requests
+          python3 scripts/asc-testflight.py
+
       - name: Was jetzt passiert
         run: |
           cat <<'ENDE'
@@ -328,10 +352,18 @@ jobs:
           Hochgeladen. Was jetzt von allein passiert:
 
             · Apple prüft den Bau automatisch. Das dauert 5 bis 30 Minuten.
-            · Danach steht er in App Store Connect unter TestFlight.
-            · Beim allerersten Bau fragt Apple einmal nach der
-              Ausfuhr-Verschlüsselung. Antwort für diese App: nein, es wird
-              keine nicht-standardmäßige Verschlüsselung verwendet.
+            · Danach steht er in App Store Connect unter TestFlight, mit dem
+              Hinweistext aus diesem Lauf.
+
+          Nach der Ausfuhr-Verschlüsselung fragt Apple nicht: Die Antwort steht
+          als `ITSAppUsesNonExemptEncryption` in `App/Info.plist`, und sie ist
+          `false`. Ohne diesen Schlüssel bliebe jeder Bau auf „Missing
+          Compliance" stehen und wäre für niemanden installierbar.
+
+          Für die **interne** Gruppe — also den Gründer auf seinem eigenen
+          Gerät — ist der Bau damit sofort da. Externe Tester bräuchten
+          zusätzlich eine Beta-Prüfung durch Apple; die wird hier bewusst nicht
+          angestoßen.
 
           Dann in der TestFlight-App auf dem iPhone anmelden — dieselbe
           Apple-ID — und installieren.

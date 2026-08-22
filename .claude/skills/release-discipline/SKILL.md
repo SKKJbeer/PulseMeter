@@ -96,7 +96,7 @@ stimmen.
 Zum Prüfen genügt ein Griff:
 
 ```bash
-grep -rn "0\.69\.2" project.yml README.md docs/prototype/index.html
+grep -rn "0\.70\.0" project.yml README.md docs/prototype/index.html
 ```
 
 ---

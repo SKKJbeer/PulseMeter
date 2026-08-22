@@ -9,6 +9,50 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.70.0 — 2026-08-22
+
+**Was bei den Testern steht, steht jetzt auch wirklich dort.**
+
+Der Gründer: „mache alles ready dass es in testflight auch live geht." Also
+nachgesehen, was einen Bau tatsächlich aufhalten kann — und einen gebrochenen
+Vorsatz gefunden.
+
+Der TestFlight-Ablauf fragt seit dem ersten Tag nach einem Hinweis, wörtlich:
+„Was ist neu? Steht später bei den Testern." Der Text wurde entgegengenommen und
+**nirgends verwendet**. Zehn Bauten lang stand bei den Testern nichts. Das ist
+genau die Sorte Versprechen, die dieses Projekt sich selbst verbietet — nur
+stand es diesmal im eigenen Werkzeug statt in einem App-Store-Text.
+
+`altool --upload-app` lädt nur hoch. Die Testhinweise hängen nicht am Paket,
+sondern am Bau in App Store Connect, und dorthin führt nur die Schnittstelle.
+`scripts/asc-testflight.py` geht diesen Weg: warten, bis Apple den Bau
+verarbeitet hat, dann die Lokalisierung `de-DE` anlegen oder ändern, dann melden,
+dass der Bau bereitsteht.
+
+Dauert die Verarbeitung länger als zwanzig Minuten, endet das Skript **grün**
+mit einem Hinweis. Der Bau kommt trotzdem an; ein roter Lauf für etwas, das
+niemand beheben kann, wäre eine Meldung, auf die keine Handlung folgt — und
+solche Meldungen liest nach drei Tagen niemand mehr.
+
+### Was nicht blockiert, obwohl es danach aussieht
+
+- **Ausfuhr-Verschlüsselung.** `ITSAppUsesNonExemptEncryption` steht seit jeher
+  als `false` in `App/Info.plist`. Ohne diesen Schlüssel bliebe jeder Bau auf
+  „Missing Compliance" stehen und wäre für niemanden installierbar. Der Text am
+  Ende des Ablaufs behauptete das Gegenteil — Apple frage einmal nach — und ist
+  korrigiert.
+- **App-Gruppe, iCloud, Push.** Weiter nicht freigeschaltet, weiter kein
+  Hindernis: Die App läuft vollständig, nur das Widget bleibt leer und der
+  Abgleich aus. Der Rückfall dafür ist im Code gebaut.
+- **Externe Tester.** Dafür bräuchte es eine Beta-Prüfung durch Apple. Der
+  Ablauf stößt sie bewusst nicht an — das ist eine Entscheidung, keine
+  Automatisierung. Für die interne Gruppe steht der Bau nach der Verarbeitung
+  sofort bereit.
+
+Die Grenze dieses Stands ist ehrlich zu nennen: Das Skript ist unter Linux nur
+syntaktisch geprüft, gegen die Schnittstelle von Apple lief es hier nie. Erster
+echter Durchgang ist der nächste TestFlight-Lauf.
+
 ## 0.69.2 — 2026-08-22
 
 **Ein Test, der am Wortlaut hing. Und zwei Lücken in der Dokumentation.**
