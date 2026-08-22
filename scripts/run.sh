@@ -75,6 +75,12 @@ shoot light screenshot-zurueck-light -pulse-capture-step2
 shoot dark  screenshot-zurueck-dark  -pulse-capture-step2
 shoot light screenshot-verlauf-light -pulse-verlauf
 shoot dark  screenshot-verlauf-dark  -pulse-verlauf
+# Derselbe Schirm am zuletzt abgelesenen Zähler. Die beiden Bilder darüber
+# zeigen den Gaszähler, der in den Beispieldaten absichtlich überfällig ist —
+# an ihm ist nichts hochzurechnen, und die Vorschau für den laufenden Monat war
+# damit auf keinem Bild zu sehen.
+shoot light screenshot-vorschau-light -pulse-verlauf -pulse-verlauf-vorschau
+shoot dark  screenshot-vorschau-dark  -pulse-verlauf -pulse-verlauf-vorschau
 PULSE_WARTEN=15 shoot light screenshot-bericht-light -pulse-bericht
 PULSE_WARTEN=15 shoot dark  screenshot-bericht-dark  -pulse-bericht
 shoot light screenshot-leer-light -pulse-empty

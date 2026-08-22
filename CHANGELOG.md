@@ -9,6 +9,47 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.68.0 — 2026-08-22
+
+**Die erwartete Zahl steht am Balken.**
+
+Der Gründer, nachdem er 0.67.2 auf dem Telefon hatte: „ich will dass man das
+voraussichtliche des monats in dem balken grafik direkt sehen kann."
+
+Bisher stand die Zahl nur im Satz unter der Karte. Im Bild selbst war die
+Erwartung eine blasse Fläche — die sagt „da kommt noch was", aber nicht wie
+viel. Wer aufs Diagramm schaut, schaut nicht nach unten.
+
+Über dem Deckel der Hochrechnung steht jetzt `≈ 190`. Mit dem Zeichen, weil die
+Zahl gerechnet ist und nicht gemessen (Produktprinzip 7). Ohne Einheit: Die
+steht groß über der Karte, und zwölf Monate nebeneinander lassen keinen Platz
+für sie. Der Maßstab bekommt Luft nach oben, sobald eine Hochrechnung im Bild
+ist — sonst säße die Zahl über dem Kartenrand. Ist ein anderer Abschnitt ohnehin
+höher, ändert sich am Bild nichts.
+
+Die Zahl darf über ihre Spalte hinausragen. Eine Spalte ist bei zwölf Monaten
+gut zwanzig Punkte breit, da steht keine dreistellige Zahl drin. Das geht, weil
+der laufende Abschnitt immer der letzte mit Daten ist: Rechts von ihm liegt
+leerer Platz.
+
+Für die Bedienhilfen ändert sich nichts — die erwartete Menge steckte schon in
+der Ansage des Balkens. Die neue Zahl ist dort ausgeblendet, zweimal vorgelesen
+wäre einmal zu viel.
+
+### Endlich ein Bild davon
+
+Neu sind `screenshot-vorschau-light` und `-dark`: derselbe Verlauf, aber am
+zuletzt abgelesenen Zähler. Die bisherigen Verlaufsbilder zeigen den Gaszähler,
+der in den Beispieldaten absichtlich überfällig ist — an dem gibt es nichts
+hochzurechnen, und deshalb war die Vorschau auf keinem einzigen Bild zu sehen.
+Der Startschalter dafür wählt den Zähler mit der jüngsten Ablesung und nicht
+einen mit festem Namen: Ein Name in der App, den nur ein Datensatz kennt, ist
+eine Falle für später.
+
+Im Klick-Dummy dasselbe, dazu zwei Prüfungen: dass genau **eine** erwartete Zahl
+am Balken steht, und dass es dieselbe ist wie im Satz darunter. Zwei Zahlen, die
+dasselbe meinen und auseinanderlaufen, wären schlimmer als eine.
+
 ## 0.67.2 — 2026-08-21
 
 **Der Wachstumstest hat sich selbst gemessen statt den Rechenkern.**

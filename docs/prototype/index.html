@@ -743,7 +743,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.67.2</p>
+  <p>Klickbarer Entwurf · v0.68.0</p>
 </div>
 
 <div class="device">
@@ -2000,9 +2000,13 @@ function renderChart() {
     const max = Math.max(...[...now, ...prev].filter(v => v !== null),
                          mf ? mf.value : 0, 1);
     const bw = W / 12;
+    // Über dem Deckel der Hochrechnung steht die erwartete Zahl. Sie braucht
+    // Luft; ohne sie säße sie über dem Kartenrand. Ohne Hochrechnung bleibt es
+    // beim knappen Rand von vorher.
+    const kopf = mf ? 26 : 12;
     let svg = svgOpen(W, H + 18, "Monatsverbrauch 2026 im Vergleich zu 2025");
     for (let g = 0; g <= 2; g++) {
-      const yy = H - (g / 2) * (H - 12);
+      const yy = H - (g / 2) * (H - kopf);
       svg += `<line x1="0" y1="${yy}" x2="${W}" y2="${yy}" stroke="var(--hairline)" stroke-width="1"/>`;
     }
     for (let i = 0; i < 12; i++) {
@@ -2012,7 +2016,7 @@ function renderChart() {
           fill="var(--ink)" opacity=".055"/>`;
       }
       if (prev[i] !== null) {
-        const h = (prev[i] / max) * (H - 12);
+        const h = (prev[i] / max) * (H - kopf);
         svg += `<rect x="${cx + bw * .16}" y="${H - h}" width="${bw * .68}" height="${h}" rx="2.5" fill="var(--hairline-2)" opacity=".85"/>`;
       }
       // Die Erwartung liegt **hinter** dem Gemessenen und reicht vom Boden bis
@@ -2021,14 +2025,25 @@ function renderChart() {
       // klaffte eine Fuge, und eine Fuge in einem Balken liest sich als Lücke
       // in den Daten.
       if (mf && i === laufend && mf.value > (now[i] ?? 0)) {
-        const hp = (mf.value / max) * (H - 12);
+        const hp = (mf.value / max) * (H - kopf);
         svg += `<rect x="${cx + bw * .28}" y="${H - hp}" width="${bw * .44}" height="${hp}"
           rx="2.5" fill="${m.color}" opacity=".22"/>`;
         svg += `<rect x="${cx + bw * .28}" y="${H - hp}" width="${bw * .44}" height="1.5"
           fill="${m.color}" opacity=".55"/>`;
+        // **Die Zahl steht am Balken, nicht nur im Satz darunter.**
+        //
+        // Der Gründer, nachdem die Verlängerung eingebaut war: „ich will dass
+        // man das voraussichtliche des monats in dem balken grafik direkt
+        // sehen kann." Eine blasse Fläche sagt „mehr wird es noch"; wie viel
+        // mehr, sagt erst die Zahl. Mit ≈, weil sie gerechnet ist und nicht
+        // gemessen (Produktprinzip 7). Ohne Einheit — die steht groß über der
+        // Karte, und zwölf Monate lassen keinen Platz für sie.
+        svg += `<text x="${cx + bw / 2}" y="${H - hp - 7}" text-anchor="middle"
+          font-size="10" font-weight="650" fill="${textFarbe(m.color)}"
+          font-family="-apple-system,sans-serif">≈ ${nf(mf.value, dp)}</text>`;
       }
       if (now[i] !== null) {
-        const h = (now[i] / max) * (H - 12);
+        const h = (now[i] / max) * (H - kopf);
         const teil = mf && i === laufend;
         svg += `<rect x="${cx + bw * .28}" y="${H - h}" width="${bw * .44}" height="${h}" rx="2.5"
           fill="${est[i] ? "url(#hatch)" : m.color}"${teil ? ' opacity=".55"' : ""}/>`;

@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 /// Ein Balken je Abschnitt, mit dem Vorjahr als Marke darin.
@@ -35,6 +36,7 @@ public struct PeriodBars: View {
 
     private let columns: [Column]
     private let accent: Color
+    private let accentInk: Color?
     private let selection: Int?
     private let unit: String
     private let onSelect: (Int) -> Void
@@ -42,10 +44,17 @@ public struct PeriodBars: View {
     /// - Parameter unit: Einheit für die Ansage. Ein Balken, der „312" sagt,
     ///   sagt nichts — kWh und m³ stehen in derselben App nebeneinander, und
     ///   ohne Einheit ist die Zahl nicht zu deuten.
-    public init(columns: [Column], accent: Color, selection: Int?, unit: String = "",
+    /// - Parameter accentInk: Dieselbe Farbe, aber für Text. Eine Fläche darf
+    ///   leuchten, eine Zahl in zehn Punkt muss lesbar sein — das sind zwei
+    ///   verschiedene Werte (siehe `PulseColor.resourceInk`). Ohne Angabe wird
+    ///   die Flächenfarbe genommen; für die Zahl über der Hochrechnung sollte
+    ///   sie gesetzt sein.
+    public init(columns: [Column], accent: Color, accentInk: Color? = nil,
+                selection: Int?, unit: String = "",
                 onSelect: @escaping (Int) -> Void) {
         self.columns = columns
         self.accent = accent
+        self.accentInk = accentInk
         self.selection = selection
         self.unit = unit
         self.onSelect = onSelect
@@ -73,12 +82,27 @@ public struct PeriodBars: View {
         return text
     }
 
+    /// Die erwartete Menge, wie sie über dem Balken steht.
+    ///
+    /// Mit ≈ und ohne Einheit: Das ≈ ist Pflicht (Produktprinzip 7 — die Zahl
+    /// ist gerechnet, nicht gemessen), die Einheit steht groß über der Karte
+    /// und würde hier nur Platz kosten, den zwölf Monate nicht haben.
+    private func erwartungsZahl(_ wert: Double) -> String {
+        "≈ " + wert.formatted(.number.precision(.fractionLength(0)))
+    }
+
     private var upperBound: Double {
         // Die Hochrechnung gehört in den Maßstab. Ohne sie ragte die
         // Verlängerung des laufenden Monats über den Rand hinaus und wäre
         // abgeschnitten — also gerade dort falsch, wo sie etwas sagen soll.
         let values = columns.flatMap { [$0.value, $0.reference, $0.projection].compactMap { $0 } }
-        return Swift.max(values.max() ?? 1, 0.0001)
+        let hoechster = Swift.max(values.max() ?? 1, 0.0001)
+        // Über dem Deckel steht die erwartete Zahl, und die braucht Luft. Ist
+        // die Hochrechnung der höchste Wert im Bild, säße sie sonst über dem
+        // Kartenrand. Ein Sechstel der Höhe reicht für eine Zeile in zehn
+        // Punkt; ist ein anderer Abschnitt ohnehin höher, ändert sich nichts.
+        let mitPlatzFuerDieZahl = (columns.compactMap(\.projection).max() ?? 0) * 1.18
+        return Swift.max(hoechster, mitPlatzFuerDieZahl)
     }
 
     public var body: some View {
@@ -162,6 +186,31 @@ public struct PeriodBars: View {
                             Rectangle()
                                 .fill(accent.opacity(0.55))
                                 .frame(height: 1.5)
+                        }
+                        .overlay(alignment: .top) {
+                            // **Die Zahl steht am Balken, nicht nur im Satz
+                            // darunter.**
+                            //
+                            // Der Gründer, nachdem die Verlängerung eingebaut
+                            // war: „ich will dass man das voraussichtliche des
+                            // monats in dem balken grafik direkt sehen kann."
+                            // Eine blasse Fläche sagt „mehr wird es noch"; wie
+                            // viel mehr, sagt erst die Zahl.
+                            //
+                            // `fixedSize` lässt sie über die Spalte
+                            // hinausragen — bei zwölf Monaten ist eine Spalte
+                            // gut zwanzig Punkte breit, da steht keine
+                            // dreistellige Zahl drin. Das geht gut, weil der
+                            // laufende Abschnitt immer der letzte mit Daten
+                            // ist: Rechts von ihm liegt leerer Platz.
+                            Text(erwartungsZahl(projection))
+                                .font(.system(size: 10, weight: .semibold))
+                                .foregroundStyle(accentInk ?? accent)
+                                .fixedSize()
+                                .offset(y: -13)
+                                // Steckt schon in `spokenValue`; zweimal
+                                // vorgelesen wäre sie einmal zu viel.
+                                .accessibilityHidden(true)
                         }
                 }
 

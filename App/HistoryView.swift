@@ -58,6 +58,9 @@ struct HistoryView: View {
     private var meter: MeteringPoint? { meters.first { $0.id == selectedMeterID } }
     private var register: Register? { meter?.primaryRegister }
     private var accent: Color { PulseColor.resource(meter?.appearance.colorToken ?? "amber") }
+    /// Dieselbe Farbe für Text. Die Fläche darf leuchten, die Zahl über der
+    /// Hochrechnung muss in zehn Punkt lesbar bleiben.
+    private var accentInk: Color { PulseColor.resourceInk(meter?.appearance.colorToken ?? "amber") }
     private var unit: String { register?.unit.symbol ?? "" }
 
     /// Namen der Zählwerke — nur bei einem Zähler, der mehr als eine Zahl
@@ -460,8 +463,8 @@ struct HistoryView: View {
 
                 forecastLine
 
-                PeriodBars(columns: chartColumns, accent: accent, selection: selectedSlot,
-                           unit: unit) { slot in
+                PeriodBars(columns: chartColumns, accent: accent, accentInk: accentInk,
+                           selection: selectedSlot, unit: unit) { slot in
                     selectedSlot = selectedSlot == slot ? nil : slot
                     recomputeComparison()
                 }
@@ -646,12 +649,42 @@ struct HistoryView: View {
             let repository = PulseRepository(context: context)
             meters = try repository.meteringPoints()
             if selectedMeterID == nil || !meters.contains(where: { $0.id == selectedMeterID }) {
-                selectedMeterID = meters.first?.id
+                // Nur für die Bildschirmfotos, wie `-pulse-bericht` weiter
+                // oben: Vorn steht sonst der Zähler, der zuerst im Alphabet
+                // kommt, und in den Beispieldaten ist das der absichtlich
+                // überfällige Gaszähler. An dem gibt es nichts hochzurechnen —
+                // ein Bild vom Verlauf zeigte die Vorschau also nie.
+                //
+                // Gewählt wird der zuletzt abgelesene Zähler und nicht ein
+                // Zähler mit festem Namen: Ein Name in der App, der nur in
+                // einem Datensatz vorkommt, ist eine Falle für später.
+                if Startschalter.gesetzt("-pulse-verlauf-vorschau") {
+                    selectedMeterID = zuletztAbgelesenerZaehler() ?? meters.first?.id
+                } else {
+                    selectedMeterID = meters.first?.id
+                }
             }
             recompute()
         } catch {
             problem = "Der Verlauf ließ sich nicht laden: \(error.localizedDescription)"
         }
+    }
+
+    /// Der Zähler mit der jüngsten Ablesung.
+    ///
+    /// Nur für den Startschalter `-pulse-verlauf-vorschau` gedacht, siehe
+    /// `load()`. Ohne Ablesung fällt ein Zähler heraus — er wäre der schlechteste
+    /// Kandidat für ein Bild vom Verlauf.
+    private func zuletztAbgelesenerZaehler() -> MeteringPoint.ID? {
+        let repository = PulseRepository(context: context)
+        return meters
+            .compactMap { punkt -> (MeteringPoint.ID, CalendarDay)? in
+                guard let letzte = try? repository.readings(for: punkt).map(\.day).max() else {
+                    return nil
+                }
+                return (punkt.id, letzte)
+            }
+            .max { links, rechts in links.1 < rechts.1 }?.0
     }
 
     private func recompute() {

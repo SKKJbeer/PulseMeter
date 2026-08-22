@@ -169,6 +169,23 @@ for (const scheme of ["light", "dark"]) {
        `Die Erwartung liegt nicht unter dem Gemessenen `
        + `(${Math.round(prognose.erwartet)} zu ${Math.round(prognose.gemessen)})`);
 
+  // **Die Zahl steht auch im Bild.**
+  //
+  // „ich will dass man das voraussichtliche des monats in dem balken grafik
+  // direkt sehen kann." Ein Satz unter der Karte ist nicht dasselbe wie eine
+  // Zahl am Balken — wer aufs Diagramm schaut, schaut nicht nach unten.
+  const amBalken = await page.evaluate(`(() => {
+    const texte = [...document.querySelectorAll("#chart svg text")]
+      .map(t => t.textContent.trim());
+    return { alle: texte, mitZeichen: texte.filter(t => t.startsWith("≈")) };
+  })()`);
+  note(amBalken.mitZeichen.length === 1,
+       `Genau eine erwartete Zahl steht am Balken („${amBalken.mitZeichen[0] ?? "—"}")`);
+  note(prognose.erwartet !== null && amBalken.mitZeichen.length === 1
+       && Math.abs(Number(amBalken.mitZeichen[0].replace(/[^\d,.-]/g, "")
+                          .replace(/\./g, "").replace(",", ".")) - prognose.erwartet) < 1.5,
+       "Und es ist dieselbe Zahl wie im Satz darunter");
+
   // In der Jahresansicht hat die Zeile keinen Ort: Dort stehen drei Jahre
   // nebeneinander, und die Hochrechnung steckt schon im Balken von 2026.
   await page.locator('[data-scale="year"]').first().click();
