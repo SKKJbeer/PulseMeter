@@ -596,10 +596,22 @@ table.data tr.est td:first-child::after {
 .cmp-foot { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--hairline);
   font-size: var(--fs-cap); color: var(--ink-2); line-height: 1.5; }
 .cmp-foot b { color: var(--ink); font-weight: 620; }
-.chart-forecast {
-  font-size: var(--fs-cap); color: var(--ink-2); margin: 2px 0 10px;
-}
-.chart-forecast b { color: var(--ink); font-weight: 640; }
+/* **Der laufende Monat als eigene Leiste.**
+   Im Jahresbild ist eine Spalte gut zwanzig Punkte breit — für zwei Zahlen mit
+   Einheit ist dort kein Platz, und jeder Versuch, sie dort unterzubringen, hat
+   sich überschnitten oder herausgeragt. In voller Breite ist Platz: links, was
+   feststeht, rechts, was erwartet wird, und dazwischen sieht man, wie weit der
+   Monat ist. */
+.chart-forecast { display: flex; flex-direction: column; gap: 6px; margin: 10px 0 2px; }
+.fc-oben { display: flex; justify-content: space-between; gap: 10px;
+  font-size: var(--fs-cap); font-variant-numeric: tabular-nums; }
+.fc-ist { color: var(--ink); font-weight: 650; }
+.fc-soll { font-weight: 650; }
+.fc-spur { height: 15px; border-radius: 8px; overflow: hidden;
+  background: var(--hairline); display: flex; }
+.fc-voll { border-radius: 8px 0 0 8px; }
+.fc-rest { flex: 1; }
+.fc-unten { font-size: var(--fs-cap); color: var(--ink-3); }
 .chart-hint { text-align: center; font-size: var(--fs-cap); color: var(--ink-3); margin-top: 10px; }
 #chart rect[data-month] { cursor: pointer; }
 
@@ -743,7 +755,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.68.3</p>
+  <p>Klickbarer Entwurf · v0.69.0</p>
 </div>
 
 <div class="device">
@@ -784,13 +796,13 @@ select.field { cursor: pointer; }
             <div><div class="big" id="chart-total"></div><div class="lbl" id="chart-label"></div></div>
             <div class="lbl" id="chart-delta"></div>
           </div>
-          <div class="chart-forecast" id="chart-forecast" style="display:none"></div>
           <div id="chart"></div>
           <div class="legend">
             <span><i id="lg-now"></i>2026</span>
             <span><i style="background:var(--hairline-2)"></i>2025</span>
             <span><i style="background:repeating-linear-gradient(45deg,var(--ink-3) 0 2px,transparent 2px 4px)"></i><span id="lg-hatch">geschätzt</span></span>
           </div>
+          <div class="chart-forecast" id="chart-forecast" style="display:none"></div>
           <div class="chart-hint" id="chart-hint">Tippe einen Monat an, um ihn mit den Vorjahren zu vergleichen</div>
         </div>
         <div id="compare-block">
@@ -2010,10 +2022,9 @@ function renderChart() {
     const max = Math.max(...[...now, ...prev].filter(v => v !== null),
                          mf ? mf.value : 0, 1);
     const bw = W / 12;
-    // Über dem Deckel der Hochrechnung steht die erwartete Zahl. Sie braucht
-    // Luft; ohne sie säße sie über dem Kartenrand. Ohne Hochrechnung bleibt es
-    // beim knappen Rand von vorher.
-    const kopf = mf ? 32 : 12;
+    // Im Diagramm steht keine Zahl mehr — die beiden Zahlen stehen in der
+    // Leiste darunter. Damit reicht wieder der knappe Rand von vorher.
+    const kopf = 12;
     let svg = svgOpen(W, H + 18, "Monatsverbrauch 2026 im Vergleich zu 2025");
     for (let g = 0; g <= 2; g++) {
       const yy = H - (g / 2) * (H - kopf);
@@ -2053,32 +2064,6 @@ function renderChart() {
         // Erwartung, dafür braucht es keine zweite Marke.
         svg += `<rect x="${cx + bw * .28}" y="${H - hp}" width="${bw * .44}" height="${hp}"
           rx="2.5" fill="url(#hatch)"/>`;
-        // **Die Zahl als Schild, nicht als schwebende Beschriftung.**
-        //
-        // Ein Balken ist zwölf Punkte breit, die Zahl dreißig. Frei über der
-        // Fläche traf sie Gitterlinien und Nachbarbalken und sah aus, als sei
-        // sie dort liegengeblieben: „Das geht außerhalb der boxen und passt
-        // nicht stimmig ins bild."
-        //
-        // Als Schild — Fläche in der Farbe der Karte, ein Hauch vom Ton des
-        // Zählers, ein Zeiger nach unten auf seinen Balken — ist derselbe
-        // Überhang keine Panne mehr, sondern eine Beschriftung. Sie deckt ab,
-        // was hinter ihr liegt, statt sich damit zu überschneiden. Am Rand
-        // rutscht das Schild herein; der Zeiger bleibt über seinem Balken.
-        const zahl = `≈ ${nf(mf.value, dp)}`;
-        const sb = zahl.length * 5.8 + 10, sh = 15;
-        const mitte = cx + bw / 2;
-        const sx = Math.min(Math.max(0, mitte - sb / 2), W - sb);
-        const sy = Math.max(0, H - hp - sh - 6);
-        svg += `<rect x="${sx}" y="${sy}" width="${sb}" height="${sh}" rx="4"
-          fill="var(--surface)"/>`;
-        svg += `<rect x="${sx}" y="${sy}" width="${sb}" height="${sh}" rx="4"
-          fill="${m.color}" opacity=".1"/>`;
-        svg += `<rect x="${mitte - .5}" y="${sy + sh}" width="1" height="4"
-          fill="${m.color}" opacity=".45"/>`;
-        svg += `<text x="${sx + sb / 2}" y="${sy + 11}" text-anchor="middle"
-          font-size="10" font-weight="650" fill="var(--ink-2)"
-          font-family="-apple-system,sans-serif">${zahl}</text>`;
       }
       if (now[i] !== null) {
         const h = (now[i] / max) * (H - kopf);
@@ -2106,17 +2091,26 @@ function renderChart() {
       // **Wie viele Tage dahinterstehen, gehört dazu.** Drei gemessene Tage
       // ergeben eine Zahl, die sich liest wie ein Monat — und die sich morgen
       // deutlich verschiebt. Wer die Grundlage sieht, kann das einordnen.
-      // **Beide Zahlen, und beide benannt.** „es muss klar sein welche zahl fix
-      // schon ist und welche prognose für den laufenden monat ist." Vorher
-      // stand hier nur die Erwartung; wie viel davon schon feststeht, musste
-      // man aus der Höhe des farbigen Balkens schätzen.
+      // **Beide Zahlen, beide benannt, in voller Breite.** Links, was feststeht,
+      // rechts, was erwartet wird; die Leiste dazwischen zeigt, wie weit der
+      // Monat ist. Dieselbe Bildsprache wie im Diagramm: voll heißt gemessen,
+      // schraffiert heißt erwartet.
       const bisher = meterConsumption(m, { y: TODAY.y, m: TODAY.m, d: 1 }, TODAY);
-      fz.innerHTML = `Bisher <b>${nf(bisher ? bisher.value : 0, dp)} ${m.unit}</b> gemessen,
-        voraussichtlich <b>≈ ${nf(mf.value, dp)} ${m.unit}</b> bis Ende
-        ${MONTHS_LONG[laufend]} — ${mf.method === "previousYear"
-          ? "nach dem Verlauf deines Vorjahres"
-          : "gleichmäßig aus dem bisherigen Tagesschnitt"},
-        gerechnet aus ${mf.tage} von ${mf.tageGesamt} Tagen.`;
+      const ist = bisher ? bisher.value : 0;
+      const anteil = mf.value > 0 ? Math.min(100, (ist / mf.value) * 100) : 0;
+      fz.innerHTML = `
+        <div class="fc-oben">
+          <span class="fc-ist">${nf(ist, dp)} ${m.unit} gemessen</span>
+          <span class="fc-soll" style="color:${textFarbe(m.color)}">≈ ${nf(mf.value, dp)} ${m.unit} erwartet</span>
+        </div>
+        <div class="fc-spur">
+          <div class="fc-voll" style="width:${anteil}%;background:${m.color}"></div>
+          <div class="fc-rest" style="background-color:color-mix(in srgb, ${m.color} 14%, transparent);background-image:repeating-linear-gradient(45deg, color-mix(in srgb, ${m.color} 62%, transparent) 0 1px, transparent 1px 4px)"></div>
+        </div>
+        <div class="fc-unten">${MONTHS_LONG[laufend]} · ${mf.tage} von ${mf.tageGesamt} Tagen ·
+          ${mf.method === "previousYear"
+            ? "nach dem Verlauf deines Vorjahres"
+            : "gleichmäßig aus dem bisherigen Tagesschnitt"}</div>`;
       fz.style.display = "";
     } else {
       fz.style.display = "none";

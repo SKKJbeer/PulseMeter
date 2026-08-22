@@ -147,21 +147,30 @@ for (const scheme of ["light", "dark"]) {
   await page.locator('[data-mode="chart"]').first().click();
   await page.waitForTimeout(300);
   const prognose = await page.evaluate(`(() => {
-    const zeile = document.getElementById("chart-forecast");
+    const leiste = document.getElementById("chart-forecast");
     const m = METERS.find(x => x.id === histMeter);
     const f = monthForecast(m, TODAY.y, TODAY.m);
     const gemessen = meterConsumption(m, { y: TODAY.y, m: TODAY.m, d: 1 }, TODAY);
+    const voll = leiste.querySelector(".fc-voll");
+    const spur = leiste.querySelector(".fc-spur");
     return {
-      sichtbar: zeile.style.display !== "none" && zeile.innerText.trim().length > 0,
-      text: zeile.innerText.trim(),
+      sichtbar: leiste.style.display !== "none" && leiste.innerText.trim().length > 0,
+      text: leiste.innerText.trim(),
+      links: (leiste.querySelector(".fc-ist") || {}).textContent || "",
+      rechts: (leiste.querySelector(".fc-soll") || {}).textContent || "",
       erwartet: f ? f.value : null,
-      gemessen: gemessen ? gemessen.value : null
+      gemessen: gemessen ? gemessen.value : null,
+      anteil: voll && spur
+        ? voll.getBoundingClientRect().width / spur.getBoundingClientRect().width : null
     };
   })()`);
   note(prognose.sichtbar, `Der laufende Monat sagt, was voraussichtlich zusammenkommt`);
-  note(/≈/.test(prognose.text), `Die Zahl trägt ein ≈ — sie ist gerechnet, nicht gemessen`);
+  note(/gemessen/.test(prognose.links) && /erwartet/.test(prognose.rechts),
+       `Beide Zahlen sind benannt („${prognose.links.trim()}" / „${prognose.rechts.trim()}")`);
+  note(/≈/.test(prognose.rechts),
+       `Die erwartete Zahl trägt ein ≈ — sie ist gerechnet, nicht gemessen`);
   note(/von \d+ Tagen/.test(prognose.text),
-       `Und sie nennt, auf wie vielen Tagen sie steht („${prognose.text.slice(-32)}")`);
+       `Und sie nennt, auf wie vielen Tagen sie steht`);
   note(/Vorjahres|Tagesschnitt/.test(prognose.text),
        "Die Grundlage der Hochrechnung steht dabei");
   note(prognose.erwartet !== null && prognose.gemessen !== null
@@ -169,72 +178,41 @@ for (const scheme of ["light", "dark"]) {
        `Die Erwartung liegt nicht unter dem Gemessenen `
        + `(${Math.round(prognose.erwartet)} zu ${Math.round(prognose.gemessen)})`);
 
-  // **Die Zahl steht auch im Bild.**
+  // **Die Leiste zeigt dasselbe Verhältnis, das die Zahlen nennen.**
   //
-  // „ich will dass man das voraussichtliche des monats in dem balken grafik
-  // direkt sehen kann." Ein Satz unter der Karte ist nicht dasselbe wie eine
-  // Zahl am Balken — wer aufs Diagramm schaut, schaut nicht nach unten.
-  const amBalken = await page.evaluate(`(() => {
-    const texte = [...document.querySelectorAll("#chart svg text")]
-      .map(t => t.textContent.trim());
-    return { alle: texte, mitZeichen: texte.filter(t => t.startsWith("≈")) };
-  })()`);
-  note(amBalken.mitZeichen.length === 1,
-       `Genau eine erwartete Zahl steht am Balken („${amBalken.mitZeichen[0] ?? "—"}")`);
-  note(prognose.erwartet !== null && amBalken.mitZeichen.length === 1
-       && Math.abs(Number(amBalken.mitZeichen[0].replace(/[^\d,.-]/g, "")
-                          .replace(/\./g, "").replace(",", ".")) - prognose.erwartet) < 1.5,
-       "Und es ist dieselbe Zahl wie im Satz darunter");
+  // Eine Leiste, die halb voll aussieht, während daneben ein Zehntel steht,
+  // wäre schlimmer als gar keine — man glaubt dem Bild, nicht der Zahl.
+  const sollAnteil = prognose.gemessen / prognose.erwartet;
+  note(prognose.anteil !== null && Math.abs(prognose.anteil - sollAnteil) < 0.03,
+       `Der volle Teil der Leiste passt zum Verhältnis der Zahlen `
+       + `(${(prognose.anteil * 100).toFixed(0)} % zu ${(sollAnteil * 100).toFixed(0)} %)`);
 
-  // **Nichts ragt aus dem Bild heraus.** „es soll alles in den grafiken sein
-  // und nicht außerhalb rausgehen oder so." Eine Zahl, die über den Rand
-  // hinaussteht, ist auf einem schmalen Telefon halb abgeschnitten — und ein
-  // halb abgeschnittener Wert ist schlimmer als keiner.
-  // Gemessen wird das **Schild**, nicht die Schrift darin: Die Fläche ist das
-  // Breiteste am Ganzen, und sie ist es, die am Rand anstoßen würde.
-  const drin = await page.evaluate(`(() => {
-    const svg = document.querySelector("#chart svg").getBoundingClientRect();
-    const zahl = [...document.querySelectorAll("#chart svg text")]
-      .find(t => t.textContent.trim().startsWith("≈"));
-    if (!zahl) return null;
-    const t = zahl.getBoundingClientRect();
-    // Das Schild ist das Rechteck, das die Zahl umschließt.
-    const flaeche = [...document.querySelectorAll("#chart svg rect")]
-      .map(r => r.getBoundingClientRect())
-      .filter(r => r.left <= t.left + 1 && r.right >= t.right - 1
-                && r.top <= t.top + 1 && r.bottom >= t.bottom - 1)
-      .sort((a, b) => (a.width * a.height) - (b.width * b.height))[0];
-    if (!flaeche) return null;
-    return {
-      links: flaeche.left - svg.left,
-      rechts: svg.right - flaeche.right,
-      oben: flaeche.top - svg.top,
-      schild: Math.round(flaeche.width)
-    };
+  // **Im Diagramm selbst steht keine Ziffer.** Drei Anläufe, die Zahl an den
+  // Balken zu hängen, sind an der Breite gescheitert: Ein Monatsbalken ist elf
+  // Punkte breit, die Zahl dreißig. Sie hat dort nichts verloren.
+  const imBild = await page.evaluate(`(() => {
+    return [...document.querySelectorAll("#chart svg text")]
+      .map(t => t.textContent.trim())
+      .filter(t => /[0-9≈]/.test(t));
   })()`);
-  note(drin !== null && drin.links >= 0 && drin.rechts >= 0 && drin.oben >= 0,
-       `Das Schild bleibt im Bild (${drin ? drin.schild : "?"} breit; links `
-       + `${drin ? drin.links.toFixed(0) : "?"}, rechts ${drin ? drin.rechts.toFixed(0) : "?"}, `
-       + `oben ${drin ? drin.oben.toFixed(0) : "?"})`);
-  note(drin !== null, "Die Zahl steht auf einer Fläche und nicht frei im Diagramm");
+  note(imBild.length === 0,
+       `Keine Zahl schwebt im Diagramm${imBild.length ? ` (gefunden: ${imBild.join(", ")})` : ""}`);
 
   // **Voll heißt gemessen, schraffiert heißt nicht gemessen.**
   //
   // Zwei Anläufe waren falsch, und der zweite ist der lehrreiche: blass im Ton
   // des Zählers las sich als „dasselbe, nur schwächer" — grau war schlimmer,
   // denn Grau heißt in diesem Bild schon „Vorjahr", und die Hochrechnung stand
-  // ununterscheidbar neben den Vorjahresbalken. Deshalb wird hier geprüft,
-  // dass die Verlängerung **weder** einfarbig **noch** grau ist.
+  // ununterscheidbar neben den Vorjahresbalken.
   const toene = await page.evaluate(`(() => {
     const rects = [...document.querySelectorAll("#chart svg rect")]
       .map(r => ({ fill: r.getAttribute("fill"), op: r.getAttribute("opacity") }))
       .filter(r => r.fill && r.fill !== "transparent");
-    const vorjahr = rects.filter(r => /--hairline-2/.test(r.fill));
     return {
       schraffiert: rects.filter(r => /#hatch/.test(r.fill)).length,
       grau: rects.filter(r => /--ink-3/.test(r.fill)).length,
       farbig: rects.filter(r => /--(amber|green|blue|orange|red|teal)/.test(r.fill)).length,
-      vorjahr: vorjahr.length
+      vorjahr: rects.filter(r => /--hairline-2/.test(r.fill)).length
     };
   })()`);
   note(toene.schraffiert === 1,
@@ -243,10 +221,6 @@ for (const scheme of ["light", "dark"]) {
        `Und sie ist nicht grau — grau heißt hier Vorjahr (${toene.vorjahr} solche Balken)`);
   note(toene.farbig > 0, `Das Gemessene behält die Farbe des Zählers (${toene.farbig} Balken)`);
 
-  // Ein Zeichen, nicht drei. Die Schraffur sagt, wie weit es reicht; die Zahl
-  // sagt, wie viel. Ein Deckelstrich obendrauf war das dritte Zeichen für
-  // dieselbe Sache — „dann horizontale linie und dann das ungefähr zeichen das
-  // versteh ich nicht."
   const legende = await page.evaluate(`document.getElementById("lg-hatch").textContent`);
   note(/erwartet|geschätzt/.test(legende), `Die Legende benennt die Schraffur („${legende}")`);
 

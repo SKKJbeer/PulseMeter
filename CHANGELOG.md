@@ -9,6 +9,52 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.69.0 — 2026-08-22
+
+**Der laufende Monat bekommt eine eigene Leiste.**
+
+Vier Anläufe, die erwartete Menge an den Balken zu schreiben, sind an derselben
+Sache gescheitert: Ein Monatsbalken ist elf Punkte breit, die Zahl dreißig. Blass
+in der Zählerfarbe, grau, schraffiert mit Deckel, zuletzt auf einem Schild mit
+Zeiger — jedes Mal traf sie Gitterlinien oder Nachbarbalken, und jedes Mal war
+die Antwort des Gründers dieselbe: passt nicht ins Bild.
+
+Statt einen fünften Anlauf zu nehmen, standen drei Vorschläge nebeneinander, als
+klickbare Muster mit echten Zahlen (`docs/entwuerfe/prognose-varianten.html`):
+die Zahlen unter dem Diagramm, die Zahl an der Achse, oder eine eigene Leiste in
+voller Breite. Der Gründer hat die Leiste gewählt.
+
+Unter dem Diagramm steht jetzt:
+
+```
+11 kWh gemessen                        ≈ 115 kWh erwartet
+████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+August · 2 von 31 Tagen · nach dem Verlauf deines Vorjahres
+```
+
+Links, was feststeht. Rechts, was erwartet wird. Dazwischen, wie weit der Monat
+ist — eine Auskunft, die im Jahresbild überhaupt nicht vorkam. Dieselbe
+Bildsprache wie im Diagramm darüber: voll heißt gemessen, schraffiert heißt
+nicht gemessen.
+
+Im Diagramm selbst steht keine Ziffer mehr. Die Schraffur bleibt, sie zeigt den
+Rest des Monats; der Maßstab braucht dafür keinen Kopfraum mehr, weil nichts
+mehr über den Balken steht. Die Legende bleibt, wie sie war — ausdrücklich so
+gewünscht: „Trotzdem würde ich gerne die legende haben wie hier schonmal war,
+dann ist es leichter zu verstehen."
+
+`ForecastStrip` in PulseUI ist der Baustein dazu. Für die Bedienhilfen bleibt es
+ein Satz statt vier Bruchstücke — eine Leiste, die in Teilen vorgelesen wird,
+ergibt keine Auskunft.
+
+Zwei Prüfungen sind neu und halten fest, was hier leicht auseinanderläuft: dass
+der volle Teil der Leiste zum Verhältnis der beiden Zahlen passt (eine Leiste,
+die halb voll aussieht, während daneben ein Zehntel steht, glaubt man eher als
+die Zahl), und dass im Diagramm keine Ziffer mehr schwebt.
+
+Die englischen Namen sind nachgezogen: `Hatching` und `HatchSwatch` statt der
+deutschen Fassung von gestern — CLAUDE.md sagt, Bezeichner sind englisch.
+
 ## 0.68.3 — 2026-08-22
 
 **Die erwartete Zahl bekommt ein Schild.**

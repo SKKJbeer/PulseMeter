@@ -58,6 +58,9 @@ struct HistoryView: View {
     private var meter: MeteringPoint? { meters.first { $0.id == selectedMeterID } }
     private var register: Register? { meter?.primaryRegister }
     private var accent: Color { PulseColor.resource(meter?.appearance.colorToken ?? "amber") }
+    /// Dieselbe Farbe für Text. Eine Fläche darf leuchten, eine Zahl in
+    /// Fußnotengröße muss lesbar bleiben.
+    private var accentInk: Color { PulseColor.resourceInk(meter?.appearance.colorToken ?? "amber") }
     private var unit: String { register?.unit.symbol ?? "" }
 
     /// Namen der Zählwerke — nur bei einem Zähler, der mehr als eine Zahl
@@ -458,8 +461,6 @@ struct HistoryView: View {
                 // 0.27.0.
                 .accessibilityElement(children: .combine)
 
-                forecastLine
-
                 PeriodBars(columns: chartColumns, accent: accent,
                            selection: selectedSlot, unit: unit) { slot in
                     selectedSlot = selectedSlot == slot ? nil : slot
@@ -494,6 +495,8 @@ struct HistoryView: View {
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel(legendDescription)
 
+                forecastLine
+
                 Text(selectedSlot == nil
                      ? "Tippe einen Abschnitt an, um ihn mit den Vorjahren zu vergleichen"
                      : "Noch einmal antippen hebt die Auswahl auf")
@@ -506,48 +509,44 @@ struct HistoryView: View {
         }
     }
 
-    /// Die erwartete Menge des laufenden Abschnitts, in einem Satz.
+    /// Der laufende Abschnitt als eigene Leiste unter dem Diagramm.
     ///
-    /// **Warum eine Zeile und keine zweite große Zahl.** Oben steht, was
-    /// gemessen ist; das bleibt die Hauptaussage. Die Erwartung ist eine
-    /// Ableitung daraus und steht darunter — mit ≈, mit dem Zeitraum, den sie
-    /// meint, und mit der Grundlage, auf der sie beruht. Produktprinzip 7
-    /// verlangt genau das: Eine hochgerechnete Zahl darf da sein, aber niemals
-    /// aussehen wie eine gemessene.
+    /// **Warum nicht am Balken.** Drei Anläufe, die erwartete Menge im
+    /// Jahresbild unterzubringen, sind an derselben Sache gescheitert: Ein
+    /// Monatsbalken ist elf Punkte breit, die Zahl dreißig. Der Gründer hat
+    /// alle drei abgelehnt und aus drei Vorschlägen diesen gewählt.
     ///
-    /// Die Grundlage steht dabei ausgeschrieben („nach dem Verlauf deines
+    /// Beide Zahlen stehen benannt nebeneinander — „es muss klar sein welche
+    /// zahl fix schon ist und welche prognose für den laufenden monat ist" —,
+    /// und die Leiste dazwischen zeigt, wie weit der Abschnitt ist.
+    ///
+    /// Die Grundlage steht ausgeschrieben („nach dem Verlauf deines
     /// Vorjahres"), weil sie den Unterschied zwischen einer Beobachtung an dir
     /// und einer Annahme über dich benennt — und den Text dafür liefert der
     /// Rechenkern, damit App, Bericht und Entwurf dieselben Wörter benutzen.
     @ViewBuilder
     private var forecastLine: some View {
         if let vorschau, vorschau.daysRemaining > 0 {
-            HStack(alignment: .firstTextBaseline, spacing: 5) {
-                Image(systemName: "chart.line.uptrend.xyaxis")
-                    .accessibilityHidden(true)
-                    .font(.system(.caption, weight: .semibold))
-                    // Grau wie die Verlängerung im Balken. In der Farbe des
-                    // Zählers stünde hier ein Zeichen für „gemessen" vor einem
-                    // Satz, der von einer Erwartung handelt.
-                    .foregroundStyle(PulseColor.inkTertiary)
-                // **Beide Zahlen, und beide benannt.**
-                //
-                // Der Gründer: „es muss klar sein welche zahl fix schon ist und
-                // welche prognose für den laufenden monat ist." Vorher stand
-                // hier nur die Erwartung. Wie viel davon schon feststeht, musste
-                // man aus der Höhe des farbigen Balkens schätzen — und eine
-                // Zahl, die man schätzen muss, ist keine Auskunft.
-                Text("Bisher \(number(vorschau.actual.quantity.value, digits: 0)) \(unit) "
-                     + "gemessen, voraussichtlich "
-                     + "≈ \(number(vorschau.projected.value, digits: 0)) \(unit) "
-                     + "bis Ende \(laufenderAbschnittName) — \(vorschau.method.explanation), "
-                     + "gerechnet aus \(vorschau.daysElapsed) von "
-                     + "\(vorschau.daysElapsed + vorschau.daysRemaining) Tagen.")
-                    .font(PulseText.caption)
-                    .foregroundStyle(PulseColor.inkSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .accessibilityElement(children: .combine)
+            let gemessen = "\(number(vorschau.actual.quantity.value, digits: 0)) \(unit)"
+            let erwartet = "≈ \(number(vorschau.projected.value, digits: 0)) \(unit)"
+            let tage = "\(vorschau.daysElapsed) von "
+                + "\(vorschau.daysElapsed + vorschau.daysRemaining) Tagen"
+            ForecastStrip(
+                measured: "\(gemessen) gemessen",
+                expected: "\(erwartet) erwartet",
+                // Anteil des Gemessenen an der Erwartung. Beides kommt aus
+                // derselben Rechnung, und die Prognose liegt nie unter dem Ist —
+                // die Leiste kann also nicht über ihr Ende hinauslaufen.
+                share: vorschau.projected.value > 0
+                    ? double(vorschau.actual.quantity.value) / double(vorschau.projected.value)
+                    : 0,
+                caption: "\(laufenderAbschnittName) · \(tage) · \(vorschau.method.explanation)",
+                accent: accent,
+                accentInk: accentInk,
+                spoken: "Bisher \(gemessen) gemessen, voraussichtlich \(erwartet) "
+                    + "bis Ende \(laufenderAbschnittName) — \(vorschau.method.explanation), "
+                    + "gerechnet aus \(tage)."
+            )
         }
     }
 

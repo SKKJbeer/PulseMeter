@@ -1,0 +1,342 @@
+<title>Prognose im Diagramm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+
+<style>
+  /* Die Farben sind die des Produkts, nicht die dieser Seite. Nur so lässt
+     sich beurteilen, wie eine Variante in der App wirkt. */
+  :root {
+    --ground:    #FBFAF8;
+    --surface:   #FFFFFF;
+    --ink:       #17150F;
+    --ink-2:     #555147;
+    --ink-3:     #6B6457;
+    --hairline:  #E7E3DA;
+    --hairline-2:#D8D2C6;
+    --amber:     #C77A0E;
+    --amber-ink: #9B5F0B;
+    --pro:       #2F7F52;
+    --contra:    #B03A38;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:    #100F0D;
+      --surface:   #1B1917;
+      --ink:       #F5F2EC;
+      --ink-2:     #B3AEA1;
+      --ink-3:     #928B7C;
+      --hairline:  #2B2822;
+      --hairline-2:#383430;
+      --amber:     #E0A040;
+      --amber-ink: #E0A040;
+      --pro:       #5CBF85;
+      --contra:    #DC6E6C;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:    #100F0D;
+    --surface:   #1B1917;
+    --ink:       #F5F2EC;
+    --ink-2:     #B3AEA1;
+    --ink-3:     #928B7C;
+    --hairline:  #2B2822;
+    --hairline-2:#383430;
+    --amber:     #E0A040;
+    --amber-ink: #E0A040;
+    --pro:       #5CBF85;
+    --contra:    #DC6E6C;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    margin: 0;
+    padding: 30px 18px 64px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .blatt { max-width: 620px; margin: 0 auto; display: flex; flex-direction: column; gap: 34px; }
+
+  header { display: flex; flex-direction: column; gap: 12px; }
+  .marke {
+    font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-3); font-weight: 600;
+  }
+  h1 {
+    font-family: Newsreader, Georgia, "Times New Roman", serif;
+    font-weight: 500; font-size: clamp(30px, 8vw, 40px); line-height: 1.1;
+    margin: 0; text-wrap: balance; letter-spacing: -.01em;
+  }
+  .lede {
+    font-family: Newsreader, Georgia, serif;
+    font-size: 18px; line-height: 1.6; color: var(--ink-2); margin: 0;
+    max-width: 34em;
+  }
+  .lede b { color: var(--ink); font-weight: 600; }
+
+  .karte {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: 16px;
+    padding: 18px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+
+  .kopf { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .buchstabe {
+    font-family: Newsreader, Georgia, serif;
+    font-size: 26px; line-height: 1; color: var(--amber-ink); font-weight: 600;
+  }
+  h2 {
+    font-family: Newsreader, Georgia, serif;
+    font-size: 23px; font-weight: 500; margin: 0; line-height: 1.15;
+  }
+  .karte > p { margin: 0; color: var(--ink-2); font-size: 15px; }
+
+  /* Das Musterstück: sieht aus wie die Karte in der App, damit man es
+     beurteilen kann und nicht die Seite drumherum. */
+  .muster {
+    border: 1px solid var(--hairline);
+    border-radius: 13px;
+    padding: 14px 13px 11px;
+    display: flex; flex-direction: column; gap: 10px;
+    background: var(--surface);
+  }
+  .muster .gross {
+    font-size: 27px; font-weight: 700; letter-spacing: -.02em; line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .muster .klein { font-size: 12px; color: var(--ink-3); margin-top: 3px; }
+  .muster svg { display: block; width: 100%; height: auto; }
+
+  .satz { font-size: 12.5px; line-height: 1.45; color: var(--ink-2); }
+  .satz b { color: var(--ink); font-weight: 650; }
+
+  /* Variante A: zwei Werte nebeneinander unter dem Diagramm. */
+  .werte { display: flex; gap: 9px; }
+  .wert {
+    flex: 1; border: 1px solid var(--hairline); border-radius: 9px;
+    padding: 8px 10px; display: flex; flex-direction: column; gap: 2px;
+  }
+  .wert .etikett {
+    font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-3); font-weight: 600;
+  }
+  .wert .zahl { font-size: 17px; font-weight: 660; font-variant-numeric: tabular-nums; }
+  .wert.erwartet { border-color: color-mix(in srgb, var(--amber) 45%, transparent); }
+  .wert.erwartet .zahl { color: var(--amber-ink); }
+
+  /* Variante C: die eigene Leiste für den laufenden Monat. */
+  .leiste { display: flex; flex-direction: column; gap: 6px; }
+  .leiste .oben {
+    display: flex; justify-content: space-between; gap: 10px;
+    font-size: 12px; font-variant-numeric: tabular-nums;
+  }
+  .leiste .oben .b { color: var(--ink); font-weight: 650; }
+  .leiste .oben .e { color: var(--amber-ink); font-weight: 650; }
+  .spur {
+    height: 15px; border-radius: 8px; overflow: hidden;
+    background: var(--hairline); display: flex;
+  }
+  .spur .voll { background: var(--amber); }
+  .spur .rest {
+    flex: 1;
+    background-color: color-mix(in srgb, var(--amber) 14%, transparent);
+    background-image: repeating-linear-gradient(45deg,
+      color-mix(in srgb, var(--amber) 62%, transparent) 0 1px,
+      transparent 1px 4px);
+  }
+  .leiste .unten { font-size: 11.5px; color: var(--ink-3); }
+
+  .waage { display: flex; flex-direction: column; gap: 7px; padding-top: 2px; }
+  .waage div { display: flex; gap: 8px; font-size: 14px; line-height: 1.45; }
+  .waage .zeichen { font-weight: 700; flex: none; width: 14px; }
+  .waage .dafuer .zeichen { color: var(--pro); }
+  .waage .dagegen .zeichen { color: var(--contra); }
+  .waage .dagegen span:last-child { color: var(--ink-2); }
+
+  footer {
+    border-top: 1px solid var(--hairline); padding-top: 18px;
+    color: var(--ink-2); font-size: 15px;
+  }
+  footer p { margin: 0 0 8px; }
+  footer b { color: var(--ink); }
+</style>
+
+<div class="blatt">
+
+  <header>
+    <div class="marke">PulseMeter · Entscheidung</div>
+    <h1>Prognose im Diagramm</h1>
+    <p class="lede">Drei Wege, die erwartete Menge des laufenden Monats zu zeigen.
+      Alle drei lösen dasselbe Problem: Ein Monatsbalken ist <b>elf Punkte breit</b>,
+      die Zahl <b>dreißig</b>. Sie passt dort nicht hin — also muss sie woanders
+      stehen. Die Frage ist nur, wo.</p>
+    <p class="lede">Gleich in allen drei: Voll heißt gemessen, schraffiert heißt
+      erwartet, grau heißt Vorjahr. Die Zahlen sind echt — August, neunzehn von
+      einunddreißig Tagen abgelesen — genau der Stand, den die App gerade rechnet.</p>
+  </header>
+
+  <section class="karte">
+    <div class="kopf"><span class="buchstabe">A</span><h2>Ruhig</h2></div>
+    <p>Im Diagramm steht keine einzige Ziffer. Die beiden Zahlen stehen darunter
+      nebeneinander, jede mit ihrem Etikett.</p>
+    <div class="muster">
+      <div>
+        <div class="gross">1.723 kWh</div>
+        <div class="klein">seit 1. Januar 2026</div>
+      </div>
+      <div data-diagramm="a"></div>
+      <div class="werte">
+        <div class="wert">
+          <span class="etikett">Gemessen</span>
+          <span class="zahl">116 kWh</span>
+        </div>
+        <div class="wert erwartet">
+          <span class="etikett">Erwartet</span>
+          <span class="zahl">≈ 190 kWh</span>
+        </div>
+      </div>
+      <div class="satz">August — nach dem Verlauf deines Vorjahres, gerechnet aus 19 von 31 Tagen.</div>
+    </div>
+    <div class="waage">
+      <div class="dafuer"><span class="zeichen">+</span><span>Nichts überlappt, nichts ragt heraus — das Diagramm bleibt ein Diagramm.</span></div>
+      <div class="dafuer"><span class="zeichen">+</span><span>Beide Zahlen gleich gut lesbar, gleich groß, nebeneinander vergleichbar.</span></div>
+      <div class="dagegen"><span class="zeichen">−</span><span>Die Zahl steht nicht am Balken. Wer aufs Diagramm schaut, muss den Blick senken.</span></div>
+    </div>
+  </section>
+
+  <section class="karte">
+    <div class="kopf"><span class="buchstabe">B</span><h2>An der Achse</h2></div>
+    <p>Die erwartete Zahl steht unter dem Monatskürzel, in derselben Zeile wie
+      „Jan", „Feb", „Mär". Dort hat jede Spalte ihre volle Breite — die Zahl
+      passt hinein, ohne irgendwo hineinzuragen.</p>
+    <div class="muster">
+      <div>
+        <div class="gross">1.723 kWh</div>
+        <div class="klein">seit 1. Januar 2026</div>
+      </div>
+      <div data-diagramm="b"></div>
+      <div class="satz">Bisher <b>116 kWh</b> gemessen, voraussichtlich
+        <b>≈ 190 kWh</b> bis Ende August — nach dem Verlauf deines Vorjahres,
+        gerechnet aus 19 von 31 Tagen.</div>
+    </div>
+    <div class="waage">
+      <div class="dafuer"><span class="zeichen">+</span><span>Die Zahl gehört sichtbar zu ihrer Spalte, ohne Schild, ohne Zeiger, ohne Überlappung.</span></div>
+      <div class="dafuer"><span class="zeichen">+</span><span>Die Achse ist ohnehin die Zeile, in der man Spalten benennt.</span></div>
+      <div class="dagegen"><span class="zeichen">−</span><span>Sie sitzt unten, der Balken endet oben — Auge und Zahl liegen weit auseinander.</span></div>
+      <div class="dagegen"><span class="zeichen">−</span><span>Bei vier Nachkommastellen oder Wasser in m³ wird es an der Achse eng.</span></div>
+    </div>
+  </section>
+
+  <section class="karte">
+    <div class="kopf"><span class="buchstabe">C</span><h2>Eigene Leiste</h2></div>
+    <p>Der laufende Monat bekommt unter dem Diagramm eine eigene waagerechte
+      Leiste. Sie zeigt dasselbe noch einmal, aber in voller Breite: was
+      feststeht, was erwartet wird, und wie weit der Monat ist.</p>
+    <div class="muster">
+      <div>
+        <div class="gross">1.723 kWh</div>
+        <div class="klein">seit 1. Januar 2026</div>
+      </div>
+      <div data-diagramm="c"></div>
+      <div class="leiste">
+        <div class="oben">
+          <span class="b">116 kWh gemessen</span>
+          <span class="e">≈ 190 kWh erwartet</span>
+        </div>
+        <div class="spur">
+          <div class="voll" style="width: 61%"></div>
+          <div class="rest"></div>
+        </div>
+        <div class="unten">August · 19 von 31 Tagen · nach dem Verlauf deines Vorjahres</div>
+      </div>
+    </div>
+    <div class="waage">
+      <div class="dafuer"><span class="zeichen">+</span><span>Volle Breite statt elf Punkte — hier ist Platz für Zahlen, Einheit und Grundlage.</span></div>
+      <div class="dafuer"><span class="zeichen">+</span><span>Man sieht auf einen Blick, wie weit der Monat ist. Das sagt kein Balken im Jahresbild.</span></div>
+      <div class="dagegen"><span class="zeichen">−</span><span>Dieselbe Aussage steht zweimal auf der Karte: einmal als Säule, einmal als Leiste.</span></div>
+      <div class="dagegen"><span class="zeichen">−</span><span>Die Karte wird höher. Prinzip 3 sagt: fünf Sekunden, ohne Scrollen.</span></div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Antworte mit <b>A</b>, <b>B</b> oder <b>C</b> — oder mit einer Mischung,
+      etwa „B, aber mit den zwei Werten aus A".</p>
+    <p>Was du wählst, baue ich in den Klick-Dummy und in die App, mit Prüfungen
+      darauf. Die anderen beiden verschwinden.</p>
+  </footer>
+
+</div>
+
+<script>
+  // Echte Zahlen aus dem Klick-Dummy: Strom, 2026 gegen 2025.
+  const VORJAHR  = [312, 286, 268, 241, 218, 205, 198, 204, 226, 258, 289, 315];
+  const HEUER    = [290, 266, 249, 224, 203, 191, 184, 116, null, null, null, null];
+  const MONATE   = ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
+  const LAUFEND  = 7;          // August
+  const ERWARTET = 190;
+
+  function diagramm(variante) {
+    const W = 322, H = 148;
+    const achsenZeilen = variante === "b" ? 2 : 1;
+    const unten = achsenZeilen === 2 ? 32 : 20;
+    const max = Math.max(...VORJAHR, ERWARTET);
+    const bw = W / 12;
+    const hoehe = w => (w / max) * (H - 12);
+
+    let s = `<svg viewBox="0 0 ${W} ${H + unten}" role="img" `
+          + `aria-label="Monatsverbrauch 2026 im Vergleich zu 2025, August hochgerechnet">`
+          + `<defs><pattern id="sch-${variante}" width="4" height="4" `
+          + `patternTransform="rotate(45)" patternUnits="userSpaceOnUse">`
+          + `<rect width="4" height="4" fill="var(--amber)" opacity=".14"/>`
+          + `<line x1="0" y1="0" x2="0" y2="4" stroke="var(--amber)" stroke-width="1.1" opacity=".62"/>`
+          + `</pattern></defs>`;
+
+    for (let g = 0; g <= 2; g++) {
+      const y = H - (g / 2) * (H - 12);
+      s += `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="var(--hairline)" stroke-width="1"/>`;
+    }
+
+    for (let i = 0; i < 12; i++) {
+      const cx = i * bw;
+      const hv = hoehe(VORJAHR[i]);
+      s += `<rect x="${cx + bw * .16}" y="${H - hv}" width="${bw * .68}" height="${hv}" `
+         + `rx="2.5" fill="var(--hairline-2)"/>`;
+
+      if (i === LAUFEND) {
+        const he = hoehe(ERWARTET);
+        s += `<rect x="${cx + bw * .28}" y="${H - he}" width="${bw * .44}" height="${he}" `
+           + `rx="2.5" fill="url(#sch-${variante})"/>`;
+      }
+      if (HEUER[i] !== null) {
+        const h = hoehe(HEUER[i]);
+        s += `<rect x="${cx + bw * .28}" y="${H - h}" width="${bw * .44}" height="${h}" `
+           + `rx="2.5" fill="var(--amber)"/>`;
+      }
+
+      const laufend = i === LAUFEND;
+      s += `<text x="${cx + bw / 2}" y="${H + 13}" text-anchor="middle" font-size="9.5" `
+         + `fill="${laufend ? "var(--ink)" : "var(--ink-3)"}" `
+         + `font-weight="${laufend ? 640 : 400}">${MONATE[i]}</text>`;
+
+      // Variante B: die erwartete Zahl als zweite Zeile an der Achse.
+      if (variante === "b" && laufend) {
+        s += `<text x="${cx + bw / 2}" y="${H + 25}" text-anchor="middle" font-size="9.5" `
+           + `font-weight="650" fill="var(--amber-ink)">≈${ERWARTET}</text>`;
+      }
+    }
+
+    return s + `</svg>`;
+  }
+
+  for (const halter of document.querySelectorAll("[data-diagramm]")) {
+    halter.innerHTML = diagramm(halter.dataset.diagramm);
+  }
+</script>

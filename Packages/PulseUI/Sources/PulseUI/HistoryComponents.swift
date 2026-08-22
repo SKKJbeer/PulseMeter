@@ -1,13 +1,6 @@
 import Foundation
 import SwiftUI
 
-/// Ein Balken je Abschnitt, mit dem Vorjahr als Marke darin.
-///
-/// Warum eine Marke und kein zweiter Balken: Zwölf Monate mal zwei Balken
-/// ergeben auf einem Telefon Striche von fünf Punkten Breite — man sieht sie,
-/// aber man liest sie nicht mehr. Die Marke sitzt auf derselben Achse wie der
-/// Balken, und die Frage „mehr oder weniger als voriges Jahr?" beantwortet sich
-/// dadurch ohne Vergleich zweier Höhen an verschiedenen Orten.
 /// Diagonale Striche — im ganzen Produkt das Zeichen für „nicht gemessen".
 ///
 /// **Warum eine Schraffur und keine dritte Farbe.** Im Verlauf sind beide
@@ -20,10 +13,10 @@ import SwiftUI
 /// Eine Schraffur ist keine Farbe. Sie sagt „hier ist nichts abgelesen worden",
 /// und zwar unabhängig davon, welche Farbe darunterliegt. Der Klick-Dummy und
 /// die Jahresansicht benutzen sie seit jeher für genau das.
-public struct Schraffur: Shape {
-    private let abstand: CGFloat
+public struct Hatching: Shape {
+    private let spacing: CGFloat
 
-    public init(abstand: CGFloat = 4) { self.abstand = abstand }
+    public init(spacing: CGFloat = 4) { self.spacing = spacing }
 
     public func path(in rect: CGRect) -> Path {
         var pfad = Path()
@@ -33,14 +26,14 @@ public struct Schraffur: Shape {
         while x < rect.maxX {
             pfad.move(to: CGPoint(x: x, y: rect.maxY))
             pfad.addLine(to: CGPoint(x: x + rect.height, y: rect.minY))
-            x += abstand
+            x += spacing
         }
         return pfad
     }
 }
 
 /// Ein Feld Schraffur für die Legende — dasselbe Muster wie im Balken.
-public struct SchraffurFeld: View {
+public struct HatchSwatch: View {
     private let color: Color
 
     public init(color: Color) { self.color = color }
@@ -49,13 +42,98 @@ public struct SchraffurFeld: View {
         RoundedRectangle(cornerRadius: 2, style: .continuous)
             .fill(color.opacity(0.16))
             .overlay {
-                Schraffur(abstand: 3)
+                Hatching(spacing: 3)
                     .stroke(color.opacity(0.75), lineWidth: 1)
                     .clipShape(RoundedRectangle(cornerRadius: 2, style: .continuous))
             }
     }
 }
 
+/// Der laufende Abschnitt in voller Breite: was feststeht, was erwartet wird.
+///
+/// **Warum eine eigene Leiste und keine Zahl am Balken.** Drei Anläufe, die
+/// erwartete Menge im Jahresbild unterzubringen, sind an derselben Sache
+/// gescheitert: Ein Monatsbalken ist elf Punkte breit, die Zahl dreißig. Sie
+/// überschnitt Gitterlinien, ragte aus dem Bild oder brauchte ein Schild, das
+/// wie ein Fremdkörper wirkte. Der Gründer hat alle drei abgelehnt und sich für
+/// diese Fassung entschieden.
+///
+/// Über die ganze Breite ist Platz für beides: links, was gemessen ist, rechts,
+/// was erwartet wird, und dazwischen sieht man, wie weit der Abschnitt ist —
+/// eine Auskunft, die im Jahresbild überhaupt nicht vorkommt.
+///
+/// Dieselbe Bildsprache wie im Diagramm darüber: voll heißt gemessen,
+/// schraffiert heißt nicht gemessen.
+public struct ForecastStrip: View {
+    private let measured: String
+    private let expected: String
+    private let share: Double
+    private let caption: String
+    private let accent: Color
+    private let accentInk: Color
+    private let spoken: String
+
+    /// - Parameter share: Anteil des Gemessenen an der Erwartung, 0 bis 1.
+    /// - Parameter spoken: Was VoiceOver vorliest. Die Leiste besteht aus vier
+    ///   Stücken, die einzeln vorgelesen nichts ergeben; als ein Satz ergeben
+    ///   sie dieselbe Auskunft wie das Bild.
+    public init(measured: String, expected: String, share: Double, caption: String,
+                accent: Color, accentInk: Color, spoken: String) {
+        self.measured = measured
+        self.expected = expected
+        self.share = share
+        self.caption = caption
+        self.accent = accent
+        self.accentInk = accentInk
+        self.spoken = spoken
+    }
+
+    public var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(measured)
+                    .foregroundStyle(PulseColor.ink)
+                Spacer(minLength: 10)
+                Text(expected)
+                    .foregroundStyle(accentInk)
+            }
+            // `PulseText.caption` bringt die gleich breiten Ziffern schon mit.
+            .font(PulseText.caption.weight(.semibold))
+
+            GeometryReader { geometry in
+                HStack(spacing: 0) {
+                    Rectangle()
+                        .fill(accent)
+                        .frame(width: geometry.size.width * min(max(share, 0), 1))
+                    Rectangle()
+                        .fill(accent.opacity(0.14))
+                        .overlay {
+                            Hatching()
+                                .stroke(accent.opacity(0.6), lineWidth: 1)
+                                .clipShape(Rectangle())
+                        }
+                }
+            }
+            .frame(height: 14)
+            .clipShape(Capsule())
+
+            Text(caption)
+                .font(PulseText.caption)
+                .foregroundStyle(PulseColor.inkTertiary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(spoken)
+    }
+}
+
+/// Ein Balken je Abschnitt, mit dem Vorjahr als Marke darin.
+///
+/// Warum eine Marke und kein zweiter Balken: Zwölf Monate mal zwei Balken
+/// ergeben auf einem Telefon Striche von fünf Punkten Breite — man sieht sie,
+/// aber man liest sie nicht mehr. Die Marke sitzt auf derselben Achse wie der
+/// Balken, und die Frage „mehr oder weniger als voriges Jahr?" beantwortet sich
+/// dadurch ohne Vergleich zweier Höhen an verschiedenen Orten.
 public struct PeriodBars: View {
 
     public struct Column: Identifiable, Hashable, Sendable {
@@ -122,106 +200,15 @@ public struct PeriodBars: View {
         return text
     }
 
-    /// Die erwartete Zahl als **Schild** über der Schraffur.
-    ///
-    /// **Warum ein Schild und keine nackte Zahl.** Ein Balken ist elf Punkte
-    /// breit, die Zahl dreißig. Frei über der Fläche schwebend traf sie
-    /// Gitterlinien und Nachbarbalken und sah aus, als sei sie dort
-    /// liegengeblieben: „Das geht außerhalb der boxen und passt nicht stimmig
-    /// ins bild."
-    ///
-    /// Als Schild — Fläche in der Farbe der Karte, ein Hauch vom Ton des
-    /// Zählers, ein Zeiger nach unten auf seinen Balken — ist derselbe Überhang
-    /// kein Fehler mehr, sondern eine Beschriftung. Sie deckt ab, was hinter
-    /// ihr liegt, statt sich damit zu überschneiden, und der Zeiger sagt, zu
-    /// welchem Balken sie gehört.
-    ///
-    /// An den Rändern rutscht das Schild herein, damit nichts aus dem Bild
-    /// ragt; der Zeiger bleibt dabei über seinem Balken stehen und wandert
-    /// innerhalb des Schilds mit.
-    @ViewBuilder
-    private var erwartungsSchild: some View {
-        if let treffer = columns.firstIndex(where: { spalte in
-            guard let erwartet = spalte.projection, let gemessen = spalte.value else { return false }
-            return erwartet > gemessen
-        }), let projection = columns[treffer].projection {
-            GeometryReader { geometry in
-                let anzahl = CGFloat(columns.count)
-                let spaltenbreite = (geometry.size.width - 4 * (anzahl - 1)) / anzahl
-                let mitte = CGFloat(treffer) * (spaltenbreite + 4) + spaltenbreite / 2
-                let breite = schildbreite(projection)
-                let x = Swift.min(Swift.max(0, mitte - breite / 2), geometry.size.width - breite)
-                let deckel = geometry.size.height
-                    - geometry.size.height * projection / upperBound
-                schild(projection, zeigerBei: mitte - x, breite: breite)
-                    .offset(x: x, y: Swift.max(0, deckel - 21))
-            }
-        }
-    }
-
-    /// Breite des Schilds: so viel, wie die Zahl braucht, und keinen Punkt mehr.
-    ///
-    /// Geschätzt statt gemessen — eine Messung im Layout hieße, die Zahl zweimal
-    /// zu setzen. Bei zehn Punkt Schriftgröße ist eine Ziffer gut sechs Punkte
-    /// breit; das Zeichen und die Ränder kommen dazu.
-    private func schildbreite(_ wert: Double) -> CGFloat {
-        CGFloat(erwartungsZahl(wert).count) * 6 + 10
-    }
-
-    private func schild(_ wert: Double, zeigerBei: CGFloat, breite: CGFloat) -> some View {
-        VStack(spacing: 0) {
-            Text(erwartungsZahl(wert))
-                .font(.system(size: 10, weight: .semibold))
-                .foregroundStyle(PulseColor.inkSecondary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-                .padding(.horizontal, 5)
-                .padding(.vertical, 2)
-                .frame(width: breite)
-                // Reihenfolge zählt: `background` legt nach hinten. Der Hauch
-                // Zählerfarbe muss direkt hinter der Schrift liegen, die
-                // deckende Kartenfarbe dahinter — andersherum verschluckt sie
-                // ihn, und das Schild wäre farblos.
-                .background(
-                    RoundedRectangle(cornerRadius: 4, style: .continuous)
-                        .fill(accent.opacity(0.1))
-                )
-                .background(PulseColor.surface,
-                            in: RoundedRectangle(cornerRadius: 4, style: .continuous))
-            // Der Zeiger. Zwei Punkte hoch, sonst wirkt er wie ein Strich im
-            // Diagramm — und Striche haben hier schon eine Bedeutung.
-            Rectangle()
-                .fill(accent.opacity(0.45))
-                .frame(width: 1, height: 4)
-                .offset(x: zeigerBei - breite / 2)
-        }
-        // Steckt schon in der Ansage des Balkens; zweimal vorgelesen wäre
-        // einmal zu viel.
-        .accessibilityHidden(true)
-    }
-
-    /// Die erwartete Menge, wie sie über dem Balken steht.
-    ///
-    /// Mit ≈ und ohne Einheit: Das ≈ ist Pflicht (Produktprinzip 7 — die Zahl
-    /// ist gerechnet, nicht gemessen), die Einheit steht groß über der Karte
-    /// und würde hier nur Platz kosten, den zwölf Monate nicht haben.
-    private func erwartungsZahl(_ wert: Double) -> String {
-        "≈ " + wert.formatted(.number.precision(.fractionLength(0)))
-    }
-
     private var upperBound: Double {
         // Die Hochrechnung gehört in den Maßstab. Ohne sie ragte die
         // Verlängerung des laufenden Monats über den Rand hinaus und wäre
         // abgeschnitten — also gerade dort falsch, wo sie etwas sagen soll.
         let values = columns.flatMap { [$0.value, $0.reference, $0.projection].compactMap { $0 } }
-        let hoechster = Swift.max(values.max() ?? 1, 0.0001)
-        // Über der Schraffur steht das Schild mit der erwarteten Zahl, und das
-        // braucht Luft: Zeile, Ränder und Zeiger sind gut zwanzig Punkte. Ist
-        // die Hochrechnung der höchste Wert im Bild, säße es sonst über dem
-        // Kartenrand. Ist ein anderer Abschnitt ohnehin höher, ändert sich
-        // nichts am Bild.
-        let mitPlatzFuerDieZahl = (columns.compactMap(\.projection).max() ?? 0) * 1.2
-        return Swift.max(hoechster, mitPlatzFuerDieZahl)
+        // Im Diagramm steht keine Zahl mehr — die beiden Zahlen stehen in der
+        // Leiste darunter (``ForecastStrip``). Damit braucht der Maßstab keinen
+        // Kopfraum mehr; die Schraffur darf bis oben reichen.
+        return Swift.max(values.max() ?? 1, 0.0001)
     }
 
     public var body: some View {
@@ -232,7 +219,6 @@ public struct PeriodBars: View {
                 }
             }
             .frame(height: 140)
-            .overlay(alignment: .topLeading) { erwartungsSchild }
 
             // Eine durchgehende Grundlinie statt einer Spur je Spalte.
             //
@@ -313,7 +299,7 @@ public struct PeriodBars: View {
                     ecke
                         .fill(accent.opacity(0.14))
                         .overlay {
-                            Schraffur()
+                            Hatching()
                                 .stroke(accent.opacity(0.6), lineWidth: 1)
                                 .clipShape(ecke)
                         }
