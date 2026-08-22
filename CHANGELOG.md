@@ -9,6 +9,31 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.71.2 — 2026-08-22
+
+**Build 12 liegt in TestFlight — und zum ersten Mal steht auch etwas bei den
+Testern.**
+
+`scripts/asc-testflight.py` aus 0.70.0 war unter Linux nur syntaktisch geprüft;
+gegen Apples Schnittstelle war es nie gelaufen. Beim ersten echten Durchgang hat
+es gehalten. Zwei Minuten für Warten und Eintragen, und im Protokoll steht:
+
+```
+Bau 12: VALID
+Bau 12 steht bereit, die Testhinweise sind eingetragen.
+```
+
+Damit ist der Vorsatz eingelöst, den der Ablauf seit dem ersten Tag gegeben und
+elf Bauten lang nicht gehalten hat: Wer den Bau in TestFlight öffnet, liest
+jetzt, was neu ist.
+
+Build 12 trägt 0.71.0 — die Vergleichskarte nennt ihren Ausschnitt (`1.–3.
+August` statt `August`), weniger Text darunter, und die Vorschau für den
+laufenden Monat gilt für alle Zähler.
+
+Die Auslieferungstabelle in `docs/12-auslieferung.md` ist auf Stand: zwölf
+Bauten, fünf davon gescheitert oder abgebrochen, jeder mit Grund.
+
 ## 0.71.1 — 2026-08-22
 
 **Build 10 liegt in TestFlight — und Build 11 ist ein Fehler, der in die Tabelle

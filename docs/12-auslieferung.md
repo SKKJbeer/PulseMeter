@@ -1,6 +1,6 @@
 # 12 – Auslieferung: vom Code in den App Store, ohne Mac
 
-Stand: 2026-08-22, Version 0.71.1
+Stand: 2026-08-22, Version 0.71.2
 
 Am 17. August ist PulseMeter zum ersten Mal in TestFlight gelandet — **ohne
 Kabel, ohne Xcode auf dem Rechner des Gründers, ohne einen Klick im
@@ -200,6 +200,7 @@ Store Connect deshalb nie gesehen.
 | 9 | 0.67.2 | 21.08. 19:41 | ✓ | Hochrechnung für den laufenden Monat, erste Fassung |
 | 10 | 0.69.2 | 22.08. 11:43 | ✓ | Der laufende Monat als eigene Leiste unter dem Verlauf |
 | 11 | 0.69.2 | 22.08. 14:57 | ✗ | Abgebrochen: derselbe Stand ein zweites Mal geschickt, weil ich nicht nachgesehen hatte, ob Build 10 schon lief |
+| 12 | 0.71.0 | 22.08. 14:59 | ✓ | Vergleichskarte nennt ihren Ausschnitt, Vorschau bei allen Zählern — **erster Bau mit Testhinweisen** |
 
 Zeitangaben in UTC. Ein ✗ heißt: hochgeladen wurde nichts, die Nummer ist
 trotzdem verbraucht.
@@ -214,7 +215,15 @@ Der Ablauf fragte von Anfang an nach diesem Text und schrieb ihn nirgends hin.
 Zehn Bauten lang stand bei den Testern nichts. Seit 0.70.0 trägt
 `scripts/asc-testflight.py` ihn nach dem Hochladen ein: Es wartet auf die
 Verarbeitung, legt die Lokalisierung `de-DE` an oder ändert sie und meldet, wann
-der Bau bereitsteht. Dauert die Verarbeitung länger als zwanzig Minuten, endet
+der Bau bereitsteht.
+
+**Beim ersten echten Durchgang, Build 12, hat es auf Anhieb gehalten** — zwei
+Minuten für Warten und Eintragen, und im Protokoll steht:
+
+```
+Bau 12: VALID
+Bau 12 steht bereit, die Testhinweise sind eingetragen.
+``` Dauert die Verarbeitung länger als zwanzig Minuten, endet
 das Skript grün mit einem Hinweis — der Bau kommt trotzdem an, und ein roter
 Lauf für etwas, das niemand beheben kann, wäre eine Meldung ohne Handlung.
 
