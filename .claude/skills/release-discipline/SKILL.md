@@ -96,7 +96,7 @@ stimmen.
 Zum Prüfen genügt ein Griff:
 
 ```bash
-grep -rn "0\.71\.0" project.yml README.md docs/prototype/index.html
+grep -rn "0\.71\.1" project.yml README.md docs/prototype/index.html
 ```
 
 ---
@@ -165,6 +165,13 @@ ist die eigentliche Auskunft.
 Ohne diese Tabelle lässt sich eine Rückmeldung vom Gerät nicht mehr zuordnen.
 „Bei mir sieht das anders aus" ist ohne die Frage „welcher Build?" nicht zu
 beantworten, und die Antwort steht sonst nirgends.
+
+**Und sie wird vorher gelesen, nicht nur hinterher gefüllt.** Vor jedem
+TestFlight-Lauf: nachsehen, ob für diesen Stand schon einer läuft oder gelaufen
+ist — in der Tabelle und über `list_workflow_runs` mit Status `in_progress`
+**und** `completed`. In 0.71.1 ist genau das schiefgegangen: Eine geplante
+Nachschau hatte den Bau schon angestoßen, ich habe denselben Commit ein zweites
+Mal geschickt, und Build 11 war ein Doppel, das abgebrochen werden musste.
 
 ---
 

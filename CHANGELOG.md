@@ -9,6 +9,33 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.71.1 — 2026-08-22
+
+**Build 10 liegt in TestFlight — und Build 11 ist ein Fehler, der in die Tabelle
+gehört.**
+
+Der Eintrag, für den die Tabelle aus 0.69.2 überhaupt gebaut wurde, ist der
+zweite:
+
+| Build | Version | Ergebnis | |
+|---|---|---|---|
+| 10 | 0.69.2 | ✓ | Der laufende Monat als eigene Leiste |
+| 11 | 0.69.2 | ✗ | Abgebrochen — derselbe Stand ein zweites Mal geschickt |
+
+Was passiert war: Eine geplante Nachschau hatte Build 10 bereits angestoßen. Ich
+habe nicht nachgesehen, ob schon etwas läuft, und denselben Commit ein zweites
+Mal in den Ablauf geschickt. Abgebrochen, bevor er hochgeladen hat — zwei
+identische Bauten in TestFlight wären Rauschen, und die Nummer wäre für nichts
+verbraucht gewesen.
+
+Der Fehler ist genau der Fall, gegen den die Tabelle steht: Hätte ich sie vorher
+gelesen, hätte dort gestanden, dass Build 10 aus 0.69.2 schon läuft. Sie ist
+deshalb kein Protokoll, sondern eine Vorbedingung — **vor dem Anstoßen
+nachsehen, nicht danach eintragen.**
+
+Auch festgehalten: Die Uhr im Prüfcontainer geht gut drei Stunden nach. Für
+Zeitangaben zählt, was der Zeitplan sagt, nicht `date -u`.
+
 ## 0.71.0 — 2026-08-22
 
 **Die Überschrift sagt, was die Zahl meint. Der Erklärsatz kann weg.**

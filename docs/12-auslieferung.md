@@ -1,6 +1,6 @@
 # 12 – Auslieferung: vom Code in den App Store, ohne Mac
 
-Stand: 2026-08-22, Version 0.70.0
+Stand: 2026-08-22, Version 0.71.1
 
 Am 17. August ist PulseMeter zum ersten Mal in TestFlight gelandet — **ohne
 Kabel, ohne Xcode auf dem Rechner des Gründers, ohne einen Klick im
@@ -198,7 +198,8 @@ Store Connect deshalb nie gesehen.
 | 7 | 0.64.0 | 17.08. 18:13 | ✓ | Datum **und Uhrzeit** bei der Ablesung; mehrere Einträge pro Tag |
 | 8 | 0.66.0 | 18.08. 06:56 | ✓ | Szenarienprüfungen, Kontraste nach AA, Schaltjahr-Fehler im Vergleich behoben |
 | 9 | 0.67.2 | 21.08. 19:41 | ✓ | Hochrechnung für den laufenden Monat, erste Fassung |
-| 10 | 0.69.x | offen | — | Der laufende Monat als eigene Leiste unter dem Verlauf |
+| 10 | 0.69.2 | 22.08. 11:43 | ✓ | Der laufende Monat als eigene Leiste unter dem Verlauf |
+| 11 | 0.69.2 | 22.08. 14:57 | ✗ | Abgebrochen: derselbe Stand ein zweites Mal geschickt, weil ich nicht nachgesehen hatte, ob Build 10 schon lief |
 
 Zeitangaben in UTC. Ein ✗ heißt: hochgeladen wurde nichts, die Nummer ist
 trotzdem verbraucht.
