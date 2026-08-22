@@ -124,6 +124,10 @@ public struct ForecastStrip: View {
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(spoken)
+        // Für den Oberflächentest. Am Wortlaut zu suchen hat schon einmal
+        // gebrochen, als sich der Wortlaut änderte — die Kennung überlebt jede
+        // Umformulierung.
+        .accessibilityIdentifier("forecast-strip")
     }
 }
 

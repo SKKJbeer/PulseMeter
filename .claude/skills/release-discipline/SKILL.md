@@ -79,11 +79,25 @@ Eine Korrektur an einem Rechenweg ist **PATCH**, auch wenn sie inhaltlich
 schwer wiegt — sie stellt her, was ohnehin gelten sollte. Ändert sich dagegen,
 *was* gerechnet wird, ist es MINOR.
 
-Die Version steht an drei Stellen und muss überall gleich sein:
+Die Version steht an **fünf** Stellen und muss überall gleich sein:
 
 1. `CHANGELOG.md` — als Überschrift des Eintrags
-2. `docs/prototype/index.html` — in der Kopfzeile neben „Klickbarer Entwurf"
-3. Der Commit, der die Änderung enthält
+2. `project.yml` — `MARKETING_VERSION`, **zweimal**: App und Widget
+3. `README.md` — die Zeile „Version **x.y.z**."
+4. `docs/prototype/index.html` — in der Kopfzeile neben „Klickbarer Entwurf"
+5. Der Commit, der die Änderung enthält
+
+Die Liste stand bis 0.69.2 auf drei Stellen und verschwieg damit ausgerechnet
+die einzige, die beim Nutzer ankommt: `MARKETING_VERSION` ist die Zahl, die in
+TestFlight und im App Store steht. Wer sie vergisst, liefert einen neuen Stand
+unter der alten Nummer aus — und niemand sieht es, weil alle anderen Stellen
+stimmen.
+
+Zum Prüfen genügt ein Griff:
+
+```bash
+grep -rn "0\.69\.2" project.yml README.md docs/prototype/index.html
+```
 
 ---
 
@@ -135,7 +149,26 @@ _82 Tests in PulseCore, alle grün. Prototyp in Hell und Dunkel geprüft._
 
 ---
 
-## 4. Ablauf
+## 4. Was ausgeliefert wurde, wird festgehalten
+
+`CHANGELOG.md` sagt, **was sich geändert hat**. Es sagt nicht, **was auf einem
+Telefon gelandet ist** — und das ist eine andere Frage. Nicht jede Version geht
+nach TestFlight, und die Buildnummer dort kommt aus der Laufnummer des
+Arbeitsablaufs, hat also mit der Version nichts zu tun.
+
+Nach **jedem** TestFlight-Lauf kommt deshalb eine Zeile in die Tabelle in
+`docs/12-auslieferung.md`, Abschnitt „Was wann in TestFlight lag": Buildnummer,
+Version, Datum, Ergebnis, und in einem Halbsatz, was neu war. Auch bei einem
+gescheiterten Lauf — gerade dann, denn die Nummer ist verbraucht und der Grund
+ist die eigentliche Auskunft.
+
+Ohne diese Tabelle lässt sich eine Rückmeldung vom Gerät nicht mehr zuordnen.
+„Bei mir sieht das anders aus" ist ohne die Frage „welcher Build?" nicht zu
+beantworten, und die Antwort steht sonst nirgends.
+
+---
+
+## 5. Ablauf
 
 Für jede Änderung, in dieser Reihenfolge:
 
@@ -149,6 +182,8 @@ Für jede Änderung, in dieser Reihenfolge:
 7. **Committen**, Version in der Commit-Nachricht nennen.
 8. **In der Antwort** die Version und den Prüfstand nennen — der Nutzer soll
    nicht nachfragen müssen, ob getestet wurde.
+9. **Nach einem TestFlight-Lauf** die Zeile in `docs/12-auslieferung.md`
+   nachtragen (Abschnitt 4).
 
 ### Wenn etwas nicht geprüft werden kann
 

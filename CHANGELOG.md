@@ -9,6 +9,55 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.69.2 — 2026-08-22
+
+**Ein Test, der am Wortlaut hing. Und zwei Lücken in der Dokumentation.**
+
+### Behoben
+
+Der Lauf zu 0.69.1 hat gebaut und ist an einer Zusicherung gescheitert:
+
+```
+LaunchTests.swift:543: XCTAssertTrue failed —
+Der laufende Monat nennt seinen voraussichtlichen Verbrauch nicht
+```
+
+Der Oberflächentest suchte einen Text, der mit „Voraussichtlich" beginnt. Genau
+diesen Satz hat 0.69.0 durch die Leiste ersetzt. Der Test hat also richtig
+angeschlagen — nur nicht auf einen Produktfehler, sondern auf meine eigene
+Nachlässigkeit: Wer die Darstellung ändert, ändert die Prüfung mit.
+
+Er sucht jetzt über eine **Kennung** statt über den Wortlaut
+(`forecast-strip`). Das ist nicht bequemer, sondern richtiger: Die Leiste ist
+für die Bedienhilfen ein Element mit einem Satz als Beschriftung, und eine
+Kennung überlebt jede Umformulierung. Geprüft wird weiter, was zählt — das ≈,
+das Wort „gemessen" und die Tagesgrundlage.
+
+### Dokumentation
+
+Der Gründer: „stelle auch sicher dass du alle änderungen und release
+dokumentierst." Nachgesehen statt behauptet — und zwei Befunde:
+
+**Alle 126 Versionen mit eigenem Commit haben einen Eintrag in dieser Datei.**
+Acht weitere Einträge (0.1.0 bis 0.8.0) beschreiben den ersten Wurf, der in
+einem Commit steckt. Keine Lücke.
+
+**Was ausgeliefert wurde, stand nirgends.** `CHANGELOG.md` sagt, was sich
+geändert hat, nicht, was auf einem Telefon gelandet ist — und das ist eine
+andere Frage: Nicht jede Version geht nach TestFlight, und die Buildnummer dort
+ist die Laufnummer des Arbeitsablaufs, nicht die Version. `docs/12-auslieferung.md`
+hat jetzt die Tabelle „Was wann in TestFlight lag", rückwirkend gefüllt für alle
+zehn Läufe, mit den vier gescheiterten und ihren Gründen. Ohne sie lässt sich
+„bei mir sieht das anders aus" nicht mehr zuordnen.
+
+**Die Release-Skill nannte drei Stellen für die Versionsnummer und ließ die
+wichtigste aus:** `MARKETING_VERSION` in `project.yml`, zweimal, App und Widget.
+Das ist die Zahl, die in TestFlight steht. Wer sie vergisst, liefert einen neuen
+Stand unter der alten Nummer aus, und niemand sieht es, weil alle anderen
+Stellen stimmen. Die Liste steht jetzt auf fünf Stellen, mit einem Einzeiler zum
+Nachprüfen — und der Ablauf hat einen neunten Schritt: nach jedem
+TestFlight-Lauf die Zeile nachtragen.
+
 ## 0.69.1 — 2026-08-22
 
 **Eine Umbenennung, ein vergessener Aufrufer.**

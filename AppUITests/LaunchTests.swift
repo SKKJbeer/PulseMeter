@@ -537,20 +537,27 @@ final class LaunchTests: XCTestCase {
                       "Der Stromzähler fehlt in der Auswahl")
         strom.tap()
 
-        let vorschau = app.staticTexts
-            .matching(NSPredicate(format: "label BEGINSWITH %@", "Voraussichtlich"))
-            .firstMatch
+        // Über die Kennung und nicht über den Text: Die Leiste ist für die
+        // Bedienhilfen **ein** Element mit einem Satz als Beschriftung — vier
+        // Bruchstücke einzeln vorgelesen ergäben keine Auskunft. Ein Test, der
+        // am Wortlaut hängt, geht bei der nächsten Umformulierung kaputt; genau
+        // das ist in 0.69.1 passiert, als die Leiste den Satz ersetzt hat.
+        let vorschau = app.descendants(matching: .any)["forecast-strip"].firstMatch
         XCTAssertTrue(vorschau.waitForExistence(timeout: erscheint),
                       "Der laufende Monat nennt seinen voraussichtlichen Verbrauch nicht")
 
         // Produktprinzip 7: Die Zahl ist gerechnet, nicht gemessen, und muss
         // das auch sagen. Und sie muss dazusagen, aus wie vielen Tagen — eine
         // Hochrechnung aus drei Tagen liest sich sonst so fest wie eine
-        // Ablesung.
-        XCTAssertTrue(vorschau.label.contains("≈"),
-                      "Der hochgerechneten Zahl fehlt das Ungefähr-Zeichen: \(vorschau.label)")
-        XCTAssertTrue(vorschau.label.contains(" von ") && vorschau.label.contains("Tagen"),
-                      "Die Prognose nennt ihre Tagesgrundlage nicht: \(vorschau.label)")
+        // Ablesung. Und beide Zahlen müssen benannt sein, sonst weiß niemand,
+        // welche feststeht.
+        let text = vorschau.label
+        XCTAssertTrue(text.contains("≈"),
+                      "Der hochgerechneten Zahl fehlt das Ungefähr-Zeichen: \(text)")
+        XCTAssertTrue(text.contains("gemessen"),
+                      "Das schon Gemessene ist nicht als solches benannt: \(text)")
+        XCTAssertTrue(text.contains(" von ") && text.contains("Tagen"),
+                      "Die Prognose nennt ihre Tagesgrundlage nicht: \(text)")
     }
 
     /// Ein Zähler lässt sich anlegen, ohne dass vorher Beispieldaten nötig

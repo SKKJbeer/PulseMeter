@@ -1,6 +1,6 @@
 # 12 – Auslieferung: vom Code in den App Store, ohne Mac
 
-Stand: 2026-08-17, Version 0.61.0
+Stand: 2026-08-22, Version 0.69.2
 
 Am 17. August ist PulseMeter zum ersten Mal in TestFlight gelandet — **ohne
 Kabel, ohne Xcode auf dem Rechner des Gründers, ohne einen Klick im
@@ -176,7 +176,41 @@ Vier getrennte Dinge, und jedes einzelne hält den Bau unsichtbar:
 
 ---
 
-## 4. Die Kleinigkeiten, die je einen Lauf kosten
+## 4. Was wann in TestFlight lag
+
+`CHANGELOG.md` sagt, was sich geändert hat. Diese Tabelle sagt, **was auf einem
+Telefon gelandet ist** — das ist eine andere Frage, und sie stand bis 0.69.2
+nirgends.
+
+Die **Buildnummer ist die Laufnummer** des Arbeitsablaufs
+(`CURRENT_PROJECT_VERSION=${{ github.run_number }}`), nicht die Version. Sie
+zählt auch bei einem gescheiterten Lauf weiter; die Nummern 1 bis 4 hat App
+Store Connect deshalb nie gesehen.
+
+| Build | Version | Datum | Ergebnis | Was neu war |
+|---|---|---|---|---|
+| 1 | 0.59.1 | 17.08. 09:53 | ✗ | Erster Versuch überhaupt. Bezeichner `com.pulsemeter.app` war bei Apple vergeben |
+| 2 | 0.60.0 | 17.08. 10:00 | ✗ | Neuer Bezeichner `de.karjoth.pulsemeter`; Archiv suchte ein Entwicklungsprofil |
+| 3 | 0.60.1 | 17.08. 10:08 | ✗ | Verteilprofile über die API; dasselbe Profil-Problem |
+| 4 | 0.60.1 | 17.08. 10:18 | ✗ | Wiederholung; Apple lehnte das iOS-18-SDK ab |
+| 5 | 0.60.2 | 17.08. 10:25 | ✓ | **Erster Build auf dem Gerät.** Xcode 26 wird jetzt selbst gewählt |
+| 6 | 0.62.1 | 17.08. 12:08 | ✓ | Herunterladen-Menü im Verlauf, CSV und PDF |
+| 7 | 0.64.0 | 17.08. 18:13 | ✓ | Datum **und Uhrzeit** bei der Ablesung; mehrere Einträge pro Tag |
+| 8 | 0.66.0 | 18.08. 06:56 | ✓ | Szenarienprüfungen, Kontraste nach AA, Schaltjahr-Fehler im Vergleich behoben |
+| 9 | 0.67.2 | 21.08. 19:41 | ✓ | Hochrechnung für den laufenden Monat, erste Fassung |
+| 10 | 0.69.x | offen | — | Der laufende Monat als eigene Leiste unter dem Verlauf |
+
+Zeitangaben in UTC. Ein ✗ heißt: hochgeladen wurde nichts, die Nummer ist
+trotzdem verbraucht.
+
+**Die Zeile kommt nach jedem Lauf dazu, auch nach einem gescheiterten.** Ohne
+sie lässt sich eine Rückmeldung vom Gerät nicht zuordnen: „bei mir sieht das
+anders aus" ist ohne „welcher Build?" nicht zu beantworten, und die Antwort
+steht sonst nirgends.
+
+---
+
+## 5. Die Kleinigkeiten, die je einen Lauf kosten
 
 | Falle | Was zu tun ist |
 |---|---|
@@ -189,7 +223,7 @@ Vier getrennte Dinge, und jedes einzelne hält den Bau unsichtbar:
 
 ---
 
-## 5. Geheimnisse schreiben, nicht abtippen
+## 6. Geheimnisse schreiben, nicht abtippen
 
 Ein Verteilzertifikat als Base64 sind rund viertausend Zeichen. Die aus einem
 Protokoll in ein Formularfeld zu übertragen — auf einem Telefon — ist keine
@@ -210,7 +244,7 @@ trägt sie von Hand ein. Diese Wahl gehört dem Betreiber, nicht dem Werkzeug.
 
 ---
 
-## 6. Was das Vorgehen an sich gelehrt hat
+## 7. Was das Vorgehen an sich gelehrt hat
 
 **Der Fehlschlag ist die Auskunft.** Fünf Läufe, vier Befunde — und **zweimal
 war meine Vermutung falsch und das Protokoll richtig**: einmal bei
@@ -237,7 +271,7 @@ wackligen Oberflächenprüfungen, nur in einer anderen Sprache.
 
 ---
 
-## 7. Auf ein neues Projekt übertragen
+## 8. Auf ein neues Projekt übertragen
 
 Vier Dateien tragen das Ganze. Auszutauschen ist darin nur die Kennung.
 
