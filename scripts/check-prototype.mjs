@@ -87,6 +87,32 @@ for (const scheme of ["light", "dark"]) {
             .click().catch(() => {});
   await page.waitForTimeout(250);
 
+  // --- Von der Übersichtskarte in den Verlauf desselben Zählers
+  //
+  // Vom Gerät gemeldet: Auf der Übersicht passierte beim Antippen einer Karte
+  // nichts, außer man traf „Stand eintragen". Geprüft wird die Zahl selbst,
+  // nicht der Winkel daneben — sie ist das, was jemand ansieht, wenn er mehr
+  // wissen will (Produktprinzip 4).
+  await page.locator('[data-pane="home"]').first().click();
+  await page.waitForTimeout(250);
+  const zweiter = await page.evaluate(() => activeMeters()[1]?.id ?? null);
+  if (zweiter) {
+    await page.locator(`[data-history="${zweiter}"] .value`).first().click();
+    await page.waitForTimeout(350);
+    const angekommen = await page.evaluate(() => ({
+      pane: document.getElementById("pane-history")?.classList.contains("on"),
+      meter: histMeter,
+      monat: selMonth
+    }));
+    note(angekommen.pane === true, "Ein Klick auf die Zahl führt in den Verlauf");
+    note(angekommen.meter === zweiter,
+         "Und zwar zum Zähler dieser Karte, nicht zum ersten der Liste");
+    note(angekommen.monat === null,
+         "Ohne einen Monat, der noch vom vorigen Zähler stammt");
+    await page.locator('[data-pane="home"]').first().click();
+    await page.waitForTimeout(200);
+  }
+
   if (neu) {
     await page.locator('[data-pane="home"]').first().click();
     await page.waitForTimeout(250);

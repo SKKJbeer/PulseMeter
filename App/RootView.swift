@@ -18,12 +18,23 @@ struct RootView: View {
         return 0
     }()
 
+    /// Welcher Zähler im Verlauf gezeigt werden soll, wenn jemand seine Karte
+    /// auf der Übersicht antippt.
+    ///
+    /// Ein Wunsch, kein Zustand: Der Verlauf nimmt ihn entgegen und setzt ihn
+    /// zurück. Bliebe er stehen, führte jeder spätere Wechsel auf den Verlauf
+    /// wieder zu diesem Zähler — auch Wochen später.
+    @State private var verlaufFuer: MeteringPoint.ID?
+
     var body: some View {
         TabView(selection: $tab) {
-            OverviewView()
+            OverviewView(oeffneVerlauf: { id in
+                verlaufFuer = id
+                tab = 1
+            })
                 .tabItem { Label("Übersicht", systemImage: "house") }
                 .tag(0)
-            HistoryView()
+            HistoryView(zeige: $verlaufFuer)
                 .tabItem { Label("Verlauf", systemImage: "chart.bar") }
                 .tag(1)
             MetersView()
@@ -107,6 +118,10 @@ struct MeterRow: Identifiable {
 }
 
 struct OverviewView: View {
+
+    /// Wohin eine angetippte Karte führt. Ohne Angabe bleibt die Übersicht
+    /// eine Anzeige — so, wie sie in Vorschauen und Prüfungen gebraucht wird.
+    var oeffneVerlauf: ((MeteringPoint.ID) -> Void)?
 
     @Environment(\.modelContext) private var context
     @State private var rows: [MeterRow] = []
@@ -202,7 +217,8 @@ struct OverviewView: View {
             unit: row.unit,
             detail: detailText(for: row),
             badge: row.isDue ? "Fällig" : nil,
-            series: row.monthlySeries
+            series: row.monthlySeries,
+            onOpen: oeffneVerlauf.map { sprung in { sprung(row.id) } }
         ) {
             VStack(spacing: 0) {
                 if let value = row.lastValue, let day = row.lastDay {

@@ -230,6 +230,16 @@ h2.large {
 }
 .chip-icon svg { width: 15px; height: 15px; }
 .card-name { font-weight: 620; font-size: 16px; letter-spacing: -0.012em; flex: 1; }
+/* Kopf und Zahl sind ein Knopf und führen in den Verlauf dieses Zählers.
+   Die Fußzeilen bleiben außen vor: Dort sitzt der Erklärknopf des Abschlags,
+   und ein Knopf im Knopf ist im HTML nicht erlaubt und im Finger eine Falle. */
+.card-open {
+  display: block; width: 100%; padding: 0; border: 0; background: none;
+  font: inherit; color: inherit; text-align: left; cursor: pointer;
+}
+.card-open:active { background: var(--surface-2); }
+.card-open:focus-visible { outline: 2px solid var(--tint); outline-offset: -3px; }
+.card-open .chev { width: 17px; height: 17px; flex: none; color: var(--ink-3); }
 .due-pill {
   font-size: 11px; font-weight: 660; letter-spacing: .02em; text-transform: uppercase;
   padding: 4px 8px; border-radius: 999px;
@@ -757,7 +767,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.72.2</p>
+  <p>Klickbarer Entwurf · v0.73.0</p>
 </div>
 
 <div class="device">
@@ -1809,19 +1819,23 @@ function renderCards() {
     }
 
     return `<article class="card ${due ? "flagged" : ""}" style="--c:${m.color};--c-ink:${textFarbe(m.color)}">
-      <div class="card-top">
-        <span class="chip-icon">${icon(m)}</span>
-        <span class="card-name">${m.name}</span>
-        ${due ? '<span class="due-pill">Fällig</span>' : ""}
-      </div>
-      <div class="card-body">
-        <div class="card-figure">
-          <div class="card-caption">${periodCaption(ytd)}</div>
-          <div class="value-row"><span class="value">${figure}</span><span class="unit">${m.unit}</span></div>
-          <div class="sub">${sub}</div>
+      <button type="button" class="card-open" data-history="${m.id}"
+              aria-label="Verlauf für ${m.name}">
+        <div class="card-top">
+          <span class="chip-icon">${icon(m)}</span>
+          <span class="card-name">${m.name}</span>
+          ${due ? '<span class="due-pill">Fällig</span>' : ""}
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
         </div>
-        ${sparkline(reg, m.color)}
-      </div>
+        <div class="card-body">
+          <div class="card-figure">
+            <div class="card-caption">${periodCaption(ytd)}</div>
+            <div class="value-row"><span class="value">${figure}</span><span class="unit">${m.unit}</span></div>
+            <div class="sub">${sub}</div>
+          </div>
+          ${sparkline(reg, m.color)}
+        </div>
+      </button>
       ${extra}
       <div class="card-actions"><button type="button" data-capture="${m.id}">Stand eintragen</button></div>
     </article>`;
@@ -3548,7 +3562,7 @@ function refreshAfterMeterChange() {
 
 /* Ereignisse */
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-capture],[data-meterchange],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export],[data-month],[data-open],[data-scope],[data-period],[data-meter],[data-pro],[data-unlock],#add-meter,#first-meter,#ed-save,#ed-archive,#ed-delete");
+  const t = e.target.closest("[data-capture],[data-history],[data-meterchange],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export],[data-month],[data-open],[data-scope],[data-period],[data-meter],[data-pro],[data-unlock],#add-meter,#first-meter,#ed-save,#ed-archive,#ed-delete");
   if (!t) return;
 
   if (t.dataset.pro !== undefined) return setPro(t.dataset.pro === "1");
@@ -3565,6 +3579,20 @@ document.addEventListener("click", e => {
   if (t.id === "ed-delete") return deleteMeter();
 
   if (t.dataset.capture) return openCapture(t.dataset.capture);
+
+  // Von der Karte in den Verlauf desselben Zählers.
+  //
+  // Der ausgewählte Monat fällt dabei weg: Er gehörte zum vorigen Zähler, und
+  // ein Balken, der beim Wechsel stehen bleibt, zeigt den Ausschnitt eines
+  // anderen — die wiederkehrende Fehlerklasse dieses Projekts.
+  if (t.dataset.history) {
+    histMeter = t.dataset.history;
+    selMonth = null;
+    renderPicker();
+    renderHistory();
+    document.querySelector('#tabs [data-pane="history"]').click();
+    return;
+  }
   if (t.dataset.meterchange) return recordMeterChange();
   if (t.dataset.explain) return openExplain(t.dataset.explain);
   if (t.hasAttribute("data-close")) return closeSheets();
@@ -3585,7 +3613,15 @@ document.addEventListener("click", e => {
     document.querySelector(".screen").scrollTop = 0;
     return;
   }
-  if (t.dataset.pick) { histMeter = t.dataset.pick; renderPicker(); renderHistory(); return; }
+  // `selMonth` fällt auch hier weg — aus demselben Grund wie beim Sprung von
+  // der Karte, und weil `HistoryView` es beim Zählerwechsel ebenso hält.
+  if (t.dataset.pick) {
+    histMeter = t.dataset.pick;
+    selMonth = null;
+    renderPicker();
+    renderHistory();
+    return;
+  }
   if (t.dataset.scale) {
     histScale = t.dataset.scale;
     document.querySelectorAll("#scale button").forEach(b =>

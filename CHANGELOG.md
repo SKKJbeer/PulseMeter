@@ -9,6 +9,42 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.73.0 — 2026-08-22
+
+**Die Karte führt in den Verlauf.**
+
+Vom Gerät gemeldet: „wenn man beim zähler irgendwo hinklickt passiert aktuell
+nichts. nur wenn man auf zähler eintragen geht." Stimmt — und die Sparkline
+trug seit ihrem ersten Tag den Kommentar „Wer den Wert braucht, tippt die Karte
+an". Antippen ließ sie sich nie.
+
+### Hinzugefügt
+- **Ein Tipp auf die Karte auf der Übersicht öffnet den Verlauf dieses
+  Zählers.** Die ganze Fläche über der Fußzeile gilt: Name, Zeitraum, Zahl,
+  Einheit, Erläuterung, Linie. Ein Winkel oben rechts sagt vorher, dass es
+  weitergeht — er ist zugleich der Knopf, über den VoiceOver dorthin kommt.
+- Der Verlauf übernimmt den angetippten Zähler und wirft den ausgewählten
+  Abschnitt weg. Ein Balken, der beim Wechsel stehen bleibt, zeigte sonst den
+  Ausschnitt eines anderen Zählers — die wiederkehrende Fehlerklasse dieses
+  Projekts, diesmal in der Navigation.
+- Drei Prüfungen im Klick-Dummy und eine Oberflächenprüfung in der App, beide
+  auf die **Zahl** gerichtet und nicht auf den Winkel: Wer nur die eigens
+  gebaute Schaltfläche trifft, beweist nichts über die Fläche darum herum.
+
+### Geändert
+- Die Fußzeile der Karte bleibt außen vor. Dort sitzen „Stand eintragen" und
+  der Erklärknopf des Abschlags; eine Tippfläche über einem Knopf ist eine
+  Falle, und im Klick-Dummy wäre es ein Knopf im Knopf.
+- Im Klick-Dummy wirft jetzt auch der Zählerwähler den gewählten Monat weg —
+  die App hielt es längst so, der Entwurf nicht. Regel 2 gilt in beide
+  Richtungen.
+
+_152 Prüfungen im Klick-Dummy, hell und dunkel. PulseCore vollständig grün.
+Die neue Oberflächenprüfung läuft erst auf dem macOS-Läufer — unter Linux gibt
+es keinen Simulator._
+
+---
+
 ## 0.72.2 — 2026-08-22
 
 **„Geht erst beim 3. Mal tippen."**

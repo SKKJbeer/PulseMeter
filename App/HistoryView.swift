@@ -12,6 +12,17 @@ import UniformTypeIdentifiers
 /// Lüge. Wer vergleichen will, wählt einen Zähler (docs/03-ux-konzept.md).
 struct HistoryView: View {
 
+    /// Ein Zähler, den die Übersicht hier sehen möchte.
+    ///
+    /// Wird beim Übernehmen auf `nil` gesetzt — der Wunsch gilt einmal. Sonst
+    /// überschriebe er jede spätere eigene Wahl des Nutzers, sobald er den Tab
+    /// wechselt.
+    @Binding var zeige: MeteringPoint.ID?
+
+    init(zeige: Binding<MeteringPoint.ID?> = .constant(nil)) {
+        _zeige = zeige
+    }
+
     @Environment(\.modelContext) private var context
     @Environment(Purchase.self) private var purchase
 
@@ -107,6 +118,7 @@ struct HistoryView: View {
             .navigationTitle("Verlauf")
             .onAppear {
                 load()
+                uebernimmWunsch()
                 // Nur für die Bildschirmfotos: `simctl` kann nicht tippen, und
                 // ein Dokument, das niemand ansieht, ist ein Dokument, in dem
                 // sich ein Fehler beliebig lange hält.
@@ -114,6 +126,10 @@ struct HistoryView: View {
                     showingReport = true
                 }
             }
+            // Beim ersten Mal ist der Verlauf noch gar nicht gebaut, dann
+            // greift `onAppear`. Beim zweiten Mal steht er schon und bekommt
+            // nur den neuen Wunsch — deshalb beide Wege.
+            .onChange(of: zeige) { _, _ in uebernimmWunsch() }
             .sheet(isPresented: $showingReport) {
                 ReportView()
             }
@@ -674,6 +690,21 @@ struct HistoryView: View {
     }
 
     // MARK: - Daten
+
+    /// Nimmt den Zähler an, den die Übersicht angetippt hat.
+    ///
+    /// Der ausgewählte Abschnitt fällt dabei weg: Er gehörte zum vorigen
+    /// Zähler, und ein Balken, der beim Wechsel stehen bleibt, zeigt den
+    /// Ausschnitt eines anderen Zählers — genau die wiederkehrende
+    /// Fehlerklasse dieses Projekts.
+    private func uebernimmWunsch() {
+        guard let gewuenscht = zeige else { return }
+        zeige = nil
+        guard gewuenscht != selectedMeterID else { return }
+        selectedMeterID = gewuenscht
+        selectedSlot = nil
+        recompute()
+    }
 
     private func load() {
         do {

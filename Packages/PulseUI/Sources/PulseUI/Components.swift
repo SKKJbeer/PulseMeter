@@ -87,6 +87,7 @@ public struct ValueCard<Footer: View>: View {
     private let detail: Text
     private let badge: String?
     private let series: [Double]
+    private let onOpen: (() -> Void)?
     private let footer: Footer
 
     /// - Parameter caption: Der Zeitraum, den der Wert abdeckt. Kein
@@ -99,6 +100,9 @@ public struct ValueCard<Footer: View>: View {
     ///   statt es in die Zeichenkette zu schreiben: Bei einem länger geführten
     ///   Zähler ist es fast immer da, und was fast immer da ist, darf der Zahl
     ///   nicht die Aufmerksamkeit nehmen.
+    /// - Parameter onOpen: Wohin die Karte führt. Ist sie gesetzt, ist alles
+    ///   oberhalb der Fußzeile antippbar und ein Winkel rechts oben sagt, dass
+    ///   es weitergeht. Ohne sie bleibt die Karte, was sie war — eine Anzeige.
     public init(
         title: String,
         symbolName: String,
@@ -110,6 +114,7 @@ public struct ValueCard<Footer: View>: View {
         detail: Text,
         badge: String? = nil,
         series: [Double] = [],
+        onOpen: (() -> Void)? = nil,
         @ViewBuilder footer: () -> Footer = { EmptyView() }
     ) {
         self.title = title
@@ -122,83 +127,130 @@ public struct ValueCard<Footer: View>: View {
         self.detail = detail
         self.badge = badge
         self.series = series
+        self.onOpen = onOpen
         self.footer = footer()
     }
 
     public var body: some View {
         PulseCard(accent: badge == nil ? nil : accent) {
             VStack(spacing: 0) {
-                HStack(spacing: 10) {
-                    Image(systemName: symbolName)
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(accent)
-                        .frame(width: 27, height: 27)
-                        .background(accent.opacity(0.15), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-                    Text(title)
-                        .font(PulseText.cardTitle)
-                        .foregroundStyle(PulseColor.ink)
-                    Spacer(minLength: 8)
-                    if let badge {
-                        Text(badge)
-                            .font(.system(.caption2, weight: .semibold))
-                            .textCase(.uppercase)
-                            .foregroundStyle(accent)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(accent.opacity(0.16), in: Capsule())
-                    }
+                // **Die Karte selbst führt weiter, nicht nur ihr Knopf.**
+                //
+                // Vom Gerät gemeldet: „wenn man beim zähler irgendwo hinklickt
+                // passiert aktuell nichts. nur wenn man auf zähler eintragen
+                // geht." Die Sparkline trug seit jeher den Kommentar „Wer den
+                // Wert braucht, tippt die Karte an" — sie ließ sich nur nie
+                // antippen. Produktprinzip 4 verlangt genau das: keine Zahl
+                // ohne Weg dahinter.
+                //
+                // Die Fußzeile bleibt außen vor. Sie trägt eigene Knöpfe, und
+                // ein Tippbereich über einem Knopf ist eine Falle.
+                if onOpen != nil {
+                    kopfUndWert
+                        .contentShape(Rectangle())
+                        .onTapGesture { onOpen?() }
+                } else {
+                    kopfUndWert
                 }
-                .padding(.horizontal, 15)
-                .padding(.top, 14)
-
-                HStack(alignment: .bottom, spacing: 14) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        // Über der Zahl, nicht darunter: Der Zeitraum ist die
-                        // Frage, die Zahl die Antwort. In dieser Reihenfolge
-                        // gelesen kann die Zahl nicht mehr versprechen, als
-                        // sie deckt.
-                        if !caption.isEmpty {
-                            Text(caption)
-                                .font(PulseText.caption)
-                                .foregroundStyle(PulseColor.inkTertiary)
-                        }
-                        HStack(alignment: .firstTextBaseline, spacing: 5) {
-                            if isApproximate {
-                                Text(verbatim: "≈")
-                                    .font(PulseText.unit)
-                                    .foregroundStyle(PulseColor.inkTertiary)
-                                    .accessibilityLabel("ungefähr")
-                                    .padding(.trailing, -2)
-                            }
-                            Text(value)
-                                .font(PulseText.value)
-                                .foregroundStyle(PulseColor.ink)
-                            Text(unit)
-                                .font(PulseText.unit)
-                                .foregroundStyle(PulseColor.inkSecondary)
-                        }
-                        detail
-                            .font(PulseText.detail)
-                            .foregroundStyle(PulseColor.inkSecondary)
-                    }
-                    // Zeitraum, Zahl, Einheit und Erläuterung sind ein Satz,
-                    // kein Stapel. Einzeln vorgelesen kämen vier Fetzen —
-                    // „1. Januar bis 1. Mai", „ungefähr", „1.181", „m³" —,
-                    // und der Zusammenhang, auf den es hier ankommt, ginge
-                    // genau dabei verloren.
-                    .accessibilityElement(children: .combine)
-                    Spacer(minLength: 0)
-                    if series.count > 1 {
-                        Sparkline(values: series, accent: accent)
-                            .frame(width: 78, height: 34)
-                    }
-                }
-                .padding(.horizontal, 15)
-                .padding(.top, 8)
-                .padding(.bottom, 15)
 
                 footer
             }
+        }
+    }
+
+    /// Alles über der Fußzeile: Name, Zeitraum, Zahl, Erläuterung, Linie.
+    private var kopfUndWert: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 10) {
+                Image(systemName: symbolName)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(accent)
+                    .frame(width: 27, height: 27)
+                    .background(accent.opacity(0.15), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                Text(title)
+                    .font(PulseText.cardTitle)
+                    .foregroundStyle(PulseColor.ink)
+                Spacer(minLength: 8)
+                if let badge {
+                    Text(badge)
+                        .font(.system(.caption2, weight: .semibold))
+                        .textCase(.uppercase)
+                        .foregroundStyle(accent)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(accent.opacity(0.16), in: Capsule())
+                }
+                if onOpen != nil {
+                    // **Der Winkel ist ein eigener Knopf, nicht nur ein
+                    // Zeichen.** Er sagt dem Auge, dass es weitergeht, und
+                    // er ist für VoiceOver das Ziel, das die Karte selbst
+                    // nicht sein kann: Ihre Zahlen sind einzeln ansprechbar
+                    // und sollen es bleiben — ein Knopf um alles herum
+                    // machte aus vier Auskünften einen Satz.
+                    Button { onOpen?() } label: {
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(PulseColor.inkTertiary)
+                            .frame(width: 30, height: 30)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Verlauf für \(title)")
+                    .accessibilityHint("Doppeltippen, um den Verlauf dieses Zählers zu öffnen")
+                    // Der Winkel steht am rechten Rand der Karte, nicht
+                    // 15 Punkt davor: Die Trefferfläche darf 30 Punkt
+                    // breit sein, sichtbar bleibt der schmale Haken.
+                    .padding(.trailing, -7)
+                }
+            }
+            .padding(.horizontal, 15)
+            .padding(.top, 14)
+
+            HStack(alignment: .bottom, spacing: 14) {
+                VStack(alignment: .leading, spacing: 4) {
+                    // Über der Zahl, nicht darunter: Der Zeitraum ist die
+                    // Frage, die Zahl die Antwort. In dieser Reihenfolge
+                    // gelesen kann die Zahl nicht mehr versprechen, als
+                    // sie deckt.
+                    if !caption.isEmpty {
+                        Text(caption)
+                            .font(PulseText.caption)
+                            .foregroundStyle(PulseColor.inkTertiary)
+                    }
+                    HStack(alignment: .firstTextBaseline, spacing: 5) {
+                        if isApproximate {
+                            Text(verbatim: "≈")
+                                .font(PulseText.unit)
+                                .foregroundStyle(PulseColor.inkTertiary)
+                                .accessibilityLabel("ungefähr")
+                                .padding(.trailing, -2)
+                        }
+                        Text(value)
+                            .font(PulseText.value)
+                            .foregroundStyle(PulseColor.ink)
+                        Text(unit)
+                            .font(PulseText.unit)
+                            .foregroundStyle(PulseColor.inkSecondary)
+                    }
+                    detail
+                        .font(PulseText.detail)
+                        .foregroundStyle(PulseColor.inkSecondary)
+                }
+                // Zeitraum, Zahl, Einheit und Erläuterung sind ein Satz,
+                // kein Stapel. Einzeln vorgelesen kämen vier Fetzen —
+                // „1. Januar bis 1. Mai", „ungefähr", „1.181", „m³" —,
+                // und der Zusammenhang, auf den es hier ankommt, ginge
+                // genau dabei verloren.
+                .accessibilityElement(children: .combine)
+                Spacer(minLength: 0)
+                if series.count > 1 {
+                    Sparkline(values: series, accent: accent)
+                        .frame(width: 78, height: 34)
+                }
+            }
+            .padding(.horizontal, 15)
+            .padding(.top, 8)
+            .padding(.bottom, 15)
         }
     }
 }

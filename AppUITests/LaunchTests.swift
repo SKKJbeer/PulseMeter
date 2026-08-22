@@ -592,6 +592,48 @@ final class LaunchTests: XCTestCase {
                       "Der neue Zähler taucht nicht in der Liste auf")
     }
 
+    /// Von der Karte auf der Übersicht in den Verlauf desselben Zählers.
+    ///
+    /// **Vom Gerät gemeldet:** „wenn man auf der übersichtsseite … beim zähler
+    /// irgendwo hinklickt passiert aktuell nichts. nur wenn man auf zähler
+    /// eintragen geht."
+    ///
+    /// Getippt wird auf die große Zahl, nicht auf den Winkel daneben: Sie ist
+    /// das, was jemand ansieht, wenn er mehr wissen will, und ein Test, der
+    /// nur die eigens gebaute Schaltfläche trifft, beweist nichts über die
+    /// Fläche darum herum (Produktprinzip 4).
+    func testTappingAMeterCardOpensItsHistory() {
+        let app = launchWithData()
+
+        // **Strom, nicht der erste Zähler.** Die Zähler stehen alphabetisch,
+        // vorn steht Gas — und genau den zeigt der Verlauf auch von sich aus.
+        // An der ersten Karte ließe sich deshalb nicht unterscheiden, ob der
+        // Sprung den Zähler mitgenommen hat oder nur den Tab gewechselt.
+        let name = app.staticTexts["Strom"]
+        XCTAssertTrue(name.waitForExistence(timeout: erscheint),
+                      "Die Karte für Strom steht nicht auf der Übersicht")
+
+        // Vierzig Punkt unter der Beschriftung liegt die große Zahl. Der
+        // Abstand ist gerechnet, nicht geraten: Auf den Kopf folgen acht Punkt
+        // Abstand, die Zeitraumzeile und dann die Zahl.
+        let ziel = app.coordinate(withNormalizedOffset: .zero)
+            .withOffset(CGVector(dx: name.frame.midX, dy: name.frame.maxY + 40))
+        ziel.tap()
+
+        XCTAssertTrue(app.navigationBars["Verlauf"].waitForExistence(timeout: erscheint),
+                      "Ein Tipp auf die Zahl führt nicht in den Verlauf. Zu sehen war: "
+                      + beschriftungen(in: app))
+
+        // Und zwar zu **diesem** Zähler. Der Zählerwähler zeigt alle Namen
+        // nebeneinander; welcher gilt, sagt seine Auswahlmarke — dieselbe, an
+        // der VoiceOver den gewählten Zähler erkennt.
+        let gewaehlt = app.buttons["Strom"]
+        XCTAssertTrue(gewaehlt.waitForExistence(timeout: erscheint),
+                      "Der Zählerwähler im Verlauf kennt Strom nicht")
+        XCTAssertTrue(gewaehlt.isSelected,
+                      "Der Verlauf steht auf einem anderen Zähler als dem angetippten")
+    }
+
     /// Eine Zeile geht überall auf, wo sie aussieht wie eine Zeile.
     ///
     /// **Vom Gerät gemeldet:** „wenn ich bei zähler auf zähler gehe ist da
