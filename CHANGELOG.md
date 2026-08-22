@@ -9,6 +9,25 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.73.1 — 2026-08-22
+
+### Geändert
+- Build 14 trägt 0.72.2 und 0.73.0 zusammen nach TestFlight; die Zeile dazu
+  steht in `docs/12-auslieferung.md`.
+- **Die beiden gemessenen Zeiten stehen jetzt im sichtbaren Protokoll.**
+  `scripts/test.sh` filtert die Konsole auf Testzeilen, und beide Messungen
+  fielen durch das Sieb — Startzeit seit 0.66.0, Öffnungsdauer seit 0.72.2.
+  Sie standen nur in `build/xcodebuild-test.log` im Artefakt, also dort, wo sie
+  niemand ansieht. Beide heißen jetzt `MESSUNG …`, und der Filter lässt dieses
+  Wort durch. Aufgefallen beim Nachsehen: Im Protokoll von Lauf 213 stand keine
+  der beiden Zahlen.
+
+_Belegt aus Lauf 213 und 214: `testAMeterRowOpensWhereverItIsTapped` und
+`testTappingAMeterCardOpensItsHistory` auf dem macOS-Läufer grün, 14,4 Sekunden
+die erste. 152 Prüfungen im Klick-Dummy, PulseCore vollständig grün._
+
+---
+
 ## 0.73.0 — 2026-08-22
 
 **Die Karte führt in den Verlauf.**

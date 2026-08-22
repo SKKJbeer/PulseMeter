@@ -202,6 +202,7 @@ Store Connect deshalb nie gesehen.
 | 11 | 0.69.2 | 22.08. 14:57 | ✗ | Abgebrochen: derselbe Stand ein zweites Mal geschickt, weil ich nicht nachgesehen hatte, ob Build 10 schon lief |
 | 12 | 0.71.0 | 22.08. 14:59 | ✓ | Vergleichskarte nennt ihren Ausschnitt, Vorschau bei allen Zählern — **erster Bau mit Testhinweisen** |
 | 13 | 0.72.0 | 22.08. 17:41 | ✓ | Kein Prozentwert mehr, wo zwei Tage gegen acht Monate stehen; knappe Zeilen nennen ihre Tage |
+| 14 | 0.73.0 | 22.08. 20:03 | ✓ | Zeilen und Knöpfe auf ihrer ganzen Fläche antippbar, Eintragen und Öffnen ohne Verzögerung, Karte führt in den Verlauf |
 
 Zeitangaben in UTC. Ein ✗ heißt: hochgeladen wurde nichts, die Nummer ist
 trotzdem verbraucht.
