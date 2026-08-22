@@ -609,7 +609,13 @@ struct HistoryView: View {
                             .font(.system(.subheadline, weight: .semibold))
                             .foregroundStyle(change < 0 ? PulseColor.favourable : PulseColor.adverse)
                     } else {
-                        Text("Kein Vergleich möglich")
+                        // Kein Prozentwert heißt nicht immer dasselbe: Mal fehlt
+                        // das Vorjahr ganz, mal deckt es nur ein paar Tage ab.
+                        // Der zweite Fall braucht ein anderes Wort, sonst sucht
+                        // man einen Fehler, wo eine Ablesung fehlt.
+                        Text(comparison.entries.count >= 2 && comparison.entries[1].hasData
+                             ? "Zu wenig Vorjahr zum Vergleichen"
+                             : "Kein Vergleich möglich")
                             .font(PulseText.caption)
                             .foregroundStyle(PulseColor.inkTertiary)
                     }
@@ -864,14 +870,23 @@ struct HistoryView: View {
         // standen dadurch drei leere Zeilen untereinander — auch für das
         // laufende Jahr. Produktprinzip 7 verlangt eine Kennzeichnung, und die
         // ist das ≈; ein Verschweigen verlangt es nicht.
-        comparison.entries.map { entry in
-            YearBars.Row(
+        // **Und eine Zahl sagt, wie viele Tage sie meint.**
+        //
+        // Auf dem Gerät stand „2025 · ≈ 18 kWh" neben „2026 · 1.532 kWh". Die
+        // 18 stammten aus zwei Tagen, die 1.532 aus acht Monaten. Beide Zahlen
+        // stimmen, die Zeile daneben log: „2025" verspricht ein Jahr. Wie beim
+        // August gilt — erst die Beschriftung, dann der Text.
+        let fenster = comparison.window.spanInDays
+        return comparison.entries.map { entry in
+            let knapp = entry.hasData && entry.coveredDays * 2 < fenster
+            return YearBars.Row(
                 id: entry.year,
                 year: String(entry.year),
                 value: entry.hasData ? double(entry.value) : nil,
                 text: entry.hasData
                     ? "\(entry.isApproximate ? "≈ " : "")\(number(entry.value, digits: 0)) \(unit)"
                     : "keine Daten",
+                note: knapp ? "aus \(entry.coveredDays) von \(fenster) Tagen" : nil,
                 isCurrent: entry.year == comparison.entries.first?.year
             )
         }

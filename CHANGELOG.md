@@ -9,6 +9,63 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.72.0 — 2026-08-22
+
+**Acht Monate gegen zwei Tage sind kein Prozentwert.**
+
+Auf dem Gerät des Gründers, Jahresansicht seines Stromzählers:
+
+```
+Jahresvergleich          ≈ +8.657 % gegenüber Vorjahr
+2026  ████████████████   1.532 kWh
+2025  ▏                  ≈ 18 kWh
+2024                     keine Daten
+```
+
+Seine Frage: „warum ist da ungefähr 18 bei 2025? das ist nicht verständlich."
+
+Beide Zahlen stimmen. 1.532 kWh sind acht gemessene Monate 2026. Die 18 kWh
+stammen aus den wenigen Tagen, die seine allererste Ablesung im Ausschnitt
+abdeckt. Der Prozentwert dazwischen ist keine Aussage, sondern die
+wiederkehrende Fehlerklasse dieses Projekts in ihrer reinsten Form: ein Zeitraum,
+den die Daten abdecken, gegen einen, den sie nicht abdecken.
+
+### Der Prozentwert verschwindet, wenn er nichts bedeutet
+
+`approximateChange` liefert jetzt nur noch etwas, wenn beide Seiten den
+Ausschnitt **ähnlich weit** abdecken — die kürzere mindestens halb so weit wie
+die längere. Wer im Vorjahr zur Monatsmitte statt zum Ersten abgelesen hat,
+behält seinen Vergleich. Wer zwei von zweihundert Tagen abdeckt, hat keinen.
+
+Ein ≈ hätte hier nicht geholfen. Es kennzeichnet eine **Schätzung**; hier stand
+aber keine Schätzung, sondern ein Vergleich zweier Dinge, die sich nicht
+vergleichen lassen. So etwas wird nicht gekennzeichnet, sondern weggelassen.
+
+Statt der Zahl steht jetzt **„Zu wenig Vorjahr zum Vergleichen"** — und nicht
+das bisherige „Kein Vergleich möglich". Die beiden Fälle sind verschieden: Mal
+fehlt das Vorjahr ganz, mal deckt es nur ein paar Tage ab. Wer das falsche Wort
+liest, sucht einen Fehler, wo eine Ablesung fehlt.
+
+### Und die Zeile sagt, wie viele Tage sie meint
+
+`2025 · ≈ 18 kWh` verspricht ein Jahr und liefert zwei Tage — derselbe Fehler
+wie „August" über einer Dreitageszahl, zwei Versionen vorher. Deckt eine Zeile
+weniger als die Hälfte des Ausschnitts ab, steht die Deckung jetzt darunter:
+**„aus 12 von 31 Tagen"**. Damit ist die Zahl richtig beschriftet, und der
+Erklärsatz, den es nie gab, wird auch nicht gebraucht.
+
+Die Zahl selbst bleibt stehen. Sie zu verschweigen wäre der Rückschritt auf
+0.64.1, den der Gründer damals zu Recht gemeldet hat.
+
+### Geprüft
+
+Zwei Tests im Rechenkern, an genau seinem Fall nachgebaut: zwei Ablesungen im
+August 2025, ein Jahr Pause, dann laufend 2026 — kein Prozentwert. Und die
+Gegenprobe: ein Vorjahr, das zwei Wochen später anfängt, behält seinen. Im
+Klick-Dummy drei weitere, die den Fall in der Ansicht erzeugen und wieder
+aufräumen: kein Prozentzeichen, der richtige Grund, und die Tagesangabe an der
+knappen Zeile. 142 Prüfungen im Entwurf.
+
 ## 0.71.2 — 2026-08-22
 
 **Build 12 liegt in TestFlight — und zum ersten Mal steht auch etwas bei den

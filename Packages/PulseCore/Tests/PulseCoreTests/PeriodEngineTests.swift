@@ -326,3 +326,84 @@ final class PeriodEngineTests: XCTestCase {
     }
 
 }
+
+// MARK: - Vergleichbare Ausschnitte
+
+/// **Acht Monate gegen zwei Tage sind kein Prozentwert.**
+///
+/// Auf dem Gerät des Gründers stand „≈ +8.657 % gegenüber Vorjahr": 1.532 kWh
+/// aus acht Monaten 2026 gegen ≈ 18 kWh aus zwei Dezembertagen 2025 — seiner
+/// allerersten Ablesung. Beide Zahlen für sich stimmen; die Zahl dazwischen ist
+/// die wiederkehrende Fehlerklasse dieses Projekts.
+final class VergleichbareAusschnitteTests: XCTestCase {
+
+    private func punkt(_ readings: [(CalendarDay, Decimal)]) -> (MeteringPoint, [Reading]) {
+        let werk = Fixture.electricityRegister()
+        let point = MeteringPoint(propertyID: Fixture.property.id, name: "Strom 1",
+                                  kind: .electricity, registers: [werk])
+        var folge = 0
+        let liste = readings.map { tag, wert -> Reading in
+            folge += 1
+            return Reading(registerID: werk.id, day: tag, value: wert,
+                           createdAt: Date(timeIntervalSince1970: TimeInterval(folge)))
+        }
+        return (point, liste)
+    }
+
+    func testTwoDaysAgainstEightMonthsYieldsNoPercentage() throws {
+        // Zwei Ablesungen im August 2025 — mehr gab es damals nicht —, danach
+        // laufend durch 2026. Vom Fenster des Bezugsjahres (1. Januar bis
+        // 20. August) deckt 2025 also zwei Tage ab, 2026 gut acht Monate.
+        // Das Zusammenschneiden auf einen gemeinsamen Ausschnitt greift hier
+        // nicht: Drei Tage sind kein Jahr, und die Vierteltagsgrenze in
+        // `comparison(slot:…)` lehnt es zu Recht ab.
+        var werte: [(CalendarDay, Decimal)] = [
+            (day(2025, 8, 18), 1_000),
+            (day(2025, 8, 20), 1_018),
+            (day(2026, 1, 1), 2_600)
+        ]
+        var stand = Decimal(2_600)
+        for monat in 2...8 {
+            stand += 190
+            werte.append((day(2026, monat, 20), stand))
+        }
+        let (point, readings) = punkt(werte)
+
+        let vergleich = try XCTUnwrap(PeriodEngine.compareAcrossYears(
+            meteringPoint: point, readings: readings, slot: 1, granularity: .year,
+            referenceYear: 2026, yearsBack: 2))
+
+        // Beide Zahlen dürfen dastehen — gekennzeichnet, wie Produktprinzip 7
+        // es verlangt. Nur der Prozentwert dazwischen nicht.
+        XCTAssertTrue(vergleich.entries[0].hasData, "2026 muss eine Zahl haben")
+        XCTAssertTrue(vergleich.entries[1].hasData, "2025 hat zwei gemessene Tage")
+        XCTAssertFalse(vergleich.spansAreComparable,
+                       "Zwei Tage und acht Monate decken den Ausschnitt nicht ähnlich weit ab")
+        XCTAssertNil(vergleich.approximateChange,
+                     "Aus acht Monaten gegen zwei Tage darf kein Prozentwert entstehen")
+    }
+
+    func testASlightlyShorterPreviousYearKeepsItsComparison() throws {
+        // Vorjahr fängt zwei Wochen später an — das bleibt vergleichbar.
+        var werte: [(CalendarDay, Decimal)] = [(day(2025, 1, 15), 1_000)]
+        var stand = Decimal(1_000)
+        for monat in 2...12 {
+            stand += 180
+            werte.append((day(2025, monat, 1), stand))
+        }
+        for monat in 1...8 {
+            stand += 170
+            werte.append((day(2026, monat, 1), stand))
+        }
+        let (point, readings) = punkt(werte)
+
+        let vergleich = try XCTUnwrap(PeriodEngine.compareAcrossYears(
+            meteringPoint: point, readings: readings, slot: 1, granularity: .year,
+            referenceYear: 2026, yearsBack: 1))
+
+        XCTAssertTrue(vergleich.spansAreComparable,
+                      "Zwei Wochen Unterschied sind kein Grund, den Vergleich wegzuwerfen")
+        XCTAssertNotNil(vergleich.approximateChange,
+                        "Hier gehört ein Prozentwert hin")
+    }
+}

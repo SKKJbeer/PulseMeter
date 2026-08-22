@@ -159,6 +159,15 @@ public enum PeriodEngine {
             /// nicht sie zu verschweigen. Die Ansicht zeigt sie jetzt mit einem
             /// ≈ davor.
             public var isApproximate: Bool { hasData && !isComparable }
+
+            /// Wie viele Tage dieses Jahr zum Ausschnitt wirklich beiträgt.
+            ///
+            /// Nicht dasselbe wie ``isComparable``: Ein Jahr kann den ganzen
+            /// Ausschnitt formal abdecken und trotzdem aus einer weit
+            /// gespannten Geraden geschnitten sein. Umgekehrt kann ein Jahr
+            /// echte Ablesungen haben, aber nur für zwei Tage des Ausschnitts.
+            /// Diese Zahl beantwortet die zweite Frage.
+            public var coveredDays: Int { result.coveredDays }
         }
 
         public let slot: Int
@@ -200,8 +209,37 @@ public enum PeriodEngine {
         }
 
         /// Dieselbe Veränderung, auch wenn eine Seite zwischen zwei Ablesungen
-        /// gerechnet ist. Zum Anzeigen **mit** Kennzeichnung, nie ohne.
-        public var approximateChange: Decimal? { rawChange }
+        /// gerechnet ist — aber **nur**, wenn beide Seiten den Ausschnitt
+        /// ähnlich weit abdecken. Zum Anzeigen mit Kennzeichnung, nie ohne.
+        ///
+        /// **Warum die zweite Bedingung.** Auf dem Gerät des Gründers stand
+        /// „≈ +8.657 % gegenüber Vorjahr": 1.532 kWh aus acht Monaten 2026
+        /// gegen ≈ 18 kWh, die aus zwei Dezembertagen 2025 stammen — seine
+        /// erste Ablesung überhaupt. Beide Zahlen für sich sind richtig, der
+        /// Prozentwert dazwischen ist keine Aussage, sondern die
+        /// wiederkehrende Fehlerklasse dieses Projekts: acht Monate gegen zwei
+        /// Tage.
+        ///
+        /// Ein ≈ hilft dagegen nicht. Es kennzeichnet eine Schätzung; hier
+        /// steht aber keine Schätzung, sondern ein Vergleich zweier Dinge, die
+        /// sich nicht vergleichen lassen. Der wird nicht gekennzeichnet,
+        /// sondern weggelassen.
+        public var approximateChange: Decimal? {
+            guard let roh = rawChange, spansAreComparable else { return nil }
+            return roh
+        }
+
+        /// Ob beide Seiten den Ausschnitt ähnlich weit abdecken.
+        ///
+        /// Die Hälfte als Grenze: Wer im Vorjahr zur Monatsmitte statt zum
+        /// Ersten abgelesen hat, soll seinen Vergleich behalten. Wer zwei von
+        /// zweihundert Tagen abdeckt, hat keinen.
+        public var spansAreComparable: Bool {
+            guard entries.count >= 2 else { return false }
+            let a = entries[0].coveredDays, b = entries[1].coveredDays
+            guard a > 0, b > 0 else { return false }
+            return Swift.min(a, b) * 2 >= Swift.max(a, b)
+        }
 
         /// Ob eine angezeigte Veränderung eine geschätzte ist.
         public var changeIsApproximate: Bool {

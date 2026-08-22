@@ -583,6 +583,8 @@ table.data tr.est td:first-child::after {
 .cmp-rows { display: flex; flex-direction: column; gap: 9px; }
 .cmp-row { display: flex; align-items: center; gap: 11px; font-size: var(--fs-sub); }
 .cmp-row .yr { width: 34px; flex: none; color: var(--ink-2); font-weight: 560; }
+.cmp-row .num em { display: block; font-style: normal; font-size: 10.5px;
+  color: var(--ink-3); font-weight: 400; margin-top: 1px; }
 .cmp-row.current .yr { color: var(--ink); font-weight: 680; }
 .cmp-row .track { flex: 1; height: 22px; border-radius: 5px; background: var(--surface-2); overflow: hidden; }
 .cmp-row .track i {
@@ -755,7 +757,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.71.2</p>
+  <p>Klickbarer Entwurf · v0.72.0</p>
 </div>
 
 <div class="device">
@@ -1887,8 +1889,10 @@ function renderCompare(m, reg, idx) {
   // eine Aussage über einen Zeitraum, den die Zahlen nicht beschreiben.
   // Spiegelt `PeriodEngine.comparison`.
   let fenster = win;
+  // Außerhalb des Blocks, weil die Beschriftung der Zeilen sie ebenfalls
+  // braucht: „aus 2 von 234 Tagen" ist ohne die 234 keine Auskunft.
+  const volleTage = win ? between(win.from, win.to) : 0;
   if (win) {
-    const volleTage = between(win.from, win.to);
     for (let step = 1; step < YEARS.length; step++) {
       const von = shiftYear(fenster.from, -step), bis = shiftYear(fenster.to, -step);
       const tage = reg.readings
@@ -1921,22 +1925,41 @@ function renderCompare(m, reg, idx) {
     // Ablesungen herausgeschnitten ist, ganz weg — auch beim laufenden Jahr.
     const belastbar = c && c.complete && restsOnOwnReadings(c);
     return { y, v: c && c.value !== null ? c.value : null,
-             days: c ? c.days : monthDays(y, month), ca: !!c && !belastbar };
+             days: c ? c.days : monthDays(y, month), ca: !!c && !belastbar,
+             // Wie viele Tage des Ausschnitts dieses Jahr wirklich abdeckt.
+             deckung: c && c.days ? c.days : 0 };
   });
 
   const max = Math.max(...rows.map(r => r.v ?? 0), 0.0001);
   const dp = m.frac >= 3 ? 1 : 0;
   const cur = rows[0], prev = rows[1];
-  const delta = cur.v !== null && prev.v !== null && prev.v !== 0 ? (cur.v - prev.v) / prev.v : null;
+  // **Acht Monate gegen zwei Tage sind kein Prozentwert.**
+  //
+  // Auf dem Gerät des Gründers stand „≈ +8.657 % gegenüber Vorjahr": 1.532 kWh
+  // aus acht Monaten 2026 gegen ≈ 18 kWh aus zwei Tagen 2025, seiner ersten
+  // Ablesung überhaupt. Beide Zahlen stimmen; die Zahl dazwischen ist die
+  // wiederkehrende Fehlerklasse dieses Projekts. Ein ≈ hilft dagegen nicht —
+  // es kennzeichnet eine Schätzung, hier steht aber ein Vergleich zweier
+  // Dinge, die sich nicht vergleichen lassen.
+  const aehnlichGedeckt = cur.deckung > 0 && prev.deckung > 0
+    && Math.min(cur.deckung, prev.deckung) * 2 >= Math.max(cur.deckung, prev.deckung);
+  const delta = cur.v !== null && prev.v !== null && prev.v !== 0 && aehnlichGedeckt
+    ? (cur.v - prev.v) / prev.v : null;
 
   const head = delta !== null
     ? `<div class="cmp-delta ${delta < 0 ? "down" : "up"}">${cur.ca || prev.ca ? "≈ " : ""}${pct(delta)} ggü. ${prev.y}</div>`
-    : `<div class="cmp-delta none">${cur.v === null ? "noch keine Ablesung" : "kein Vorjahreswert"}</div>`;
+    : `<div class="cmp-delta none">${cur.v === null
+        ? "noch keine Ablesung"
+        : (prev.v !== null ? "zu wenig Vorjahr zum Vergleichen" : "kein Vorjahreswert")}</div>`;
 
   const body = rows.map(r => `<div class="cmp-row ${r.y === YEARS[0] ? "current" : ""}">
       <span class="yr">${r.y}</span>
       <div class="track">${r.v === null ? "" : `<i style="width:${Math.max(2, r.v / max * 100)}%"></i>`}</div>
-      <span class="num">${r.v === null ? "—" : (r.ca ? "≈ " : "") + nf(r.v, dp) + " " + m.unit}</span>
+      <span class="num">${r.v === null ? "—" : (r.ca ? "≈ " : "") + nf(r.v, dp) + " " + m.unit}${
+        // „2025" verspricht ein Jahr. Deckt die Zahl nur zwei Tage davon ab,
+        // muss das dranstehen — sonst liest sie sich als sparsames Jahr.
+        r.v !== null && r.deckung > 0 && r.deckung * 2 < volleTage
+          ? `<em>aus ${r.deckung} von ${volleTage} Tagen</em>` : ""}</span>
     </div>`).join("");
 
   let foot = "";

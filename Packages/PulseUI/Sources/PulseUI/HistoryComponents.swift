@@ -350,13 +350,19 @@ public struct YearBars: View {
         public let year: String
         public let value: Double?
         public let text: String
+        /// Wie viel des Ausschnitts diese Zahl abdeckt — nur gesetzt, wenn es
+        /// deutlich weniger ist als beim Rest. Ohne diese Angabe liest sich ein
+        /// Jahr mit zwei gemessenen Tagen wie ein sparsames Jahr.
+        public let note: String?
         public let isCurrent: Bool
 
-        public init(id: Int, year: String, value: Double?, text: String, isCurrent: Bool) {
+        public init(id: Int, year: String, value: Double?, text: String,
+                    note: String? = nil, isCurrent: Bool) {
             self.id = id
             self.year = year
             self.value = value
             self.text = text
+            self.note = note
             self.isCurrent = isCurrent
         }
     }
@@ -406,12 +412,24 @@ public struct YearBars: View {
                     }
                     .frame(height: 22)
 
-                    Text(row.text)
-                        .font(.system(.subheadline, weight: row.isCurrent ? .semibold : .regular))
-                        .foregroundStyle(row.value == nil ? PulseColor.inkTertiary : PulseColor.ink)
-                        .frame(width: 92, alignment: .trailing)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.75)
+                    VStack(alignment: .trailing, spacing: 1) {
+                        Text(row.text)
+                            .font(.system(.subheadline, weight: row.isCurrent ? .semibold : .regular))
+                            .foregroundStyle(row.value == nil ? PulseColor.inkTertiary : PulseColor.ink)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.75)
+                        // Die Deckung, wenn sie deutlich kleiner ist als beim
+                        // Rest. Ohne sie liest sich ein Jahr mit zwei gemessenen
+                        // Tagen wie ein sparsames Jahr.
+                        if let note = row.note {
+                            Text(note)
+                                .font(.system(.caption2))
+                                .foregroundStyle(PulseColor.inkTertiary)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.7)
+                        }
+                    }
+                    .frame(width: 92, alignment: .trailing)
                 }
                 .accessibilityElement(children: .combine)
             }

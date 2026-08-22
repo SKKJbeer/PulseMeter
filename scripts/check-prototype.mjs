@@ -224,6 +224,58 @@ for (const scheme of ["light", "dark"]) {
   const legende = await page.evaluate(`document.getElementById("lg-hatch").textContent`);
   note(/erwartet|geschätzt/.test(legende), `Die Legende benennt die Schraffur („${legende}")`);
 
+  // --- Acht Monate gegen zwei Tage sind kein Prozentwert
+  //
+  // Auf dem Gerät des Gründers stand „≈ +8.657 % gegenüber Vorjahr": 1.532 kWh
+  // aus acht Monaten 2026 gegen ≈ 18 kWh aus zwei Tagen 2025 — seiner ersten
+  // Ablesung überhaupt. Beide Zahlen stimmen; die Zahl dazwischen ist die
+  // wiederkehrende Fehlerklasse dieses Projekts.
+  //
+  // Der Fall steckt nicht in den Beispieldaten, also wird er hier gebaut: ein
+  // Zähler, dessen Vorjahr nur zwei Tage des Ausschnitts abdeckt.
+  const knapp = await page.evaluate(`(() => {
+    const m = METERS.find(x => x.id === histMeter);
+    const reg = m.registers[0];
+    const sicherung = reg.readings.slice();
+    // Zwei Ablesungen im Juli 2025, dann ein Jahr Pause, dann laufend 2026.
+    const neu = [
+      { y: 2025, m: 7, d: 20, value: 1000, origin: "manual" },
+      { y: 2025, m: 7, d: 22, value: 1018, origin: "manual" }
+    ];
+    let stand = 1018;
+    for (let mo = 1; mo <= 8; mo++) {
+      stand += 190;
+      neu.push({ y: 2026, m: mo, d: 1, value: stand, origin: "manual" });
+    }
+    reg.readings = neu;
+    return { sicherung: sicherung.length };
+  })()`);
+  note(knapp.sicherung > 0, "Beispieldaten für den Grenzfall vorübergehend ersetzt");
+
+  await page.locator('[data-scale="month"]').first().click();
+  await page.waitForTimeout(300);
+  await page.locator('[data-month="6"]').first().click();   // Juli
+  await page.waitForTimeout(400);
+
+  const grenzfall = await page.evaluate(`(() => {
+    const c = document.getElementById("compare");
+    return {
+      kopf: (c.querySelector(".cmp-delta") || {}).textContent || "",
+      zeilen: [...c.querySelectorAll(".cmp-row")].map(r => r.innerText.split("\\n").join(" "))
+    };
+  })()`);
+  note(!/%/.test(grenzfall.kopf),
+       `Kein Prozentwert aus acht Monaten gegen zwei Tage („${grenzfall.kopf.trim()}")`);
+  note(/zu wenig Vorjahr/i.test(grenzfall.kopf),
+       "Und es steht da, woran es liegt — nicht nur ein leerer Platz");
+  note(grenzfall.zeilen.some(z => /von \d+ Tagen/.test(z)),
+       `Die knappe Zeile sagt, wie viele Tage sie meint („${(grenzfall.zeilen.find(z => /von \d+ Tagen/.test(z)) || "—").trim()}")`);
+
+  await page.evaluate(`(() => { location.reload(); })()`);
+  await page.waitForTimeout(600);
+  await page.locator('[data-pane="history"]').first().click();
+  await page.waitForTimeout(300);
+
   // In der Jahresansicht hat die Zeile keinen Ort: Dort stehen drei Jahre
   // nebeneinander, und die Hochrechnung steckt schon im Balken von 2026.
   await page.locator('[data-scale="year"]').first().click();
