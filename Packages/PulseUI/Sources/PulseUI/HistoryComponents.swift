@@ -8,6 +8,54 @@ import SwiftUI
 /// aber man liest sie nicht mehr. Die Marke sitzt auf derselben Achse wie der
 /// Balken, und die Frage „mehr oder weniger als voriges Jahr?" beantwortet sich
 /// dadurch ohne Vergleich zweier Höhen an verschiedenen Orten.
+/// Diagonale Striche — im ganzen Produkt das Zeichen für „nicht gemessen".
+///
+/// **Warum eine Schraffur und keine dritte Farbe.** Im Verlauf sind beide
+/// Farben schon vergeben: Der Ton des Zählers heißt „gemessen", Grau heißt
+/// „Vorjahr". Eine blasse Fassung des Zählertons las sich als „dasselbe, nur
+/// schwächer", und Grau war schlicht besetzt — auf dem Bildschirmfoto des
+/// Gründers stand die graue Hochrechnung neben den grauen Vorjahresbalken und
+/// war von ihnen nicht zu unterscheiden.
+///
+/// Eine Schraffur ist keine Farbe. Sie sagt „hier ist nichts abgelesen worden",
+/// und zwar unabhängig davon, welche Farbe darunterliegt. Der Klick-Dummy und
+/// die Jahresansicht benutzen sie seit jeher für genau das.
+public struct Schraffur: Shape {
+    private let abstand: CGFloat
+
+    public init(abstand: CGFloat = 4) { self.abstand = abstand }
+
+    public func path(in rect: CGRect) -> Path {
+        var pfad = Path()
+        // Von links außerhalb beginnen: Sonst bliebe die untere linke Ecke
+        // ungestrichelt, weil die Diagonale sie erst hinter dem Rand erreicht.
+        var x = rect.minX - rect.height
+        while x < rect.maxX {
+            pfad.move(to: CGPoint(x: x, y: rect.maxY))
+            pfad.addLine(to: CGPoint(x: x + rect.height, y: rect.minY))
+            x += abstand
+        }
+        return pfad
+    }
+}
+
+/// Ein Feld Schraffur für die Legende — dasselbe Muster wie im Balken.
+public struct SchraffurFeld: View {
+    private let color: Color
+
+    public init(color: Color) { self.color = color }
+
+    public var body: some View {
+        RoundedRectangle(cornerRadius: 2, style: .continuous)
+            .fill(color.opacity(0.16))
+            .overlay {
+                Schraffur(abstand: 3)
+                    .stroke(color.opacity(0.75), lineWidth: 1)
+                    .clipShape(RoundedRectangle(cornerRadius: 2, style: .continuous))
+            }
+    }
+}
+
 public struct PeriodBars: View {
 
     public struct Column: Identifiable, Hashable, Sendable {
@@ -210,30 +258,28 @@ public struct PeriodBars: View {
                 // eine Fuge in einem Balken liest sich als Lücke in den Daten.
                 if let projection = column.projection, let value = column.value,
                    projection > value {
-                    // **Grau, nicht in der Farbe des Zählers.**
+                    // **Schraffiert, nicht eingefärbt.**
                     //
-                    // Der Gründer zur ersten Fassung, die den Zählerton blass
-                    // weiterführte: „es muss klar sein welche zahl fix schon
-                    // ist und welche prognose für den laufenden monat ist. das
-                    // prognose laufende monat soll eher dezent sein und so grau
-                    // integriert und das richtige farbe der reale wert bisher."
+                    // Zwei Anläufe davor waren falsch. Blass in der Farbe des
+                    // Zählers las sich als „dasselbe, nur schwächer" — gemessen
+                    // und hochgerechnet sind aber zweierlei. Grau war schlimmer:
+                    // Grau heißt in diesem Bild „Vorjahr", und auf dem
+                    // Bildschirmfoto stand die graue Hochrechnung direkt neben
+                    // den grauen Vorjahresbalken.
                     //
-                    // Er hat recht: Dieselbe Farbe in zwei Helligkeiten sagt
-                    // „dasselbe, nur schwächer". Gemessen und hochgerechnet
-                    // sind aber nicht dasselbe in schwächer, sondern zweierlei.
-                    // Die Farbe gehört jetzt allein dem, was wirklich abgelesen
-                    // wurde.
-                    RoundedRectangle(cornerRadius: 3, style: .continuous)
-                        .fill(PulseColor.inkTertiary.opacity(0.26))
-                        .frame(height: Swift.max(2, height * projection / upperBound))
-                        .overlay(alignment: .top) {
-                            // Der Deckel sagt, wo die Erwartung endet. Ohne ihn
-                            // sieht eine blasse Fläche nach Unschärfe aus statt
-                            // nach einer Zahl.
-                            Rectangle()
-                                .fill(PulseColor.inkTertiary.opacity(0.6))
-                                .frame(height: 1.5)
+                    // Die Schraffur ist keine dritte Farbe, sondern eine
+                    // Aussage über die Fläche: hier wurde nichts abgelesen. Der
+                    // Ton bleibt der des Zählers — es sind ja seine Zahlen.
+                    let voll = Swift.max(2, height * projection / upperBound)
+                    let ecke = RoundedRectangle(cornerRadius: 3, style: .continuous)
+                    ecke
+                        .fill(accent.opacity(0.14))
+                        .overlay {
+                            Schraffur()
+                                .stroke(accent.opacity(0.6), lineWidth: 1)
+                                .clipShape(ecke)
                         }
+                        .frame(height: voll)
                 }
 
                 if let value = column.value {

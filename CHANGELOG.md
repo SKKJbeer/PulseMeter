@@ -9,6 +9,53 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.68.2 — 2026-08-22
+
+**Schraffiert heißt: hier wurde nichts abgelesen.**
+
+Auch 0.68.1 hat der Gründer im Entwurf abgelehnt, und diesmal mit einem Satz,
+der den Fehler genau benennt: „für mich macht es den eindruck dass prognose
+einmal im oberen diagramm das graue ist, dann horizontale linie und dann das
+ungefähr zeichen das versteh ich nicht."
+
+Zwei Fehler, und beide sind meine.
+
+**Grau war besetzt.** In diesem Diagramm heißt Grau seit jeher „Vorjahr" — die
+Balken hinter den farbigen sind das Vorjahr. Auf seinem Bildschirmfoto stand die
+graue Hochrechnung für August direkt neben den grauen Balken für September bis
+Dezember und war von ihnen nicht zu unterscheiden. Ich habe die Farbe frei
+geglaubt, weil ich auf die Prognose geschaut habe und nicht auf das Bild.
+
+**Drei Zeichen für eine Sache.** Fläche, Deckelstrich und ≈-Zahl sagten
+dasselbe. Wer drei Signale sieht, sucht drei Bedeutungen.
+
+Die Antwort stand längst im eigenen Haus: Die Jahresansicht zeichnet ihre
+Hochrechnung **schraffiert**, und dieselbe Schraffur markiert im Monatsbild
+geschätzte Mengen. Sie ist keine dritte Farbe, sondern eine Aussage über die
+Fläche — hier wurde nichts abgelesen —, und sie funktioniert über jeder Farbe.
+
+Damit steht das Diagramm auf drei Zeichen, die sich nicht überschneiden:
+
+| Was man sieht | Was es heißt |
+|---|---|
+| Voll in der Farbe des Zählers | gemessen |
+| Schraffiert in derselben Farbe | nicht gemessen — erwartet oder geschätzt |
+| Grau | Vorjahr |
+
+Der Deckelstrich ist weg: Wo die Schraffur aufhört, endet die Erwartung. Die
+Zahl bleibt, sie sagt etwas anderes als die Fläche — nicht wie weit, sondern wie
+viel.
+
+Die Legende benennt die Schraffur mit dem Wort, das im gerade gezeigten Bild
+stimmt: „erwartet", wenn nur die Hochrechnung schraffiert ist, „geschätzt",
+sobald auch geschätzte Monate dabei sind, „hochgerechnet" in der Jahresansicht.
+Ein Wort, das für den einen Fall passt und für den anderen nicht, wäre schlimmer
+als gar keins.
+
+In der App gibt es die Schraffur jetzt auch — `Schraffur` und `SchraffurFeld` in
+PulseUI, letzteres für die Legende, damit dort dasselbe Muster steht wie im
+Balken und nicht ein Farbklecks, der etwas anderes behauptet.
+
 ## 0.68.1 — 2026-08-22
 
 **Farbe heißt gemessen. Grau heißt erwartet.**

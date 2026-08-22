@@ -202,19 +202,37 @@ for (const scheme of ["light", "dark"]) {
        `Die Zahl bleibt im Bild (links ${drin ? drin.links.toFixed(0) : "?"}, `
        + `rechts ${drin ? drin.rechts.toFixed(0) : "?"}, oben ${drin ? drin.oben.toFixed(0) : "?"})`);
 
-  // **Farbe heißt gemessen.** Die Verlängerung ist grau, damit sich Ist und
-  // Erwartung nicht als dieselbe Sache in zwei Helligkeiten lesen.
+  // **Voll heißt gemessen, schraffiert heißt nicht gemessen.**
+  //
+  // Zwei Anläufe waren falsch, und der zweite ist der lehrreiche: blass im Ton
+  // des Zählers las sich als „dasselbe, nur schwächer" — grau war schlimmer,
+  // denn Grau heißt in diesem Bild schon „Vorjahr", und die Hochrechnung stand
+  // ununterscheidbar neben den Vorjahresbalken. Deshalb wird hier geprüft,
+  // dass die Verlängerung **weder** einfarbig **noch** grau ist.
   const toene = await page.evaluate(`(() => {
     const rects = [...document.querySelectorAll("#chart svg rect")]
       .map(r => ({ fill: r.getAttribute("fill"), op: r.getAttribute("opacity") }))
       .filter(r => r.fill && r.fill !== "transparent");
+    const vorjahr = rects.filter(r => /--hairline-2/.test(r.fill));
     return {
-      grau: rects.filter(r => /--ink-3/.test(r.fill) && Number(r.op) < 1).length,
-      farbig: rects.filter(r => /--(amber|green|blue|orange|red|teal)/.test(r.fill)).length
+      schraffiert: rects.filter(r => /#hatch/.test(r.fill)).length,
+      grau: rects.filter(r => /--ink-3/.test(r.fill)).length,
+      farbig: rects.filter(r => /--(amber|green|blue|orange|red|teal)/.test(r.fill)).length,
+      vorjahr: vorjahr.length
     };
   })()`);
-  note(toene.grau >= 2, `Die Verlängerung ist grau (${toene.grau} Flächen)`);
+  note(toene.schraffiert === 1,
+       `Die Erwartung ist schraffiert, nicht eingefärbt (${toene.schraffiert} Fläche)`);
+  note(toene.grau === 0,
+       `Und sie ist nicht grau — grau heißt hier Vorjahr (${toene.vorjahr} solche Balken)`);
   note(toene.farbig > 0, `Das Gemessene behält die Farbe des Zählers (${toene.farbig} Balken)`);
+
+  // Ein Zeichen, nicht drei. Die Schraffur sagt, wie weit es reicht; die Zahl
+  // sagt, wie viel. Ein Deckelstrich obendrauf war das dritte Zeichen für
+  // dieselbe Sache — „dann horizontale linie und dann das ungefähr zeichen das
+  // versteh ich nicht."
+  const legende = await page.evaluate(`document.getElementById("lg-hatch").textContent`);
+  note(/erwartet|geschätzt/.test(legende), `Die Legende benennt die Schraffur („${legende}")`);
 
   // In der Jahresansicht hat die Zeile keinen Ort: Dort stehen drei Jahre
   // nebeneinander, und die Hochrechnung steckt schon im Balken von 2026.

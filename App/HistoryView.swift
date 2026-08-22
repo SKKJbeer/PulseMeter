@@ -478,12 +478,12 @@ struct HistoryView: View {
                     if chartColumns.contains(where: \.isPartial) {
                         legendDot(color: accent.opacity(0.4), text: "unvollständig")
                     }
-                    // Grau steht im Bild für „noch nicht gemessen". Ohne
-                    // Legende wäre das eine Farbe, die man sich zusammenreimen
+                    // Die Schraffur heißt „hier wurde nichts abgelesen". Ohne
+                    // Legende wäre das ein Muster, das man sich zusammenreimen
                     // muss — und ausgerechnet bei der Zahl, die keine Messung
                     // ist, darf nichts geraten werden.
                     if vorschau != nil, chartColumns.contains(where: { $0.projection != nil }) {
-                        legendDot(color: PulseColor.inkTertiary.opacity(0.35), text: "erwartet")
+                        legendHatch(text: "erwartet")
                     }
                 }
                 .font(PulseText.caption)
@@ -565,6 +565,16 @@ struct HistoryView: View {
         }
     }
 
+    /// Ein Feld Schraffur statt eines Farbklecks — dasselbe Muster wie im
+    /// Balken, sonst erklärt die Legende etwas anderes, als im Bild steht.
+    private func legendHatch(text: String) -> some View {
+        HStack(spacing: 5) {
+            SchraffurFeld(color: accent).frame(width: 10, height: 10)
+                .accessibilityHidden(true)
+            Text(text)
+        }
+    }
+
     private func legendLine(text: String) -> some View {
         HStack(spacing: 5) {
             Rectangle().fill(PulseColor.inkTertiary).frame(width: 10, height: 2)
@@ -580,6 +590,9 @@ struct HistoryView: View {
         if granularity != .year { parts.append("die Linie \(today.year - 1)") }
         if chartColumns.contains(where: \.isPartial) {
             parts.append("blasse Balken sind unvollständige Abschnitte")
+        }
+        if chartColumns.contains(where: { $0.projection != nil }) {
+            parts.append("die schraffierte Fläche ist die Erwartung für den laufenden Abschnitt")
         }
         return parts.joined(separator: ", ")
     }

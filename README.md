@@ -92,7 +92,7 @@ iCloud-Abgleich wie Käufe lassen sich noch nicht ausprobieren.
 
 ## Status
 
-Version **0.68.1**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
+Version **0.68.2**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
 rechnet echt. Alle vier Bildschirme — Übersicht, Erfassung, Verlauf und Zähler —
 laufen als SwiftUI-App im Simulator und werden auf jedem Lauf fotografiert,
 hell und dunkel. Siehe [CHANGELOG.md](CHANGELOG.md).
@@ -139,7 +139,7 @@ nicht eingecheckt. Wer gar nicht gefragt werden will, startet mit
 
 ## Klick-Dummy
 
-**[Zuletzt veröffentlichter Entwurf →](https://claude.ai/code/artifact/1536d6e0-645d-4fbd-9508-3b5f68338797)**
+**[Zuletzt veröffentlichter Entwurf →](https://claude.ai/code/artifact/1a863df2-7517-408a-a915-6b32fb776b9f)**
 
 Jede Produktänderung wird sofort sichtbar gemacht — als **neue** Veröffentlichung
 mit eigener URL, weil erneutes Veröffentlichen auf dieselbe Adresse nicht

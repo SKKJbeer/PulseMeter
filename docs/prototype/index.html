@@ -743,7 +743,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.68.1</p>
+  <p>Klickbarer Entwurf · v0.68.2</p>
 </div>
 
 <div class="device">
@@ -790,7 +790,6 @@ select.field { cursor: pointer; }
             <span><i id="lg-now"></i>2026</span>
             <span><i style="background:var(--hairline-2)"></i>2025</span>
             <span><i style="background:repeating-linear-gradient(45deg,var(--ink-3) 0 2px,transparent 2px 4px)"></i><span id="lg-hatch">geschätzt</span></span>
-            <span id="lg-erwartet" style="display:none"><i style="background:var(--ink-3);opacity:.35"></i>erwartet</span>
           </div>
           <div class="chart-hint" id="chart-hint">Tippe einen Monat an, um ihn mit den Vorjahren zu vergleichen</div>
         </div>
@@ -1983,6 +1982,9 @@ function renderChart() {
 
   const ytd = yearToDate(reg), yoy = yearOverYear(reg), fc = forecast(reg, m);
   const W = 322, H = 148;
+  // Das Wort zur Schraffur in der Legende. Gesetzt wird es unten dort, wo
+  // gezeichnet wird — nur da ist bekannt, was im Bild tatsächlich vorkommt.
+  let hatchWort = "hochgerechnet";
 
   if (histScale === "month") {
     const now = [], prev = [], est = [];
@@ -1998,6 +2000,13 @@ function renderChart() {
     const mf = monthForecast(m, TODAY.y, TODAY.m);
     const laufend = TODAY.m - 1;
     if (mf) now[laufend] = mf.gemessen;
+    // **Ein Wort für die Schraffur, und zwar das, was sie hier bedeutet.**
+    //
+    // Schraffiert heißt immer „nicht gemessen". Ob das eine geschätzte
+    // Zwischenmenge ist oder die Erwartung für den laufenden Monat, hängt
+    // daran, was im Bild vorkommt. Kommt beides vor, gilt das weitere Wort —
+    // sonst stünde an einem geschätzten Monat „erwartet", und das wäre falsch.
+    hatchWort = est.some(Boolean) ? "geschätzt" : (mf ? "erwartet" : "geschätzt");
     const max = Math.max(...[...now, ...prev].filter(v => v !== null),
                          mf ? mf.value : 0, 1);
     const bw = W / 12;
@@ -2027,18 +2036,23 @@ function renderChart() {
       // in den Daten.
       if (mf && i === laufend && mf.value > (now[i] ?? 0)) {
         const hp = (mf.value / max) * (H - kopf);
-        // **Grau, nicht im Ton des Zählers.**
+        // **Schraffiert, nicht eingefärbt.**
         //
-        // Der Gründer zur ersten Fassung: „es muss klar sein welche zahl fix
-        // schon ist und welche prognose für den laufenden monat ist. das
-        // prognose laufende monat soll eher dezent sein und so grau integriert
-        // und das richtige farbe der reale wert bisher." Dieselbe Farbe in zwei
-        // Helligkeiten sagt „dasselbe, nur schwächer" — gemessen und
-        // hochgerechnet sind aber zweierlei. Die Farbe gehört dem Gemessenen.
+        // Zwei Anläufe davor waren falsch. Blass im Ton des Zählers las sich
+        // als „dasselbe, nur schwächer". Grau war schlimmer: Grau heißt in
+        // diesem Bild „Vorjahr", und auf dem Bildschirmfoto des Gründers stand
+        // die graue Hochrechnung direkt neben den grauen Vorjahresbalken —
+        // „für mich macht es den eindruck dass prognose einmal im oberen
+        // diagramm das graue ist, dann horizontale linie und dann das ungefähr
+        // zeichen das versteh ich nicht."
+        //
+        // Die Schraffur ist keine dritte Farbe, sondern eine Aussage über die
+        // Fläche: hier wurde nichts abgelesen. Genau dafür steht sie in diesem
+        // Diagramm längst — bei geschätzten Monaten und in der Jahresansicht.
+        // Der Deckelstrich ist weg: Wo die Schraffur aufhört, endet die
+        // Erwartung, dafür braucht es keine zweite Marke.
         svg += `<rect x="${cx + bw * .28}" y="${H - hp}" width="${bw * .44}" height="${hp}"
-          rx="2.5" fill="var(--ink-3)" opacity=".26"/>`;
-        svg += `<rect x="${cx + bw * .28}" y="${H - hp}" width="${bw * .44}" height="1.5"
-          fill="var(--ink-3)" opacity=".6"/>`;
+          rx="2.5" fill="url(#hatch)"/>`;
         // Die Zahl dazu, und zwar **innerhalb** der Zeichenfläche: Am Rand
         // rutscht sie herein statt hinaus („es soll alles in den grafiken sein
         // und nicht außerhalb rausgehen oder so"). Mit ≈, weil sie gerechnet
@@ -2092,10 +2106,7 @@ function renderChart() {
     } else {
       fz.style.display = "none";
     }
-    // Grau heißt im Bild „noch nicht gemessen". Ohne Legende wäre das eine
-    // Farbe, die man sich zusammenreimen muss — und ausgerechnet bei der Zahl,
-    // die keine Messung ist, darf nichts geraten werden.
-    document.getElementById("lg-erwartet").style.display = mf ? "" : "none";
+
   } else {
     // Jahresansicht: gemessen fest, hochgerechnet schraffiert — die Prognose
     // sieht anders aus als eine Messung, weil sie etwas anderes ist.
@@ -2122,11 +2133,9 @@ function renderChart() {
     document.getElementById("chart-label").textContent =
       fc && fc.method === "seasonal" ? "erwartet 2026 · nach Vorjahresverlauf" : "erwartet 2026 · aus dem Tagesschnitt";
     document.getElementById("chart-forecast").style.display = "none";
-    document.getElementById("lg-erwartet").style.display = "none";
   }
 
-  document.getElementById("lg-hatch").textContent =
-    histScale === "month" ? "geschätzt" : "hochgerechnet";
+  document.getElementById("lg-hatch").textContent = hatchWort;
 
   // Der Monatsvergleich hat im Jahresmaßstab keine Entsprechung.
   const inMonth = histScale === "month";
