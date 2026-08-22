@@ -568,7 +568,7 @@ struct HistoryView: View {
     /// Balken, sonst erklärt die Legende etwas anderes, als im Bild steht.
     private func legendHatch(text: String) -> some View {
         HStack(spacing: 5) {
-            SchraffurFeld(color: accent).frame(width: 10, height: 10)
+            HatchSwatch(color: accent).frame(width: 10, height: 10)
                 .accessibilityHidden(true)
             Text(text)
         }

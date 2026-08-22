@@ -9,6 +9,31 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.69.1 — 2026-08-22
+
+**Eine Umbenennung, ein vergessener Aufrufer.**
+
+Der Lauf zu 0.69.0 ist am App-Build gescheitert:
+
+```
+App/HistoryView.swift:571:13: error: cannot find 'SchraffurFeld' in scope
+```
+
+Beim Umbenennen von `SchraffurFeld` auf `HatchSwatch` habe ich die Deklaration
+erwischt und eine von zwei Verwendungsstellen. Die Legende der Diagrammkarte rief
+weiter den alten Namen auf.
+
+Dass es die Prüfung unter Linux nicht gefunden hat, ist keine Lücke, sondern die
+bekannte Grenze: `swiftc -parse` liest die Datei und prüft **keine** Namen. Ein
+unbekannter Typ ist kein Syntaxfehler. Dieselbe Klasse wie 0.62.1 (`register?.unit
+?? ""`), und wieder war der erste echte Compiler der auf dem Prüfrechner.
+
+Was daraus folgt, ist keine neue Prüfung, sondern eine Handregel: Nach einer
+Umbenennung wird der alte Name einmal über das ganze Verzeichnis gesucht. Das
+kostet eine Zeile und hätte hier zwanzig Minuten gespart. Einen halben
+Typprüfer nachzubauen, damit ein Container das findet, wofür es einen Compiler
+gibt, wäre der falsche Aufwand.
+
 ## 0.69.0 — 2026-08-22
 
 **Der laufende Monat bekommt eine eigene Leiste.**
