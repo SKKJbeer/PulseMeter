@@ -743,7 +743,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.68.0</p>
+  <p>Klickbarer Entwurf · v0.68.1</p>
 </div>
 
 <div class="device">
@@ -790,6 +790,7 @@ select.field { cursor: pointer; }
             <span><i id="lg-now"></i>2026</span>
             <span><i style="background:var(--hairline-2)"></i>2025</span>
             <span><i style="background:repeating-linear-gradient(45deg,var(--ink-3) 0 2px,transparent 2px 4px)"></i><span id="lg-hatch">geschätzt</span></span>
+            <span id="lg-erwartet" style="display:none"><i style="background:var(--ink-3);opacity:.35"></i>erwartet</span>
           </div>
           <div class="chart-hint" id="chart-hint">Tippe einen Monat an, um ihn mit den Vorjahren zu vergleichen</div>
         </div>
@@ -2026,21 +2027,29 @@ function renderChart() {
       // in den Daten.
       if (mf && i === laufend && mf.value > (now[i] ?? 0)) {
         const hp = (mf.value / max) * (H - kopf);
-        svg += `<rect x="${cx + bw * .28}" y="${H - hp}" width="${bw * .44}" height="${hp}"
-          rx="2.5" fill="${m.color}" opacity=".22"/>`;
-        svg += `<rect x="${cx + bw * .28}" y="${H - hp}" width="${bw * .44}" height="1.5"
-          fill="${m.color}" opacity=".55"/>`;
-        // **Die Zahl steht am Balken, nicht nur im Satz darunter.**
+        // **Grau, nicht im Ton des Zählers.**
         //
-        // Der Gründer, nachdem die Verlängerung eingebaut war: „ich will dass
-        // man das voraussichtliche des monats in dem balken grafik direkt
-        // sehen kann." Eine blasse Fläche sagt „mehr wird es noch"; wie viel
-        // mehr, sagt erst die Zahl. Mit ≈, weil sie gerechnet ist und nicht
-        // gemessen (Produktprinzip 7). Ohne Einheit — die steht groß über der
-        // Karte, und zwölf Monate lassen keinen Platz für sie.
-        svg += `<text x="${cx + bw / 2}" y="${H - hp - 7}" text-anchor="middle"
-          font-size="10" font-weight="650" fill="${textFarbe(m.color)}"
-          font-family="-apple-system,sans-serif">≈ ${nf(mf.value, dp)}</text>`;
+        // Der Gründer zur ersten Fassung: „es muss klar sein welche zahl fix
+        // schon ist und welche prognose für den laufenden monat ist. das
+        // prognose laufende monat soll eher dezent sein und so grau integriert
+        // und das richtige farbe der reale wert bisher." Dieselbe Farbe in zwei
+        // Helligkeiten sagt „dasselbe, nur schwächer" — gemessen und
+        // hochgerechnet sind aber zweierlei. Die Farbe gehört dem Gemessenen.
+        svg += `<rect x="${cx + bw * .28}" y="${H - hp}" width="${bw * .44}" height="${hp}"
+          rx="2.5" fill="var(--ink-3)" opacity=".26"/>`;
+        svg += `<rect x="${cx + bw * .28}" y="${H - hp}" width="${bw * .44}" height="1.5"
+          fill="var(--ink-3)" opacity=".6"/>`;
+        // Die Zahl dazu, und zwar **innerhalb** der Zeichenfläche: Am Rand
+        // rutscht sie herein statt hinaus („es soll alles in den grafiken sein
+        // und nicht außerhalb rausgehen oder so"). Mit ≈, weil sie gerechnet
+        // ist und nicht gemessen (Produktprinzip 7); ohne Einheit, die steht
+        // groß über der Karte.
+        const zahl = `≈ ${nf(mf.value, dp)}`;
+        const halb = zahl.length * 2.9 + 2;
+        const zx = Math.min(Math.max(halb, cx + bw / 2), W - halb);
+        svg += `<text x="${zx}" y="${Math.max(9, H - hp - 7)}" text-anchor="middle"
+          font-size="10" font-weight="650" fill="var(--ink-2)"
+          font-family="-apple-system,sans-serif">${zahl}</text>`;
       }
       if (now[i] !== null) {
         const h = (now[i] / max) * (H - kopf);
@@ -2068,7 +2077,13 @@ function renderChart() {
       // **Wie viele Tage dahinterstehen, gehört dazu.** Drei gemessene Tage
       // ergeben eine Zahl, die sich liest wie ein Monat — und die sich morgen
       // deutlich verschiebt. Wer die Grundlage sieht, kann das einordnen.
-      fz.innerHTML = `Voraussichtlich <b>≈ ${nf(mf.value, dp)} ${m.unit}</b> bis Ende
+      // **Beide Zahlen, und beide benannt.** „es muss klar sein welche zahl fix
+      // schon ist und welche prognose für den laufenden monat ist." Vorher
+      // stand hier nur die Erwartung; wie viel davon schon feststeht, musste
+      // man aus der Höhe des farbigen Balkens schätzen.
+      const bisher = meterConsumption(m, { y: TODAY.y, m: TODAY.m, d: 1 }, TODAY);
+      fz.innerHTML = `Bisher <b>${nf(bisher ? bisher.value : 0, dp)} ${m.unit}</b> gemessen,
+        voraussichtlich <b>≈ ${nf(mf.value, dp)} ${m.unit}</b> bis Ende
         ${MONTHS_LONG[laufend]} — ${mf.method === "previousYear"
           ? "nach dem Verlauf deines Vorjahres"
           : "gleichmäßig aus dem bisherigen Tagesschnitt"},
@@ -2077,6 +2092,10 @@ function renderChart() {
     } else {
       fz.style.display = "none";
     }
+    // Grau heißt im Bild „noch nicht gemessen". Ohne Legende wäre das eine
+    // Farbe, die man sich zusammenreimen muss — und ausgerechnet bei der Zahl,
+    // die keine Messung ist, darf nichts geraten werden.
+    document.getElementById("lg-erwartet").style.display = mf ? "" : "none";
   } else {
     // Jahresansicht: gemessen fest, hochgerechnet schraffiert — die Prognose
     // sieht anders aus als eine Messung, weil sie etwas anderes ist.
@@ -2103,6 +2122,7 @@ function renderChart() {
     document.getElementById("chart-label").textContent =
       fc && fc.method === "seasonal" ? "erwartet 2026 · nach Vorjahresverlauf" : "erwartet 2026 · aus dem Tagesschnitt";
     document.getElementById("chart-forecast").style.display = "none";
+    document.getElementById("lg-erwartet").style.display = "none";
   }
 
   document.getElementById("lg-hatch").textContent =

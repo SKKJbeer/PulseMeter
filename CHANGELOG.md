@@ -9,6 +9,43 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.68.1 — 2026-08-22
+
+**Farbe heißt gemessen. Grau heißt erwartet.**
+
+0.68.0 hat der Gründer im Entwurf angesehen und abgelehnt, bevor es ein Gerät
+erreicht hat: „gefällt mir nicht. […] es muss klar sein welche zahl fix schon
+ist und welche prognose für den laufenden monat ist. das prognose laufende monat
+soll eher dezent sein und so grau integriert und das richtige farbe der reale
+wert bisher. es soll alles in den grafiken sein und nicht außerhalb rausgehen
+oder so."
+
+Drei Einwände, und alle drei treffen.
+
+**Die Verlängerung war blass in der Farbe des Zählers.** Dieselbe Farbe in zwei
+Helligkeiten sagt „dasselbe, nur schwächer". Gemessen und hochgerechnet sind
+aber nicht dasselbe in schwächer, sondern zweierlei. Die Verlängerung ist jetzt
+grau, und die Farbe gehört allein dem, was wirklich abgelesen wurde. In der
+Legende steht ein vierter Eintrag: „erwartet".
+
+**Die Zahl ragte aus dem Bild.** Sie hing am Balken und durfte über ihre Spalte
+hinausstehen — bei zwölf Monaten ist eine Spalte gut zwanzig Punkte breit, da
+passt keine dreistellige Zahl hinein. Die Begründung („rechts vom laufenden
+Monat ist ohnehin leer") war richtig und trotzdem die falsche Antwort: Auf einem
+schmalen Gerät steht sie im Dezember halb außerhalb. Sie liegt jetzt über der
+ganzen Zeichenfläche, bekommt einen Platz von drei Spalten und wird an den
+Rändern hineingeschoben. Eine neue Prüfung misst das nach — Kasten der Zahl
+gegen Kasten des Bildes, links, rechts und oben.
+
+**Es stand nur eine Zahl da, und zwar die gerechnete.** Wie viel im laufenden
+Monat schon feststeht, musste man aus der Höhe des farbigen Balkens schätzen.
+Unter der Karte stehen jetzt beide, jede mit ihrem Wort: „Bisher 11 kWh
+gemessen, voraussichtlich ≈ 115 kWh bis Ende August — nach dem Verlauf deines
+Vorjahres, gerechnet aus 2 von 31 Tagen."
+
+Zwei weitere Prüfungen im Entwurf halten fest, was hier die eigentliche Aussage
+ist: dass die Verlängerung grau ist und das Gemessene farbig.
+
 ## 0.68.0 — 2026-08-22
 
 **Die erwartete Zahl steht am Balken.**

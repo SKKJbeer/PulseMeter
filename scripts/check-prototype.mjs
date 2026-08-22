@@ -186,6 +186,36 @@ for (const scheme of ["light", "dark"]) {
                           .replace(/\./g, "").replace(",", ".")) - prognose.erwartet) < 1.5,
        "Und es ist dieselbe Zahl wie im Satz darunter");
 
+  // **Nichts ragt aus dem Bild heraus.** „es soll alles in den grafiken sein
+  // und nicht außerhalb rausgehen oder so." Eine Zahl, die über den Rand
+  // hinaussteht, ist auf einem schmalen Telefon halb abgeschnitten — und ein
+  // halb abgeschnittener Wert ist schlimmer als keiner.
+  const drin = await page.evaluate(`(() => {
+    const svg = document.querySelector("#chart svg").getBoundingClientRect();
+    const zahl = [...document.querySelectorAll("#chart svg text")]
+      .find(t => t.textContent.trim().startsWith("≈"));
+    if (!zahl) return null;
+    const b = zahl.getBoundingClientRect();
+    return { links: b.left - svg.left, rechts: svg.right - b.right, oben: b.top - svg.top };
+  })()`);
+  note(drin !== null && drin.links >= 0 && drin.rechts >= 0 && drin.oben >= 0,
+       `Die Zahl bleibt im Bild (links ${drin ? drin.links.toFixed(0) : "?"}, `
+       + `rechts ${drin ? drin.rechts.toFixed(0) : "?"}, oben ${drin ? drin.oben.toFixed(0) : "?"})`);
+
+  // **Farbe heißt gemessen.** Die Verlängerung ist grau, damit sich Ist und
+  // Erwartung nicht als dieselbe Sache in zwei Helligkeiten lesen.
+  const toene = await page.evaluate(`(() => {
+    const rects = [...document.querySelectorAll("#chart svg rect")]
+      .map(r => ({ fill: r.getAttribute("fill"), op: r.getAttribute("opacity") }))
+      .filter(r => r.fill && r.fill !== "transparent");
+    return {
+      grau: rects.filter(r => /--ink-3/.test(r.fill) && Number(r.op) < 1).length,
+      farbig: rects.filter(r => /--(amber|green|blue|orange|red|teal)/.test(r.fill)).length
+    };
+  })()`);
+  note(toene.grau >= 2, `Die Verlängerung ist grau (${toene.grau} Flächen)`);
+  note(toene.farbig > 0, `Das Gemessene behält die Farbe des Zählers (${toene.farbig} Balken)`);
+
   // In der Jahresansicht hat die Zeile keinen Ort: Dort stehen drei Jahre
   // nebeneinander, und die Hochrechnung steckt schon im Balken von 2026.
   await page.locator('[data-scale="year"]').first().click();

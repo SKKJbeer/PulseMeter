@@ -36,7 +36,6 @@ public struct PeriodBars: View {
 
     private let columns: [Column]
     private let accent: Color
-    private let accentInk: Color?
     private let selection: Int?
     private let unit: String
     private let onSelect: (Int) -> Void
@@ -44,17 +43,10 @@ public struct PeriodBars: View {
     /// - Parameter unit: Einheit für die Ansage. Ein Balken, der „312" sagt,
     ///   sagt nichts — kWh und m³ stehen in derselben App nebeneinander, und
     ///   ohne Einheit ist die Zahl nicht zu deuten.
-    /// - Parameter accentInk: Dieselbe Farbe, aber für Text. Eine Fläche darf
-    ///   leuchten, eine Zahl in zehn Punkt muss lesbar sein — das sind zwei
-    ///   verschiedene Werte (siehe `PulseColor.resourceInk`). Ohne Angabe wird
-    ///   die Flächenfarbe genommen; für die Zahl über der Hochrechnung sollte
-    ///   sie gesetzt sein.
-    public init(columns: [Column], accent: Color, accentInk: Color? = nil,
-                selection: Int?, unit: String = "",
+    public init(columns: [Column], accent: Color, selection: Int?, unit: String = "",
                 onSelect: @escaping (Int) -> Void) {
         self.columns = columns
         self.accent = accent
-        self.accentInk = accentInk
         self.selection = selection
         self.unit = unit
         self.onSelect = onSelect
@@ -80,6 +72,47 @@ public struct PeriodBars: View {
                                  : ", Vorjahr \(Int(reference.rounded())) \(unit)"
         }
         return text
+    }
+
+    /// Die erwartete Zahl über dem Deckel — und zwar **innerhalb** der
+    /// Zeichenfläche.
+    ///
+    /// **Warum sie nicht am Balken selbst hängt.** Dort müsste sie über ihre
+    /// Spalte hinausragen: Bei zwölf Monaten ist eine Spalte gut zwanzig Punkte
+    /// breit, da steht keine dreistellige Zahl drin. Genau das wollte der
+    /// Gründer nicht — „es soll alles in den grafiken sein und nicht außerhalb
+    /// rausgehen oder so."
+    ///
+    /// Sie liegt deshalb über der ganzen Fläche und bekommt einen Platz von
+    /// drei Spalten, der an den Rändern hineingeschoben wird. Am Rand steht sie
+    /// dann leicht neben der Mitte ihrer Spalte — dafür nie außerhalb des
+    /// Bildes.
+    @ViewBuilder
+    private var erwartungsSchild: some View {
+        if let treffer = columns.firstIndex(where: { spalte in
+            guard let erwartet = spalte.projection, let gemessen = spalte.value else { return false }
+            return erwartet > gemessen
+        }), let projection = columns[treffer].projection {
+            GeometryReader { geometry in
+                let anzahl = CGFloat(columns.count)
+                let spaltenbreite = (geometry.size.width - 4 * (anzahl - 1)) / anzahl
+                let platz = Swift.min(geometry.size.width, spaltenbreite * 3 + 8)
+                let mitte = CGFloat(treffer) * (spaltenbreite + 4) + spaltenbreite / 2
+                let x = Swift.min(Swift.max(0, mitte - platz / 2), geometry.size.width - platz)
+                let deckel = geometry.size.height
+                    - geometry.size.height * projection / upperBound
+                Text(erwartungsZahl(projection))
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(PulseColor.inkSecondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+                    .frame(width: platz, alignment: .center)
+                    .offset(x: x, y: Swift.max(0, deckel - 14))
+                    // Steckt schon in der Ansage des Balkens; zweimal
+                    // vorgelesen wäre einmal zu viel.
+                    .accessibilityHidden(true)
+            }
+        }
     }
 
     /// Die erwartete Menge, wie sie über dem Balken steht.
@@ -113,6 +146,7 @@ public struct PeriodBars: View {
                 }
             }
             .frame(height: 140)
+            .overlay(alignment: .topLeading) { erwartungsSchild }
 
             // Eine durchgehende Grundlinie statt einer Spur je Spalte.
             //
@@ -176,41 +210,29 @@ public struct PeriodBars: View {
                 // eine Fuge in einem Balken liest sich als Lücke in den Daten.
                 if let projection = column.projection, let value = column.value,
                    projection > value {
+                    // **Grau, nicht in der Farbe des Zählers.**
+                    //
+                    // Der Gründer zur ersten Fassung, die den Zählerton blass
+                    // weiterführte: „es muss klar sein welche zahl fix schon
+                    // ist und welche prognose für den laufenden monat ist. das
+                    // prognose laufende monat soll eher dezent sein und so grau
+                    // integriert und das richtige farbe der reale wert bisher."
+                    //
+                    // Er hat recht: Dieselbe Farbe in zwei Helligkeiten sagt
+                    // „dasselbe, nur schwächer". Gemessen und hochgerechnet
+                    // sind aber nicht dasselbe in schwächer, sondern zweierlei.
+                    // Die Farbe gehört jetzt allein dem, was wirklich abgelesen
+                    // wurde.
                     RoundedRectangle(cornerRadius: 3, style: .continuous)
-                        .fill(accent.opacity(0.22))
+                        .fill(PulseColor.inkTertiary.opacity(0.26))
                         .frame(height: Swift.max(2, height * projection / upperBound))
                         .overlay(alignment: .top) {
                             // Der Deckel sagt, wo die Erwartung endet. Ohne ihn
                             // sieht eine blasse Fläche nach Unschärfe aus statt
                             // nach einer Zahl.
                             Rectangle()
-                                .fill(accent.opacity(0.55))
+                                .fill(PulseColor.inkTertiary.opacity(0.6))
                                 .frame(height: 1.5)
-                        }
-                        .overlay(alignment: .top) {
-                            // **Die Zahl steht am Balken, nicht nur im Satz
-                            // darunter.**
-                            //
-                            // Der Gründer, nachdem die Verlängerung eingebaut
-                            // war: „ich will dass man das voraussichtliche des
-                            // monats in dem balken grafik direkt sehen kann."
-                            // Eine blasse Fläche sagt „mehr wird es noch"; wie
-                            // viel mehr, sagt erst die Zahl.
-                            //
-                            // `fixedSize` lässt sie über die Spalte
-                            // hinausragen — bei zwölf Monaten ist eine Spalte
-                            // gut zwanzig Punkte breit, da steht keine
-                            // dreistellige Zahl drin. Das geht gut, weil der
-                            // laufende Abschnitt immer der letzte mit Daten
-                            // ist: Rechts von ihm liegt leerer Platz.
-                            Text(erwartungsZahl(projection))
-                                .font(.system(size: 10, weight: .semibold))
-                                .foregroundStyle(accentInk ?? accent)
-                                .fixedSize()
-                                .offset(y: -13)
-                                // Steckt schon in `spokenValue`; zweimal
-                                // vorgelesen wäre sie einmal zu viel.
-                                .accessibilityHidden(true)
                         }
                 }
 

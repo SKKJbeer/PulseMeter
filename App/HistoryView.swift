@@ -58,9 +58,6 @@ struct HistoryView: View {
     private var meter: MeteringPoint? { meters.first { $0.id == selectedMeterID } }
     private var register: Register? { meter?.primaryRegister }
     private var accent: Color { PulseColor.resource(meter?.appearance.colorToken ?? "amber") }
-    /// Dieselbe Farbe für Text. Die Fläche darf leuchten, die Zahl über der
-    /// Hochrechnung muss in zehn Punkt lesbar bleiben.
-    private var accentInk: Color { PulseColor.resourceInk(meter?.appearance.colorToken ?? "amber") }
     private var unit: String { register?.unit.symbol ?? "" }
 
     /// Namen der Zählwerke — nur bei einem Zähler, der mehr als eine Zahl
@@ -463,7 +460,7 @@ struct HistoryView: View {
 
                 forecastLine
 
-                PeriodBars(columns: chartColumns, accent: accent, accentInk: accentInk,
+                PeriodBars(columns: chartColumns, accent: accent,
                            selection: selectedSlot, unit: unit) { slot in
                     selectedSlot = selectedSlot == slot ? nil : slot
                     recomputeComparison()
@@ -480,6 +477,13 @@ struct HistoryView: View {
                     }
                     if chartColumns.contains(where: \.isPartial) {
                         legendDot(color: accent.opacity(0.4), text: "unvollständig")
+                    }
+                    // Grau steht im Bild für „noch nicht gemessen". Ohne
+                    // Legende wäre das eine Farbe, die man sich zusammenreimen
+                    // muss — und ausgerechnet bei der Zahl, die keine Messung
+                    // ist, darf nichts geraten werden.
+                    if vorschau != nil, chartColumns.contains(where: { $0.projection != nil }) {
+                        legendDot(color: PulseColor.inkTertiary.opacity(0.35), text: "erwartet")
                     }
                 }
                 .font(PulseText.caption)
@@ -522,8 +526,20 @@ struct HistoryView: View {
                 Image(systemName: "chart.line.uptrend.xyaxis")
                     .accessibilityHidden(true)
                     .font(.system(.caption, weight: .semibold))
-                    .foregroundStyle(accent)
-                Text("Voraussichtlich ≈ \(number(vorschau.projected.value, digits: 0)) \(unit) "
+                    // Grau wie die Verlängerung im Balken. In der Farbe des
+                    // Zählers stünde hier ein Zeichen für „gemessen" vor einem
+                    // Satz, der von einer Erwartung handelt.
+                    .foregroundStyle(PulseColor.inkTertiary)
+                // **Beide Zahlen, und beide benannt.**
+                //
+                // Der Gründer: „es muss klar sein welche zahl fix schon ist und
+                // welche prognose für den laufenden monat ist." Vorher stand
+                // hier nur die Erwartung. Wie viel davon schon feststeht, musste
+                // man aus der Höhe des farbigen Balkens schätzen — und eine
+                // Zahl, die man schätzen muss, ist keine Auskunft.
+                Text("Bisher \(number(vorschau.actual.quantity.value, digits: 0)) \(unit) "
+                     + "gemessen, voraussichtlich "
+                     + "≈ \(number(vorschau.projected.value, digits: 0)) \(unit) "
                      + "bis Ende \(laufenderAbschnittName) — \(vorschau.method.explanation), "
                      + "gerechnet aus \(vorschau.daysElapsed) von "
                      + "\(vorschau.daysElapsed + vorschau.daysRemaining) Tagen.")
