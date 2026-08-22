@@ -620,22 +620,18 @@ struct HistoryView: View {
 
                 YearBars(rows: comparisonRows(comparison), accent: accent)
 
-                // Der Satz ist der Grund, warum diese Karte überhaupt richtig
-                // rechnet: Läuft der Abschnitt noch, sind alle Jahre auf
-                // denselben Ausschnitt beschnitten — und das muss dastehen,
-                // sonst hält der Leser die Zahl für einen ganzen Monat.
-                if comparison.isPartial {
-                    Text(comparison.isNarrowed
-                         ? "Verglichen wird \(germanDate(comparison.window.start)) bis \(germanDate(comparison.window.end)) — so weit reichen die Ablesungen der Vorjahre. In jedem Jahr derselbe Ausschnitt."
-                         : "Verglichen wird \(germanDate(comparison.window.start)) bis \(germanDate(comparison.window.end)) — in jedem Jahr derselbe Ausschnitt.")
+                // **Kurz halten.** Hier standen zwei Sätze: welcher Ausschnitt
+                // verglichen wird, und was ≈ bedeutet. Der Ausschnitt steht
+                // jetzt in der Überschrift; was übrig bleibt, ist das, was die
+                // Überschrift nicht sagen kann.
+                if comparison.isNarrowed {
+                    Text("Weiter reichen die Ablesungen der Vorjahre nicht.")
                         .font(PulseText.caption)
                         .foregroundStyle(PulseColor.inkSecondary)
                         .padding(.top, 2)
                 }
-                // Das ≈ steht an den Zahlen; hier steht, was es heißt. Ohne
-                // diesen Satz ist es ein Zeichen, das jeder anders deutet.
                 if comparison.entries.contains(where: \.isApproximate) {
-                    Text("≈ heißt: zwischen zwei Ablesungen gerechnet, nicht gemessen.")
+                    Text("≈ gerechnet, nicht gemessen.")
                         .font(PulseText.caption)
                         .foregroundStyle(PulseColor.inkTertiary)
                 }
@@ -1012,12 +1008,22 @@ struct HistoryView: View {
 
     /// Überschrift der Vergleichskarte. Beim Jahr steht die Jahreszahl schon
     /// in der Auswahl, sonst der Name des Abschnitts.
+    /// Die Überschrift nennt den Ausschnitt, den die Zahlen meinen.
+    ///
+    /// **Warum nicht einfach „August".** Genau das stand da, über einer Zahl,
+    /// die drei Tage meint — der Gründer las 11 kWh als Augustverbrauch und
+    /// hielt sie für falsch. Sie war richtig, nur falsch beschriftet. Ein Satz
+    /// weiter unten hat es erklärt; eine Zahl, die eine Erklärung braucht, ist
+    /// die falsche Beschriftung.
     private func comparisonTitle(_ comparison: PeriodEngine.SlotComparison) -> String {
+        let voll: String
         switch comparison.granularity {
-        case .month: return Self.monthsLong[safe: comparison.slot - 1] ?? "\(comparison.slot)"
-        case .quarter: return "\(comparison.slot). Quartal"
+        case .month: voll = Self.monthsLong[safe: comparison.slot - 1] ?? "\(comparison.slot)"
+        case .quarter: voll = "\(comparison.slot). Quartal"
         case .year: return "Jahresvergleich"
         }
+        guard comparison.isPartial else { return voll }
+        return "\(comparison.window.start.day).–\(comparison.window.end.day). \(voll)"
     }
 
     private func percentText(_ change: Decimal) -> String {

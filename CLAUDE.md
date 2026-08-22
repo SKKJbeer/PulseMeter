@@ -210,6 +210,20 @@ Was sich dabei **nicht** ändert: Nichts versprechen, was es nicht gibt
 (`09-appstore.md`), und geschätzte Zahlen bleiben gekennzeichnet
 (Produktprinzip 7). Lockerer Ton ist kein Freibrief für großzügige Aussagen.
 
+### Selbstsprechend statt erklärt
+
+Vom Gründer am 22. August verlangt: „es soll eigentlich alles immer
+selbstsprechend sein." Der Anlass: Über einer Zahl stand „August", die Zahl
+meinte drei Tage, und ein Satz darunter erklärte das. Die Zahl war richtig, die
+Überschrift falsch — und der Erklärsatz hat den Fehler nicht behoben, sondern
+verdeckt.
+
+> **Wenn ein Text erklären muss, was daneben steht, stimmt die Beschriftung
+> nicht.** Erst die Beschriftung richtig machen, dann den Text streichen.
+
+Der Ablauf dazu steht in `.claude/skills/selbstsprechend/SKILL.md` und gilt für
+jede Überschrift, jede Beschriftung und jede Erklärzeile.
+
 ### Keine Annahmen in Texten, die jemand anderes liest
 
 Am 16. August ausdrücklich verlangt, nachdem im Impressum „Kleinunternehmer im

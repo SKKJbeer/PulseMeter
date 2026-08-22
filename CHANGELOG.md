@@ -9,6 +9,61 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.71.0 — 2026-08-22
+
+**Die Überschrift sagt, was die Zahl meint. Der Erklärsatz kann weg.**
+
+Vier Rückmeldungen vom Gerät, und die erste ist die wichtigste.
+
+### Die 11 kWh waren richtig, die Überschrift war falsch
+
+Über der Vergleichskarte stand **August**, darunter **≈ 11 kWh** — und der
+Gründer hielt die Zahl für einen Fehler. Sie war keiner: Verglichen wurden
+1. bis 3. August, in jedem Jahr derselbe Ausschnitt, weil der August 2026 erst
+so weit reicht. Erklärt hat das ein Satz weiter unten.
+
+Genau das ist der Fehler. **Eine Zahl, die eine Erklärung braucht, ist falsch
+beschriftet.** Die Karte heißt jetzt **1.–3. August**, und damit stimmt alles,
+was daneben steht, ohne einen einzigen erklärenden Satz.
+
+Was sich dabei ausdrücklich **nicht** ändert: Verglichen werden weiter gleich
+lange Ausschnitte. Eine Hochrechnung neben gemessene Vorjahre zu stellen wäre
+die wiederkehrende Fehlerklasse dieses Projekts — zwei Seiten, die verschiedene
+Sachverhalte beschreiben. Was der Monat wird, steht in der Leiste darüber
+(≈ 115 kWh erwartet); wie er sich gegen frühere Jahre schlägt, steht hier, Tag
+für Tag vergleichbar.
+
+### Weniger Text
+
+Unter der Vergleichskarte standen vier Sätze. Jetzt zwei kurze: „5,58 kWh pro
+Tag, im Vorjahr 6,58. 3,79 € statt 4,47 €." Der Ausschnitt steht in der
+Überschrift, das ≈ erklärt sich in drei Wörtern.
+
+Die Abschnittsüberschrift „Gleicher Monat, andere Jahre" beschrieb korrekt, was
+passiert, und klang wie ein Datenbankfeld. Sie heißt jetzt **„Damals im August"**
+— mitwandernd mit dem gewählten Abschnitt, „Die Jahre davor" in der
+Jahresansicht.
+
+### Die Vorschau gilt für alle Zähler
+
+Im Klick-Dummy war sie nur beim Strom zu sehen. Nicht, weil die Rechnung am
+Zähler hing — sie war schon immer je Zähler —, sondern weil nur der Stromzähler
+in den Beispieldaten bis in den laufenden Monat abgelesen war. Wasser,
+Wärmepumpe und Wallbox werden jetzt ebenfalls am 3. August abgelesen; Gas bleibt
+absichtlich überfällig, es ist der Fall, an dem der Fällig-Zustand sichtbar wird.
+
+Gegengeprüft, Zähler für Zähler: Strom ≈ 115 kWh, Wasser ≈ 9 m³, Wärmepumpe
+≈ 135 kWh, Wallbox ≈ 124 kWh, Gas keine — richtig, denn dort fehlt seit Mai eine
+Ablesung.
+
+### Verankert statt einmalig behoben
+
+Auf ausdrücklichen Wunsch: `.claude/skills/selbstsprechend/SKILL.md`. Die Regel
+darin ist eine einzige — *wenn ein Text erklären muss, was daneben steht, stimmt
+die Beschriftung nicht* — mit dem Fall dieser Version als Beleg, Regeln für
+Überschriften, einer Reihenfolge zum Kürzen und drei Fragen vor dem
+Veröffentlichen. In `CLAUDE.md` steht der Kern samt Verweis.
+
 ## 0.70.0 — 2026-08-22
 
 **Was bei den Testern steht, steht jetzt auch wirklich dort.**

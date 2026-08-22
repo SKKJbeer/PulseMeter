@@ -755,7 +755,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.70.0</p>
+  <p>Klickbarer Entwurf · v0.71.0</p>
 </div>
 
 <div class="device">
@@ -806,7 +806,7 @@ select.field { cursor: pointer; }
           <div class="chart-hint" id="chart-hint">Tippe einen Monat an, um ihn mit den Vorjahren zu vergleichen</div>
         </div>
         <div id="compare-block">
-          <div class="section-label">Gleicher Monat, andere Jahre</div>
+          <div class="section-label" id="cmp-label">Damals im August</div>
           <div class="chart-card" id="compare"></div>
         </div>
         <div class="list" style="margin-top:18px">
@@ -1132,7 +1132,8 @@ const METERS = [
     serial: "WZ-88 214 097",
     registers: [
       { id: "wasser-r", label: null, unit: "m³", int: 5, frac: 3,
-        readings: buildReadings(998.618, SHAPE.wasser, { frac: 3, estimateAt: { y: 2025, m: 10 } }) }
+        readings: buildReadings(998.618, SHAPE.wasser,
+          { frac: 3, estimateAt: { y: 2025, m: 10 }, partialInto: { m: 8, d: 3 } }) }
     ]
   },
   {
@@ -1162,9 +1163,9 @@ const METERS = [
     serial: "1ESY1161284777",
     registers: [
       { id: "wp-ht", label: "Hochtarif", unit: "kWh", int: 6, frac: 2, price: 0.31,
-        readings: buildReadings(18420.5, SHAPE.strom, { frac: 2 }) },
+        readings: buildReadings(18420.5, SHAPE.strom, { frac: 2, partialInto: { m: 8, d: 3 } }) },
       { id: "wp-nt", label: "Niedertarif", unit: "kWh", int: 6, frac: 2, price: 0.21,
-        readings: buildReadings(24310.8, SHAPE.gas, { frac: 2 }) }
+        readings: buildReadings(24310.8, SHAPE.gas, { frac: 2, partialInto: { m: 8, d: 3 } }) }
     ]
   },
   {
@@ -1176,7 +1177,7 @@ const METERS = [
     serial: "1ESY1161299844",
     registers: [
       { id: "wallbox-r", label: null, unit: "kWh", int: 6, frac: 2,
-        readings: buildReadings(5148.3, SHAPE.wallbox, { frac: 2 }) }
+        readings: buildReadings(5148.3, SHAPE.wallbox, { frac: 2, partialInto: { m: 8, d: 3 } }) }
     ]
   }
 ];
@@ -1940,21 +1941,20 @@ function renderCompare(m, reg, idx) {
 
   let foot = "";
   if (cur.v !== null && prev.v !== null) {
-    foot = `<div class="cmp-foot">Pro Tag <b>${nf(cur.v / cur.days, 2)} ${m.unit}</b>
-      gegenüber ${nf(prev.v / prev.days, 2)} ${m.unit} im Vorjahr.`;
+    // **Kurz halten.** Hier standen vier Sätze: Tagesschnitt, Preis, welcher
+    // Ausschnitt verglichen wird, und was ≈ bedeutet. Der Ausschnitt steht
+    // jetzt in der Überschrift, und was ≈ heißt, gehört in drei Wörter.
+    foot = `<div class="cmp-foot"><b>${nf(cur.v / cur.days, 2)} ${m.unit}</b> pro Tag,
+      im Vorjahr ${nf(prev.v / prev.days, 2)}.`;
     if (m.price) {
       const c1 = billedUnits(m, cur.v) * m.price, c0 = billedUnits(m, prev.v) * m.price;
-      foot += ` Arbeitspreis <b>${money(c1)}</b> gegenüber ${money(c0)}.`;
+      foot += ` <b>${money(c1)}</b> statt ${money(c0)}.`;
     }
-    // Der Satz ist der Grund, warum diese Karte richtig rechnet — und er muss
-    // dastehen, sonst hält der Leser die Zahl für einen ganzen Monat.
-    if (partial && fenster) {
-      foot += ` Verglichen wird <b>${dateMedium(fenster.from)} bis ${dateMedium(fenster.to)}</b> —
-        ${gekuerzt ? "so weit reichen die Ablesungen der Vorjahre; " : ""}in jedem Jahr
-        derselbe Ausschnitt.`;
+    if (gekuerzt) {
+      foot += ` Weiter reichen die Ablesungen der Vorjahre nicht.`;
     }
     if (rows.some(r => r.ca)) {
-      foot += ` ≈ heißt: zwischen zwei Ablesungen gerechnet, nicht gemessen.`;
+      foot += ` ≈ gerechnet, nicht gemessen.`;
     }
     foot += `</div>`;
   } else if (cur.v === null) {
@@ -1965,8 +1965,20 @@ function renderCompare(m, reg, idx) {
       Ablesungen — es gibt nichts, womit sich vergleichen ließe.</div>`;
   }
 
+  // **Die Überschrift nennt, was verglichen wird — nicht der Fließtext.**
+  //
+  // Vorher stand „August" über einer Zahl, die drei Tage meint: Der Gründer las
+  // 11 kWh als Augustverbrauch und hielt sie für falsch. Sie war richtig, nur
+  // falsch beschriftet. Ein Satz weiter unten hat das erklärt; eine Zahl, die
+  // eine Erklärung braucht, ist die falsche Beschriftung.
+  const titel = (partial && fenster)
+    ? `${fenster.from.d}.–${fenster.to.d}. ${MONTHS_LONG[idx]}`
+    : MONTHS_LONG[idx];
+
+  document.getElementById("cmp-label").textContent =
+    histScale === "year" ? "Die Jahre davor" : `Damals im ${MONTHS_LONG[idx]}`;
   document.getElementById("compare").innerHTML =
-    `<div class="cmp-head"><div class="cmp-title">${MONTHS_LONG[idx]}</div>${head}</div>
+    `<div class="cmp-head"><div class="cmp-title">${titel}</div>${head}</div>
      <div class="cmp-rows" style="--c:${m.color};--c-ink:${textFarbe(m.color)}">${body}</div>${foot}`;
 }
 
