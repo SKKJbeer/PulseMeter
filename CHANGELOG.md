@@ -9,6 +9,23 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.75.2 — 2026-08-23
+
+### Behoben
+- **Die Prüfung zählte die sichtbaren Zeilen, nicht die Ablesungen.** Lauf 222
+  meldete „sollten es 18 sein, die Zeile sagt 22". Beide Zahlen stimmten:
+  `app.cells.count` gab 19, weil eine Liste nur zeichnet, was auf den Schirm
+  passt — vorhanden waren 23. **Das Löschen selbst hat gestimmt**, 23 wurden 22.
+  Gezählt wird jetzt an der Zeile „Alle Ablesungen, N Einträge", und die stimmt
+  unabhängig davon, wie weit jemand gescrollt hat.
+
+Zweimal hintereinander ist dieselbe neue Prüfung gefallen, und beide Male lag es
+an ihr und nicht am Produkt. Das ist keine Entschuldigung, sondern der Grund,
+warum eine Oberflächenprüfung dazugehört: Was sie über den Bildschirm annimmt,
+stimmt erst, wenn ein Gerät es bestätigt hat.
+
+---
+
 ## 0.75.1 — 2026-08-23
 
 ### Behoben

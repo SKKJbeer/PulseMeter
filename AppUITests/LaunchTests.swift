@@ -608,11 +608,21 @@ final class LaunchTests: XCTestCase {
         let liste = app.buttons.matching(
             NSPredicate(format: "label BEGINSWITH 'Alle Ablesungen'")
         ).firstMatch
+        XCTAssertTrue(liste.waitForExistence(timeout: erscheint),
+                      "Die Zeile für alle Ablesungen steht nicht im Verlauf")
+
+        // **Gezählt wird an der Zeile, nicht an den sichtbaren Reihen.** Lauf
+        // 222 ist genau daran gefallen: `app.cells.count` gab 19, weil eine
+        // Liste nur zeichnet, was auf den Schirm passt — es waren 23. Die Zahl
+        // steht in der Zeile darüber, und die stimmt immer.
+        guard let vorher = eintraege(in: liste.label) else {
+            XCTFail("Die Zeile nennt keine Zahl: \(liste.label)")
+            return
+        }
+        XCTAssertGreaterThan(vorher, 1, "Die Beispieldaten haben zu wenige Ablesungen")
+
         guard oeffne(liste, bis: app.navigationBars["Ablesungen"], in: app,
                      "Ablesungen öffnen") else { return }
-
-        let zeilen = app.cells.count
-        XCTAssertGreaterThan(zeilen, 1, "Die Beispieldaten haben zu wenige Ablesungen")
 
         // Die zweite Zeile, nicht die erste: Die oberste ist die jüngste, und
         // an ihr ließe sich nicht zeigen, dass auch ein alter Stand erreichbar
@@ -647,9 +657,18 @@ final class LaunchTests: XCTestCase {
         ).firstMatch
         XCTAssertTrue(danach.waitForExistence(timeout: erscheint),
                       "Nach dem Löschen ist der Verlauf nicht wieder da")
-        XCTAssertTrue(danach.label.contains("\(zeilen - 1) Einträge"),
-                      "Nach dem Löschen sollten es \(zeilen - 1) Einträge sein, "
-                      + "die Zeile sagt: \(danach.label)")
+        XCTAssertEqual(eintraege(in: danach.label), vorher - 1,
+                       "Nach dem Löschen sollten es \(vorher - 1) Einträge sein, "
+                       + "die Zeile sagt: \(danach.label)")
+    }
+
+    /// Die Zahl aus „Alle Ablesungen, 23 Einträge".
+    ///
+    /// Über die Ziffern, nicht über eine feste Stelle: Die Beschriftung ist ein
+    /// gesprochener Satz und darf sich ändern, ohne dass eine Prüfung fällt.
+    private func eintraege(in label: String) -> Int? {
+        let ziffern = label.split(whereSeparator: { !$0.isNumber })
+        return ziffern.first.flatMap { Int($0) }
     }
 
     /// Ein angetippter Monat steht sofort über dem Diagramm.
