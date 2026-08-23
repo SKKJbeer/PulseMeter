@@ -9,6 +9,20 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.73.2 — 2026-08-22
+
+### Behoben
+- Build 14 steht in der Auslieferungstabelle mit 20:01 statt 20:03. Zwei
+  Minuten ändern an nichts, was jemand daraus abliest — aber die Tabelle ist
+  das einzige, woran sich eine Rückmeldung vom Gerät später festmachen lässt,
+  und eine Zahl darin, von der ich weiß, dass sie nicht stimmt, macht die
+  daneben unglaubwürdig.
+
+_Nur ein Dokument. Prüflauf wie gehabt, kein neuer Bau: Build 14 bleibt der
+aktuelle und liegt verarbeitet in TestFlight._
+
+---
+
 ## 0.73.1 — 2026-08-22
 
 ### Geändert
