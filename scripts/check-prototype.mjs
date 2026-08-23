@@ -23,6 +23,11 @@ const note = (ok, text) => {
   if (!ok) failures.push(text);
 };
 
+/// Eine ganze Zahl so geschrieben, wie der Entwurf sie schreibt: mit Punkt als
+/// Tausendertrenner. Nur zum Vergleichen einer angezeigten Zahl mit einer
+/// gerechneten — nicht zum Formatieren.
+const nfLike = value => Math.round(value).toLocaleString("de-DE");
+
 const browser = await chromium.launch({
   executablePath: process.env.PULSE_CHROMIUM || undefined
 });
@@ -192,6 +197,27 @@ for (const scheme of ["light", "dark"]) {
 
   await page.evaluate(() => { selMonth = null; renderChart(); });
   await page.waitForTimeout(150);
+
+  // --- Die Jahresansicht zeigt das laufende Jahr, keine Summe über alle Jahre
+  //
+  // Vom Gerät gemeldet: „auf Jahresbasis macht es keinen Sinn über alle Jahre
+  // die Summe. damit fängt ja keiner was an." Verbrauch vergleicht man Jahr
+  // gegen Jahr — dafür stehen die Balken nebeneinander.
+  await page.locator('[data-scale="year"]').first().click();
+  await page.waitForTimeout(300);
+  const jahr = await page.evaluate(() => ({
+    zahl: document.getElementById("chart-total").textContent,
+    marke: document.getElementById("chart-label").textContent,
+    gemessen: yearToDate(METERS.find(m => m.id === histMeter).registers[0]).value
+  }));
+  note(/^2026/.test(jahr.marke) && !/zusammen|bis/.test(jahr.marke),
+       `Die Jahresansicht nennt das laufende Jahr („${jahr.marke}“)`);
+  note(/ · aus \d+ von \d+ Tagen$/.test(jahr.marke),
+       "Und sagt, aus wie vielen Tagen die Zahl stammt");
+  note(jahr.zahl.includes(nfLike(jahr.gemessen)),
+       `Die Zahl ist das Gemessene, nicht die Erwartung („${jahr.zahl}“)`);
+  await page.locator('[data-scale="month"]').first().click();
+  await page.waitForTimeout(250);
 
   // --- Von der Übersichtskarte in den Verlauf desselben Zählers
   //

@@ -759,6 +759,33 @@ final class LaunchTests: XCTestCase {
                       "Der Verlauf steht auf einem anderen Zähler als dem angetippten")
     }
 
+    /// In der Jahresansicht steht das laufende Jahr, keine Summe darüber.
+    ///
+    /// **Vom Gerät gemeldet:** „auf Jahresbasis wie im Screenshot macht es
+    /// keinen Sinn über alle Jahre die Summe. damit fängt ja keiner was an und
+    /// daran werden ja keine Analysen gemacht."
+    ///
+    /// Dort stand „2024 bis 2026, zusammen · unvollständig" über ≈ 1.880 kWh.
+    func testTheYearViewShowsTheRunningYearAndNotASumOverAllYears() {
+        let app = launchWithData()
+        guard wechsel(zu: "Verlauf", in: app) else { return }
+
+        app.buttons["Jahr"].tap()
+
+        let kopf = app.descendants(matching: .any)
+            .matching(identifier: "verlauf-kopfzahl").firstMatch
+        XCTAssertTrue(kopf.waitForExistence(timeout: erscheint),
+                      "Über dem Diagramm steht keine Zahl")
+
+        let jahr = Calendar(identifier: .gregorian).component(.year, from: Date())
+        XCTAssertTrue(kopf.label.contains("\(jahr)"),
+                      "Die Jahresansicht nennt nicht das laufende Jahr: \(kopf.label)")
+        XCTAssertFalse(kopf.label.contains("zusammen"),
+                       "Über die Jahre summiert wird nicht mehr: \(kopf.label)")
+        XCTAssertFalse(kopf.label.contains("bis"),
+                       "Eine Spanne über mehrere Jahre gehört da nicht hin: \(kopf.label)")
+    }
+
     /// Eine Zeile geht überall auf, wo sie aussieht wie eine Zeile.
     ///
     /// **Vom Gerät gemeldet:** „wenn ich bei zähler auf zähler gehe ist da

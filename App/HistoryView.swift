@@ -1058,18 +1058,46 @@ struct HistoryView: View {
     /// Die Beschriftung nennt den Ausschnitt, den die Zahl meint, und bei einem
     /// angebrochenen Abschnitt auch, aus wie vielen Tagen sie stammt. Dieselbe
     /// Wendung wie in den Vergleichszeilen: „aus 12 von 31 Tagen".
+    /// Was oben steht, wenn niemand einen Balken angetippt hat.
+    ///
+    /// **In der Jahresansicht das laufende Jahr, keine Summe darüber.** Vom
+    /// Gerät gemeldet: „auf Jahresbasis macht es keinen Sinn über alle Jahre
+    /// die Summe. damit fängt ja keiner was an und daran werden ja keine
+    /// Analysen gemacht."
+    ///
+    /// Er hat recht. „2024 bis 2026, zusammen" beantwortet keine Frage, die
+    /// jemand stellt: Verbrauch vergleicht man Jahr gegen Jahr, und dafür
+    /// stehen die Balken nebeneinander. Bei Monat und Quartal bleibt die Summe
+    /// des laufenden Jahres — dort ist sie die Klammer um die zwölf Balken.
+    private var defaultBucket: PeriodEngine.Bucket? {
+        guard granularity == .year else { return nil }
+        return buckets.first { $0.year == today.year }
+    }
+
+    private var headlineBucket: PeriodEngine.Bucket? { selectedBucket ?? defaultBucket }
+
     private var headlineCaption: String {
-        guard let bucket = selectedBucket else { return totalCaption }
+        guard let bucket = headlineBucket else {
+            // In der Jahresansicht gibt es keine Summe mehr, auf die
+            // zurückzufallen wäre. Fehlt der Balken für das laufende Jahr,
+            // steht das da — und nicht die Summe der anderen.
+            return granularity == .year ? "\(today.year) · keine Ablesung" : totalCaption
+        }
         let name = granularity == .year ? "\(bucket.year)" : "\(slotName(bucket)) \(bucket.year)"
         guard bucket.hasData else { return "\(name) · keine Ablesung" }
         guard !bucket.isComplete else { return name }
         return "\(name) · aus \(bucket.result.coveredDays) von \(bucket.range.spanInDays) Tagen"
     }
 
-    private var headlineHasValue: Bool { selectedBucket.map(\.hasData) ?? true }
+    private var headlineHasValue: Bool {
+        guard let bucket = headlineBucket else { return granularity != .year }
+        return bucket.hasData
+    }
 
     private var headlineNumber: String {
-        guard let bucket = selectedBucket else { return number(total, digits: 0) }
+        guard let bucket = headlineBucket else {
+            return granularity == .year ? "—" : number(total, digits: 0)
+        }
         guard bucket.hasData else { return "—" }
         return number(bucket.value, digits: 0)
     }
@@ -1081,7 +1109,7 @@ struct HistoryView: View {
     /// ohne Zeichen — und hätte nach dieser Änderung ausgerechnet neben einem
     /// angetippten Monat mit „≈" gestanden, der in ihr enthalten ist.
     private var headlineIsApproximate: Bool {
-        guard let bucket = selectedBucket else {
+        guard let bucket = headlineBucket else {
             return buckets.contains { $0.hasData && $0.result.confidence != .measured }
         }
         return bucket.hasData && bucket.result.confidence != .measured
@@ -1095,11 +1123,10 @@ struct HistoryView: View {
         if metric == .cost {
             complete = complete && buckets.filter(\.hasData).allSatisfy { costs[$0.id] != nil }
         }
-        let base: String
-        switch granularity {
-        case .year: base = "\(yearSpan.first ?? today.year) bis \(today.year), zusammen"
-        case .quarter, .month: base = "\(today.year), zusammen"
-        }
+        // Nur noch für Monat und Quartal: Dort ist die Jahressumme die Klammer
+        // um die Balken darunter. In der Jahresansicht steht seit 0.76.0 das
+        // laufende Jahr, siehe `defaultBucket`.
+        let base = "\(today.year), zusammen"
         return complete ? base : base + " · unvollständig"
     }
 

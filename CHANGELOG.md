@@ -9,6 +9,42 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.76.0 — 2026-08-23
+
+**Über alle Jahre summiert niemand.**
+
+Vom Gerät gemeldet, Jahresansicht: „auf Jahresbasis macht es keinen Sinn über
+alle Jahre die Summe. damit fängt ja keiner was an und daran werden ja keine
+Analysen gemacht. das kann weg und auf Jahresbasis einfachsten bleiben."
+
+Dort stand „2024 bis 2026, zusammen · unvollständig" über ≈ 1.880 kWh — eine
+Zahl, die keine Frage beantwortet. Verbrauch vergleicht man Jahr gegen Jahr,
+und dafür stehen die Balken schon nebeneinander.
+
+### Geändert
+- **In der Jahresansicht steht jetzt das laufende Jahr**, mit seiner eigenen
+  Zahl und der Angabe, aus wie vielen Tagen sie stammt: „2026 · aus 214 von 365
+  Tagen". Ein angetippter Balken ersetzt sie durch dieses Jahr — wie in 0.74.0
+  für Monat und Quartal.
+- Bei **Monat und Quartal bleibt die Summe des laufenden Jahres.** Dort ist sie
+  die Klammer um die zwölf beziehungsweise vier Balken darunter und beantwortet
+  die Frage „wie viel bisher dieses Jahr".
+- **Im Klick-Dummy stand an derselben Stelle die Hochrechnung fürs Jahresende.**
+  Auch das ist weg: Die große Zahl ist jetzt das Gemessene, in App und Entwurf
+  dieselbe. Die Erwartung bleibt sichtbar — als schraffierter Teil des Balkens,
+  wo sie sich nicht mit einer Messung verwechseln lässt (Produktprinzip 7).
+
+### Hinzugefügt
+- Drei Prüfungen im Klick-Dummy und eine Oberflächenprüfung in der App, die
+  ausdrücklich verlangen, dass dort **kein** „zusammen" und **kein** „bis"
+  mehr steht.
+
+_178 Prüfungen im Klick-Dummy, hell und dunkel. Nachgerechnet: 2026 steht bei
+1.607 kWh aus 214 von 365 Tagen — dieselbe Zahl, die die Übersichtskarte für
+das Jahr zeigt. PulseCore vollständig grün._
+
+---
+
 ## 0.75.3 — 2026-08-23
 
 ### Geändert

@@ -778,7 +778,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.75.3</p>
+  <p>Klickbarer Entwurf · v0.76.0</p>
 </div>
 
 <div class="device">
@@ -2229,9 +2229,19 @@ function renderChart() {
       svg += `<text x="${cx + bw / 2}" y="${H - hs - he - 6}" text-anchor="middle" font-size="11" font-weight="600" fill="var(--ink-2)" font-family="-apple-system,sans-serif">${nf(b.solid + b.extra, dp)}</text>`;
     });
     host.innerHTML = svg + "</svg>";
-    document.getElementById("chart-total").textContent = nf(projected, dp) + " " + m.unit;
+    // **Das laufende Jahr, gemessen — keine Summe über alle Jahre und keine
+    // Hochrechnung als große Zahl.**
+    //
+    // Vom Gerät gemeldet: „auf Jahresbasis macht es keinen Sinn über alle Jahre
+    // die Summe." In der App stand dort bis 0.76.0 „2024 bis 2026, zusammen",
+    // hier die Erwartung fürs Jahresende. Beides beantwortet keine Frage, die
+    // jemand stellt. Die Erwartung bleibt sichtbar — als schraffierter Teil des
+    // Balkens, wo sie sich nicht mit einer Messung verwechseln lässt.
+    const jahr = between({ y: 2026, m: 1, d: 1 }, { y: 2027, m: 1, d: 1 });
+    document.getElementById("chart-total").textContent =
+      (ytd.exact ? "" : "≈ ") + nf(measured, dp) + " " + m.unit;
     document.getElementById("chart-label").textContent =
-      fc && fc.method === "seasonal" ? "erwartet 2026 · nach Vorjahresverlauf" : "erwartet 2026 · aus dem Tagesschnitt";
+      ytd.days >= jahr ? "2026" : `2026 · aus ${ytd.days} von ${jahr} Tagen`;
     document.getElementById("chart-forecast").style.display = "none";
   }
 
