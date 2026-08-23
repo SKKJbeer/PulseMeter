@@ -9,6 +9,17 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.75.3 — 2026-08-23
+
+### Geändert
+- Build 15 liegt seit 16:58 UTC in TestFlight, verarbeitet und mit
+  Testhinweisen — er trägt 0.74.0 und 0.75.0 zusammen. Die Zeile dazu steht in
+  `docs/12-auslieferung.md`, deren Kopf jetzt wieder den aktuellen Stand nennt.
+
+_Nur Dokumente. Kein neuer Bau: Build 15 ist der aktuelle._
+
+---
+
 ## 0.75.2 — 2026-08-23
 
 ### Behoben

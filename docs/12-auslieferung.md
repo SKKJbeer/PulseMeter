@@ -1,6 +1,6 @@
 # 12 – Auslieferung: vom Code in den App Store, ohne Mac
 
-Stand: 2026-08-22, Version 0.71.2
+Stand: 2026-08-23, Version 0.75.3
 
 Am 17. August ist PulseMeter zum ersten Mal in TestFlight gelandet — **ohne
 Kabel, ohne Xcode auf dem Rechner des Gründers, ohne einen Klick im
@@ -203,6 +203,7 @@ Store Connect deshalb nie gesehen.
 | 12 | 0.71.0 | 22.08. 14:59 | ✓ | Vergleichskarte nennt ihren Ausschnitt, Vorschau bei allen Zählern — **erster Bau mit Testhinweisen** |
 | 13 | 0.72.0 | 22.08. 17:41 | ✓ | Kein Prozentwert mehr, wo zwei Tage gegen acht Monate stehen; knappe Zeilen nennen ihre Tage |
 | 14 | 0.73.0 | 22.08. 20:01 | ✓ | Zeilen und Knöpfe auf ihrer ganzen Fläche antippbar, Eintragen und Öffnen ohne Verzögerung, Karte führt in den Verlauf |
+| 15 | 0.75.2 | 23.08. 16:53 | ✓ | Die große Zahl folgt dem angetippten Monat; Ablesungen lassen sich ändern und löschen |
 
 Zeitangaben in UTC. Ein ✗ heißt: hochgeladen wurde nichts, die Nummer ist
 trotzdem verbraucht.
