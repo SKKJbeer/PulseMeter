@@ -136,7 +136,14 @@ struct HistoryView: View {
             .sheet(isPresented: $showingReadings) {
                 ReadingsList(readings: readings, unit: unit,
                              fractionDigits: register?.fractionDigits ?? 1,
-                             labels: registerLabels)
+                             labels: registerLabels,
+                             meteringPoint: meter,
+                             onChanged: {
+                                 // Neu laden statt nur neu rechnen: Die Liste
+                                 // hat gerade den Bestand geändert, und
+                                 // `readings` hängt an ihm.
+                                 load()
+                             })
             }
             .sheet(isPresented: $showingPaywall) {
                 UnlockSheet(product: .pdfReport)
@@ -1176,12 +1183,27 @@ struct ReadingsList: View {
     /// Bei einem gewöhnlichen Zähler stünde sonst „Bezug" an jeder Zeile —
     /// ein Wort, das der Nutzer nie gebraucht hat.
     var labels: [Register.ID: String] = [:]
+    /// Der Zähler, zu dem die Ablesungen gehören. Ohne ihn ließe sich keine
+    /// ändern: Stellen, Einheit und Gerätewechsel hängen am Zählwerk.
+    var meteringPoint: MeteringPoint?
+    /// Wird gerufen, wenn sich etwas geändert hat — der Verlauf dahinter muss
+    /// dann neu rechnen.
+    var onChanged: () -> Void = {}
 
+    @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @State private var editing: Reading?
+    @State private var deleting: Reading?
+    @State private var problem: String?
 
     var body: some View {
         NavigationStack {
             List {
+                if let problem {
+                    Text(problem)
+                        .font(PulseText.caption)
+                        .foregroundStyle(PulseColor.adverse)
+                }
                 ForEach(readings.reversed()) { reading in
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
@@ -1204,9 +1226,30 @@ struct ReadingsList: View {
                         Text("\(number(reading.value)) \(unit)")
                             .font(.system(.body, weight: .medium))
                             .foregroundStyle(PulseColor.ink)
+                        if meteringPoint != nil {
+                            Image(systemName: "chevron.right")
+                                .accessibilityHidden(true)
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundStyle(PulseColor.inkTertiary)
+                        }
+                    }
+                    // Die ganze Zeile führt zum Ändern, nicht nur die Schrift.
+                    .contentShape(Rectangle())
+                    .onTapGesture { if meteringPoint != nil { editing = reading } }
+                    // Löschen zusätzlich über das Wischen — der schnelle Weg
+                    // für den, der ihn kennt. Gefragt wird trotzdem: Eine
+                    // gelöschte Ablesung ist nicht wiederzuholen.
+                    .swipeActions(edge: .trailing) {
+                        if meteringPoint != nil {
+                            Button(role: .destructive) { deleting = reading } label: {
+                                Label("Löschen", systemImage: "trash")
+                            }
+                        }
                     }
                     // Als ein Satz: „1. Juni 2026, Hochtarif, 25.971,5 kWh".
                     .accessibilityElement(children: .combine)
+                    .accessibilityHint(meteringPoint == nil ? "" : "Öffnet die Ablesung zum Ändern")
+                    .accessibilityAddTraits(meteringPoint == nil ? [] : .isButton)
                 }
             }
             .navigationTitle("Ablesungen")
@@ -1216,6 +1259,47 @@ struct ReadingsList: View {
                     Button("Fertig") { dismiss() }
                 }
             }
+            .sheet(item: $editing) { reading in
+                if let meteringPoint {
+                    ReadingEditor(reading: reading,
+                                  meteringPoint: meteringPoint,
+                                  others: readings.filter {
+                                      $0.registerID == reading.registerID && $0.id != reading.id
+                                  },
+                                  onDone: {
+                                      onChanged()
+                                      dismiss()
+                                  })
+                }
+            }
+            .confirmationDialog("Diese Ablesung löschen?",
+                                isPresented: Binding(get: { deleting != nil },
+                                                     set: { if !$0 { deleting = nil } }),
+                                titleVisibility: .visible) {
+                Button("Löschen", role: .destructive) { entfernen() }
+                Button("Abbrechen", role: .cancel) { deleting = nil }
+            } message: {
+                Text(deleting.map {
+                    "Der Stand vom \(germanDate($0.day)) wird entfernt. Der Verbrauch davor und danach wird neu gerechnet."
+                } ?? "")
+            }
+        }
+    }
+
+    /// **Warum das Blatt danach zugeht.** Die Liste hat ihre Ablesungen als
+    /// Kopie bekommen; nach einer Änderung stimmt sie nicht mehr. Sie an Ort
+    /// und Stelle nachzuladen hieße, denselben Bestand an zwei Orten zu führen
+    /// — die Liste zeigt danach den Stand des Verlaufs dahinter, und der ist
+    /// gerade neu gerechnet worden.
+    private func entfernen() {
+        guard let reading = deleting else { return }
+        deleting = nil
+        do {
+            try PulseRepository(context: context).delete(readingID: reading.id)
+            onChanged()
+            dismiss()
+        } catch {
+            problem = "Die Ablesung ließ sich nicht löschen: \(error.localizedDescription)"
         }
     }
 

@@ -83,9 +83,70 @@ for (const scheme of ["light", "dark"]) {
   }
   note(await page.locator("#ed-name").isVisible().catch(() => false),
        "Ein Klick neben den Namen öffnet den Zähler");
-  await page.locator("#sheet-editor .sheet-close, .sheet-close[data-close]").first()
-            .click().catch(() => {});
+  // Über die eigene Funktion des Entwurfs schließen, nicht über einen Knopf:
+  // `.first()` einer Sammelauswahl traf schon den Schließen-Knopf eines
+  // anderen Blatts, und das offene Blatt fing danach jeden Klick ab.
+  await page.evaluate(() => closeSheets());
   await page.waitForTimeout(250);
+
+  // --- Eine erfasste Ablesung ändern und löschen
+  //
+  // Vom Nutzer verlangt: „ich benötige noch eine Option dass man historische
+  // Zählerstände ändern und löschen kann." Wer sich vertippt, verschiebt beide
+  // angrenzenden Zeiträume — und sah den falschen Wert bis 0.75.0 für immer.
+  await page.locator('[data-pane="history"]').first().click();
+  await page.waitForTimeout(250);
+  // Zurück ins Diagramm: Ein früherer Abschnitt hat auf „Alle Zahlen"
+  // umgeschaltet, und dort gibt es die Zeile „Alle Ablesungen" nicht.
+  await page.locator('[data-mode="chart"]').first().click();
+  await page.waitForTimeout(250);
+  await page.locator('[data-open="readings"]').first().click();
+  await page.waitForTimeout(300);
+  const bestand = await page.evaluate(() => {
+    const reg = METERS.find(m => m.id === histMeter).registers[0];
+    return { anzahl: reg.readings.length, idx: reg.readings.length - 2 };
+  });
+  await page.locator(`[data-reading="${bestand.idx}"]`).click();
+  await page.waitForTimeout(300);
+  const imEditor = await page.evaluate(() => ({
+    titel: document.getElementById("cap-title").textContent,
+    ziffern: digits,
+    loeschbar: !document.getElementById("cap-delete").hidden
+  }));
+  note(imEditor.titel === "Ablesung ändern" && imEditor.ziffern.length > 0,
+       `Eine Zeile öffnet die Ablesung mit ihrem Wert („${imEditor.titel}“)`);
+  note(imEditor.loeschbar, "Und bietet an, sie zu löschen");
+
+  // Eine Ziffer ändern und sichern: Der Bestand wird nicht länger, und die
+  // Reihe bleibt sortiert — sonst rechnete jeder Abschnitt danach falsch.
+  await page.locator('[data-key="back"]').click();
+  await page.locator('[data-key="9"]').click();
+  await page.waitForTimeout(120);
+  await page.locator("#save").click();
+  await page.waitForTimeout(350);
+  const nachAendern = await page.evaluate(() => {
+    const reg = METERS.find(m => m.id === histMeter).registers[0];
+    const serial = r => r.y * 10000 + r.m * 100 + r.d;
+    return {
+      anzahl: reg.readings.length,
+      sortiert: reg.readings.every((r, i, a) => i === 0 || serial(a[i - 1]) <= serial(r))
+    };
+  });
+  note(nachAendern.anzahl === bestand.anzahl,
+       "Ändern legt keine zweite Ablesung an");
+  note(nachAendern.sortiert, "Und die Reihe bleibt nach dem Tag geordnet");
+
+  page.once("dialog", d => d.accept());
+  await page.locator('[data-open="readings"]').first().click();
+  await page.waitForTimeout(300);
+  await page.locator(`[data-reading="${bestand.idx}"]`).click();
+  await page.waitForTimeout(300);
+  await page.locator("#cap-delete").click();
+  await page.waitForTimeout(350);
+  const nachLoeschen = await page.evaluate(() =>
+    METERS.find(m => m.id === histMeter).registers[0].readings.length);
+  note(nachLoeschen === bestand.anzahl - 1,
+       `Löschen nimmt genau eine Ablesung weg (${bestand.anzahl} → ${nachLoeschen})`);
 
   // --- Die große Zahl über dem Diagramm folgt dem angetippten Monat
   //

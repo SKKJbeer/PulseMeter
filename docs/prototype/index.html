@@ -445,6 +445,17 @@ h2.large {
 }
 .save:not([disabled]):active { filter: brightness(.92); }
 .save:focus-visible { outline: 2px solid var(--tint); outline-offset: 3px; }
+/* Löschen sieht nicht aus wie Sichern. Keine Fläche, keine Farbe außer der
+   Warnfarbe der Schrift — es ist der seltenere Weg und der einzige, der etwas
+   wegnimmt. */
+.loeschen {
+  width: 100%; margin-top: 10px; font: inherit;
+  font-size: 15px; font-weight: 620; letter-spacing: -0.01em;
+  color: var(--red-ink); background: none; border: 0;
+  padding: 13px; min-height: 44px; cursor: pointer; border-radius: 12px;
+}
+.loeschen:active { background: var(--surface-2); }
+.loeschen:focus-visible { outline: 2px solid var(--tint); outline-offset: -2px; }
 .save-note {
   text-align: center; font-size: var(--fs-cap); color: var(--ink-3);
   margin-top: 9px;
@@ -767,7 +778,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.74.0</p>
+  <p>Klickbarer Entwurf · v0.75.0</p>
 </div>
 
 <div class="device">
@@ -940,6 +951,10 @@ select.field { cursor: pointer; }
         <input type="date" id="cap-date" max="2026-08-04">
         <input type="time" id="cap-time" step="60">
       </div>
+      <!-- Nur beim Ändern einer vorhandenen Ablesung. Beim Eintragen gäbe es
+           nichts zu löschen, und ein Knopf, der nichts tut, ist schlimmer als
+           keiner. -->
+      <button type="button" class="loeschen" id="cap-delete" hidden>Diese Ablesung löschen</button>
     </div>
   </div>
 
@@ -2234,17 +2249,22 @@ function renderChart() {
     d.style.color = yoy < 0 ? "var(--good)" : "var(--red)";
   } else { d.textContent = ""; }
 
+  // **Jede Zeile führt zum Ändern.** Bis 0.75.0 war die Liste eine Anzeige:
+  // Wer sich vertippt hatte, sah den falschen Wert für immer. Eine falsche
+  // Ziffer verschiebt beide angrenzenden Zeiträume — sie muss sich berichtigen
+  // lassen (Produktprinzip 4).
   const rows = reg.readings.slice().reverse().map(r => {
     const idx = reg.readings.indexOf(r);
     const before = reg.readings[idx - 1];
     const diff = before ? r.value - before.value : null;
     const days = before ? between(before, r) : null;
-    return `<div class="row">
+    return `<button type="button" class="rowbtn" data-reading="${idx}">
       <div class="rl">${momentLabel(r)}
         <small>${diff !== null ? nf(diff, m.frac >= 3 ? 1 : 0) + " " + m.unit + " in " + days + " Tagen" : "Erster Stand"}</small></div>
       ${r.origin === "estimated" ? '<span class="tag">geschätzt</span>' : ""}
       <div class="rv">${nf(r.value, m.frac)}<small>${m.unit}</small></div>
-    </div>`;
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+    </button>`;
   }).join("");
   document.getElementById("readings").innerHTML = rows;
   const first = reg.readings[0];
@@ -3151,10 +3171,42 @@ let capIndex = 0, capEntered = {};
 function capRegister() { return capMeter.registers[capIndex]; }
 function capIsLast() { return capIndex >= capMeter.registers.length - 1; }
 
+/* Die Ablesung, die gerade geändert wird — `null` beim Eintragen einer neuen.
+
+   Derselbe Schirm für beides, mit Absicht: Eine Zahl vom Gerät einzutippen ist
+   derselbe Vorgang, ob sie neu ist oder berichtigt wird. Ein zweites Formular
+   daneben wäre ein zweiter Weg für dieselbe Sache — und der einzige Ort, an
+   dem ein Zählerstand nicht wie ein Zählwerk aussieht. Wie `ReadingEditor`. */
+let capEdit = null;
+
+/* Eine vorhandene Ablesung öffnen. `idx` zeigt in `reg.readings`. */
+function openReadingEdit(idx) {
+  const m = METERS.find(x => x.id === histMeter);
+  const reg = m.registers[0];
+  const r = reg.readings[idx];
+  if (!r) return;
+  capMeter = m;
+  capIndex = 0;
+  capEntered = {};
+  capEdit = { idx, value: r.value };
+  document.getElementById("cap-date").value =
+    `${r.y}-${String(r.m).padStart(2, "0")}-${String(r.d).padStart(2, "0")}`;
+  document.getElementById("cap-time").value = r.t == null
+    ? "12:00"
+    : `${String(Math.floor(r.t / 60)).padStart(2, "0")}:${String(r.t % 60).padStart(2, "0")}`;
+  showCaptureStep();
+  // Nach `showCaptureStep`, das den Schirm für den Normalfall herrichtet.
+  digits = String(Math.round(r.value * 10 ** reg.frac));
+  drawCounter();
+  judge();
+  openSheet("sheet-capture");
+}
+
 function openCapture(id) {
   capMeter = METERS.find(m => m.id === id);
   capIndex = 0;
   capEntered = {};
+  capEdit = null;
   // Vorbelegt auf den heutigen Tag dieses Entwurfs und die Uhrzeit der Uhr, die
   // gerade läuft. Wer nichts anfasst, merkt von der Zeile nichts.
   document.getElementById("cap-date").value =
@@ -3224,8 +3276,17 @@ function showCaptureStep() {
        <br><button type="button" class="prefill" id="prefill">Vom letzten Stand übernehmen</button>`
     : "Erste Ablesung für dieses Zählwerk");
   document.getElementById("cap-unit").textContent = reg.unit;
-  document.getElementById("save").textContent = capIsLast() ? "Sichern" : "Weiter";
+  document.getElementById("save").textContent = capEdit ? "Sichern" : (capIsLast() ? "Sichern" : "Weiter");
   document.getElementById("save").style.setProperty("--c", capMeter.color);
+  // Beim Ändern trägt der Kopf den Vorgang, nicht den Zähler: „Ablesung
+  // ändern" sagt, was der Schirm hier tut. Und der Vorschlag „vom letzten
+  // Stand übernehmen" gehört nicht hierher — der letzte Stand ist eine andere
+  // Ablesung als die, die gerade berichtigt wird.
+  if (capEdit) {
+    document.getElementById("cap-title").textContent = "Ablesung ändern";
+    document.getElementById("cap-meta").innerHTML = head;
+  }
+  document.getElementById("cap-delete").hidden = !capEdit;
   drawCounter();
   judge();
   const prefill = document.getElementById("prefill");
@@ -3279,8 +3340,19 @@ function judge() {
     return;
   }
   const reg = capRegister();
-  const last = reg.readings[reg.readings.length - 1];
-  const days = last ? between(last, TODAY) : 0;
+  // **Der Vorgänger des gewählten Tages, nicht der zuletzt erfasste.**
+  //
+  // Beim Eintragen ist das dasselbe: Ein neuer Stand liegt hinter allem. Beim
+  // Ändern einer alten Ablesung ist es das nicht — verglichen würde sonst mit
+  // dem neuesten Wert, und der Satz „liegt unter dem letzten Wert" spräche
+  // über eine Ablesung, die Monate später kommt. `ConsumptionEngine`
+  // beantwortet dieselbe Frage mit `history.last(where: { $0.day <= day })`.
+  const tag = capEdit ? capMoment() : TODAY;
+  const bis = serial(tag.y, tag.m, tag.d);
+  const last = reg.readings
+    .filter((r, i) => (!capEdit || i !== capEdit.idx) && serial(r.y, r.m, r.d) <= bis)
+    .slice(-1)[0];
+  const days = last ? between(last, tag) : 0;
   const check = '<svg class="mark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4 10-10"/></svg>';
   const bang = '<svg class="mark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 7v7"/><path d="M12 17.5v.01"/></svg>';
 
@@ -3317,7 +3389,7 @@ function judge() {
   // Gaszähler verbraucht im Juli einen Bruchteil des Mittels. Gegen den
   // Durchschnitt geprüft würde jeder korrekte Sommerstand beanstandet und ein
   // zehnfach zu hoher durchgewinkt.
-  const prior = consumption(reg, shiftYear(last, -1), shiftYear(TODAY, -1));
+  const prior = consumption(reg, shiftYear(last, -1), shiftYear(tag, -1));
   let usual = prior && prior.complete && prior.value > 0 ? prior.value / prior.days : null;
   if (usual === null) { const ytd = yearToDate(reg); usual = ytd ? ytd.value / ytd.days : perDay; }
   const factor = usual > 0 ? perDay / usual : 1;
@@ -3379,6 +3451,25 @@ function recordMeterChange() {
 function saveReading() {
   const v = currentValue();
   if (v === null) return;
+
+  // Ändern heißt ersetzen, nicht anhängen. Danach neu sortieren: Wer eine
+  // Ablesung auf ein früheres Datum zieht, hängt sie sonst hinten an, und
+  // jeder Abschnitt danach rechnete falsch — dieselbe Falle wie beim
+  // Nachtragen.
+  if (capEdit) {
+    const reg = capRegister();
+    const moment = capMoment();
+    const r = reg.readings[capEdit.idx];
+    if (!r) return;
+    Object.assign(r, { y: moment.y, m: moment.m, d: moment.d, t: moment.t, value: v });
+    sortReadings(reg);
+    capEdit = null;
+    closeSheets();
+    melden("Ablesung geändert");
+    renderAll();
+    return;
+  }
+
   capEntered[capRegister().id] = v;
 
   if (!capIsLast()) {
@@ -3387,6 +3478,41 @@ function saveReading() {
     return;
   }
   commitReadings();
+}
+
+/* Tag, dann Uhrzeit — wie `chronological()` in PulseCore. */
+function sortReadings(reg) {
+  reg.readings.sort((a, b) => {
+    const da = serial(a.y, a.m, a.d), db = serial(b.y, b.m, b.d);
+    if (da !== db) return da - db;
+    if (a.t != null && b.t != null) return a.t - b.t;
+    return 0;
+  });
+}
+
+function melden(text) {
+  const t = document.getElementById("toast");
+  document.getElementById("toast-text").textContent = text;
+  t.classList.add("on");
+  setTimeout(() => t.classList.remove("on"), 1250);
+}
+
+/* Eine Ablesung entfernen.
+
+   Gefragt wird vorher, und zwar mit der Folge statt mit dem Wort
+   „unwiderruflich": Der Verbrauch davor und danach wird neu gerechnet, weil
+   die Lücke zwischen den beiden Nachbarn jetzt größer ist. */
+function deleteReading() {
+  if (!capEdit) return;
+  const reg = capRegister();
+  const r = reg.readings[capEdit.idx];
+  if (!r) return;
+  if (!confirm(`Der Stand vom ${dateLabel(r)} wird entfernt. Der Verbrauch davor und danach wird neu gerechnet.`)) return;
+  reg.readings.splice(capEdit.idx, 1);
+  capEdit = null;
+  closeSheets();
+  melden("Ablesung gelöscht");
+  renderAll();
 }
 
 function commitReadings() {
@@ -3405,21 +3531,12 @@ function commitReadings() {
     // **Nach dem Einfügen sortieren.** Der Rechenkern setzt eine geordnete
     // Reihe voraus — `series()` läuft von vorn nach hinten durch. Eine
     // nachgetragene Ablesung von vorgestern hängt hinten und würde jeden
-    // Abschnitt danach falsch rechnen. Tag, dann Uhrzeit, wie
-    // `chronological()` in PulseCore.
-    r.readings.sort((a, b) => {
-      const da = serial(a.y, a.m, a.d), db = serial(b.y, b.m, b.d);
-      if (da !== db) return da - db;
-      if (a.t != null && b.t != null) return a.t - b.t;
-      return 0;
-    });
+    // Abschnitt danach falsch rechnen.
+    sortReadings(r);
   }
   const name = capMeter.name;
   closeSheets();
-  const t = document.getElementById("toast");
-  document.getElementById("toast-text").textContent = name + " gesichert";
-  t.classList.add("on");
-  setTimeout(() => t.classList.remove("on"), 1250);
+  melden(name + " gesichert");
   renderAll();
 }
 
@@ -3589,7 +3706,7 @@ function refreshAfterMeterChange() {
 
 /* Ereignisse */
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-capture],[data-history],[data-meterchange],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export],[data-month],[data-open],[data-scope],[data-period],[data-meter],[data-pro],[data-unlock],#add-meter,#first-meter,#ed-save,#ed-archive,#ed-delete");
+  const t = e.target.closest("[data-capture],[data-reading],#cap-delete,[data-history],[data-meterchange],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export],[data-month],[data-open],[data-scope],[data-period],[data-meter],[data-pro],[data-unlock],#add-meter,#first-meter,#ed-save,#ed-archive,#ed-delete");
   if (!t) return;
 
   if (t.dataset.pro !== undefined) return setPro(t.dataset.pro === "1");
@@ -3606,6 +3723,8 @@ document.addEventListener("click", e => {
   if (t.id === "ed-delete") return deleteMeter();
 
   if (t.dataset.capture) return openCapture(t.dataset.capture);
+  if (t.dataset.reading !== undefined) return openReadingEdit(Number(t.dataset.reading));
+  if (t.id === "cap-delete") return deleteReading();
 
   // Von der Karte in den Verlauf desselben Zählers.
   //

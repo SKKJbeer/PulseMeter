@@ -592,6 +592,59 @@ final class LaunchTests: XCTestCase {
                       "Der neue Zähler taucht nicht in der Liste auf")
     }
 
+    /// Eine erfasste Ablesung lässt sich berichtigen und löschen.
+    ///
+    /// **Vom Nutzer verlangt:** „ich benötige noch eine Option dass man
+    /// historische Zählerstände ändern und löschen kann. dies soll in der Liste
+    /// alle Ablesungen möglich sein."
+    ///
+    /// Geprüft wird der Weg dorthin und die Wirkung: Nach dem Löschen steht
+    /// eine Ablesung weniger in der Liste. Die Zahl selbst steht in der
+    /// Überschrift der Zeile darüber — „N Einträge".
+    func testAReadingCanBeCorrectedAndDeleted() {
+        let app = launchWithData()
+        guard wechsel(zu: "Verlauf", in: app) else { return }
+
+        let liste = app.buttons.matching(
+            NSPredicate(format: "label BEGINSWITH 'Alle Ablesungen'")
+        ).firstMatch
+        guard oeffne(liste, bis: app.navigationBars["Ablesungen"], in: app,
+                     "Ablesungen öffnen") else { return }
+
+        let zeilen = app.cells.count
+        XCTAssertGreaterThan(zeilen, 1, "Die Beispieldaten haben zu wenige Ablesungen")
+
+        // Die zweite Zeile, nicht die erste: Die oberste ist die jüngste, und
+        // an ihr ließe sich nicht zeigen, dass auch ein alter Stand erreichbar
+        // ist — genau darum ging die Bitte.
+        app.cells.element(boundBy: 1).tap()
+        XCTAssertTrue(app.navigationBars["Ablesung ändern"].waitForExistence(timeout: erscheint),
+                      "Eine Zeile öffnet die Ablesung nicht. Zu sehen war: "
+                      + beschriftungen(in: app))
+
+        let loeschen = app.buttons["Diese Ablesung löschen"]
+        XCTAssertTrue(loeschen.waitForExistence(timeout: erscheint),
+                      "Im Ändern-Schirm fehlt der Weg zum Löschen")
+        loeschen.tap()
+
+        // Gefragt wird vorher — eine gelöschte Ablesung ist nicht zurückzuholen.
+        let bestaetigen = app.buttons["Löschen"]
+        XCTAssertTrue(bestaetigen.waitForExistence(timeout: erscheint),
+                      "Gelöscht wird ohne Rückfrage")
+        bestaetigen.tap()
+
+        // Danach ist die Liste zu und der Verlauf neu gerechnet. Die Zeile
+        // „Alle Ablesungen" sagt, wie viele es noch sind.
+        let danach = app.buttons.matching(
+            NSPredicate(format: "label BEGINSWITH 'Alle Ablesungen'")
+        ).firstMatch
+        XCTAssertTrue(danach.waitForExistence(timeout: erscheint),
+                      "Nach dem Löschen ist der Verlauf nicht wieder da")
+        XCTAssertTrue(danach.label.contains("\(zeilen - 1) Einträge"),
+                      "Nach dem Löschen sollten es \(zeilen - 1) Einträge sein, "
+                      + "die Zeile sagt: \(danach.label)")
+    }
+
     /// Ein angetippter Monat steht sofort über dem Diagramm.
     ///
     /// **Vom Gerät gemeldet:** „wenn ich hier oben im Monat die Balken anklicke

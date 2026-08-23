@@ -85,6 +85,12 @@ Ein Zähler, ein Zeitraum, ein Chart. Nicht alle Zähler übereinander.
 - Interpolierte Werte visuell unterscheidbar (schraffiert statt gefüllt)
 - Antippen eines Balkens zeigt die zugrunde liegenden Ablesungen — die Kette von der Aussage zur Rohdaten-Quelle ist immer nachvollziehbar (Prinzip 4)
 - Die Liste der Ablesungen ist eine Detailansicht, nicht die Hauptoberfläche
+- **In dieser Liste lässt sich jede Ablesung berichtigen und löschen.** Eine
+  falsche Ziffer verschiebt beide angrenzenden Zeiträume; ohne einen Weg
+  zurück steht sie für immer im Verlauf (Prinzip 4). Geändert wird auf
+  demselben Schirm, auf dem erfasst wird — dieselbe Zählwerk-Optik, derselbe
+  Ziffernblock. Gelöscht wird nur nach Rückfrage, und die Rückfrage nennt die
+  Folge: Der Verbrauch davor und danach wird neu gerechnet
 
 ---
 

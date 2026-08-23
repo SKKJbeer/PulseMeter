@@ -9,6 +9,54 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.75.0 — 2026-08-23
+
+**Eine Ablesung lässt sich berichtigen.**
+
+Vom Nutzer verlangt: „ich benötige noch eine Option dass man historische
+Zählerstände ändern und löschen kann. dies soll in der Liste alle Ablesungen
+möglich sein."
+
+Bis hierher war die Liste eine Anzeige. Wer sich vertippte, sah den falschen
+Wert für immer — und es bleibt nicht bei einer Zeile: Eine falsche Ziffer
+verschiebt **beide** angrenzenden Zeiträume, den davor und den danach.
+
+### Hinzugefügt
+- **Jede Zeile in „Alle Ablesungen" führt zum Ändern.** Wert, Tag und Uhrzeit
+  lassen sich berichtigen; danach rechnet der Verlauf sofort neu.
+- **Löschen**, mit Rückfrage. Die Rückfrage nennt nicht das Wort
+  „unwiderruflich", sondern die Folge: Der Verbrauch davor und danach wird neu
+  gerechnet. Zusätzlich über das Wischen nach links — der schnelle Weg für den,
+  der ihn kennt, mit derselben Rückfrage.
+- Sechs Prüfungen im Klick-Dummy und eine Oberflächenprüfung in der App: Zeile
+  öffnen, Ziffer ändern, sichern, löschen — und danach nachzählen.
+
+### Geändert
+- **Geändert wird auf demselben Schirm, auf dem erfasst wird**: dieselbe
+  Zählwerk-Optik, derselbe Ziffernblock, dieselbe Plausibilitätsprüfung. Ein
+  Textfeld daneben wäre ein zweiter Weg für dieselbe Sache — und der einzige
+  Ort in der App, an dem ein Zählerstand nicht wie ein Zählwerk aussieht.
+- „Sichern" bleibt gesperrt, solange nichts anders ist als vorher. Ein Knopf,
+  der nichts ändert, ist eine Zusage, die er nicht einlöst.
+
+### Behoben
+- **Die Plausibilitätsprüfung vergleicht mit dem Vorgänger des gewählten Tages,
+  nicht mit der zuletzt erfassten Ablesung.** Beim Eintragen ist das dasselbe —
+  ein neuer Stand liegt hinter allem. Beim Ändern eines alten Standes ist es
+  das nicht: Der Satz „liegt unter dem letzten Wert" spräche sonst über eine
+  Ablesung, die Monate später kommt. `ConsumptionEngine` hielt es im Rechenkern
+  immer schon richtig; der Klick-Dummy zog nach.
+- Die Gerätekennung wandert mit dem Tag. Wer eine Ablesung über einen
+  Zählerwechsel hinweg verschiebt, hängt sie sonst an das falsche Gerät — und
+  der erklärte Rücksprung gälte wieder als Fehler.
+
+_172 Prüfungen im Klick-Dummy, hell und dunkel. PulseCore vollständig grün.
+`PulseData` ist unter Linux nicht baubar; geändert wurde dort nichts — Ändern
+und Löschen gehen über `save(_:fractionDigits:)` und `delete(readingID:)`, die
+es beide schon gab._
+
+---
+
 ## 0.74.0 — 2026-08-23
 
 **Die große Zahl folgt dem Finger.**
