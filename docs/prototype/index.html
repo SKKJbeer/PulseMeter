@@ -767,7 +767,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.73.2</p>
+  <p>Klickbarer Entwurf · v0.74.0</p>
 </div>
 
 <div class="device">
@@ -2129,8 +2129,35 @@ function renderChart() {
       svg += `<rect x="${cx}" y="0" width="${bw}" height="${H + 16}" fill="transparent" data-month="${i}"/>`;
     }
     host.innerHTML = svg + "</svg>";
-    document.getElementById("chart-total").textContent = nf(ytd.value, dp) + " " + m.unit;
-    document.getElementById("chart-label").textContent = "seit 1. Januar 2026";
+    // **Die große Zahl folgt dem Finger.**
+    //
+    // Vom Gerät gemeldet: „wenn ich hier oben im Monat die Balken anklicke will
+    // ich direkt oben sehen wie viel ich verbraucht habe. gerade wird das ganze
+    // Jahr angezeigt." Bis 0.74.0 blieb hier die Jahressumme stehen, egal was
+    // angetippt war — die Auswahl stand nur im Balken und in der Vergleichskarte
+    // weiter unten. Dieselbe Änderung wie in `HistoryView`.
+    const kopfZahl = document.getElementById("chart-total");
+    const kopfMarke = document.getElementById("chart-label");
+    if (selMonth !== null) {
+      const c = monthConsumption(reg, 2026, selMonth + 1);
+      const tage = between({ y: 2026, m: selMonth + 1, d: 1 },
+                           selMonth === 11 ? { y: 2027, m: 1, d: 1 }
+                                           : { y: 2026, m: selMonth + 2, d: 1 });
+      const name = `${MONTHS_LONG[selMonth]} 2026`;
+      if (!c) {
+        kopfZahl.textContent = "—";
+        kopfMarke.textContent = `${name} · keine Ablesung`;
+      } else {
+        // Das ≈ heißt hier wie überall: gerechnet, nicht gemessen.
+        kopfZahl.textContent = (c.exact ? "" : "≈ ") + nf(c.value, dp) + " " + m.unit;
+        // Und die Beschriftung sagt, aus wie vielen Tagen die Zahl stammt —
+        // dieselbe Wendung wie in den Vergleichszeilen.
+        kopfMarke.textContent = c.complete ? name : `${name} · aus ${c.days} von ${tage} Tagen`;
+      }
+    } else {
+      kopfZahl.textContent = (ytd.exact ? "" : "≈ ") + nf(ytd.value, dp) + " " + m.unit;
+      kopfMarke.textContent = "seit 1. Januar 2026";
+    }
     // Die Zahl zum blassen Balken. Sie steht als Satz unter der großen Zahl und
     // nicht als zweite große Zahl daneben: Gemessen bleibt die Hauptaussage,
     // die Erwartung ist eine Ableitung daraus — mit ≈ und mit der Grundlage,

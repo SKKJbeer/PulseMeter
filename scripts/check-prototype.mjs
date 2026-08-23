@@ -87,6 +87,51 @@ for (const scheme of ["light", "dark"]) {
             .click().catch(() => {});
   await page.waitForTimeout(250);
 
+  // --- Die große Zahl über dem Diagramm folgt dem angetippten Monat
+  //
+  // Vom Gerät gemeldet: Wer einen Balken antippt, will oben sehen, was in dem
+  // Monat zusammenkam. Vorher blieb dort die Jahressumme stehen.
+  await page.locator('[data-pane="history"]').first().click();
+  await page.waitForTimeout(250);
+  const kopfOhne = await page.evaluate(() => {
+    selMonth = null; renderChart();
+    return { zahl: document.getElementById("chart-total").textContent,
+             marke: document.getElementById("chart-label").textContent };
+  });
+  note(/1\. Januar/.test(kopfOhne.marke),
+       `Ohne Auswahl steht die Summe des Jahres oben („${kopfOhne.marke}“)`);
+
+  const kopfMaerz = await page.evaluate(() => {
+    selMonth = 2; renderChart();
+    return { zahl: document.getElementById("chart-total").textContent,
+             marke: document.getElementById("chart-label").textContent };
+  });
+  note(/^März 2026/.test(kopfMaerz.marke),
+       `Ein angetippter Monat steht oben („${kopfMaerz.marke}“)`);
+  note(kopfMaerz.zahl !== kopfOhne.zahl && /\d/.test(kopfMaerz.zahl),
+       `Und seine Zahl steht daneben („${kopfMaerz.zahl}“)`);
+
+  // Der laufende Monat ist angebrochen — dann gehört dazu, aus wie vielen
+  // Tagen die Zahl stammt. Ohne das verspricht „August" einen ganzen Monat.
+  const kopfLaufend = await page.evaluate(() => {
+    selMonth = TODAY.m - 1; renderChart();
+    return { zahl: document.getElementById("chart-total").textContent,
+             marke: document.getElementById("chart-label").textContent };
+  });
+  note(/ · aus \d+ von \d+ Tagen$/.test(kopfLaufend.marke),
+       `Der angebrochene Monat sagt seine Tage („${kopfLaufend.marke}“)`);
+
+  const kopfLeer = await page.evaluate(() => {
+    selMonth = 10; renderChart();
+    return { zahl: document.getElementById("chart-total").textContent,
+             marke: document.getElementById("chart-label").textContent };
+  });
+  note(kopfLeer.zahl === "—" && /keine Ablesung$/.test(kopfLeer.marke),
+       `Ein Monat ohne Ablesung zeigt keine Null („${kopfLeer.zahl}“)`);
+
+  await page.evaluate(() => { selMonth = null; renderChart(); });
+  await page.waitForTimeout(150);
+
   // --- Von der Übersichtskarte in den Verlauf desselben Zählers
   //
   // Vom Gerät gemeldet: Auf der Übersicht passierte beim Antippen einer Karte

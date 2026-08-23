@@ -592,6 +592,52 @@ final class LaunchTests: XCTestCase {
                       "Der neue Zähler taucht nicht in der Liste auf")
     }
 
+    /// Ein angetippter Monat steht sofort über dem Diagramm.
+    ///
+    /// **Vom Gerät gemeldet:** „wenn ich hier oben im Monat die Balken anklicke
+    /// will ich direkt oben sehen wie viel ich verbraucht habe. gerade wird das
+    /// ganze Jahr angezeigt."
+    ///
+    /// Die Auswahl stand vorher nur im Balken selbst und in der Vergleichskarte
+    /// unterhalb des Bildschirmrands. Die große Zahl blieb die Jahressumme.
+    func testTappingAMonthPutsThatMonthAboveTheChart() {
+        let app = launchWithData()
+        guard wechsel(zu: "Verlauf", in: app) else { return }
+
+        // Strom statt des voreingestellten Zählers: Gas ist der absichtlich
+        // überfällige, seine Ablesungen enden im Mai — an einem Monat ohne
+        // Zahl ließe sich nicht zeigen, dass die Zahl dem Finger folgt.
+        let strom = app.buttons["Strom"]
+        XCTAssertTrue(strom.waitForExistence(timeout: erscheint),
+                      "Der Zählerwähler im Verlauf kennt Strom nicht")
+        strom.tap()
+
+        let kopf = app.descendants(matching: .any)
+            .matching(identifier: "verlauf-kopfzahl").firstMatch
+        XCTAssertTrue(kopf.waitForExistence(timeout: erscheint),
+                      "Über dem Diagramm steht keine Zahl")
+        XCTAssertFalse(kopf.label.contains("Juli"),
+                       "Ohne Auswahl gehört dort die Summe hin, nicht ein Monat")
+
+        let juli = app.descendants(matching: .any)
+            .matching(identifier: "periodbar-7").firstMatch
+        XCTAssertTrue(juli.waitForExistence(timeout: erscheint),
+                      "Der Balken für Juli fehlt")
+        juli.tap()
+
+        wait(for: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Juli"),
+                               evaluatedWith: kopf)],
+             timeout: erscheint)
+
+        // Und zurück: Noch einmal antippen hebt die Auswahl auf, dann steht
+        // wieder die Summe da. Ohne diesen zweiten Teil wäre nur belegt, dass
+        // sich die Zahl einmal ändert — nicht, dass sie der Auswahl folgt.
+        juli.tap()
+        wait(for: [expectation(for: NSPredicate(format: "NOT (label CONTAINS %@)", "Juli"),
+                               evaluatedWith: kopf)],
+             timeout: erscheint)
+    }
+
     /// Von der Karte auf der Übersicht in den Verlauf desselben Zählers.
     ///
     /// **Vom Gerät gemeldet:** „wenn man auf der übersichtsseite … beim zähler

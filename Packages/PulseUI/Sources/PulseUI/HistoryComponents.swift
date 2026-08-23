@@ -336,6 +336,10 @@ public struct PeriodBars: View {
         .accessibilityValue(spokenValue(for: column))
         .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
         .accessibilityHint("Öffnet den Vergleich mit den Vorjahren")
+        // Die Beschriftung taugt nicht zum Ansprechen: „J" tragen Januar, Juni
+        // und Juli gemeinsam. Die Kennung ist eindeutig und übersteht jede
+        // Umbenennung — dieselbe Lehre wie beim Vorschau-Streifen in 0.69.2.
+        .accessibilityIdentifier("periodbar-\(column.id)")
     }
 }
 

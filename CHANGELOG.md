@@ -9,6 +9,46 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.74.0 — 2026-08-23
+
+**Die große Zahl folgt dem Finger.**
+
+Vom Gerät gemeldet: „wenn ich hier oben im Monat die Balken anklicke will ich
+direkt oben sehen wie viel ich verbraucht habe. gerade wird das ganze Jahr
+angezeigt. das will ich aber auf Monatsebene gar nicht sehen."
+
+Er hat recht. Wer einen Balken antippt, sieht die Auswahl im Balken und die
+Vergleichszahlen — unterhalb des Bildschirmrands. Die große Zahl darüber blieb
+die Jahressumme.
+
+### Geändert
+- **Ein angetippter Abschnitt steht über dem Diagramm**, mit Namen und Zahl:
+  „Juli 2026 · 173 kWh". Gilt für Monat, Quartal und Jahr. Noch einmal
+  antippen hebt die Auswahl auf, dann steht wieder die Summe da.
+- Ist der Abschnitt angebrochen, sagt die Beschriftung, aus wie vielen Tagen
+  die Zahl stammt: „August 2026 · aus 22 von 31 Tagen". Dieselbe Wendung wie in
+  den Vergleichszeilen — „August" allein verspricht einen ganzen Monat.
+- Ein Abschnitt ohne Ablesung zeigt „—" und „keine Ablesung" statt einer Null.
+  Eine Null wäre die Aussage „nichts verbraucht", und die hat niemand gemacht.
+- **Die Summe bekommt ihr ≈, wenn eine Interpolation darin steckt.** Sie stand
+  bis hierher ohne Zeichen da. Nach dieser Änderung hätte ausgerechnet ein
+  angetippter Monat mit „≈" neben einer Summe ohne gestanden, in der er
+  enthalten ist (Produktprinzip 7).
+
+### Hinzugefügt
+- Jeder Balken trägt eine Kennung (`periodbar-7`). Über die Beschriftung war er
+  nicht anzusprechen: „J" tragen Januar, Juni und Juli gemeinsam.
+- Eine Oberflächenprüfung, die Juli antippt, den Monat oben erwartet und die
+  Auswahl wieder aufhebt — nur beides zusammen belegt, dass die Zahl der
+  Auswahl folgt und nicht bloß einmal umspringt. Dazu fünf Prüfungen im
+  Klick-Dummy: Summe ohne Auswahl, Monat mit Auswahl, Tagesangabe am laufenden
+  Monat, „—" ohne Ablesung.
+
+_162 Prüfungen im Klick-Dummy, hell und dunkel. PulseCore vollständig grün.
+Die Oberflächenprüfung läuft erst auf dem macOS-Läufer._
+
+---
+
 ## 0.73.2 — 2026-08-22
 
 ### Behoben

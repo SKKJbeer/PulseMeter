@@ -459,18 +459,30 @@ struct HistoryView: View {
         PulseCard {
             VStack(alignment: .leading, spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(totalCaption)
+                    Text(headlineCaption)
                         .font(PulseText.caption)
                         .foregroundStyle(PulseColor.inkTertiary)
                     HStack(alignment: .firstTextBaseline, spacing: 5) {
-                        Text(number(total, digits: 0))
+                        // Dasselbe Zeichen wie überall sonst: gerechnet, nicht
+                        // gemessen (Produktprinzip 7).
+                        if headlineIsApproximate {
+                            Text(verbatim: "≈")
+                                .font(PulseText.unit)
+                                .foregroundStyle(PulseColor.inkTertiary)
+                                .accessibilityLabel("ungefähr")
+                                .padding(.trailing, -2)
+                        }
+                        Text(headlineNumber)
                             .font(.system(.title, weight: .bold))
                             .foregroundStyle(PulseColor.ink)
-                        Text(unit)
-                            .font(PulseText.unit)
-                            .foregroundStyle(PulseColor.inkSecondary)
+                        if headlineHasValue {
+                            Text(unit)
+                                .font(PulseText.unit)
+                                .foregroundStyle(PulseColor.inkSecondary)
+                        }
                     }
                 }
+                .accessibilityIdentifier("verlauf-kopfzahl")
                 // Als ein Satz: „Verbrauch 2026, 2.541 kWh". Getrennt
                 // vorgelesen käme die Einheit als eigener Brocken nach der
                 // Zahl — dieselbe Änderung wie auf der Übersichtskarte in
@@ -1013,6 +1025,59 @@ struct HistoryView: View {
     /// Summe der Abschnitte, die tatsächlich Daten haben.
     private var total: Decimal {
         buckets.filter(\.hasData).reduce(Decimal(0)) { $0 + $1.value }
+    }
+
+    // MARK: - Die Zahl über dem Diagramm
+
+    /// Der angetippte Abschnitt, oder keiner.
+    ///
+    /// Die Auswahl ist bei „Jahr" eine Jahreszahl und sonst die Nummer des
+    /// Abschnitts — dieselbe Kennung, die auch die Balken tragen.
+    private var selectedBucket: PeriodEngine.Bucket? {
+        guard let selection = selectedSlot else { return nil }
+        return buckets.first { columnID($0) == selection }
+    }
+
+    /// Was über dem Diagramm steht, wenn ein Balken angetippt ist.
+    ///
+    /// **Vom Gerät gemeldet:** „wenn ich hier oben im Monat die Balken anklicke
+    /// will ich direkt oben sehen wie viel ich verbraucht habe. gerade wird das
+    /// ganze Jahr angezeigt. das will ich aber auf Monatsebene gar nicht sehen."
+    ///
+    /// Er hatte recht: Die Zahl oben blieb die Jahressumme, egal was man antippt.
+    /// Die Auswahl stand allein im Balken und in der Vergleichskarte weiter
+    /// unten — also außerhalb des Blickfelds, in dem die große Zahl steht.
+    ///
+    /// Die Beschriftung nennt den Ausschnitt, den die Zahl meint, und bei einem
+    /// angebrochenen Abschnitt auch, aus wie vielen Tagen sie stammt. Dieselbe
+    /// Wendung wie in den Vergleichszeilen: „aus 12 von 31 Tagen".
+    private var headlineCaption: String {
+        guard let bucket = selectedBucket else { return totalCaption }
+        let name = granularity == .year ? "\(bucket.year)" : "\(slotName(bucket)) \(bucket.year)"
+        guard bucket.hasData else { return "\(name) · keine Ablesung" }
+        guard !bucket.isComplete else { return name }
+        return "\(name) · aus \(bucket.result.coveredDays) von \(bucket.range.spanInDays) Tagen"
+    }
+
+    private var headlineHasValue: Bool { selectedBucket.map(\.hasData) ?? true }
+
+    private var headlineNumber: String {
+        guard let bucket = selectedBucket else { return number(total, digits: 0) }
+        guard bucket.hasData else { return "—" }
+        return number(bucket.value, digits: 0)
+    }
+
+    /// Ob die Zahl gerechnet ist statt gemessen.
+    ///
+    /// Ohne Auswahl gilt sie für die Summe: Steckt in **einem** Abschnitt eine
+    /// Interpolation, steckt sie auch in der Summe. Bis 0.74.0 stand sie dort
+    /// ohne Zeichen — und hätte nach dieser Änderung ausgerechnet neben einem
+    /// angetippten Monat mit „≈" gestanden, der in ihr enthalten ist.
+    private var headlineIsApproximate: Bool {
+        guard let bucket = selectedBucket else {
+            return buckets.contains { $0.hasData && $0.result.confidence != .measured }
+        }
+        return bucket.hasData && bucket.result.confidence != .measured
     }
 
     /// Sagt, was die Summe umfasst — und wenn sie unvollständig ist, dass sie
