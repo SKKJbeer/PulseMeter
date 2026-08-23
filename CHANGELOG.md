@@ -9,6 +9,22 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.75.1 — 2026-08-23
+
+### Behoben
+- **Die neue Oberflächenprüfung griff zu weit.** Lauf 221 fiel an einer Zeile
+  meiner eigenen Prüfung: `app.buttons["Löschen"]` fand mehrere Treffer, weil
+  „Löschen" auch die Wischgeste an jeder Zeile der Liste dahinter heißt. Gesucht
+  wird jetzt **innerhalb** der Rückfrage. Am Produkt lag es nicht — alles davor
+  war grün: Die Zeile öffnete die Ablesung, der Ändern-Schirm stand, der Weg
+  zum Löschen war da.
+
+_Nebenbei belegt: Die beiden Messzeiten aus 0.73.1 stehen jetzt im Protokoll,
+wo sie hingehören — „MESSUNG Öffnen eines Zählers: 2,08 s" und „MESSUNG
+Startzeit bis zur ersten Zahl: 6,58 s"._
+
+---
+
 ## 0.75.0 — 2026-08-23
 
 **Eine Ablesung lässt sich berichtigen.**

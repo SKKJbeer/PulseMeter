@@ -628,10 +628,17 @@ final class LaunchTests: XCTestCase {
         loeschen.tap()
 
         // Gefragt wird vorher — eine gelöschte Ablesung ist nicht zurückzuholen.
-        let bestaetigen = app.buttons["Löschen"]
-        XCTAssertTrue(bestaetigen.waitForExistence(timeout: erscheint),
+        //
+        // **Innerhalb der Rückfrage suchen, nicht in der ganzen App.** Der Lauf
+        // 221 ist genau hier gefallen: „Löschen" heißt auch die Wischgeste an
+        // jeder Zeile der Liste dahinter, und `app.buttons["Löschen"]` fand
+        // deshalb mehrere. Kein Produktfehler — ein zu weit gefasster Griff.
+        let rueckfrage = app.sheets.firstMatch.waitForExistence(timeout: erscheint)
+            ? app.sheets.firstMatch
+            : app.alerts.firstMatch
+        XCTAssertTrue(rueckfrage.waitForExistence(timeout: erscheint),
                       "Gelöscht wird ohne Rückfrage")
-        bestaetigen.tap()
+        rueckfrage.buttons["Löschen"].tap()
 
         // Danach ist die Liste zu und der Verlauf neu gerechnet. Die Zeile
         // „Alle Ablesungen" sagt, wie viele es noch sind.
