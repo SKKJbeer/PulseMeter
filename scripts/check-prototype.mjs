@@ -28,6 +28,9 @@ const note = (ok, text) => {
 /// gerechneten — nicht zum Formatieren.
 const nfLike = value => Math.round(value).toLocaleString("de-DE");
 
+const MONATSNAMEN = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli",
+                     "August", "September", "Oktober", "November", "Dezember"];
+
 const browser = await chromium.launch({
   executablePath: process.env.PULSE_CHROMIUM || undefined
 });
@@ -457,12 +460,22 @@ for (const scheme of ["light", "dark"]) {
   await page.locator('[data-pane="history"]').first().click();
   await page.waitForTimeout(300);
 
-  // In der Jahresansicht hat die Zeile keinen Ort: Dort stehen drei Jahre
-  // nebeneinander, und die Hochrechnung steckt schon im Balken von 2026.
+  // **Auch in der Jahresansicht steht die Leiste** — vom Gerät verlangt: „immer
+  // den Ist darstellen und den Forecast." Sie spricht dort vom Jahr, nicht von
+  // einem Monat; stünde dort ein Monatsname, wäre die Zahl daneben falsch
+  // beschriftet.
   await page.locator('[data-scale="year"]').first().click();
   await page.waitForTimeout(300);
-  note(await page.evaluate(`document.getElementById("chart-forecast").style.display === "none"`),
-       "In der Jahresansicht steht die Monatszeile nicht");
+  const jahresLeiste = await page.evaluate(() => {
+    const el = document.getElementById("chart-forecast");
+    return { sichtbar: el.style.display !== "none", text: el.innerText.replace(/\s+/g, " ").trim() };
+  });
+  note(jahresLeiste.sichtbar, "Die Jahresansicht zeigt Ist und Erwartung als Leiste");
+  note(/gemessen/.test(jahresLeiste.text) && /erwartet/.test(jahresLeiste.text),
+       `Beide Zahlen sind benannt („${jahresLeiste.text.slice(0, 60)}…“)`);
+  note(/2026 · \d+ von \d+ Tagen/.test(jahresLeiste.text)
+       && !MONATSNAMEN.some(n => jahresLeiste.text.includes(n)),
+       "Und sie spricht vom Jahr, nicht von einem Monat");
   await page.locator('[data-scale="month"]').first().click();
   await page.waitForTimeout(250);
 

@@ -9,6 +9,42 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.77.0 — 2026-08-24
+
+**Ist und Erwartung, jetzt auch beim Jahr.**
+
+Vom Gerät gemeldet: „ich möchte aber auch den Forecast haben wie viel Verbrauch
+aufs Jahr ist mit der aktuellen Prognose und Verbrauch bisher im Jahr. so wie
+bei Quartal und Monat. immer den Ist darstellen und den Forecast."
+
+### Hinzugefügt
+- **Die Leiste unter dem Diagramm steht auch in der Jahresansicht.** Links, was
+  feststeht, rechts, was bis Silvester erwartet wird, dazwischen der Balken, wie
+  weit das Jahr ist — dieselbe Leiste wie bei Monat und Quartal, nur über
+  365 Tage. Darunter, worauf die Erwartung beruht.
+- Der Balken des laufenden Jahres bekommt seine schraffierte Verlängerung, und
+  die Legende nennt sie „erwartet" — genau wie im Monatsbild.
+
+### Behoben
+- **Die Hochrechnung war beim Jahr ausdrücklich abgeschaltet.** Im Code stand
+  `granularity != .year` mit der Begründung, eine Verlängerung am letzten Balken
+  wäre „ein vierter Balken, den es nicht gibt". Das war schon beim Schreiben die
+  falsche Frage: Die Erwartung steht nicht im Balken, sondern in der Leiste
+  darunter — die es genau deshalb gibt, weil eine Zahl in einen elf Punkte
+  breiten Balken nicht passt.
+- Eine Prüfung im Klick-Dummy verlangte dieses Verhalten sogar ausdrücklich
+  („In der Jahresansicht steht die Monatszeile nicht"). Sie ist umgedreht und
+  prüft jetzt das Gegenteil, samt der Bedingung, dass die Leiste dort vom
+  **Jahr** spricht und nicht von einem Monat — ein Monatsname über einer
+  Jahreszahl wäre die falsche Beschriftung, und die ist in diesem Projekt schon
+  dreimal aufgefallen.
+
+_182 Prüfungen im Klick-Dummy, hell und dunkel. Nachgerechnet: 1.607 kWh
+gemessen aus 214 von 365 Tagen, ≈ 2.787 kWh erwartet. PulseCore vollständig
+grün._
+
+---
+
 ## 0.76.2 — 2026-08-24
 
 ### Geändert

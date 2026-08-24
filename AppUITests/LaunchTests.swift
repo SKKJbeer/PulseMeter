@@ -784,6 +784,18 @@ final class LaunchTests: XCTestCase {
                        "Über die Jahre summiert wird nicht mehr: \(kopf.label)")
         XCTAssertFalse(kopf.label.contains("bis"),
                        "Eine Spanne über mehrere Jahre gehört da nicht hin: \(kopf.label)")
+
+        // **Und die Leiste mit Ist und Erwartung steht auch hier.** Vom Gerät
+        // verlangt: „immer den Ist darstellen und den Forecast." Bis 0.76.2 war
+        // die Hochrechnung in der Jahresansicht ausdrücklich abgeschaltet.
+        let leiste = app.descendants(matching: .any)
+            .matching(identifier: "forecast-strip").firstMatch
+        XCTAssertTrue(leiste.waitForExistence(timeout: erscheint),
+                      "In der Jahresansicht fehlt die Leiste mit Ist und Erwartung")
+        XCTAssertTrue(leiste.label.contains("gemessen") && leiste.label.contains("voraussichtlich"),
+                      "Die Leiste benennt nicht beide Zahlen: \(leiste.label)")
+        XCTAssertTrue(leiste.label.contains("\(jahr)"),
+                      "Die Leiste spricht nicht vom laufenden Jahr: \(leiste.label)")
     }
 
     /// Eine Zeile geht überall auf, wo sie aussieht wie eine Zeile.

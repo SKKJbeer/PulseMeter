@@ -815,12 +815,18 @@ struct HistoryView: View {
     /// Balken daneben ist die Summe, und eine Zahl, die eine andere Sache meint
     /// als der Balken, neben dem sie steht, ist schlimmer als keine.
     ///
-    /// Nur beim Monat und beim Quartal. Bei „Jahr" stehen drei Jahre
-    /// nebeneinander; eine Verlängerung am letzten wäre dort ein vierter
-    /// Balken, den es nicht gibt.
+    /// **Auch beim Jahr.** Bis 0.76.2 stand hier `granularity != .year` mit der
+    /// Begründung, eine Verlängerung am letzten Balken wäre „ein vierter
+    /// Balken, den es nicht gibt". Das war schon damals die falsche Frage: Die
+    /// Erwartung steht nicht im Balken, sondern in der Leiste darunter — die
+    /// gibt es genau deshalb, weil eine Zahl in einen elf Punkte breiten Balken
+    /// nicht passt.
+    ///
+    /// Vom Gerät gemeldet: „ich möchte aber auch den Forecast haben wie viel
+    /// Verbrauch aufs Jahr ist … so wie bei Quartal und Monat. immer den Ist
+    /// darstellen und den Forecast."
     private func recomputeForecast(meter: MeteringPoint) {
-        guard granularity != .year,
-              let laufend = buckets.first(where: { $0.range.contains(today) }) else {
+        guard let laufend = buckets.first(where: { $0.range.contains(today) }) else {
             vorschau = nil
             return
         }

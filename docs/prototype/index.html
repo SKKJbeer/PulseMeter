@@ -778,7 +778,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.76.2</p>
+  <p>Klickbarer Entwurf · v0.77.0</p>
 </div>
 
 <div class="device">
@@ -2242,7 +2242,30 @@ function renderChart() {
       (ytd.exact ? "" : "≈ ") + nf(measured, dp) + " " + m.unit;
     document.getElementById("chart-label").textContent =
       ytd.days >= jahr ? "2026" : `2026 · aus ${ytd.days} von ${jahr} Tagen`;
-    document.getElementById("chart-forecast").style.display = "none";
+
+    // **Auch hier die Leiste: Ist und Erwartung nebeneinander.**
+    //
+    // Vom Gerät gemeldet: „ich möchte aber auch den Forecast haben wie viel
+    // Verbrauch aufs Jahr ist … so wie bei Quartal und Monat. immer den Ist
+    // darstellen und den Forecast." Dieselbe Leiste wie beim Monat, nur über
+    // das Jahr — links, was feststeht, rechts, was erwartet wird.
+    const jz = document.getElementById("chart-forecast");
+    if (fc && projected > measured) {
+      const anteil = projected > 0 ? Math.min(100, (measured / projected) * 100) : 0;
+      jz.innerHTML = `
+        <div class="fc-oben">
+          <span class="fc-ist">${nf(measured, dp)} ${m.unit} gemessen</span>
+          <span class="fc-soll" style="color:${textFarbe(m.color)}">≈ ${nf(projected, dp)} ${m.unit} erwartet</span>
+        </div>
+        <div class="fc-spur">
+          <div class="fc-voll" style="width:${anteil}%;background:${m.color}"></div>
+          <div class="fc-rest" style="background-color:color-mix(in srgb, ${m.color} 14%, transparent);background-image:repeating-linear-gradient(45deg, color-mix(in srgb, ${m.color} 62%, transparent) 0 1px, transparent 1px 4px)"></div>
+        </div>
+        <div class="fc-unten">2026 · ${ytd.days} von ${jahr} Tagen · ${FORECAST_BASIS[fc.method]}</div>`;
+      jz.style.display = "";
+    } else {
+      jz.style.display = "none";
+    }
   }
 
   document.getElementById("lg-hatch").textContent = hatchWort;
