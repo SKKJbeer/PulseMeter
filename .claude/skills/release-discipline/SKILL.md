@@ -189,8 +189,12 @@ Für jede Änderung, in dieser Reihenfolge:
 7. **Committen**, Version in der Commit-Nachricht nennen.
 8. **In der Antwort** die Version und den Prüfstand nennen — der Nutzer soll
    nicht nachfragen müssen, ob getestet wurde.
-9. **Nach einem TestFlight-Lauf** die Zeile in `docs/12-auslieferung.md`
-   nachtragen (Abschnitt 4).
+9. **Bis in TestFlight bringen** — ohne dass jemand danach fragt: pushen,
+   Nachschau planen, bei Grün nach `main`, Bau anstoßen, Zeile in
+   `docs/12-auslieferung.md` nachtragen (Abschnitt 4), Ergebnis melden. Bei Rot
+   beheben und wieder von vorn. Der Dauerauftrag dazu steht in `CLAUDE.md`,
+   Regel 4; eine Version, die nur Dokumente oder Prüfskripte anfasst, endet in
+   `main`.
 
 ### Wenn etwas nicht geprüft werden kann
 

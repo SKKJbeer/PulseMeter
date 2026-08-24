@@ -140,23 +140,40 @@ sich aus auf.
 ## Regel 4 — Angefangenes wird zu Ende gebracht, ohne Nachfrage
 
 Der Nutzer erinnert nicht. Wer einen Lauf anstößt, sieht auch nach — und wer
-etwas gebaut hat, bringt es bis in `main`, ohne dass jemand danach fragt.
+etwas gebaut hat, bringt es bis aufs Telefon, ohne dass jemand danach fragt.
 
-Eine Aufgabe ist **nicht** erledigt, wenn der Zweig gepusht ist. Sie ist
-erledigt, wenn das Ergebnis zusammengeführt, aufgeräumt und gemeldet ist.
+**Fertig heißt: in TestFlight.** Am 24. August ausdrücklich verlangt und als
+Dauerauftrag erteilt: „mach es dass du immer alles ohne meine weiteren
+Anweisungen alles grün und dann auf main so dass es in TestFlight ist."
+
+Eine Aufgabe ist also **nicht** erledigt, wenn der Zweig gepusht ist, und auch
+nicht, wenn sie in `main` liegt. Sie ist erledigt, wenn ein Bau verarbeitet in
+TestFlight steht und das gemeldet ist — belegt mit „Bau N: VALID" aus dem
+Protokoll, nicht mit einer Vermutung.
 
 Konkret, nach jedem Push und jedem angestoßenen Lauf:
 
 1. **Nachschau planen**, bevor der Zug endet — `send_later` in dieser Umgebung,
-   sonst der nächste Lauf von `scripts/pruefen.sh`. Nie auf eine Erinnerung
-   warten und nie mit `sleep` blockieren.
-2. **Grün** → zusammenführen, zusammengeführte Arbeitszweige löschen, Bilder
-   holen, Ergebnis melden.
+   `CronCreate` als Ausweichweg, wenn `send_later` eine Genehmigung verlangt.
+   Nie auf eine Erinnerung warten und nie mit `sleep` blockieren.
+2. **Grün** → zusammenführen, TestFlight-Lauf anstoßen, Zeile in
+   `docs/12-auslieferung.md` nachtragen, zusammengeführte Arbeitszweige
+   löschen, Bilder holen, Ergebnis melden.
 3. **Rot** → Begründung aus dem Protokoll holen, einordnen (Prüf- oder
-   Produktfehler) und melden. Ein roter Lauf, der stillschweigend liegen
-   bleibt, ist schlimmer als gar keiner.
+   Produktfehler), **beheben** und wieder von vorn. Melden, was los war, statt
+   auf eine Freigabe zu warten — die ist erteilt.
 4. **Noch offen** → nächste Nachschau planen und **nichts** melden. Eine
    Zwischenmeldung ohne Ergebnis ist eine Störung.
+
+**Was nicht nach TestFlight geht:** eine Version, die nur Dokumente,
+Prüfskripte oder den Klick-Dummy anfasst. Sie endet in `main`. Alles, was am
+App-Bau etwas ändert — `App/`, `Packages/`, `project.yml`, `Widget/` —, geht
+den ganzen Weg. Mehrere Versionen dürfen in **einem** Bau zusammenkommen; jeder
+Bau kostet einen gemieteten Mac und eine Nummer, die verbraucht ist.
+
+**Und nach jedem Bau:** den Schritt „Testhinweise eintragen" im Protokoll
+ansehen. Ein Bau ohne Hinweistext ist bei den Testern ein Bau ohne Auskunft —
+zehn Bauten lang stand dort nichts, und niemandem ist es aufgefallen.
 
 ### Nie pushen, solange ein Prüflauf auf demselben Zweig läuft
 

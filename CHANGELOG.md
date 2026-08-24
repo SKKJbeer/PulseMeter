@@ -9,6 +9,28 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.76.2 — 2026-08-24
+
+### Geändert
+- **Fertig heißt ab jetzt: in TestFlight.** Als Dauerauftrag erteilt — „mach es
+  dass du immer alles ohne meine weiteren Anweisungen alles grün und dann auf
+  main so dass es in TestFlight ist." Regel 4 in `CLAUDE.md` endete bisher bei
+  `main`; sie geht jetzt bis auf das Telefon und verlangt den Beleg „Bau N:
+  VALID" aus dem Protokoll statt einer Vermutung.
+- Dazu geschrieben, was **nicht** gebaut wird: Eine Version, die nur Dokumente,
+  Prüfskripte oder den Klick-Dummy anfasst, endet in `main`. Jeder Bau kostet
+  einen gemieteten Mac und verbraucht eine Nummer — mehrere Versionen dürfen in
+  einem Bau zusammenkommen.
+- Bei einem roten Lauf wird behoben und von vorn begonnen, statt auf eine
+  Freigabe zu warten. Die ist erteilt.
+- `CronCreate` steht als Ausweichweg für die Nachschau daneben: `send_later`
+  hat gestern zweimal eine Genehmigung verlangt, und eine Kette, die daran
+  hängen bleibt, ist genau das, was dieser Auftrag abstellen soll.
+
+_Nur Arbeitsregeln. Kein neuer Bau: Build 16 ist der aktuelle._
+
+---
+
 ## 0.76.1 — 2026-08-24
 
 ### Geändert
