@@ -18,6 +18,12 @@ struct PulseMeterApp: App {
     /// noch die alte Antwort gibt.
     @State private var purchase: Purchase
 
+    /// Das Signal, dass sich am Bestand etwas geändert hat — einmal für die
+    /// ganze App, aus demselben Grund wie der Kaufzustand darüber: Drei
+    /// Ansichten hören darauf, und drei eigene Kopien wären drei Zähler, die
+    /// einander nicht erreichen.
+    @State private var datenstand = Datenstand()
+
     init() {
         // **Drei Stufen, nicht ein Schalter.**
         //
@@ -66,6 +72,7 @@ struct PulseMeterApp: App {
         WindowGroup {
             RootView()
                 .environment(purchase)
+                .environment(datenstand)
                 .task {
                     // **Nicht im Konstruktor.** Beides geht übers Netz, und
                     // ein Konstruktor kann nicht warten. Solange nichts

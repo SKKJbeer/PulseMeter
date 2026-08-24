@@ -69,6 +69,16 @@ jobs:
       - name: Klick-Dummy prüfen
         run: node scripts/check-prototype.mjs
 
+      # Zwei Prüfungen der iOS-Quellen, die kein Xcode brauchen — reines Lesen.
+      # Sie standen bisher nur in `pruefen.sh`, und damit war die CI-Beschreibung
+      # von der lokalen Prüfung abgewichen; CLAUDE.md warnt genau davor. Hier
+      # oben statt beim App-Build: Ein Läufer für Linux ist sofort da, ein Mac
+      # steht in der Warteschlange.
+      - name: Trefferflächen
+        run: python3 scripts/check-trefferflaechen.py
+      - name: Aktualisierung
+        run: python3 scripts/check-aktualisierung.py
+
       # Bedienbarkeit und Geschwindigkeit: Trefferflächen, Kontrast, Namen für
       # die Vorlesefunktion, gemessene Zeiten — und die Produktprinzipien 2 bis
       # 4, gezählt statt behauptet. Braucht dasselbe Chromium wie der Entwurf.

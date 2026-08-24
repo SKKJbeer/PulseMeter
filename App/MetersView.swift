@@ -14,6 +14,7 @@ struct MetersView: View {
 
     @Environment(\.modelContext) private var context
     @Environment(Purchase.self) private var purchase
+    @Environment(Datenstand.self) private var datenstand
 
     @State private var meters: [MeteringPoint] = []
     @State private var showingPaywall = false
@@ -101,10 +102,13 @@ struct MetersView: View {
                     showingPaywall = true
                 }
             }
+            // Ein gelöschter oder umbenannter Zähler ändert die Übersicht
+            // mit; ein hier eingetragener Stand ändert diese Liste.
+            .onChange(of: datenstand.version) { _, _ in load() }
             .sheet(item: $editing) { draft in
                 MeterEditor(draft: draft,
                             readingCount: draft.existing.flatMap { readingCounts[$0.id] } ?? 0,
-                            onDone: { load() })
+                            onDone: { datenstand.geaendert() })
             }
             .sheet(isPresented: $showingPaywall) {
                 UnlockSheet(product: .additionalMeters)

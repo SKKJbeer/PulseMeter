@@ -124,6 +124,7 @@ struct OverviewView: View {
     var oeffneVerlauf: ((MeteringPoint.ID) -> Void)?
 
     @Environment(\.modelContext) private var context
+    @Environment(Datenstand.self) private var datenstand
     @State private var rows: [MeterRow] = []
     @State private var points: [MeteringPoint] = []
     @State private var capturing: MeteringPoint?
@@ -159,11 +160,18 @@ struct OverviewView: View {
             .background(PulseColor.ground)
             .navigationTitle("Übersicht")
             .onAppear(perform: start)
+            // **Ein Weg für alle drei Ansichten.** Die Blätter melden nur, dass
+            // sich etwas geändert hat; neu geladen wird hier, an derselben
+            // Stelle, an der auch eine Änderung aus dem Verlauf oder der
+            // Zählerliste ankommt. Zwei Wege wären zwei Gelegenheiten, dass
+            // einer davon etwas ausrechnet, was der andere nicht kennt.
+            .onChange(of: datenstand.version) { _, _ in reload() }
             .sheet(item: $capturing) { point in
-                CaptureView(meteringPoint: point, onSaved: reload)
+                CaptureView(meteringPoint: point, onSaved: { datenstand.geaendert() })
             }
             .sheet(isPresented: $addingMeter) {
-                MeterEditor(draft: MeterDraft(), readingCount: 0, onDone: reload)
+                MeterEditor(draft: MeterDraft(), readingCount: 0,
+                            onDone: { datenstand.geaendert() })
             }
         }
     }
@@ -227,6 +235,14 @@ struct OverviewView: View {
                             .font(PulseText.detail)
                             .foregroundStyle(PulseColor.inkTertiary)
                     }
+                    // Für die Oberflächenprüfung, die belegt, dass eine im
+                    // Verlauf gelöschte Ablesung auch hier ankommt. Der Stand
+                    // ist dafür die einzige Zahl, die sich zwangsläufig ändert:
+                    // Ein Zählwerk läuft vorwärts, also ist der vorletzte Wert
+                    // ein anderer als der letzte. Am Jahresverbrauch ließe sich
+                    // dasselbe nur wahrscheinlich zeigen, und eine Prüfung, die
+                    // meistens stimmt, ist keine.
+                    .accessibilityIdentifier("kartenstand-\(row.name)")
                 }
                 // Vor den Kosten, nicht danach: Der Betrag darunter ist
                 // bereits netto — die Vergütung ist abgezogen. Stünde sie
@@ -713,7 +729,7 @@ struct OverviewView: View {
     private func seed() {
         do {
             try LaunchFixture.seedSamples(into: PulseRepository(context: context), today: today)
-            reload()
+            datenstand.geaendert()
         } catch {
             problem = "Die Beispieldaten ließen sich nicht anlegen: \(error.localizedDescription)"
         }
@@ -768,4 +784,5 @@ struct OverviewView: View {
     RootView()
         .modelContainer(try! PulseStore.container(inMemory: true, cloudKit: false))
         .environment(Purchase())
+        .environment(Datenstand())
 }

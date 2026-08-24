@@ -25,6 +25,7 @@ struct HistoryView: View {
 
     @Environment(\.modelContext) private var context
     @Environment(Purchase.self) private var purchase
+    @Environment(Datenstand.self) private var datenstand
 
     @State private var meters: [MeteringPoint] = []
     @State private var showingPaywall = false
@@ -130,6 +131,10 @@ struct HistoryView: View {
             // greift `onAppear`. Beim zweiten Mal steht er schon und bekommt
             // nur den neuen Wunsch — deshalb beide Wege.
             .onChange(of: zeige) { _, _ in uebernimmWunsch() }
+            // Auch wenn die Änderung woanders passiert ist: Ein Stand, der auf
+            // der Übersicht eingetragen wurde, gehört in dieselbe Reihe wie
+            // einer aus der Ablesungsliste hier.
+            .onChange(of: datenstand.version) { _, _ in load() }
             .sheet(isPresented: $showingReport) {
                 ReportView()
             }
@@ -141,8 +146,11 @@ struct HistoryView: View {
                              onChanged: {
                                  // Neu laden statt nur neu rechnen: Die Liste
                                  // hat gerade den Bestand geändert, und
-                                 // `readings` hängt an ihm.
-                                 load()
+                                 // `readings` hängt an ihm. Über den Datenstand
+                                 // und nicht mit `load()`, damit die Übersicht
+                                 // und die Zählerliste dieselbe Meldung
+                                 // bekommen.
+                                 datenstand.geaendert()
                              })
             }
             .sheet(isPresented: $showingPaywall) {

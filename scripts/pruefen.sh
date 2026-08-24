@@ -115,6 +115,10 @@ if [ "$SCOPE" != "bilder" ]; then
   # nur dort, wo er zeichnet. Das sieht man ihm nicht an — es hat einen
   # Fehlerbericht vom Gerät gebraucht (0.72.2).
   run "Trefferflächen" python3 scripts/check-trefferflaechen.py || true
+  # Eine Ablesung, die im Verlauf gelöscht wird, ändert die Zahl auf der
+  # Übersicht mit. Bis 0.78.0 erfuhr die davon nichts — auch ein Fehlerbericht
+  # vom Gerät.
+  run "Aktualisierung" python3 scripts/check-aktualisierung.py || true
   # Kostet nichts und hält die Fläche klein, auf der überhaupt etwas
   # schiefgehen kann — siehe docs/11-sicherheit.md, Abschnitt 6.
   run "Angriffsfläche" scripts/check-sicherheit.sh || true

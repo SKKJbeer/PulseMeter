@@ -662,6 +662,140 @@ final class LaunchTests: XCTestCase {
                        + "die Zeile sagt: \(danach.label)")
     }
 
+    /// Eine Änderung im Verlauf steht sofort auch auf der Übersicht und beim
+    /// Zähler.
+    ///
+    /// **Vom Gerät verlangt:** „stelle sicher dass die Zahlen und Grafiken sich
+    /// auch immer aktualisieren wenn neue Zähler eingaben kamen. egal ob einer
+    /// aus der historie gelöscht oder geändert wurde oder ein ganz neuer
+    /// zählerstand hinzu kommt."
+    ///
+    /// Bis 0.78.0 lud jeder Schirm nur für sich: in seinem eigenen `onAppear`
+    /// und danach nur noch, wenn ein Blatt, das *er* aufgemacht hatte, sich
+    /// schloss. Eine im Verlauf gelöschte Ablesung erreichte die Übersicht
+    /// deshalb nie — die Karte zeigte einen Stand, den es nicht mehr gab, bis
+    /// iOS die Ansicht von sich aus neu baute.
+    ///
+    /// Geprüft wird am **Stand** und nicht am Jahresverbrauch: Ein Zählwerk
+    /// läuft vorwärts, also ist der vorletzte Wert zwangsläufig ein anderer als
+    /// der letzte. Beim Jahresverbrauch wäre dasselbe nur wahrscheinlich.
+    func testDeletingAReadingReachesTheOtherTabs() {
+        let app = launchWithData()
+
+        let stand = app.descendants(matching: .any)
+            .matching(identifier: "kartenstand-Strom").firstMatch
+        XCTAssertTrue(stand.waitForExistence(timeout: erscheint),
+                      "Auf der Übersicht steht kein Stand für Strom. Zu sehen war: "
+                      + beschriftungen(in: app))
+        let standVorher = stand.label
+
+        let zeileVorher = app.buttons.matching(
+            NSPredicate(format: "label BEGINSWITH 'Strom'")
+        ).firstMatch
+        guard wechsel(zu: "Zähler", in: app) else { return }
+        XCTAssertTrue(zeileVorher.waitForExistence(timeout: erscheint),
+                      "Die Zählerliste kennt Strom nicht")
+        let zaehlerzeileVorher = zeileVorher.label
+
+        // Löschen — im Verlauf, also in keinem der beiden Schirme oben.
+        guard wechsel(zu: "Verlauf", in: app) else { return }
+        let strom = app.buttons["Strom"]
+        XCTAssertTrue(strom.waitForExistence(timeout: erscheint),
+                      "Der Zählerwähler im Verlauf kennt Strom nicht")
+        strom.tap()
+
+        let liste = app.buttons.matching(
+            NSPredicate(format: "label BEGINSWITH 'Alle Ablesungen'")
+        ).firstMatch
+        guard oeffne(liste, bis: app.navigationBars["Ablesungen"], in: app,
+                     "Ablesungen öffnen") else { return }
+
+        // Die oberste Zeile ist die jüngste — und nur sie bestimmt den Stand,
+        // der auf der Karte und in der Zählerliste steht.
+        app.cells.element(boundBy: 0).tap()
+        XCTAssertTrue(app.navigationBars["Ablesung ändern"].waitForExistence(timeout: erscheint),
+                      "Eine Zeile öffnet die Ablesung nicht")
+        app.buttons["Diese Ablesung löschen"].tap()
+
+        let rueckfrage = app.sheets.firstMatch.waitForExistence(timeout: erscheint)
+            ? app.sheets.firstMatch
+            : app.alerts.firstMatch
+        XCTAssertTrue(rueckfrage.waitForExistence(timeout: erscheint),
+                      "Gelöscht wird ohne Rückfrage")
+        rueckfrage.buttons["Löschen"].tap()
+
+        // Und jetzt die eigentliche Frage: Wissen die anderen beiden davon?
+        guard wechsel(zu: "Übersicht", in: app) else { return }
+        let standNachher = app.descendants(matching: .any)
+            .matching(identifier: "kartenstand-Strom").firstMatch
+        XCTAssertTrue(standNachher.waitForExistence(timeout: erscheint),
+                      "Nach dem Löschen steht auf der Übersicht kein Stand mehr")
+        XCTAssertNotEqual(standNachher.label, standVorher,
+                          "Die Übersicht zeigt weiter den gelöschten Stand: \(standVorher)")
+
+        guard wechsel(zu: "Zähler", in: app) else { return }
+        let zeileNachher = app.buttons.matching(
+            NSPredicate(format: "label BEGINSWITH 'Strom'")
+        ).firstMatch
+        XCTAssertTrue(zeileNachher.waitForExistence(timeout: erscheint),
+                      "Nach dem Löschen fehlt Strom in der Zählerliste")
+        XCTAssertNotEqual(zeileNachher.label, zaehlerzeileVorher,
+                          "Die Zählerliste zeigt weiter den gelöschten Stand: \(zaehlerzeileVorher)")
+    }
+
+    /// Ein neu eingetragener Stand steht sofort auch im Verlauf.
+    ///
+    /// Die Gegenrichtung zur Prüfung darüber, und der Fall, den der Nutzer
+    /// zuerst genannt hat: „ein ganz neuer zählerstand hinzu kommt."
+    func testANewReadingReachesTheHistory() {
+        let app = launchWithData()
+
+        // **Gas, weil beide Seiten dann denselben Zähler meinen.** Die Zähler
+        // stehen alphabetisch: Gas ist der erste, also sowohl der voreingestellte
+        // im Verlauf als auch der, dessen „Stand eintragen" auf der Übersicht
+        // zuerst kommt. Ohne diese Übereinstimmung prüfte der Test zwei
+        // verschiedene Zähler gegeneinander — genau die Fehlerklasse, die in
+        // CLAUDE.md steht.
+        guard wechsel(zu: "Verlauf", in: app) else { return }
+        let gas = app.buttons["Gas"]
+        XCTAssertTrue(gas.waitForExistence(timeout: erscheint),
+                      "Der Zählerwähler im Verlauf kennt Gas nicht")
+        gas.tap()
+
+        let liste = app.buttons.matching(
+            NSPredicate(format: "label BEGINSWITH 'Alle Ablesungen'")
+        ).firstMatch
+        XCTAssertTrue(liste.waitForExistence(timeout: erscheint),
+                      "Die Zeile für alle Ablesungen steht nicht im Verlauf")
+        guard let vorher = eintraege(in: liste.label) else {
+            XCTFail("Die Zeile nennt keine Zahl: \(liste.label)")
+            return
+        }
+
+        // Eintragen auf der Übersicht, nicht hier.
+        guard wechsel(zu: "Übersicht", in: app) else { return }
+        app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Stand eintragen'"))
+            .firstMatch.tap()
+        XCTAssertTrue(app.buttons["7"].waitForExistence(timeout: erscheint),
+                      "Der Ziffernblock erschien nicht")
+
+        // Über die Vorbelegung wie in `testCapturingAReadingClearsTheNotice`:
+        // Sie liefert einen garantiert plausiblen Wert, und um den Wert geht es
+        // hier nicht.
+        app.buttons["Vom letzten Stand übernehmen"].tap()
+        app.buttons["Sichern"].tap()
+
+        // Der Verlauf hat nichts davon mitbekommen — außer über den Datenstand.
+        guard wechsel(zu: "Verlauf", in: app) else { return }
+        let danach = app.buttons.matching(
+            NSPredicate(format: "label BEGINSWITH 'Alle Ablesungen'")
+        ).firstMatch
+        XCTAssertTrue(danach.waitForExistence(timeout: erscheint),
+                      "Nach dem Eintragen ist der Verlauf nicht wieder da")
+        XCTAssertEqual(eintraege(in: danach.label), vorher + 1,
+                       "Der neue Stand fehlt im Verlauf: \(danach.label)")
+    }
+
     /// Die Zahl aus „Alle Ablesungen, 23 Einträge".
     ///
     /// Über die Ziffern, nicht über eine feste Stelle: Die Beschriftung ist ein

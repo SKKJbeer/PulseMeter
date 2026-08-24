@@ -156,6 +156,99 @@ for (const scheme of ["light", "dark"]) {
   note(nachLoeschen === bestand.anzahl - 1,
        `Löschen nimmt genau eine Ablesung weg (${bestand.anzahl} → ${nachLoeschen})`);
 
+  // --- Eine Änderung erreicht auch die Ansicht, in der sie nicht passiert ist
+  //
+  // Vom Gerät verlangt: „stelle sicher dass die Zahlen und Grafiken sich auch
+  // immer aktualisieren wenn neue Zähler eingaben kamen. egal ob einer aus der
+  // historie gelöscht oder geändert wurde oder ein ganz neuer zählerstand hinzu
+  // kommt."
+  //
+  // Der Entwurf hat das von jeher getan — er zeichnet nach jeder Änderung alles
+  // neu. Die App tat es bis 0.78.0 nicht: Jeder Schirm lud nur für sich, und
+  // eine im Verlauf gelöschte Ablesung erreichte die Übersichtskarte nie. Die
+  // Prüfung steht trotzdem hier, und zwar deswegen: Was keine Prüfung festhält,
+  // läuft irgendwann auseinander, und dann ist der Entwurf keine Vorlage mehr
+  // (Regel 2).
+  const ziel = await page.evaluate(() => {
+    const m = activeMeters().find(x => x.registers.length === 1
+                                    && x.registers[0].readings.length > 2);
+    if (!m) return null;
+    const rs = m.registers[0].readings;
+    return { id: m.id, frac: m.frac, letzter: rs[rs.length - 1].value,
+             anzahl: rs.length };
+  });
+  if (!ziel) {
+    note(false, "Kein einfacher Zähler für die Aktualisierungsprüfung gefunden");
+  } else {
+    // Erst den Verlauf auf diesen Zähler stellen — über die Karte, wie ein
+    // Nutzer es täte. Danach steht die Kopfzahl für denselben Zähler wie die
+    // Karte, und beide müssen sich gemeinsam bewegen.
+    await page.locator('[data-pane="home"]').first().click();
+    await page.waitForTimeout(200);
+    await page.locator(`[data-history="${ziel.id}"]`).click();
+    await page.waitForTimeout(350);
+    const vorher = await page.evaluate(id => ({
+      kopf: document.getElementById("chart-total").textContent.trim(),
+      karte: (() => {
+        const el = document.querySelector(`[data-history="${id}"] .value`);
+        return el ? el.textContent.trim() : "";
+      })()
+    }), ziel.id);
+
+    // Ein neuer Stand, deutlich über dem letzten — auf der Übersicht
+    // eingetragen, also nicht im Verlauf.
+    await page.locator('[data-pane="home"]').first().click();
+    await page.waitForTimeout(200);
+    await page.locator(`[data-capture="${ziel.id}"]`).click();
+    await page.waitForTimeout(300);
+    const ziffern = String(Math.round((ziel.letzter + 250) * 10 ** ziel.frac));
+    for (const z of ziffern) await page.locator(`#keys [data-key="${z}"]`).first().click();
+    await page.waitForTimeout(150);
+    await page.locator("#save").click();
+    await page.waitForTimeout(400);
+
+    const nachher = await page.evaluate(id => ({
+      anzahl: METERS.find(m => m.id === id).registers[0].readings.length,
+      karte: (() => {
+        const el = document.querySelector(`[data-history="${id}"] .value`);
+        return el ? el.textContent.trim() : "";
+      })()
+    }), ziel.id);
+    note(nachher.anzahl === ziel.anzahl + 1,
+         `Der neue Stand ist erfasst (${ziel.anzahl} → ${nachher.anzahl})`);
+    note(nachher.karte !== vorher.karte && nachher.karte !== "",
+         `Die Übersichtskarte zeigt ihn sofort (${vorher.karte} → ${nachher.karte})`);
+
+    await page.locator('[data-pane="history"]').first().click();
+    await page.waitForTimeout(350);
+    const kopfNachher = await page.evaluate(() =>
+      document.getElementById("chart-total").textContent.trim());
+    note(kopfNachher !== vorher.kopf && kopfNachher !== "",
+         `Und der Verlauf ebenso, ohne dass dort etwas angetippt wurde (${vorher.kopf} → ${kopfNachher})`);
+
+    // Und rückwärts: Der Stand wird im Verlauf gelöscht, und die Karte auf der
+    // Übersicht muss zurückgehen. Das ist der Weg, der in der App gefehlt hat.
+    page.once("dialog", d => d.accept());
+    await page.locator('[data-mode="chart"]').first().click();
+    await page.waitForTimeout(200);
+    await page.locator('[data-open="readings"]').first().click();
+    await page.waitForTimeout(300);
+    await page.locator(`[data-reading="${nachher.anzahl - 1}"]`).click();
+    await page.waitForTimeout(300);
+    await page.locator("#cap-delete").click();
+    await page.waitForTimeout(400);
+    await page.locator('[data-pane="home"]').first().click();
+    await page.waitForTimeout(300);
+    const zurueck = await page.evaluate(id => ({
+      anzahl: METERS.find(m => m.id === id).registers[0].readings.length,
+      karte: document.querySelector(`[data-history="${id}"] .value`)?.textContent.trim() ?? ""
+    }), ziel.id);
+    note(zurueck.anzahl === ziel.anzahl,
+         "Der gelöschte Stand ist wieder fort");
+    note(zurueck.karte === vorher.karte,
+         `Und die Übersichtskarte steht wieder auf ${vorher.karte} (${zurueck.karte})`);
+  }
+
   // --- Die große Zahl über dem Diagramm folgt dem angetippten Monat
   //
   // Vom Gerät gemeldet: Wer einen Balken antippt, will oben sehen, was in dem

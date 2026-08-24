@@ -9,6 +9,56 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.78.0 — 2026-08-24
+
+**Jede Änderung erreicht jeden Schirm.**
+
+Vom Gerät verlangt: „stelle sicher dass die Zahlen und Grafiken sich auch immer
+aktualisieren wenn neue Zähler eingaben kamen. egal ob einer aus der historie
+gelöscht oder geändert wurde oder ein ganz neuer zählerstand hinzu kommt."
+
+Er beschreibt keinen Einzelfall, sondern die Bauweise. Jeder der drei Schirme
+lud in seinem eigenen `onAppear` und danach nur noch dann, wenn ein Blatt, das
+**er** aufgemacht hatte, sich wieder schloss. Das genügt, solange eine Änderung
+nur den Schirm angeht, auf dem sie passiert — und das trifft auf keine einzige
+zu. Wer im Verlauf eine Ablesung löscht, ändert damit den Stand auf der
+Übersichtskarte und die Zeile in der Zählerliste mit. Die beiden erfuhren davon
+erst, wenn iOS sie aus eigenem Antrieb neu baute.
+
+Neu ist ein gemeinsames Signal: `Datenstand`, ein Zähler, der hochgeht und
+sonst nichts bedeutet. Die Blätter melden sich darüber statt beim Aufrufer, und
+alle drei Schirme laden darauf hin neu. Ein Weg statt drei — zwei Wege wären
+zwei Gelegenheiten, dass einer etwas ausrechnet, was der andere nicht kennt.
+
+Der Entwurf hat das von jeher richtig gemacht: Er zeichnet nach jeder Änderung
+alles neu. Genau deshalb ist der Fehler nur in der App entstanden, und genau
+deshalb steht die Prüfung dafür jetzt an beiden Orten.
+
+- `scripts/check-aktualisierung.py` liest die iOS-Quellen und besteht auf drei
+  Regeln: Jeder Schirm mit Zahlen lädt auf das Signal hin neu, jedes ändernde
+  Blatt meldet sich darüber, und niemand lädt daran vorbei. Gegen den Stand von
+  Bau 17 gehalten meldet sie genau die sieben Lücken, die es dort gab — und
+  keine falsche.
+- Ihr erster Lauf schlug auf einen Kommentar an, in dem `load()` als Erklärung
+  stand, warum dort gerade **nicht** geladen wird. Kommentare werden jetzt
+  ausgeblendet, Zeilennummern bleiben. Eine Prüfung, die auf Fließtext anspringt,
+  ist binnen Tagen weggeklickt; dieselbe Erfahrung steht schon in 0.60.2.
+- Zwei Oberflächenprüfungen für die Kreuzwege: eine gelöschte Ablesung erreicht
+  Übersicht und Zählerliste, ein neu eingetragener Stand erreicht den Verlauf.
+  Verglichen wird am **Stand**, nicht am Jahresverbrauch — ein Zählwerk läuft
+  vorwärts, also ist der vorletzte Wert zwangsläufig ein anderer als der letzte.
+  Beim Jahresverbrauch wäre dasselbe nur wahrscheinlich, und eine Prüfung, die
+  meistens stimmt, ist keine.
+- Fünf Prüfungen im Entwurf für denselben Weg, in Hell und Dunkel: Ein auf der
+  Übersicht eingetragener Stand bewegt Karte und Verlaufskopf (≈86,0 → 336,0 m³),
+  und nach dem Löschen steht die Karte wieder auf ≈86,0.
+- `Trefferflächen` und `Aktualisierung` laufen jetzt auch in der CI. Sie standen
+  bisher nur in `pruefen.sh` — genau das Auseinanderlaufen, vor dem CLAUDE.md
+  warnt. Sie hängen am Linux-Auftrag, der sofort einen Läufer bekommt, statt am
+  Mac in der Warteschlange.
+
+---
+
 ## 0.77.0 — 2026-08-24
 
 **Ist und Erwartung, jetzt auch beim Jahr.**
