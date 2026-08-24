@@ -9,6 +9,16 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.76.1 — 2026-08-24
+
+### Geändert
+- Build 16 liegt seit 10:36 UTC in TestFlight, verarbeitet und mit
+  Testhinweisen. Die Zeile dazu steht in `docs/12-auslieferung.md`.
+
+_Nur Dokumente. Kein neuer Bau: Build 16 ist der aktuelle._
+
+---
+
 ## 0.76.0 — 2026-08-23
 
 **Über alle Jahre summiert niemand.**
