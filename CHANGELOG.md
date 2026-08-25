@@ -9,6 +9,36 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.78.1 — 2026-08-24
+
+**Der Test hielt zwei Zählwerke gegeneinander.**
+
+Lauf 232 meldete: „Stand 47.481,68 kWh, 23. August 2026" ist gleich „Stand
+47.481,68 kWh, 23. August 2026" — die Übersicht zeige weiter den gelöschten
+Stand.
+
+Beide Zahlen waren richtig. Die neue Oberflächenprüfung löschte beim
+Stromzähler, und der hat **zwei** Zählwerke: Bezug und Einspeisung. Die
+Ablesungsliste zeigt beide, die oberste Zeile war die der Einspeisung, und die
+Karte nennt den Stand des ersten Zählwerks. Der war zu Recht unverändert.
+
+Das ist die wiederkehrende Fehlerklasse dieses Projekts in neuer Verkleidung:
+Bisher standen zwei verschiedene **Zeiträume** gegeneinander, hier zwei
+verschiedene **Zählwerke**. Beide Seiten müssen dasselbe beschreiben.
+
+Geprüft wird jetzt am Gaszähler — ein Zählwerk, damit gibt es die Verwechslung
+nicht. Und vor der eigentlichen Frage steht eine neue Zusicherung: dass
+überhaupt gelöscht wurde. Ohne sie spräche ein Fehlschlag von einer Ansicht,
+die nicht nachzieht, während in Wahrheit nichts passiert ist — und dann sucht
+man an der falschen Stelle.
+
+Zum dritten Mal in Folge lag eine neu geschriebene Oberflächenprüfung falsch
+und nicht die App. Das ist keine Entschuldigung, sondern der Grund, warum sie
+auf einem Gerät laufen muss: Was sie über den Schirm annimmt, stimmt erst, wenn
+ein Simulator es bestätigt hat.
+
+---
+
 ## 0.78.0 — 2026-08-24
 
 **Jede Änderung erreicht jeden Schirm.**

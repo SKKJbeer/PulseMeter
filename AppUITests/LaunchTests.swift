@@ -679,39 +679,53 @@ final class LaunchTests: XCTestCase {
     /// Geprüft wird am **Stand** und nicht am Jahresverbrauch: Ein Zählwerk
     /// läuft vorwärts, also ist der vorletzte Wert zwangsläufig ein anderer als
     /// der letzte. Beim Jahresverbrauch wäre dasselbe nur wahrscheinlich.
+    ///
+    /// **Und an Gas, nicht an Strom.** Der erste Anlauf nahm Strom und fiel auf
+    /// der CI: „Stand 47.481,68 kWh" vor und nach dem Löschen derselbe. Kein
+    /// Produktfehler — Strom hat zwei Zählwerke, Bezug und Einspeisung, die
+    /// Ablesungsliste zeigt beide, und die oberste Zeile war die der
+    /// Einspeisung. Die Karte nennt den Stand des ersten Zählwerks, und der
+    /// war zu Recht unverändert. Zwei Zählwerke gegeneinander gehalten ist
+    /// dieselbe Fehlerklasse wie zwei verschiedene Zeiträume: Beide Seiten
+    /// müssen dasselbe beschreiben. Gas hat ein Zählwerk, damit fällt der Fall
+    /// weg.
     func testDeletingAReadingReachesTheOtherTabs() {
         let app = launchWithData()
 
         let stand = app.descendants(matching: .any)
-            .matching(identifier: "kartenstand-Strom").firstMatch
+            .matching(identifier: "kartenstand-Gas").firstMatch
         XCTAssertTrue(stand.waitForExistence(timeout: erscheint),
-                      "Auf der Übersicht steht kein Stand für Strom. Zu sehen war: "
+                      "Auf der Übersicht steht kein Stand für Gas. Zu sehen war: "
                       + beschriftungen(in: app))
         let standVorher = stand.label
 
-        let zeileVorher = app.buttons.matching(
-            NSPredicate(format: "label BEGINSWITH 'Strom'")
-        ).firstMatch
         guard wechsel(zu: "Zähler", in: app) else { return }
+        let zeileVorher = app.buttons.matching(
+            NSPredicate(format: "label BEGINSWITH 'Gas'")
+        ).firstMatch
         XCTAssertTrue(zeileVorher.waitForExistence(timeout: erscheint),
-                      "Die Zählerliste kennt Strom nicht")
+                      "Die Zählerliste kennt Gas nicht")
         let zaehlerzeileVorher = zeileVorher.label
 
         // Löschen — im Verlauf, also in keinem der beiden Schirme oben.
         guard wechsel(zu: "Verlauf", in: app) else { return }
-        let strom = app.buttons["Strom"]
-        XCTAssertTrue(strom.waitForExistence(timeout: erscheint),
-                      "Der Zählerwähler im Verlauf kennt Strom nicht")
-        strom.tap()
+        let gas = app.buttons["Gas"]
+        XCTAssertTrue(gas.waitForExistence(timeout: erscheint),
+                      "Der Zählerwähler im Verlauf kennt Gas nicht")
+        gas.tap()
 
         let liste = app.buttons.matching(
             NSPredicate(format: "label BEGINSWITH 'Alle Ablesungen'")
         ).firstMatch
+        guard let eintraegeVorher = eintraege(in: liste.label) else {
+            XCTFail("Die Zeile nennt keine Zahl: \(liste.label)")
+            return
+        }
         guard oeffne(liste, bis: app.navigationBars["Ablesungen"], in: app,
                      "Ablesungen öffnen") else { return }
 
-        // Die oberste Zeile ist die jüngste — und nur sie bestimmt den Stand,
-        // der auf der Karte und in der Zählerliste steht.
+        // Die oberste Zeile ist die jüngste — und bei einem Zähler mit **einem**
+        // Zählwerk ist sie zugleich die, die den Stand auf der Karte bestimmt.
         app.cells.element(boundBy: 0).tap()
         XCTAssertTrue(app.navigationBars["Ablesung ändern"].waitForExistence(timeout: erscheint),
                       "Eine Zeile öffnet die Ablesung nicht")
@@ -724,10 +738,22 @@ final class LaunchTests: XCTestCase {
                       "Gelöscht wird ohne Rückfrage")
         rueckfrage.buttons["Löschen"].tap()
 
+        // **Erst prüfen, dass überhaupt gelöscht wurde.** Sonst spräche der
+        // Fehlschlag unten von einer Ansicht, die nicht nachzieht, während in
+        // Wahrheit nichts passiert ist — und dann sucht man tagelang an der
+        // falschen Stelle.
+        let danach = app.buttons.matching(
+            NSPredicate(format: "label BEGINSWITH 'Alle Ablesungen'")
+        ).firstMatch
+        XCTAssertTrue(danach.waitForExistence(timeout: erscheint),
+                      "Nach dem Löschen ist der Verlauf nicht wieder da")
+        XCTAssertEqual(eintraege(in: danach.label), eintraegeVorher - 1,
+                       "Gelöscht wurde nichts: \(danach.label)")
+
         // Und jetzt die eigentliche Frage: Wissen die anderen beiden davon?
         guard wechsel(zu: "Übersicht", in: app) else { return }
         let standNachher = app.descendants(matching: .any)
-            .matching(identifier: "kartenstand-Strom").firstMatch
+            .matching(identifier: "kartenstand-Gas").firstMatch
         XCTAssertTrue(standNachher.waitForExistence(timeout: erscheint),
                       "Nach dem Löschen steht auf der Übersicht kein Stand mehr")
         XCTAssertNotEqual(standNachher.label, standVorher,
@@ -735,10 +761,10 @@ final class LaunchTests: XCTestCase {
 
         guard wechsel(zu: "Zähler", in: app) else { return }
         let zeileNachher = app.buttons.matching(
-            NSPredicate(format: "label BEGINSWITH 'Strom'")
+            NSPredicate(format: "label BEGINSWITH 'Gas'")
         ).firstMatch
         XCTAssertTrue(zeileNachher.waitForExistence(timeout: erscheint),
-                      "Nach dem Löschen fehlt Strom in der Zählerliste")
+                      "Nach dem Löschen fehlt Gas in der Zählerliste")
         XCTAssertNotEqual(zeileNachher.label, zaehlerzeileVorher,
                           "Die Zählerliste zeigt weiter den gelöschten Stand: \(zaehlerzeileVorher)")
     }
