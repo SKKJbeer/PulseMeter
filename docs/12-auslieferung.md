@@ -1,6 +1,6 @@
 # 12 – Auslieferung: vom Code in den App Store, ohne Mac
 
-Stand: 2026-08-24, Version 0.78.0
+Stand: 2026-08-25, Version 0.79.0
 
 Am 17. August ist PulseMeter zum ersten Mal in TestFlight gelandet — **ohne
 Kabel, ohne Xcode auf dem Rechner des Gründers, ohne einen Klick im
@@ -143,6 +143,26 @@ vollständig, nur das Widget bleibt leer und der iCloud-Abgleich aus. Für beide
 gab es im Code schon einen Rückfall. **Die zwei Wochen echte Eigennutzung sind
 mehr wert als der Abgleich** — sie können sofort anfangen, und die Häkchen
 kommen später.
+
+**Seit 0.79.0 versucht der Lauf die Häkchen selbst.**
+`scripts/asc-berechtigungen.py` steht vor dem Anlegen der Profile und schaltet
+über dieselbe Schnittstelle frei, über die schon Zertifikat und Profile kommen:
+`APP_GROUPS`, `ICLOUD` und `PUSH_NOTIFICATIONS` über
+`POST /v1/bundleIdCapabilities`.
+
+Zwei Dinge daran sind offen, und das ist Absicht so aufgeschrieben: Ob Apples
+öffentliche Schnittstelle **App-Gruppen und iCloud-Behälter** anlegen und einer
+App-ID zuordnen lässt, ist nicht dokumentiert. Das Skript versucht es und
+**benennt**, was Apple geantwortet hat — zwei Anfragen, und danach steht es
+schwarz auf weiß statt als Vermutung im Dokument.
+
+Es kann den Lauf nicht zu Fall bringen. Was sich nicht setzen lässt, wandert in
+eine Liste zum Anklicken, und der Bau fährt wie zuvor mit leeren
+Berechtigungen. Nur wenn am Ende alles steht — **nachgelesen, nicht geglaubt**,
+also die App-ID noch einmal abgefragt — meldet das Skript `bereit=ja`, und erst
+dann zieht `xcodebuild` die beiden Berechtigungsdateien an. Ein Bau, der auf
+einer Vermutung signiert, scheitert zwanzig Minuten später an einer Meldung,
+die den Grund nicht nennt.
 
 Voraussetzung dafür: Der Code muss den Ausfall aushalten. Bei uns tut er es in
 drei Stufen — iCloud, sonst lokal, sonst flüchtig —, und die **mittlere** Stufe

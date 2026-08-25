@@ -9,6 +9,46 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.79.0 — 2026-08-25
+
+**Die Häkchen an der App-ID setzt der Lauf jetzt selbst.**
+
+Auf die Frage „kannst du mir das nicht irgendwie automatisch setzen?": ja, den
+Teil, den Apple über seine Schnittstelle anbietet — und der Rest wird benannt
+statt vermutet.
+
+App-Gruppe, iCloud und Push müssen an der App-ID freigeschaltet sein, sonst
+lehnt Apple das Verteilprofil ab, und die Meldung sagt nicht, welche der drei
+fehlt. Bisher stand im Plan, das sei Handarbeit im Portal.
+
+`scripts/asc-berechtigungen.py` steht nun vor dem Anlegen der Profile und
+schaltet `APP_GROUPS`, `ICLOUD` (mit CloudKit) und `PUSH_NOTIFICATIONS` über
+dieselbe Schnittstelle frei, über die schon Zertifikat und Profile kommen.
+
+Zwei Stellen sind ungewiss, und sie stehen als ungewiss da: Ob Apples
+öffentliche Schnittstelle **App-Gruppen und iCloud-Behälter** anlegen und einer
+App-ID zuordnen lässt, ist nicht dokumentiert. Das Skript versucht es, kostet
+dafür zwei Anfragen, und schreibt hin, was Apple geantwortet hat. Das ist mehr
+wert als ein Absatz, der behauptet, es ginge nicht.
+
+- **Der Lauf kann daran nicht scheitern.** Was sich nicht setzen lässt, landet
+  in einer Liste zum Anklicken samt Link, und der Bau fährt wie zuvor mit
+  leeren Berechtigungen. Die App läuft dann vollständig; nur Widget und
+  iCloud-Abgleich bleiben aus, und für beides gibt es im Code einen Rückfall.
+- **Nachgelesen, nicht geglaubt.** Eine 201 sagt, dass Apple die Anfrage
+  angenommen hat — nicht, dass die App-ID danach kann, was die
+  Berechtigungsdatei verlangt. Am Ende wird die App-ID noch einmal abgefragt.
+  Nur wenn dort wirklich alles steht, meldet das Skript `bereit=ja`.
+- **Erst dann ziehen die Berechtigungsdateien mit.** `xcodebuild` bekommt sie
+  aus dem Ergebnis des Schritts davor statt aus einer Annahme. Ein Bau, der auf
+  einer Vermutung signiert, scheitert zwanzig Minuten später an einer Meldung,
+  die den Grund nicht nennt — genau so gingen die Läufe 1 bis 4 verloren.
+- Damit hängt der Bau nicht mehr an fünf Klicks im Portal, sondern höchstens an
+  zweien: der Gruppe und dem Behälter, falls Apple sie nicht über die
+  Schnittstelle anlegt.
+
+---
+
 ## 0.78.1 — 2026-08-24
 
 **Der Test hielt zwei Zählwerke gegeneinander.**
