@@ -29,8 +29,10 @@ Aufruf (Umgebung wie bei `asc-profil.py`):
     ASC_KEY_ID=… ASC_ISSUER_ID=… ASC_KEY_P8=… python3 scripts/asc-kaeufe.py
 """
 
+import hashlib
 import json
 import os
+import pathlib
 import sys
 import time
 
@@ -99,6 +101,11 @@ class Apple:
     def anlegen(self, pfad: str, koerper: dict):
         antwort = requests.post(f"{BASIS}/{pfad}", headers=self.kopf,
                                 data=json.dumps(koerper), timeout=30)
+        return antwort.status_code, antwort
+
+    def aendern(self, pfad: str, koerper: dict):
+        antwort = requests.patch(f"{BASIS}/{pfad}", headers=self.kopf,
+                                 data=json.dumps(koerper), timeout=60)
         return antwort.status_code, antwort
 
 
@@ -279,6 +286,99 @@ def verfuegbar(apple: Apple, kauf_id: str, produkt_id: str, wo: list[dict]) -> N
                  f"({stand}) — {kurz(antwort)}")
 
 
+def bild_vorbereiten(quelle: str, ziel: str) -> str | None:
+    """Das Bildschirmfoto der Kaufseite auf Apples Mindestmaß bringen.
+
+    **Gepolstert, nicht hochskaliert.** Der Simulator liefert 460 × 1000,
+    Apple verlangt mindestens 640 × 920. Hochrechnen macht die Schrift
+    unscharf; ein breiterer Rand lässt das Bild, wie es ist. Die Randfarbe
+    kommt aus dem Bild selbst — sonst stünde ein heller Schirm in einem
+    schwarzen Rahmen.
+    """
+    try:
+        from PIL import Image
+    except ImportError:
+        offen.append("Pillow fehlt — ohne Bildbearbeitung kein Prüfbild")
+        return None
+    try:
+        bild = Image.open(quelle).convert("RGB")
+    except Exception as fehler:  # noqa: BLE001
+        offen.append(f"Das Bildschirmfoto ließ sich nicht öffnen: {fehler}")
+        return None
+
+    breite, hoehe = bild.size
+    ziel_breite, ziel_hoehe = max(breite, 640), max(hoehe, 920)
+    if (ziel_breite, ziel_hoehe) != (breite, hoehe):
+        grund = bild.getpixel((0, 0))
+        leinwand = Image.new("RGB", (ziel_breite, ziel_hoehe), grund)
+        leinwand.paste(bild, ((ziel_breite - breite) // 2,
+                              (ziel_hoehe - hoehe) // 2))
+        bild = leinwand
+    bild.save(ziel, "JPEG", quality=92)
+    print(f"Prüfbild: {breite}×{hoehe} → {bild.size[0]}×{bild.size[1]}")
+    return ziel
+
+
+def pruefbild(apple: Apple, kauf_id: str, pfad: str, produkt_id: str) -> None:
+    """Das Bildschirmfoto, das Apple zu jedem Kauf sehen will.
+
+    **Es ist das, was zwischen `MISSING_METADATA` und `READY_TO_SUBMIT`
+    steht.** Ohne diesen Zustand liefert StoreKit den Kauf nicht aus — auch
+    nicht in der Sandbox, auch nicht bei sonst vollständigen Angaben. Vom
+    Gerät gemeldet: „ne kann nichts kaufen im TestFlight."
+
+    Hochgeladen wird in drei Zügen, wie Apple es verlangt: Platz reservieren,
+    Bytes an die genannte Adresse schicken, Vollzug melden. Die Prüfsumme im
+    letzten Zug ist Apples Gegenprobe, dass unterwegs nichts verloren ging.
+    """
+    stand, antwort = apple.holen(
+        f"v2/inAppPurchases/{kauf_id}/appStoreReviewScreenshot")
+    if stand == 200 and antwort.json().get("data"):
+        getan.append(f"{produkt_id}: Prüfbild stand schon")
+        return
+
+    daten = pathlib.Path(pfad).read_bytes()
+    stand, antwort = apple.anlegen("v1/inAppPurchaseAppStoreReviewScreenshots", {
+        "data": {
+            "type": "inAppPurchaseAppStoreReviewScreenshots",
+            "attributes": {"fileSize": len(daten), "fileName": "kaufseite.jpg"},
+            "relationships": {"inAppPurchaseV2": {
+                "data": {"type": "inAppPurchases", "id": kauf_id}}},
+        },
+    })
+    if stand not in (200, 201):
+        offen.append(f"{produkt_id}: Prüfbild nicht angemeldet ({stand}) "
+                     f"— {kurz(antwort)}")
+        return
+
+    inhalt = antwort.json().get("data", {})
+    bild_id = inhalt.get("id")
+    for zug in inhalt.get("attributes", {}).get("uploadOperations", []):
+        teil = daten[zug["offset"]:zug["offset"] + zug["length"]]
+        kopf = {k["name"]: k["value"] for k in zug.get("requestHeaders", [])}
+        antwort = requests.request(zug["method"], zug["url"], headers=kopf,
+                                   data=teil, timeout=120)
+        if antwort.status_code >= 300:
+            offen.append(f"{produkt_id}: Prüfbild nicht übertragen "
+                         f"({antwort.status_code})")
+            return
+
+    stand, antwort = apple.aendern(
+        f"v1/inAppPurchaseAppStoreReviewScreenshots/{bild_id}", {
+            "data": {
+                "type": "inAppPurchaseAppStoreReviewScreenshots",
+                "id": bild_id,
+                "attributes": {"uploaded": True,
+                               "sourceFileChecksum": hashlib.md5(daten).hexdigest()},
+            },
+        })
+    if stand in (200, 201):
+        getan.append(f"{produkt_id}: Prüfbild hochgeladen")
+        return
+    offen.append(f"{produkt_id}: Prüfbild nicht bestätigt ({stand}) "
+                 f"— {kurz(antwort)}")
+
+
 def main() -> None:
     fehlend = [n for n in ("ASC_KEY_ID", "ASC_ISSUER_ID", "ASC_KEY_P8")
                if not os.environ.get(n)]
@@ -296,6 +396,13 @@ def main() -> None:
     vorhanden = bestand(apple, app_id)
     wo = gebiete(apple)
 
+    # Dasselbe Bild für alle fünf: Die Kaufseite zeigt sie gemeinsam, und
+    # Apple will sehen, wo im Programm der Kauf vorkommt.
+    quelle = os.environ.get("PULSE_KAUFBILD", "")
+    bild = bild_vorbereiten(quelle, "/tmp/kaufseite.jpg") if quelle else None
+    if not bild:
+        offen.append("Ohne Prüfbild bleibt jeder Kauf auf MISSING_METADATA")
+
     for kauf in KAEUFE:
         produkt_id = f"{BUNDLE}.{kauf['kennung']}"
         eintrag = vorhanden.get(produkt_id)
@@ -309,6 +416,8 @@ def main() -> None:
         beschriftung(apple, kauf_id, kauf, produkt_id)
         preis_setzen(apple, kauf_id, kauf, produkt_id)
         verfuegbar(apple, kauf_id, produkt_id, wo)
+        if bild:
+            pruefbild(apple, kauf_id, bild, produkt_id)
 
     # **Nachlesen statt glauben — und zwar den Zustand, nicht die Existenz.**
     #
