@@ -430,6 +430,7 @@ def main() -> None:
     # Ausgeliefert wird ein Kauf nur in bestimmten Zuständen. `MISSING_METADATA`
     # heißt: Apple fehlt noch etwas, und die App bekommt das Produkt nicht.
     danach = bestand(apple, app_id)
+    gemeldet = False
     for kauf in KAEUFE:
         produkt_id = f"{BUNDLE}.{kauf['kennung']}"
         eintrag = danach.get(produkt_id)
@@ -442,8 +443,43 @@ def main() -> None:
         else:
             offen.append(f"{produkt_id}: Zustand {zustand} — StoreKit liefert "
                          "diesen Kauf nicht aus, die Kaufseite bleibt ohne Knopf")
+            # Nur beim ersten: Fünfmal dieselbe Aufstellung wäre Lärm, und
+            # alle fünf sind gleich gebaut.
+            if not gemeldet:
+                was_fehlt(apple, eintrag[0], produkt_id)
+                gemeldet = True
 
     melden()
+
+
+def was_fehlt(apple: Apple, kauf_id: str, produkt_id: str) -> None:
+    """Alles ausschreiben, was Apple über diesen Kauf sagt.
+
+    **Weil Raten zweimal falsch war.** Erst hielt ich die Vereinbarung für
+    bezahlte Apps für die Ursache, dann das Prüfbild. Das Bild liegt jetzt bei
+    allen fünf, und der Zustand steht unverändert auf `MISSING_METADATA`.
+    Apples Schnittstelle nennt nirgends, *welches* Feld fehlt — also wird hier
+    alles aufgeschrieben, was sie hergibt, und die Lücke aus dem Vergleich
+    sichtbar gemacht statt aus einer Vermutung.
+    """
+    stand, antwort = apple.holen(f"v2/inAppPurchases/{kauf_id}")
+    if stand == 200:
+        merkmale = antwort.json().get("data", {}).get("attributes", {})
+        print(f"\n  {produkt_id} — was Apple über den Kauf führt:")
+        for schluessel, wert in sorted(merkmale.items()):
+            print(f"      {schluessel}: {wert}")
+
+    # Jede Beziehung einzeln: vorhanden oder nicht, und mit welcher Antwort.
+    for name in ("inAppPurchaseLocalizations", "iapPriceSchedule",
+                 "iapAvailability", "appStoreReviewScreenshot",
+                 "promotedPurchase", "images", "content"):
+        stand, antwort = apple.holen(f"v2/inAppPurchases/{kauf_id}/{name}")
+        if stand != 200:
+            print(f"      {name}: nicht lesbar ({stand})")
+            continue
+        inhalt = antwort.json().get("data")
+        anzahl = len(inhalt) if isinstance(inhalt, list) else (1 if inhalt else 0)
+        print(f"      {name}: {anzahl}")
 
 
 def melden() -> None:
