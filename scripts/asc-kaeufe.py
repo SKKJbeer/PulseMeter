@@ -266,10 +266,17 @@ def gebiete(apple: Apple) -> list[dict]:
 
 
 def verfuegbar(apple: Apple, kauf_id: str, produkt_id: str, wo: list[dict]) -> None:
-    stand, antwort = apple.holen(f"v2/inAppPurchases/{kauf_id}/iapAvailability")
-    if stand == 200 and antwort.json().get("data"):
-        getan.append(f"{produkt_id}: Verfügbarkeit stand schon")
-        return
+    # **Zwei Namen für dieselbe Beziehung.** Der Preisplan heißt
+    # `iapPriceSchedule`, die Verfügbarkeit aber `inAppPurchaseAvailability` —
+    # die Abkürzung gibt es hier nicht. Mit dem falschen Namen kam 404 zurück,
+    # das Skript hielt die Verfügbarkeit für ungesetzt und legte sie bei jedem
+    # Lauf neu an. Gemeldet hat es trotzdem „steht" — dritter Fall derselben
+    # Verwechslung an einem Tag.
+    for name in ("inAppPurchaseAvailability", "iapAvailability"):
+        stand, antwort = apple.holen(f"v2/inAppPurchases/{kauf_id}/{name}")
+        if stand == 200 and antwort.json().get("data"):
+            getan.append(f"{produkt_id}: Verfügbarkeit stand schon")
+            return
 
     stand, antwort = apple.anlegen("v1/inAppPurchaseAvailabilities", {"data": {
         "type": "inAppPurchaseAvailabilities",
@@ -331,10 +338,21 @@ def pruefbild(apple: Apple, kauf_id: str, pfad: str, produkt_id: str) -> None:
     Bytes an die genannte Adresse schicken, Vollzug melden. Die Prüfsumme im
     letzten Zug ist Apples Gegenprobe, dass unterwegs nichts verloren ging.
     """
+    # **Vorhanden heißt nicht angenommen.** Apple legt die Bilddatei an, sobald
+    # sie angemeldet ist; ob die Bytes durchgekommen und die Maße gültig sind,
+    # steht in `assetDeliveryState`. Ein Bild in `FAILED` ist da und zählt
+    # trotzdem nicht — und der Kauf bleibt auf MISSING_METADATA.
     stand, antwort = apple.holen(
         f"v2/inAppPurchases/{kauf_id}/appStoreReviewScreenshot")
     if stand == 200 and antwort.json().get("data"):
-        getan.append(f"{produkt_id}: Prüfbild stand schon")
+        merkmale = antwort.json()["data"].get("attributes", {})
+        zustand = (merkmale.get("assetDeliveryState") or {}).get("state", "?")
+        if zustand == "COMPLETE":
+            getan.append(f"{produkt_id}: Prüfbild steht ({zustand})")
+            return
+        fehler = (merkmale.get("assetDeliveryState") or {}).get("errors") or []
+        offen.append(f"{produkt_id}: Prüfbild liegt als {zustand} vor"
+                     + (f" — {fehler[0]}" if fehler else ""))
         return
 
     daten = pathlib.Path(pfad).read_bytes()
@@ -471,7 +489,7 @@ def was_fehlt(apple: Apple, kauf_id: str, produkt_id: str) -> None:
 
     # Jede Beziehung einzeln: vorhanden oder nicht, und mit welcher Antwort.
     for name in ("inAppPurchaseLocalizations", "iapPriceSchedule",
-                 "iapAvailability", "appStoreReviewScreenshot",
+                 "inAppPurchaseAvailability", "appStoreReviewScreenshot",
                  "promotedPurchase", "images", "content"):
         stand, antwort = apple.holen(f"v2/inAppPurchases/{kauf_id}/{name}")
         if stand != 200:
@@ -480,6 +498,13 @@ def was_fehlt(apple: Apple, kauf_id: str, produkt_id: str) -> None:
         inhalt = antwort.json().get("data")
         anzahl = len(inhalt) if isinstance(inhalt, list) else (1 if inhalt else 0)
         print(f"      {name}: {anzahl}")
+        # Bei den beiden, an denen es hängen kann, auch den Inhalt.
+        if name in ("appStoreReviewScreenshot", "inAppPurchaseLocalizations"):
+            for eintrag in (inhalt if isinstance(inhalt, list) else [inhalt]):
+                if not eintrag:
+                    continue
+                for schluessel, wert in sorted(eintrag.get("attributes", {}).items()):
+                    print(f"          {schluessel}: {wert}")
 
 
 def melden() -> None:
