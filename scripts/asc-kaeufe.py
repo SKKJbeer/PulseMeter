@@ -128,15 +128,21 @@ def app_finden(apple: Apple):
 
 
 def bestand(apple: Apple, app_id: str) -> dict:
-    """Was schon da ist, nach Produkt-ID."""
+    """Was schon da ist: Produkt-ID → (Kennung, Zustand)."""
     stand, antwort = apple.holen(f"v1/apps/{app_id}/inAppPurchasesV2", **{"limit": 200})
     if stand != 200:
         offen.append(f"Die vorhandenen Käufe ließen sich nicht lesen ({stand}) "
                      f"— {kurz(antwort)}")
         return {}
-    return {e["attributes"]["productId"]: e["id"]
+    return {e["attributes"]["productId"]: (e["id"], e["attributes"].get("state", "?"))
             for e in antwort.json().get("data", [])
             if e.get("attributes", {}).get("productId")}
+
+
+# Nur dieser Zustand wird von StoreKit ausgeliefert — auch in der Sandbox.
+# Alles andere heißt: Der Kauf existiert, die App bekommt ihn aber nicht zu
+# sehen, und die Kaufseite bleibt ohne Knopf.
+LIEFERBAR = {"READY_TO_SUBMIT", "APPROVED", "WAITING_FOR_REVIEW", "IN_REVIEW"}
 
 
 def kauf_anlegen(apple: Apple, app_id: str, kauf: dict, produkt_id: str):
@@ -292,8 +298,9 @@ def main() -> None:
 
     for kauf in KAEUFE:
         produkt_id = f"{BUNDLE}.{kauf['kennung']}"
-        kauf_id = vorhanden.get(produkt_id)
-        if kauf_id:
+        eintrag = vorhanden.get(produkt_id)
+        if eintrag:
+            kauf_id = eintrag[0]
             getan.append(f"{produkt_id}: stand schon")
         else:
             kauf_id = kauf_anlegen(apple, app_id, kauf, produkt_id)
@@ -303,14 +310,29 @@ def main() -> None:
         preis_setzen(apple, kauf_id, kauf, produkt_id)
         verfuegbar(apple, kauf_id, produkt_id, wo)
 
-    # **Nachlesen statt glauben.** Dieselbe Regel wie bei den Berechtigungen:
-    # Eine 201 sagt, dass Apple die Anfrage angenommen hat, nicht dass der Kauf
-    # danach in der Sandbox auftaucht.
+    # **Nachlesen statt glauben — und zwar den Zustand, nicht die Existenz.**
+    #
+    # Der erste Anlauf prüfte nur, ob der Kauf in der Liste steht. Er stand
+    # dort, alle fünf, und trotzdem meldete der Gründer: „ne kann nichts kaufen
+    # im TestFlight." Dasselbe Muster wie bei den Berechtigungen in 0.79.1 —
+    # „ist da" und „funktioniert" sind zwei verschiedene Sachverhalte, und ich
+    # hatte den einen für den anderen genommen.
+    #
+    # Ausgeliefert wird ein Kauf nur in bestimmten Zuständen. `MISSING_METADATA`
+    # heißt: Apple fehlt noch etwas, und die App bekommt das Produkt nicht.
     danach = bestand(apple, app_id)
     for kauf in KAEUFE:
         produkt_id = f"{BUNDLE}.{kauf['kennung']}"
-        if produkt_id not in danach:
+        eintrag = danach.get(produkt_id)
+        if not eintrag:
             offen.append(f"{produkt_id}: steht nach dem Lauf nicht in der Liste")
+            continue
+        zustand = eintrag[1]
+        if zustand in LIEFERBAR:
+            getan.append(f"{produkt_id}: Zustand {zustand} — wird ausgeliefert")
+        else:
+            offen.append(f"{produkt_id}: Zustand {zustand} — StoreKit liefert "
+                         "diesen Kauf nicht aus, die Kaufseite bleibt ohne Knopf")
 
     melden()
 
