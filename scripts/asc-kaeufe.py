@@ -103,6 +103,10 @@ class Apple:
                                 data=json.dumps(koerper), timeout=30)
         return antwort.status_code, antwort
 
+    def loeschen(self, pfad: str) -> int:
+        return requests.delete(f"{BASIS}/{pfad}", headers=self.kopf,
+                               timeout=30).status_code
+
     def aendern(self, pfad: str, koerper: dict):
         antwort = requests.patch(f"{BASIS}/{pfad}", headers=self.kopf,
                                  data=json.dumps(koerper), timeout=60)
@@ -293,14 +297,22 @@ def verfuegbar(apple: Apple, kauf_id: str, produkt_id: str, wo: list[dict]) -> N
                  f"({stand}) — {kurz(antwort)}")
 
 
-def bild_vorbereiten(quelle: str, ziel: str) -> str | None:
-    """Das Bildschirmfoto der Kaufseite auf Apples Mindestmaß bringen.
+# **Apple nimmt Gerätemaße, keine Mindestgröße.** 640 × 1000 kam mit
+# `IMAGE_INCORRECT_DIMENSIONS` zurück — die Zahl war größer als das
+# dokumentierte Mindestmaß und trotzdem falsch, weil die Liste erlaubter Maße
+# aus echten iPhone-Auflösungen besteht. Welche davon für ein Prüfbild gilt,
+# steht nirgends verbindlich; also werden sie der Reihe nach versucht und Apple
+# entscheidet. Gemessen statt geraten — beim vierten Anlauf an diesem Tag.
+MASSE = [(1242, 2208), (750, 1334), (640, 920), (1125, 2436),
+         (1284, 2778), (828, 1792)]
 
-    **Gepolstert, nicht hochskaliert.** Der Simulator liefert 460 × 1000,
-    Apple verlangt mindestens 640 × 920. Hochrechnen macht die Schrift
-    unscharf; ein breiterer Rand lässt das Bild, wie es ist. Die Randfarbe
-    kommt aus dem Bild selbst — sonst stünde ein heller Schirm in einem
-    schwarzen Rahmen.
+
+def bild_vorbereiten(quelle: str, ziel: str, masse: tuple[int, int]) -> str | None:
+    """Das Bildschirmfoto auf ein genaues Maß bringen, ohne es zu verzerren.
+
+    Erst so weit verkleinern oder vergrößern, dass es ganz hineinpasst, dann
+    mittig auf die Leinwand. Die Randfarbe kommt aus dem Bild selbst — sonst
+    stünde ein heller Schirm in einem schwarzen Rahmen.
     """
     try:
         from PIL import Image
@@ -313,48 +325,30 @@ def bild_vorbereiten(quelle: str, ziel: str) -> str | None:
         offen.append(f"Das Bildschirmfoto ließ sich nicht öffnen: {fehler}")
         return None
 
-    breite, hoehe = bild.size
-    ziel_breite, ziel_hoehe = max(breite, 640), max(hoehe, 920)
-    if (ziel_breite, ziel_hoehe) != (breite, hoehe):
-        grund = bild.getpixel((0, 0))
-        leinwand = Image.new("RGB", (ziel_breite, ziel_hoehe), grund)
-        leinwand.paste(bild, ((ziel_breite - breite) // 2,
-                              (ziel_hoehe - hoehe) // 2))
-        bild = leinwand
-    bild.save(ziel, "JPEG", quality=92)
-    print(f"Prüfbild: {breite}×{hoehe} → {bild.size[0]}×{bild.size[1]}")
+    ziel_breite, ziel_hoehe = masse
+    faktor = min(ziel_breite / bild.width, ziel_hoehe / bild.height)
+    breite, hoehe = max(1, round(bild.width * faktor)), max(1, round(bild.height * faktor))
+    verkleinert = bild.resize((breite, hoehe), Image.LANCZOS)
+    leinwand = Image.new("RGB", masse, bild.getpixel((0, 0)))
+    leinwand.paste(verkleinert, ((ziel_breite - breite) // 2,
+                                 (ziel_hoehe - hoehe) // 2))
+    leinwand.save(ziel, "JPEG", quality=90)
     return ziel
 
 
-def pruefbild(apple: Apple, kauf_id: str, pfad: str, produkt_id: str) -> None:
-    """Das Bildschirmfoto, das Apple zu jedem Kauf sehen will.
-
-    **Es ist das, was zwischen `MISSING_METADATA` und `READY_TO_SUBMIT`
-    steht.** Ohne diesen Zustand liefert StoreKit den Kauf nicht aus — auch
-    nicht in der Sandbox, auch nicht bei sonst vollständigen Angaben. Vom
-    Gerät gemeldet: „ne kann nichts kaufen im TestFlight."
-
-    Hochgeladen wird in drei Zügen, wie Apple es verlangt: Platz reservieren,
-    Bytes an die genannte Adresse schicken, Vollzug melden. Die Prüfsumme im
-    letzten Zug ist Apples Gegenprobe, dass unterwegs nichts verloren ging.
-    """
-    # **Vorhanden heißt nicht angenommen.** Apple legt die Bilddatei an, sobald
-    # sie angemeldet ist; ob die Bytes durchgekommen und die Maße gültig sind,
-    # steht in `assetDeliveryState`. Ein Bild in `FAILED` ist da und zählt
-    # trotzdem nicht — und der Kauf bleibt auf MISSING_METADATA.
+def bildzustand(apple: Apple, kauf_id: str):
+    """(Kennung, Zustand, Fehler) des Prüfbilds — oder (None, None, None)."""
     stand, antwort = apple.holen(
         f"v2/inAppPurchases/{kauf_id}/appStoreReviewScreenshot")
-    if stand == 200 and antwort.json().get("data"):
-        merkmale = antwort.json()["data"].get("attributes", {})
-        zustand = (merkmale.get("assetDeliveryState") or {}).get("state", "?")
-        if zustand == "COMPLETE":
-            getan.append(f"{produkt_id}: Prüfbild steht ({zustand})")
-            return
-        fehler = (merkmale.get("assetDeliveryState") or {}).get("errors") or []
-        offen.append(f"{produkt_id}: Prüfbild liegt als {zustand} vor"
-                     + (f" — {fehler[0]}" if fehler else ""))
-        return
+    if stand != 200 or not antwort.json().get("data"):
+        return None, None, None
+    eintrag = antwort.json()["data"]
+    lieferung = eintrag.get("attributes", {}).get("assetDeliveryState") or {}
+    return eintrag.get("id"), lieferung.get("state"), lieferung.get("errors") or []
 
+
+def hochladen(apple: Apple, kauf_id: str, pfad: str) -> str | None:
+    """Anmelden, Bytes schicken, Vollzug melden. Gibt den Fehlertext zurück."""
     daten = pathlib.Path(pfad).read_bytes()
     stand, antwort = apple.anlegen("v1/inAppPurchaseAppStoreReviewScreenshots", {
         "data": {
@@ -365,21 +359,17 @@ def pruefbild(apple: Apple, kauf_id: str, pfad: str, produkt_id: str) -> None:
         },
     })
     if stand not in (200, 201):
-        offen.append(f"{produkt_id}: Prüfbild nicht angemeldet ({stand}) "
-                     f"— {kurz(antwort)}")
-        return
+        return f"nicht angemeldet ({stand}) — {kurz(antwort)}"
 
     inhalt = antwort.json().get("data", {})
     bild_id = inhalt.get("id")
     for zug in inhalt.get("attributes", {}).get("uploadOperations", []):
         teil = daten[zug["offset"]:zug["offset"] + zug["length"]]
         kopf = {k["name"]: k["value"] for k in zug.get("requestHeaders", [])}
-        antwort = requests.request(zug["method"], zug["url"], headers=kopf,
-                                   data=teil, timeout=120)
-        if antwort.status_code >= 300:
-            offen.append(f"{produkt_id}: Prüfbild nicht übertragen "
-                         f"({antwort.status_code})")
-            return
+        gesendet = requests.request(zug["method"], zug["url"], headers=kopf,
+                                    data=teil, timeout=120)
+        if gesendet.status_code >= 300:
+            return f"nicht übertragen ({gesendet.status_code})"
 
     stand, antwort = apple.aendern(
         f"v1/inAppPurchaseAppStoreReviewScreenshots/{bild_id}", {
@@ -390,11 +380,58 @@ def pruefbild(apple: Apple, kauf_id: str, pfad: str, produkt_id: str) -> None:
                                "sourceFileChecksum": hashlib.md5(daten).hexdigest()},
             },
         })
-    if stand in (200, 201):
-        getan.append(f"{produkt_id}: Prüfbild hochgeladen")
-        return
-    offen.append(f"{produkt_id}: Prüfbild nicht bestätigt ({stand}) "
-                 f"— {kurz(antwort)}")
+    if stand not in (200, 201):
+        return f"nicht bestätigt ({stand}) — {kurz(antwort)}"
+    return None
+
+
+def pruefbild(apple: Apple, kauf_id: str, quelle: str, produkt_id: str,
+              gewinner: tuple[int, int] | None) -> tuple[int, int] | None:
+    """Das Prüfbild, so lange in anderen Maßen, bis Apple es annimmt.
+
+    **Vorhanden heißt nicht angenommen.** Apple legt die Datei an, sobald sie
+    angemeldet ist; ob sie zählt, steht in `assetDeliveryState`. Ein Bild in
+    `FAILED` ist da und hält den Kauf trotzdem auf `MISSING_METADATA` — genau
+    das war „ne kann nichts kaufen im TestFlight".
+    """
+    bild_id, zustand, fehler = bildzustand(apple, kauf_id)
+    if zustand == "COMPLETE":
+        getan.append(f"{produkt_id}: Prüfbild steht")
+        return gewinner
+    if bild_id:
+        apple.loeschen(f"v1/inAppPurchaseAppStoreReviewScreenshots/{bild_id}")
+
+    # Das Maß, das beim ersten Kauf durchging, zuerst — die anderen vier
+    # brauchen die Suche dann nicht noch einmal.
+    reihe = ([gewinner] if gewinner else []) + [m for m in MASSE if m != gewinner]
+    for masse in reihe:
+        pfad = bild_vorbereiten(quelle, f"/tmp/kaufseite-{masse[0]}x{masse[1]}.jpg", masse)
+        if not pfad:
+            return gewinner
+        schiefgegangen = hochladen(apple, kauf_id, pfad)
+        if schiefgegangen:
+            offen.append(f"{produkt_id}: Prüfbild {masse[0]}×{masse[1]} {schiefgegangen}")
+            return gewinner
+
+        # Apple prüft das Bild erst nach dem Vollzug. Kurz nachfassen, statt
+        # einen Zwischenstand für das Ergebnis zu halten.
+        for _ in range(8):
+            bild_id, zustand, fehler = bildzustand(apple, kauf_id)
+            if zustand in ("COMPLETE", "FAILED"):
+                break
+            time.sleep(2)
+
+        if zustand == "COMPLETE":
+            getan.append(f"{produkt_id}: Prüfbild angenommen ({masse[0]}×{masse[1]})")
+            return masse
+
+        grund = (fehler[0].get("code") if fehler else zustand) or "?"
+        print(f"  {produkt_id}: {masse[0]}×{masse[1]} abgelehnt ({grund})")
+        if bild_id:
+            apple.loeschen(f"v1/inAppPurchaseAppStoreReviewScreenshots/{bild_id}")
+
+    offen.append(f"{produkt_id}: Kein Maß aus {len(MASSE)} wurde angenommen")
+    return gewinner
 
 
 def main() -> None:
@@ -417,8 +454,8 @@ def main() -> None:
     # Dasselbe Bild für alle fünf: Die Kaufseite zeigt sie gemeinsam, und
     # Apple will sehen, wo im Programm der Kauf vorkommt.
     quelle = os.environ.get("PULSE_KAUFBILD", "")
-    bild = bild_vorbereiten(quelle, "/tmp/kaufseite.jpg") if quelle else None
-    if not bild:
+    gewinner: tuple[int, int] | None = None
+    if not quelle:
         offen.append("Ohne Prüfbild bleibt jeder Kauf auf MISSING_METADATA")
 
     for kauf in KAEUFE:
@@ -434,8 +471,8 @@ def main() -> None:
         beschriftung(apple, kauf_id, kauf, produkt_id)
         preis_setzen(apple, kauf_id, kauf, produkt_id)
         verfuegbar(apple, kauf_id, produkt_id, wo)
-        if bild:
-            pruefbild(apple, kauf_id, bild, produkt_id)
+        if quelle:
+            gewinner = pruefbild(apple, kauf_id, quelle, produkt_id, gewinner)
 
     # **Nachlesen statt glauben — und zwar den Zustand, nicht die Existenz.**
     #
