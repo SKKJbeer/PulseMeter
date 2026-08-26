@@ -9,6 +9,37 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.80.1 — 2026-08-26
+
+**Bau 19 steht in TestFlight, und die Häkchen sind bestätigt.**
+
+Der Lauf für 0.80.0 ist durch: „Bau 19: VALID", mit Testhinweisen. Die Zeile
+steht in `docs/12-auslieferung.md`.
+
+Derselbe Lauf hat die offene Frage aus 0.79.1 beantwortet, und zwar zweimal
+unabhängig — einmal im Bau, einmal im eigenen Ablauf auf Linux:
+
+```
+· de.karjoth.pulsemeter: APP_GROUPS stand schon
+· de.karjoth.pulsemeter: ICLOUD stand schon
+· de.karjoth.pulsemeter: PUSH_NOTIFICATIONS stand schon
+· de.karjoth.pulsemeter.widget: APP_GROUPS stand schon
+· de.karjoth.pulsemeter: nachgelesen, alles steht
+· de.karjoth.pulsemeter.widget: nachgelesen, alles steht
+```
+
+Die drei Berechtigungen sitzen also wirklich an der App-ID. Das „fehlt
+weiterhin" aus Bau 18 war ausschließlich die blinde Stelle im Nachlesen, die
+0.79.1 behoben hat — nichts an Apples Seite hatte sich geändert.
+
+Offen bleiben genau die zwei Stellen, für die es keine Schnittstelle gibt
+(beide 404): die App-Gruppe `group.de.karjoth.pulsemeter` und der Behälter
+`iCloud.de.karjoth.pulsemeter`. Sind sie im Portal angelegt und zugeordnet,
+meldet der nächste Lauf `bereit=ja` und nimmt die Berechtigungsdateien von
+selbst mit — Widget und iCloud-Abgleich kommen dann ohne weiteres Zutun.
+
+---
+
 ## 0.80.0 — 2026-08-26
 
 **„Jahresvergleich" stand über einem halben Jahr.**
