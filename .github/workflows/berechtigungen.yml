@@ -1,0 +1,37 @@
+name: Berechtigungen
+
+# **Warum das einen eigenen Ablauf hat.**
+#
+# Bis 0.79.1 lief `asc-berechtigungen.py` nur im TestFlight-Lauf mit. Das
+# genügte, solange es einmal richtig ist — und war falsch, sobald man daran
+# etwas nachbessern muss: Jeder Versuch kostete dann einen gemieteten Mac und
+# eine Buildnummer, die verbraucht ist.
+#
+# Das Skript spricht nur HTTP. Es braucht kein Xcode, keinen Simulator und
+# keinen Mac. Hier läuft es auf Linux, in Sekunden, so oft man will.
+#
+# Im TestFlight-Lauf bleibt derselbe Schritt stehen: Er ist dort die
+# Selbstheilung, die vor dem Signieren noch einmal nachsieht. Zwei Orte,
+# dasselbe Skript — nicht zwei Skripte.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  freischalten:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Berechtigungen freischalten und nachlesen
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          pip3 install --quiet "pyjwt[crypto]" requests
+          python3 scripts/asc-berechtigungen.py

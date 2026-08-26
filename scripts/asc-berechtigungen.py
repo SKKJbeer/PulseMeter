@@ -107,14 +107,40 @@ def kennung_finden(apple: Apple, bezeichner: str):
     return None
 
 
-def vorhandene(apple: Apple, kennung: str) -> set[str]:
+def vorhandene(apple: Apple, kennung: str) -> tuple[bool, set[str]]:
+    """Was die App-ID kann — und ob die Frage überhaupt beantwortet wurde.
+
+    **Der Rückgabewert hat zwei Teile, und der erste ist der wichtigere.**
+    Bau 18 meldete „fehlt weiterhin APP_GROUPS, ICLOUD, PUSH_NOTIFICATIONS",
+    obwohl Apple alle drei mit 200 angenommen hatte. Die Ursache lag hier: Bei
+    einer Fehlantwort gab diese Funktion eine leere Menge zurück, und leer
+    heißt für den Aufrufer „nichts eingeschaltet". „Konnte ich nicht lesen"
+    und „ist nicht da" sahen also gleich aus — und das ist dieselbe
+    Fehlerklasse wie zwei Zeiträume, die man gegeneinanderhält: zwei
+    verschiedene Sachverhalte unter einer Zahl.
+
+    Zwei Wege, weil nicht feststeht, welchen Apple für diese Beziehung
+    anbietet. Der erste, der antwortet, gilt.
+    """
     stand, antwort = apple.holen(f"bundleIds/{kennung}/bundleIdCapabilities",
                                  **{"limit": 200})
-    if stand != 200:
-        return set()
-    return {e["attributes"]["capabilityType"]
-            for e in antwort.json().get("data", [])
-            if e.get("attributes", {}).get("capabilityType")}
+    if stand == 200:
+        return True, {e["attributes"]["capabilityType"]
+                      for e in antwort.json().get("data", [])
+                      if e.get("attributes", {}).get("capabilityType")}
+    erster = f"{stand} — {kurz(antwort)}"
+
+    stand, antwort = apple.holen(f"bundleIds/{kennung}",
+                                 **{"include": "bundleIdCapabilities"})
+    if stand == 200:
+        return True, {e.get("attributes", {}).get("capabilityType")
+                      for e in antwort.json().get("included", [])
+                      if e.get("attributes", {}).get("capabilityType")}
+
+    offen.append(f"Was {kennung} kann, ließ sich nicht nachlesen "
+                 f"(Beziehung: {erster}; eingebettet: {stand}) — "
+                 "gesetzt wurde es, nachgeprüft ist es nicht")
+    return False, set()
 
 
 def einschalten(apple: Apple, kennung: str, bezeichner: str, art: str) -> None:
@@ -220,7 +246,7 @@ def main() -> None:
         kennung = kennung_finden(apple, bezeichner)
         if not kennung:
             continue
-        steht = vorhandene(apple, kennung)
+        _, steht = vorhandene(apple, kennung)
         for art in arten:
             if art in steht:
                 getan.append(f"{bezeichner}: {art} stand schon")
@@ -240,11 +266,17 @@ def main() -> None:
         if not kennung:
             vollstaendig = False
             continue
-        steht = vorhandene(apple, kennung)
+        lesbar, steht = vorhandene(apple, kennung)
+        if not lesbar:
+            # Nicht als „fehlt" melden. Was hier fehlt, ist die Auskunft.
+            vollstaendig = False
+            continue
         fehlt = [a for a in arten if a not in steht]
         if fehlt:
             vollstaendig = False
             offen.append(f"{bezeichner}: fehlt weiterhin {', '.join(fehlt)}")
+        else:
+            getan.append(f"{bezeichner}: nachgelesen, alles steht")
 
     melden(bereit=vollstaendig)
 

@@ -9,6 +9,44 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.79.1 — 2026-08-26
+
+**„Konnte ich nicht lesen" sah aus wie „ist nicht da".**
+
+Bau 18 hat die Frage aus 0.79.0 beantwortet, und die Antwort ist zweigeteilt.
+
+Apple hat alle vier Häkchen angenommen — `APP_GROUPS`, `ICLOUD` und
+`PUSH_NOTIFICATIONS` an der App, `APP_GROUPS` am Widget, jedes mit 200. Für
+**App-Gruppen und iCloud-Behälter** gibt es keine Schnittstelle: beide
+Abfragen kamen mit 404 zurück. Das ist jetzt gemessen und nicht mehr geraten,
+und es bleibt genau bei den zwei Klicks im Portal, die 0.79.0 vorhergesagt hat.
+
+Danach meldete das Skript trotzdem „fehlt weiterhin APP_GROUPS, ICLOUD,
+PUSH_NOTIFICATIONS". Das war ein Fehler in ihm selbst: Beim Nachlesen gab es
+bei einer Fehlantwort eine **leere Menge** zurück, und leer heißt für den
+Aufrufer „nichts eingeschaltet". Ob Apple nichts hatte oder ob die Frage nicht
+beantwortet wurde — beides sah gleich aus.
+
+Das ist die wiederkehrende Fehlerklasse dieses Projekts, diesmal ohne
+Zeiträume: zwei verschiedene Sachverhalte unter einem Wert.
+
+- Das Nachlesen sagt jetzt beides — ob gelesen werden konnte und was dastand.
+  Ging es nicht, steht das als fehlende **Auskunft** da, nicht als fehlende
+  Berechtigung, mit beiden Statuscodes daneben.
+- Zwei Wege werden versucht, weil nicht feststeht, welchen Apple für diese
+  Beziehung anbietet: die Beziehung selbst und die eingebettete Fassung. Der
+  erste, der antwortet, gilt.
+- **Eigener Ablauf `berechtigungen.yml`.** Das Skript spricht nur HTTP — kein
+  Xcode, kein Simulator, kein Mac. Bisher lief es nur im TestFlight-Lauf mit,
+  und damit kostete jeder Versuch daran einen gemieteten Mac und eine
+  Buildnummer. Jetzt läuft es auf Linux, in Sekunden, so oft man will. Im
+  TestFlight-Lauf bleibt derselbe Schritt als Selbstheilung stehen — zwei Orte,
+  dasselbe Skript.
+
+Bau 18 steht in TestFlight, mit Testhinweisen.
+
+---
+
 ## 0.79.0 — 2026-08-25
 
 **Die Häkchen an der App-ID setzt der Lauf jetzt selbst.**

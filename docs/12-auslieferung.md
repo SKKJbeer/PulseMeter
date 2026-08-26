@@ -1,6 +1,6 @@
 # 12 – Auslieferung: vom Code in den App Store, ohne Mac
 
-Stand: 2026-08-25, Version 0.79.0
+Stand: 2026-08-26, Version 0.79.1
 
 Am 17. August ist PulseMeter zum ersten Mal in TestFlight gelandet — **ohne
 Kabel, ohne Xcode auf dem Rechner des Gründers, ohne einen Klick im
@@ -150,11 +150,26 @@ kommen später.
 `APP_GROUPS`, `ICLOUD` und `PUSH_NOTIFICATIONS` über
 `POST /v1/bundleIdCapabilities`.
 
-Zwei Dinge daran sind offen, und das ist Absicht so aufgeschrieben: Ob Apples
-öffentliche Schnittstelle **App-Gruppen und iCloud-Behälter** anlegen und einer
-App-ID zuordnen lässt, ist nicht dokumentiert. Das Skript versucht es und
-**benennt**, was Apple geantwortet hat — zwei Anfragen, und danach steht es
-schwarz auf weiß statt als Vermutung im Dokument.
+**Bau 18 hat es beantwortet, und zwar gemessen:**
+
+| Was | Antwort |
+|---|---|
+| `APP_GROUPS`, `ICLOUD`, `PUSH_NOTIFICATIONS` an der App | 200 — geht |
+| `APP_GROUPS` am Widget | 200 — geht |
+| `POST /v1/appGroups` | **404** — gibt es nicht |
+| `POST /v1/cloudContainers` | **404** — gibt es nicht |
+
+Es bleiben also genau zwei Klicks im Portal: die App-Gruppe
+`group.de.karjoth.pulsemeter` und der Behälter `iCloud.de.karjoth.pulsemeter`.
+Angelegt werden sie dort; **zugeordnet** werden sie an der App-ID, und die
+Häkchen dafür stehen schon.
+
+Derselbe Lauf hat einen Fehler im Skript aufgedeckt, der teurer hätte werden
+können als die 404er: Das Nachlesen gab bei einer Fehlantwort eine **leere
+Menge** zurück, und leer heißt für den Aufrufer „nichts eingeschaltet". „Konnte
+ich nicht lesen" und „ist nicht da" sahen gleich aus. Seit 0.79.1 sagt es
+beides getrennt — dieselbe Regel wie bei den Zeiträumen: zwei Sachverhalte
+gehören nicht unter einen Wert.
 
 Es kann den Lauf nicht zu Fall bringen. Was sich nicht setzen lässt, wandert in
 eine Liste zum Anklicken, und der Bau fährt wie zuvor mit leeren
@@ -226,6 +241,7 @@ Store Connect deshalb nie gesehen.
 | 15 | 0.75.2 | 23.08. 16:53 | ✓ | Die große Zahl folgt dem angetippten Monat; Ablesungen lassen sich ändern und löschen |
 | 16 | 0.76.0 | 24.08. 10:31 | ✓ | Jahresansicht zeigt das laufende Jahr statt einer Summe über alle Jahre |
 | 17 | 0.77.0 | 24.08. 12:04 | ✓ | Ist und Erwartung auch in der Jahresansicht |
+| 18 | 0.79.0 | 26.08. 05:38 | ✓ | Zahlen und Grafiken ziehen überall sofort nach; erster Lauf, der die Häkchen an der App-ID selbst setzt |
 
 Zeitangaben in UTC. Ein ✗ heißt: hochgeladen wurde nichts, die Nummer ist
 trotzdem verbraucht.
