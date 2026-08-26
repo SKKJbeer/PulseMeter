@@ -27,6 +27,15 @@ struct HistoryView: View {
     @Environment(Purchase.self) private var purchase
     @Environment(Datenstand.self) private var datenstand
 
+    /// Die zwölf Monate des gezeigten Jahres.
+    struct Jahresmonate {
+        let jahr: Int
+        let spalten: [PeriodBars.Column]
+        /// Ein Satz über die Verteilung — oder keiner, wenn es nichts zu
+        /// verteilen gibt.
+        let treiber: String?
+    }
+
     @State private var meters: [MeteringPoint] = []
     @State private var showingPaywall = false
     @State private var selectedMeterID: MeteringPoint.ID?
@@ -34,6 +43,10 @@ struct HistoryView: View {
     @State private var buckets: [PeriodEngine.Bucket] = []
     @State private var previousYear: [PeriodEngine.Bucket] = []
     @State private var selectedSlot: Int?
+    @State private var jahresmonate: Jahresmonate?
+    /// Auswahl **innerhalb** der Monatskarte, unabhängig von der des
+    /// Hauptdiagramms: Dort ist ein Jahr gewählt, hier ein Monat darin.
+    @State private var monatWahl: Int?
     @State private var comparison: PeriodEngine.SlotComparison?
     @State private var readings: [Reading] = []
     @State private var showingReadings = false
@@ -100,7 +113,11 @@ struct HistoryView: View {
                             noHistoryYet
                         } else if mode == .chart {
                             chartCard
-                            if let comparison {
+                            if granularity == .year {
+                                if let jahresmonate {
+                                    jahresmonateCard(jahresmonate)
+                                }
+                            } else if let comparison {
                                 comparisonCard(comparison)
                             }
                         } else {
@@ -508,6 +525,7 @@ struct HistoryView: View {
                            selection: selectedSlot, unit: unit) { slot in
                     selectedSlot = selectedSlot == slot ? nil : slot
                     recomputeComparison()
+                    recomputeJahresmonate()
                 }
 
                 // Die Legende erklärt nur, was auch zu sehen ist. „2025"
@@ -637,6 +655,64 @@ struct HistoryView: View {
             parts.append("die schraffierte Fläche ist die Erwartung für den laufenden Abschnitt")
         }
         return parts.joined(separator: ", ")
+    }
+
+    /// Woher das Jahr kommt — zwölf Monate, das Vorjahr als Marke dahinter.
+    ///
+    /// Die Begründung steht bei ``recomputeJahresmonate()``.
+    private func jahresmonateCard(_ daten: Jahresmonate) -> some View {
+        PulseCard {
+            VStack(alignment: .leading, spacing: 13) {
+                HStack(alignment: .firstTextBaseline) {
+                    // Die Jahreszahl gehört in die Überschrift: In der
+                    // Jahresansicht lässt sich ein anderes Jahr antippen, und
+                    // dann zeigt diese Karte dessen Monate. „Woher das Jahr
+                    // kommt" ließe offen, welches.
+                    Text("Woher \(daten.jahr) kommt")
+                        .font(PulseText.cardTitle)
+                        .foregroundStyle(PulseColor.ink)
+                    Spacer(minLength: 8)
+                    // Produktprinzip 4: Ein Balken, den man antippen kann, muss
+                    // auch etwas sagen. Hier statt in einem Blatt — es ist eine
+                    // Zahl, kein Schirm.
+                    if let wahl = daten.spalten.first(where: { $0.id == monatWahl }),
+                       let wert = wahl.value {
+                        Text("\(Self.monthsLong[safe: wahl.id - 1] ?? "") · "
+                             + "\(number(Decimal(wert), digits: 0)) \(unit)")
+                            .font(PulseText.caption)
+                            .foregroundStyle(PulseColor.inkSecondary)
+                    }
+                }
+                // **Die Kennung gehört an das zusammengefasste Element, nicht
+                // an die Überschrift darin.** `children: .combine` macht aus
+                // der Zeile ein Element; eine Kennung an einem Kind wäre danach
+                // nicht mehr zu greifen.
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier("jahresmonate-titel")
+
+                PeriodBars(columns: daten.spalten, accent: accent,
+                           selection: monatWahl, unit: unit) { slot in
+                    monatWahl = monatWahl == slot ? nil : slot
+                }
+
+                // Ohne Legende ist die Marke hinter dem Balken ein Strich ohne
+                // Bedeutung. Zwei Wörter, und sie nennen Jahreszahlen statt
+                // „Vorjahr" — welches Jahr gemeint ist, hängt hier davon ab,
+                // welchen Balken oben jemand angetippt hat.
+                HStack(spacing: 14) {
+                    legendDot(color: accent, text: "\(daten.jahr)")
+                    legendLine(text: "\(daten.jahr - 1)")
+                }
+
+                if let treiber = daten.treiber {
+                    Text(treiber)
+                        .font(PulseText.caption)
+                        .foregroundStyle(PulseColor.inkSecondary)
+                        .accessibilityIdentifier("jahresmonate-treiber")
+                }
+            }
+            .padding(15)
+        }
     }
 
     private func comparisonCard(_ comparison: PeriodEngine.SlotComparison) -> some View {
@@ -809,6 +885,7 @@ struct HistoryView: View {
             }
             recomputeCosts(meter: meter)
             recomputeComparison()
+            recomputeJahresmonate()
             recomputeReport()
             recomputeForecast(meter: meter)
         } catch {
@@ -866,7 +943,91 @@ struct HistoryView: View {
             .report(scope: selectedMeterID, period: zeitraum, today: today)
     }
 
+    /// Die zwölf Monate des gezeigten Jahres — woher das Jahr kommt.
+    ///
+    /// **Warum das den Jahresvergleich ersetzt.** Vom Gerät gemeldet: „die
+    /// Funktion bei Jahren unten ist nicht verständlich. ich habe ja alle
+    /// Informationen oben die mich auf Jahresbasis eigentlich interessieren."
+    ///
+    /// Er hat recht. Oben stehen die Jahre bereits als Balken nebeneinander —
+    /// das *ist* der Jahresvergleich. Die Karte darunter sagte dasselbe ein
+    /// zweites Mal und musste dafür den Zeitraum auf das kürzen, was alle Jahre
+    /// abdecken. Daher die zwei verschiedenen Zahlen für dasselbe Jahr, über
+    /// die er in 0.80.0 gestolpert ist.
+    ///
+    /// Die große Zahl oben sagt **wie viel**. Hier steht **woher** — und das
+    /// ist das Einzige, woraus sich etwas ableiten lässt: Wer sieht, dass drei
+    /// Wintermonate 41 % tragen, weiß, wo Sparen etwas bringt und wo nicht.
+    ///
+    /// **Und es ist der einzige Weg zu den Monaten eines vergangenen Jahres.**
+    /// ``recompute()`` baut die Monatsabschnitte immer für `today.year`; die
+    /// Monate von 2025 waren in der ganzen App nirgends zu sehen.
+    private func recomputeJahresmonate() {
+        guard granularity == .year, let meter, let jahr = headlineBucket?.year else {
+            jahresmonate = nil
+            monatWahl = nil
+            return
+        }
+        // Ein anderes Jahr heißt andere Monate — eine stehengebliebene Auswahl
+        // zeigte sonst den Februar des Jahres daneben. Dieselbe Falle wie beim
+        // Zählerwechsel in 0.73.0.
+        if jahresmonate?.jahr != jahr { monatWahl = nil }
+
+        let monate = PeriodEngine.buckets(meteringPoint: meter, readings: readings,
+                                          year: jahr, granularity: .month)
+        let vorjahr = PeriodEngine.buckets(meteringPoint: meter, readings: readings,
+                                           year: jahr - 1, granularity: .month)
+        let spalten = monate.map { bucket -> PeriodBars.Column in
+            let referenz = vorjahr.first { $0.slot == bucket.slot }
+            return PeriodBars.Column(
+                id: bucket.slot,
+                label: shortSlotName(bucket),
+                value: bucket.hasData ? double(bucket.value) : nil,
+                reference: (referenz?.hasData ?? false) ? double(referenz!.value) : nil,
+                isPartial: bucket.hasData && !bucket.isComplete
+            )
+        }
+        jahresmonate = Jahresmonate(jahr: jahr, spalten: spalten,
+                                    treiber: treiberSatz(monate))
+    }
+
+    /// „Januar, Februar und Dezember tragen 41 % des Jahres."
+    ///
+    /// **Der Nenner ist das Gemessene, nicht das Jahr.** Bei einem
+    /// angebrochenen Jahr wären 41 % „des Jahres" eine Aussage über einen
+    /// Zeitraum, den die Zahlen nicht abdecken — die wiederkehrende
+    /// Fehlerklasse aus CLAUDE.md. Dann heißt es „vom bisher Gemessenen".
+    ///
+    /// Unter vier Monaten fällt der Satz weg: „Januar trägt 100 %" ist keine
+    /// Auskunft über eine Verteilung, sondern über eine fehlende.
+    private func treiberSatz(_ monate: [PeriodEngine.Bucket]) -> String? {
+        let mitZahl = monate.filter(\.hasData)
+        guard mitZahl.count >= 4 else { return nil }
+        let summe = mitZahl.reduce(Decimal(0)) { $0 + $1.value }
+        guard summe > 0 else { return nil }
+
+        let staerkste = mitZahl.sorted { $0.value > $1.value }.prefix(3)
+        let anteil = staerkste.reduce(Decimal(0)) { $0 + $1.value } / summe
+        // Nach Kalender benannt, nicht nach Größe: Wer die Balken ansieht,
+        // liest von links nach rechts.
+        let namen = staerkste.map(\.slot).sorted()
+            .compactMap { Self.monthsLong[safe: $0 - 1] }
+        guard namen.count == 3 else { return nil }
+
+        let vollstaendig = mitZahl.count == 12 && mitZahl.allSatisfy(\.isComplete)
+        let bezug = vollstaendig ? "des Jahres" : "vom bisher Gemessenen"
+        return "\(namen[0]), \(namen[1]) und \(namen[2]) tragen "
+             + "\(number(anteil * 100, digits: 0)) % \(bezug)."
+    }
+
     private func recomputeComparison() {
+        // **Im Jahr gibt es diese Karte nicht mehr** (0.81.0). Sie stand dort
+        // neben Balken, die dasselbe schon sagten, und musste dafür den
+        // Zeitraum kürzen. An ihrer Stelle steht ``jahresmonateCard``.
+        guard granularity != .year else {
+            comparison = nil
+            return
+        }
         guard let meter, let selection = selectedSlot else {
             comparison = nil
             return
@@ -1153,8 +1314,15 @@ struct HistoryView: View {
     private static let monthsLong = ["Januar", "Februar", "März", "April", "Mai", "Juni",
                                      "Juli", "August", "September", "Oktober", "November", "Dezember"]
 
+    /// **Der Abschnitt sagt seinen Maßstab, nicht die Ansicht.**
+    ///
+    /// Bis 0.81.0 stand hier `switch granularity` — der Maßstab, auf den der
+    /// Verlauf gerade eingestellt ist. Solange alle gezeigten Abschnitte
+    /// daraus stammen, ist das dasselbe. Die Monatskarte in der Jahresansicht
+    /// bricht das: Dort steht die Ansicht auf „Jahr" und die Abschnitte sind
+    /// Monate — zwölf Balken hätten alle dieselbe Jahreszahl getragen.
     private func shortSlotName(_ bucket: PeriodEngine.Bucket) -> String {
-        switch granularity {
+        switch bucket.granularity {
         case .month: return Self.monthsShort[safe: bucket.slot - 1] ?? "\(bucket.slot)"
         case .quarter: return "Q\(bucket.slot)"
         case .year: return "\(bucket.year)"

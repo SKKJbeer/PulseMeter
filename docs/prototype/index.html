@@ -778,7 +778,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.80.1</p>
+  <p>Klickbarer Entwurf · v0.81.0</p>
 </div>
 
 <div class="device">
@@ -2027,11 +2027,99 @@ function renderCompare(m, reg, idx) {
     ? `${fenster.from.d}.–${fenster.to.d}. ${MONTHS_LONG[idx]}`
     : MONTHS_LONG[idx];
 
-  document.getElementById("cmp-label").textContent =
-    histScale === "year" ? "Die Jahre davor" : `Damals im ${MONTHS_LONG[idx]}`;
   document.getElementById("compare").innerHTML =
     `<div class="cmp-head"><div class="cmp-title">${titel}</div>${head}</div>
      <div class="cmp-rows" style="--c:${m.color};--c-ink:${textFarbe(m.color)}">${body}</div>${foot}`;
+}
+
+/* Woher das Jahr kommt — zwölf Monate, das Vorjahr als Balken dahinter.
+
+   Spiegelt `HistoryView.jahresmonateCard`. Die große Zahl oben sagt **wie
+   viel**; hier steht **woher**, und das ist das Einzige, woraus sich etwas
+   ableiten lässt: Wer sieht, dass drei Wintermonate 41 % tragen, weiß, wo
+   Sparen etwas bringt.
+
+   **Ein Unterschied zur App bleibt und ist bekannt:** Dort lässt sich ein
+   Jahresbalken antippen, und die Karte zeigt dann dessen Monate. Das
+   Jahresdiagramm hier kennt keine Auswahl — es zeichnet zwei feste Balken.
+   Gezeigt wird deshalb immer das laufende Jahr. */
+function renderJahresmonate(m) {
+  const jahr = TODAY.y;
+  const dp = m.frac >= 3 ? 1 : 0;
+  // **Eine Überschrift, nicht zwei.** „Das Jahr im Einzelnen" über „Woher 2026
+  // kommt" sind zwei Zeilen, die dasselbe sagen — und die zweite sagt es
+  // besser, weil sie die Jahreszahl nennt. Der Wortlaut ist derselbe wie in
+  // `HistoryView.jahresmonateCard`.
+  document.getElementById("cmp-label").textContent = `Woher ${jahr} kommt`;
+
+  const now = [], prev = [], teil = [];
+  for (let i = 1; i <= 12; i++) {
+    const c = meterMonthConsumption(m, jahr, i);
+    const p = meterMonthConsumption(m, jahr - 1, i);
+    now.push(c && c.value !== null ? c.value : null);
+    prev.push(p && p.value !== null ? p.value : null);
+    teil.push(!!c && c.value !== null && !c.complete);
+  }
+
+  const W = 322, H = 118, kopf = 10;
+  const max = Math.max(...[...now, ...prev].filter(v => v !== null), 1);
+  const bw = W / 12;
+  let svg = svgOpen(W, H + 18, `Monatsverbrauch ${jahr} im Vergleich zu ${jahr - 1}`);
+  for (let g = 0; g <= 2; g++) {
+    const yy = H - (g / 2) * (H - kopf);
+    svg += `<line x1="0" y1="${yy}" x2="${W}" y2="${yy}" stroke="var(--hairline)" stroke-width="1"/>`;
+  }
+  for (let i = 0; i < 12; i++) {
+    const cx = i * bw;
+    // Das Vorjahr breit und grau dahinter, das Jahr schmal und farbig davor —
+    // dieselbe Bildsprache wie im Monatsdiagramm. Zwei Sprachen für dieselbe
+    // Aussage wären zwei Dinge zum Lernen.
+    if (prev[i] !== null) {
+      const h = (prev[i] / max) * (H - kopf);
+      svg += `<rect x="${cx + bw * .16}" y="${H - h}" width="${bw * .68}" height="${h}" rx="2.5" fill="var(--hairline-2)" opacity=".85"/>`;
+    }
+    if (now[i] !== null) {
+      const h = (now[i] / max) * (H - kopf);
+      // Schraffiert heißt in diesem Bild überall dasselbe: hier wurde nicht
+      // durchgehend abgelesen. Ein angebrochener Monat sieht sonst aus wie ein
+      // sparsamer.
+      svg += `<rect x="${cx + bw * .28}" y="${H - h}" width="${bw * .44}" height="${h}" rx="2.5"
+        fill="${teil[i] ? "url(#hatch)" : m.color}"/>`;
+    }
+    svg += `<text x="${cx + bw / 2}" y="${H + 13}" text-anchor="middle" font-size="10"
+      fill="var(--ink-3)" font-family="-apple-system,sans-serif">${MONTHS[i]}</text>`;
+  }
+  document.getElementById("compare").innerHTML =
+    svg + "</svg>"
+    + `<div class="legend">
+         <span><i style="background:${m.color}"></i>${jahr}</span>
+         <span><i style="background:var(--hairline-2)"></i>${jahr - 1}</span>
+       </div>`
+    + treiberSatz(now, teil, dp);
+}
+
+/* „Januar, Februar und Dezember tragen 41 % des Jahres."
+
+   **Der Nenner ist das Gemessene, nicht das Jahr.** Bei einem angebrochenen
+   Jahr wären 41 % „des Jahres" eine Aussage über einen Zeitraum, den die
+   Zahlen nicht abdecken — die wiederkehrende Fehlerklasse. Unter vier Monaten
+   fällt der Satz weg: „Januar trägt 100 %" ist keine Auskunft über eine
+   Verteilung, sondern über eine fehlende. */
+function treiberSatz(now, teil) {
+  const mitZahl = now.map((v, i) => ({ v, i })).filter(x => x.v !== null);
+  if (mitZahl.length < 4) return "";
+  const summe = mitZahl.reduce((a, x) => a + x.v, 0);
+  if (summe <= 0) return "";
+  const staerkste = mitZahl.slice().sort((a, b) => b.v - a.v).slice(0, 3)
+    // Nach Kalender benannt, nicht nach Größe: Wer die Balken ansieht, liest
+    // von links nach rechts.
+    .sort((a, b) => a.i - b.i);
+  if (staerkste.length < 3) return "";
+  const anteil = staerkste.reduce((a, x) => a + x.v, 0) / summe;
+  const vollstaendig = mitZahl.length === 12 && !teil.some(Boolean);
+  return `<div class="cmp-foot" id="cmp-treiber">${MONTHS_LONG[staerkste[0].i]},
+    ${MONTHS_LONG[staerkste[1].i]} und ${MONTHS_LONG[staerkste[2].i]} tragen
+    ${Math.round(anteil * 100)} % ${vollstaendig ? "des Jahres" : "vom bisher Gemessenen"}.</div>`;
 }
 
 const readingOn = (reg, y, m, d) => reg.readings.find(r => r.y === y && r.m === m && r.d === d);
@@ -2270,11 +2358,25 @@ function renderChart() {
 
   document.getElementById("lg-hatch").textContent = hatchWort;
 
-  // Der Monatsvergleich hat im Jahresmaßstab keine Entsprechung.
+  // **Unter dem Jahr steht, woher es kommt — nicht noch ein Jahresvergleich.**
+  //
+  // Vom Gerät gemeldet: „die Funktion bei Jahren unten ist nicht verständlich.
+  // ich habe ja alle Informationen oben die mich auf Jahresbasis eigentlich
+  // interessieren." Er hat recht: Oben stehen die Jahre bereits nebeneinander.
+  //
+  // Bis 0.81.0 war der Block hier im Jahresmaßstab schlicht ausgeblendet — und
+  // genau dadurch konnte im App-Verlauf fünf Versionen lang „Jahresvergleich"
+  // über einem halben Jahr stehen, ohne dass eine Prüfung anschlug. Der
+  // Entwurf hatte die Karte dort nicht, also gab es nichts zu prüfen. Regel 2.
   const inMonth = histScale === "month";
-  document.getElementById("compare-block").style.display = inMonth ? "" : "none";
   document.getElementById("chart-hint").style.display = inMonth ? "" : "none";
-  if (inMonth) renderCompare(m, reg, activeMonth(reg));
+  document.getElementById("compare-block").style.display = "";
+  if (inMonth) {
+    document.getElementById("cmp-label").textContent = `Damals im ${MONTHS_LONG[activeMonth(reg)]}`;
+    renderCompare(m, reg, activeMonth(reg));
+  } else {
+    renderJahresmonate(m);
+  }
 
   const d = document.getElementById("chart-delta");
   if (yoy !== null) {

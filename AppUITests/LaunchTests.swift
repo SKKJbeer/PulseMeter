@@ -822,20 +822,19 @@ final class LaunchTests: XCTestCase {
                        "Der neue Stand fehlt im Verlauf: \(danach.label)")
     }
 
-    /// Die Vergleichskarte nennt den Ausschnitt, den sie vergleicht.
+    /// Die Jahresansicht zeigt, woher das Jahr kommt — Monat für Monat.
     ///
-    /// **Vom Gerät gemeldet:** „beim Jahresvergleich passt doch etwas nicht?
-    /// der ungefähr unten kann doch nicht weniger sein wie oben ist und
-    /// Prognose."
+    /// **Vom Gerät verlangt:** „die Funktion bei Jahren unten ist nicht
+    /// verständlich. ich habe ja alle Informationen oben die mich auf
+    /// Jahresbasis eigentlich interessieren."
     ///
-    /// Oben stand „2026 · aus 237 von 365 Tagen · ≈ 1.652 kWh", in der Karte
-    /// darunter „2026 · ≈ 1.032 kWh". Beide Zahlen stimmten. Verglichen wird
-    /// der Ausschnitt, den **alle** gezeigten Jahre abdecken, und der ist
-    /// kürzer als die 237 Tage oben — nur stand darüber „Jahresvergleich".
-    ///
-    /// Monat und Quartal machen es seit 0.71.0 richtig; die Jahresansicht
-    /// kehrte eine Zeile vorher zurück. Diese Prüfung hält alle drei fest.
-    func testTheYearComparisonNamesTheWindowItCompares() {
+    /// An die Stelle der Vergleichskarte treten die zwölf Monate des gewählten
+    /// Jahres. Zwei Dinge werden geprüft, und beide waren einmal falsch: dass
+    /// die Überschrift das Jahr nennt, das gemeint ist, und dass die Balken
+    /// Monatsnamen tragen statt zwölfmal derselben Jahreszahl —
+    /// `shortSlotName` fragte bis 0.81.0 die Ansicht nach dem Maßstab statt
+    /// den Abschnitt.
+    func testTheYearViewShowsWhereTheYearComesFrom() {
         let app = launchWithData()
         guard wechsel(zu: "Verlauf", in: app) else { return }
 
@@ -845,28 +844,33 @@ final class LaunchTests: XCTestCase {
         strom.tap()
         app.buttons["Jahr"].tap()
 
-        // Die Karte erscheint erst mit einer Auswahl — der Balken des
-        // laufenden Jahres, so wie der Nutzer ihn angetippt hatte.
         let jahr = Calendar(identifier: .gregorian).component(.year, from: Date())
-        let balken = app.descendants(matching: .any)
-            .matching(identifier: "periodbar-\(jahr)").firstMatch
-        XCTAssertTrue(balken.waitForExistence(timeout: erscheint),
-                      "Der Balken für \(jahr) fehlt")
-        balken.tap()
-
         let titel = app.descendants(matching: .any)
-            .matching(identifier: "vergleich-titel").firstMatch
+            .matching(identifier: "jahresmonate-titel").firstMatch
         XCTAssertTrue(titel.waitForExistence(timeout: erscheint),
-                      "Die Vergleichskarte hat keine Überschrift. Zu sehen war: "
+                      "Die Monatskarte fehlt in der Jahresansicht. Zu sehen war: "
                       + beschriftungen(in: app))
+        XCTAssertTrue(titel.label.contains("\(jahr)"),
+                      "Die Überschrift nennt nicht das gezeigte Jahr: \(titel.label)")
 
-        // Die Beispieldaten enden heute, also mitten im Jahr — der verglichene
-        // Ausschnitt ist zwangsläufig kürzer als das Jahr.
-        XCTAssertNotEqual(titel.label, "Jahresvergleich",
-                          "Über einem angebrochenen Ausschnitt darf kein ganzes "
-                          + "Jahr stehen")
-        XCTAssertTrue(titel.label.contains("bis") || titel.label.contains("–"),
-                      "Die Überschrift nennt keinen Ausschnitt: \(titel.label)")
+        // Der alte Jahresvergleich ist fort — er stand neben Balken, die
+        // dasselbe schon sagten.
+        XCTAssertFalse(app.staticTexts["Jahresvergleich"].exists,
+                       "Der Jahresvergleich steht immer noch da")
+
+        // Monatsbalken, keine zwölf Jahreszahlen. „F" ist der Februar; in der
+        // Jahresansicht des Hauptdiagramms gibt es keinen Balken mit diesem
+        // Namen, der Treffer kann also nur aus der Karte stammen.
+        let februar = app.descendants(matching: .any)
+            .matching(identifier: "periodbar-2").firstMatch
+        XCTAssertTrue(februar.waitForExistence(timeout: erscheint),
+                      "Die Karte zeigt keine Monatsbalken")
+        februar.tap()
+
+        // Produktprinzip 4: Ein angetippter Balken sagt, was er meint.
+        wait(for: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Februar"),
+                               evaluatedWith: titel)],
+             timeout: erscheint)
     }
 
     /// Die Zahl aus „Alle Ablesungen, 23 Einträge".

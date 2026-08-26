@@ -249,6 +249,76 @@ for (const scheme of ["light", "dark"]) {
          `Und die Übersichtskarte steht wieder auf ${vorher.karte} (${zurueck.karte})`);
   }
 
+  // --- Unter dem Jahr steht, woher es kommt
+  //
+  // Vom Gerät verlangt: „die Funktion bei Jahren unten ist nicht verständlich.
+  // ich habe ja alle Informationen oben die mich auf Jahresbasis eigentlich
+  // interessieren." An die Stelle des Jahresvergleichs treten die zwölf Monate.
+  //
+  // **Diese Prüfung schließt die Lücke, durch die 0.80.0 gefallen ist.** Bis
+  // dahin blendete der Entwurf den Block im Jahresmaßstab aus — es gab dort
+  // nichts zu prüfen, und deshalb konnte in der App fünf Versionen lang
+  // „Jahresvergleich" über einem halben Jahr stehen.
+  await page.locator('[data-pane="history"]').first().click();
+  await page.waitForTimeout(200);
+  await page.locator('[data-mode="chart"]').first().click();
+  await page.waitForTimeout(200);
+  await page.locator('[data-scale="year"]').first().click();
+  await page.waitForTimeout(400);
+
+  const jahresmonate = await page.evaluate(() => {
+    const m = METERS.find(x => x.id === histMeter);
+    const monate = [];
+    for (let i = 1; i <= 12; i++) {
+      const c = meterMonthConsumption(m, TODAY.y, i);
+      monate.push(c && c.value !== null ? c.value : null);
+    }
+    const gemessen = monate.filter(v => v !== null);
+    const sortiert = gemessen.slice().sort((a, b) => b - a).slice(0, 3);
+    return {
+      label: document.getElementById("cmp-label").textContent.trim(),
+      sichtbar: document.getElementById("compare-block").style.display !== "none",
+      treiber: document.getElementById("cmp-treiber")?.textContent.replace(/\s+/g, " ").trim() ?? "",
+      balken: document.querySelectorAll("#compare svg rect").length,
+      summe: gemessen.reduce((a, b) => a + b, 0),
+      anteil: Math.round(sortiert.reduce((a, b) => a + b, 0) / gemessen.reduce((a, b) => a + b, 0) * 100),
+      kopf: document.getElementById("chart-total").textContent.trim(),
+      jahr: TODAY.y
+    };
+  });
+
+  note(jahresmonate.sichtbar && jahresmonate.label === `Woher ${jahresmonate.jahr} kommt`,
+       `Unter dem Jahr steht, woher es kommt („${jahresmonate.label}")`);
+  note(jahresmonate.balken >= 12,
+       `Zwölf Monate stehen als Balken da (${jahresmonate.balken} Flächen mit Vorjahr)`);
+
+  // **Die Summe der Monate ist die Zahl über dem Diagramm.** Beide beschreiben
+  // dasselbe Jahr — weichen sie ab, beschreibt eine von beiden etwas anderes,
+  // und genau das ist die wiederkehrende Fehlerklasse dieses Projekts.
+  // **Als Zahl vergleichen, nicht als Zeichenkette.** Der erste Anlauf verglich
+  // Text und meldete „86 gegen ≈ 86,0 m³" als Fehler: Beim Wegwerfen der
+  // Nicht-Ziffern wird aus „86,0" die 860. Die Zahlen stimmten, der Vergleich
+  // nicht — und eine Prüfung, die auf Formatierung anschlägt, wird weggeklickt.
+  const kopfZahl = parseFloat(jahresmonate.kopf
+    .replace(/[^0-9,.]/g, "").replace(/\./g, "").replace(",", "."));
+  note(Math.abs(kopfZahl - jahresmonate.summe) < 0.6,
+       `Die Monate summieren sich auf die Kopfzahl (${jahresmonate.summe.toFixed(1)} gegen ${jahresmonate.kopf})`);
+
+  note(jahresmonate.treiber.includes(`${jahresmonate.anteil} %`),
+       `Der Satz nennt den gerechneten Anteil (${jahresmonate.anteil} %): „${jahresmonate.treiber}"`);
+
+  // Ein angebrochenes Jahr darf nicht „des Jahres" sagen — es sind Prozent von
+  // dem, was bisher gemessen ist.
+  note(jahresmonate.treiber.includes("vom bisher Gemessenen"),
+       "Und er nennt den Bezug, weil das Jahr noch läuft");
+
+  // Der alte Jahresvergleich ist fort.
+  note(!jahresmonate.label.includes("Jahre davor"),
+       "Der Jahresvergleich steht dort nicht mehr");
+
+  await page.locator('[data-scale="month"]').first().click();
+  await page.waitForTimeout(300);
+
   // --- Die große Zahl über dem Diagramm folgt dem angetippten Monat
   //
   // Vom Gerät gemeldet: Wer einen Balken antippt, will oben sehen, was in dem

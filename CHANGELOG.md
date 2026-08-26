@@ -9,6 +9,63 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.81.0 — 2026-08-26
+
+**Unter dem Jahr steht jetzt, woher es kommt.**
+
+Vom Gerät gemeldet: „die Funktion bei Jahren unten ist nicht verständlich. ich
+habe ja alle Informationen oben die mich auf Jahresbasis eigentlich
+interessieren."
+
+Er hat recht, und zwar grundsätzlich. Oben stehen die Jahre bereits als Balken
+nebeneinander — das **ist** der Jahresvergleich. Die Karte darunter sagte
+dasselbe ein zweites Mal und musste dafür den Zeitraum auf das kürzen, was alle
+Jahre abdecken. Daher die zwei verschiedenen Zahlen für dasselbe Jahr, über die
+er einen Tag vorher gestolpert ist. 0.80.0 hat die Beschriftung repariert; hier
+fällt der Anlass weg.
+
+An ihre Stelle treten die **zwölf Monate des gezeigten Jahres**, das Vorjahr als
+Balken dahinter, und ein Satz über die Verteilung: „Januar, Februar und März
+tragen 50 % vom bisher Gemessenen."
+
+Die große Zahl oben sagt *wie viel*. Das hier sagt *woher* — und das ist das
+Einzige, woraus sich etwas ableiten lässt. Wer sieht, dass drei Wintermonate die
+Hälfte tragen, weiß, wo Sparen etwas bringt und wo nicht.
+
+**Und es ist der einzige Weg zu den Monaten eines vergangenen Jahres.** Der
+Verlauf baut seine Monatsabschnitte immer für das laufende Jahr; die Monate von
+2025 waren in der ganzen App nirgends zu sehen. In der Jahresansicht einen
+älteren Balken anzutippen zeigt jetzt dessen zwölf Monate.
+
+Drei Dinge, die beim Bauen aufgefallen sind:
+
+- **Der Nenner ist das Gemessene, nicht das Jahr.** Bei einem angebrochenen Jahr
+  wären „50 % des Jahres" eine Aussage über einen Zeitraum, den die Zahlen nicht
+  abdecken. Dann heißt es „vom bisher Gemessenen". Unter vier Monaten fällt der
+  Satz ganz weg — „Januar trägt 100 %" ist keine Auskunft über eine Verteilung.
+- **`shortSlotName` fragte die Ansicht nach dem Maßstab, nicht den Abschnitt.**
+  Solange alle gezeigten Abschnitte aus dem eingestellten Maßstab stammen, ist
+  das dasselbe. Diese Karte bricht es: Die Ansicht steht auf „Jahr", die
+  Abschnitte sind Monate — alle zwölf Balken hätten dieselbe Jahreszahl
+  getragen.
+- **Die Prüfung im Entwurf hat den eigenen Vergleich erwischt.** Sie meldete
+  „86 gegen ≈ 86,0 m³": Beim Wegwerfen der Nicht-Ziffern wird aus „86,0" die
+  860. Die Zahlen stimmten, der Vergleich nicht. Verglichen wird jetzt als Zahl.
+
+**Der Entwurf bekommt die Karte mit** — und damit schließt sich die Lücke, durch
+die 0.80.0 gefallen ist: Bis hierher blendete er den Block im Jahresmaßstab aus,
+es gab dort nichts zu prüfen, und deshalb konnte in der App fünf Versionen lang
+„Jahresvergleich" über einem halben Jahr stehen. Sechs neue Prüfungen halten die
+Karte fest, darunter die wichtigste: Die zwölf Monate müssen sich auf die Zahl
+über dem Diagramm summieren. Tun sie es nicht, beschreibt eine von beiden etwas
+anderes.
+
+Ein Unterschied zur App bleibt und ist im Entwurf benannt: Sein Jahresdiagramm
+kennt keine Auswahl — zwei feste Balken —, deshalb zeigt die Karte dort immer
+das laufende Jahr.
+
+---
+
 ## 0.80.1 — 2026-08-26
 
 **Bau 19 steht in TestFlight, und die Häkchen sind bestätigt.**
