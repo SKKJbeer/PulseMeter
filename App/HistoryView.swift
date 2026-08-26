@@ -646,6 +646,9 @@ struct HistoryView: View {
                     Text(comparisonTitle(comparison))
                         .font(PulseText.cardTitle)
                         .foregroundStyle(PulseColor.ink)
+                        // Damit eine Prüfung die Überschrift lesen kann, ohne
+                        // sich an ihrem Wortlaut festzuhalten.
+                        .accessibilityIdentifier("vergleich-titel")
                     Spacer(minLength: 8)
                     if let change = comparison.approximateChange {
                         Text("\(comparison.changeIsApproximate ? "≈ " : "")\(percentText(change))")
@@ -1175,15 +1178,48 @@ struct HistoryView: View {
     /// hielt sie für falsch. Sie war richtig, nur falsch beschriftet. Ein Satz
     /// weiter unten hat es erklärt; eine Zahl, die eine Erklärung braucht, ist
     /// die falsche Beschriftung.
+    /// Die Überschrift nennt den Ausschnitt, den die Zahlen darunter meinen.
+    ///
+    /// **Vom Gerät gemeldet, Jahresansicht:** „beim Jahresvergleich passt doch
+    /// etwas nicht? der ungefähr unten kann doch nicht weniger sein wie oben
+    /// ist und Prognose."
+    ///
+    /// Oben stand „2026 · aus 237 von 365 Tagen · ≈ 1.652 kWh", unten in der
+    /// Karte „2026 · ≈ 1.032 kWh". Beide Zahlen waren richtig: Verglichen wird
+    /// der Ausschnitt, den **alle** gezeigten Jahre abdecken, und der ist
+    /// kürzer als die 237 Tage oben. Nur stand über ihm „Jahresvergleich" und
+    /// neben ihm „2026" — beides verspricht ein ganzes Jahr.
+    ///
+    /// Genau dafür gibt es diese Funktion seit 0.71.0, als „August" über einer
+    /// Zahl stand, die drei Tage meinte. Monat und Quartal bekamen damals ihren
+    /// Ausschnitt in die Überschrift; **die Jahresansicht kehrte eine Zeile
+    /// vorher zurück** und behielt ihre falsche. Der Kommentar unter dem
+    /// Diagramm behauptet seither, der Ausschnitt stehe in der Überschrift —
+    /// für zwei von drei Maßstäben stimmte das.
     private func comparisonTitle(_ comparison: PeriodEngine.SlotComparison) -> String {
         let voll: String
         switch comparison.granularity {
         case .month: voll = Self.monthsLong[safe: comparison.slot - 1] ?? "\(comparison.slot)"
         case .quarter: voll = "\(comparison.slot). Quartal"
-        case .year: return "Jahresvergleich"
+        case .year:
+            guard comparison.isPartial else { return "Jahresvergleich" }
+            return fensterText(comparison.window)
         }
         guard comparison.isPartial else { return voll }
         return "\(comparison.window.start.day).–\(comparison.window.end.day). \(voll)"
+    }
+
+    /// Ein Ausschnitt in Worten, ohne Jahreszahl — die steht in den Zeilen.
+    ///
+    /// Innerhalb eines Monats die knappe Form wie bei Monat und Quartal, sonst
+    /// beide Enden ausgeschrieben. `end` ist einschließlich (`DayRange`), der
+    /// genannte Tag gehört also dazu.
+    private func fensterText(_ window: DayRange) -> String {
+        if window.start.month == window.end.month, window.start.year == window.end.year {
+            let name = Self.monthsLong[safe: window.start.month - 1] ?? "\(window.start.month)"
+            return "\(window.start.day).–\(window.end.day). \(name)"
+        }
+        return "\(germanDate(window.start)) bis \(germanDate(window.end))"
     }
 
     private func percentText(_ change: Decimal) -> String {

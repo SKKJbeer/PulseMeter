@@ -9,6 +9,48 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.80.0 — 2026-08-26
+
+**„Jahresvergleich" stand über einem halben Jahr.**
+
+Vom Gerät gemeldet: „beim Jahresvergleich passt doch etwas nicht? der ungefähr
+unten kann doch nicht weniger sein wie oben ist und Prognose."
+
+Auf seinem Schirm stand oben „2026 · aus 237 von 365 Tagen · ≈ 1.652 kWh" und
+darunter in der Karte „2026 · ≈ 1.032 kWh". Er hat recht, dass das nicht
+zusammengeht — und beide Zahlen sind richtig.
+
+Verglichen wird der Ausschnitt, den **alle** gezeigten Jahre abdecken. Sein
+Vorjahr reicht nicht bis in den August, also ist der gemeinsame Ausschnitt
+kürzer als die 237 Tage oben, und 1.032 kWh sind der Verbrauch in genau diesem
+kürzeren Stück. Das ist die Regel aus 0.72.0, und sie bleibt: Acht Monate gegen
+zwei Tage sind kein Vergleich.
+
+Falsch war die Beschriftung. „Jahresvergleich" verspricht ein Jahr, „2026"
+daneben auch — und dieselbe Jahreszahl stand oben über einer größeren Zahl.
+
+Die Karte heißt jetzt nach dem Ausschnitt, den sie vergleicht: **„1. Januar bis
+24. August"**. Die Jahreszahlen bleiben in den Zeilen, wo sie hingehören.
+
+**Und das ist keine neue Regel, sondern eine übersehene Stelle.** Genau dafür
+gibt es diese Funktion seit 0.71.0, als „August" über einer Zahl stand, die drei
+Tage meinte. Monat und Quartal bekamen damals ihren Ausschnitt in die
+Überschrift. Die Jahresansicht kehrte eine Zeile vorher zurück — `case .year:
+return "Jahresvergleich"` — und behielt ihre falsche. Der Kommentar unter dem
+Diagramm behauptet seither, der Ausschnitt stehe in der Überschrift; für zwei
+von drei Maßstäben stimmte das.
+
+- Eine Oberflächenprüfung hält jetzt alle drei fest: Über einem angebrochenen
+  Ausschnitt darf kein ganzes Jahr stehen. Sie liest die Überschrift über eine
+  Kennung statt über den Wortlaut, damit sie eine Umformulierung überlebt.
+- **Warum der Entwurf das nicht gefunden hat:** Er blendet die Vergleichskarte
+  im Jahresmaßstab aus — „der Monatsvergleich hat im Jahresmaßstab keine
+  Entsprechung". Damit gibt es dort nichts, was hätte falsch beschriftet sein
+  können. Das ist ein Auseinanderlaufen nach Regel 2 und die Erklärung dafür,
+  dass diese eine Zeile fünf Versionen überlebt hat.
+
+---
+
 ## 0.79.1 — 2026-08-26
 
 **„Konnte ich nicht lesen" sah aus wie „ist nicht da".**

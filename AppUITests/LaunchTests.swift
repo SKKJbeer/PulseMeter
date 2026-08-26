@@ -822,6 +822,53 @@ final class LaunchTests: XCTestCase {
                        "Der neue Stand fehlt im Verlauf: \(danach.label)")
     }
 
+    /// Die Vergleichskarte nennt den Ausschnitt, den sie vergleicht.
+    ///
+    /// **Vom Gerät gemeldet:** „beim Jahresvergleich passt doch etwas nicht?
+    /// der ungefähr unten kann doch nicht weniger sein wie oben ist und
+    /// Prognose."
+    ///
+    /// Oben stand „2026 · aus 237 von 365 Tagen · ≈ 1.652 kWh", in der Karte
+    /// darunter „2026 · ≈ 1.032 kWh". Beide Zahlen stimmten. Verglichen wird
+    /// der Ausschnitt, den **alle** gezeigten Jahre abdecken, und der ist
+    /// kürzer als die 237 Tage oben — nur stand darüber „Jahresvergleich".
+    ///
+    /// Monat und Quartal machen es seit 0.71.0 richtig; die Jahresansicht
+    /// kehrte eine Zeile vorher zurück. Diese Prüfung hält alle drei fest.
+    func testTheYearComparisonNamesTheWindowItCompares() {
+        let app = launchWithData()
+        guard wechsel(zu: "Verlauf", in: app) else { return }
+
+        let strom = app.buttons["Strom"]
+        XCTAssertTrue(strom.waitForExistence(timeout: erscheint),
+                      "Der Zählerwähler im Verlauf kennt Strom nicht")
+        strom.tap()
+        app.buttons["Jahr"].tap()
+
+        // Die Karte erscheint erst mit einer Auswahl — der Balken des
+        // laufenden Jahres, so wie der Nutzer ihn angetippt hatte.
+        let jahr = Calendar(identifier: .gregorian).component(.year, from: Date())
+        let balken = app.descendants(matching: .any)
+            .matching(identifier: "periodbar-\(jahr)").firstMatch
+        XCTAssertTrue(balken.waitForExistence(timeout: erscheint),
+                      "Der Balken für \(jahr) fehlt")
+        balken.tap()
+
+        let titel = app.descendants(matching: .any)
+            .matching(identifier: "vergleich-titel").firstMatch
+        XCTAssertTrue(titel.waitForExistence(timeout: erscheint),
+                      "Die Vergleichskarte hat keine Überschrift. Zu sehen war: "
+                      + beschriftungen(in: app))
+
+        // Die Beispieldaten enden heute, also mitten im Jahr — der verglichene
+        // Ausschnitt ist zwangsläufig kürzer als das Jahr.
+        XCTAssertNotEqual(titel.label, "Jahresvergleich",
+                          "Über einem angebrochenen Ausschnitt darf kein ganzes "
+                          + "Jahr stehen")
+        XCTAssertTrue(titel.label.contains("bis") || titel.label.contains("–"),
+                      "Die Überschrift nennt keinen Ausschnitt: \(titel.label)")
+    }
+
     /// Die Zahl aus „Alle Ablesungen, 23 Einträge".
     ///
     /// Über die Ziffern, nicht über eine feste Stelle: Die Beschriftung ist ein
