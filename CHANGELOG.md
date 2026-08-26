@@ -9,6 +9,20 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.81.2 — 2026-08-26
+
+**Bau 20 steht in TestFlight.**
+
+„Bau 20: VALID", mit Testhinweisen. Er trägt die Jahresansicht aus 0.81.0 und
+die berichtigte Jahreszahl aus 0.81.1. Die Zeile steht in
+`docs/12-auslieferung.md`.
+
+Zwanzig Bauten in zehn Tagen, davon vier gescheiterte ganz am Anfang. Was seit
+Bau 5 gescheitert ist, waren zwei Prüfungen und ein Fehler in der App — kein
+einziges Mal die Auslieferung selbst.
+
+---
+
 ## 0.81.1 — 2026-08-26
 
 **„Woher 2.026 kommt" — eine Jahreszahl mit Tausendertrenner.**
