@@ -9,6 +9,49 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.82.0 — 2026-08-26
+
+**Die fünf Käufe legt jetzt ein Lauf an, nicht die Hand.**
+
+Vom Gründer verlangt: „kannst du das nicht für mich alles über eine API oder
+ähnliches anlegen?"
+
+`scripts/asc-kaeufe.py` spricht dieselbe Schnittstelle an, über die schon
+Zertifikat, Profile und die Häkchen an der App-ID laufen. Je Kauf vier Schritte:
+anlegen, deutsche Beschriftung, Preis, Verfügbarkeit.
+
+**Der Grund, es nicht abtippen zu lassen, ist die Produkt-ID.** Sie ist das
+Einzige an einem Kauf, das für immer feststeht — ein umbenannter Kauf ist für
+jeden Käufer ein verlorener Kauf. Im Skript kommt sie aus derselben Regel wie in
+der App: `de.karjoth.pulsemeter.` plus dem Namen in Kleinbuchstaben. Ein
+Tippfehler kann dort nicht entstehen.
+
+**Was dabei entsteht, ist ein Entwurf und nichts Verkauftes.** Ein neu
+angelegter Kauf steht auf „Bereit zum Senden": sichtbar in der Sandbox und damit
+in jedem TestFlight-Bau, dort kostenlos. Verkauft wird erst mit der Einreichung
+der App. Preise, Namen und Beschreibungen lassen sich jederzeit ändern.
+
+Zwei Dinge, die beim Schreiben aufgefallen sind:
+
+- **Store-Texte sind eine andere Textsorte als App-Texte.** Apple lässt 30
+  Zeichen für den Anzeigenamen und 45 für die Beschreibung; die Sätze aus
+  `ProductID.explanation` sind länger. Also eigene, kurze Fassungen — und aus
+  „Tag- und Nachtstrom, Einspeisung" (32) wird „Nachtstrom und Einspeisung":
+  Der Anzeigename ist zugleich ein Suchfeld (10-sichtbarkeit.md), und die beiden
+  Wörter, nach denen jemand sucht, bleiben stehen.
+- **Der Zeichenketten-Prüfer hat den ersten Entwurf angehalten.** Ein deutsches
+  Anführungszeichen, mit einem geraden geschlossen, mitten in einer f-Zeichenkette
+  — genau die Fehlerklasse, für die es ihn seit 0.60.2 gibt. Vierter Treffer.
+
+Wie bei den Berechtigungen gilt: Der Lauf bricht nie ab, jeder Schritt wird
+einzeln benannt, und am Ende wird nachgelesen statt geglaubt — eine 201 sagt,
+dass Apple die Anfrage angenommen hat, nicht dass der Kauf danach in der Sandbox
+steht.
+
+Der Ablauf heißt jetzt „Einrichtung bei Apple" und trägt beides.
+
+---
+
 ## 0.81.2 — 2026-08-26
 
 **Bau 20 steht in TestFlight.**

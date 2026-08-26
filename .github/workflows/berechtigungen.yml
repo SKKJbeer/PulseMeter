@@ -1,4 +1,4 @@
-name: Berechtigungen
+name: Einrichtung bei Apple
 
 # **Warum das einen eigenen Ablauf hat.**
 #
@@ -21,17 +21,31 @@ permissions:
   contents: read
 
 jobs:
-  freischalten:
+  einrichten:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+
+      - name: Abhängigkeiten
+        run: pip3 install --quiet "pyjwt[crypto]" requests
 
       - name: Berechtigungen freischalten und nachlesen
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
-        run: |
-          pip3 install --quiet "pyjwt[crypto]" requests
-          python3 scripts/asc-berechtigungen.py
+        run: python3 scripts/asc-berechtigungen.py
+
+      # **Die fünf Käufe.** Vom Gründer verlangt: „kannst du das nicht für mich
+      # alles über eine API oder ähnliches anlegen?"
+      #
+      # Was hier entsteht, ist ein Entwurf: „Bereit zum Senden", sichtbar in der
+      # Sandbox und damit in jedem TestFlight-Bau, dort kostenlos. Verkauft wird
+      # erst mit der Einreichung der App.
+      - name: Käufe anlegen und nachlesen
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: python3 scripts/asc-kaeufe.py
