@@ -9,6 +9,35 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.81.1 — 2026-08-26
+
+**„Woher 2.026 kommt" — eine Jahreszahl mit Tausendertrenner.**
+
+Lauf 240 meldete:
+
+```
+Die Überschrift nennt nicht das gezeigte Jahr: Woher 2,026 kommt
+```
+
+Diesmal lag die App falsch und nicht die Prüfung. `Text("Woher \(daten.jahr)
+kommt")` baut aus dem Zeichenkettenliteral einen `LocalizedStringKey`, und der
+formatiert eine eingesetzte Ganzzahl nach Gebietsschema. Auf dem Läufer wurde
+daraus „2,026", auf einem deutschen Gerät stünde „2.026".
+
+Eine Jahreszahl ist keine Menge. Sie bekommt keinen Tausendertrenner, und
+`String(...)` um die Zahl herum verhindert es.
+
+**Die Falle ist unauffällig, und genau deshalb steht sie hier.** Ein paar Zeilen
+weiter unten geht dieselbe Jahreszahl durch `legendDot(text: "\(daten.jahr)")`
+— dort ist der Parameter eine Zeichenkette, es gibt keinen
+`LocalizedStringKey`, und die Zahl bleibt unangetastet. Zwei Schreibweisen, die
+gleich aussehen, und nur eine davon formatiert.
+
+Gefunden hat es die Oberflächenprüfung aus 0.81.0, beim ersten Lauf. Die drei
+Male davor lag eine neu geschriebene Prüfung falsch; dieses Mal die App.
+
+---
+
 ## 0.81.0 — 2026-08-26
 
 **Unter dem Jahr steht jetzt, woher es kommt.**

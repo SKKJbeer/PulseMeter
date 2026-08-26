@@ -668,7 +668,14 @@ struct HistoryView: View {
                     // Jahresansicht lässt sich ein anderes Jahr antippen, und
                     // dann zeigt diese Karte dessen Monate. „Woher das Jahr
                     // kommt" ließe offen, welches.
-                    Text("Woher \(daten.jahr) kommt")
+                    // **`String(...)` und nicht die nackte Zahl.** `Text` mit
+                    // einer Zeichenkette *literal* baut daraus einen
+                    // `LocalizedStringKey`, und der formatiert eine
+                    // eingesetzte Ganzzahl nach Gebietsschema — auf der CI
+                    // stand „Woher 2,026 kommt", auf einem deutschen Gerät
+                    // stünde dort „2.026". Eine Jahreszahl ist keine Menge und
+                    // bekommt keinen Tausendertrenner.
+                    Text("Woher \(String(daten.jahr)) kommt")
                         .font(PulseText.cardTitle)
                         .foregroundStyle(PulseColor.ink)
                     Spacer(minLength: 8)
