@@ -1,6 +1,6 @@
 ---
 name: projekt-baukasten
-description: Das gesammelte Vorgehen aus PulseMeter, übertragbar auf jedes andere Vorhaben — wie ein Projekt aufgebaut, dokumentiert, konzipiert, geprüft und ohne Mac bis in TestFlight ausgeliefert wird, und welche Fallen bei Apple, App Store Connect, macOS-Läufern, Berechtigungen und In-App-Käufen dabei zuschlagen. Diese Skill verwenden, wenn ein neues Projekt beginnt oder eingerichtet wird, wenn eine Sitzung kalt startet und wissen muss, wie hier gearbeitet wird, wenn etwas über die Schnittstelle von Apple angelegt oder freigeschaltet werden soll, wenn ein Bau, ein Profil, eine Signatur oder ein Kauf nicht durchgeht, wenn ein Konzept oder eine Produktentscheidung entsteht, und wenn der Nutzer fragt „wie machen wir das hier eigentlich" oder etwas aus einem anderen Projekt übernehmen will. Außerdem gilt: Jede neue, teuer bezahlte Erkenntnis wird hier nachgetragen.
+description: Das gesammelte Vorgehen für ein Softwarevorhaben — wie ein Projekt aufgebaut, dokumentiert, konzipiert, geprüft und ohne Mac bis in TestFlight ausgeliefert wird, und welche Fallen bei Apple, App Store Connect, macOS-Läufern, Berechtigungen und In-App-Käufen dabei zuschlagen. **Zuerst verwenden, wenn eine Sitzung in einem leeren oder frisch angelegten Repository startet** — also überall dort, wo es noch keine CLAUDE.md und kein scripts/pruefen.sh gibt: dann wird das Gerüst aufgesetzt, bevor die erste Zeile Code entsteht. Außerdem verwenden, wenn ein neues Projekt beginnt oder eingerichtet wird, wenn eine Sitzung kalt startet und wissen muss, wie hier gearbeitet wird, wenn etwas über die Schnittstelle von Apple angelegt oder freigeschaltet werden soll, wenn ein Bau, ein Profil, eine Signatur oder ein Kauf nicht durchgeht, wenn ein Konzept oder eine Produktentscheidung entsteht, und wenn jemand fragt „wie machen wir das hier eigentlich" oder etwas aus einem anderen Projekt übernehmen will. Und es gilt: Jede neue, teuer bezahlte Erkenntnis wird hier nachgetragen.
 ---
 
 # Der Baukasten
@@ -24,6 +24,48 @@ jemand danach fragt. Der Abschnitt ganz unten sagt, wie.
 ---
 
 ## 0. Wie diese Datei in ein neues Projekt kommt
+
+### Der Fall, der am häufigsten vorkommt: ein leeres Repository, vom Telefon
+
+Wird diese Skill in einer Sitzung geladen, deren Repository **kein**
+`scripts/pruefen.sh` und **keine** `CLAUDE.md` hat, dann ist das Aufsetzen die
+erste Aufgabe — vor der ersten Zeile Code, ohne dass jemand danach fragt. Es
+gibt hier kein `scripts/neues-projekt.sh`; die folgenden Dateien werden direkt
+angelegt, ihr Inhalt steht in den Abschnitten 1 bis 8.
+
+| Datei | Was hineingehört |
+|---|---|
+| `CLAUDE.md` | die vier Regeln aus Abschnitt 1 und 8, die Sprachregeln, und **leer gelassen** die Produktprinzipien — die kann nur der Betreiber sagen |
+| `scripts/pruefen.sh` | ein Befehl für alles, Umfänge `alles`/`schnell`, Schalter `--nur` und `--melden`, Schritte nach **Kosten** sortiert, Übersprungenes wird **benannt** |
+| `.github/workflows/ci.yml` | zwei Aufträge, Nebenläufigkeit **je Auftrag** — der schnelle abbrechbar, der lange nicht —, Belege auch bei rotem Lauf |
+| `.githooks/pre-push` | `scripts/pruefen.sh schnell` vor jedem Push, dazu `git config core.hooksPath .githooks` |
+| `CHANGELOG.md` | neueste Version oben, Aufbau nach `release-discipline` |
+| `docs/06-uebergabe.md` | der laufende Zustand, wird **überschrieben**, nicht fortgeschrieben |
+| `.claude/skills/projekt-baukasten/SKILL.md` | **diese Datei, wörtlich** — nur so hat auch die nächste Sitzung in diesem Repository sie |
+
+Die letzte Zeile ist die wichtigste und wird am leichtesten vergessen. Eine
+Skill aus dem claude.ai-Konto gilt in einer Cloud-Sitzung; sie gilt **nicht**
+für jemanden, der das Repository klont, und nicht für einen Prüflauf. Committet
+gehört sie trotzdem.
+
+Danach die drei Dinge nennen, die niemand raten kann: die Schritte in
+`pruefen.sh`, die Produktprinzipien, und bei einem iOS-Vorhaben die Kennung
+**vor** dem ersten Bau (Abschnitt 4).
+
+### Wo eine Sitzung diese Datei überhaupt findet
+
+| Ort | Pfad | Gilt in |
+|---|---|---|
+| claude.ai-Konto | in den Skill-Einstellungen hochgeladen | **jeder Cloud-Sitzung**, auch in einem frisch angelegten Repo |
+| Persönlich | `~/.claude/skills/<name>/SKILL.md` | allen Projekten auf **einem Rechner** |
+| Projekt | `<projekt>/.claude/skills/<name>/SKILL.md` | diesem Repository — lokal **und** in der Cloud |
+
+**Eine Cloud-Sitzung liest `~/.claude/skills` nicht.** Wer Vorhaben vom Telefon
+aus anfängt, hat deshalb genau einen Weg, der ohne Vorarbeit im Repository
+funktioniert: die Skill **einmal** ins claude.ai-Konto laden. Danach ist sie in
+jedem neuen Chat dabei, und der Abschnitt oben sorgt für den Rest.
+
+### Auf einem Rechner mit Shell
 
 Von Hand kopieren funktioniert genau einmal und dann nie wieder. Deshalb gibt
 es `scripts/neues-projekt.sh`.
