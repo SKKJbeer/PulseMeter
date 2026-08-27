@@ -9,6 +9,34 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.86.0 — 2026-08-27
+
+### Hinzugefügt
+- **Der Baukasten trägt sich jetzt selbst auf, ohne Shell.** Der Anlass war ein
+  Satz des Gründers, der die beiden Versionen davor entwertet hat: „ich starte
+  aber am Handy immer neue Projekte/Chats mit neuen Repos." `--einrichten` und
+  `neu` laufen auf einem Mac in einer Shell — vom Telefon nützt beides nichts.
+  Abschnitt 0 der Skill sagt deshalb jetzt zuerst, was in einem **leeren**
+  Repository zu tun ist: das Gerüst anlegen, bevor die erste Zeile Code
+  entsteht, mit einer Tabelle, welche Datei welchen Inhalt trägt. Es braucht
+  dafür kein Skript und kein anderes Repository.
+- Die Beschreibung der Skill löst auf genau diesen Fall aus — eine Sitzung in
+  einem Repository ohne `CLAUDE.md` und ohne `scripts/pruefen.sh`.
+- Eine Tabelle, wo eine Sitzung die Datei überhaupt findet. Nachgelesen, nicht
+  vermutet: Eine Cloud-Sitzung lädt die Skills des claude.ai-Kontos und die des
+  geklonten Repositories — `~/.claude/skills` liest sie **nicht**. Wer vom
+  Telefon anfängt, hat damit genau einen Weg ohne Vorarbeit: die Skill einmal
+  ins Konto laden.
+- Die Zeile, die am leichtesten vergessen wird: Die Skill gehört **auch dann**
+  in das neue Repository committet, wenn sie aus dem Konto ohnehin gilt. Sonst
+  hat sie niemand, der klont, und kein Prüflauf.
+
+### Geändert
+- Der Anhang zum Aufsetzen mit Shell steht jetzt hinter dem Fall ohne Shell.
+  Die Reihenfolge folgt dem, was tatsächlich häufiger vorkommt.
+
+---
+
 ## 0.85.0 — 2026-08-27
 
 ### Hinzugefügt
