@@ -13,6 +13,12 @@ ausgetauscht werden muss.
 > wie geprüft wird; dort, wie ausgeliefert wird — ohne Mac, über einen
 > macOS-Läufer. Beide sind unabhängig voneinander übertragbar.
 
+> **Die Kurzfassung von beidem in einer Datei:**
+> [`.claude/skills/projekt-baukasten/SKILL.md`](../.claude/skills/projekt-baukasten/SKILL.md).
+> Sie ist in sich geschlossen, gilt auch ohne dieses Repo und wird bei jeder
+> teuren Erkenntnis fortgeschrieben. Wer etwas in ein neues Projekt mitnehmen
+> will, nimmt sie.
+
 ---
 
 ## Die vier Ideen dahinter

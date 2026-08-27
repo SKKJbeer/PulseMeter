@@ -9,6 +9,30 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.83.0 — 2026-08-27
+
+### Hinzugefügt
+- **Der Baukasten:** `.claude/skills/projekt-baukasten/SKILL.md` sammelt das
+  gesamte Vorgehen in einer Datei — wie ein Projekt aufgebaut, dokumentiert und
+  konzipiert wird, wie ohne Mac über einen macOS-Läufer bis in TestFlight
+  ausgeliefert wird, was Apples Schnittstelle bei Berechtigungen und Käufen
+  wirklich beantwortet, welche zwei Fehlerklassen immer wiederkommen und wie
+  ermittelt wird, wenn etwas nicht geht. Vom Gründer verlangt: das Gelernte
+  soll in anderen Sitzungen zur Verfügung stehen, statt jedes Mal neu
+  herausgefunden zu werden. Die Datei ist deshalb in sich geschlossen und gilt
+  auch ohne dieses Repo.
+- **Regel 1c in `CLAUDE.md`:** Was einen Lauf, einen Bau oder mehr als eine
+  Stunde gekostet hat, wird im Baukasten nachgetragen — im selben Commit wie
+  die Änderung, ohne Aufforderung. Auch die Vermutung, die falsch war.
+
+### Geändert
+- Die Kette der In-App-Käufe steht jetzt an **einer** Stelle. `docs/12` und
+  `docs/08` verweisen darauf, statt sie ein zweites Mal zu erzählen. Zwei
+  Stände derselben Auskunft sind schlimmer als einer — dieselbe Regel, nach der
+  Prototyp und Rechenkern nicht auseinanderlaufen dürfen.
+
+---
+
 ## 0.82.5 — 2026-08-26
 
 **Apple hat den Grund genannt: `IMAGE_INCORRECT_DIMENSIONS`.**

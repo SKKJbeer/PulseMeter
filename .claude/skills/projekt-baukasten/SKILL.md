@@ -1,0 +1,473 @@
+---
+name: projekt-baukasten
+description: Das gesammelte Vorgehen aus PulseMeter, übertragbar auf jedes andere Vorhaben — wie ein Projekt aufgebaut, dokumentiert, konzipiert, geprüft und ohne Mac bis in TestFlight ausgeliefert wird, und welche Fallen bei Apple, App Store Connect, macOS-Läufern, Berechtigungen und In-App-Käufen dabei zuschlagen. Diese Skill verwenden, wenn ein neues Projekt beginnt oder eingerichtet wird, wenn eine Sitzung kalt startet und wissen muss, wie hier gearbeitet wird, wenn etwas über die Schnittstelle von Apple angelegt oder freigeschaltet werden soll, wenn ein Bau, ein Profil, eine Signatur oder ein Kauf nicht durchgeht, wenn ein Konzept oder eine Produktentscheidung entsteht, und wenn der Nutzer fragt „wie machen wir das hier eigentlich" oder etwas aus einem anderen Projekt übernehmen will. Außerdem gilt: Jede neue, teuer bezahlte Erkenntnis wird hier nachgetragen.
+---
+
+# Der Baukasten
+
+Alles, was dieses Projekt an Vorgehen gelernt hat, in einer Datei — damit es
+in einer anderen Sitzung und in einem anderen Projekt nicht noch einmal
+herausgefunden werden muss.
+
+**Was hier steht, ist bezahlt.** Fast jede Zeile ist ein roter Lauf, ein
+verbrannter gemieteter Mac oder ein halber Tag. Zahlen sind gemessen; wo
+etwas nur vermutet ist, steht das dabei.
+
+**Diese Datei wird fortgeführt.** Sobald eine Runde etwas kostet, das beim
+nächsten Mal Zeit spart, kommt es hier hinein — im selben Commit, ohne dass
+jemand danach fragt. Der Abschnitt ganz unten sagt, wie.
+
+> **Langfassungen im PulseMeter-Repo:** `docs/08-baukasten.md` (wie geprüft
+> wird) und `docs/12-auslieferung.md` (wie ausgeliefert wird). In einem
+> anderen Projekt gibt es die nicht — was hier steht, genügt allein.
+
+---
+
+## 1. Wie ein Projekt aufgebaut wird
+
+### Die vier Ideen
+
+**1. Ein Befehl prüft alles.** Nicht vier Befehle in einer Reihenfolge, die
+irgendwo beschrieben steht. Ein Skript, das an **beiden** Orten läuft, überall
+dasselbe prüft und **benennt**, was es überspringt. Zwei Abläufe laufen
+auseinander, und dann prüft der eine etwas anderes als der andere. Deshalb ist
+es dasselbe Skript wie in der CI-Beschreibung.
+
+**2. Der lokale Lauf ist der erste Durchgang, die CI die Gegenprobe.** Lokal
+zwei Minuten, in der CI fünfzehn. Wer auf die CI wartet, wartet auf ein
+Ergebnis, das er längst haben könnte.
+
+**3. Zwei Zweige verbinden, was einander nicht sieht.** Eine Cloud-Sitzung
+erreicht den Rechner des Nutzers nicht und umgekehrt. Verbunden sind sie über
+git: `pruefungen` bekommt eine Zeile je lokalem Lauf (Zeitpunkt, Stand,
+Ergebnis, Umfang, Dauer, Rechner), `screenshots` die Bilder des letzten Laufs.
+Damit ist die CI für nichts mehr das Nadelöhr.
+
+**4. Angefangenes wird zu Ende gebracht, ohne Nachfrage.** Wer einen Lauf
+anstößt, plant die Nachschau selbst, bevor der Zug endet. Nie auf eine
+Erinnerung warten, nie mit `sleep` blockieren.
+
+### Die Teile
+
+| Datei | Was sie tut | Übertragbar? |
+|---|---|---|
+| `scripts/pruefen.sh` | ein Befehl für alles, mit Umfängen (`schnell`, `app`, `bilder`) und Schaltern (`--nur`, `--melden`) | Gerüst allgemein, Schritte projektspezifisch |
+| `scripts/mac-start.sh` | Stand holen → einrichten → prüfen → melden → Bilder zeigen | fast unverändert |
+| `scripts/melden.sh` | schreibt eine Zeile je Lauf in den Zweig `pruefungen` | unverändert |
+| `scripts/publish-shots.sh` | schiebt Bilder in den Zweig `screenshots`, aus CI **und** vom Rechner | fast unverändert |
+| `.githooks/pre-push` | die schnellen Prüfungen vor jedem Push | unverändert |
+| `.github/workflows/ci.yml` | schneller Auftrag auf Linux, langsamer auf macOS | Aufbau allgemein |
+| `CLAUDE.md` | Arbeitsweise, Prüfschritte, Sprachregeln, die Regeln | teils allgemein |
+| `.claude/skills/release-discipline` | Version, Release Notes und Tests als Pflicht je Änderung | unverändert |
+| `.claude/settings.json` | die Befehle des Projekts ohne Rückfrage, `sudo` gesperrt | Liste anpassen |
+| `docs/06-uebergabe.md` | der laufende Zustand für eine Sitzung, die kalt startet | Vorlage, wird **überschrieben**, nicht fortgeschrieben |
+
+### In zehn Schritten übertragen
+
+1. `scripts/`, `.githooks/`, `.claude/` und `.github/workflows/ci.yml` kopieren.
+2. In `pruefen.sh` die Schritte austauschen. **Nach Kosten sortieren, nicht
+   nach Wichtigkeit** — was in einer Sekunde brechen kann, soll auch in einer
+   Sekunde brechen.
+3. Die Bedingung finden, die „hier fehlt das schwere Werkzeug" bedeutet (hier:
+   `xcodebuild`). Übersprungenes wird **benannt**, nie verschwiegen.
+4. `mac-start.sh` auf den Zielzweig einstellen.
+5. `melden.sh` und `publish-shots.sh` unverändert übernehmen — beide brauchen
+   nur `origin`.
+6. Im Arbeitsablauf beide Aufträge trennen: einer schnell und abbrechbar, einer
+   langsam und **nicht** abbrechbar.
+7. Bilder — oder was das Gegenstück ist — **auch bei rotem Lauf** erzeugen.
+8. `CLAUDE.md` schreiben: wo was liegt, wie geprüft wird, welche Wörter
+   verboten sind, und die Regel, dass Angefangenes zu Ende gebracht wird.
+9. `release-discipline` übernehmen.
+10. `06-uebergabe.md` anlegen und bei jeder Übergabe überschreiben.
+
+---
+
+## 2. Wie dokumentiert wird
+
+**Nummerierte Dokumente, ein Thema je Datei, Entscheidungen als ADR.**
+Strategie, Architektur, Datenmodell, UX, Monetarisierung, Roadmap,
+Sichtbarkeit, Sicherheit, Auslieferung. Ein Dokument beantwortet eine Frage;
+wer die Frage hat, findet die Datei am Namen.
+
+**Was ein gutes Dokument von einem schlechten trennt:**
+
+- **Zahlen sind gemessen oder gekennzeichnet.** „Fünf Läufe, vier Befunde",
+  „80 bis 130 Sekunden", „27 Stellen". Eine Annahme steht als Annahme da
+  („Wette", „geschätzt", „nicht gemessen").
+- **Der Fehlschlag steht drin, nicht nur die Lösung.** Der Abschnitt „was uns
+  das gekostet hat" ist der wertvollste. Er verhindert, dass jemand denselben
+  Weg noch einmal geht, weil er plausibel aussieht.
+- **Auch die falsche Vermutung steht drin.** Zweimal war meine Diagnose falsch
+  und das Protokoll richtig. Das gehört ins Dokument, sonst wirkt der Weg
+  gerade, und der nächste hält seine erste Vermutung wieder für die Antwort.
+- **Kommentare im Code begründen *warum*, nicht *was*.** Ein Kommentar, der
+  den Code nacherzählt, veraltet still.
+
+**Keine Annahmen in Texten, die jemand anderes liest.** Was über den Betreiber,
+sein Gewerbe, seine Anschrift oder seine Zahlen behauptet wird, muss von ihm
+bestätigt sein. Sonst: weglassen. Geht es nicht ohne, dann als Platzhalter in
+eckigen Klammern mit einem `PLATZHALTER`-Kommentar daneben — sichtbar, zählbar,
+prüfbar. Das gilt besonders für Rechtstexte; ein Impressum ist keine Textsorte,
+in der sich etwas plausibel ergänzen lässt.
+
+---
+
+## 3. Wie Konzepte entstehen
+
+**Der Prototyp rechnet echt.** Der Klick-Dummy enthält eine verkürzte Fassung
+des Rechenkerns und arbeitet mit echten Zeitreihen über Jahre, nicht mit
+Platzhalterzahlen. Das ist der Grund, warum er sich lohnt: **Bisher hat jede
+Runde am Prototyp einen echten Fehler im Rechenkern aufgedeckt, den kein
+ausgedachter Unit-Test gefunden hätte.**
+
+**Weicht der Prototyp von der App ab, ist das ein Fehler, kein Zustand.** Eine
+falsche Beschriftung überlebte fünf Versionen, weil der Prototyp die Karte an
+dieser Stelle gar nicht zeigte — es gab dort nichts, was hätte auffallen
+können.
+
+**Vorschläge statt Vorschlag.** Wenn eine Ansicht nicht trägt: drei Optionen
+mit Mehrwert, kurz begründet, der Nutzer wählt eine. Nicht eine bauen und
+hoffen.
+
+**Produktprinzipien sind Prüfsteine, keine Präambel.** Jede Änderung wird
+gegen sie gehalten. Bei uns: 60 Sekunden bis zur ersten Nutzung ohne Konto,
+3 Berührungen bis zur Folgeaktion, 5 Sekunden Blickzeit, keine Sackgasse,
+Datenfreiheit, kein technisches Vokabular, **nie stillschweigend rechnen**.
+
+**Selbstsprechend statt erklärt.** Wenn ein Text erklären muss, was daneben
+steht, stimmt die Beschriftung nicht. Erst die Beschriftung richtig machen,
+dann den Erklärsatz streichen. Anlass: Über einer Zahl stand „August", die
+Zahl meinte drei Tage, und ein Satz darunter erklärte das. Die Zahl war
+richtig, die Überschrift falsch — und der Erklärsatz hat den Fehler nicht
+behoben, sondern verdeckt.
+
+**Kein Schema ersetzt, dass jemand das Produkt benutzt.** Sieben
+Darstellungsfehler hat kein Test gefunden, sondern der Blick auf ein Bild —
+und der Fehler, der den Kernfluss zur Sackgasse machte, fiel auf, weil jemand
+die App in die Hand genommen hat.
+
+---
+
+## 4. Ausliefern ohne Mac
+
+### Die eine Erkenntnis, die alles trägt
+
+**Ein iOS-Projekt braucht keinen Mac, sondern einen macOS-Läufer.** Wer eine CI
+mit `runs-on: macos-*` hat, hat den Mac schon. Es fehlen zwei Dinge, und beide
+gehen ohne Bildschirm:
+
+- **Signieren** mit einem Schlüssel statt eines Anmeldefensters
+  (`-authenticationKeyPath`, `-authenticationKeyID`, `-authenticationKeyIssuerID`).
+- **Hochladen** mit `xcrun altool --upload-app --apiKey … --apiIssuer …`.
+
+Meine erste Antwort war „nein, iOS-Apps brauchen Xcode". Das stimmt — und war
+trotzdem falsch, weil das Projekt längst einen hatte. **Wenn eine Antwort auf
+eine Voraussetzung verweist, prüfe zuerst, ob sie nicht schon erfüllt ist.**
+
+### Die Reihenfolge, die funktioniert
+
+| # | Was | Wo | Dauer |
+|---|---|---|---|
+| 1 | API-Schlüssel in App Store Connect, Rolle **App Manager** | Browser | 5 min |
+| 2 | Vier Geheimnisse im Repository: Key-ID, Issuer-ID, `.p8`-Inhalt, Team-ID | Browser | 5 min |
+| 3 | Verteilzertifikat **einmalig** über die Schnittstelle anlegen und als Geheimnis ablegen | Ablauf | 2 min |
+| 4 | **App-Eintrag** in App Store Connect anlegen | Browser | 10 min |
+| 5 | Bauen, signieren, hochladen | Ablauf | 3 min |
+| 6 | Exportbestimmungen, Testergruppe, Tester, Bau zuweisen | Browser | 5 min |
+
+Schritt 4 kommt vor Schritt 5, und das ist nicht offensichtlich: Die **App-ID**
+entsteht beim ersten Bau von selbst, der **App-Eintrag** nicht — aber vor dem
+ersten Bau steht die Kennung nicht in Apples Auswahlliste. Also einmal bauen
+lassen und den Eintrag anlegen, während der Lauf läuft.
+
+### Die Befunde, in der Reihenfolge, in der sie zuschlagen
+
+**Die Bundle-ID gehört nicht auf eine fremde Domain.**
+`com.<produkt>.app` ist eine Wette gegen alle anderen Apple-Entwickler und geht
+oft verloren. Nimm `de.<nachname>.<produkt>`. **Und entscheide es vor allem
+anderen:** Die Kennung steckt in der Projektdatei, in beiden
+Berechtigungsdateien, in der App-Gruppe, im iCloud-Container, in jeder
+Kauf-Kennung, in Tests und Skripten — bei uns an 27 Stellen. Solange in App
+Store Connect keine App und kein Kauf existiert, ist das Suchen und Ersetzen.
+Danach kostet es jeden Käufer seinen Kauf.
+
+**`xcodebuild archive` will ein Development-Profil.** Mit
+`CODE_SIGN_STYLE=Automatic` besorgt sich `archive` ein Entwicklungsprofil, und
+das verlangt mindestens ein registriertes Gerät. Ein Konto ohne Kabel hat
+keins — **dieser Weg kann nie durchgehen.** Ausweg: App-Store-Profile über
+`POST /v1/profiles` (`profileType: IOS_APP_STORE`), Inhalt nach
+`~/Library/MobileDevice/Provisioning Profiles/<uuid>.mobileprovision`, bauen mit
+`CODE_SIGN_STYLE=Manual`, `CODE_SIGN_IDENTITY="Apple Distribution"` und
+`PROVISIONING_PROFILE_SPECIFIER` **je Ziel**.
+(Meine erste Erklärung — die fehlende Angabe `-configuration Release` — war
+falsch und hat einen Lauf gekostet. Die Profilart hängt nicht an der
+Konfiguration.)
+
+**Bauvorgaben auf der Kommandozeile gelten für *alle* Ziele.**
+`CODE_SIGN_ENTITLEMENTS=…` hinter `xcodebuild` trifft App **und** Erweiterung.
+Also je Ziel in der Projektdatei über Variablen, leer als Vorgabe:
+
+```yaml
+settings:
+  base:
+    PULSE_PROFILE_APP: ""      # leer = automatisch, für Simulator und CI
+    PULSE_PROFILE_WIDGET: ""
+targets:
+  App:    { settings: { base: { PROVISIONING_PROFILE_SPECIFIER: $(PULSE_PROFILE_APP) } } }
+  Widget: { settings: { base: { PROVISIONING_PROFILE_SPECIFIER: $(PULSE_PROFILE_WIDGET) } } }
+```
+
+Dasselbe Muster trägt `aps-environment`: `development` in Debug, `production`
+in Release — fest eingetragen ist einer der beiden Wege immer falsch.
+
+**Der Läufer hat mehrere Xcodes, und das voreingestellte ist zu alt.**
+`SDK version issue … must be built with the iOS 26 SDK or later`, während der
+Läufer auf 16.4 stand und 26.3 danebenlag. **Nie das voreingestellte Xcode
+nehmen.** Höchste vorhandene Fassung suchen, `xcode-select` setzen — und wenn
+keine reicht, **auflisten, was da ist**, statt über das Läuferbild zu raten.
+
+**Hochgeladen ist nicht testbar.** Vier getrennte Dinge, jedes hält den Bau
+unsichtbar: Exportbestimmungen beantworten (sonst „Missing Compliance"),
+Gruppe für interne Tests anlegen, **sich selbst als Tester eintragen**
+(Kontoinhaber zu sein genügt nicht), Bau der Gruppe zuweisen.
+
+**Die Testhinweise hängen nicht am Paket.** `altool` lädt nur hoch. „Was ist
+neu" hängt am Bau in App Store Connect und geht nur über die Schnittstelle —
+erreichbar erst, wenn Apple den Bau verarbeitet hat. Zehn Bauten lang stand bei
+den Testern nichts, und niemandem ist es aufgefallen. Also: auf `VALID` warten,
+Lokalisierung `de-DE` anlegen oder ändern, melden, wann der Bau bereitsteht.
+Dauert die Verarbeitung zu lange, grün enden mit Hinweis — ein roter Lauf für
+etwas, das niemand beheben kann, ist eine Meldung ohne Handlung.
+
+### Die Kleinigkeiten, die je einen Lauf kosten
+
+| Falle | Was zu tun ist |
+|---|---|
+| **Buildnummer doppelt** | App Store Connect nimmt jede Nummer **einmal**. `CURRENT_PROJECT_VERSION=${{ github.run_number }}` — sie zählt auch bei rotem Lauf weiter |
+| **Drei Zertifikate, dann Schluss** | Zertifikat **einmal** anlegen und als Geheimnis ablegen. Ein frischer Läufer legt sonst jedes Mal ein neues an |
+| **PKCS#12 lässt sich nicht einlesen** | `openssl pkcs12 -export -legacy`. OpenSSL 3 erzeugt sonst ein Format, das der Schlüsselbund mit „MAC verification failed" ablehnt — das sieht nach falschem Kennwort aus und ist keins |
+| **`codesign` wartet auf ein Kennwort** | `security set-key-partition-list -S apple-tool:,apple:,codesign:` nach dem Import, sonst läuft der Auftrag in die Zeitgrenze |
+| **Falsches Profil am falschen Ziel** | Apples `filter[identifier]` filtert als **Präfix**: `de.x.app` liefert auch `de.x.app.widget`. Genau vergleichen, nicht das erste Ergebnis nehmen |
+| **Zugangsdaten fehlen** | Die Prüfung darauf als **ersten** Schritt, sonst scheitert der Lauf nach zwanzig Minuten an einer Meldung, die das fehlende Geheimnis nicht nennt |
+| **Geheimnisse abtippen** | Nicht abtippen. Öffentlichen Schlüssel des Repositories holen, Wert in eine Sealed Box legen, `PUT /actions/secrets/<name>`. Dafür braucht es ein **fein granuliertes** Token mit „Secrets: Read and write" — ein klassisches mit `repo` genügt nicht |
+| **`cancel-in-progress` über dem ganzen Ablauf** | Nebenläufigkeit **je Auftrag**: der schnelle darf abgebrochen werden, der lange nicht. Drei Läufe an einem Tag endeten sonst kurz vor dem Ziel |
+
+---
+
+## 5. App Store Connect über die Schnittstelle
+
+Alles unten ist **gemessen**, nicht aus einer Anleitung übernommen.
+
+### Was geht und was nicht
+
+| Vorgang | Antwort |
+|---|---|
+| `POST /v1/bundleIdCapabilities` — `APP_GROUPS`, `ICLOUD` (Einstellung `XCODE_6`), `PUSH_NOTIFICATIONS` | 200 — geht, an App **und** Erweiterung |
+| `POST /v1/appGroups` | **404** — gibt es nicht, im Portal anlegen |
+| `POST /v1/cloudContainers` | **404** — gibt es nicht, im Portal anlegen |
+| `POST /v2/inAppPurchases` samt Beschriftung, Preis, Verfügbarkeit, Prüfbild | geht vollständig |
+| Verträge (bezahlte Apps, Bank, Steuer) | keine Schnittstelle, nur Browser |
+
+Es bleiben also genau **zwei Klicks im Portal**: die App-Gruppe und der
+iCloud-Behälter. Angelegt werden sie dort, **zugeordnet** an der App-ID — und
+die Häkchen dafür setzt der Lauf.
+
+### Der Berechtigungsteil gehört nicht in den TestFlight-Lauf
+
+Er spricht nur HTTP: kein Xcode, kein Simulator, kein Mac. Als Schritt im
+TestFlight-Lauf kostet **jeder Versuch** einen gemieteten Mac und eine
+verbrauchte Buildnummer. Als eigener `workflow_dispatch`-Ablauf auf Ubuntu
+läuft er in Sekunden, so oft man will.
+
+Im TestFlight-Lauf bleibt derselbe Schritt trotzdem stehen — dort ist er die
+Selbstheilung vor dem Signieren. **Zwei Orte, dasselbe Skript.**
+
+> `workflow_dispatch` verlangt die Datei auf dem Standardzweig, kann aber jeden
+> `ref` fahren. So lässt sich ein Zweigstand ausprobieren, ohne ihn zu
+> verschmelzen.
+
+### In-App-Käufe anlegen
+
+Vier Schritte je Kauf: anlegen, Beschriftung, Preis, Verfügbarkeit. Dazu das
+Prüfbild. Was dabei zuschlägt:
+
+- **`MISSING_METADATA` heißt: StoreKit liefert den Kauf nicht aus** — auch
+  nicht in der Sandbox, auch nicht in TestFlight. Die Kaufseite zeigt dann ihre
+  Merkmale ohne Knopf. Erst ab `READY_TO_SUBMIT` kommt das Produkt in der App
+  an.
+- **Das Prüfbild ist Pflicht** für `READY_TO_SUBMIT`, nicht Beiwerk. Genau
+  daran hing „ich kann im TestFlight nichts kaufen".
+- **Hochladen ist dreiteilig:** reservieren, Bytes per `PUT` an die von Apple
+  genannte Adresse, dann mit md5-Prüfsumme bestätigen.
+- **Die Maße müssen einer echten Gerätauflösung entsprechen**, nicht bloß ein
+  Minimum überschreiten. 640×1000 ist größer als das dokumentierte Minimum und
+  wird trotzdem mit `IMAGE_INCORRECT_DIMENSIONS` abgelehnt; 1242×2208 wurde
+  angenommen. Welche gilt, steht nirgends verbindlich — also der Reihe nach
+  durchprobieren und die siegreiche Größe für die übrigen Käufe merken.
+- **Bild lieber ergänzen als vergrößern.** Hochskalieren macht die Schrift
+  matschig; ein breiterer Rand in der Eckfarbe des Bildes lässt es in Ruhe.
+- **Beziehungsnamen sind nicht durchgängig abgekürzt.** `iapPriceSchedule`
+  funktioniert, `iapAvailability` gibt es nicht — sie heißt
+  `inAppPurchaseAvailability`. Mit dem falschen Namen sah das Skript 404, hielt
+  die Verfügbarkeit für ungesetzt, legte sie bei **jedem** Lauf neu an und
+  meldete jedes Mal Erfolg.
+- **Store-Text ist eine andere Textsorte als App-Text.** 30 Zeichen für den
+  Anzeigenamen, 45 für die Beschreibung. Der Anzeigename ist zugleich Suchfeld —
+  beim Kürzen bleiben die Wörter stehen, nach denen jemand sucht.
+- **Die Produkt-Kennung ist das einzig Unveränderliche.** Ein umbenannter Kauf
+  ist für jeden Käufer ein verlorener Kauf. Deshalb kommt sie im Skript aus
+  derselben Regel wie in der App, nie aus einer abgetippten Liste.
+- **Ein neu angelegter Kauf ist ein Entwurf**, kein Verkaufsangebot: in der
+  Sandbox sichtbar und dort kostenlos, verkauft wird er erst mit der
+  Einreichung der App.
+- **Vertrag für bezahlte Apps.** Steht auch nur eine Zeile unter „Geschäftlich"
+  — Kontaktangaben, Bankverbindung, Steuerangaben — nicht auf „Aktiv", liefert
+  StoreKit nach allem, was wir sehen, nichts aus. *Bei uns noch nicht bewiesen:
+  Es ist der letzte verbliebene Kandidat, nachdem alle fünf Käufe auf
+  `READY_TO_SUBMIT` standen und die Kaufseite trotzdem leer blieb.* Wer das
+  Gegenteil misst, korrigiert diese Zeile.
+
+---
+
+## 6. Die zwei Fehlerklassen, die immer wiederkommen
+
+### „Vorhanden" ist nicht „wirkt"
+
+Dreimal an einem einzigen Tag, jedes Mal in anderer Verkleidung:
+
+1. Das Nachlesen der Berechtigungen gab bei einer **Fehlantwort** eine leere
+   Menge zurück — und leer heißt für den Aufrufer „nichts eingeschaltet".
+   „Konnte ich nicht lesen" und „ist nicht da" sahen gleich aus.
+2. Bei den Käufen habe ich die **Existenz** geprüft, nicht den Zustand. Alle
+   fünf standen in der Liste und keiner wurde ausgeliefert.
+3. Das Prüfbild **existiert**, sobald es reserviert ist. Ob die Bytes ankamen
+   und die Maße gelten, sagt `assetDeliveryState` — ein Bild in `FAILED` ist
+   vorhanden und zählt trotzdem nicht.
+
+> **Jedes Nachlesen muss zwei Fragen stellen: Ist es da, und wirkt es?** Und
+> zwei Sachverhalte gehören nie unter einen Wert.
+
+Dieselbe Regel greift beim Signieren: Erst wenn die App-ID **noch einmal
+abgefragt** wurde und alles steht, darf der Bau die Berechtigungsdateien
+anziehen. Ein Bau, der auf einer Vermutung signiert, scheitert zwanzig Minuten
+später an einer Meldung, die den Grund nicht nennt.
+
+### Zwei Zeitausschnitte, die einander nicht decken
+
+Bisher entstand **jeder** gefundene Rechenfehler dadurch, dass ein Zeitraum,
+den die Daten abdecken, gegen einen verglichen wurde, den sie nicht abdecken —
+in fünf Verkleidungen: Hochrechnung, Vorjahresvergleich, Plausibilitätsprüfung,
+Tabellensummen, Abschlagssaldo.
+
+> Beide Seiten müssen denselben Zeitausschnitt beschreiben — und bei saisonalen
+> Daten denselben Ausschnitt des Jahres.
+
+Der Zwilling davon in der Oberfläche: **zwei verschiedene Register unter einer
+Beschriftung.** Ein Oberflächentest fiel, weil der neueste Wert die Einspeisung
+war und die Karte zu Recht unverändert blieb.
+
+---
+
+## 7. Wie ermittelt wird, wenn etwas nicht geht
+
+**Der Fehlschlag ist die Auskunft.** Der Reflex, aus einer Meldung eine
+Erklärung zu bauen und danach zu handeln, hat mehr gekostet als das Lesen.
+
+**Ein schneller Fehlschlag ist billig.** Die Läufe scheiterten nach 80 bis 130
+Sekunden. Bei dieser Länge lohnt es, zu probieren statt zu grübeln — und genau
+deshalb gehört die Zugangsprüfung nach vorn.
+
+**Beim zweiten Danebengreifen wird instrumentiert, nicht weitergeraten.** Nach
+zwei falschen Vermutungen zu `MISSING_METADATA` habe ich eine Diagnose
+geschrieben, die **alles** ausgibt, was Apple über einen Kauf führt: jedes
+Attribut und zu jeder Beziehung, ob sie existiert und mit welcher Antwort. Der
+genaue Fehlercode stand danach in **einem** Lauf da. Dasselbe hat bei einem
+roten Oberflächentest der halbe Zugänglichkeitsbaum geleistet.
+
+**Zwei rote Läufe mit derselben Meldung sind kein Fortschritt.** Beim zweiten
+Mal derselben Diagnose liegt die Ursache nicht im Code — dann melden statt
+basteln. Bei uns fehlte der App-Eintrag, und den kann kein Skript anlegen.
+
+**Eine plausible Erklärung ist keine gemessene.** Ein Test fiel zweimal mit
+„Knopf fehlt". Die erste Erklärung war „zu kurz gewartet", alle Wartezeiten
+wurden verdoppelt. Beim zweiten Mal sagten die Zeitstempel, die schon im
+**ersten** Protokoll standen, etwas anderes: Der Start dauerte vierzehn
+Sekunden, der Tipp fiel in dieses Fenster und ging verloren. Der Knopf war nie
+langsam, er war auf einem anderen Schirm.
+
+> **Eine Bedienhandlung, deren Wirkung nicht nachgeprüft wird, ist eine
+> Annahme.** Wo ein Test etwas antippt, gehört die Gegenprobe daneben — an
+> einem Merkmal, das der Tipp selbst nicht schon erfüllt.
+
+**Eine Prüfung, die grundlos anschlägt, ist schlechter als keine.** Die Suche
+nach einem deutschen Anführungszeichen mit geradem Schlusszeichen fand 24
+Stellen, von denen keine einzige schadete — in einem Kommentar ist das Zeichen
+harmlos. Die richtige Prüfung testet nicht das Zeichen, sondern die **Folge**:
+Python übersetzen, YAML laden, jeden `run:`-Block durch `bash -n`. Wer den
+Kommentar nicht ausblendet, baut eine Prüfung, die ignoriert wird.
+
+**Was sich nicht setzen lässt, bringt den Lauf nicht zu Fall.** Es wandert in
+eine Liste zum Anklicken, mit Adresse dazu, und der Bau fährt mit dem Rückfall
+weiter. Voraussetzung: Der Code muss den Ausfall aushalten — bei uns in drei
+Stufen, und die **mittlere** ist die wichtige. Ohne sie fiele der Simulator auf
+einen flüchtigen Speicher zurück und jede Oberflächenprüfung wäre rot, ohne
+dass irgendwo der Grund stünde.
+
+**Ein Arbeitsverzeichnis auf einem veralteten Zweig sieht vollständig aus.**
+Eine Sitzung hat zwei Versionen alten Code vollständig geprüft, grün gemeldet
+und für den aktuellen Stand gehalten. Deshalb: **zuerst holen**, dann Zweig und
+Version nennen, dann loslaufen.
+
+---
+
+## 8. Wann etwas fertig ist
+
+**Fertig heißt: beim Nutzer.** Nicht gepusht, nicht zusammengeführt — bei uns:
+ein Bau verarbeitet in TestFlight, belegt mit `Bau N: VALID` aus dem Protokoll,
+nicht mit einer Vermutung.
+
+Nach jedem Push und jedem angestoßenen Lauf:
+
+1. **Nachschau planen**, bevor der Zug endet. Nie auf eine Erinnerung warten,
+   nie mit `sleep` blockieren.
+2. **Grün** → zusammenführen, Auslieferung anstoßen, Zeile im
+   Auslieferungsprotokoll nachtragen, zusammengeführte Arbeitszweige löschen,
+   Ergebnis melden.
+3. **Rot** → Begründung aus dem Protokoll holen, einordnen (Prüf- oder
+   Produktfehler), **beheben** und von vorn. Melden, was los war, statt auf
+   eine Freigabe zu warten.
+4. **Noch offen** → nächste Nachschau planen und **nichts** melden. Eine
+   Zwischenmeldung ohne Ergebnis ist eine Störung.
+
+**Nicht jede Version geht den ganzen Weg.** Was nur Dokumente, Prüfskripte oder
+den Prototyp anfasst, endet im Hauptzweig. Alles, was am Bau etwas ändert, geht
+bis aufs Gerät. Mehrere Versionen dürfen in **einem** Bau zusammenkommen; jeder
+Bau kostet einen gemieteten Mac und eine Nummer, die verbraucht ist.
+
+**Nie pushen, solange ein Prüflauf auf demselben Zweig läuft.** Fertige Arbeit
+wartet, bis der Lauf durch ist.
+
+---
+
+## 9. Diese Datei fortführen
+
+Am Ende einer Runde, in der etwas Neues teuer war, gehört der Befund hierher —
+**im selben Commit wie die Änderung**, nicht in einem Folgeticket.
+
+Was hier hineingehört:
+
+- Ein Befund, der einen Lauf, einen Bau oder mehr als eine Stunde gekostet hat.
+- Eine Vermutung, die falsch war, samt dem, was stattdessen zutraf.
+- Eine gemessene Antwort von einer fremden Schnittstelle — auch ein 404.
+- Eine Regel, die aus einem Fehler entstanden ist, der sich wiederholen kann.
+
+Was nicht hineingehört: was in einer Anleitung steht und beim ersten Versuch
+funktioniert hat.
+
+**Beim Eintragen gelten dieselben Regeln wie für alle Dokumente hier:** die
+Zahl gemessen oder gekennzeichnet, die falsche Vermutung mit aufgeschrieben,
+und der Satz sagt, was zu tun ist — nicht nur, was war.
+
+**Und wenn eine Zeile hier widerlegt wird, wird sie geändert, nicht ergänzt.**
+Zwei Stände derselben Auskunft nebeneinander sind schlimmer als keine.
