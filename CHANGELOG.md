@@ -9,6 +9,95 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.85.0 — 2026-08-27
+
+### Hinzugefügt
+- **`scripts/neues-projekt.sh --einrichten`** — einmal je Rechner, danach ist
+  bei einem neuen Vorhaben nichts mehr zu tun. Verlangt hatte der Gründer, dass
+  der Baukasten automatisch gilt, „ohne manuelles Tun". Ein Aufruf setzt drei
+  Dinge, und jedes deckt eine Lücke der anderen zwei:
+  - den **Verweis** unter `~/.claude/skills` — gilt in jedem Projekt auf diesem
+    Rechner;
+  - einen Block in **`~/.claude/CLAUDE.md`** — diese Datei wird in *jeder*
+    Sitzung gelesen, auch in der ersten Minute eines leeren Ordners, also genau
+    dann, wenn noch nichts dasteht, was eine Skill auslösen könnte. Darin die
+    Anweisung, in einem Projekt ohne `pruefen.sh` oder `CLAUDE.md` zuerst das
+    Gerüst aufzusetzen;
+  - die Funktion **`neu`** in der Shell, damit „neues Projekt" nicht heißt, an
+    ein Skript in einem fremden Repository zu denken. `neu wasserwacht` legt
+    den Ordner an, setzt das Gerüst auf, springt hinein und startet Claude.
+- Beide Blöcke stehen zwischen Marken und werden bei einem zweiten Durchlauf
+  **ersetzt**, nicht angehängt. Sonst trüge eine `.zshrc` nach vier
+  Einrichtungen vier Fassungen derselben Funktion.
+
+### Behoben
+- Ein Backtick im Kommentar eines Here-Dokuments, das in einer
+  Kommandoersetzung steht, wird trotz Rückstrich ein zweites Mal ausgewertet
+  und reißt alles bis zum nächsten Backtick mit hinein. Die Fehlermeldung zeigte
+  auf eine Zeile weit unterhalb der Ursache. Steht als zweiter Beleg in
+  Abschnitt 7 des Baukastens: **erzeugter Code hat zwei Lagen Anführung, und
+  die zweite sieht man nicht.**
+- `neu` gab einen Fehlschlag zurück, wenn auf dem Rechner kein `claude` liegt —
+  obwohl das Projekt vollständig dastand.
+
+---
+
+## 0.84.0 — 2026-08-27
+
+### Hinzugefügt
+- **`scripts/neues-projekt.sh`** — der Baukasten kommt von selbst in ein neues
+  Vorhaben, statt von Hand kopiert zu werden. Gefragt hatte der Gründer, ob
+  sich das nicht automatisiert an jeden Projektstart hängen lässt.
+  - `--ueberall` legt einen **Verweis** unter `~/.claude/skills` an. Damit gilt
+    der Baukasten in jedem Projekt auf diesem Rechner, sofort und ohne
+    Neustart. Ein Verweis und keine Kopie, weil eine Kopie am Tag der
+    Erstellung richtig wäre und danach still veraltet.
+  - `<ordner> <name>` setzt ein Projekt auf: die drei Skills, `melden.sh`,
+    `publish-shots.sh` und der Push-Haken unverändert, dazu ein Gerüst für
+    `pruefen.sh`, ein Arbeitsablauf mit getrennter Nebenläufigkeit je Auftrag,
+    `CLAUDE.md`, `CHANGELOG.md` und die Übergabe-Vorlage. Vorhandene Dateien
+    werden nie überschrieben, sondern benannt und übersprungen.
+  - `--trocken` zeigt nur, was geschähe, und legt nichts an.
+- **Abschnitt 0 im Baukasten:** wo Claude Code Skills sucht und was daraus
+  folgt. Gemessen an der Dokumentation, nicht vermutet: `~/.claude/skills` gilt
+  für alle Projekte auf einem Rechner, `<projekt>/.claude/skills` für das
+  Repository — und **nur das Zweite erreicht eine Cloud-Sitzung.** Der Verweis
+  im Heimverzeichnis nützt am Mac und nirgends sonst.
+
+### Behoben
+- Das Gerüst setzte das Ausführbit in der Kopierphase, in der die erzeugten
+  Dateien noch gar nicht existierten. Das neue Projekt scheiterte beim
+  allerersten Aufruf mit „Permission denied" — beim Lesen sah das Skript
+  richtig aus, ein Durchlauf in einen Wegwerfordner hat es in zehn Sekunden
+  gezeigt. Steht als Lehre in Abschnitt 7 des Baukastens: **Ein Skript, das
+  etwas erzeugt, wird ausgeführt, nicht gelesen.**
+
+---
+
+## 0.83.0 — 2026-08-27
+
+### Hinzugefügt
+- **Der Baukasten:** `.claude/skills/projekt-baukasten/SKILL.md` sammelt das
+  gesamte Vorgehen in einer Datei — wie ein Projekt aufgebaut, dokumentiert und
+  konzipiert wird, wie ohne Mac über einen macOS-Läufer bis in TestFlight
+  ausgeliefert wird, was Apples Schnittstelle bei Berechtigungen und Käufen
+  wirklich beantwortet, welche zwei Fehlerklassen immer wiederkommen und wie
+  ermittelt wird, wenn etwas nicht geht. Vom Gründer verlangt: das Gelernte
+  soll in anderen Sitzungen zur Verfügung stehen, statt jedes Mal neu
+  herausgefunden zu werden. Die Datei ist deshalb in sich geschlossen und gilt
+  auch ohne dieses Repo.
+- **Regel 1c in `CLAUDE.md`:** Was einen Lauf, einen Bau oder mehr als eine
+  Stunde gekostet hat, wird im Baukasten nachgetragen — im selben Commit wie
+  die Änderung, ohne Aufforderung. Auch die Vermutung, die falsch war.
+
+### Geändert
+- Die Kette der In-App-Käufe steht jetzt an **einer** Stelle. `docs/12` und
+  `docs/08` verweisen darauf, statt sie ein zweites Mal zu erzählen. Zwei
+  Stände derselben Auskunft sind schlimmer als einer — dieselbe Regel, nach der
+  Prototyp und Rechenkern nicht auseinanderlaufen dürfen.
+
+---
+
 ## 0.82.5 — 2026-08-26
 
 **Apple hat den Grund genannt: `IMAGE_INCORRECT_DIMENSIONS`.**

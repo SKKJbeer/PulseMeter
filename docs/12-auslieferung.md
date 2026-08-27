@@ -209,6 +209,19 @@ Vier getrennte Dinge, und jedes einzelne hält den Bau unsichtbar:
    Das war bei uns der letzte Stolperstein.
 4. Den **Bau der Gruppe zuweisen**.
 
+### 3.7 Die Käufe stehen im Baukasten
+
+Am 26. August kam die Kette der In-App-Käufe dazu: anlegen, beschriften,
+bepreisen, verfügbar machen, Prüfbild hochladen — und die fünf Befunde, die das
+gekostet hat, vom Zustand `MISSING_METADATA` über den Beziehungsnamen
+`inAppPurchaseAvailability` bis zu den Bildmaßen.
+
+Sie stehen **nicht hier**, sondern in
+[`.claude/skills/projekt-baukasten/SKILL.md`](../.claude/skills/projekt-baukasten/SKILL.md),
+Abschnitt 5. Diese Datei beschreibt einen Bau; der Baukasten ist die
+übertragbare Fassung und lässt sich in ein anderes Projekt kopieren. Zwei
+Stände derselben Auskunft wären schlimmer als einer.
+
 ---
 
 ## 4. Was wann in TestFlight lag

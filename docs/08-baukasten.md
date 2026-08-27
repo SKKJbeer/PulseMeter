@@ -13,6 +13,12 @@ ausgetauscht werden muss.
 > wie geprüft wird; dort, wie ausgeliefert wird — ohne Mac, über einen
 > macOS-Läufer. Beide sind unabhängig voneinander übertragbar.
 
+> **Die Kurzfassung von beidem in einer Datei:**
+> [`.claude/skills/projekt-baukasten/SKILL.md`](../.claude/skills/projekt-baukasten/SKILL.md).
+> Sie ist in sich geschlossen, gilt auch ohne dieses Repo und wird bei jeder
+> teuren Erkenntnis fortgeschrieben. Wer etwas in ein neues Projekt mitnehmen
+> will, nimmt sie.
+
 ---
 
 ## Die vier Ideen dahinter
@@ -104,6 +110,19 @@ erfüllt.
 ---
 
 ## In zehn Schritten übertragen
+
+Die Schritte 1, 5, 6, 8, 9 und 10 macht seit 0.84.0 ein Aufruf, und seit
+0.85.0 richtet `--einrichten` den Rechner einmal so ein, dass `neu <name>`
+genügt:
+
+```bash
+scripts/neues-projekt.sh --einrichten    # einmal je Rechner
+neu wasserwacht                          # ab dann fängt jedes Vorhaben so an
+```
+
+Von Hand bleiben 2, 3, 4 und 7 — die vier, die wissen müssen, was das Projekt
+eigentlich tut. Die Liste steht trotzdem vollständig hier, weil sie erklärt,
+**warum** das Skript tut, was es tut.
 
 1. `scripts/`, `.githooks/`, `.claude/` und `.github/workflows/ci.yml` kopieren.
 2. In `pruefen.sh` die Schritte austauschen: Was ist die schnelle Prüfung, was

@@ -59,6 +59,30 @@ jede Änderung wird getestet — ohne dass der Nutzer danach fragt. Der Ablauf
 steht in `.claude/skills/release-discipline/SKILL.md` und gilt auch für kleine
 Änderungen.
 
+## Regel 1c — Teuer Gelerntes kommt in den Baukasten
+
+`.claude/skills/projekt-baukasten/SKILL.md` ist die eine Datei, die das
+gesammelte Vorgehen trägt: Aufbau, Dokumentation, Konzeptarbeit, Auslieferung
+über einen macOS-Läufer, die Schnittstelle von Apple samt Berechtigungen und
+Käufen, die wiederkehrenden Fehlerklassen und die Art zu ermitteln, wenn etwas
+nicht geht. Sie ist absichtlich in sich geschlossen und lässt sich in ein
+anderes Projekt kopieren.
+
+**Was einen Lauf, einen Bau oder mehr als eine Stunde gekostet hat, wird dort
+nachgetragen — im selben Commit wie die Änderung**, ohne dass der Nutzer danach
+fragt. Auch die Vermutung, die falsch war. Wird eine Zeile widerlegt, wird sie
+geändert, nicht ergänzt.
+
+In ein anderes Vorhaben kommt sie über `scripts/neues-projekt.sh --einrichten`.
+Das läuft **einmal** auf einem Rechner und setzt drei Dinge: den Verweis unter
+`~/.claude/skills`, eine Regel in `~/.claude/CLAUDE.md` — die wird in jeder
+Sitzung gelesen, auch im leeren Ordner — und die Funktion `neu` in der Shell.
+Danach fängt ein Vorhaben mit `neu <name>` an, und das Gerüst steht.
+
+Eine Cloud-Sitzung liest `~/.claude` **nicht**. Sie sieht nur das geklonte
+Repository — dort liegt der Baukasten dann aber schon, weil das Aufsetzen ihn
+hineinschreibt.
+
 ## Regel 2 — Der Prototyp rechnet echt
 
 Der Klick-Dummy enthält eine verkürzte Fassung von `PulseCore` in JavaScript.
