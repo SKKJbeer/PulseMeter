@@ -9,6 +9,135 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.82.5 — 2026-08-26
+
+**Apple hat den Grund genannt: `IMAGE_INCORRECT_DIMENSIONS`.**
+
+Damit endet die Suche. Das Prüfbild lag auf `FAILED`, und der Code sagt warum:
+640 × 1000 ist **größer** als das dokumentierte Mindestmaß und trotzdem falsch.
+Apple nimmt keine Mindestgröße, sondern eine Liste echter iPhone-Auflösungen.
+
+Welche davon für ein Prüfbild gilt, steht nirgends verbindlich. Also entscheidet
+das Skript es nicht mehr: Es legt das Bild in sechs Gerätemaßen an, lädt hoch,
+wartet auf Apples Urteil und behält das erste, das angenommen wird. Angenommen
+wurde **1242 × 2208**; dasselbe Maß gilt dann für die übrigen vier Käufe.
+
+Danach stehen alle fünf auf `READY_TO_SUBMIT` und werden von StoreKit
+ausgeliefert.
+
+---
+
+## 0.82.4 — 2026-08-26
+
+**Zwei Namen für eine Beziehung, und hochgeladen ist nicht angenommen.**
+
+Die Diagnose aus 0.82.3 lieferte zwei Befunde.
+
+`iapAvailability` kam mit 404 zurück, während `iapPriceSchedule` sich lesen
+lässt. Die Abkürzung gibt es für die Verfügbarkeit nicht — sie heißt
+`inAppPurchaseAvailability`. Mit dem falschen Namen hielt das Skript sie für
+ungesetzt, legte sie bei jedem Lauf neu an und meldete jedes Mal Erfolg.
+
+Und das Prüfbild: Die Datei existiert, sobald sie angemeldet ist — mehr hatte
+die alte Prüfung nicht gefragt. Ob die Bytes ankamen und die Maße gültig sind,
+steht in `assetDeliveryState`. Ein Bild in `FAILED` ist da und zählt trotzdem
+nicht.
+
+Drittes Mal an einem Tag, dass „ist da" für „funktioniert" genommen wurde.
+Beide Nachlesungen stellen jetzt die zweite Frage.
+
+---
+
+## 0.82.3 — 2026-08-26
+
+**Apple nennt das fehlende Feld nicht, also werden alle aufgeschrieben.**
+
+Das Prüfbild lag bei allen fünf Käufen, der Zustand stand unverändert auf
+`MISSING_METADATA`. Das war die zweite Vermutung nach der Vereinbarung für
+bezahlte Apps, und sie war ebenso falsch.
+
+Apples Schnittstelle nennt einen Zustand, nie das Feld dahinter. Das Skript
+schreibt deshalb alles aus, was es über den ersten nicht lieferbaren Kauf
+führt — jedes Merkmal, und zu jeder Beziehung, ob sie existiert und mit welcher
+Antwort. Die Lücke wird aus dem Vergleich sichtbar statt aus einem Bauchgefühl.
+
+---
+
+## 0.82.2 — 2026-08-26
+
+**Das Prüfbild, hochgeladen über die Schnittstelle.**
+
+Apple will zu jedem Kauf ein Bildschirmfoto sehen, das zeigt, wo im Programm er
+vorkommt. Das Skript lädt es jetzt hoch, in den drei Zügen, die Apple verlangt:
+Platz reservieren, Bytes an die genannte Adresse schicken, Vollzug mit
+Prüfsumme melden.
+
+Das Bild ist die Kaufseite aus dem letzten CI-Lauf, aus dem Zweig
+`screenshots` — ein neues zu erzeugen bräuchte einen Simulator und damit einen
+Mac.
+
+---
+
+## 0.82.1 — 2026-08-26
+
+**Die Existenz nachzulesen ist nicht dasselbe wie den Zustand nachzulesen.**
+
+Vom Gerät gemeldet: „ne kann nichts kaufen im TestFlight."
+
+Alle fünf Käufe waren angelegt und standen in der Liste — das Nachlesen sagte
+es, und es beantwortete die falsche Frage. StoreKit liefert einen Kauf nur in
+bestimmten Zuständen aus; `MISSING_METADATA` heißt, Apple wartet noch auf
+etwas, und die App bekommt das Produkt nie zu sehen.
+
+Dasselbe Muster wie bei den Berechtigungen in 0.79.1. Das Nachlesen meldet
+jetzt den Zustand jedes Kaufs und sagt ausdrücklich, wenn StoreKit ihn nicht
+ausliefert.
+
+---
+
+## 0.82.0 — 2026-08-26
+
+**Die fünf Käufe legt jetzt ein Lauf an, nicht die Hand.**
+
+Vom Gründer verlangt: „kannst du das nicht für mich alles über eine API oder
+ähnliches anlegen?"
+
+`scripts/asc-kaeufe.py` spricht dieselbe Schnittstelle an, über die schon
+Zertifikat, Profile und die Häkchen an der App-ID laufen. Je Kauf vier Schritte:
+anlegen, deutsche Beschriftung, Preis, Verfügbarkeit.
+
+**Der Grund, es nicht abtippen zu lassen, ist die Produkt-ID.** Sie ist das
+Einzige an einem Kauf, das für immer feststeht — ein umbenannter Kauf ist für
+jeden Käufer ein verlorener Kauf. Im Skript kommt sie aus derselben Regel wie in
+der App: `de.karjoth.pulsemeter.` plus dem Namen in Kleinbuchstaben. Ein
+Tippfehler kann dort nicht entstehen.
+
+**Was dabei entsteht, ist ein Entwurf und nichts Verkauftes.** Ein neu
+angelegter Kauf steht auf „Bereit zum Senden": sichtbar in der Sandbox und damit
+in jedem TestFlight-Bau, dort kostenlos. Verkauft wird erst mit der Einreichung
+der App. Preise, Namen und Beschreibungen lassen sich jederzeit ändern.
+
+Zwei Dinge, die beim Schreiben aufgefallen sind:
+
+- **Store-Texte sind eine andere Textsorte als App-Texte.** Apple lässt 30
+  Zeichen für den Anzeigenamen und 45 für die Beschreibung; die Sätze aus
+  `ProductID.explanation` sind länger. Also eigene, kurze Fassungen — und aus
+  „Tag- und Nachtstrom, Einspeisung" (32) wird „Nachtstrom und Einspeisung":
+  Der Anzeigename ist zugleich ein Suchfeld (10-sichtbarkeit.md), und die beiden
+  Wörter, nach denen jemand sucht, bleiben stehen.
+- **Der Zeichenketten-Prüfer hat den ersten Entwurf angehalten.** Ein deutsches
+  Anführungszeichen, mit einem geraden geschlossen, mitten in einer f-Zeichenkette
+  — genau die Fehlerklasse, für die es ihn seit 0.60.2 gibt. Vierter Treffer.
+
+Wie bei den Berechtigungen gilt: Der Lauf bricht nie ab, jeder Schritt wird
+einzeln benannt, und am Ende wird nachgelesen statt geglaubt — eine 201 sagt,
+dass Apple die Anfrage angenommen hat, nicht dass der Kauf danach in der Sandbox
+steht.
+
+Der Ablauf heißt jetzt „Einrichtung bei Apple" und trägt beides.
+
+---
+
 ## 0.81.2 — 2026-08-26
 
 **Bau 20 steht in TestFlight.**

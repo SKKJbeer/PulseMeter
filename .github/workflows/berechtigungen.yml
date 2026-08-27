@@ -1,4 +1,4 @@
-name: Berechtigungen
+name: Einrichtung bei Apple
 
 # **Warum das einen eigenen Ablauf hat.**
 #
@@ -21,17 +21,48 @@ permissions:
   contents: read
 
 jobs:
-  freischalten:
+  einrichten:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+
+      - name: Abhängigkeiten
+        run: pip3 install --quiet "pyjwt[crypto]" requests pillow
 
       - name: Berechtigungen freischalten und nachlesen
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: python3 scripts/asc-berechtigungen.py
+
+      # **Das Prüfbild kommt aus dem Zweig `screenshots`.**
+      #
+      # Apple will zu jedem Kauf ein Bildschirmfoto sehen, das zeigt, wo im
+      # Programm er vorkommt — und ohne dieses eine Feld bleibt der Kauf auf
+      # `MISSING_METADATA` und wird von StoreKit nicht ausgeliefert, auch nicht
+      # in der Sandbox. Genau daran hing „ne kann nichts kaufen im TestFlight".
+      #
+      # Das Bild ist die Kaufseite aus dem letzten CI-Lauf. Es neu zu erzeugen
+      # bräuchte einen Simulator und damit einen Mac; hier liegt es schon.
+      - name: Bild der Kaufseite holen
         run: |
-          pip3 install --quiet "pyjwt[crypto]" requests
-          python3 scripts/asc-berechtigungen.py
+          git fetch --depth 1 origin screenshots
+          mkdir -p build
+          git show origin/screenshots:screenshot-pro-light.jpg > build/kaufseite.jpg
+          ls -l build/kaufseite.jpg
+
+      # **Die fünf Käufe.** Vom Gründer verlangt: „kannst du das nicht für mich
+      # alles über eine API oder ähnliches anlegen?"
+      #
+      # Was hier entsteht, ist ein Entwurf: „Bereit zum Senden", sichtbar in der
+      # Sandbox und damit in jedem TestFlight-Bau, dort kostenlos. Verkauft wird
+      # erst mit der Einreichung der App.
+      - name: Käufe anlegen und nachlesen
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+          PULSE_KAUFBILD: build/kaufseite.jpg
+        run: python3 scripts/asc-kaeufe.py
