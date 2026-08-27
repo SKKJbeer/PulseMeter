@@ -73,6 +73,12 @@ nachgetragen — im selben Commit wie die Änderung**, ohne dass der Nutzer dana
 fragt. Auch die Vermutung, die falsch war. Wird eine Zeile widerlegt, wird sie
 geändert, nicht ergänzt.
 
+In ein anderes Vorhaben kommt sie über `scripts/neues-projekt.sh`:
+`--ueberall` legt einen Verweis unter `~/.claude/skills` an und gilt damit in
+jedem Projekt auf diesem Rechner, `<ordner> <name>` setzt ein neues Projekt mit
+dem ganzen Gerüst auf. Eine Cloud-Sitzung liest `~/.claude/skills` **nicht** —
+sie sieht nur, was im geklonten Repository liegt.
+
 ## Regel 2 — Der Prototyp rechnet echt
 
 Der Klick-Dummy enthält eine verkürzte Fassung von `PulseCore` in JavaScript.

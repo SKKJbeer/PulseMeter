@@ -111,6 +111,17 @@ erfüllt.
 
 ## In zehn Schritten übertragen
 
+Die Schritte 1, 5, 6, 8, 9 und 10 macht seit 0.84.0 ein Aufruf:
+
+```bash
+scripts/neues-projekt.sh ~/Code/neues-vorhaben Name
+scripts/neues-projekt.sh --ueberall      # nur der Baukasten, für alle Projekte hier
+```
+
+Von Hand bleiben 2, 3, 4 und 7 — die vier, die wissen müssen, was das Projekt
+eigentlich tut. Die Liste steht trotzdem vollständig hier, weil sie erklärt,
+**warum** das Skript tut, was es tut.
+
 1. `scripts/`, `.githooks/`, `.claude/` und `.github/workflows/ci.yml` kopieren.
 2. In `pruefen.sh` die Schritte austauschen: Was ist die schnelle Prüfung, was
    die teure? **Nach Kosten sortieren, nicht nach Wichtigkeit** — was in einer

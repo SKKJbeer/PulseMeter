@@ -23,6 +23,49 @@ jemand danach fragt. Der Abschnitt ganz unten sagt, wie.
 
 ---
 
+## 0. Wie diese Datei in ein neues Projekt kommt
+
+Von Hand kopieren funktioniert genau einmal und dann nie wieder. Deshalb gibt
+es `scripts/neues-projekt.sh`.
+
+```bash
+scripts/neues-projekt.sh --ueberall        # dieser Rechner, alle Projekte
+scripts/neues-projekt.sh ~/Code/neu Name   # ein neues Projekt aufsetzen
+```
+
+**Zwei Wege, weil es zwei Orte gibt.** Gemessen an der Dokumentation von
+Claude Code:
+
+| Ort | Pfad | Wo es gilt |
+|---|---|---|
+| Persönlich | `~/.claude/skills/<name>/SKILL.md` | alle Projekte auf diesem Rechner |
+| Projekt | `<projekt>/.claude/skills/<name>/SKILL.md` | dieses Repository — **auch in der Cloud** |
+| Plugin | `<plugin>/skills/<name>/SKILL.md` | wo das Plugin eingeschaltet ist |
+
+**Eine Cloud-Sitzung liest `~/.claude/skills` nicht.** Sie sieht nur, was im
+geklonten Repository liegt. Der Verweis im Heimverzeichnis nützt also am Mac
+und nirgends sonst — ein neues Repository braucht trotzdem seine eigene Kopie.
+Wer es ohne Kopie über alle Rechner will, packt die Skill in ein Plugin und
+deklariert es in `.claude/settings.json` des Repositories; solche Plugins
+werden beim Sitzungsstart installiert.
+
+`--ueberall` legt einen **Verweis** an, keine Kopie: Claude Code folgt an
+dieser Stelle einem Symlink. Eine Kopie wäre am Tag der Erstellung richtig und
+danach still veraltet — genau die Doppelung, gegen die diese Datei sonst
+argumentiert.
+
+Was das Aufsetzen mitbringt: die drei Skills, `melden.sh`, `publish-shots.sh`
+und den Push-Haken unverändert, dazu ein Gerüst für `pruefen.sh`, einen
+Arbeitsablauf mit getrennter Nebenläufigkeit je Auftrag, `CLAUDE.md`,
+`CHANGELOG.md` und die Übergabe-Vorlage. Vorhandene Dateien werden **nie**
+überschrieben, sondern benannt und übersprungen.
+
+Von Hand bleibt danach: die Schritte in `pruefen.sh`, die Produktprinzipien in
+`CLAUDE.md` — und bei einem iOS-Projekt die Abschnitte 4 und 5, **bevor** der
+erste Bau läuft.
+
+---
+
 ## 1. Wie ein Projekt aufgebaut wird
 
 ### Die vier Ideen
@@ -413,6 +456,12 @@ weiter. Voraussetzung: Der Code muss den Ausfall aushalten — bei uns in drei
 Stufen, und die **mittlere** ist die wichtige. Ohne sie fiele der Simulator auf
 einen flüchtigen Speicher zurück und jede Oberflächenprüfung wäre rot, ohne
 dass irgendwo der Grund stünde.
+
+**Ein Skript, das etwas erzeugt, wird ausgeführt, nicht gelesen.** Das Gerüst
+oben sah beim Lesen richtig aus und setzte das Ausführbit in der Kopierphase —
+da gab es die erzeugte Datei noch gar nicht. Das neue Projekt scheiterte beim
+allerersten Aufruf mit „Permission denied". Ein Durchlauf in einen Wegwerfordner
+hat es in zehn Sekunden gezeigt.
 
 **Ein Arbeitsverzeichnis auf einem veralteten Zweig sieht vollständig aus.**
 Eine Sitzung hat zwei Versionen alten Code vollständig geprüft, grün gemeldet

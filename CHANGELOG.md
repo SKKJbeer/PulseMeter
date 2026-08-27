@@ -9,6 +9,38 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.84.0 — 2026-08-27
+
+### Hinzugefügt
+- **`scripts/neues-projekt.sh`** — der Baukasten kommt von selbst in ein neues
+  Vorhaben, statt von Hand kopiert zu werden. Gefragt hatte der Gründer, ob
+  sich das nicht automatisiert an jeden Projektstart hängen lässt.
+  - `--ueberall` legt einen **Verweis** unter `~/.claude/skills` an. Damit gilt
+    der Baukasten in jedem Projekt auf diesem Rechner, sofort und ohne
+    Neustart. Ein Verweis und keine Kopie, weil eine Kopie am Tag der
+    Erstellung richtig wäre und danach still veraltet.
+  - `<ordner> <name>` setzt ein Projekt auf: die drei Skills, `melden.sh`,
+    `publish-shots.sh` und der Push-Haken unverändert, dazu ein Gerüst für
+    `pruefen.sh`, ein Arbeitsablauf mit getrennter Nebenläufigkeit je Auftrag,
+    `CLAUDE.md`, `CHANGELOG.md` und die Übergabe-Vorlage. Vorhandene Dateien
+    werden nie überschrieben, sondern benannt und übersprungen.
+  - `--trocken` zeigt nur, was geschähe, und legt nichts an.
+- **Abschnitt 0 im Baukasten:** wo Claude Code Skills sucht und was daraus
+  folgt. Gemessen an der Dokumentation, nicht vermutet: `~/.claude/skills` gilt
+  für alle Projekte auf einem Rechner, `<projekt>/.claude/skills` für das
+  Repository — und **nur das Zweite erreicht eine Cloud-Sitzung.** Der Verweis
+  im Heimverzeichnis nützt am Mac und nirgends sonst.
+
+### Behoben
+- Das Gerüst setzte das Ausführbit in der Kopierphase, in der die erzeugten
+  Dateien noch gar nicht existierten. Das neue Projekt scheiterte beim
+  allerersten Aufruf mit „Permission denied" — beim Lesen sah das Skript
+  richtig aus, ein Durchlauf in einen Wegwerfordner hat es in zehn Sekunden
+  gezeigt. Steht als Lehre in Abschnitt 7 des Baukastens: **Ein Skript, das
+  etwas erzeugt, wird ausgeführt, nicht gelesen.**
+
+---
+
 ## 0.83.0 — 2026-08-27
 
 ### Hinzugefügt
