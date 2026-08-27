@@ -111,11 +111,13 @@ erfüllt.
 
 ## In zehn Schritten übertragen
 
-Die Schritte 1, 5, 6, 8, 9 und 10 macht seit 0.84.0 ein Aufruf:
+Die Schritte 1, 5, 6, 8, 9 und 10 macht seit 0.84.0 ein Aufruf, und seit
+0.85.0 richtet `--einrichten` den Rechner einmal so ein, dass `neu <name>`
+genügt:
 
 ```bash
-scripts/neues-projekt.sh ~/Code/neues-vorhaben Name
-scripts/neues-projekt.sh --ueberall      # nur der Baukasten, für alle Projekte hier
+scripts/neues-projekt.sh --einrichten    # einmal je Rechner
+neu wasserwacht                          # ab dann fängt jedes Vorhaben so an
 ```
 
 Von Hand bleiben 2, 3, 4 und 7 — die vier, die wissen müssen, was das Projekt

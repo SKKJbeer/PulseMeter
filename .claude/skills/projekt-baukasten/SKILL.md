@@ -28,9 +28,39 @@ jemand danach fragt. Der Abschnitt ganz unten sagt, wie.
 Von Hand kopieren funktioniert genau einmal und dann nie wieder. Deshalb gibt
 es `scripts/neues-projekt.sh`.
 
+**Einmal auf dem Rechner, danach nie wieder:**
+
 ```bash
-scripts/neues-projekt.sh --ueberall        # dieser Rechner, alle Projekte
-scripts/neues-projekt.sh ~/Code/neu Name   # ein neues Projekt aufsetzen
+scripts/neues-projekt.sh --einrichten
+```
+
+Das setzt drei Dinge, und jedes deckt eine Lücke der beiden anderen:
+
+1. **Verweis** auf `~/.claude/skills/projekt-baukasten` — die Skill gilt in
+   jedem Projekt auf diesem Rechner.
+2. **Ein Block in `~/.claude/CLAUDE.md`** — diese Datei wird in *jeder* Sitzung
+   gelesen, auch in der ersten Minute eines leeren Ordners. Genau dann, wenn
+   noch nichts dasteht, was eine Skill auslösen könnte. Darin die Anweisung:
+   In einem Projekt ohne `scripts/pruefen.sh` oder ohne `CLAUDE.md` zuerst das
+   Gerüst aufsetzen.
+3. **Die Funktion `neu` in `~/.zshrc`** — damit „neues Projekt" nicht heißt, an
+   ein Skript in einem anderen Repository zu denken. Der Befehl, mit dem ein
+   Vorhaben anfängt, **ist** das Aufsetzen:
+
+```bash
+neu wasserwacht          # ~/Code/wasserwacht anlegen, Gerüst, hineinspringen, Claude
+```
+
+Alles drei ist wiederholbar: Die Blöcke stehen zwischen Marken und werden
+**ersetzt**, nicht angehängt. Sonst trüge eine `.zshrc` nach vier Einrichtungen
+vier Fassungen derselben Funktion.
+
+**Einzelne Teile, wenn nicht alles gewollt ist:**
+
+```bash
+scripts/neues-projekt.sh --ueberall        # nur der Verweis, ohne Shell
+scripts/neues-projekt.sh ~/Code/neu Name   # nur ein Projekt aufsetzen
+scripts/neues-projekt.sh --trocken …       # nur zeigen, was geschähe
 ```
 
 **Zwei Wege, weil es zwei Orte gibt.** Gemessen an der Dokumentation von
@@ -457,11 +487,19 @@ Stufen, und die **mittlere** ist die wichtige. Ohne sie fiele der Simulator auf
 einen flüchtigen Speicher zurück und jede Oberflächenprüfung wäre rot, ohne
 dass irgendwo der Grund stünde.
 
-**Ein Skript, das etwas erzeugt, wird ausgeführt, nicht gelesen.** Das Gerüst
-oben sah beim Lesen richtig aus und setzte das Ausführbit in der Kopierphase —
-da gab es die erzeugte Datei noch gar nicht. Das neue Projekt scheiterte beim
-allerersten Aufruf mit „Permission denied". Ein Durchlauf in einen Wegwerfordner
-hat es in zehn Sekunden gezeigt.
+**Ein Skript, das etwas erzeugt, wird ausgeführt, nicht gelesen.** Zweimal
+hintereinander bewiesen, beide Male in Sekunden durch einen Durchlauf in einen
+Wegwerfordner:
+
+- Das Gerüst setzte das Ausführbit in der Kopierphase — da gab es die erzeugte
+  Datei noch gar nicht. Das neue Projekt scheiterte beim allerersten Aufruf mit
+  „Permission denied".
+- **Erzeugter Code hat zwei Lagen Anführung, und die zweite sieht man nicht.**
+  Ein Backtick im Kommentar eines Here-Dokuments, das in einer
+  Kommandoersetzung steht, wird trotz Rückstrich noch einmal ausgewertet und
+  reißt alles bis zum nächsten Backtick mit hinein. Der Fehler zeigt auf eine
+  Zeile weit unterhalb der Ursache. Im erzeugten Text also keine Backticks —
+  und was erzeugt wurde, danach selbst durch `bash -n` schicken.
 
 **Ein Arbeitsverzeichnis auf einem veralteten Zweig sieht vollständig aus.**
 Eine Sitzung hat zwei Versionen alten Code vollständig geprüft, grün gemeldet

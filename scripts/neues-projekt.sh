@@ -18,9 +18,14 @@
 # den Mac, und ein neues Repository braucht trotzdem seine eigene Kopie.
 #
 # Aufruf:
-#   scripts/neues-projekt.sh --ueberall           Baukasten auf diesem Rechner
-#                                                 in jedem Projekt verfügbar machen
+#   scripts/neues-projekt.sh --einrichten         einmal auf diesem Rechner:
+#                                                 Verweis, Regel für jede Sitzung
+#                                                 und der Befehl `neu` in der Shell
+#   scripts/neues-projekt.sh --ueberall           nur der Verweis, ohne Shell
 #   scripts/neues-projekt.sh <ordner> [name]      neues Projekt aufsetzen
+#
+# Nach `--einrichten` fängt ein Vorhaben so an, und das ist alles:
+#   neu wasserwacht
 #
 # Schalter:
 #   --trocken     nur zeigen, was geschähe
@@ -38,11 +43,13 @@ titel(){ printf "\n%s▸ %s%s\n" "$BOLD" "$1" "$RESET"; }
 ZIEL=""
 NAME=""
 UEBERALL=0
+EINRICHTEN=0
 TROCKEN=0
 GIT=1
 
 while [ $# -gt 0 ]; do
   case "$1" in
+    --einrichten) EINRICHTEN=1 ;;
     --ueberall) UEBERALL=1 ;;
     --trocken)  TROCKEN=1 ;;
     --ohne-git) GIT=0 ;;
@@ -60,24 +67,124 @@ tu() {  # führt aus — oder sagt bei --trocken nur, was geschähe
 
 # ------------------------------------------------- Auf diesem Rechner überall
 
-if [ "$UEBERALL" = 1 ]; then
-  titel "Baukasten für jedes Projekt auf diesem Rechner"
-  HEIM="$HOME/.claude/skills"
-  LINK="$HEIM/projekt-baukasten"
+# Schreibt einen Block zwischen zwei Marken in eine Datei — legt sie an, wenn
+# es sie nicht gibt, und **ersetzt** den Block, wenn er schon dasteht. Anhängen
+# statt ersetzen wäre der Weg, auf dem eine Datei nach vier Einrichtungen vier
+# Fassungen derselben Regel trägt.
+block() {
+  local datei="$1" marke="$2" inhalt="$3"
+  local anfang="$marke:anfang" ende="$marke:ende"
+  if [ "$TROCKEN" = 1 ]; then
+    printf "  %s→ Block %s in %s%s\n" "$DIM" "$marke" "$datei" "$RESET"; return 0
+  fi
+  mkdir -p "$(dirname "$datei")"
+  [ -f "$datei" ] || : > "$datei"
+  if grep -q "$anfang" "$datei" 2>/dev/null; then
+    # Alten Block herausschneiden, ohne den Rest der Datei anzufassen.
+    awk -v a="$anfang" -v e="$ende" '
+      index($0,a) {drin=1} !drin {print} index($0,e) {drin=0}
+    ' "$datei" > "$datei.neu" && mv "$datei.neu" "$datei"
+  fi
+  printf '%s\n' "$inhalt" >> "$datei"
+  ok "$datei"
+}
 
+verweis() {
+  local heim="$HOME/.claude/skills" link="$HOME/.claude/skills/projekt-baukasten"
   # Ein **Verweis**, keine Kopie. Eine Kopie wäre am Tag der Erstellung richtig
   # und danach still veraltet — genau die Doppelung, gegen die der Baukasten
   # selbst argumentiert. Claude Code folgt einem Symlink an dieser Stelle.
-  if [ -e "$LINK" ] && [ ! -L "$LINK" ]; then
-    warn "$LINK gibt es schon und es ist kein Verweis — nichts angefasst."
-    exit 1
+  if [ -e "$link" ] && [ ! -L "$link" ]; then
+    warn "$link gibt es schon und es ist kein Verweis — nichts angefasst."
+    return 1
   fi
-  tu mkdir -p "$HEIM"
-  tu ln -sfn "$QUELLE/.claude/skills/projekt-baukasten" "$LINK"
-  ok "$LINK → $QUELLE/.claude/skills/projekt-baukasten"
+  tu mkdir -p "$heim"
+  tu ln -sfn "$QUELLE/.claude/skills/projekt-baukasten" "$link"
+  ok "$link → $QUELLE/.claude/skills/projekt-baukasten"
+}
+
+if [ "$UEBERALL" = 1 ] && [ "$EINRICHTEN" = 0 ]; then
+  titel "Baukasten für jedes Projekt auf diesem Rechner"
+  verweis || exit 1
   weg "Gilt in jedem Projekt auf diesem Rechner, sofort, ohne Neustart."
   weg "Gilt **nicht** in einer Cloud-Sitzung — die liest nur das geklonte Repo."
   weg "Für ein neues Repository: scripts/neues-projekt.sh <ordner>"
+  exit 0
+fi
+
+# ------------------------------------------------- Einmal, danach nie wieder
+
+if [ "$EINRICHTEN" = 1 ]; then
+  titel "Einrichtung — läuft einmal, danach ist nichts mehr zu tun"
+
+  verweis || exit 1
+
+  # **Warum zusätzlich `~/.claude/CLAUDE.md`.** Eine Skill wird geladen, wenn
+  # sie passt. Diese Datei wird in **jeder** Sitzung gelesen, auch in der
+  # allerersten Minute eines leeren Ordners — also genau dann, wenn noch nichts
+  # dasteht, was eine Skill auslösen könnte.
+  block "$HOME/.claude/CLAUDE.md" "<!-- baukasten" "$(cat <<HEIM
+<!-- baukasten:anfang -->
+## Vorgehen in jedem Projekt
+
+Das gesammelte Vorgehen steht in der Skill \`projekt-baukasten\`: Aufbau,
+Dokumentation, Konzeptarbeit, Prüfen, Ausliefern über einen macOS-Läufer, die
+Schnittstelle von Apple, die wiederkehrenden Fehlerklassen.
+
+**Beim Start in einem Projekt ohne \`scripts/pruefen.sh\` oder ohne
+\`CLAUDE.md\`:** das Gerüst aufsetzen, bevor die erste Zeile Code entsteht —
+\`$QUELLE/scripts/neues-projekt.sh <ordner> <name>\`. Danach die drei Dinge
+nachtragen, die das Skript nicht wissen kann: die Schritte in \`pruefen.sh\`,
+die Produktprinzipien in \`CLAUDE.md\`, und bei einem iOS-Projekt die Kennung
+**vor** dem ersten Bau.
+
+**Und was einen Lauf, einen Bau oder mehr als eine Stunde gekostet hat**, wird
+im Baukasten nachgetragen — im selben Commit wie die Änderung, ohne dass jemand
+danach fragt. Auch die Vermutung, die falsch war.
+<!-- baukasten:ende -->
+HEIM
+)"
+
+  # **Warum zusätzlich eine Funktion in der Shell.** Damit „neues Projekt"
+  # nicht heißt: an ein Skript in einem anderen Repository denken. Der Befehl,
+  # mit dem ein Vorhaben anfängt, **ist** das Aufsetzen.
+  for profil in "$HOME/.zshrc" "$HOME/.bashrc"; do
+    [ -f "$profil" ] || [ "$profil" = "$HOME/.zshrc" ] || continue
+    block "$profil" "# baukasten" "$(cat <<PROFIL
+# baukasten:anfang
+# Neues Vorhaben aufsetzen:  neu <name> [ordner]
+neu() {
+  [ -n "\${1:-}" ] || { echo "neu <name> [ordner]" >&2; return 2; }
+  local ziel="\${2:-\$HOME/Code/\$1}"
+  "$QUELLE/scripts/neues-projekt.sh" "\$ziel" "\$1" || return 1
+  cd "\$ziel" || return 1
+  # Ohne das oder-true gäbe die Funktion einen Fehlschlag zurück, nur weil auf
+  # diesem Rechner kein claude liegt — das Projekt steht dann trotzdem.
+  { command -v claude >/dev/null && claude; } || true
+}
+# baukasten:ende
+PROFIL
+)"
+  done
+
+  cat <<ENDE
+
+  Fertig. Ab jetzt gilt der Baukasten in jedem Projekt auf diesem Rechner.
+
+  Ein neues Vorhaben fängt so an — ein Wort, sonst nichts:
+
+      neu wasserwacht
+
+  Das legt ~/Code/wasserwacht an, setzt das Gerüst auf, springt hinein und
+  startet Claude. Ein anderer Ort: neu wasserwacht ~/woanders/hin
+
+  Einmal noch nötig: ein neues Terminalfenster, damit die Shell die Funktion
+  kennt. Oder jetzt sofort:  source ~/.zshrc
+
+  Was das **nicht** kann: Eine Cloud-Sitzung liest ~/.claude nicht. Sie sieht
+  nur das geklonte Repository — dort liegt der Baukasten dann aber schon, weil
+  das Aufsetzen ihn hineinschreibt. Einmal committen und pushen genügt.
+ENDE
   exit 0
 fi
 

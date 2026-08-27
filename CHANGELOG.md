@@ -9,6 +9,39 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.85.0 — 2026-08-27
+
+### Hinzugefügt
+- **`scripts/neues-projekt.sh --einrichten`** — einmal je Rechner, danach ist
+  bei einem neuen Vorhaben nichts mehr zu tun. Verlangt hatte der Gründer, dass
+  der Baukasten automatisch gilt, „ohne manuelles Tun". Ein Aufruf setzt drei
+  Dinge, und jedes deckt eine Lücke der anderen zwei:
+  - den **Verweis** unter `~/.claude/skills` — gilt in jedem Projekt auf diesem
+    Rechner;
+  - einen Block in **`~/.claude/CLAUDE.md`** — diese Datei wird in *jeder*
+    Sitzung gelesen, auch in der ersten Minute eines leeren Ordners, also genau
+    dann, wenn noch nichts dasteht, was eine Skill auslösen könnte. Darin die
+    Anweisung, in einem Projekt ohne `pruefen.sh` oder `CLAUDE.md` zuerst das
+    Gerüst aufzusetzen;
+  - die Funktion **`neu`** in der Shell, damit „neues Projekt" nicht heißt, an
+    ein Skript in einem fremden Repository zu denken. `neu wasserwacht` legt
+    den Ordner an, setzt das Gerüst auf, springt hinein und startet Claude.
+- Beide Blöcke stehen zwischen Marken und werden bei einem zweiten Durchlauf
+  **ersetzt**, nicht angehängt. Sonst trüge eine `.zshrc` nach vier
+  Einrichtungen vier Fassungen derselben Funktion.
+
+### Behoben
+- Ein Backtick im Kommentar eines Here-Dokuments, das in einer
+  Kommandoersetzung steht, wird trotz Rückstrich ein zweites Mal ausgewertet
+  und reißt alles bis zum nächsten Backtick mit hinein. Die Fehlermeldung zeigte
+  auf eine Zeile weit unterhalb der Ursache. Steht als zweiter Beleg in
+  Abschnitt 7 des Baukastens: **erzeugter Code hat zwei Lagen Anführung, und
+  die zweite sieht man nicht.**
+- `neu` gab einen Fehlschlag zurück, wenn auf dem Rechner kein `claude` liegt —
+  obwohl das Projekt vollständig dastand.
+
+---
+
 ## 0.84.0 — 2026-08-27
 
 ### Hinzugefügt
