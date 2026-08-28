@@ -9,6 +9,39 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.95.1 — 2026-08-28
+
+Vom Gründer: „die Website muss ich ja jetzt hosten — hilf mir das so weit es
+geht automatisieren. Und ein Link direkt zum App Store mit so einem
+Apple-Button, wie man ihn kennt."
+
+### Hinzugefügt
+- **Das App-Store-Abzeichen** in der Kopfzeile der Startseite, in der Form, die
+  jeder kennt: schwarz, abgerundet, Apfel links, zwei Zeilen rechts. Nachgebaut
+  und nicht von Apple geladen — die Seite holt grundsätzlich nichts von fremden
+  Servern, und das gilt auch für ein Bild, das bequem wäre.
+
+  **Es führt noch nirgendwohin, und das mit Absicht.** Die App ist nicht im
+  Store; ein Abzeichen „Laden im App Store", das auf eine Fehlseite führt, ist
+  genau das Versprechen, das dieses Projekt sich verbietet. Bis dahin steht
+  dort „Bald im App Store". Am Starttag ein Befehl:
+  `scripts/appstore-knopf.sh an` — er tauscht den ganzen markierten Block, nicht
+  ein Wort darin, und beide Zustände sind geprüft.
+- **„Website veröffentlichen"** — ein Ablauf, der `docs/website/` bei jeder
+  Änderung an `main` zu Cloudflare Pages schiebt. Vorher läuft
+  `check-website.mjs`; was die Prüfung nicht durchlässt, geht nicht online.
+  Deshalb ein eigener Ablauf und nicht Cloudflares Anbindung ans Repository:
+  Dort läge der Auslöser bei Cloudflare, und die Prüfung hätte kein Wort
+  mitzureden.
+- **`docs/website/CLOUDFLARE.md`** — die Einrichtung in vier Schritten, alles
+  im kostenlosen Tarif, mit den Klicks statt mit Verweisen auf Handbücher.
+
+**Fehlen die zwei Geheimnisse, bricht der Ablauf nicht ab.** Er prüft die
+Seite, meldet „Cloudflare ist noch nicht eingerichtet" und ist fertig. Ein
+roter Lauf, der nichts bedeutet, gewöhnt einem das Hinsehen ab.
+
+---
+
 ## 0.95.0 — 2026-08-28
 
 Vom Gründer: „setze alles auf 1 € für den Start und 5 € für das Bündel."

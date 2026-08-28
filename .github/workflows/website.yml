@@ -1,0 +1,85 @@
+name: Website veröffentlichen
+
+# **Die Website geht bei jeder Änderung von selbst online.**
+#
+# Sie liegt als fertige Dateien in `docs/website/` — kein Bauwerkzeug, keine
+# Abhängigkeiten, nichts zu übersetzen. Cloudflare Pages nimmt genau das
+# entgegen und legt es auf sein Netz.
+#
+# Warum ein Ablauf und nicht die Anbindung ans Repository, die Cloudflare
+# selbst anbietet: Dann läge der Auslöser bei Cloudflare, und die Prüfung
+# hier hätte kein Wort mitzureden. So geht nur online, was `check-website.mjs`
+# vorher durchgelassen hat — und dieselbe Prüfung sagt „nein", solange noch
+# ein PLATZHALTER im Quelltext steht.
+#
+# ---
+#
+# **Einmalig einzurichten** (alles kostenlos, siehe docs/website/CLOUDFLARE.md):
+#
+#   1. Cloudflare-Konto anlegen, Bereich „Workers & Pages".
+#   2. Dort ein Pages-Projekt namens `pulsemeter` anlegen — „Direct Upload".
+#   3. Ein API-Token erzeugen mit der Berechtigung „Cloudflare Pages: Edit".
+#   4. Im Repository unter Settings › Secrets and variables › Actions zwei
+#      Geheimnisse anlegen:
+#        CLOUDFLARE_API_TOKEN    das Token aus Schritt 3
+#        CLOUDFLARE_ACCOUNT_ID   steht in der Adresszeile des Dashboards
+#
+# Danach läuft es bei jedem Push auf `main`, der die Website anfasst.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/website/**"
+      - ".github/workflows/website.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: website
+  cancel-in-progress: true
+
+jobs:
+  veroeffentlichen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Chromium
+        run: npx --yes playwright@1.47.0 install --with-deps chromium
+
+      # **Erst prüfen, dann veröffentlichen.** Eine Seite mit einer offenen
+      # Textlücke im Impressum ist schlimmer als keine Seite.
+      - name: Website prüfen
+        run: node scripts/check-website.mjs
+
+      - name: Sind die Zugangsdaten da?
+        id: zugang
+        env:
+          TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          KONTO: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$TOKEN" ] || [ -z "$KONTO" ]; then
+            echo "bereit=nein" >> "$GITHUB_OUTPUT"
+            echo "::notice::Cloudflare ist noch nicht eingerichtet — die Seite ist geprüft, aber nicht hochgeladen. Anleitung: docs/website/CLOUDFLARE.md"
+          else
+            echo "bereit=ja" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Zu Cloudflare Pages hochladen
+        if: steps.zugang.outputs.bereit == 'ja'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy docs/website --project-name=pulsemeter --branch=main
+
+      - name: Was jetzt dasteht
+        if: steps.zugang.outputs.bereit == 'ja'
+        run: echo "::notice::Die Website steht auf https://pulsemeter.pages.dev/"
