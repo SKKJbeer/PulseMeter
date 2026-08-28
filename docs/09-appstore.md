@@ -80,20 +80,20 @@ Du trägst eine Zahl ein. PulseMeter sagt dir, ob alles im Rahmen ist.
 
 Zählerstände landen auf einem Zettel am Sicherungskasten, in einer Tabelle, die
 niemand pflegt, oder nirgends. Und im Frühjahr kommt die Abrechnung, und man
-glaubt ihr einfach. PulseMeter macht aus zehn Sekunden im Keller eine Zahl, mit
+glaubt ihr einfach. PulseMeter macht aus zehn Sekunden am Zähler eine Zahl, mit
 der sich etwas anfangen lässt.
 
 
-ABLESEN, BEVOR DAS LICHT AUSGEHT
+ZEHN SEKUNDEN AM ZÄHLER
 
 App öffnen, Zahl eintippen, sichern. Das Datum steht schon auf heute, der
-Ziffernblock ist groß genug, dass man ihn einhändig trifft — im Keller, im
-Halbdunkel, mit klammen Fingern.
+Ziffernblock ist groß genug, dass man ihn einhändig trifft. Auch im
+Halbdunkel und mit klammen Fingern.
 
 Und bevor der Wert in deinen Daten landet, sieht die App ihn sich an. Eine Zahl
 unter dem letzten Stand, eine Zahl weit über dem, was bei dir üblich ist — dann
-fragt sie nach. Im Keller, wo du noch einmal hinsehen kannst, nicht im Februar
-beim Blick aufs Diagramm.
+fragt sie nach. Am Zähler kannst du noch einmal hinsehen, im Februar vor dem
+Diagramm nicht mehr.
 
 
 FÜNF SEKUNDEN, UND DU WEISST, WO DU STEHST

@@ -3,7 +3,7 @@ import SwiftUI
 /// Ein Zählwerk, wie es am Gerät aussieht: weiße Vorkomma-, rote
 /// Nachkommastellen auf dunklem Grund.
 ///
-/// Der Nutzer steht im Keller und vergleicht optisch, statt zu übersetzen.
+/// Der Nutzer steht am Zähler und vergleicht optisch, statt zu übersetzen.
 /// Sieht die Eingabe aus wie das Gerät, sinkt die Zahl der Tippfehler — und
 /// der Tippfehler ist der häufigste Datenfehler in dieser Art App.
 public struct CounterDisplay: View {

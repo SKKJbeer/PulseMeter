@@ -40,7 +40,7 @@ public enum ResourceKind: Hashable, Codable, Sendable {
     ///
     /// **Strom steht seit 0.46.0 auf zwei statt einer.** Mechanische
     /// Ferraris-Zähler haben eine rote Ziffer, moderne elektronische Zähler
-    /// führen zwei — und die hängen inzwischen in den meisten Kellern. Wer nur
+    /// führen zwei — und die hängen inzwischen in vielen Haushalten. Wer nur
     /// eine Stelle eintragen kann, rundet bei jeder Ablesung, und über ein Jahr
     /// summiert sich das sichtbar. Umgekehrt kostet eine Stelle zu viel nichts:
     /// Sie bleibt eben null.

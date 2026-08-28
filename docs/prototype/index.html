@@ -381,7 +381,7 @@ ul.includes.done li::before { content: "✓"; color: var(--tint); font-size: 12p
      drei Entwürfen gewählt (`docs/entwuerfe/zaehlereingabe.html`): Die Ziffern
      laufen von rechts ein wie am Geldautomaten, die Tausenderpunkte setzen
      sich selbst, die Nachkommastellen bleiben rot wie am Gerät. Der Grund für
-     die Wahl war Tempo — sechs Rollen einzeln zu drehen dauert im Keller
+     die Wahl war Tempo — sechs Rollen einzeln zu drehen dauert am Zähler
      länger, als eine Zahl einzutippen. */
   text-align: right;
   padding: 18px 16px 15px;
@@ -452,7 +452,7 @@ ul.includes.done li::before { content: "✓"; color: var(--tint); font-size: 12p
   border: 0; border-radius: 14px; padding: 16px; cursor: pointer;
   /* 44 Punkte, nicht 43. Die nicht-funktionale Prüfung hat den einen Punkt
      gemeldet, der fehlte — Apples Mindestmaß für eine Fläche, die man im
-     Keller einhändig trifft. */
+     Zähler einhändig trifft. */
   min-height: 44px;
 }
 /* Eigene Farben statt durchscheinender Akzentfläche: Mit `opacity` stand im
@@ -479,7 +479,7 @@ ul.includes.done li::before { content: "✓"; color: var(--tint); font-size: 12p
   text-align: center; font-size: var(--fs-cap); color: var(--ink-3);
   margin-top: 9px;
 }
-/* Datum und Uhrzeit der Ablesung. Eine Zeile, kein Formular — im Keller tippt
+/* Datum und Uhrzeit der Ablesung. Eine Zeile, kein Formular — am Zähler tippt
    niemand ein Datum ein, er tippt eine Zahl und drückt Sichern. */
 .momentrow {
   display: flex; align-items: center; gap: 8px; margin-top: 11px;
@@ -797,7 +797,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.97.0</p>
+  <p>Klickbarer Entwurf · v0.97.1</p>
 </div>
 
 <div class="device">
@@ -3383,7 +3383,7 @@ function openMeterEditor(id) {
     <div class="section-label">Name</div>
     <div class="list"><div class="row"><input class="field" id="ed-name" type="text"
       value="${editMeter ? editMeter.name.replace(/"/g, "&quot;") : ""}"
-      placeholder="Strom, Gas Keller, Wohnung oben"></div></div>
+      placeholder="Strom, Gas, Wohnung oben"></div></div>
 
     <div class="section-label">Art</div>
     <div class="list"><div class="row"><select class="field" id="ed-kind"

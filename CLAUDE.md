@@ -246,15 +246,21 @@ Woran man den maschinellen Klang erkennt und was stattdessen dasteht:
 | Nicht so | Sondern |
 |---|---|
 | Jeder Satz begründet sich selbst mit einem Gedankenstrich | Behaupten und weitergehen. Die Begründung nur, wo sie überrascht |
-| „Ein großer Ziffernblock, bedienbar bei schlechtem Licht" | „Groß genug, dass man ihn im Keller einhändig trifft" |
+| „Ein großer Ziffernblock, bedienbar bei schlechtem Licht" | „Groß genug, dass man ihn am Zähler einhändig trifft" |
 | Gleich lange, gleich gebaute Sätze | Kurz. Dann einer, der ausholt und die Sache zu Ende bringt. Dann wieder kurz |
 | Merkmale aufzählen | Die Lage beschreiben, in der jemand steckt |
 | „ermöglicht", „bietet", „verfügt über" | „macht", „zeigt", „rechnet", „fragt nach" |
 | Alles abwägen und absichern | Einen Standpunkt haben |
 
-Konkrete Zahlen, konkrete Orte, konkrete Gegenstände: Keller, Sicherungskasten,
+Konkrete Zahlen, konkrete Orte, konkrete Gegenstände: Sicherungskasten,
 Februar, Kubikmeter, Wallbox in der Garage. Sie tragen den Text, nicht die
 Adjektive.
+
+**„Keller" gehört nicht dazu.** Er stand hier als Vorbild und deshalb überall im
+Produkt — und der Gründer mag ihn nicht. Er stimmt auch nicht: In einer Wohnung
+hängt der Zähler im Flur, bei manchen außen am Haus. Wo jemand steht, heißt
+**„am Zähler"**. Was gemeint war, bleibt: schlechtes Licht, eine Hand frei,
+kalte Finger.
 
 #### Nachgeschärft am 28. August: nicht nach Werbeagentur
 

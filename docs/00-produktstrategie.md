@@ -29,7 +29,7 @@ Der Fehler fast aller bestehenden Apps: Sie lösen **A** hervorragend und **B** 
 
 - **Versorger-Apps** (E.ON, EnBW, Stadtwerke): nur der eigene Vertrag, kein Vergleich, wechseln nicht mit dem Nutzer mit, oft unangenehm zu bedienen.
 - **Zählerstand-Apps im Store** (diverse, meist Einzelentwickler): funktional, aber tabellenlastig, technische Sprache, kein Dark Mode, schwache Charts, keine Kostenlogik, kein iCloud-Sync.
-- **Smart-Home-/Energiemanager** (Tibber, Shelly, SMA, Home Assistant): Echtzeitdaten, aber setzen Hardware voraus, sind für Nicht-Techniker unbenutzbar und lösen den analogen Zähler im Keller gar nicht.
+- **Smart-Home-/Energiemanager** (Tibber, Shelly, SMA, Home Assistant): Echtzeitdaten, aber setzen Hardware voraus, sind für Nicht-Techniker unbenutzbar und lösen den analogen Zähler an der Wand gar nicht.
 - **Excel / Notizen-App**: der eigentliche Marktführer. Der ehrlichste Wettbewerber.
 
 ### Die Lücke
@@ -85,7 +85,7 @@ Du hast ausdrücklich kritisches Denken verlangt. Hier sind die drei wichtigsten
 
 **Empfehlung:** Wir halten die Vision, aber definieren sie präzise um: PulseMeter ist das Dashboard für **manuell und periodisch erfasste** Verbrauchsdaten aller Art. Live-Integrationen sind ein **explizites Nicht-Ziel** bis mindestens v2.0, und wenn, dann als optionale Datenquelle in dasselbe Modell — nie als eigener Modus.
 
-**Begründung:** Unsere Stärke ist, dass wir mit *jedem* Zähler funktionieren, auch dem 30 Jahre alten Ferraris-Zähler im Keller. Sobald wir Hardware voraussetzen, verlieren wir 90 % der Zielgruppe und den Grund, warum uns jemand weiterempfiehlt.
+**Begründung:** Unsere Stärke ist, dass wir mit *jedem* Zähler funktionieren, auch dem 30 Jahre alten Ferraris-Zähler an der Wand. Sobald wir Hardware voraussetzen, verlieren wir 90 % der Zielgruppe und den Grund, warum uns jemand weiterempfiehlt.
 
 ### 4.3 Vermieter-Funktionen sind ein rechtliches Risiko, wenn wir sie falsch benennen
 

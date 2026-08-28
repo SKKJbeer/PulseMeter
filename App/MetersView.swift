@@ -609,7 +609,7 @@ struct MeterEditor: View {
                 } header: {
                     Text("Name")
                 } footer: {
-                    Text("So heißt der Zähler in der Übersicht — „Strom“, „Gas Keller“, „Wohnung oben“.")
+                    Text("So heißt der Zähler in der Übersicht: „Strom“, „Gas“, „Wohnung oben“.")
                 }
 
                 Section {
@@ -662,7 +662,7 @@ struct MeterEditor: View {
                 } header: {
                     Text("Anzeige am Gerät")
                 } footer: {
-                    Text("So viele Stellen zeigt das Gerät. Die Eingabe sieht dann genauso aus wie der Zähler im Keller.")
+                    Text("So viele Stellen zeigt das Gerät. Die Eingabe sieht dann genauso aus wie der Zähler selbst.")
                 }
 
                 if kind == .electricity {

@@ -36,7 +36,7 @@ const CANVAS = { width: 1320, height: 2868 };
  * Die ersten beiden Bilder sind die einzigen, die in der Suchliste erscheinen
  * — sie müssen allein tragen. Deshalb steht vorn nicht der Funktionsumfang,
  * sondern das Versprechen (»sagt dir, ob alles im Rahmen ist«) und der
- * Moment, an dem es sich einlöst (die Erfassung im Keller).
+ * Moment, an dem es sich einlöst (die Erfassung am Zähler).
  *
  * Das letzte Bild ist bewusst der Preis: Wer bis dahin gewischt hat, will
  * wissen, was es kostet — und »kein Abo« ist hier das stärkste Argument. */

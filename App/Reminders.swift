@@ -24,7 +24,7 @@ enum Reminders {
     /// Um wie viel Uhr erinnert wird.
     ///
     /// Achtzehn Uhr, nicht morgens: Ein Zählerstand wird abgelesen, wenn
-    /// jemand zu Hause ist und in den Keller gehen kann. Eine Mitteilung um
+    /// jemand zu Hause ist und zum Zähler gehen kann. Eine Mitteilung um
     /// sieben Uhr früh wird weggewischt und nie nachgeholt.
     static let hour = 18
 

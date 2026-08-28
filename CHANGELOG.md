@@ -9,6 +9,28 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.97.1 — 2026-08-28
+
+Vom Gründer: „das mit dem Keller stört mich und mag ich nicht."
+
+### Geändert
+- **Der Keller ist raus, an 22 Stellen.** Website, App-Store-Beschreibung,
+  zwei Hinweistexte in der App, der Entwurf, sechs Kommentare im Quelltext,
+  zwei Dokumente und drei Testnamen. Wo jemand steht, heißt jetzt **„am
+  Zähler"**.
+- **Und aus `CLAUDE.md`, wo er als Vorbild stand.** Dort war er unter „konkrete
+  Orte" empfohlen, und genau deshalb kam er überall wieder. Eine Formulierung,
+  die in der Anleitung steht, schreibt sich von selbst weiter.
+
+Er war außerdem falsch: In einer Wohnung hängt der Zähler im Flur, bei manchen
+außen am Haus. Was gemeint war, bleibt stehen — schlechtes Licht, eine Hand
+frei, kalte Finger.
+
+Aus „ABLESEN, BEVOR DAS LICHT AUSGEHT" in der Store-Beschreibung ist „ZEHN
+SEKUNDEN AM ZÄHLER" geworden. Die alte Überschrift war ein Bild ohne Inhalt.
+
+---
+
 ## 0.97.0 — 2026-08-28
 
 Vom Gründer: „Die Texte dürfen nicht nach KI oder Werbeagentur klingen. Schreibe
