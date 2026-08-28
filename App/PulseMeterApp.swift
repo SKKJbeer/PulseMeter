@@ -59,7 +59,16 @@ struct PulseMeterApp: App {
         // Ohne Startschalter tut das gar nichts.
         LaunchFixture.apply(to: container)
 
-        let purchase = Purchase(gateway: store)
+        // **`-pulse-ohne-store` prüft den Fall, den es im Simulator nicht
+        // gibt.** Die Annahme war, dort gebe es keinen Store — der Lauf zu
+        // 0.90.0 hat das Gegenteil ausgeschrieben: Auf der Kaufseite standen
+        // `$2.99` und `$8.99`, also echte Preise aus der Sandbox. Ein Test für
+        // „der Store liefert nichts" braucht deshalb einen Vermittler, der
+        // nichts liefert, statt einer Umgebung, von der man es annimmt.
+        let gateway: PurchaseGateway = Startschalter.gesetzt("-pulse-ohne-store")
+            ? UnavailablePurchaseGateway()
+            : store
+        let purchase = Purchase(gateway: gateway)
         _purchase = State(initialValue: purchase)
 
         // Käufe, die woanders passiert sind: auf dem iPad, durch eine Freigabe
