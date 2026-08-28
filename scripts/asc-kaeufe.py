@@ -296,9 +296,15 @@ def app_verfuegbar(apple: Apple, app_id: str, wo: list[dict]) -> None:
 
     # Jedes Land wird einzeln mitgeschickt: `territoryAvailabilities` ist eine
     # eigene Ressource, keine Liste von Kennungen wie beim Kauf.
+    # **Die Kennung muss `${…}` lauten, mit geschweiften Klammern.** Der erste
+    # Anlauf schrieb `f"${gebiet['id']}"` — und in einem f-String ist `$` ein
+    # gewöhnliches Zeichen, die Klammern dagegen der Platzhalter. Heraus kam
+    # `$AFG`, und Apple hat es benannt: „the id must be a local id with the
+    # format '${local-id}'". Dieselbe Klasse wie der Backtick im Here-Dokument:
+    # ein Zeichen, das in zwei Sprachen zugleich etwas bedeutet.
     enthalten = [{
         "type": "territoryAvailabilities",
-        "id": f"${gebiet['id']}",
+        "id": "${" + gebiet["id"] + "}",
         "attributes": {"available": True},
         "relationships": {"territory": {"data": gebiet}},
     } for gebiet in wo]

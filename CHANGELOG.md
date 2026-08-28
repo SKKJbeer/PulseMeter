@@ -9,6 +9,25 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.88.1 — 2026-08-28
+
+### Behoben
+- Apple hat die Kennung der eingebetteten Länder abgelehnt:
+
+  ```
+  409 — The provided included entity id '$AFG' has invalid format.
+        For inline creation, the id must be a local id with the
+        format '${local-id}'.
+  ```
+
+  Geschrieben war `f"${gebiet['id']}"`. In einem f-String ist `$` ein
+  gewöhnliches Zeichen und die geschweifte Klammer der Platzhalter — heraus kam
+  `$AFG` statt `${AFG}`. Dieselbe Klasse wie der Backtick im Here-Dokument
+  einen Tag zuvor: **ein Zeichen, das in zwei Sprachen zugleich etwas
+  bedeutet.**
+
+---
+
 ## 0.88.0 — 2026-08-28
 
 ### Behoben
