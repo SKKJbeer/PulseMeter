@@ -12,6 +12,12 @@ name: Einreichung nachsehen
 
 on:
   workflow_dispatch:
+    inputs:
+      fuellen:
+        description: "Auch eintragen, was aus dem Repository kommt?"
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -31,4 +37,9 @@ jobs:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
-        run: python3 scripts/asc-einreichung.py
+        run: |
+          if [ "${{ inputs.fuellen }}" = "true" ]; then
+            python3 scripts/asc-einreichung.py --fuellen
+          else
+            python3 scripts/asc-einreichung.py
+          fi

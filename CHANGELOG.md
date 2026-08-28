@@ -9,6 +9,35 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.96.0 — 2026-08-28
+
+Der Einreichungs-Lauf hat zum ersten Mal geantwortet, und die Antwort war
+brauchbar: **5 steht, 4 offen, 1 braucht den Gründer.**
+
+### Hinzugefügt
+- **`asc-einreichung.py --fuellen`** trägt ein, was aus dem Repository kommt:
+  Name, Untertitel, Datenschutz-URL, die beiden Kategorien, die Altersfreigabe,
+  die Fassung 1.0 und deren deutsche Texte — Beschreibung, Schlagworte,
+  Werbetext, Versionshinweise, Support- und Marketing-Adresse.
+
+  **Die Texte stehen weiter nur in `docs/09-appstore.md`.** Sie ins Skript zu
+  kopieren hieße, zwei Fassungen zu führen, und die laufen auseinander — heute
+  dreimal passiert. Gelesen wird der Block hinter der jeweiligen Überschrift.
+- Der Ablauf „Einreichung nachsehen" hat einen Schalter dafür. Ohne ihn liest
+  er weiter nur.
+
+### Behoben
+- **Der Leser hielt eine leere Altersfreigabe für eine beantwortete.** Er
+  meldete „Altersfreigabe beantwortet (0 Angaben)" — null Angaben heißt nicht
+  beantwortet. Dieselbe Fehlerklasse, über die seit heute ein eigener Abschnitt
+  im Baukasten steht, und ich bin beim Schreiben dieses Lesers hineingelaufen.
+
+**Die Datenschutz-URL ist kein Punkt für den Gründer mehr.** Sie stand als „kann
+nur er" auf der Liste, weil die Seite nicht veröffentlicht war. Sie ist es jetzt:
+`https://pulsemeter.pages.dev/datenschutz`.
+
+---
+
 ## 0.95.8 — 2026-08-28
 
 **Der Lauf war grün und hatte nichts getan.** Fünfmal stand im Protokoll „Preis

@@ -22,6 +22,7 @@ Aufruf (Umgebung wie bei `asc-profil.py`):
 
 import json
 import os
+import re
 import sys
 import time
 
@@ -36,6 +37,7 @@ SPRACHE = "de-DE"
 erledigt: list[str] = []
 offen: list[str] = []
 gehoert_ihm: list[str] = []
+getan: list[str] = []
 
 
 def token() -> str:
@@ -59,6 +61,16 @@ class Apple:
     def holen(self, pfad: str, **werte):
         antwort = requests.get(f"{BASIS}/{pfad}", headers=self.kopf,
                                params=werte, timeout=30)
+        return antwort.status_code, antwort
+
+    def anlegen(self, pfad: str, koerper: dict):
+        antwort = requests.post(f"{BASIS}/{pfad}", headers=self.kopf,
+                                data=json.dumps(koerper), timeout=60)
+        return antwort.status_code, antwort
+
+    def aendern(self, pfad: str, koerper: dict):
+        antwort = requests.patch(f"{BASIS}/{pfad}", headers=self.kopf,
+                                 data=json.dumps(koerper), timeout=60)
         return antwort.status_code, antwort
 
 
@@ -101,6 +113,153 @@ def pruefe(bedingung: bool, satz: str, wem: list[str] | None = None) -> None:
         (wem if wem is not None else offen).append(satz)
 
 
+# ---------------------------------------------------------------- Füllen
+
+# **Die Texte stehen in `docs/09-appstore.md` und nirgends sonst.** Sie hier
+# noch einmal hinzuschreiben hieße, zwei Fassungen zu führen — und die laufen
+# auseinander, das ist heute dreimal passiert. Gelesen wird der Block hinter
+# der jeweiligen Überschrift.
+def store_text(ueberschrift: str) -> str:
+    pfad = os.path.join(os.path.dirname(__file__), "..", "docs", "09-appstore.md")
+    try:
+        with open(pfad, encoding="utf-8") as datei:
+            inhalt = datei.read()
+    except OSError:
+        return ""
+    stelle = inhalt.find("### " + ueberschrift)
+    if stelle < 0:
+        return ""
+    treffer = re.search(r"```\n(.*?)```", inhalt[stelle:], re.S)
+    return treffer.group(1).strip() if treffer else ""
+
+
+# Aus derselben Datei, Abschnitt 2 „Einordnung".
+KATEGORIE_HAUPT = "UTILITIES"
+KATEGORIE_ZWEIT = "FINANCE"
+
+WEBSITE = "https://pulsemeter.pages.dev"
+DATENSCHUTZ = f"{WEBSITE}/datenschutz"
+SUPPORT = f"{WEBSITE}/hilfe"
+
+
+def setzen(apple: Apple, pfad: str, typ: str, kennung: str,
+           werte: dict, was: str) -> bool:
+    """Ein PATCH, der sagt, was er getan hat — oder warum nicht."""
+    leer = {k: v for k, v in werte.items() if v}
+    if not leer:
+        offen.append(f"{was}: nichts einzutragen — der Text fehlt im Dokument")
+        return False
+    stand, antwort = apple.aendern(f"{pfad}/{kennung}",
+                                   {"data": {"type": typ, "id": kennung,
+                                             "attributes": leer}})
+    if stand in (200, 204):
+        getan.append(f"{was}: {', '.join(leer)}")
+        return True
+    offen.append(f"{was}: ging nicht ({stand}) — {kurz(antwort)}")
+    return False
+
+
+def eintrag_fuellen(apple: Apple, app_id: str) -> None:
+    """Name, Untertitel, Datenschutz-URL, Kategorien, Altersfreigabe."""
+    stand, info = erste(apple, f"v1/apps/{app_id}/appInfos", **{"limit": 10})
+    if info is None:
+        offen.append(f"Der App-Eintrag ließ sich nicht lesen ({stand})")
+        return
+
+    stand, ort = erste(apple, f"v1/appInfos/{info['id']}/appInfoLocalizations",
+                       **{"limit": 20, "filter[locale]": SPRACHE})
+    if ort is None:
+        offen.append("Keine deutsche Beschriftung am App-Eintrag")
+    else:
+        setzen(apple, "v1/appInfoLocalizations", "appInfoLocalizations",
+               ort["id"],
+               {"name": store_text("Name (max. 30 Zeichen)"),
+                "subtitle": store_text("Untertitel (max. 30 Zeichen)"),
+                "privacyPolicyUrl": DATENSCHUTZ},
+               "Name, Untertitel und Datenschutz-URL")
+
+    # Kategorien hängen als Beziehung, nicht als Eigenschaft.
+    stand, antwort = apple.aendern(f"v1/appInfos/{info['id']}", {"data": {
+        "type": "appInfos", "id": info["id"],
+        "relationships": {
+            "primaryCategory": {"data": {"type": "appCategories",
+                                         "id": KATEGORIE_HAUPT}},
+            "secondaryCategory": {"data": {"type": "appCategories",
+                                           "id": KATEGORIE_ZWEIT}},
+        }}})
+    if stand in (200, 204):
+        getan.append(f"Kategorien: {KATEGORIE_HAUPT}, {KATEGORIE_ZWEIT}")
+    else:
+        offen.append(f"Kategorien: ging nicht ({stand}) — {kurz(antwort)}")
+
+    # **Altersfreigabe 4+**: keine der Fragen trifft zu. Die Felder heißen bei
+    # Apple lang und wechseln gelegentlich; deshalb wird gesetzt, was der
+    # Eintrag selbst führt, statt eine Liste zu raten.
+    stand, alter = erste(apple, f"v1/appInfos/{info['id']}/ageRatingDeclaration")
+    if alter is None:
+        offen.append(f"Altersfreigabe nicht lesbar ({stand})")
+        return
+    antworten = {}
+    for name, wert in (alter.get("attributes") or {}).items():
+        if name in ("ageRatingOverride", "kidsAgeBand"):
+            continue
+        antworten[name] = False if isinstance(wert, bool) else "NONE"
+    stand, antwort = apple.aendern(
+        f"v1/ageRatingDeclarations/{alter['id']}",
+        {"data": {"type": "ageRatingDeclarations", "id": alter["id"],
+                  "attributes": antworten}})
+    if stand in (200, 204):
+        getan.append(f"Altersfreigabe: {len(antworten)} Fragen mit „trifft nicht zu\" beantwortet")
+    else:
+        offen.append(f"Altersfreigabe: ging nicht ({stand}) — {kurz(antwort)}")
+
+
+def fassung_fuellen(apple: Apple, app_id: str) -> None:
+    """Die Fassung 1.0 und ihre Texte."""
+    stand, fassung = erste(apple, f"v1/apps/{app_id}/appStoreVersions",
+                           **{"limit": 5, "filter[platform]": "IOS"})
+    if fassung is None:
+        stand, antwort = apple.anlegen("v1/appStoreVersions", {"data": {
+            "type": "appStoreVersions",
+            "attributes": {"platform": "IOS", "versionString": "1.0"},
+            "relationships": {"app": {"data": {"type": "apps", "id": app_id}}},
+        }})
+        if stand not in (200, 201):
+            offen.append(f"Fassung 1.0 ließ sich nicht anlegen ({stand}) "
+                         f"— {kurz(antwort)}")
+            return
+        fassung = antwort.json()["data"]
+        getan.append("Fassung 1.0 angelegt")
+    else:
+        getan.append(f"Fassung {feld(fassung, 'versionString')} stand schon")
+
+    stand, ort = erste(apple,
+                       f"v1/appStoreVersions/{fassung['id']}/appStoreVersionLocalizations",
+                       **{"limit": 20, "filter[locale]": SPRACHE})
+    if ort is None:
+        stand, antwort = apple.anlegen("v1/appStoreVersionLocalizations", {"data": {
+            "type": "appStoreVersionLocalizations",
+            "attributes": {"locale": SPRACHE},
+            "relationships": {"appStoreVersion": {
+                "data": {"type": "appStoreVersions", "id": fassung["id"]}}},
+        }})
+        if stand not in (200, 201):
+            offen.append(f"Deutsche Texte ließen sich nicht anlegen ({stand}) "
+                         f"— {kurz(antwort)}")
+            return
+        ort = antwort.json()["data"]
+
+    setzen(apple, "v1/appStoreVersionLocalizations",
+           "appStoreVersionLocalizations", ort["id"],
+           {"description": store_text("Beschreibung (max. 4000 Zeichen)"),
+            "keywords": store_text("Schlagworte (max. 100 Zeichen, komma-getrennt, ohne Leerzeichen)"),
+            "promotionalText": store_text("Werbetext (max. 170 Zeichen, jederzeit ohne neue Version änderbar)"),
+            "whatsNew": store_text("Neue Funktionen (Versionshinweise)"),
+            "supportUrl": SUPPORT,
+            "marketingUrl": WEBSITE},
+           "Beschreibung, Schlagworte, Werbetext, Support-URL")
+
+
 def app_finden(apple: Apple):
     stand, antwort = apple.holen("v1/apps", **{"filter[bundleId]": BUNDLE,
                                                "limit": 20})
@@ -139,10 +298,17 @@ def eintrag_pruefen(apple: Apple, app_id: str) -> None:
     if alter is None:
         offen.append(f"Altersfreigabe: nicht lesbar ({stand})")
     else:
-        gesetzt = [k for k, v in (alter.get("attributes") or {}).items()
-                   if v not in (None, "", False, "NONE")]
-        pruefe(bool(alter.get("attributes")),
-               f"Altersfreigabe beantwortet ({len(gesetzt)} Angaben von null verschieden)")
+        # **Vorhanden ist nicht beantwortet.** Der erste Lauf meldete
+        # „Altersfreigabe beantwortet (0 Angaben)" — die Ressource war da und
+        # leer. Dieselbe Fehlerklasse, über die im Baukasten seit heute ein
+        # Abschnitt steht, und ich bin beim Schreiben dieses Lesers hineingelaufen.
+        # Beantwortet ist sie, wenn Apple die Freigabe berechnet hat.
+        stufe = feld(alter, "ageRatingOverride") or feld(alter, "kidsAgeBand")
+        angaben = [k for k, v in (alter.get("attributes") or {}).items()
+                   if v is not None]
+        pruefe(len(angaben) >= 5,
+               f"Altersfreigabe: {len(angaben)} Angaben"
+               + (f", Stufe {stufe}" if stufe else ""))
 
 
 def fassung_pruefen(apple: Apple, app_id: str) -> None:
@@ -213,6 +379,21 @@ def verfuegbarkeit_pruefen(apple: Apple, app_id: str) -> None:
 def main() -> None:
     apple = Apple()
     app_id = app_finden(apple)
+
+    if "--fuellen" in sys.argv:
+        print("::notice::Trage ein, was aus dem Repository kommt.")
+        eintrag_fuellen(apple, app_id)
+        fassung_fuellen(apple, app_id)
+        print("\n=== Eingetragen ===")
+        for zeile in getan:
+            print(f"  ✓ {zeile}")
+        print("\n=== Ging nicht ===")
+        for zeile in offen:
+            print(f"  · {zeile}")
+        print("\n--- und so sieht es danach aus ---\n")
+        getan.clear()
+        offen.clear()
+
     eintrag_pruefen(apple, app_id)
     fassung_pruefen(apple, app_id)
     kaeufe_pruefen(apple, app_id)
