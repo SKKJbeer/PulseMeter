@@ -1,6 +1,6 @@
 # 12 – Auslieferung: vom Code in den App Store, ohne Mac
 
-Stand: 2026-08-28, Version 0.92.1
+Stand: 2026-08-28, Version 0.93.3
 
 Am 17. August ist PulseMeter zum ersten Mal in TestFlight gelandet — **ohne
 Kabel, ohne Xcode auf dem Rechner des Gründers, ohne einen Klick im
@@ -259,6 +259,7 @@ Store Connect deshalb nie gesehen.
 | 20 | 0.81.1 | 26.08. 08:28 | ✓ | Die Jahresansicht zeigt, woher das Jahr kommt |
 | 21 | 0.90.1 | 28.08. 09:50 | ✓ | **Erster Bau, in dem sich wirklich kaufen lässt.** Die Kaufseite sagt außerdem, was der Store geantwortet hat, statt eine Ursache zu behaupten |
 | 22 | 0.92.1 | 28.08. 11:48 | ✓ | Kaufübersicht über eine eigene Zeile im Zähler-Schirm, Stichpunkte statt Fließtext, der Bericht an genau einer Stelle |
+| 23 | 0.93.2 | 28.08. 14:51 | ✓ | Einkaufswagen an der Zeile, Preise im Verlauf für einen kostenlosen Nutzer — und dahinter das Blatt zum angetippten Kauf statt zum vorletzten |
 
 Zeitangaben in UTC. Ein ✗ heißt: hochgeladen wurde nichts, die Nummer ist
 trotzdem verbraucht.

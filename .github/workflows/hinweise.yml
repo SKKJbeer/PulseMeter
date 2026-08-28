@@ -1,0 +1,64 @@
+name: Testhinweise nachtragen
+
+# **Warum das einen eigenen Ablauf hat.**
+#
+# Dieselbe Lehre wie bei „Einrichtung bei Apple": Ein Schritt, der nur mit
+# Apple spricht, darf nicht an einem Bau hängen. Bau 23 ging mit dem
+# Vorgabetext „Neuer Stand zum Ausprobieren." zu den Testern — ein Satz, der
+# nichts sagt. Ihn zu berichtigen hätte einen neuen Bau gekostet: einen
+# gemieteten Mac, zwanzig Minuten und eine verbrauchte Buildnummer, nur für
+# eine Zeile Text.
+#
+# Hier läuft dasselbe Skript auf Linux, in Sekunden, so oft man will. Es legt
+# die Hinweise an oder ändert sie, je nachdem, ob es sie schon gibt.
+#
+# Ohne Text genommen wird, was seit dem letzten Bau im Änderungsprotokoll
+# steht — das ist auch im TestFlight-Lauf der Normalfall.
+
+on:
+  workflow_dispatch:
+    inputs:
+      bau:
+        description: "Buildnummer, z. B. 23. Leer = der neueste."
+        required: false
+        default: ""
+      hinweis:
+        description: "Was ist neu? Leer = aus CHANGELOG.md."
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  eintragen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Abhängigkeiten
+        run: pip3 install --quiet "pyjwt[crypto]" requests
+
+      # Die Buildnummer ist sonst die Laufnummer dieses Ablaufs — und die
+      # gehört zu einem anderen Ablauf und meint nichts.
+      - name: Nummer bestimmen
+        id: nummer
+        env:
+          EINGABE: ${{ inputs.bau }}
+        run: |
+          if [ -n "$EINGABE" ]; then
+            echo "wert=$EINGABE" >> "$GITHUB_OUTPUT"
+          else
+            echo "wert=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Testhinweise eintragen
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+          PULSE_BUNDLE_ID: de.karjoth.pulsemeter
+          PULSE_BUILD: ${{ steps.nummer.outputs.wert }}
+          PULSE_HINWEIS: ${{ inputs.hinweis }}
+        run: python3 scripts/asc-testflight.py

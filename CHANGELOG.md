@@ -9,6 +9,34 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.93.3 — 2026-08-28
+
+Bau 23 ging mit dem Satz **„Neuer Stand zum Ausprobieren."** zu den Testern.
+Das war die Vorgabe des Ablaufs, und weil sie von selbst dastand, sah der
+Schritt „Testhinweise eintragen" grün aus und meldete „die Testhinweise sind
+eingetragen". Dieselbe Fehlerklasse wie zehn Bauten ganz ohne Text, nur
+höflicher verpackt.
+
+### Geändert
+- **Ohne Text nimmt der Ablauf jetzt das Änderungsprotokoll** — und zwar alles,
+  was seit der Version im letzten Bau dazugekommen ist. Die Grenze steht in der
+  Tabelle in `docs/12-auslieferung.md`; ihre Zeile entsteht **nach** dem Bau,
+  also steht beim Bau noch der Vorgänger obenauf. Auszeichnung wird entfernt,
+  Aufzählungen bleiben, bei 4000 Zeichen wird gekürzt.
+- Die Vorgabe im Ablauf ist leer statt gefüllt. Ein Feld, das gefüllt aussieht
+  und nichts sagt, wird nicht nachgesehen.
+
+### Hinzugefügt
+- **„Testhinweise nachtragen"** — ein eigener Ablauf auf Linux, der Hinweise zu
+  einem beliebigen Bau setzt oder ändert. Ohne Nummer nimmt er den letzten.
+  Vorher hätte eine Zeile Text einen neuen Bau gekostet: einen gemieteten Mac,
+  zwanzig Minuten und eine verbrauchte Buildnummer. Dieselbe Lehre wie bei
+  „Einrichtung bei Apple" — was nur mit Apple spricht, hängt nicht an einem Bau.
+
+Nur Werkzeug: Diese Version geht nach `main` und nicht nach TestFlight.
+
+---
+
 ## 0.93.2 — 2026-08-28
 
 ### Behoben

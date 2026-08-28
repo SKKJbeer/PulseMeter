@@ -35,10 +35,14 @@ name: TestFlight
 on:
   workflow_dispatch:
     inputs:
+      # **Leer statt „Neuer Stand zum Ausprobieren."** Der Vorgabesatz sah
+      # gefüllt aus und sagte nichts, und weil er von selbst dastand, fiel es
+      # bei Bau 23 niemandem auf. Leer greift stattdessen das
+      # Änderungsprotokoll — das steht ohnehin schon da und ist verpflichtend.
       hinweis:
-        description: "Was ist neu? Steht später bei den Testern."
+        description: "Was ist neu? Leer = aus CHANGELOG.md, seit dem letzten Bau."
         required: false
-        default: "Neuer Stand zum Ausprobieren."
+        default: ""
 
 permissions:
   contents: read

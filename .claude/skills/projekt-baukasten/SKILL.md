@@ -367,6 +367,22 @@ etwas, das niemand beheben kann, ist eine Meldung ohne Handlung.
 | **Zugangsdaten fehlen** | Die Prüfung darauf als **ersten** Schritt, sonst scheitert der Lauf nach zwanzig Minuten an einer Meldung, die das fehlende Geheimnis nicht nennt |
 | **Geheimnisse abtippen** | Nicht abtippen. Öffentlichen Schlüssel des Repositories holen, Wert in eine Sealed Box legen, `PUT /actions/secrets/<name>`. Dafür braucht es ein **fein granuliertes** Token mit „Secrets: Read and write" — ein klassisches mit `repo` genügt nicht |
 | **`cancel-in-progress` über dem ganzen Ablauf** | Nebenläufigkeit **je Auftrag**: der schnelle darf abgebrochen werden, der lange nicht. Drei Läufe an einem Tag endeten sonst kurz vor dem Ziel |
+| **Vorgabetext, der nichts sagt** | Ein `default:` wie „Neuer Stand zum Ausprobieren." lässt den Schritt grün melden und liefert den Testern nichts. Vorgabe **leer** lassen und aus dem Änderungsprotokoll ableiten — das steht ohnehin da |
+
+### Ein Schritt, der nur mit Apple spricht, darf nicht an einem Bau hängen
+
+Zweimal dieselbe Rechnung: erst die Berechtigungen, dann die Testhinweise. Beide
+liefen zunächst nur im TestFlight-Lauf mit. Das genügt, solange es einmal
+richtig ist — und ist falsch, sobald man nachbessern muss. Jeder Versuch kostet
+dann einen gemieteten Mac, zwanzig Minuten und eine **verbrauchte Buildnummer**,
+für eine Zeile Text.
+
+> Was nur HTTP macht, bekommt zusätzlich einen eigenen `workflow_dispatch` auf
+> Linux. **Dasselbe Skript an zwei Orten, nicht zwei Skripte:** im Bau als
+> Selbstheilung, daneben zum Nachbessern in Sekunden.
+
+Erkennungsmerkmal für „das gehört auch nach Linux": Der Schritt braucht weder
+Xcode noch Simulator noch das Paket — nur den Schlüssel.
 
 ---
 
