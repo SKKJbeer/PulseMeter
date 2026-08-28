@@ -9,6 +9,40 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.95.2 — 2026-08-28
+
+Vom Gerät: „der Link geht nicht, bin am Handy."
+
+Er ging nicht, weil die GitHub-App **überhaupt keinen Einstellungsbereich hat.**
+Geheimnisse lassen sich dort in keiner Ansicht eintragen, und die App fängt den
+Verweis darauf ab, ohne ihn zeigen zu können. Die Anleitung führte damit an
+eine Tür, die es auf dem Gerät des Gründers nicht gibt.
+
+### Hinzugefügt
+- **Der Zweig `website`.** Der Ablauf legt die geprüften Seiten dort in die
+  Wurzel, und Cloudflare Pages hängt sich daran. Damit braucht die Einrichtung
+  **kein einziges Geheimnis im Repository** — sie läuft vollständig im
+  Cloudflare-Dashboard, und das öffnet im Browser des Telefons.
+
+  **Der alte Einwand bleibt beantwortet.** Cloudflares Anbindung ans Repository
+  war abgelehnt worden, weil dann auch online ginge, was `check-website.mjs`
+  nicht durchgelassen hat. Der Zweig entsteht erst **nach** der Prüfung —
+  Cloudflare sieht nie den Hauptzweig, sondern immer nur das, was durchgekommen
+  ist.
+- `_headers` im Zweig: kein `nosniff`-Rateverhalten, kein fremder Rahmen,
+  Referrer nur bei gleicher Herkunft.
+
+### Geändert
+- `docs/website/CLOUDFLARE.md` beginnt jetzt mit dem Weg, der am Telefon
+  funktioniert — zwei Schritte statt vier. Der Token-Weg steht darunter, mit
+  dem Satz dazu, warum er dort nicht geht.
+
+**Die Anleitungen gehen nicht mit online.** `EINTRAGEN.md` und `CLOUDFLARE.md`
+werden aus dem Zweig entfernt: Sie gehören ins Repository, nicht auf eine
+öffentliche Adresse.
+
+---
+
 ## 0.95.1 — 2026-08-28
 
 Vom Gründer: „die Website muss ich ja jetzt hosten — hilf mir das so weit es

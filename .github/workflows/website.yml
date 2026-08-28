@@ -35,7 +35,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: website
@@ -58,6 +58,19 @@ jobs:
       # Textlücke im Impressum ist schlimmer als keine Seite.
       - name: Website prüfen
         run: node scripts/check-website.mjs
+
+      # **Der Weg ohne ein einziges Geheimnis.** Cloudflare Pages hängt sich an
+      # diesen Zweig und liest ihn aus; einzurichten ist das im Cloudflare-
+      # Dashboard, das am Telefon funktioniert. Die GitHub-App dagegen hat
+      # überhaupt keinen Einstellungsbereich — Geheimnisse lassen sich dort
+      # nicht eintragen, und der Verweis darauf lief ins Leere.
+      #
+      # Die Prüfung behält trotzdem das letzte Wort: Dieser Schritt läuft nach
+      # ihr, also sieht Cloudflare nie etwas, was nicht durchgekommen ist.
+      - name: In den Zweig website legen
+        run: scripts/website-zweig.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Sind die Zugangsdaten da?
         id: zugang
