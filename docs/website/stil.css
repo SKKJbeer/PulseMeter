@@ -261,13 +261,26 @@ h1 {
 .apfel b { font-size: 19px; font-weight: 550; letter-spacing: -0.01em; }
 a.apfel:hover { transform: translateY(-1px); }
 
-/* Wartezustand: dieselbe Form, aber sichtbar noch kein Weg. Kein Grau in
-   Grau — das sähe nach kaputt aus statt nach „kommt noch". */
-.apfel-wartet { background: var(--ink); border-color: var(--ink); opacity: .55; cursor: default; }
+/* Wartezustand: dieselbe Form, aber ruhiger — eine Karte, kein schwarzes
+   Abzeichen. Sie soll lesbar sein und nicht nach kaputt aussehen.
+
+   **Hier stand `var(--bg)`, und die Variable gibt es nicht.** Die Datei kennt
+   `--ground`, `--raised` und `--surface`. Ein `var()` auf einen unbekannten
+   Namen ist keine Fehlermeldung, sondern ein Rückfall auf den geerbten Wert —
+   im Dunkeln war das fast dasselbe Weiß wie der Grund. Ergebnis auf dem
+   Telefon des Gründers: ein leerer grauer Kasten, kein Text, kein Apfel.
+
+   Deshalb jetzt nur Variablen, die es gibt, und keine Deckkraft: Die dämpft
+   auch die Schrift. */
+.apfel-wartet {
+  background: var(--surface);
+  color: var(--ink-2);
+  border-color: var(--line-2);
+  cursor: default;
+}
 
 @media (prefers-color-scheme: dark) {
   .apfel { background: #fff; color: #000; border-color: #fff; }
-  .apfel-wartet { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 }
 
 .notiz {

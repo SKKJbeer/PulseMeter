@@ -9,6 +9,34 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.96.4 — 2026-08-28
+
+Vom Gerät, mit Bildschirmfoto: ein leerer grauer Kasten über dem Knopf „Jetzt
+ausprobieren". Kein Text, kein Apfel.
+
+### Behoben
+- **Eine CSS-Variable, die es nicht gibt.** Im Stil des App-Store-Abzeichens
+  stand `var(--bg)`; die Datei kennt `--ground`, `--raised` und `--surface`.
+  Der Browser meldet so etwas **nicht** — ein `var()` auf einen unbekannten
+  Namen fällt auf den geerbten Wert zurück. Im Dunkeln war das fast dasselbe
+  Weiß wie der Grund, und die Deckkraft von 55 % machte daraus den grauen
+  Kasten. Der Text war die ganze Zeit da, nur unsichtbar.
+- Der Wartezustand ist jetzt eine ruhige Karte statt eines gedimmten schwarzen
+  Abzeichens: lesbar in beiden Erscheinungsbildern, ohne Deckkraft — die dämpft
+  auch die Schrift.
+
+### Hinzugefügt
+- **Eine Prüfung, die jede benutzte CSS-Variable gegen die definierten hält.**
+  Zehn Zeilen, und sie hätte das hier vor dem Veröffentlichen gefunden. Von 393
+  Prüfungen sah keine etwas, weil alle nach Text, Überlauf und Kontrast fragen
+  — und der Text war ja da.
+
+Im Baukasten steht die verallgemeinerte Form: **Wo eine Sprache einen
+unbekannten Namen still auflöst statt abzubrechen, gehört eine Prüfung daneben,
+die die Namen gegeneinander hält.**
+
+---
+
 ## 0.96.3 — 2026-08-28
 
 **14 von 17 Punkten stehen.** Beschreibung, Schlagworte, Werbetext,

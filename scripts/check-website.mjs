@@ -131,6 +131,28 @@ note(adressen.size === 1,
        ? `Alle Seiten zeigen auf ${[...adressen][0]}`
        : `Die Seiten zeigen auf verschiedene Adressen: ${[...adressen].join(", ")}`);
 
+// **Jede benutzte CSS-Variable muss es geben.**
+//
+// `var(--bg)` stand im Stil des App-Store-Abzeichens, und die Datei kennt nur
+// `--ground`, `--raised` und `--surface`. Ein unbekannter Name ist im Browser
+// keine Fehlermeldung, sondern ein Rückfall auf den geerbten Wert — im Dunkeln
+// also fast dasselbe Weiß wie der Grund. Auf dem Telefon des Gründers stand
+// ein leerer grauer Kasten, und keine der 393 Prüfungen sah etwas: Der Text
+// war da, nur unsichtbar.
+{
+  // Ohne Kommentare: Der Hinweis, warum `var(--bg)` hier einmal stand, ist
+  // kein Gebrauch der Variable — sonst schlägt die Prüfung auf ihrer eigenen
+  // Begründung an.
+  const css = readFileSync(`${dir}/stil.css`, "utf8").replace(/\/\*[\s\S]*?\*\//g, " ");
+  const definiert = new Set([...css.matchAll(/(--[a-z0-9-]+)\s*:/g)].map(m => m[1]));
+  const benutzt = new Set([...css.matchAll(/var\((--[a-z0-9-]+)/g)].map(m => m[1]));
+  const fehlend = [...benutzt].filter(name => !definiert.has(name));
+  note(fehlend.length === 0,
+       fehlend.length === 0
+         ? `Alle ${benutzt.size} benutzten CSS-Variablen sind definiert`
+         : `Nicht definiert: ${fehlend.join(", ")} — der Browser meldet das nicht, er erbt`);
+}
+
 // Platzhalter sind ein **Hinweis**, kein Fehlschlag — solange die Seite nicht
 // online ist. Sonst stünde die CI dauerhaft auf Rot für etwas, das nur der
 // Gründer eintragen kann, und ein dauerhaft roter Lauf wird nach drei Tagen
