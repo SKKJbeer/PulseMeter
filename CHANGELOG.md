@@ -9,6 +9,28 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.87.0 — 2026-08-27
+
+### Hinzugefügt
+- **Die Diagnose fragt jetzt eine Ebene höher.** Vom Gerät gemeldet: „ich kann
+  immer noch nicht in TestFlight kaufen" — bei fünf Käufen auf
+  `READY_TO_SUBMIT`, angenommenem Prüfbild, gesetztem Preis und gesetzter
+  Verfügbarkeit. Damit kann die Ursache nicht mehr am Kauf liegen.
+  `was_die_app_fuehrt()` schreibt aus, was Apple über die **App** führt: alle
+  Merkmale und zu `appPriceSchedule`, `appAvailabilityV2`, `appStoreVersions`,
+  `appInfos`, `builds`, `inAppPurchasesV2` und der Lizenzvereinbarung jeweils,
+  ob es sie gibt und mit welcher Antwort.
+- `PULSE_DIAGNOSE=1` lässt die Aufstellung **auch dann** laufen, wenn alles
+  grün aussieht. Der bisherige Weg schrieb nur bei einem nicht lieferbaren Kauf
+  etwas aus — also genau dann nicht, wenn man es jetzt braucht. Der Ablauf
+  „Einrichtung bei Apple" setzt die Variable.
+
+Verträge — bezahlte Apps, Bank, Steuer — hat Apples Schnittstelle nicht. Bleibt
+die Aufstellung ohne Befund, ist das der letzte verbliebene Kandidat, und er
+lässt sich nur im Browser ansehen.
+
+---
+
 ## 0.86.0 — 2026-08-27
 
 ### Hinzugefügt

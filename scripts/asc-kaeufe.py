@@ -504,7 +504,55 @@ def main() -> None:
                 was_fehlt(apple, eintrag[0], produkt_id)
                 gemeldet = True
 
+    # **Auch dann ausschreiben, wenn alles grün aussieht.** Genau dieser Fall
+    # steht gerade an: fünfmal READY_TO_SUBMIT, und auf dem Gerät trotzdem kein
+    # Knopf. Ein Lauf, der nur „alles steht" sagt, hilft dann nicht weiter.
+    if os.environ.get("PULSE_DIAGNOSE") and not gemeldet:
+        was_die_app_fuehrt(apple, app_id)
+        erster = danach.get(f"{BUNDLE}.{KAEUFE[0]['kennung']}")
+        if erster:
+            was_fehlt(apple, erster[0], f"{BUNDLE}.{KAEUFE[0]['kennung']}")
+
     melden()
+
+
+def was_die_app_fuehrt(apple: Apple, app_id: str) -> None:
+    """Alles ausschreiben, was Apple über die **App** führt.
+
+    **Weil die Käufe es nicht mehr sein können.** Alle fünf stehen auf
+    `READY_TO_SUBMIT`, das Prüfbild ist angenommen, Preis und Verfügbarkeit
+    stehen — und auf dem Gerät bleibt die Kaufseite leer. Damit ist die Ursache
+    nicht mehr am Kauf, sondern eine Ebene darüber: an der App selbst oder an
+    einem Vertrag.
+
+    Verträge hat Apples Schnittstelle nicht. Die App hat sie, und ein Feld, das
+    hier fehlt, ist mehr wert als die nächste Vermutung.
+    """
+    stand, antwort = apple.holen(f"v1/apps/{app_id}")
+    if stand == 200:
+        merkmale = antwort.json().get("data", {}).get("attributes", {})
+        print("\n  Was Apple über die App führt:")
+        for schluessel, wert in sorted(merkmale.items()):
+            print(f"      {schluessel}: {wert}")
+
+    # Preis und Verfügbarkeit der **App**: Ohne sie ist die App nirgends zu
+    # haben — und ein Kauf in einer App, die es in keinem Land gibt, kann von
+    # StoreKit nicht ausgeliefert werden. Das ist die Vermutung, die diese
+    # Abfrage prüfen soll; ob sie stimmt, sagt die Antwort.
+    for name in ("appPriceSchedule", "appAvailabilityV2", "appStoreVersions",
+                 "appInfos", "builds", "inAppPurchasesV2", "endUserLicenseAgreement"):
+        stand, antwort = apple.holen(f"v1/apps/{app_id}/{name}", **{"limit": 5})
+        if stand != 200:
+            print(f"      {name}: nicht lesbar ({stand}) — {kurz(antwort)}")
+            continue
+        inhalt = antwort.json().get("data")
+        anzahl = len(inhalt) if isinstance(inhalt, list) else (1 if inhalt else 0)
+        print(f"      {name}: {anzahl}")
+        for eintrag in (inhalt if isinstance(inhalt, list) else [inhalt])[:2]:
+            if not eintrag:
+                continue
+            for schluessel, wert in sorted(eintrag.get("attributes", {}).items()):
+                print(f"          {schluessel}: {wert}")
 
 
 def was_fehlt(apple: Apple, kauf_id: str, produkt_id: str) -> None:
