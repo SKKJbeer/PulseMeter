@@ -233,6 +233,17 @@ enum LaunchFixture {
                 }
             }
 
+            // **`-pulse-ohne-preise` lässt die Tarife weg.**
+            //
+            // Der Zustand eines Nutzers, der nie „Kosten und Preise" gekauft
+            // hat: Zähler und Ablesungen vollständig, Beträge nirgends. Bis
+            // 0.93.1 gab es ihn im Fixture nicht — die Beispieldaten brachten
+            // immer Tarife mit, auch mit `-pulse-frei`, und damit zeigte die
+            // App einem angeblich kostenlosen Nutzer Kosten. Prüfen ließ sich
+            // die Sperre so nicht: Sie greift genau dann, wenn keine Tarife da
+            // sind.
+            if Startschalter.gesetzt("-pulse-ohne-preise") { continue }
+
             guard let yearStart = CalendarDay(year: today.year - 2, month: 1, day: 1) else { continue }
             // Bei zwei Arbeitspreisen hängt an jedem Zählwerk ein eigener
             // Tarif, und der Grundpreis steht nur am ersten: Er gehört zum

@@ -37,7 +37,21 @@ struct HistoryView: View {
     }
 
     @State private var meters: [MeteringPoint] = []
-    @State private var showingPaywall = false
+
+    /// Welcher Kauf auf dem Blatt steht — und `nil`, solange keins offen ist.
+    ///
+    /// **Vorher standen hier zwei Zustände nebeneinander**: ein Schalter „Blatt
+    /// auf" und daneben ein Produkt, das der Tipp erst setzen musste. Beide
+    /// wurden im selben Atemzug geschrieben, und das Blatt ging mit dem alten
+    /// Produkt auf — mit dem Bericht, den hier niemand anbietet. Auf dem Schirm
+    /// sah man den falschen Kauf, die Prüfung sah eine Leiste, die nie kam, und
+    /// gemeldet hat sie am Ende etwas ganz anderes: Ihr zweiter Tipp lief gegen
+    /// das offene Blatt und klang wie „die Zeile ist nicht antippbar".
+    ///
+    /// Ein Zustand kann nicht mit sich selbst aus dem Takt geraten. Der
+    /// Prototyp hat es die ganze Zeit so gemacht — dort steht das Produkt am
+    /// Knopf (`data-unlock`), nicht in einer Merkstelle daneben.
+    @State private var paywallProdukt: ProductID?
     @State private var selectedMeterID: MeteringPoint.ID?
     @State private var granularity: PeriodEngine.Granularity = .month
     @State private var buckets: [PeriodEngine.Bucket] = []
@@ -125,6 +139,7 @@ struct HistoryView: View {
                             tableCard
                         }
                         if !buckets.isEmpty { exportRow }
+                        kostenSperre
                         reportRow
                         readingsRow
                     }
@@ -170,8 +185,8 @@ struct HistoryView: View {
                                  datenstand.geaendert()
                              })
             }
-            .sheet(isPresented: $showingPaywall) {
-                UnlockSheet(product: .pdfReport)
+            .sheet(item: $paywallProdukt) { produkt in
+                UnlockSheet(product: produkt)
             }
         }
     }
@@ -398,6 +413,32 @@ struct HistoryView: View {
         }
         .accessibilityLabel("Tabellen herunterladen")
         .accessibilityHint("Ablesungen oder Auswertung als CSV. Der Verbrauchsbericht als PDF steht darunter")
+    }
+
+    /// **Was fehlt, steht da — mit seinem Preis.**
+    ///
+    /// Der Umschalter „Menge / Kosten" erscheint erst, wenn Tarife vorliegen,
+    /// und Tarife lassen sich erst eintragen, wenn `costsAndTariffs` gekauft
+    /// ist. Für einen kostenlosen Nutzer gab es Kosten damit **nirgends** —
+    /// nicht als Sperre, nicht als Preis, gar nicht. Der Gründer: „so sieht es
+    /// ein User bisher nicht und würde es wahrscheinlich nie kaufen."
+    ///
+    /// Dieselbe Antwort wie im Zählerformular seit 0.40.0, nur an der Stelle,
+    /// an der Menschen wirklich sind: Versteckt man „Preise" ganz, vermisst
+    /// sie niemand — und niemand kauft. Eine Zeile, kein Banner: Sie sagt, was
+    /// es gibt und was es kostet, und verschwindet nach dem Kauf.
+    @ViewBuilder
+    private var kostenSperre: some View {
+        if tariffs.isEmpty && !purchase.allows(.costsAndTariffs) && !buckets.isEmpty {
+            PulseCard {
+                ProLockRow(product: .costsAndTariffs) {
+                    paywallProdukt = .costsAndTariffs
+                }
+                .padding(.horizontal, 15)
+                .padding(.vertical, 11)
+            }
+            .accessibilityIdentifier("kosten-sperre")
+        }
     }
 
     /// Der Bericht steht unter dem Export und nicht daneben.

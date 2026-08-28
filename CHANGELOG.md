@@ -9,6 +9,92 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.93.2 — 2026-08-28
+
+### Behoben
+- **Die Kostenzeile im Verlauf öffnete den falschen Kauf.** Wer auf „Kosten und
+  Preise" tippte, bekam ein Blatt zu sehen, das den Bericht anbot. Ursache
+  waren zwei Zustände für eine Sache: ein Schalter „Blatt auf" und daneben eine
+  Merkstelle für das Produkt. Beide wurden im selben Atemzug geschrieben, und
+  das Blatt ging mit dem Stand von vorher auf.
+- Dasselbe Muster steckte im **Zählerformular**, dort mit zwei möglichen
+  Produkten — „Mehrere Zählwerke" und „Kosten und Preise" — und damit mit
+  demselben Schaden. Beide Stellen hängen das Blatt jetzt am Produkt auf
+  (`sheet(item:)`), nicht an einem Schalter daneben.
+- `ProductID` ist dafür `Identifiable`. Die Notiz, das gehe nicht, weil die
+  Kennung eine Anforderung der Oberfläche in den Rechenkern trüge, ist gestrichen:
+  `Identifiable` steht in der Standardbibliothek, nicht in SwiftUI.
+
+### Geändert
+- Die Prüfhilfe `oeffne` meldet beim zweiten Versuch nicht mehr das Falsche.
+  Vorher tippte sie stumpf ein zweites Mal, lief gegen das inzwischen offene
+  Blatt und meldete „not hittable" — eine Aussage über die Zeile, die mit der
+  Ursache nichts mehr zu tun hatte. Kommt sie an den Knopf nicht mehr heran,
+  hat sie ihn getroffen; dann steht jetzt da, dass der Anker ausblieb, und was
+  auf dem Schirm stand.
+
+**Der Prototyp hatte recht.** Dort steht das Produkt seit jeher am Knopf
+(`data-unlock="costsAndTariffs"`) und nicht in einer Merkstelle daneben — die
+App wich davon ab, nicht umgekehrt.
+
+---
+
+## 0.93.1 — 2026-08-28
+
+### Behoben
+- Die neue Prüfung fiel, und meine Vermutung dazu war falsch. Sie lautete: die
+  Kennung sitzt am falschen Element. Das Protokoll sagte etwas anderes, und es
+  sagte es in seinem ersten Wort — **`T:Übersicht`**: Der Test hatte den
+  Wechsel in den Verlauf gar nicht gemacht.
+- Dahinter lag der eigentliche Befund. Die Beispieldaten bringen **Tarife**
+  mit, auch mit `-pulse-frei`. Damit zeigte die App einem angeblich
+  kostenlosen Nutzer Beträge — auf der Übersicht stand `Kosten bis 27. August,
+  502,68 €` —, und die neue Sperre konnte nicht greifen, weil sie genau dann
+  erscheint, wenn keine Tarife da sind.
+- `-pulse-ohne-preise` legt den Zustand jetzt her, um den es geht: Zähler und
+  Ablesungen vollständig, Beträge nirgends.
+
+**Dass vorhandene Tarife ohne Kauf weiter rechnen, bleibt so.** Es ist dieselbe
+Regel wie bei den Zählern über der Grenze: Was schon da ist, bleibt benutzbar.
+Neu eintragen lässt sich ohne Kauf nichts.
+
+---
+
+## 0.93.0 — 2026-08-28
+
+Vom Gerät gemeldet: „so sieht es ein User bisher nicht und würde es
+wahrscheinlich nie kaufen."
+
+### Hinzugefügt
+- **Im Verlauf steht jetzt, dass es Kosten gibt — und was sie kosten.** Der
+  Umschalter „Menge / Kosten" erscheint erst, wenn Tarife vorliegen, und Tarife
+  lassen sich erst mit dem Kauf eintragen. Für einen kostenlosen Nutzer gab es
+  Kosten damit **nirgends**: nicht als Sperre, nicht als Preis, gar nicht. Die
+  einzige Stelle, an der davon je die Rede war, lag im Zählerformular — und
+  dorthin geht niemand, der nur seine Zahlen ansieht.
+
+  Dieselbe Antwort wie dort seit 0.40.0, nur an der Stelle, an der Menschen
+  wirklich sind: eine Zeile mit Titel, einem Satz und dem Preis. Kein Banner —
+  sie verschwindet nach dem Kauf.
+- **Ein Einkaufswagen an der Zeile zur Kaufübersicht.** Ohne Zeichen liest sie
+  sich wie eine weitere Einstellung; mit ihm sieht man in einer Zehntelsekunde,
+  worum es geht.
+- Das Kaufblatt im Verlauf zeigt jetzt den Kauf, auf den getippt wurde. Es
+  stand fest auf dem Bericht — was niemandem auffiel, weil es bis hierher
+  keinen Aufrufer hatte.
+
+### Behoben
+- **Im Entwurf zeichnete der Kaufzustand-Schalter drei Zeilen nicht mit.** Nach
+  dem Umschalten blieben der Stand an der Kaufzeile, das Preisschild am Bericht
+  und die neue Kostensperre stehen und behaupteten etwas anderes als der Rest
+  des Schirms. Aufgefallen, weil die neue Prüfung genau diesen Weg ging.
+
+Geprüft: 228 Prüfungen im Entwurf (vorher 220), dazu eine neue
+Oberflächenprüfung — dass die Zeile im Verlauf steht, ihren Preis nennt und auf
+das richtige Kaufblatt führt.
+
+---
+
 ## 0.92.1 — 2026-08-28
 
 ### Behoben

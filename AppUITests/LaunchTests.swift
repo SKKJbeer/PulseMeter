@@ -118,6 +118,19 @@ final class LaunchTests: XCTestCase {
             return false
         }
         for versuch in 1...2 {
+            // **Der zweite Tipp darf nicht über das Ergebnis des ersten
+            // hinweggehen.** In 0.93.1 hat der erste Tipp ein Blatt geöffnet —
+            // nur das falsche. Der Anker kam deshalb nie, der zweite Tipp lief
+            // gegen das offene Blatt, und gemeldet wurde „not hittable": eine
+            // Aussage über die Zeile, die längst nichts mehr mit der Ursache zu
+            // tun hatte. Wer nicht mehr an den Knopf herankommt, hat ihn
+            // getroffen; dann ist die Frage, was aufgegangen ist.
+            if versuch > 1 && !knopf.isHittable {
+                XCTFail("\(was): der erste Tipp kam an, aber \(anker) blieb aus. "
+                        + "Zu sehen war: \(beschriftungen(in: app))",
+                        file: datei, line: zeile)
+                return false
+            }
             knopf.tap()
             if anker.waitForExistence(timeout: erscheint) { return true }
             if versuch == 1 {
@@ -1723,6 +1736,37 @@ final class LaunchTests: XCTestCase {
     /// derweil in App Store Connect, bei den Käufen und bei den Verträgen; die
     /// einzige Stelle, die die Antwort hatte, verschwieg sie.
     ///
+    /// **Ein kostenloser Nutzer sieht, dass es Kosten gibt — und was sie kosten.**
+    ///
+    /// Der Umschalter „Menge / Kosten" erscheint erst, wenn Tarife vorliegen,
+    /// und Tarife lassen sich erst mit dem Kauf eintragen. Für einen
+    /// kostenlosen Nutzer gab es Kosten damit **nirgends** — nicht als Sperre,
+    /// nicht als Preis, gar nicht. Der Gründer: „so sieht es ein User bisher
+    /// nicht und würde es wahrscheinlich nie kaufen."
+    func testTheHistoryShowsThatCostsExistAndWhatTheyCost() {
+        // **Ohne Tarife, denn darum geht es.** Die Beispieldaten bringen
+        // Tarife mit — der erste Anlauf prüfte deshalb einen Zustand, den ein
+        // kostenloser Nutzer nie hat, und fand die Sperre zu Recht nicht. Und
+        // er stand dabei noch auf der Übersicht: Der Wechsel in den Verlauf
+        // fehlte ganz, was das Protokoll mit „T:Übersicht" als erstes sagte.
+        let app = launchFree("-pulse-ohne-preise")
+
+        guard wechsel(zu: "Verlauf", in: app) else { return }
+
+        let sperre = element("kosten-sperre", in: app)
+        guard scroll(to: sperre, in: app) else {
+            XCTFail("Im Verlauf steht nicht, dass es Kosten gibt. Zu sehen war: \(beschriftungen(in: app))")
+            return
+        }
+        // Der Preis steht **an** der Zeile, nicht erst hinter einem Tipp: Wer
+        // ihn erst nach dem Öffnen erfährt, öffnet nicht.
+        XCTAssertTrue(sperre.label.contains("Kosten und Preise"),
+                      "Die Zeile nennt nicht, worum es geht: \(sperre.label)")
+        guard oeffne(sperre, bis: app.navigationBars["Kosten und Preise"], in: app, "Kostensperre") else {
+            return
+        }
+    }
+
     /// **Die Kaufübersicht ist erreichbar, ohne an eine Grenze zu stoßen.**
     ///
     /// Bis 0.92.0 öffnete sich die Kaufseite ausschließlich vor einer Sperre.

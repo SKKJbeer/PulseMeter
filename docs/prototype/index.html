@@ -797,7 +797,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.92.1</p>
+  <p>Klickbarer Entwurf · v0.93.2</p>
 </div>
 
 <div class="device">
@@ -903,6 +903,25 @@ select.field { cursor: pointer; }
            Zeitraum und Zähler zur Wahl — und danach Papier, keine Tabelle.
            Bis 0.92.0 fehlte diese Zeile im Entwurf ganz, während sie in der
            App seit 0.62.2 stand: eine Abweichung nach Regel 2. -->
+      <!-- **Was fehlt, steht da — mit seinem Preis.**
+           Der Umschalter „Menge / Kosten" erscheint erst, wenn Tarife
+           vorliegen, und Tarife lassen sich erst mit dem Kauf eintragen. Für
+           einen kostenlosen Nutzer gab es Kosten damit nirgends: nicht als
+           Sperre, nicht als Preis, gar nicht. Der Gründer: „so sieht es ein
+           User bisher nicht und würde es wahrscheinlich nie kaufen." -->
+      <div class="list" id="cost-lock" style="margin-top:12px;display:none">
+        <button type="button" class="rowbtn" data-unlock="costsAndTariffs">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+               style="width:18px;height:18px;flex:none;color:var(--tint-ink);margin-right:11px">
+            <rect x="4" y="10.5" width="16" height="10" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/>
+          </svg>
+          <div class="rl">Kosten und Preise<small>Aus dem Verbrauch wird ein Betrag — mit Abschlagsvergleich und Vorschau aufs Jahresende</small></div>
+          <span class="freebadge pro">${""}</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+        </button>
+      </div>
+
       <div class="list" style="margin-top:12px">
         <button type="button" class="rowbtn" data-open="report" id="report-row">
           <div class="rl">Verbrauchsbericht<small>Gestaltetes Dokument zum Prüfen der Jahresabrechnung</small></div>
@@ -933,6 +952,15 @@ select.field { cursor: pointer; }
       <div class="section-label">Freischalten</div>
       <div class="list">
         <button type="button" class="rowbtn" data-open="store" id="store-row">
+          <!-- Einkaufswagen: Ohne Zeichen liest sich die Zeile wie eine
+               weitere Einstellung; mit ihm sieht man in einer Zehntelsekunde,
+               worum es geht. -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+               style="width:19px;height:19px;flex:none;color:var(--tint-ink);margin-right:11px">
+            <circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/>
+            <path d="M2 3h2.2l2.4 12.2a1.6 1.6 0 0 0 1.6 1.3h8.6a1.6 1.6 0 0 0 1.6-1.3L21 7H5.4"/>
+          </svg>
           <div class="rl">Was PulseMeter noch kann<small id="store-state"></small></div>
           <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
         </button>
@@ -3279,6 +3307,13 @@ function setPro(on) {
     b.setAttribute("aria-selected", String((b.dataset.pro === "1") === owns("everything"))));
   renderLimitNote();
   renderCards();
+  // **Auch die Zeilen, die vom Kaufzustand abhängen.** Ohne sie blieb nach dem
+  // Umschalten der Stand an der Kaufzeile stehen, das Preisschild am Bericht
+  // und die Kostensperre — drei Stellen, die etwas anderes behaupteten als der
+  // Rest des Schirms.
+  renderStoreRow();
+  renderReportRow();
+  renderCostLock();
 }
 
 function renderLimitNote() {
@@ -3874,10 +3909,19 @@ function renderAll() {
   renderLimitNote();
   renderStoreRow();
   renderReportRow();
+  renderCostLock();
 }
 
 /* Das Wasserzeichen steht am Weg zum Bericht, bevor jemand ihn verschickt —
    nicht danach, wenn er den Schriftzug darauf entdeckt. */
+function renderCostLock() {
+  const box = document.getElementById("cost-lock");
+  if (!box) return;
+  const zeigen = !owns("costsAndTariffs");
+  box.style.display = zeigen ? "" : "none";
+  if (zeigen) box.querySelector(".freebadge").textContent = price("costsAndTariffs");
+}
+
 function renderReportRow() {
   const badge = document.getElementById("report-badge");
   if (!badge) return;

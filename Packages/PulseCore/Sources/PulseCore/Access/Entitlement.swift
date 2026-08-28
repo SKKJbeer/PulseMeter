@@ -18,7 +18,14 @@ import Foundation
 /// das stärkste Argument gegen die Sorge „was, wenn die App eingestellt wird" —
 /// genau die Sorge, die Menschen bei Excel hält. Wer ihn verkauft, löst ein
 /// paar Euro und verliert das Argument, das alles andere trägt.
-public enum ProductID: String, Hashable, Codable, Sendable, CaseIterable {
+public enum ProductID: String, Hashable, Codable, Sendable, CaseIterable, Identifiable {
+
+    /// Die Kennung ist der Kauf selbst — es gibt jeden nur einmal.
+    ///
+    /// Damit lässt sich ein Kaufblatt an dem Produkt aufhängen, das jemand
+    /// angetippt hat, statt an einem Schalter daneben. Zwei Zustände für eine
+    /// Sache geraten aus dem Takt; einer kann das nicht.
+    public var id: String { rawValue }
 
     /// Der dritte und jeder weitere Zähler.
     case additionalMeters

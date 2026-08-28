@@ -579,6 +579,41 @@ Der Zwilling davon in der Oberfläche: **zwei verschiedene Register unter einer
 Beschriftung.** Ein Oberflächentest fiel, weil der neueste Wert die Einspeisung
 war und die Karte zu Recht unverändert blieb.
 
+### Zwei Zustände für eine Sache geraten aus dem Takt
+
+Ein Blatt in SwiftUI stand über einem Schalter „ist es offen?" und daneben lag
+in einer zweiten Merkstelle, **was** darauf stehen soll. Der Tipp schrieb beide
+im selben Atemzug. Das Blatt ging mit dem Inhalt von vorher auf — sichtbar der
+falsche Kauf. Ein Lauf auf einem gemieteten Mac, fünfundzwanzig Minuten.
+
+> Ein Zustand kann nicht mit sich selbst aus dem Takt geraten, zwei können es
+> immer. Das Blatt hängt am Gegenstand (`sheet(item:)`), nicht an einem Schalter
+> daneben.
+
+Es stand sogar eine Begründung dabei, warum es zwei sein müssten: Der Typ liege
+im Rechenkern, und ihm eine Kennung anzuhängen hieße, eine Anforderung der
+Oberfläche in die Domäne zu tragen. Sie trug nicht — `Identifiable` steht in der
+Standardbibliothek, nicht in SwiftUI. **Eine Begründung, die im Code steht, ist
+deshalb noch nicht geprüft.**
+
+### Ein zweiter Versuch, der über den ersten hinweggeht, meldet das Falsche
+
+Die Prüfhilfe tippte einen Knopf, wartete auf einen Anker und tippte bei
+Ausbleiben ein zweites Mal — gedacht gegen verlorene Tipps. Der erste Tipp war
+aber angekommen und hatte ein Blatt geöffnet, nur das falsche. Der zweite lief
+gegen dieses Blatt, und gemeldet wurde `not hittable`: eine Aussage über die
+Zeile, die mit der Ursache nichts mehr zu tun hatte. Die Suche ging danach eine
+Stunde lang in die falsche Richtung.
+
+> Wer beim zweiten Versuch nicht mehr an den Knopf herankommt, **hat ihn beim
+> ersten getroffen.** Dann ist die Frage nicht, ob die Zeile antippbar ist,
+> sondern was aufgegangen ist. Ein Wiederholungsversuch prüft vorher, ob die
+> Voraussetzung des ersten überhaupt noch gilt.
+
+Erkennbar war es an der Uhr, bevor es an der Meldung erkennbar war: Der Test
+lief 24 Sekunden, und die Wartezeit auf den Anker beträgt 10. Wer nicht
+hinkommt, wartet nicht.
+
 ---
 
 ## 7. Wie ermittelt wird, wenn etwas nicht geht
