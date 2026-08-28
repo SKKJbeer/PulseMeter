@@ -9,6 +9,38 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.91.0 — 2026-08-28
+
+**Es geht.** Vom Gerät gemeldet: „ok geht jetzt, ist zwar in dollar aber ok."
+Nach drei Tagen liefert StoreKit die fünf Käufe mit Preisen aus.
+
+### Hinzugefügt
+- **Die Reihenfolge, in der ein Kauf einzurichten ist** — im Baukasten,
+  Abschnitt 5. Von unten nach oben zu suchen hat drei Tage gekostet; von oben
+  nach unten einzurichten kostet zwanzig Minuten: Verträge, Preisplan der App,
+  **Verfügbarkeit der App**, dann erst der Kauf, das Prüfbild und das
+  Nachlesen des Zustands.
+- **Punkt 3 war der Blocker, und er ist der unauffälligste.** Die fünf Käufe
+  standen vollständig auf `READY_TO_SUBMIT` — und die App gab es in keinem
+  Land. Ein Kauf in einer App, die in keinem Laden existiert, hat keinen Laden,
+  in dem er angeboten werden könnte.
+- **Nach dem Setzen nicht sofort nachmessen.** Zwischen „Verfügbarkeit gesetzt"
+  und „Preise stehen auf dem Telefon" lagen mehrere Stunden. Ein Nachmessen
+  nach zehn Minuten hätte die richtige Änderung fälschlich verworfen.
+- **Die Währung kommt vom Gerät, nicht vom Entwickler.** Dollar statt Euro ist
+  kein Konfigurationsfehler: Angezeigt wird der Laden der angemeldeten
+  Apple-ID. Zu prüfen unter Einstellungen → App Store, im TestFlight zusätzlich
+  unter Einstellungen → Entwickler → Sandbox Apple Account. Die hinterlegten
+  Beträge sind davon unberührt — ein Preispunkt gilt in allen Ländern, Apple
+  rechnet ihn je Laden um. Deshalb steht in der App nie ein fester Betrag,
+  sondern der des Stores, und der eigene Vorschlag trägt ein „ca.".
+- Zwei Einträge in Abschnitt 7: das `try?`, das die Antwort des Stores
+  verschluckte, als fünfter Fall derselben Fehlerklasse — und **„Wer nur dort
+  sucht, wo der Fehler auftritt, findet ihn nicht"**: Bei jedem Fehlschlag
+  mitfragen, worin das Fehlgeschlagene steckt und ob das vollständig ist.
+
+---
+
 ## 0.90.1 — 2026-08-28
 
 ### Behoben
