@@ -143,7 +143,11 @@ SUPPORT = f"{WEBSITE}/hilfe"
 
 
 # In Apples Fehlertexten steht das Feld in einfachen Anführungszeichen.
-FELD_IM_FEHLER = re.compile(r"attribute '([A-Za-z]+)'")
+# **Und zwar unabhängig von der Großschreibung.** Apple schreibt einmal
+# „Unexpected json type provided for attribute 'messagingAndChat'" und einmal
+# „Attribute 'whatsNew' cannot be edited" — dasselbe Wort, zwei Schreibweisen.
+# Das Muster traf nur die kleine, und der zweite Einwand blieb ungehört.
+FELD_IM_FEHLER = re.compile(r"attribute '([A-Za-z]+)'", re.I)
 
 
 def setzen(apple: Apple, pfad: str, typ: str, kennung: str,
@@ -243,8 +247,16 @@ def eintrag_fuellen(apple: Apple, app_id: str) -> None:
         return
     # Erst alles als „NONE"; welche davon Wahrheitswerte sind, sagt Apple im
     # Einwand, und `setzen` dreht sie dann um.
-    antworten = {name: "NONE" for name in (alter.get("attributes") or {})
-                 if name not in ("ageRatingOverride", "kidsAgeBand")}
+    #
+    # **Felder, die eine Adresse wollen, bekommen keine Stufe.** Der zweite
+    # Lauf brach mit „must be a valid RFC 3986 URI" ab, und diesmal nannte
+    # Apple das Feld nicht — es blieb nur der Name selbst als Hinweis. Alles
+    # mit `Url` oder `Uri` im Namen bleibt deshalb außen vor.
+    felder = list((alter.get("attributes") or {}).keys())
+    getan.append(f"Altersfreigabe führt {len(felder)} Felder: {', '.join(sorted(felder))}")
+    antworten = {name: "NONE" for name in felder
+                 if name not in ("ageRatingOverride", "kidsAgeBand")
+                 and "url" not in name.lower() and "uri" not in name.lower()}
     setzen(apple, "v1/ageRatingDeclarations", "ageRatingDeclarations",
            alter["id"], antworten, "Altersfreigabe 4+")
 
@@ -381,8 +393,10 @@ def fassung_pruefen(apple: Apple, app_id: str) -> None:
                            ("keywords", "Schlagworte", None),
                            ("promotionalText", "Werbetext", None),
                            ("whatsNew", "Neue Funktionen", None),
-                           ("supportUrl", "Support-URL", gehoert_ihm),
-                           ("marketingUrl", "Marketing-URL", gehoert_ihm)):
+                           # Standen als „kann nur der Gründer", solange die
+                           # Website nicht veröffentlicht war. Sie steht.
+                           ("supportUrl", "Support-URL", None),
+                           ("marketingUrl", "Marketing-URL", None)):
         wert = feld(ort, name) or ""
         pruefe(bool(wert.strip()),
                f"{was} ({len(wert)} Zeichen)" if wert else f"{was} fehlt", wem)

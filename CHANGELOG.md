@@ -9,6 +9,30 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.96.2 — 2026-08-28
+
+Name, Untertitel, Datenschutz-URL und beide Kategorien stehen — **8 von 17
+Punkten**, vorher 5. Zwei Einwände blieben, und beide hatten eine genaue
+Ursache.
+
+### Behoben
+- **Ein Großbuchstabe.** Das Muster suchte `attribute '…'` klein geschrieben.
+  Apple schreibt einmal „Unexpected json type provided for attribute
+  'messagingAndChat'" und einmal „**A**ttribute 'whatsNew' cannot be edited" —
+  dasselbe Wort, zwei Schreibweisen. Der zweite Einwand blieb deshalb ungehört,
+  und mit ihm fielen Beschreibung, Schlagworte und Werbetext.
+- **Felder, die eine Adresse wollen, bekommen keine Stufe.** Die Altersfreigabe
+  brach mit „must be a valid RFC 3986 URI" ab, und diesmal nannte Apple das
+  Feld nicht. Alles mit `Url` oder `Uri` im Namen bleibt jetzt außen vor — und
+  der Lauf schreibt die Feldnamen mit ins Protokoll, damit beim nächsten Mal
+  nicht wieder geraten werden muss.
+
+### Geändert
+- **Support- und Marketing-Adresse sind keine Punkte für den Gründer mehr.**
+  Sie standen dort, solange die Website nicht veröffentlicht war. Sie steht.
+
+---
+
 ## 0.96.1 — 2026-08-28
 
 Name, Untertitel und die Datenschutz-URL stehen in App Store Connect. Zwei
