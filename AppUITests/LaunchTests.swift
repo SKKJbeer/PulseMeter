@@ -1595,14 +1595,19 @@ final class LaunchTests: XCTestCase {
         }
 
         // Und ablesen geht auch.
+        //
+        // **Über `oeffne`, nicht mit einem nackten `tap`.** Genau hier ist der
+        // Lauf zu 0.88.1 gefallen — „Der Ziffernblock erschien nicht", bei
+        // unverändertem App-Code. Der Helfer tippt ein zweites Mal, wenn der
+        // erste Tipp nicht angekommen ist, und schreibt bei einem Fehlschlag
+        // auf, was stattdessen zu sehen war. Ein nackter Tipp sagt beides
+        // nicht, und dann steht im Protokoll nur, was fehlte.
         let eintragen = app.buttons.matching(
             NSPredicate(format: "label BEGINSWITH 'Stand eintragen'")
         ).firstMatch
         XCTAssertTrue(eintragen.waitForExistence(timeout: erscheint),
                       "Ablesen ist nie Pro — es ist der Zweck der App")
-        eintragen.tap()
-        XCTAssertTrue(app.buttons["1"].waitForExistence(timeout: erscheint),
-                      "Der Ziffernblock erschien nicht")
+        _ = oeffne(eintragen, bis: app.buttons["1"], in: app, "Ziffernblock ohne Pro")
     }
 
     /// **Der Bericht ist nie gesperrt, und der Export nie käuflich.**

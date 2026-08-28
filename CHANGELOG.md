@@ -9,6 +9,42 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.89.0 — 2026-08-28
+
+### Hinzugefügt
+- **Was in TestFlight mit Käufen wirklich geht — nachgeschlagen statt
+  behauptet.** Der Gründer hat den wunden Punkt getroffen: „geht überhaupt
+  kaufen in TestFlight? rate niemals." Drei Tage lang stand in jedem Lauf „In
+  einem TestFlight-Bau lassen sie sich kostenlos ausprobieren", ohne dass ich
+  das je geprüft hätte. Es stimmt — TestFlight-Bauten laufen gegen die Sandbox,
+  der Kauf kostet nichts, `READY_TO_SUBMIT` genügt, weder App noch Kauf müssen
+  genehmigt sein, ein Sandbox-Zugang ist nicht nötig. Aber es war eine Annahme,
+  und sie trug die ganze Suche.
+- Die Tabelle dazu steht jetzt in Abschnitt 5 des Baukastens, zusammen mit den
+  zwei Ursachen, die eine leere Produktliste erfahrungsgemäß wirklich
+  verursachen: die **Verfügbarkeit der App** und der **Vertrag für bezahlte
+  Apps**. Beide liegen außerhalb des Kaufs — deshalb sucht man sie zuletzt.
+- Der Befund aus 0.88.x ist dort ebenfalls festgehalten: `appAvailabilityV2`
+  antwortet mit 404, wenn die App in keinem Land verfügbar ist, und die
+  Länderkennungen müssen beim Anlegen wörtlich `${AFG}` lauten.
+
+### Behoben
+- `testExistingMetersStayUsableWithoutPro` fiel im Lauf zu 0.88.1 mit „Der
+  Ziffernblock erschien nicht" — bei unverändertem App-Code. Die Stelle tippte
+  nackt auf „Stand eintragen" und prüfte danach. Für genau diesen Fall gibt es
+  seit Längerem `oeffne()`: Es tippt ein zweites Mal, wenn der erste Tipp nicht
+  ankam, und schreibt bei einem Fehlschlag auf, was stattdessen zu sehen war.
+  Der Helfer war da, diese eine Stelle benutzte ihn nur nicht. Sechs weitere
+  Stellen tippen noch nackt; sie kommen dran, wenn sie fallen.
+
+### Geändert
+- Neue Regel in Abschnitt 7: **Die Voraussetzung wird zuerst geprüft, nicht
+  zuletzt.** Was die Suche trägt, wird belegt, bevor gesucht wird — und solange
+  es nicht belegt ist, steht es als Annahme da, nicht als Satz im Protokoll, den
+  beim zehnten Lesen niemand mehr hinterfragt.
+
+---
+
 ## 0.88.1 — 2026-08-28
 
 ### Behoben
