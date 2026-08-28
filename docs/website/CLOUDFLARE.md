@@ -110,11 +110,8 @@ einem das Hinsehen ab.
 
 ## Was vor dem ersten Mal noch zu tun ist
 
-- **Der Platzhalter in `datenschutz.html`.** Dort steht der Hoster in eckigen
-  Klammern. Bleibt es bei Cloudflare, genügt es, die Klammern zu entfernen —
-  Name und Anschrift stimmen dann. `check-website.mjs` lässt die Seite erst
-  durch, wenn kein `PLATZHALTER` mehr im Quelltext steht, und der Ablauf oben
-  hält sich daran.
+- ~~Der Platzhalter in `datenschutz.html`~~ — seit 0.95.4 zu. Dort steht jetzt
+  Cloudflare ohne Klammern.
 - **Das App-Store-Abzeichen** steht auf „Bald im App Store" und führt
   nirgendwohin. Am Starttag: `scripts/appstore-knopf.sh an`.
 
