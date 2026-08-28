@@ -760,9 +760,14 @@ for (const scheme of ["light", "dark"]) {
        "Und den Preis dazu, bevor jemand tippt");
   note(/Alles freischalten/.test(kaufseite.text) && /9,99/.test(kaufseite.text),
        "Das Bündel steht darunter, nicht als Regal davor");
-  note(/Der Export\s+bleibt kostenlos/.test(kaufseite.text.replace(/\s+/g, " "))
-       || /Export bleibt kostenlos/.test(kaufseite.text.replace(/\s+/g, " ")),
+  // Seit 0.92.0 stehen dort Stichpunkte statt eines Absatzes — geprüft wird
+  // deshalb die Sache, nicht der Wortlaut: Der freie Export ist Produktprinzip
+  // 5, und der Abgleich gehört genannt, weil ihn sonst niemand bemerkt.
+  const frei = kaufseite.text.replace(/\s+/g, " ");
+  note(/Export/.test(frei) && /kostenlos/.test(frei),
        "Die Kaufseite sagt, was kostenlos bleibt");
+  note(/iCloud/.test(frei),
+       "Und nennt den Abgleich, den sonst niemand bemerkt");
 
   // Nichts versprechen, was es noch nicht gibt: Foto-Belege und
   // Siri-Kurzbefehle sind aus 1.0 gestrichen (docs/07-v1-plan.md).
@@ -780,16 +785,53 @@ for (const scheme of ["light", "dark"]) {
   await page.waitForTimeout(250);
   await page.locator('[data-pane="history"]').first().click();
   await page.waitForTimeout(250);
-  // Der Weg zum Bericht führt über „Herunterladen". Ein Knopf, drei Einträge —
-  // und der Bericht ist einer davon, weil er genauso ein Download ist.
+  // **Die Kaufübersicht ist erreichbar, ohne an eine Grenze zu stoßen.**
+  //
+  // Bis 0.92.0 öffnete sich die Kaufseite ausschließlich vor einer Sperre. Wer
+  // wissen wollte, was die App überhaupt kann, fand nirgends eine Antwort.
+  await page.locator('[data-pane="meters"]').first().click();
+  await page.waitForTimeout(250);
+  await page.locator("#store-row").first().click();
+  await page.waitForTimeout(300);
+  const laden = await page.evaluate(() => ({
+    offen: document.getElementById("sheet-store").classList.contains("on"),
+    karten: [...document.querySelectorAll("#store-body [data-karte]")].map(x => x.dataset.karte),
+    punkte: document.querySelectorAll("#store-body ul.includes li").length,
+    absatz: document.getElementById("store-body").innerText.split("\n")
+              .filter(z => z.trim().length > 120).length,
+    text: document.getElementById("store-body").innerText
+  }));
+  note(laden.offen, "Die Kaufübersicht öffnet sich über eine eigene Zeile");
+  note(laden.karten.length === 4,
+       `Alle vier Einzelkäufe stehen darin: ${laden.karten.join(", ")}`);
+  note(/Alles freischalten/.test(laden.text) && /9,99/.test(laden.text),
+       "Das Bündel steht oben, mit Preis");
+  note(laden.punkte >= 14,
+       `Stichpunkte statt Absätze: ${laden.punkte} Zeilen`);
+  // Vom Gründer verlangt: „nicht so viel Fließtext". Eine Zeile über 120
+  // Zeichen ist ein Absatz, und davon darf hier keiner stehen.
+  note(laden.absatz === 0, `Kein Fließtext in der Übersicht (${laden.absatz} lange Zeilen)`);
+  note(/iCloud/.test(laden.text), "Der kostenlose Abgleich wird genannt");
+  await page.locator("#sheet-store [data-close]").first().click();
+  await page.waitForTimeout(250);
+  await page.locator('[data-pane="history"]').first().click();
+  await page.waitForTimeout(250);
+
+  // **Der Bericht steht an genau einer Stelle.** Bis 0.92.0 lag er im Menü
+  // *und* in der Zeile darunter — der Gründer: „das mit dem Bericht ist glaub
+  // doppelt". Das Menü trägt jetzt Tabellen, der Bericht seine eigene Zeile.
   await page.locator('[data-open="download"]').first().click();
   await page.waitForTimeout(300);
   const auswahl = await page.evaluate(() =>
     [...document.querySelectorAll("#sheet-download .rowbtn .rl")]
       .map(x => x.childNodes[0].textContent.trim()));
-  note(auswahl.length === 3 && auswahl.every(x => /CSV|PDF/.test(x)),
-       `Hinter „Herunterladen" stehen drei Dateien: ${auswahl.join(", ")}`);
-  await page.locator('#sheet-download [data-open="report"]').first().click();
+  note(auswahl.length === 2 && auswahl.every(x => /CSV/.test(x)),
+       `Hinter „Tabellen" stehen zwei Tabellen: ${auswahl.join(", ")}`);
+  note(!auswahl.some(x => /PDF|Bericht/.test(x)),
+       "Der Bericht steht nicht doppelt — er hat seine eigene Zeile");
+  await page.locator("#sheet-download [data-close]").first().click();
+  await page.waitForTimeout(250);
+  await page.locator('[data-open="report"]').first().click();
   await page.waitForTimeout(250);
   await page.locator("#makereport").click();
   await page.waitForTimeout(350);

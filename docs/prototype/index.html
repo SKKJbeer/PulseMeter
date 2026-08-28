@@ -218,6 +218,25 @@ h2.large {
   transition: border-color .18s;
 }
 .card.flagged { border-color: color-mix(in srgb, var(--c) 45%, transparent); }
+
+/* Die Kaufübersicht: Stichpunkte statt Absätze.
+
+   Die Haken stehen als eigene Spalte vor dem Text und nicht als Zeichen im
+   Text — sonst rutscht bei einer zweizeiligen Zeile die zweite unter den
+   Haken, und die Liste liest sich nicht mehr in einer Spalte. */
+.card > .cardtitle { padding: 14px 15px 0; font-weight: 640; font-size: 15.5px;
+  letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; }
+.card > .includes, .card > .note, .card > .save, .card > .rowbtn { margin: 8px 15px 14px; }
+ul.includes { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 5px; }
+ul.includes li {
+  position: relative; padding-left: 19px;
+  font-size: 13.5px; line-height: 1.35; color: var(--ink-2);
+}
+ul.includes li::before {
+  content: "•"; position: absolute; left: 4px; top: -1px;
+  color: var(--ink-3); font-size: 15px; line-height: 1.35;
+}
+ul.includes.done li::before { content: "✓"; color: var(--tint); font-size: 12px; font-weight: 700; top: 0; }
 .card-top {
   display: flex; align-items: center; gap: 10px;
   padding: 14px 15px 0;
@@ -778,7 +797,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.90.1</p>
+  <p>Klickbarer Entwurf · v0.92.1</p>
 </div>
 
 <div class="device">
@@ -873,7 +892,22 @@ select.field { cursor: pointer; }
                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M4 20h16"/>
           </svg>
-          Herunterladen
+          Tabellen
+        </button>
+      </div>
+
+      <!-- **Der Bericht hat seine eigene Zeile, und zwar nur diese.**
+           In der App stand er zusätzlich im Menü darüber; der Gründer hat es
+           beim zweiten Hinsehen benannt. Er ist kein dritter Export, sondern
+           ein Dokument: Wer die Rechnung des Versorgers prüfen will, braucht
+           Zeitraum und Zähler zur Wahl — und danach Papier, keine Tabelle.
+           Bis 0.92.0 fehlte diese Zeile im Entwurf ganz, während sie in der
+           App seit 0.62.2 stand: eine Abweichung nach Regel 2. -->
+      <div class="list" style="margin-top:12px">
+        <button type="button" class="rowbtn" data-open="report" id="report-row">
+          <div class="rl">Verbrauchsbericht<small>Gestaltetes Dokument zum Prüfen der Jahresabrechnung</small></div>
+          <span class="freebadge pro" id="report-badge"></span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
         </button>
       </div>
     </section>
@@ -892,6 +926,18 @@ select.field { cursor: pointer; }
         <div class="row"><div class="rl">Monatlich am 1.<small>Für Strom, Wasser, Wärmepumpe</small></div><div class="rv" style="color:var(--good)">An</div></div>
         <div class="row"><div class="rl">Gas<small>Monatlich am 1.</small></div><div class="rv" style="color:var(--good)">An</div></div>
       </div>
+      <!-- Der dezente Weg zur Kaufübersicht. Nicht als vierter Tab: Ein Tab
+           ist ein Ort, an dem man ständig vorbeikommt, und ein Laden gehört
+           dorthin nicht. Hier steht er sichtbar für den, der sucht, und stumm
+           für alle anderen. -->
+      <div class="section-label">Freischalten</div>
+      <div class="list">
+        <button type="button" class="rowbtn" data-open="store" id="store-row">
+          <div class="rl">Was PulseMeter noch kann<small id="store-state"></small></div>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+        </button>
+      </div>
+
       <div class="section-label">Nur im Entwurf</div>
       <!-- `data-entwurf` markiert, was es in der App nicht gibt. Die
            nicht-funktionale Prüfung lässt diesen Block aus: Sie soll das
@@ -1001,11 +1047,11 @@ select.field { cursor: pointer; }
     <div class="sheet-body"><div class="list" id="readings"></div></div>
   </div>
 
-  <!-- Herunterladen -->
-  <div class="sheet" id="sheet-download" role="dialog" aria-modal="true" aria-label="Herunterladen">
+  <!-- Tabellen -->
+  <div class="sheet" id="sheet-download" role="dialog" aria-modal="true" aria-label="Tabellen herunterladen">
     <div class="grabber"></div>
     <div class="sheet-head">
-      <div class="sheet-title">Herunterladen</div>
+      <div class="sheet-title">Tabellen</div>
       <button type="button" class="sheet-close" data-close>Fertig</button>
     </div>
     <div class="sheet-body" id="dl-body"></div>
@@ -1032,6 +1078,15 @@ select.field { cursor: pointer; }
   </div>
 
   <!-- Erklärung -->
+  <!-- Kaufübersicht -->
+  <div class="sheet" id="sheet-store" role="dialog" aria-modal="true" aria-label="Freischalten">
+    <div class="sheet-card">
+      <button type="button" class="sheet-close" data-close="1" aria-label="Schließen">✕</button>
+      <div class="sheet-title">Freischalten</div>
+      <div id="store-body"></div>
+    </div>
+  </div>
+
   <div class="sheet" id="sheet-explain" role="dialog" aria-modal="true" aria-label="Erklärung">
     <div class="grabber"></div>
     <div class="sheet-head">
@@ -2973,9 +3028,14 @@ function renderReport() {
   doc.innerHTML = head + summary + sections + note + mark;
 }
 
-/* Der Bogen hinter „Herunterladen" — die Auswahl, die in der App das Menü am
-   Knopf ist. Drei Einträge, und der Bericht steht mit dabei: Er ist genauso ein
-   Download wie die zwei Tabellen, nur ungekauft mit Wasserzeichen. */
+/* Der Bogen hinter „Tabellen" — die Auswahl, die in der App das Menü am Knopf
+   ist.
+
+   **Der Bericht stand hier und in der Zeile darunter**, also zweimal auf
+   demselben Schirm. Der Gründer: „das mit dem Bericht ist glaub doppelt, das
+   muss sauber an einer Stelle gemacht werden." Er hat recht, und beide
+   Einwände vertragen sich: Hier liegen **Tabellen**, der Bericht ist ein
+   **Dokument** mit Zeitraum und Vorschau und hat seine eigene Zeile. */
 function openDownload() {
   const scope = histMeter === "all" ? "Alle Zähler" : METERS.find(x => x.id === histMeter).name;
   document.getElementById("dl-body").innerHTML = `
@@ -2988,11 +3048,6 @@ function openDownload() {
     <button type="button" class="rowbtn" data-export="analysis" style="padding-left:0;padding-right:0">
       <div class="rl">Auswertung als CSV<small>Eine Zeile je Zeitraum, mit gerechnetem Verbrauch</small></div>
       <span class="freebadge">frei</span>
-      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
-    </button>
-    <button type="button" class="rowbtn" data-open="report" style="padding-left:0;padding-right:0">
-      <div class="rl">Verbrauchsbericht als PDF${reportIsWatermarked() ? " (mit Wasserzeichen)" : ""}<small>In der App kommt hier die Datei — im Entwurf der Bericht zum Drucken</small></div>
-      ${reportIsWatermarked() ? `<span class="freebadge pro">${price("pdfReport")}</span>` : ""}
       <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
     </button>
     <div class="note">Der Datenexport bleibt dauerhaft kostenlos. Deine Ablesungen sind deine Daten —
@@ -3068,6 +3123,46 @@ const PRODUCTS = [
 const BUNDLE = { id: "everything", price: 9.99, title: "Alles freischalten",
                  text: "Alle vier Freischaltungen zusammen, dauerhaft. Günstiger als einzeln." };
 
+/* Was in einem Kauf steckt — als Stichpunkte, nicht als Absatz.
+
+   Der Satz in `text` sagt, wozu etwas gut ist; er trägt, solange man vor genau
+   dieser Sperre steht. Wer vor der Liste aller Käufe steht, will nicht vier
+   Absätze lesen, sondern in fünf Sekunden sehen, was er bekommt. Dieselben
+   Zeilen stehen in `ProductID.includes` — weichen sie ab, ist das ein Fehler
+   und kein Zustand (Regel 2). */
+const INCLUDES = {
+  additionalMeters: ["Beliebig viele Zähler statt zwei",
+                     "Strom, Gas, Wasser und Wärme nebeneinander"],
+  multipleRegisters: ["Zwei Zählwerke an einem Gerät",
+                      "Tag- und Nachtstrom getrennt",
+                      "Einspeisung neben dem Bezug"],
+  costsAndTariffs: ["Grundpreis und Arbeitspreis eintragen",
+                    "Kosten statt nur Verbrauch",
+                    "Abschlagsvergleich und Vorschau aufs Jahresende"],
+  pdfReport: ["Bericht ohne Wasserzeichen",
+              "Zum Weitergeben an Vermieter oder Versorger"],
+  everything: PRODUCTS.map(p => p.title)
+};
+
+/* Was dauerhaft nichts kostet. Steht neben den Preisen, nicht im
+   Kleingedruckten: Die häufigste Sorge ist nicht der Preis, sondern die Angst,
+   später nicht mehr an die eigenen Zahlen zu kommen. Der Abgleich gehört
+   genannt, weil ihn sonst niemand bemerkt — er läuft von selbst. */
+const ALWAYS_FREE = [
+  "Zwei Zähler mit unbegrenzt vielen Ablesungen",
+  "Die ganze Historie und der Vorjahresvergleich",
+  "Abgleich zwischen deinen Geräten über iCloud",
+  "Erinnerungen an fällige Ablesungen",
+  "Export aller Daten als Tabelle — dauerhaft kostenlos"
+];
+
+/* Stichpunkte mit Haken davor — dieselbe Form für Gekauftes, Käufliches und
+   Kostenloses, damit die Liste vergleichbar bleibt. */
+function bulletList(zeilen, erledigt) {
+  return `<ul class="includes${erledigt ? " done" : ""}">`
+    + zeilen.map(z => `<li>${z}</li>`).join("") + `</ul>`;
+}
+
 function product(id) { return PRODUCTS.find(p => p.id === id) || BUNDLE; }
 function owns(id) { return OWNED.has(id) || OWNED.has("everything"); }
 function price(id) { return money(product(id).price); }
@@ -3100,20 +3195,69 @@ function openPaywall(id) {
     ${rest.length && !owns("everything") ? `
       <div class="section-label">Oder gleich alles</div>
       <button type="button" class="rowbtn" id="pro-bundle" style="padding-left:0;padding-right:0">
-        <div class="rl">${BUNDLE.title}<small>${BUNDLE.text}</small></div>
+        <div class="rl">${BUNDLE.title}${bulletList(INCLUDES.everything, false)}</div>
         <span class="freebadge pro">${money(BUNDLE.price)}</span>
       </button>
-      <div class="note">Alle vier Freischaltungen zusammen — ${money(spart)} günstiger als einzeln.</div>` : ""}
+      <div class="note">Alle vier zusammen — ${money(spart)} günstiger als einzeln.</div>` : ""}
     <div class="section-label">Dauerhaft kostenlos</div>
-    <div class="note">Zwei Zähler, unbegrenzt viele Ablesungen, die ganze Historie, der
-    Vorjahresvergleich, Erinnerungen — und der Export deiner Daten als Tabelle. Der Export
-    bleibt kostenlos, auch wenn du nie kaufst.</div>
+    ${bulletList(ALWAYS_FREE, true)}
     <div class="note">Im Entwurf schalten die Knöpfe frei, ohne zu bezahlen. In der App
     übernimmt das StoreKit, sobald PulseMeter im App Store ist.</div>`;
   openSheet("sheet-pro");
   document.getElementById("pro-buy").onclick = () => unlock(p.id);
   const bundle = document.getElementById("pro-bundle");
   if (bundle) bundle.onclick = () => unlock(BUNDLE.id);
+}
+
+/* Alles Käufliche an einer Stelle — und direkt kaufbar.
+
+   Der Unterschied zum Kaufblatt: Dort steht **eine** Funktion, weil jemand
+   gerade davorsteht, mit einem erklärenden Satz. Hier stehen alle, weil er
+   nachsieht — und dann zählen Stichpunkte. Das Bündel steht oben: Wer die
+   Übersicht aufsucht, sucht den Überblick, und der beginnt bei dem Kauf, der
+   alles enthält. */
+function openStore() {
+  const einzeln = PRODUCTS.reduce((a, b) => a + b.price, 0);
+  const spart = einzeln - BUNDLE.price;
+  const buendel = owns("everything") ? "" : `
+    <div class="card" style="margin-bottom:14px">
+      <div class="cardtitle">${BUNDLE.title}</div>
+      ${bulletList(INCLUDES.everything, false)}
+      <div class="note">Alle vier zusammen — ${money(spart)} günstiger als einzeln.</div>
+      <button type="button" class="save" data-kaufen="everything"
+              style="--c:var(--tint);--c-ink:var(--tint-ink)">Freischalten · ${money(BUNDLE.price)}</button>
+    </div>`;
+
+  const einzelne = PRODUCTS.map(p => `
+    <div class="card" data-karte="${p.id}" style="margin-bottom:10px">
+      <div class="cardtitle">${p.title}${owns(p.id) ? ` <span class="freebadge">freigeschaltet</span>` : ""}</div>
+      ${bulletList(INCLUDES[p.id], owns(p.id))}
+      ${owns(p.id) ? "" : `<button type="button" class="rowbtn" data-kaufen="${p.id}"
+              style="padding-left:0;padding-right:0"><div class="rl">Freischalten</div>
+              <span class="freebadge pro">${money(p.price)}</span></button>`}
+    </div>`).join("");
+
+  document.getElementById("store-body").innerHTML = buendel
+    + `<div class="section-label">Einzeln</div>${einzelne}`
+    + `<div class="section-label">Dauerhaft kostenlos</div>${bulletList(ALWAYS_FREE, true)}`
+    + `<div class="note">Im Entwurf schalten die Knöpfe frei, ohne zu bezahlen. In der App
+       übernimmt das StoreKit.</div>`;
+  openSheet("sheet-store");
+}
+
+/* Die Zeile am Ende des Zähler-Schirms sagt, wie viel schon offensteht —
+   gezählt, nicht behauptet. Wer alles hat, soll das sehen und nicht noch
+   einmal auf ein Angebot stoßen. */
+function renderStoreRow() {
+  const offen = PRODUCTS.filter(p => !owns(p.id));
+  const guenstigste = money(Math.min(...PRODUCTS.map(p => p.price)));
+  const el = document.getElementById("store-state");
+  if (!el) return;
+  el.textContent = offen.length === 0
+    ? "Alles freigeschaltet"
+    : offen.length === PRODUCTS.length
+      ? `${offen.length} Freischaltungen ab ${guenstigste}`
+      : `Noch ${offen.length} von ${PRODUCTS.length} offen`;
 }
 
 function unlock(id) {
@@ -3728,6 +3872,17 @@ function renderAll() {
   renderHistory();
   renderMeterList();
   renderLimitNote();
+  renderStoreRow();
+  renderReportRow();
+}
+
+/* Das Wasserzeichen steht am Weg zum Bericht, bevor jemand ihn verschickt —
+   nicht danach, wenn er den Schriftzug darauf entdeckt. */
+function renderReportRow() {
+  const badge = document.getElementById("report-badge");
+  if (!badge) return;
+  badge.textContent = reportIsWatermarked() ? price("pdfReport") : "";
+  badge.style.display = reportIsWatermarked() ? "" : "none";
 }
 
 /* Tastenfeld aufbauen */
@@ -3841,11 +3996,14 @@ function refreshAfterMeterChange() {
 
 /* Ereignisse */
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-capture],[data-reading],#cap-delete,[data-history],[data-meterchange],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export],[data-month],[data-open],[data-scope],[data-period],[data-meter],[data-pro],[data-unlock],#add-meter,#first-meter,#ed-save,#ed-archive,#ed-delete");
+  const t = e.target.closest("[data-capture],[data-reading],#cap-delete,[data-history],[data-meterchange],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export],[data-month],[data-open],[data-kaufen],[data-scope],[data-period],[data-meter],[data-pro],[data-unlock],#add-meter,#first-meter,#ed-save,#ed-archive,#ed-delete");
   if (!t) return;
 
   if (t.dataset.pro !== undefined) return setPro(t.dataset.pro === "1");
   if (t.dataset.unlock) return openPaywall(t.dataset.unlock);
+  // In der Übersicht wird **direkt** gekauft, nicht erst ein Kaufblatt
+  // geöffnet: Wer dort steht, hat sich die Auswahl schon angesehen.
+  if (t.dataset.kaufen) return unlock(t.dataset.kaufen);
 
   // Der Knopf bleibt derselbe und führt zur Kaufseite statt ins Leere. Ihn
   // auszugrauen verhinderte dasselbe und erklärte nichts — Produktprinzip 4.
@@ -3939,6 +4097,7 @@ document.addEventListener("click", e => {
   }
   if (t.dataset.open === "readings") return openSheet("sheet-readings");
   if (t.dataset.open === "download") return openDownload();
+  if (t.dataset.open === "store") return openStore();
   // Der Bericht ist nie gesperrt — ungekauft trägt er ein Wasserzeichen.
   if (t.dataset.open === "report") return openReportConfig();
   if (t.dataset.scope) { repScope = t.dataset.scope; return openReportConfig(); }

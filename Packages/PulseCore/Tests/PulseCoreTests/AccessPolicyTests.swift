@@ -137,6 +137,50 @@ final class AccessPolicyTests: XCTestCase {
         }
     }
 
+    /// **Stichpunkte, keine Absätze.** Vom Gründer verlangt: „nicht so viel
+    /// Fließtext, sondern einfach nur die klaren Stichpunkte, was alles
+    /// enthalten ist."
+    ///
+    /// Die Prüfung hält die Form, nicht den Wortlaut: höchstens drei Zeilen,
+    /// jede kurz genug für eine Zeile auf einem Telefon, und keine, die mit
+    /// einem Punkt endet — eine Aufzählung ist kein Satz.
+    func testEveryProductListsWhatItContainsInShortLines() {
+        for product in ProductID.allCases {
+            let zeilen = product.includes
+            XCTAssertFalse(zeilen.isEmpty, "\(product) sagt nicht, was enthalten ist")
+            XCTAssertLessThanOrEqual(zeilen.count, 4,
+                                     "\(product) zählt mehr auf, als jemand überfliegt")
+            for zeile in zeilen {
+                XCTAssertFalse(zeile.isEmpty)
+                XCTAssertLessThanOrEqual(zeile.count, 52,
+                                         "Zu lang für eine Zeile: \(zeile)")
+                XCTAssertFalse(zeile.hasSuffix("."), "Kein Satzpunkt in einer Liste: \(zeile)")
+            }
+        }
+    }
+
+    /// Das Bündel nennt genau die vier Stücke, die es ersetzt.
+    ///
+    /// Sonst steht dort eine Liste, die nicht mit dem übereinstimmt, was
+    /// gekauft wird — und das merkt jemand erst nach dem Kauf.
+    func testTheBundleListsExactlyTheFourPiecesItReplaces() {
+        XCTAssertEqual(ProductID.everything.includes,
+                       ProductID.individually.map(\.title))
+    }
+
+    /// Was kostenlos bleibt, wird genannt — sonst bemerkt es niemand.
+    ///
+    /// Der Abgleich zwischen Geräten läuft von selbst und kostet nichts; er
+    /// stand deshalb nirgends. Der Export ist Produktprinzip 5 und das
+    /// stärkste Argument gegen die Angst, später nicht mehr an die eigenen
+    /// Zahlen zu kommen.
+    func testTheFreeListNamesSyncAndExport() {
+        let frei = ProductID.alwaysFree.joined(separator: " ")
+        XCTAssertTrue(frei.contains("iCloud"), "Der Abgleich gehört genannt")
+        XCTAssertTrue(frei.contains("Export"), "Der freie Export ist Produktprinzip 5")
+        XCTAssertFalse(ProductID.alwaysFree.contains { $0.count > 60 })
+    }
+
     /// **Die Kennungen im Store dürfen sich nie ändern.** Ein umbenanntes
     /// Produkt ist für jeden, der es gekauft hat, ein verlorener Kauf — und
     /// eine Erstattung mit schlechter Bewertung obendrauf.

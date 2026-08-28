@@ -467,6 +467,51 @@ Bleibt die Produktliste trotzdem leer, sind es erfahrungsgemäß zwei Dinge:
 die **Verfügbarkeit der App** und der **Vertrag für bezahlte Apps**. Beide
 liegen außerhalb des Kaufs, und genau deshalb sucht man sie zuletzt.
 
+### Die Reihenfolge, in der ein Kauf einzurichten ist
+
+Von unten nach oben zu suchen hat drei Tage gekostet. **Von oben nach unten
+einzurichten kostet zwanzig Minuten**, und in dieser Reihenfolge fällt jeder
+Fehler dort auf, wo er entsteht:
+
+| # | Was | Wo | Woran man merkt, dass es fehlt |
+|---|---|---|---|
+| 1 | **Verträge**: bezahlte Apps, Bank, Steuer — alle drei auf „Aktiv" | Browser, `appstoreconnect.apple.com/business` | keine Schnittstelle; nur im Browser sichtbar |
+| 2 | **Preisplan der App** | `GET /v1/apps/<id>/appPriceSchedule` | Antwort 404 |
+| 3 | **Verfügbarkeit der App** in Ländern | `GET /v1/apps/<id>/appAvailabilityV2` | **404 — „There is no resource of type 'appAvailabilities'"** |
+| 4 | **Kauf** anlegen, beschriften, bepreisen, verfügbar machen | `/v2/inAppPurchases` und Beziehungen | Zustand `MISSING_METADATA` |
+| 5 | **Prüfbild** je Kauf | `/v1/inAppPurchaseAppStoreReviewScreenshots` | Zustand bleibt `MISSING_METADATA` |
+| 6 | Nachlesen: **Zustand**, nicht Existenz | `state` je Kauf | `READY_TO_SUBMIT` = wird ausgeliefert |
+
+**Punkt 3 war bei uns der Blocker**, und er ist der unauffälligste: Die fünf
+Käufe standen vollständig auf `READY_TO_SUBMIT`, mit Preis, Beschriftung und
+angenommenem Prüfbild — und die App gab es in **keinem** Land. Ein Kauf in
+einer App, die in keinem Laden existiert, hat keinen Laden, in dem er
+angeboten werden könnte. Die Verfügbarkeit des *Kaufs* half nicht: Sie
+beschreibt, wo er gälte, wenn es die App dort gäbe.
+
+**Nach dem Setzen nicht sofort nachmessen.** Zwischen „Verfügbarkeit gesetzt"
+und „Preise stehen auf dem Telefon" lagen bei uns **mehrere Stunden**. Ein
+Nachmessen nach zehn Minuten hätte „geht immer noch nicht" ergeben und die
+richtige Änderung fälschlich verworfen. Wer etwas an der Storefront ändert,
+misst am nächsten Tag nach — oder wartet mindestens ein paar Stunden, bevor er
+weitersucht.
+
+### Die Währung kommt vom Gerät, nicht vom Entwickler
+
+Im TestFlight standen `$2,99` und `$9,99` statt Euro. Das ist **kein
+Konfigurationsfehler**: Angezeigt wird der Laden der Apple-ID, die auf dem
+Gerät angemeldet ist, nicht das Land des Entwicklerkontos. Dasselbe im
+CI-Simulator, der in der US-Region läuft.
+
+- Prüfen unter **Einstellungen → App Store → Apple-Account**; im TestFlight
+  zusätzlich der Sandbox-Zugang unter **Einstellungen → Entwickler → Sandbox
+  Apple Account**.
+- Die hinterlegten Beträge sind davon unberührt: Ein Preispunkt gilt in allen
+  Ländern, Apple rechnet ihn je Laden um.
+- **Deshalb nie einen Betrag fest in die App schreiben.** Was der Store nennt,
+  ist die einzige richtige Zahl; ein eigener Vorschlagswert gehört sichtbar
+  gekennzeichnet („ca.") und verschwindet, sobald der Store antwortet.
+
 ---
 
 ## 6. Die zwei Fehlerklassen, die immer wiederkommen
@@ -490,10 +535,30 @@ ein Fehler in meiner Abfrage — ein `limit` an einem Einzelstück statt an eine
 Liste. Ausgerechnet die zwei Felder, wegen derer die Aufstellung geschrieben
 worden war.
 
+Und ein fünftes Mal, im eigenen Programm — die teuerste Zeile der ganzen Suche:
+
+```swift
+if let geladen = try? await Product.products(for: kennungen) { … }
+```
+
+Dieses `try?` legt „der Store hat einen Fehler geworfen" und „der Store kennt
+keine unserer Kennungen" unter einen Wert. Beides endet in einer leeren Liste,
+und die Oberfläche sagte dazu einen Satz, den niemand geprüft hatte. Drei Tage
+lang wurde überall gesucht, nur nicht an der Stelle, die die Antwort hatte.
+
 > **Jedes Nachlesen muss zwei Fragen stellen: Ist es da, und wirkt es?** Und
 > zwei Sachverhalte gehören nie unter einen Wert. Auch nicht „ich konnte nicht
 > fragen" und „die Gegenseite sagt nein": Ein Fehler auf der eigenen Seite darf
 > nie wie eine Antwort der Gegenseite aussehen.
+
+### Wer nur dort sucht, wo der Fehler auftritt, findet ihn nicht
+
+Der Kauf war vollständig, fünfmal. Die Ursache saß eine Ebene höher, an der
+App, nach der niemand gefragt hatte. Dieselbe Form wie beim Prüfbild und beim
+Profil, das der Bau nicht bekam:
+
+> Bei jedem Fehlschlag mitfragen, **worin** das Fehlgeschlagene steckt — und ob
+> das seinerseits vollständig ist.
 
 Dieselbe Regel greift beim Signieren: Erst wenn die App-ID **noch einmal
 abgefragt** wurde und alles steht, darf der Bau die Berechtigungsdateien
