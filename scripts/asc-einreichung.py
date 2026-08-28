@@ -142,20 +142,62 @@ DATENSCHUTZ = f"{WEBSITE}/datenschutz"
 SUPPORT = f"{WEBSITE}/hilfe"
 
 
+# In Apples Fehlertexten steht das Feld in einfachen Anführungszeichen.
+FELD_IM_FEHLER = re.compile(r"attribute '([A-Za-z]+)'")
+
+
 def setzen(apple: Apple, pfad: str, typ: str, kennung: str,
            werte: dict, was: str) -> bool:
-    """Ein PATCH, der sagt, was er getan hat — oder warum nicht."""
-    leer = {k: v for k, v in werte.items() if v}
-    if not leer:
+    """Ein PATCH, der auf Apples Einwand eingeht, statt ihn zu melden.
+
+    **Warum das nötig war.** Der erste Lauf brachte zwei 409er, und beide
+    nannten das Feld, an dem es lag:
+
+        Unexpected json type provided for attribute 'messagingAndChat'.
+        Expected a BOOLEAN but got STRING
+
+        Attribute 'whatsNew' cannot be edited at this time
+
+    Beides ließe sich mit einer abgetippten Liste erschlagen — welche Felder
+    Wahrheitswerte sind, und dass die erste Fassung keine Versionshinweise
+    annimmt. Solche Listen veralten still. Apple sagt es ohnehin in jedem
+    Einwand; also wird gelesen statt geraten: Falscher Typ → umdrehen. Nicht
+    änderbar → weglassen und den Rest trotzdem eintragen.
+    """
+    bleibt = {k: v for k, v in werte.items() if v not in (None, "")}
+    if not bleibt:
         offen.append(f"{was}: nichts einzutragen — der Text fehlt im Dokument")
         return False
-    stand, antwort = apple.aendern(f"{pfad}/{kennung}",
-                                   {"data": {"type": typ, "id": kennung,
-                                             "attributes": leer}})
-    if stand in (200, 204):
-        getan.append(f"{was}: {', '.join(leer)}")
-        return True
-    offen.append(f"{was}: ging nicht ({stand}) — {kurz(antwort)}")
+
+    weggelassen: list[str] = []
+    for _ in range(len(bleibt) + 2):
+        stand, antwort = apple.aendern(f"{pfad}/{kennung}",
+                                       {"data": {"type": typ, "id": kennung,
+                                                 "attributes": bleibt}})
+        if stand in (200, 204):
+            satz = f"{was}: {', '.join(bleibt)}"
+            if weggelassen:
+                satz += f" (ohne {', '.join(weggelassen)} — Apple lässt es hier nicht zu)"
+            getan.append(satz)
+            return True
+
+        text = kurz(antwort)
+        treffer = FELD_IM_FEHLER.search(text)
+        if stand != 409 or not treffer or treffer.group(1) not in bleibt:
+            offen.append(f"{was}: ging nicht ({stand}) — {text}")
+            return False
+
+        name = treffer.group(1)
+        if "BOOLEAN" in text:
+            bleibt[name] = False
+        else:
+            del bleibt[name]
+            weggelassen.append(name)
+        if not bleibt:
+            offen.append(f"{was}: Apple lässt hier gerade nichts ändern — {text}")
+            return False
+
+    offen.append(f"{was}: gibt nach mehreren Versuchen keine Ruhe")
     return False
 
 
@@ -199,19 +241,12 @@ def eintrag_fuellen(apple: Apple, app_id: str) -> None:
     if alter is None:
         offen.append(f"Altersfreigabe nicht lesbar ({stand})")
         return
-    antworten = {}
-    for name, wert in (alter.get("attributes") or {}).items():
-        if name in ("ageRatingOverride", "kidsAgeBand"):
-            continue
-        antworten[name] = False if isinstance(wert, bool) else "NONE"
-    stand, antwort = apple.aendern(
-        f"v1/ageRatingDeclarations/{alter['id']}",
-        {"data": {"type": "ageRatingDeclarations", "id": alter["id"],
-                  "attributes": antworten}})
-    if stand in (200, 204):
-        getan.append(f"Altersfreigabe: {len(antworten)} Fragen mit „trifft nicht zu\" beantwortet")
-    else:
-        offen.append(f"Altersfreigabe: ging nicht ({stand}) — {kurz(antwort)}")
+    # Erst alles als „NONE"; welche davon Wahrheitswerte sind, sagt Apple im
+    # Einwand, und `setzen` dreht sie dann um.
+    antworten = {name: "NONE" for name in (alter.get("attributes") or {})
+                 if name not in ("ageRatingOverride", "kidsAgeBand")}
+    setzen(apple, "v1/ageRatingDeclarations", "ageRatingDeclarations",
+           alter["id"], antworten, "Altersfreigabe 4+")
 
 
 def fassung_fuellen(apple: Apple, app_id: str) -> None:
@@ -288,11 +323,21 @@ def eintrag_pruefen(apple: Apple, app_id: str) -> None:
            "Datenschutzerklärung als URL — die Seite muss dafür veröffentlicht sein",
            gehoert_ihm)
 
-    beziehungen = info.get("relationships", {})
+    # **Die Listenantwort führt Beziehungen nur als Verweis, nicht als Wert.**
+    # Der erste Lauf meldete deshalb „Hauptkategorie: —", obwohl der Eintrag
+    # eine Zeile vorher gesetzt worden war. Gefragt wird jetzt einzeln, mit
+    # `include`.
+    stand, antwort = apple.holen(f"v1/appInfos/{info['id']}",
+                                 **{"include": "primaryCategory,secondaryCategory"})
+    dabei = {e["id"] for e in (antwort.json().get("included", []) if stand == 200 else [])}
+    einzeln = antwort.json().get("data", {}) if stand == 200 else {}
+    beziehungen = einzeln.get("relationships", {})
     for name, was in (("primaryCategory", "Hauptkategorie"),
                       ("secondaryCategory", "Zweitkategorie")):
         gesetzt = (beziehungen.get(name) or {}).get("data")
-        pruefe(bool(gesetzt), f"{was}: {(gesetzt or {}).get('id', '—')}")
+        kennung = (gesetzt or {}).get("id")
+        pruefe(bool(kennung), f"{was}: {kennung or '—'}"
+               + ("" if not kennung or kennung in dabei else " (nicht auflösbar)"))
 
     stand, alter = erste(apple, f"v1/appInfos/{info['id']}/ageRatingDeclaration")
     if alter is None:
@@ -313,8 +358,12 @@ def eintrag_pruefen(apple: Apple, app_id: str) -> None:
 
 def fassung_pruefen(apple: Apple, app_id: str) -> None:
     """Die Fassung selbst: Zustand, Texte, Bilder, Prüfangaben."""
+    # **Dieselbe Abfrage wie im Füller.** Der las mit `filter[platform]` und
+    # fand die Fassung; der Leser sortierte mit `sort=-versionString`, bekam
+    # nichts Brauchbares zurück und meldete „es gibt noch keine Fassung" —
+    # während zwei Zeilen darüber stand, dass sie schon steht.
     stand, fassung = erste(apple, f"v1/apps/{app_id}/appStoreVersions",
-                           **{"limit": 5, "sort": "-versionString"})
+                           **{"limit": 5, "filter[platform]": "IOS"})
     if fassung is None:
         offen.append("Es gibt noch keine App-Store-Fassung — sie wird angelegt")
         return

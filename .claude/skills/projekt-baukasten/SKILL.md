@@ -599,6 +599,29 @@ angeschrieben.
 Erkennungsmerkmal: Steht im Code `if vorhanden: return`, gehört daneben die
 Frage, was passiert, wenn sich der Sollwert ändert.
 
+### Der Einwand der Gegenseite nennt oft das Feld — dann wird gelesen, nicht geraten
+
+Zwei Ablehnungen beim ersten Eintragen der Store-Daten:
+
+```
+Unexpected json type provided for attribute 'messagingAndChat'.
+Expected a BOOLEAN but got STRING
+
+Attribute 'whatsNew' cannot be edited at this time
+```
+
+Beides ließe sich mit abgetippten Listen erschlagen: welche Felder
+Wahrheitswerte sind, und dass die **erste** Fassung keine Versionshinweise
+annimmt. Solche Listen veralten still — die Gegenseite ändert Feldnamen, und
+niemand merkt es, bis ein Lauf rot wird.
+
+> Nennt der Fehler das Feld, **beantwortet der Aufruf ihn**: falscher Typ →
+> umdrehen, nicht änderbar → weglassen und den Rest trotzdem eintragen. Das
+> überlebt jede Umbenennung, die eine Liste nicht überlebt hätte.
+
+Erkennungsmerkmal: Wo im Code eine Aufzählung von Feldnamen der Gegenseite
+steht, gehört die Frage daneben, woher man wüsste, dass sie noch stimmt.
+
 ### Wer nur dort sucht, wo der Fehler auftritt, findet ihn nicht
 
 Der Kauf war vollständig, fünfmal. Die Ursache saß eine Ebene höher, an der

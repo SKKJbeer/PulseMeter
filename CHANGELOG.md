@@ -9,6 +9,34 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.96.1 — 2026-08-28
+
+Name, Untertitel und die Datenschutz-URL stehen in App Store Connect. Zwei
+Einwände kamen zurück, und beide nannten das Feld, an dem es lag.
+
+### Behoben
+- **Der Aufruf geht jetzt auf Apples Einwand ein, statt ihn zu melden.**
+  `Expected a BOOLEAN but got STRING` an `messagingAndChat` → das Feld wird
+  umgedreht. `Attribute 'whatsNew' cannot be edited at this time` → es wird
+  weggelassen und der Rest trotzdem eingetragen.
+
+  Beides ließe sich mit abgetippten Listen erschlagen — welche Felder
+  Wahrheitswerte sind, und dass die erste Fassung keine Versionshinweise
+  annimmt. Solche Listen veralten still. Apple sagt es ohnehin in jedem
+  Einwand.
+- **Der Leser widersprach sich zweimal selbst.** „Kategorien: UTILITIES,
+  FINANCE" gesetzt, zwei Zeilen später „Hauptkategorie: —" — die Listenantwort
+  führt Beziehungen nur als Verweis. Und „Fassung 1.0 stand schon" gegen „es
+  gibt noch keine Fassung": Der Füller fragte mit `filter[platform]`, der Leser
+  sortierte mit `sort=-versionString` und bekam nichts Brauchbares. Beide
+  fragen jetzt gleich.
+
+Im Baukasten steht die Regel dazu: **Nennt der Fehler das Feld, beantwortet der
+Aufruf ihn.** Das überlebt jede Umbenennung, die eine abgetippte Liste nicht
+überlebt hätte.
+
+---
+
 ## 0.96.0 — 2026-08-28
 
 Der Einreichungs-Lauf hat zum ersten Mal geantwortet, und die Antwort war
