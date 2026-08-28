@@ -9,6 +9,24 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.87.1 — 2026-08-28
+
+### Behoben
+- Die neue Aufstellung hat sich an drei Stellen selbst blind gemacht.
+  `appPriceSchedule`, `appAvailabilityV2` und die Lizenzvereinbarung sind
+  **Einzelstücke, keine Listen** und antworten auf `limit` mit 400. Im
+  Protokoll stand dreimal „nicht lesbar (400)" — das sah nach einer Auskunft
+  von Apple aus und war ein Fehler in der Abfrage. Ausgerechnet die beiden
+  Felder, wegen derer die Aufstellung geschrieben wurde: Preis und
+  Verfügbarkeit der App.
+
+Dieselbe Fehlerklasse wie in 0.79.1 und 0.82.1, zum dritten Mal in anderer
+Verkleidung: **„konnte ich nicht lesen" und „ist nicht gesetzt" dürfen nicht
+gleich aussehen** — und ein Fehler auf meiner Seite darf nicht wie eine Antwort
+der Gegenseite aussehen. Steht in Abschnitt 6 des Baukastens.
+
+---
+
 ## 0.87.0 — 2026-08-27
 
 ### Hinzugefügt

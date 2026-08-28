@@ -460,8 +460,16 @@ Dreimal an einem einzigen Tag, jedes Mal in anderer Verkleidung:
    und die Maße gelten, sagt `assetDeliveryState` — ein Bild in `FAILED` ist
    vorhanden und zählt trotzdem nicht.
 
+Und ein viertes Mal, diesmal in der Diagnose selbst: Drei Abfragen kamen mit
+`400 — nicht lesbar` zurück und sahen aus wie eine Auskunft von Apple. Es war
+ein Fehler in meiner Abfrage — ein `limit` an einem Einzelstück statt an einer
+Liste. Ausgerechnet die zwei Felder, wegen derer die Aufstellung geschrieben
+worden war.
+
 > **Jedes Nachlesen muss zwei Fragen stellen: Ist es da, und wirkt es?** Und
-> zwei Sachverhalte gehören nie unter einen Wert.
+> zwei Sachverhalte gehören nie unter einen Wert. Auch nicht „ich konnte nicht
+> fragen" und „die Gegenseite sagt nein": Ein Fehler auf der eigenen Seite darf
+> nie wie eine Antwort der Gegenseite aussehen.
 
 Dieselbe Regel greift beim Signieren: Erst wenn die App-ID **noch einmal
 abgefragt** wurde und alles steht, darf der Bau die Berechtigungsdateien

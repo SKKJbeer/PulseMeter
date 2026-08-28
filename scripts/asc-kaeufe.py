@@ -539,9 +539,14 @@ def was_die_app_fuehrt(apple: Apple, app_id: str) -> None:
     # haben — und ein Kauf in einer App, die es in keinem Land gibt, kann von
     # StoreKit nicht ausgeliefert werden. Das ist die Vermutung, die diese
     # Abfrage prüfen soll; ob sie stimmt, sagt die Antwort.
+    # **Ohne `limit`.** Der erste Lauf hat sich an genau dieser Stelle selbst
+    # blind gemacht: `appPriceSchedule`, `appAvailabilityV2` und die
+    # Lizenzvereinbarung sind Einzelstücke, keine Listen, und antworten auf
+    # `limit` mit 400. Im Protokoll stand dreimal „nicht lesbar" — was wie eine
+    # Auskunft von Apple aussah und ein Fehler von mir war.
     for name in ("appPriceSchedule", "appAvailabilityV2", "appStoreVersions",
                  "appInfos", "builds", "inAppPurchasesV2", "endUserLicenseAgreement"):
-        stand, antwort = apple.holen(f"v1/apps/{app_id}/{name}", **{"limit": 5})
+        stand, antwort = apple.holen(f"v1/apps/{app_id}/{name}")
         if stand != 200:
             print(f"      {name}: nicht lesbar ({stand}) — {kurz(antwort)}")
             continue
