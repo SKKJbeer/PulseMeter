@@ -9,6 +9,35 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.88.0 — 2026-08-28
+
+### Behoben
+- **Die App war in keinem Land verfügbar.** Das ist der Befund, auf den zwei
+  Tage zugelaufen sind. Apple sagt es wörtlich:
+
+  ```
+  appPriceSchedule: 1
+  appAvailabilityV2: 404 — There is no resource of type
+                     'appAvailabilities' with id '6802262743'
+  ```
+
+  Der Preisplan der App steht, ihre Verfügbarkeit nicht. Eine App, die es in
+  keinem Laden gibt, hat auch keinen Laden, in dem ein Kauf angeboten werden
+  könnte — StoreKit gibt dann nichts zurück, und die Kaufseite bleibt ohne
+  Knopf. Die Verfügbarkeit der **Käufe** half dabei nicht: Sie beschreibt, wo
+  ein Kauf gälte, wenn es die App dort gäbe.
+- `app_verfuegbar()` setzt sie über `POST /v2/appAvailabilities`, mit
+  denselben Ländern wie die Käufe, und läuft **vor** den Käufen.
+
+Das veröffentlicht nichts. Die App steht auf `PREPARE_FOR_SUBMISSION` und
+bleibt dort; Verfügbarkeit ist eine Angabe, keine Einreichung.
+
+Und es ist dieselbe Lehre wie beim Prüfbild, nur eine Ebene höher: **Wer nur
+dort sucht, wo der Fehler auftritt, findet ihn nicht.** Fünf Käufe waren
+vollständig — die Ursache lag an der App, nach der niemand gefragt hatte.
+
+---
+
 ## 0.87.1 — 2026-08-28
 
 ### Behoben

@@ -269,6 +269,61 @@ def gebiete(apple: Apple) -> list[dict]:
             for e in antwort.json().get("data", [])]
 
 
+def app_verfuegbar(apple: Apple, app_id: str, wo: list[dict]) -> None:
+    """Die **App** in Länder bringen — nicht den Kauf.
+
+    **Der Befund, auf den zwei Tage zugelaufen sind.** Alle fünf Käufe standen
+    auf `READY_TO_SUBMIT`, jedes Feld gesetzt, und auf dem Gerät blieb die
+    Kaufseite leer. Die Aufstellung eine Ebene höher hat es dann gesagt:
+
+        appPriceSchedule: 1
+        appAvailabilityV2: 404 — There is no resource of type
+                           'appAvailabilities' with id '…'
+
+    Der Preisplan der App steht, ihre Verfügbarkeit nicht. Eine App, die in
+    keinem Land verfügbar ist, hat auch keinen Laden, in dem ein Kauf angeboten
+    werden könnte — und StoreKit gibt nichts zurück. Die Verfügbarkeit des
+    Kaufs half nicht: Sie beschreibt, wo der Kauf gälte, wenn es die App dort
+    gäbe.
+
+    **Das veröffentlicht nichts.** Die App steht auf `PREPARE_FOR_SUBMISSION`
+    und bleibt dort; Verfügbarkeit ist eine Angabe, keine Einreichung.
+    """
+    stand, _ = apple.holen(f"v1/apps/{app_id}/appAvailabilityV2")
+    if stand == 200:
+        getan.append("Die App ist bereits in Ländern verfügbar")
+        return
+
+    # Jedes Land wird einzeln mitgeschickt: `territoryAvailabilities` ist eine
+    # eigene Ressource, keine Liste von Kennungen wie beim Kauf.
+    enthalten = [{
+        "type": "territoryAvailabilities",
+        "id": f"${gebiet['id']}",
+        "attributes": {"available": True},
+        "relationships": {"territory": {"data": gebiet}},
+    } for gebiet in wo]
+
+    stand, antwort = apple.anlegen("v2/appAvailabilities", {
+        "data": {
+            "type": "appAvailabilities",
+            "attributes": {"availableInNewTerritories": True},
+            "relationships": {
+                "app": {"data": {"type": "apps", "id": app_id}},
+                "territoryAvailabilities": {
+                    "data": [{"type": "territoryAvailabilities", "id": e["id"]}
+                             for e in enthalten]},
+            },
+        },
+        "included": enthalten,
+    })
+    if stand in (200, 201):
+        getan.append(f"Die App ist jetzt in {len(wo)} Ländern verfügbar")
+        return
+    offen.append(f"Die App ist in keinem Land verfügbar, und das ließ sich "
+                 f"hier nicht setzen ({stand}) — {kurz(antwort)}. "
+                 "In App Store Connect: Preise und Verfügbarkeit")
+
+
 def verfuegbar(apple: Apple, kauf_id: str, produkt_id: str, wo: list[dict]) -> None:
     # **Zwei Namen für dieselbe Beziehung.** Der Preisplan heißt
     # `iapPriceSchedule`, die Verfügbarkeit aber `inAppPurchaseAvailability` —
@@ -450,6 +505,10 @@ def main() -> None:
 
     vorhanden = bestand(apple, app_id)
     wo = gebiete(apple)
+
+    # Zuerst die App, dann die Käufe: Ein Kauf in einer App, die es in keinem
+    # Land gibt, wird von StoreKit nicht ausgeliefert.
+    app_verfuegbar(apple, app_id, wo)
 
     # Dasselbe Bild für alle fünf: Die Kaufseite zeigt sie gemeinsam, und
     # Apple will sehen, wo im Programm der Kauf vorkommt.
