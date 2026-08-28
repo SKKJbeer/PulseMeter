@@ -65,6 +65,9 @@ final class StoreKitGateway: PurchaseGateway {
 
     var isAvailable: Bool { !produkte.isEmpty }
 
+    /// Was beim letzten `laden()` herauskam. Siehe ``PurchaseGateway/storeDiagnosis``.
+    private(set) var storeDiagnosis: String?
+
     /// Holt die Produkte und den aktuellen Bestand. Beim Start aufzurufen.
     ///
     /// Getrennt vom `init`, weil beides über das Netz geht und ein
@@ -73,12 +76,30 @@ final class StoreKitGateway: PurchaseGateway {
     /// nicht kaputt: Alles Gekaufte gilt weiter aus dem Zwischenspeicher.
     func laden() async -> Entitlement {
         let kennungen = ProductID.allCases.map(\.storeIdentifier)
-        if let geladen = try? await Product.products(for: kennungen) {
+
+        // **`try?` war hier die teuerste Zeile der App.** Sie hat drei Tage
+        // lang dieselben zwei Sachverhalte unter einen Wert gelegt: „der Store
+        // hat einen Fehler geworfen" und „der Store kennt keines unserer fünf
+        // Produkte". Beides endete in einer leeren Liste, und die Kaufseite
+        // sagte dazu nur, sie sei noch nicht im Store — was gar nicht die Frage
+        // war. Gesucht wurde derweil überall sonst.
+        do {
+            let geladen = try await Product.products(for: kennungen)
             produkte = Dictionary(uniqueKeysWithValues: geladen.compactMap { produkt in
                 ProductID.allCases
                     .first { $0.storeIdentifier == produkt.id }
                     .map { ($0, produkt) }
             })
+            if geladen.isEmpty {
+                storeDiagnosis = "Der Store kennt keine der \(kennungen.count) Kennungen."
+            } else if geladen.count < kennungen.count {
+                storeDiagnosis = "Der Store liefert \(geladen.count) von \(kennungen.count) Käufen."
+            } else {
+                storeDiagnosis = "Alle \(geladen.count) Käufe geladen."
+            }
+        } catch {
+            produkte = [:]
+            storeDiagnosis = "Der Store antwortete mit einem Fehler: \(error.localizedDescription)"
         }
         return await bestand()
     }

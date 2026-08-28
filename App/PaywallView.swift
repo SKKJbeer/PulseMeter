@@ -158,14 +158,25 @@ struct UnlockSheet: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             if !purchase.gateway.isAvailable {
-                // **Kein Knopf, der nichts tut.** Solange die App nicht im
-                // Store ist, gibt es nichts zu kaufen; die Knöpfe oben sind
-                // deshalb abgeblendet, und hier steht, warum.
+                // **Kein Knopf, der nichts tut** — und keine Ursache, die
+                // niemand geprüft hat. Hier stand bis 0.90.0 „Kaufen geht,
+                // sobald PulseMeter im App Store ist". Das war eine
+                // Behauptung: In TestFlight lässt sich sehr wohl kaufen, und
+                // warum es hier nicht ging, wusste der Satz nicht. Jetzt steht
+                // dort, was der Store tatsächlich geantwortet hat.
                 StatusBanner(
                     tone: .notice,
-                    message: AttributedString("Kaufen geht, sobald PulseMeter im App Store ist. Bis dahin sind die Preise Richtwerte.")
+                    message: AttributedString("Der App Store liefert gerade keine Käufe aus. Die Preise sind deshalb Richtwerte.")
                 )
                 .padding(.top, 6)
+
+                if let befund = purchase.gateway.storeDiagnosis {
+                    Text(befund)
+                        .font(PulseText.detail)
+                        .foregroundStyle(PulseColor.inkSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityIdentifier("store-befund")
+                }
             }
         }
         .padding(.top, 2)

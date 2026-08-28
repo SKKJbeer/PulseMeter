@@ -9,6 +9,39 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.90.0 — 2026-08-28
+
+### Behoben
+- **Die Kaufseite sagt jetzt, warum sie nichts anbietet.** Der Vertrag für
+  gebührenpflichtige Apps ist aktiv, Bank und beide Steuerformulare auch — der
+  Gründer hat es belegt. Damit war mein letzter Kandidat erledigt, und die
+  Ursache liegt weiter im Dunkeln. Also endet das Raten dort, wo die Antwort
+  ohnehin liegt:
+
+  ```swift
+  if let geladen = try? await Product.products(for: kennungen) {
+  ```
+
+  Dieses `try?` war die teuerste Zeile der App. Es legt zwei Sachverhalte unter
+  einen Wert — „der Store hat einen Fehler geworfen" und „der Store kennt
+  keine unserer fünf Kennungen" —, beide enden in einer leeren Liste. Jetzt
+  wird der Fehler gefangen und aufgeschrieben, und die Anzahl gezählt.
+- Der Hinweisstreifen sagte „Kaufen geht, sobald PulseMeter im App Store ist".
+  Das war eine Behauptung: In TestFlight lässt sich sehr wohl kaufen. Er sagt
+  jetzt, was zutrifft — der Store liefert gerade keine Käufe aus —, und darunter
+  steht, was der Store geantwortet hat.
+
+### Hinzugefügt
+- `PurchaseGateway.storeDiagnosis` und eine Oberflächenprüfung, die verlangt,
+  dass die Zeile dasteht, wenn nichts zu kaufen ist. Über die Kennung geprüft,
+  nicht über den Wortlaut — was der Store antwortet, soll sich ändern dürfen.
+
+Dieselbe Fehlerklasse wie an diesem Tag schon viermal, jetzt im eigenen Code:
+**„Konnte ich nicht fragen" und „die Antwort ist nein" dürfen nie gleich
+aussehen.** Sie stand im Baukasten, während sie hier in einer Zeile schlief.
+
+---
+
 ## 0.89.0 — 2026-08-28
 
 ### Hinzugefügt

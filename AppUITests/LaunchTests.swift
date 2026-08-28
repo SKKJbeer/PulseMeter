@@ -1700,6 +1700,33 @@ final class LaunchTests: XCTestCase {
         }
     }
 
+    /// **Wenn nichts zu kaufen ist, steht dort warum.**
+    ///
+    /// Drei Tage lang stand auf der Kaufseite „Kaufen geht, sobald PulseMeter
+    /// im App Store ist" — ein Satz, der eine Ursache behauptet, ohne eine zu
+    /// kennen. In TestFlight lässt sich sehr wohl kaufen. Gesucht wurde
+    /// derweil in App Store Connect, bei den Käufen und bei den Verträgen; die
+    /// einzige Stelle, die die Antwort hatte, verschwieg sie.
+    ///
+    /// Im Simulator gibt es keinen Store, also greift genau dieser Fall, und
+    /// die Zeile muss dastehen. Geprüft wird über die Kennung, nicht über den
+    /// Wortlaut: Was der Store antwortet, soll sich ändern dürfen.
+    func testThePurchasePageSaysWhyNothingCanBeBought() {
+        let app = launchFree("-pulse-kaufen")
+
+        let kostenlos = app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS[c] 'Dauerhaft kostenlos'")
+        ).firstMatch
+        XCTAssertTrue(kostenlos.waitForExistence(timeout: 15),
+                      "Das Kaufblatt kam nicht. Auf dem Schirm steht: \(beschriftungen(in: app))")
+
+        let befund = app.staticTexts["store-befund"]
+        XCTAssertTrue(befund.waitForExistence(timeout: erscheint),
+                      "Ohne Käufe muss dastehen, was der Store geantwortet hat — "
+                      + "auf dem Schirm steht: \(beschriftungen(in: app))")
+        XCTAssertFalse(befund.label.isEmpty, "Ein leerer Befund erklärt nichts")
+    }
+
     // MARK: - Barrierefreiheit
 
     /// Auf dem Ziffernblock stand eine Taste, die nichts tat.

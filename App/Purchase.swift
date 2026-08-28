@@ -29,6 +29,21 @@ protocol PurchaseGateway: Sendable {
     /// der ins Leere greift, ist schlimmer als kein Knopf.
     var isAvailable: Bool { get }
 
+    /// Was der Store beim letzten Laden geantwortet hat, in einem Satz.
+    ///
+    /// **Warum eine Ansicht das überhaupt erfährt.** Drei Tage lang stand auf
+    /// der Kaufseite „Kaufen geht, sobald PulseMeter im App Store ist" — ein
+    /// Satz, der eine Ursache behauptet, ohne eine zu kennen. In Wahrheit
+    /// wusste niemand, ob der Store nichts liefert, einen Fehler wirft oder
+    /// gar nicht gefragt wurde. Gesucht wurde derweil in App Store Connect,
+    /// bei den Käufen, bei den Verträgen — an jeder Stelle außer der einen,
+    /// die die Antwort hat.
+    ///
+    /// `nil`, solange nichts geladen wurde. Sonst steht hier, was gezählt oder
+    /// was geworfen wurde — ungeschönt, damit die nächste Suche eine Richtung
+    /// hat statt einer Vermutung.
+    var storeDiagnosis: String? { get }
+
     /// Kauft ein einzelnes Produkt.
     func purchase(_ product: ProductID) async throws -> Entitlement
     /// Holt zurück, was schon gekauft wurde — auf einem neuen Gerät der einzige
@@ -49,6 +64,7 @@ protocol PurchaseGateway: Sendable {
 struct UnavailablePurchaseGateway: PurchaseGateway {
 
     var isAvailable: Bool { false }
+    var storeDiagnosis: String? { "Ohne StoreKit — dieser Stand fragt den Store gar nicht." }
 
     enum Unavailable: Error { case notYetInTheStore }
 
