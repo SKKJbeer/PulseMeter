@@ -9,6 +9,36 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.93.2 — 2026-08-28
+
+### Behoben
+- **Die Kostenzeile im Verlauf öffnete den falschen Kauf.** Wer auf „Kosten und
+  Preise" tippte, bekam ein Blatt zu sehen, das den Bericht anbot. Ursache
+  waren zwei Zustände für eine Sache: ein Schalter „Blatt auf" und daneben eine
+  Merkstelle für das Produkt. Beide wurden im selben Atemzug geschrieben, und
+  das Blatt ging mit dem Stand von vorher auf.
+- Dasselbe Muster steckte im **Zählerformular**, dort mit zwei möglichen
+  Produkten — „Mehrere Zählwerke" und „Kosten und Preise" — und damit mit
+  demselben Schaden. Beide Stellen hängen das Blatt jetzt am Produkt auf
+  (`sheet(item:)`), nicht an einem Schalter daneben.
+- `ProductID` ist dafür `Identifiable`. Die Notiz, das gehe nicht, weil die
+  Kennung eine Anforderung der Oberfläche in den Rechenkern trüge, ist gestrichen:
+  `Identifiable` steht in der Standardbibliothek, nicht in SwiftUI.
+
+### Geändert
+- Die Prüfhilfe `oeffne` meldet beim zweiten Versuch nicht mehr das Falsche.
+  Vorher tippte sie stumpf ein zweites Mal, lief gegen das inzwischen offene
+  Blatt und meldete „not hittable" — eine Aussage über die Zeile, die mit der
+  Ursache nichts mehr zu tun hatte. Kommt sie an den Knopf nicht mehr heran,
+  hat sie ihn getroffen; dann steht jetzt da, dass der Anker ausblieb, und was
+  auf dem Schirm stand.
+
+**Der Prototyp hatte recht.** Dort steht das Produkt seit jeher am Knopf
+(`data-unlock="costsAndTariffs"`) und nicht in einer Merkstelle daneben — die
+App wich davon ab, nicht umgekehrt.
+
+---
+
 ## 0.93.1 — 2026-08-28
 
 ### Behoben

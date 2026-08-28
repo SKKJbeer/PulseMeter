@@ -37,17 +37,21 @@ struct HistoryView: View {
     }
 
     @State private var meters: [MeteringPoint] = []
-    @State private var showingPaywall = false
 
-    /// Welcher Kauf auf dem Blatt steht, wenn es aufgeht.
+    /// Welcher Kauf auf dem Blatt steht — und `nil`, solange keins offen ist.
     ///
-    /// Das Blatt stand fest auf dem Bericht, obwohl es niemand öffnete — der
-    /// Bericht führt seit 0.40.0 auf seinen eigenen Schirm und nicht zur
-    /// Kaufseite. Mit der Kostenzeile gibt es hier zum ersten Mal einen echten
-    /// Aufrufer, und der entscheidet, was angeboten wird: Ein Blatt, das etwas
-    /// anderes zeigt als das, worauf jemand getippt hat, ist eine Sackgasse
-    /// mit Umweg.
-    @State private var paywallProdukt: ProductID = .pdfReport
+    /// **Vorher standen hier zwei Zustände nebeneinander**: ein Schalter „Blatt
+    /// auf" und daneben ein Produkt, das der Tipp erst setzen musste. Beide
+    /// wurden im selben Atemzug geschrieben, und das Blatt ging mit dem alten
+    /// Produkt auf — mit dem Bericht, den hier niemand anbietet. Auf dem Schirm
+    /// sah man den falschen Kauf, die Prüfung sah eine Leiste, die nie kam, und
+    /// gemeldet hat sie am Ende etwas ganz anderes: Ihr zweiter Tipp lief gegen
+    /// das offene Blatt und klang wie „die Zeile ist nicht antippbar".
+    ///
+    /// Ein Zustand kann nicht mit sich selbst aus dem Takt geraten. Der
+    /// Prototyp hat es die ganze Zeit so gemacht — dort steht das Produkt am
+    /// Knopf (`data-unlock`), nicht in einer Merkstelle daneben.
+    @State private var paywallProdukt: ProductID?
     @State private var selectedMeterID: MeteringPoint.ID?
     @State private var granularity: PeriodEngine.Granularity = .month
     @State private var buckets: [PeriodEngine.Bucket] = []
@@ -181,8 +185,8 @@ struct HistoryView: View {
                                  datenstand.geaendert()
                              })
             }
-            .sheet(isPresented: $showingPaywall) {
-                UnlockSheet(product: paywallProdukt)
+            .sheet(item: $paywallProdukt) { produkt in
+                UnlockSheet(product: produkt)
             }
         }
     }
@@ -429,7 +433,6 @@ struct HistoryView: View {
             PulseCard {
                 ProLockRow(product: .costsAndTariffs) {
                     paywallProdukt = .costsAndTariffs
-                    showingPaywall = true
                 }
                 .padding(.horizontal, 15)
                 .padding(.vertical, 11)

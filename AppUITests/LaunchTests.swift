@@ -118,6 +118,19 @@ final class LaunchTests: XCTestCase {
             return false
         }
         for versuch in 1...2 {
+            // **Der zweite Tipp darf nicht über das Ergebnis des ersten
+            // hinweggehen.** In 0.93.1 hat der erste Tipp ein Blatt geöffnet —
+            // nur das falsche. Der Anker kam deshalb nie, der zweite Tipp lief
+            // gegen das offene Blatt, und gemeldet wurde „not hittable": eine
+            // Aussage über die Zeile, die längst nichts mehr mit der Ursache zu
+            // tun hatte. Wer nicht mehr an den Knopf herankommt, hat ihn
+            // getroffen; dann ist die Frage, was aufgegangen ist.
+            if versuch > 1 && !knopf.isHittable {
+                XCTFail("\(was): der erste Tipp kam an, aber \(anker) blieb aus. "
+                        + "Zu sehen war: \(beschriftungen(in: app))",
+                        file: datei, line: zeile)
+                return false
+            }
             knopf.tap()
             if anker.waitForExistence(timeout: erscheint) { return true }
             if versuch == 1 {

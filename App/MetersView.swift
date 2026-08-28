@@ -502,11 +502,15 @@ struct MeterEditor: View {
 
     /// Welche Sperre die Kaufseite geöffnet hat, oder `nil`.
     ///
-    /// Zwei Zustände statt `sheet(item:)`: `ProductID` liegt im Rechenkern,
-    /// und ihm dort eine Kennung anzuhängen, hieße eine Anforderung der
-    /// Oberfläche in die Domäne zu tragen.
+    /// **Ein Zustand, nicht zwei.** Hier standen bis 0.93.2 ein Schalter und
+    /// daneben das Produkt, mit der Begründung, `ProductID` liege im Rechenkern
+    /// und dürfe von der Oberfläche nichts erben. Die Begründung trug nicht:
+    /// `Identifiable` steht in der Standardbibliothek, nicht in SwiftUI.
+    ///
+    /// Und sie war teuer. In der gleichen Bauart im Verlauf ging das Blatt mit
+    /// dem Produkt auf, das vor dem Tipp dastand — sichtbar der falsche Kauf.
+    /// Zwei Zustände für eine Sache geraten aus dem Takt; einer kann das nicht.
     @State private var paywallReason: ProductID?
-    @State private var showingPaywall = false
 
     @State private var name = ""
     @State private var kind: ResourceKind = .electricity
@@ -591,7 +595,6 @@ struct MeterEditor: View {
 
     private func openPaywall(_ product: ProductID) {
         paywallReason = product
-        showingPaywall = true
     }
 
     var body: some View {
@@ -765,8 +768,8 @@ struct MeterEditor: View {
                     }
                 }
             }
-            .sheet(isPresented: $showingPaywall) {
-                UnlockSheet(product: paywallReason ?? .costsAndTariffs)
+            .sheet(item: $paywallReason) { produkt in
+                UnlockSheet(product: produkt)
             }
             .confirmationDialog("Wirklich löschen?", isPresented: $confirmingDelete, titleVisibility: .visible) {
                 Button("Löschen", role: .destructive) { deletePermanently() }
