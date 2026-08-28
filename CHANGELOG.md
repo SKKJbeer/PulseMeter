@@ -9,6 +9,188 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.95.3 — 2026-08-28
+
+Cloudflares eigener Bau ist gescheitert: `Could not detect a directory to
+deploy`. Der Befehl bekam nie gesagt, welchen Ordner er hochladen soll.
+
+### Behoben
+- **Zwei Wege, die dasselbe tun sollten, taten es nicht.** Der Zweigweg nahm
+  `EINTRAGEN.md` und `CLOUDFLARE.md` heraus — die Anschrift des Gründers und
+  die Einrichtungsanleitung —, der Upload über wrangler hätte beide **ins Netz
+  gestellt**. Aufgefallen beim Nachsehen, nicht durch einen Fehlschlag: Der
+  Upload lief nie, weil die Geheimnisse fehlten.
+
+  `scripts/website-fertig.sh` ist jetzt die eine Stelle, an der entschieden
+  wird, was ausgeliefert wird. Beide Wege rufen sie auf, und sie bricht ab,
+  wenn im Auslieferordner noch eine Markdown-Datei liegt.
+- Der Upload nimmt den Auslieferordner statt `docs/website/`, setzt
+  `--branch=main` (sonst wäre es eine Vorschau statt der Produktionsfassung)
+  und `--commit-dirty=true`.
+
+### Geändert
+- **Die Anleitung führt jetzt über ein Token, nicht über Cloudflares Bau.**
+  Nicht wegen des Tippfehlers, sondern wegen der Arbeitsteilung: Baut
+  Cloudflare selbst, liegt der Fehler in einer Kiste, an die von hier aus
+  niemand herankommt. Baut GitHub, steht der Befehl im Repository und lässt
+  sich ändern. Vom Gründer so verlangt: „ich will, dass du alles für mich
+  automatisierst."
+- Welches Token: **Account › Cloudflare Pages › Edit**, sonst nichts. Nicht die
+  Vorlage „Edit Cloudflare Workers" — die darf viel mehr, und ein Token, das
+  mehr darf als nötig, kann mehr kaputtmachen.
+- Der Zweig `website` bleibt und steht jetzt im Repository. Er ist der zweite
+  Weg, und er zeigt schwarz auf weiß, was zuletzt die Prüfung bestanden hat.
+
+---
+
+## 0.95.2 — 2026-08-28
+
+Vom Gerät: „der Link geht nicht, bin am Handy."
+
+Er ging nicht, weil die GitHub-App **überhaupt keinen Einstellungsbereich hat.**
+Geheimnisse lassen sich dort in keiner Ansicht eintragen, und die App fängt den
+Verweis darauf ab, ohne ihn zeigen zu können. Die Anleitung führte damit an
+eine Tür, die es auf dem Gerät des Gründers nicht gibt.
+
+### Hinzugefügt
+- **Der Zweig `website`.** Der Ablauf legt die geprüften Seiten dort in die
+  Wurzel, und Cloudflare Pages hängt sich daran. Damit braucht die Einrichtung
+  **kein einziges Geheimnis im Repository** — sie läuft vollständig im
+  Cloudflare-Dashboard, und das öffnet im Browser des Telefons.
+
+  **Der alte Einwand bleibt beantwortet.** Cloudflares Anbindung ans Repository
+  war abgelehnt worden, weil dann auch online ginge, was `check-website.mjs`
+  nicht durchgelassen hat. Der Zweig entsteht erst **nach** der Prüfung —
+  Cloudflare sieht nie den Hauptzweig, sondern immer nur das, was durchgekommen
+  ist.
+- `_headers` im Zweig: kein `nosniff`-Rateverhalten, kein fremder Rahmen,
+  Referrer nur bei gleicher Herkunft.
+
+### Geändert
+- `docs/website/CLOUDFLARE.md` beginnt jetzt mit dem Weg, der am Telefon
+  funktioniert — zwei Schritte statt vier. Der Token-Weg steht darunter, mit
+  dem Satz dazu, warum er dort nicht geht.
+
+**Die Anleitungen gehen nicht mit online.** `EINTRAGEN.md` und `CLOUDFLARE.md`
+werden aus dem Zweig entfernt: Sie gehören ins Repository, nicht auf eine
+öffentliche Adresse.
+
+---
+
+## 0.95.1 — 2026-08-28
+
+Vom Gründer: „die Website muss ich ja jetzt hosten — hilf mir das so weit es
+geht automatisieren. Und ein Link direkt zum App Store mit so einem
+Apple-Button, wie man ihn kennt."
+
+### Hinzugefügt
+- **Das App-Store-Abzeichen** in der Kopfzeile der Startseite, in der Form, die
+  jeder kennt: schwarz, abgerundet, Apfel links, zwei Zeilen rechts. Nachgebaut
+  und nicht von Apple geladen — die Seite holt grundsätzlich nichts von fremden
+  Servern, und das gilt auch für ein Bild, das bequem wäre.
+
+  **Es führt noch nirgendwohin, und das mit Absicht.** Die App ist nicht im
+  Store; ein Abzeichen „Laden im App Store", das auf eine Fehlseite führt, ist
+  genau das Versprechen, das dieses Projekt sich verbietet. Bis dahin steht
+  dort „Bald im App Store". Am Starttag ein Befehl:
+  `scripts/appstore-knopf.sh an` — er tauscht den ganzen markierten Block, nicht
+  ein Wort darin, und beide Zustände sind geprüft.
+- **„Website veröffentlichen"** — ein Ablauf, der `docs/website/` bei jeder
+  Änderung an `main` zu Cloudflare Pages schiebt. Vorher läuft
+  `check-website.mjs`; was die Prüfung nicht durchlässt, geht nicht online.
+  Deshalb ein eigener Ablauf und nicht Cloudflares Anbindung ans Repository:
+  Dort läge der Auslöser bei Cloudflare, und die Prüfung hätte kein Wort
+  mitzureden.
+- **`docs/website/CLOUDFLARE.md`** — die Einrichtung in vier Schritten, alles
+  im kostenlosen Tarif, mit den Klicks statt mit Verweisen auf Handbücher.
+
+**Fehlen die zwei Geheimnisse, bricht der Ablauf nicht ab.** Er prüft die
+Seite, meldet „Cloudflare ist noch nicht eingerichtet" und ist fertig. Ein
+roter Lauf, der nichts bedeutet, gewöhnt einem das Hinsehen ab.
+
+---
+
+## 0.95.0 — 2026-08-28
+
+Vom Gründer: „setze alles auf 1 € für den Start und 5 € für das Bündel."
+
+### Geändert
+- **Jede Freischaltung kostet 1,99 €, alle vier zusammen 4,99 €.** Vorher
+  standen dort 2,99 € / 3,99 € und 9,99 € im Bündel.
+
+  **1 € und 5 € gingen nicht, und das war rechnerisch:** Es gibt vier
+  Einzelkäufe. Zu je einem Euro wären das vier zusammen — ein Bündel für fünf
+  wäre teurer als alles einzeln, und die App zeigt die Ersparnis an. Sie stünde
+  negativ da. Der Gründer hat 1,99 / 4,99 gewählt: Einstieg unter zwei Euro,
+  Bündel spart 37 %. Eine bestehende Prüfung verlangt zwischen 20 und 60 % —
+  sie greift weiter.
+- **„Kosten und Preise" kostet nicht mehr einen Euro mehr als die anderen.**
+  Der Aufschlag war von innen gedacht: Dort steckt am meisten drin. Wer die
+  Kaufseite ansieht, liest vier Zeilen und stolpert über die eine, die aus der
+  Reihe fällt.
+
+### Website
+- **Preise, Bericht und Widget nachgezogen.** Die Seite war vom 16. August und
+  kannte den Verbrauchsbericht nur als Fußnote, das Widget gar nicht und die
+  Kaufübersicht nicht. Der Bericht hat jetzt einen eigenen Abschnitt mit Bild:
+  Zeitraum frei wählbar, ansehen und drucken kostenlos, Schriftzug bis zum Kauf.
+- **Alle Bildschirmfotos ersetzt** — die alten zeigten die App vor dem
+  Einkaufswagen und der Preiszeile. Die neuen stammen aus dem CI-Lauf von
+  heute 17:02.
+- **Für Suchmaschinen:** Angebot und die fünf häufigsten Fragen als
+  strukturierte Daten, damit die Antworten im Ergebnis selbst stehen können.
+  Der Wortlaut kommt aus der Hilfeseite — kein zweiter Text, der auseinander
+  läuft. Dazu Verweise mitten im Text auf die beiden Ratgeber statt nur in der
+  Fußzeile, und Datenschutz im Satz, den Google anzeigt.
+- **Ein Satz ist wieder rausgeflogen**, bevor er online ging: „Eine zu niedrig
+  angesetzte Abschlagszahlung kostet das Zwanzigfache." Klingt gut, hat niemand
+  gemessen.
+
+### Behoben
+- Die Platzhalter-Prüfung der Website hielt die eckigen Klammern in den
+  strukturierten Daten für eine offene Textlücke. Sie sieht jetzt nur noch an,
+  was im Browser als Text erscheint.
+
+**Offen bleibt genau eine Stelle:** der Name des Hosters in `datenschutz.html`.
+Das ist ein Rechtstext, und was dort steht, wird nicht angenommen.
+
+---
+
+## 0.94.0 — 2026-08-28
+
+Vom Gerät benannt, mit Bildschirmfoto: „nenne das ‚Alle Funktionen
+freischalten'." Und danach: „mache alles bereit für den Release auf den App
+Store."
+
+### Hinzugefügt
+- **„Einreichung nachsehen"** — ein Lauf, der App Store Connect fragt, was für
+  die Einreichung noch fehlt, und die Antwort dreiteilt: was steht, was ich
+  mache, was nur der Gründer liefern kann. Er schreibt nichts und kostet
+  Sekunden.
+
+  Der Anlass: Die Liste in `docs/09-appstore.md` wurde von Hand gepflegt und
+  war beim Nachsehen falsch. StoreKit stand als offen, obwohl die fünf Käufe
+  seit Tagen bereit sind und sich in TestFlight kaufen lassen — nach dieser
+  Liste hätte man Arbeit gemacht, die längst getan war. Von Hand bleibt jetzt
+  nur, was keine Schnittstelle kennt: Entscheidungen, Angaben über Menschen,
+  Messungen am Gerät.
+
+### Geändert
+- **Die Zeile heißt jetzt „Alle Funktionen freischalten".** Vorher stand dort
+  „Was PulseMeter noch kann" — eine Umschreibung, die alles Mögliche meinen
+  kann: eine Anleitung, eine Merkmalsliste, ein Blick in die Zukunft. Sie sagt
+  jetzt, was passiert, wenn man tippt.
+- **Die Überschrift „FREISCHALTEN" darüber ist weg.** Das Wort stand danach
+  zweimal untereinander, und zweimal dasselbe ist nicht doppelt so deutlich,
+  sondern nur doppelt. Den Abstand, den die Überschrift mitbrachte, behält die
+  Zeile.
+
+Geprüft: 234 Prüfungen im Entwurf (vorher 228) — der Name, die fehlende
+Überschrift und der Stand an der Zeile —, dazu dieselbe Zusicherung in der
+Oberflächenprüfung.
+
+---
+
 ## 0.93.3 — 2026-08-28
 
 Bau 23 ging mit dem Satz **„Neuer Stand zum Ausprobieren."** zu den Testern.

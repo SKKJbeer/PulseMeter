@@ -1,7 +1,7 @@
 # Was vor dem Onlinegehen noch eingetragen werden muss
 
-**Eine Stelle** ist noch offen, im Quelltext mit `PLATZHALTER 1 von 1`
-markiert. Finden lässt sie sich mit:
+**Nichts mehr offen.** Der Quelltext enthält keinen `PLATZHALTER` mehr, und
+`check-website.mjs` prüft das bei jedem Lauf. Nachsehen:
 
 ```bash
 grep -rn "PLATZHALTER" docs/website/
@@ -34,14 +34,14 @@ grep -rn "PLATZHALTER" docs/website/
 
 ---
 
-## Offen 1 — der Hosting-Anbieter
+- **Der Hosting-Anbieter.** `datenschutz.html`, Abschnitt 7: Cloudflare Inc.,
+  101 Townsend St, San Francisco. Die Angabe ist Pflicht, weil jeder Hoster
+  beim Ausliefern IP-Adressen verarbeitet.
 
-`datenschutz.html`, Abschnitt 7. Dort steht heute Cloudflare, weil das der
-Plan ist. Wird es ein anderer, gehört dessen Name und Anschrift an diese
-Stelle — die Angabe ist Pflicht, weil jeder Hoster beim Ausliefern
-IP-Adressen verarbeitet.
-
-Bleibt es bei Cloudflare, genügt es, die eckigen Klammern zu entfernen.
+  Bestätigt hat der Gründer das am 28. August nicht mit einem Wort, sondern mit
+  einer Handlung: Konto bei Cloudflare, Pages-Projekt, Token ausgestellt und im
+  Repository hinterlegt. Wird es später ein anderer Anbieter, gehört dessen
+  Name und Anschrift an dieselbe Stelle.
 
 ---
 

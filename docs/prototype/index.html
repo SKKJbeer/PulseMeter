@@ -797,7 +797,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.93.3</p>
+  <p>Klickbarer Entwurf · v0.95.4</p>
 </div>
 
 <div class="device">
@@ -949,8 +949,7 @@ select.field { cursor: pointer; }
            ist ein Ort, an dem man ständig vorbeikommt, und ein Laden gehört
            dorthin nicht. Hier steht er sichtbar für den, der sucht, und stumm
            für alle anderen. -->
-      <div class="section-label">Freischalten</div>
-      <div class="list">
+      <div class="list" style="margin-top:14px">
         <button type="button" class="rowbtn" data-open="store" id="store-row">
           <!-- Einkaufswagen: Ohne Zeichen liest sich die Zeile wie eine
                weitere Einstellung; mit ihm sieht man in einer Zehntelsekunde,
@@ -961,7 +960,7 @@ select.field { cursor: pointer; }
             <circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/>
             <path d="M2 3h2.2l2.4 12.2a1.6 1.6 0 0 0 1.6 1.3h8.6a1.6 1.6 0 0 0 1.6-1.3L21 7H5.4"/>
           </svg>
-          <div class="rl">Was PulseMeter noch kann<small id="store-state"></small></div>
+          <div class="rl">Alle Funktionen freischalten<small id="store-state"></small></div>
           <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
         </button>
       </div>
@@ -3139,16 +3138,16 @@ let OWNED = new Set(["everything"]);
 const FREE_METER_LIMIT = 2;
 
 const PRODUCTS = [
-  { id: "additionalMeters", price: 2.99, title: "Unbegrenzt viele Zähler",
+  { id: "additionalMeters", price: 1.99, title: "Unbegrenzt viele Zähler",
     text: "Kostenlos sind zwei. Wer Strom, Gas und Wasser führt, braucht den dritten." },
-  { id: "multipleRegisters", price: 2.99, title: "Tag- und Nachtstrom, Einspeisung",
+  { id: "multipleRegisters", price: 1.99, title: "Tag- und Nachtstrom, Einspeisung",
     text: "Ein Gerät mit zwei Zahlen darauf: Nachtstrom, Wärmepumpe, Wallbox oder eine Anlage auf dem Dach." },
-  { id: "costsAndTariffs", price: 3.99, title: "Kosten und Preise",
+  { id: "costsAndTariffs", price: 1.99, title: "Kosten und Preise",
     text: "Zwei Zahlen von der Rechnung, und aus dem Verbrauch wird ein Betrag — mit Abschlagsvergleich und Vorschau aufs Jahresende." },
-  { id: "pdfReport", price: 2.99, title: "Bericht ohne Wasserzeichen",
+  { id: "pdfReport", price: 1.99, title: "Bericht ohne Wasserzeichen",
     text: "Der Bericht zum Weitergeben, ohne den Schriftzug quer darüber. Ansehen und drucken kannst du ihn auch so." }
 ];
-const BUNDLE = { id: "everything", price: 9.99, title: "Alles freischalten",
+const BUNDLE = { id: "everything", price: 4.99, title: "Alles freischalten",
                  text: "Alle vier Freischaltungen zusammen, dauerhaft. Günstiger als einzeln." };
 
 /* Was in einem Kauf steckt — als Stichpunkte, nicht als Absatz.

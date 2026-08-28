@@ -236,6 +236,40 @@ h1 {
 .knopf-rand { border-color: var(--line-2); color: var(--ink); background: var(--surface); }
 .knopf-rand:hover { border-color: var(--ink-3); }
 
+/* --------------------------------------------------- Abzeichen App Store
+   Die Form, die jeder kennt: schwarz, abgerundet, Apfel links, zwei Zeilen
+   rechts. Sie ist hier nachgebaut und nicht von Apple geladen — die Seite
+   holt grundsätzlich nichts von fremden Servern, und das gilt auch für ein
+   Bild, das bequem wäre. Vor der Veröffentlichung im Store gehört an diese
+   Stelle das offizielle Abzeichen aus Apples Marketing-Werkzeugen. */
+.apfel {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 17px 9px 14px;
+  border-radius: 11px;
+  background: #000;
+  color: #fff;
+  border: 1px solid #000;
+  text-decoration: none;
+  line-height: 1.05;
+  transition: transform .12s ease, opacity .12s ease;
+}
+.apfel svg { width: 25px; height: 25px; fill: currentColor; flex: none; }
+.apfel-text { display: flex; flex-direction: column; }
+.apfel small { font-size: 11px; letter-spacing: .01em; opacity: .92; }
+.apfel b { font-size: 19px; font-weight: 550; letter-spacing: -0.01em; }
+a.apfel:hover { transform: translateY(-1px); }
+
+/* Wartezustand: dieselbe Form, aber sichtbar noch kein Weg. Kein Grau in
+   Grau — das sähe nach kaputt aus statt nach „kommt noch". */
+.apfel-wartet { background: var(--ink); border-color: var(--ink); opacity: .55; cursor: default; }
+
+@media (prefers-color-scheme: dark) {
+  .apfel { background: #fff; color: #000; border-color: #fff; }
+  .apfel-wartet { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+}
+
 .notiz {
   margin: 18px 0 0;
   font-size: 14px;
@@ -386,6 +420,10 @@ p { margin: 0 0 16px; max-width: var(--w-text); text-wrap: pretty; }
   padding: 22px;
 }
 .preis-frei { border-color: var(--tint); }
+/* Das Bündel ist der Kauf, der sich lohnt — sechs gleich aussehende Karten
+   überlassen dem Leser die Rechnerei. Ein Rand statt einer Farbfläche: Es
+   soll auffallen, nicht schreien. */
+.preis-bundle { border-color: var(--tint); border-width: 2px; padding: 21px; }
 .preis b { display: block; font-size: 15px; margin-bottom: 3px; }
 .preis .betrag {
   font-size: 25px;

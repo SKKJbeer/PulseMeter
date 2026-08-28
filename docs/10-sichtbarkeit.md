@@ -4,7 +4,7 @@ Stand: 2026-08-13, Version 0.42.0
 
 Dieses Dokument beantwortet eine Frage: **Wie erfährt jemand von PulseMeter,
 der uns nicht kennt?** Es ist bewusst kein Marketingplan mit Kanälen und
-Budgets — für eine App, deren teuerstes Stück 9,99 € kostet, rechnet sich
+Budgets — für eine App, deren teuerstes Stück 4,99 € kostet, rechnet sich
 bezahlte Werbung nicht (Abschnitt 7 rechnet es vor).
 
 > **Was hier gemessen ist und was nicht.** Die Struktur des App Stores, die

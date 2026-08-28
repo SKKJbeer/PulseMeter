@@ -756,9 +756,9 @@ for (const scheme of ["light", "dark"]) {
   // hängt, bekommt den dritten Zähler angeboten — mit Preis, nicht mit Regal.
   note(/Kostenlos sind zwei/.test(kaufseite.text),
        "Das Kaufblatt zeigt die eine Sache, an der es hakte");
-  note(/Freischalten · 2,99/.test(kaufseite.text),
+  note(/Freischalten · 1,99/.test(kaufseite.text),
        "Und den Preis dazu, bevor jemand tippt");
-  note(/Alles freischalten/.test(kaufseite.text) && /9,99/.test(kaufseite.text),
+  note(/Alles freischalten/.test(kaufseite.text) && /4,99/.test(kaufseite.text),
        "Das Bündel steht darunter, nicht als Regal davor");
   // Seit 0.92.0 stehen dort Stichpunkte statt eines Absatzes — geprüft wird
   // deshalb die Sache, nicht der Wortlaut: Der freie Export ist Produktprinzip
@@ -806,7 +806,7 @@ for (const scheme of ["light", "dark"]) {
              text: box ? box.innerText.replace(/\s+/g, " ") : "" };
   });
   note(sperre.sichtbar, "Ohne Kauf steht im Verlauf, dass es Kosten gibt");
-  note(/3,99/.test(sperre.text), `Und was sie kosten: ${sperre.text.slice(0, 60)}`);
+  note(/1,99/.test(sperre.text), `Und was sie kosten: ${sperre.text.slice(0, 60)}`);
 
   await page.locator('[data-pane="meters"]').first().click();
   await page.waitForTimeout(200);
@@ -831,6 +831,28 @@ for (const scheme of ["light", "dark"]) {
     !!document.querySelector("#store-row svg circle"));
   note(symbol, "Die Zeile zur Übersicht trägt ein Einkaufssymbol");
 
+  // **Die Zeile sagt in ganzen Worten, was sie tut.** Sie hieß „Was
+  // PulseMeter noch kann" — eine Umschreibung, die alles Mögliche meinen kann,
+  // und über ihr stand als Überschrift „FREISCHALTEN". Vom Gründer benannt:
+  // „nenne das ‚Alle Funktionen freischalten'." Die Überschrift ist damit weg;
+  // zweimal dasselbe ist nicht doppelt so deutlich, sondern nur doppelt.
+  const beschriftung = await page.evaluate(() => {
+    const zeile = document.querySelector("#store-row .rl");
+    const klein = zeile?.querySelector("small");
+    return {
+      titel: (zeile?.firstChild?.textContent || "").trim(),
+      ueberschrift: [...document.querySelectorAll('[data-pane="meters"] .section-label')]
+        .map(x => x.textContent.trim().toLowerCase()),
+      stand: (klein?.textContent || "").trim(),
+    };
+  });
+  note(beschriftung.titel === "Alle Funktionen freischalten",
+       `Die Zeile heißt „Alle Funktionen freischalten" (steht: „${beschriftung.titel}")`);
+  note(!beschriftung.ueberschrift.includes("freischalten"),
+       "Über der Zeile steht das Wort nicht noch einmal als Überschrift");
+  note(beschriftung.stand.length > 0,
+       "An der Zeile steht, wie viel schon freigeschaltet ist");
+
   // **Die Kaufübersicht ist erreichbar, ohne an eine Grenze zu stoßen.**
   //
   // Bis 0.92.0 öffnete sich die Kaufseite ausschließlich vor einer Sperre. Wer
@@ -850,7 +872,7 @@ for (const scheme of ["light", "dark"]) {
   note(laden.offen, "Die Kaufübersicht öffnet sich über eine eigene Zeile");
   note(laden.karten.length === 4,
        `Alle vier Einzelkäufe stehen darin: ${laden.karten.join(", ")}`);
-  note(/Alles freischalten/.test(laden.text) && /9,99/.test(laden.text),
+  note(/Alles freischalten/.test(laden.text) && /4,99/.test(laden.text),
        "Das Bündel steht oben, mit Preis");
   note(laden.punkte >= 14,
        `Stichpunkte statt Absätze: ${laden.punkte} Zeilen`);

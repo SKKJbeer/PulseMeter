@@ -1,0 +1,34 @@
+name: Einreichung nachsehen
+
+# **Was der App Store noch verlangt — gefragt, nicht erinnert.**
+#
+# Die Liste in `docs/09-appstore.md` wurde von Hand gepflegt und war beim
+# Nachsehen falsch: StoreKit stand als offen, obwohl die fünf Käufe seit Tagen
+# bereit sind. Eine Liste, die nachgeführt werden muss, ist am Tag nach dem
+# Nachführen wieder veraltet.
+#
+# Dieser Lauf fragt stattdessen Apple. Er schreibt nichts und kostet Sekunden;
+# er darf deshalb so oft laufen, wie jemand wissen will, wo es steht.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  nachsehen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Abhängigkeiten
+        run: pip3 install --quiet "pyjwt[crypto]" requests
+
+      - name: Nachsehen
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: python3 scripts/asc-einreichung.py

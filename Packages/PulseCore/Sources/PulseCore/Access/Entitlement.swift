@@ -140,9 +140,14 @@ public enum ProductID: String, Hashable, Codable, Sendable, CaseIterable, Identi
     /// Schweiz falsch und in Österreich womöglich auch.
     public var suggestedPrice: Decimal {
         switch self {
-        case .costsAndTariffs: return Decimal(string: "3.99")!
-        case .everything:      return Decimal(string: "9.99")!
-        default:               return Decimal(string: "2.99")!
+        case .everything: return Decimal(string: "4.99")!
+        // **Alle vier gleich teuer, seit 0.95.0.** „Kosten und Preise" stand
+        // einen Euro über den anderen, weil dort am meisten drinsteckt. Das
+        // war von innen gedacht: Wer die Kaufseite ansieht, liest vier Zeilen
+        // und stolpert über die eine, die aus der Reihe fällt — und fragt sich,
+        // was mit den anderen nicht stimmt. Ein Preis für alles Einzelne ist
+        // schneller zu erfassen als eine begründete Staffel.
+        default:          return Decimal(string: "1.99")!
         }
     }
 

@@ -199,12 +199,21 @@ Bau kostet einen gemieteten Mac und eine Nummer, die verbraucht ist.
 ansehen. Ein Bau ohne Hinweistext ist bei den Testern ein Bau ohne Auskunft —
 zehn Bauten lang stand dort nichts, und niemandem ist es aufgefallen.
 
-### Nie pushen, solange ein Prüflauf auf demselben Zweig läuft
+### Pushen während eines laufenden Prüflaufs ist erlaubt
 
-`cancel-in-progress` in `ci.yml` bewertet „neu" nach Startzeit und bricht den
-laufenden Auftrag ab. An einem einzigen Tag hat das drei Läufe gekostet — jeder
-abgebrochen kurz vor dem App-Build, also nach der teuersten Minute und ohne je
-ein Ergebnis geliefert zu haben. Fertige Arbeit wartet, bis der Lauf durch ist.
+**Diese Regel stand hier umgekehrt und war überholt.** Sie lautete „nie pushen,
+solange ein Prüflauf läuft", weil `cancel-in-progress` an einem einzigen Tag
+drei Läufe gekostet hatte — jeden abgebrochen kurz vor dem App-Build, also nach
+der teuersten Minute und ohne je ein Ergebnis. Behoben wurde das damals mit
+**zwei Gruppen** in `ci.yml`, und die Regel blieb trotzdem stehen. Sie hat
+danach nur noch Wartezeit gekostet.
+
+| Auftrag | Gruppe | Bei neuem Push |
+|---|---|---|
+| `prototype` (Ubuntu, Minuten) | `entwurf-<zweig>` | wird abgebrochen — soll er, er läuft gleich wieder |
+| `build-and-test` (macOS, teuer) | `app-<zweig>` | `cancel-in-progress: false` — **reiht sich an**, beide laufen durch |
+
+Der teure Auftrag ist also geschützt. Wer wartet, wartet umsonst.
 
 ```bash
 git fetch origin screenshots && git show origin/screenshots:README.md | head -3

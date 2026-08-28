@@ -404,6 +404,22 @@ Es bleiben also genau **zwei Klicks im Portal**: die App-Gruppe und der
 iCloud-Behälter. Angelegt werden sie dort, **zugeordnet** an der App-ID — und
 die Häkchen dafür setzt der Lauf.
 
+### Eine Fortschrittsliste von Hand ist am nächsten Tag falsch
+
+Im Projektdokument stand „was vor dem Einreichen noch fehlt", gepflegt von
+Hand. Beim Nachsehen war der Punkt StoreKit offen — obwohl die fünf Käufe seit
+Tagen bereit waren und sich in TestFlight kaufen ließen. Nach der Liste hätte
+man Arbeit gemacht, die längst getan war.
+
+> Für alles, was eine Schnittstelle beantworten kann, wird **gefragt statt
+> erinnert**: ein Lauf, der liest und nichts schreibt, in Sekunden, so oft man
+> will. Von Hand bleibt nur, was keine Schnittstelle kennt — Entscheidungen,
+> Angaben über Menschen, Messungen am Gerät.
+
+Nützlich ist dabei die Dreiteilung der Ausgabe: **steht** / **mache ich** /
+**kann nur der Auftraggeber**. Der dritte Block ist die Liste, die er wirklich
+braucht; die ersten beiden gehen ihn nichts an.
+
 ### Der Berechtigungsteil gehört nicht in den TestFlight-Lauf
 
 Er spricht nur HTTP: kein Xcode, kein Simulator, kein Mac. Als Schritt im
@@ -733,8 +749,15 @@ den Prototyp anfasst, endet im Hauptzweig. Alles, was am Bau etwas ändert, geht
 bis aufs Gerät. Mehrere Versionen dürfen in **einem** Bau zusammenkommen; jeder
 Bau kostet einen gemieteten Mac und eine Nummer, die verbraucht ist.
 
-**Nie pushen, solange ein Prüflauf auf demselben Zweig läuft.** Fertige Arbeit
-wartet, bis der Lauf durch ist.
+**Nebenläufigkeit je Auftrag, und dann darf man pushen.** Aus „`cancel-in-progress`
+hat drei Läufe gekostet" war die Regel „nie pushen, solange ein Lauf läuft"
+geworden. Behoben war das längst — mit zwei Gruppen: der schnelle Auftrag darf
+abgebrochen werden, der teure steht auf `cancel-in-progress: false` und reiht
+sich an. Die Regel blieb trotzdem stehen und kostete danach nur noch Wartezeit.
+
+> Eine Regel, die aus einem Schaden entstand, gilt nicht weiter, weil der
+> Schaden einmal echt war. Sie gilt, solange die **Ursache** steht. Wer sie
+> aufschreibt, schreibt die Ursache dazu — sonst überlebt sie ihre Behebung.
 
 ---
 
