@@ -749,8 +749,15 @@ den Prototyp anfasst, endet im Hauptzweig. Alles, was am Bau etwas ändert, geht
 bis aufs Gerät. Mehrere Versionen dürfen in **einem** Bau zusammenkommen; jeder
 Bau kostet einen gemieteten Mac und eine Nummer, die verbraucht ist.
 
-**Nie pushen, solange ein Prüflauf auf demselben Zweig läuft.** Fertige Arbeit
-wartet, bis der Lauf durch ist.
+**Nebenläufigkeit je Auftrag, und dann darf man pushen.** Aus „`cancel-in-progress`
+hat drei Läufe gekostet" war die Regel „nie pushen, solange ein Lauf läuft"
+geworden. Behoben war das längst — mit zwei Gruppen: der schnelle Auftrag darf
+abgebrochen werden, der teure steht auf `cancel-in-progress: false` und reiht
+sich an. Die Regel blieb trotzdem stehen und kostete danach nur noch Wartezeit.
+
+> Eine Regel, die aus einem Schaden entstand, gilt nicht weiter, weil der
+> Schaden einmal echt war. Sie gilt, solange die **Ursache** steht. Wer sie
+> aufschreibt, schreibt die Ursache dazu — sonst überlebt sie ihre Behebung.
 
 ---
 
