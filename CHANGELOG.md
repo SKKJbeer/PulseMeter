@@ -9,6 +9,27 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.93.1 — 2026-08-28
+
+### Behoben
+- Die neue Prüfung fiel, und meine Vermutung dazu war falsch. Sie lautete: die
+  Kennung sitzt am falschen Element. Das Protokoll sagte etwas anderes, und es
+  sagte es in seinem ersten Wort — **`T:Übersicht`**: Der Test hatte den
+  Wechsel in den Verlauf gar nicht gemacht.
+- Dahinter lag der eigentliche Befund. Die Beispieldaten bringen **Tarife**
+  mit, auch mit `-pulse-frei`. Damit zeigte die App einem angeblich
+  kostenlosen Nutzer Beträge — auf der Übersicht stand `Kosten bis 27. August,
+  502,68 €` —, und die neue Sperre konnte nicht greifen, weil sie genau dann
+  erscheint, wenn keine Tarife da sind.
+- `-pulse-ohne-preise` legt den Zustand jetzt her, um den es geht: Zähler und
+  Ablesungen vollständig, Beträge nirgends.
+
+**Dass vorhandene Tarife ohne Kauf weiter rechnen, bleibt so.** Es ist dieselbe
+Regel wie bei den Zählern über der Grenze: Was schon da ist, bleibt benutzbar.
+Neu eintragen lässt sich ohne Kauf nichts.
+
+---
+
 ## 0.93.0 — 2026-08-28
 
 Vom Gerät gemeldet: „so sieht es ein User bisher nicht und würde es

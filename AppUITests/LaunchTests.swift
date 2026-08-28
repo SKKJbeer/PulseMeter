@@ -1731,7 +1731,14 @@ final class LaunchTests: XCTestCase {
     /// nicht als Preis, gar nicht. Der Gründer: „so sieht es ein User bisher
     /// nicht und würde es wahrscheinlich nie kaufen."
     func testTheHistoryShowsThatCostsExistAndWhatTheyCost() {
-        let app = launchFree()
+        // **Ohne Tarife, denn darum geht es.** Die Beispieldaten bringen
+        // Tarife mit — der erste Anlauf prüfte deshalb einen Zustand, den ein
+        // kostenloser Nutzer nie hat, und fand die Sperre zu Recht nicht. Und
+        // er stand dabei noch auf der Übersicht: Der Wechsel in den Verlauf
+        // fehlte ganz, was das Protokoll mit „T:Übersicht" als erstes sagte.
+        let app = launchFree("-pulse-ohne-preise")
+
+        guard wechsel(zu: "Verlauf", in: app) else { return }
 
         let sperre = element("kosten-sperre", in: app)
         guard scroll(to: sperre, in: app) else {
