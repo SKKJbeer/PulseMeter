@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PulseMeter — Zählerstände erfassen, Kosten verstehen</title>
+<meta name="description" content="Zählerstände für Strom, Gas, Wasser und Photovoltaik in zehn Sekunden eintragen und sehen, ob alles im Rahmen ist. Keine Server, kein Konto, kein Tracking. Ab 1,99 €, kein Abo.">
+<meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F0E0C" media="(prefers-color-scheme: dark)">
+<link rel="canonical" href="https://pulsemeter.pages.dev/">
+<!-- Das Zeichen liegt als Datenadresse in der Seite und nicht als Datei:
+     eine Anfrage weniger, und es kann nicht verlorengehen. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2317150F'/%3E%3Cpath d='M6 21a10 10 0 0 1 20 0' fill='none' stroke='%23E0A040' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M9 21h4l2-5 3 8 2-3h3' fill='none' stroke='%23E0A040' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PulseMeter">
+<meta property="og:locale" content="de_DE">
+<meta property="og:title" content="PulseMeter — Zählerstände erfassen, Kosten verstehen">
+<meta property="og:description" content="Zählerstände in zehn Sekunden eintragen und sehen, ob alles im Rahmen ist. Keine Server, kein Konto, kein Tracking. Ab 1,99 €, kein Abo.">
+<meta property="og:url" content="https://pulsemeter.pages.dev/">
+<meta property="og:image" content="https://pulsemeter.pages.dev/bilder/light.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="stil.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "PulseMeter",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "iOS 18",
+  "inLanguage": "de",
+  "description": "Zählerstände für Strom, Gas, Wasser, Photovoltaik und Nachtstrom erfassen, Verbrauch und Kosten sehen, mit dem Vorjahr vergleichen und als Tabelle exportieren.",
+  "url": "https://pulsemeter.pages.dev/",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "EUR",
+    "description": "Kostenlos mit zwei Zählern. Einzelne Freischaltungen je 1,99 €, alle zusammen 4,99 €. Kein Abo."
+  }
+}
+</script>
+<!-- Die Fragen stehen wörtlich so auf der Hilfeseite. Kein zweiter Text, der
+     auseinanderlaufen kann: Was hier steht, ist dort nachzulesen. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "de",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Meine Abrechnung nennt einen anderen Verbrauch als die App. Warum?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Meist wegen des Zeitraums: Der Versorger rechnet vom Ablesetag bis zum Ablesetag, die App von Monatsanfang bis Monatsende. Bei Gas kommen Zustandszahl und Brennwert dazu — beide stehen auf der Rechnung und gehören in die App, sonst werden aus Kubikmetern die falschen Kilowattstunden."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Ich habe eine Ablesung vergessen. Ist die Lücke ein Problem?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Nein. Die App rechnet über die Lücke hinweg und kennzeichnet, was dabei geschätzt ist. Trag den nächsten Stand einfach ein, wenn du wieder am Zähler stehst."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Brauche ich ein Konto?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Nein. Es gibt keine Anmeldung, keine E-Mail-Adresse und kein Passwort. Die App fragt bei keinem Server an, und deine Zählerstände verlassen dein Gerät nur, wenn du sie selbst weitergibst oder den Abgleich über deine eigene iCloud einschaltest."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Was kostet was?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Kostenlos bleiben zwei Zähler, alle Ablesungen, der ganze Verlauf, der Vorjahresvergleich, Erinnerungen und der Export. Einzelne Freischaltungen kosten je 1,99 €, alle vier zusammen 4,99 €. Einmal bezahlt, kein Abo."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Wie komme ich an meine Daten heran?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Über den Export als Tabelle. Der bleibt dauerhaft kostenlos, auch wenn du nie etwas kaufst — die Datei öffnet jedes Tabellenprogramm."
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<a class="sprung" href="#inhalt">Zum Inhalt springen</a>
+
+<header class="kopf">
+  <div class="bahn kopf-innen">
+    <a class="marke" href="/">
+      <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <path d="M4 23a12 12 0 0 1 24 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".28"/>
+        <path d="M7 23h4.5l2.5-6.5L18 27l2.5-4H25" fill="none" stroke="#C77A0E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      PulseMeter
+    </a>
+    <nav aria-label="Bereiche">
+      <a href="#funktionen">Funktionen</a>
+      <a href="#preise">Preise</a>
+      <a href="hilfe.html">Hilfe</a>
+    </nav>
+  </div>
+</header>
+
+<main id="inhalt">
+
+  <div class="anfang">
+    <div class="bahn anfang-gitter">
+      <div>
+        <h1>Einmal im Monat ablesen. Den Rest des Jahres Bescheid wissen.</h1>
+        <p class="vorspann">
+          PulseMeter führt deine Zählerstände für Strom, Gas, Wasser,
+          Photovoltaik und Wärme — und zeigt dir Verbrauch, Vorjahresvergleich
+          und Kosten auf einem Bildschirm. Damit die Abrechnung im Frühjahr
+          keine Überraschung mehr ist.
+        </p>
+        <div class="knoepfe">
+          <!-- APPSTORE-KNOPF — von scripts/appstore-knopf.sh gesetzt, nicht von Hand.
+               Solange die App nicht im Store ist, steht hier kein Verweis: Ein
+               Abzeichen „Laden im App Store", das auf eine Fehlseite führt, ist
+               genau das Versprechen, das dieses Projekt sich verbietet. -->
+          <span class="apfel apfel-wartet" aria-label="Bald im App Store">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+            </svg>
+            <span class="apfel-text">
+              <small>Bald</small>
+              <b>im App Store</b>
+            </span>
+          </span>
+          <!-- /APPSTORE-KNOPF -->
+          <a class="knopf knopf-voll" href="https://claude.ai/code/artifact/0857fc7e-d092-4ffe-9c96-33f323943f1f">Jetzt ausprobieren</a>
+          <a class="knopf knopf-rand" href="#funktionen">Was drinsteckt</a>
+        </div>
+        <ul class="zusagen">
+          <li>Ohne Konto</li>
+          <li>Ohne Werbung und Tracking</li>
+          <li>Deine Zahlen bleiben bei dir</li>
+        </ul>
+        <p class="notiz">
+          Die App ist noch nicht im App Store. Der Entwurf im Browser rechnet
+          aber schon mit drei Jahren echter Zahlen — probier ihn aus, bevor du
+          dich entscheidest.
+        </p>
+      </div>
+
+      <div class="geraet-reihe">
+        <picture class="geraet">
+          <source srcset="bilder/dark.jpg" media="(prefers-color-scheme: dark)">
+          <img src="bilder/light.jpg" width="460" height="1000"
+               alt="Die Übersicht von PulseMeter: vier Zähler mit Verbrauch seit Jahresbeginn, Vorjahresvergleich und Kosten.">
+        </picture>
+        <picture class="geraet">
+          <source srcset="bilder/capture-dark.jpg" media="(prefers-color-scheme: dark)">
+          <img src="bilder/capture-light.jpg" width="460" height="1000"
+               alt="Eine Ablesung eintragen: großes Zahlenfeld mit Ziffernblock, das Datum steht auf heute.">
+        </picture>
+        <picture class="geraet">
+          <source srcset="bilder/verlauf-dark.jpg" media="(prefers-color-scheme: dark)">
+          <img src="bilder/verlauf-light.jpg" width="460" height="1000"
+               alt="Der Verlauf: Verbrauch je Monat als Diagramm, daneben derselbe Zeitraum des Vorjahres.">
+        </picture>
+      </div>
+    </div>
+  </div>
+
+  <section id="funktionen">
+    <div class="bahn paar">
+      <div>
+        <span class="marke-klein">Überblick</span>
+        <h2>Verbrauch, Vorjahr und Kosten auf einem Bildschirm</h2>
+        <p class="blass">
+          Jeder Zähler zeigt, was seit Jahresbeginn zusammengekommen ist, was
+          im selben Zeitraum des Vorjahres zusammenkam und was das in Euro
+          bedeutet. Ohne Scrollen, ohne Menü.
+        </p>
+        <ul class="liste">
+          <li><strong>Vergleich auf gleicher Grundlage.</strong> Januar bis Mai gegen Januar bis Mai — bei Heizung gegen dieselbe Heizperiode, nicht gegen ein Kalenderjahr.</li>
+          <li><strong>Geschätztes ist gekennzeichnet.</strong> Hochgerechnete und interpolierte Werte stehen als solche da, nie stillschweigend zwischen gemessenen.</li>
+          <li><strong>Jede Zahl lässt sich antippen</strong> und zeigt, aus welchen Ablesungen sie entstanden ist.</li>
+        </ul>
+      </div>
+      <picture class="geraet">
+        <source srcset="bilder/dark.jpg" media="(prefers-color-scheme: dark)">
+        <img src="bilder/light.jpg" width="460" height="1000"
+             alt="Die Übersicht mit vier Zählern, Vorjahresvergleich und Kosten.">
+      </picture>
+    </div>
+  </section>
+
+  <section class="abschnitt-hell">
+    <div class="bahn paar paar-gedreht">
+      <div>
+        <span class="marke-klein">Kosten</span>
+        <h2>Die Nachzahlung siehst du im Oktober, nicht im März</h2>
+        <p class="blass">
+          Zwei Zahlen von deiner Rechnung genügen — Arbeitspreis und
+          Grundpreis. Ab da rechnet PulseMeter mit: Was kostet dieser Monat,
+          was wird das Jahr kosten, und deckt dein Abschlag das ab?
+        </p>
+        <ul class="liste">
+          <li><strong>Hochrechnung aufs Jahresende</strong>, die den Winter kennt. Ein Gasjahr wird nicht aus einem Julischnitt fortgeschrieben.</li>
+          <li><strong>Abschlagsvergleich.</strong> Zu hoch, passend oder zu niedrig — mit dem Betrag, um den es geht.</li>
+          <li><strong>Preiswechsel mitten im Jahr</strong> werden getrennt gerechnet, nicht über den Zeitraum gemittelt.</li>
+        </ul>
+      </div>
+      <picture class="geraet">
+        <source srcset="bilder/verlauf-dark.jpg" media="(prefers-color-scheme: dark)">
+        <img src="bilder/verlauf-light.jpg" width="460" height="1000"
+             alt="Der Verlauf mit Monatswerten und Vorjahresvergleich.">
+      </picture>
+    </div>
+  </section>
+
+  <section>
+    <div class="bahn paar">
+      <div>
+        <span class="marke-klein">Erfassen</span>
+        <h2>Zehn Sekunden im Keller, und der Tippfehler bleibt draußen</h2>
+        <p class="blass">
+          App öffnen, Zahl eintippen, sichern. Das Datum steht schon auf heute.
+          Und bevor der Wert in deinen Daten landet, sieht die App ihn sich an:
+          Liegt er unter dem letzten Stand oder weit über dem, was bei dir
+          üblich ist, fragt sie nach — im Keller, wo du es noch nachsehen
+          kannst, nicht im Februar beim Blick aufs Diagramm.
+        </p>
+        <ul class="liste">
+          <li><strong>Erinnerungen</strong> monatlich, vierteljährlich oder zum selbst gewählten Termin.</li>
+          <li><strong>Ein Feld auf dem Sperrbildschirm</strong> zeigt, ob eine Ablesung fällig ist und wie viel bisher zusammengekommen ist — ohne die App zu öffnen.</li>
+          <li><strong>Kein Konto, keine Anmeldung.</strong> Der erste Zähler steht in unter einer Minute.</li>
+          <li><strong>Lücken sind erlaubt.</strong> Wer drei Monate vergisst, verliert nichts — die App rechnet damit und sagt, was geschätzt ist.</li>
+        </ul>
+      </div>
+      <picture class="geraet">
+        <source srcset="bilder/capture-dark.jpg" media="(prefers-color-scheme: dark)">
+        <img src="bilder/capture-light.jpg" width="460" height="1000"
+             alt="Die Eingabe einer Ablesung mit großem Ziffernblock.">
+      </picture>
+    </div>
+  </section>
+
+  <section>
+    <div class="bahn paar paar-gedreht">
+      <div>
+        <span class="marke-klein">Bericht</span>
+        <h2>Die Rechnung prüfen, ohne sie zu glauben</h2>
+        <p class="blass">
+          Einmal im Jahr kommt ein Brief mit einer Zahl darin, und niemand
+          weiß, ob sie stimmt. PulseMeter baut daraus ein Dokument: Zeitraum,
+          Anfangs- und Endstand, Verbrauch je Monat, Vorjahr daneben, Kosten
+          und Abschlagssaldo. Zum Ausdrucken, zum Weitergeben an den
+          Vermieter, zum Danebenlegen.
+        </p>
+        <ul class="liste">
+          <li><strong>Zeitraum frei wählbar</strong> — auch der krumme, den dein Versorger abrechnet, nicht nur das Kalenderjahr.</li>
+          <li><strong>Ansehen und ausdrucken kostet nichts.</strong> Ungekauft steht ein Schriftzug quer darüber; weg ist er, wenn du ihn weitergeben willst.</li>
+          <li><strong>Jede Zahl im Bericht</strong> stammt aus einer Ablesung, die du eingetragen hast — geschätzte sind als solche gekennzeichnet.</li>
+        </ul>
+      </div>
+      <picture class="geraet">
+        <source srcset="bilder/bericht-dark.jpg" media="(prefers-color-scheme: dark)">
+        <img src="bilder/bericht-light.jpg" width="460" height="1000"
+             alt="Der Verbrauchsbericht: Zeitraum, Zählerstände, Monatswerte und Kosten als Dokument.">
+      </picture>
+    </div>
+  </section>
+
+  <section class="abschnitt-hell">
+    <div class="bahn">
+      <span class="marke-klein">Besondere Fälle</span>
+      <h2>Da, wo es sonst ungenau wird</h2>
+      <p class="blass">
+        Die meisten Haushalte haben mehr als einen einfachen Stromzähler. Genau
+        an diesen Stellen rechnen Tabellen und einfache Apps falsch.
+      </p>
+
+      <div class="karten">
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v18M5 8h14M5 16h14"/>
+          </svg>
+          <h3>Gas, richtig gerechnet</h3>
+          <p>Mit Zustandszahl und Brennwert von deiner Rechnung. Wer Kubikmeter einfach mal zehn nimmt, liegt daneben — <a href="gas-in-kwh.html">warum, steht hier</a>.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 4v3M5 12H2m20 0h-3M6.3 6.3 4.2 4.2m15.6 2.1 2.1-2.1"/><circle cx="12" cy="14" r="5"/>
+          </svg>
+          <h3>Photovoltaik</h3>
+          <p>Ein Zähler, zwei Richtungen — Bezug und Einspeisung, mit Vergütung. Und eine Vorschau, die weiß, dass im Juni mehr kommt als im Dezember.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v5l3 2"/>
+          </svg>
+          <h3>Tag- und Nachtstrom</h3>
+          <p>Zwei Preise an einem Gerät. Für Nachtspeicher, Wärmepumpe oder die Wallbox in der Garage.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 7h16M4 12h16M4 17h10"/>
+          </svg>
+          <h3>Zählerwechsel</h3>
+          <p>Neues Gerät, neue Zahlen — und der Verlauf reißt trotzdem nicht ab. Alter Endstand rein, neuer Anfangsstand rein, fertig.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 12a9 9 0 1 1 3 6.7"/><path d="M3 14v-4h4"/>
+          </svg>
+          <h3>Zählerüberlauf</h3>
+          <p>Ein sechsstelliger Zähler fängt irgendwann wieder bei null an. Die App erkennt das und zieht nicht plötzlich einen Jahresverbrauch ab.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 19V9m5 10V5m5 14v-7m5 7V8"/>
+          </svg>
+          <h3>Heizperiode statt Kalenderjahr</h3>
+          <p>Bei Gas und Fernwärme wird Oktober bis April gegen Oktober bis April verglichen. Ein Kalenderjahr zerschneidet den Winter mitten durch.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="bahn">
+      <span class="marke-klein">Deine Daten</span>
+      <h2>Wir sehen deine Zählerstände nicht. Nie.</h2>
+      <p class="blass">
+        Nicht anonymisiert, nicht aggregiert, nicht „zur Verbesserung des
+        Angebots". Deine Ablesungen verlassen dein Gerät nur dann, wenn du sie
+        selbst weitergibst — und der einzige andere Ort, an den sie gehen
+        können, ist deine eigene iCloud.
+      </p>
+
+      <div class="karten">
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12.5 10 17l9-10"/>
+          </svg>
+          <h3>Kein Konto</h3>
+          <p>Keine Anmeldung, keine E-Mail-Adresse, kein Passwort. Du lädst die App und trägst die erste Zahl ein.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 3l18 18"/><path d="M12 3a9 9 0 0 1 9 9 9 9 0 0 1-1.6 5.1M6.6 6.6A9 9 0 0 0 12 21"/>
+          </svg>
+          <h3>Keine Server</h3>
+          <p>Die App fragt nirgendwo an. Es gibt keinen Dienst, der deine Zahlen empfangen könnte — auch keinen von uns.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 21s-7-4.4-7-10V6l7-3 7 3v5c0 5.6-7 10-7 10z"/>
+          </svg>
+          <h3>Kein Tracking</h3>
+          <p>Keine Werbung, keine Analyse, keine Absturzberichte. Nichts zählt mit, wie oft du die App öffnest.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M7 17h10a4 4 0 0 0 .6-8A6 6 0 0 0 6 8.5 4.2 4.2 0 0 0 7 17z"/>
+          </svg>
+          <h3>Deine eigene iCloud</h3>
+          <p>Wenn du den Abgleich einschaltest, liegen die Daten in deinem privaten iCloud-Bereich. Wir haben darauf keinen Zugriff.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v11m0 0-4-4m4 4 4-4"/><path d="M4 17v3h16v-3"/>
+          </svg>
+          <h3>Export, dauerhaft kostenlos</h3>
+          <p>Alle Ablesungen als Tabelle, in jedem Tabellenprogramm zu öffnen. Auch wenn du nie einen Cent ausgibst.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 7h11M4 12h16M4 17h8"/><path d="M18 5v6"/>
+          </svg>
+          <h3>Löschen heißt gelöscht</h3>
+          <p>Du entfernst die App, und die Daten sind weg. Es gibt keine Kopie, die wir behalten könnten.</p>
+        </div>
+      </div>
+
+      <p class="blass">
+        Der freie Export ist der Kern davon. Er ist keine Werbeaktion, sondern
+        die Antwort auf die Frage, die jeder zu Recht stellt: <em>Was, wenn es
+        die App irgendwann nicht mehr gibt?</em> Dann nimmst du deine Tabelle
+        und gehst. Genau diese Sorge hält so viele Leute bei Excel — und Apps,
+        die die eigenen Daten als Pfand nehmen, geben ihnen recht.
+      </p>
+      <p class="notiz">
+        Dass das stimmt, prüft bei jeder Änderung ein Skript im Quelltext mit:
+        kein Netzverkehr, kein Analyse-Baustein, kein fremdes Paket, keine
+        Protokollausgabe mit Zählerständen, iCloud ausschließlich privat.
+        Schlägt eine dieser Prüfungen an, geht die Änderung nicht durch.
+        Nachzulesen in der <a href="datenschutz.html">Datenschutzerklärung</a>.
+      </p>
+      <p class="notiz">
+        Diese Seite hält sich an dieselbe Regel: keine Cookies, keine
+        Zählpixel, keine fremden Schriftarten. Deshalb hat dich hier auch kein
+        Zustimmungsfenster begrüßt.
+      </p>
+    </div>
+  </section>
+
+  <section id="preise" class="abschnitt-hell">
+    <div class="bahn">
+      <span class="marke-klein">Preise</span>
+      <h2>Ein paar Euro, einmal. Kein Abo.</h2>
+      <p class="blass">
+        Fang kostenlos an. Wenn dir später etwas fehlt, kaufst du genau das
+        frei — nicht ein Paket, in dem drei Dinge stecken, die du nie
+        brauchst. Einmal bezahlt, auf allen deinen Geräten, und es bleibt.
+      </p>
+      <p class="notiz">
+        Kaufen kann man noch nichts: Die App ist nicht im Store. Die Beträge
+        unten sind die geplanten Preise, keine gültigen.
+      </p>
+
+      <div class="preis-tafel">
+        <div class="preis preis-frei">
+          <b>Dauerhaft kostenlos</b>
+          <span class="betrag">0 €</span>
+          <p>Zwei Zähler, so viele Ablesungen du willst, der ganze Verlauf, der Vorjahresvergleich, Erinnerungen und der Export.</p>
+        </div>
+        <div class="preis">
+          <b>Weitere Zähler</b>
+          <span class="betrag">1,99 €</span>
+          <p>Ab dem dritten. Wer Strom, Gas und Wasser führt, ist schon dabei.</p>
+        </div>
+        <div class="preis">
+          <b>Tag- und Nachtstrom</b>
+          <span class="betrag">1,99 €</span>
+          <p>Ein Gerät mit zwei Zahlen. Auch Photovoltaik mit Bezug und Einspeisung.</p>
+        </div>
+        <div class="preis">
+          <b>Kosten und Preise</b>
+          <span class="betrag">1,99 €</span>
+          <p>Euro statt Kilowattstunden, Abschlagsvergleich, Vorschau aufs Jahresende.</p>
+        </div>
+        <div class="preis">
+          <b>Bericht ohne Schriftzug</b>
+          <span class="betrag">1,99 €</span>
+          <p>Das Dokument zum Weitergeben. Ansehen und ausdrucken kannst du ihn auch ohne.</p>
+        </div>
+        <div class="preis preis-bundle">
+          <b>Alles zusammen</b>
+          <span class="betrag">4,99 €</span>
+          <p>Alle vier Freischaltungen. Einzeln wären es 7,96 € — du sparst knapp drei Euro.</p>
+        </div>
+      </div>
+
+      <p class="notiz">
+        Der Verbrauchsbericht lässt sich immer ansehen und ausdrucken — ohne
+        Kauf mit einem Schriftzug quer darüber. Und ob dein Abschlag
+        überhaupt passt, rechnet die App aus, bevor die Rechnung kommt:
+        <a href="abschlag-zu-hoch.html">so prüfst du ihn</a>.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="fuss">
+  <div class="bahn fuss-innen">
+    <span>PulseMeter — gebaut in Deutschland, von einem Menschen.</span>
+    <nav aria-label="Rechtliches">
+      <a href="gas-in-kwh.html">Gas in kWh</a>
+      <a href="abschlag-zu-hoch.html">Abschlag prüfen</a>
+      <a href="hilfe.html">Hilfe &amp; Kontakt</a>
+      <a href="datenschutz.html">Datenschutz</a>
+      <a href="impressum.html">Impressum</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gaszähler: Kubikmeter in Kilowattstunden umrechnen — PulseMeter</title>
+<meta name="description" content="Der Gaszähler zählt Kubikmeter, abgerechnet werden Kilowattstunden. Die Formel mit Zustandszahl und Brennwert, ein Beispiel zum Nachrechnen und die drei häufigsten Fehler.">
+<meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F0E0C" media="(prefers-color-scheme: dark)">
+<link rel="canonical" href="https://pulsemeter.pages.dev/gas-in-kwh.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="PulseMeter">
+<meta property="og:locale" content="de_DE">
+<meta property="og:title" content="Gaszähler: Kubikmeter in Kilowattstunden umrechnen — PulseMeter">
+<meta property="og:description" content="Der Gaszähler zählt Kubikmeter, abgerechnet werden Kilowattstunden. Die Formel mit Zustandszahl und Brennwert, ein Beispiel zum Nachrechnen und die drei häufigsten Fehler.">
+<meta property="og:url" content="https://pulsemeter.pages.dev/gas-in-kwh.html">
+<meta property="og:image" content="https://pulsemeter.pages.dev/bilder/light.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2317150F'/%3E%3Cpath d='M6 21a10 10 0 0 1 20 0' fill='none' stroke='%23E0A040' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M9 21h4l2-5 3 8 2-3h3' fill='none' stroke='%23E0A040' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="stil.css">
+</head>
+<body>
+
+<a class="sprung" href="#inhalt">Zum Inhalt springen</a>
+
+<header class="kopf">
+  <div class="bahn kopf-innen">
+    <a class="marke" href="index.html">
+      <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <path d="M4 23a12 12 0 0 1 24 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".28"/>
+        <path d="M7 23h4.5l2.5-6.5L18 27l2.5-4H25" fill="none" stroke="#C77A0E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      PulseMeter
+    </a>
+    <nav aria-label="Bereiche">
+      <a href="index.html#funktionen">Funktionen</a>
+      <a href="index.html#preise">Preise</a>
+      <a href="hilfe.html">Hilfe</a>
+    </nav>
+  </div>
+</header>
+
+<main id="inhalt" class="rechtstext">
+  <div class="bahn">
+    <h1>Gaszähler: Kubikmeter in Kilowattstunden umrechnen</h1>
+    <p class="blass">
+      <strong>Kurz gesagt:</strong> Dein Zähler zählt Kubikmeter, abgerechnet
+      werden Kilowattstunden. Umgerechnet wird mit zwei Zahlen, die auf deiner
+      Rechnung stehen — Zustandszahl und Brennwert:
+    </p>
+
+    <div class="anschrift">
+      <strong>Kilowattstunden = Kubikmeter × Zustandszahl × Brennwert</strong>
+    </div>
+
+    <h2>Ein Beispiel zum Nachrechnen</h2>
+    <p>
+      Zwischen zwei Ablesungen sind 250 m³ vergangen. Auf der Rechnung stehen
+      eine Zustandszahl von 0,9650 und ein Brennwert von 11,2 kWh/m³:
+    </p>
+    <div class="anschrift">
+      250 × 0,9650 × 11,2 = <strong>2.702 kWh</strong>
+    </div>
+    <p>
+      Bei einem Arbeitspreis von 12 Cent brutto sind das 324,24 € für diesen
+      Zeitraum, plus Grundpreis.
+    </p>
+
+    <h2>Was dabei am häufigsten schiefgeht</h2>
+    <ul>
+      <li><strong>Mit zehn multiplizieren.</strong> Die verbreitete Faustformel
+        „ein Kubikmeter sind zehn Kilowattstunden" liegt je nach Gasqualität um
+        mehrere Prozent daneben — bei 2.700 kWh im Quartal ist das schnell ein
+        zweistelliger Eurobetrag.</li>
+      <li><strong>Werte vom Vorjahr weiterverwenden.</strong> Brennwert und
+        Zustandszahl stehen auf <em>jeder</em> Rechnung neu. Der Brennwert
+        schwankt mit dem Gas, das gerade im Netz ist.</li>
+      <li><strong>Andere Zeiträume vergleichen.</strong> Das Abrechnungsjahr
+        deines Versorgers beginnt selten am 1. Januar. Wer den eigenen Wert
+        gegen die Rechnung hält, muss denselben Ausschnitt wählen — sonst
+        vergleicht er Februar mit Juli.</li>
+    </ul>
+
+    <h2>Wo die Zahlen auf der Rechnung stehen</h2>
+    <p>
+      Meist im Abschnitt „Berechnung des Verbrauchs" oder „Umrechnung in
+      Kilowattstunden", oft klein gedruckt neben den Zählerständen. Die
+      Zustandszahl liegt üblicherweise nahe bei 1 und hängt von Höhenlage und
+      Druck ab; der Brennwert steht in kWh/m³.
+    </p>
+
+    <h2>Und wenn man es nicht jedes Mal selbst rechnen will</h2>
+    <p>
+      Genau dafür gibt es <a href="index.html">PulseMeter</a>: Zustandszahl und
+      Brennwert einmal eintragen, danach rechnet die App bei jeder Ablesung
+      selbst — in Kilowattstunden und in Euro. Weitere Fragen beantwortet die
+      <a href="hilfe.html">Hilfeseite</a>.
+    </p>
+
+  </div>
+</main>
+
+<footer class="fuss">
+  <div class="bahn fuss-innen">
+    <span>PulseMeter — gebaut in Deutschland, von einem Menschen.</span>
+    <nav aria-label="Rechtliches">
+      <a href="index.html">Start</a>
+      <a href="hilfe.html">Hilfe &amp; Kontakt</a>
+      <a href="datenschutz.html">Datenschutz</a>
+      <a href="impressum.html">Impressum</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
