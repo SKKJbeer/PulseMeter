@@ -33,6 +33,49 @@ cat > "$ZIEL/_headers" <<'ENDE'
   X-Frame-Options: SAMEORIGIN
 ENDE
 
+# **Adressen ohne `.html`.** Cloudflare Pages liefert `/datenschutz.html` nicht
+# aus, sondern leitet mit 308 auf `/datenschutz` weiter. Gemessen, nicht
+# vermutet — der erste Aufruf der fertigen Seite hat es gezeigt. Damit zeigte
+# jedes `canonical` auf eine Adresse, die weiterleitet, und die Sitemap meldete
+# fünf Adressen an, die es so nicht gibt. Google hält `canonical` für die
+# Wahrheit; ein Widerspruch dort kostet Sichtbarkeit.
+#
+# Umgeschrieben wird **nur im Auslieferordner**. Im Repository bleiben die
+# `.html`, sonst ließe sich die Seite lokal nicht mehr durchklicken und die
+# Prüfung fände ihre Verweise nicht mehr.
+python3 - "$ZIEL" <<'ENDE_PY'
+import pathlib, re, sys
+
+ordner = pathlib.Path(sys.argv[1])
+namen = [p.stem for p in ordner.glob("*.html")]
+
+def adresse(treffer):
+    name = treffer.group(1)
+    return "/" if name == "index" else f"/{name}"
+
+for datei in list(ordner.glob("*.html")) + [ordner / "sitemap.xml"]:
+    if not datei.exists():
+        continue
+    text = datei.read_text(encoding="utf-8")
+    # Verweise zwischen den Seiten: href="hilfe.html" → href="/hilfe"
+    text = re.sub(r'href="([a-z0-9-]+)\.html"',
+                  lambda m: f'href="{adresse(m)}"' if m.group(1) in namen else m.group(0),
+                  text)
+    # Absolute Adressen in canonical, og:url und Sitemap
+    text = re.sub(r'(https://[^"<\s]+/)([a-z0-9-]+)\.html',
+                  lambda m: m.group(1) + ("" if m.group(2) == "index" else m.group(2)),
+                  text)
+    datei.write_text(text, encoding="utf-8")
+
+# Nachzählen statt hoffen: Bleibt ein `.html`-Verweis stehen, war die Regel zu eng.
+rest = []
+for datei in ordner.glob("*.html"):
+    for treffer in re.findall(r'href="[^"]*\.html"', datei.read_text(encoding="utf-8")):
+        rest.append(f"{datei.name}: {treffer}")
+if rest:
+    sys.exit("Verweise mit .html sind stehengeblieben:\n  " + "\n  ".join(rest))
+ENDE_PY
+
 # Fällt jemandem eine weitere Datei ein, die nicht ins Netz gehört, gehört sie
 # hierher — und die Prüfung darunter merkt es, wenn sie es doch tut.
 if find "$ZIEL" -name "*.md" | grep -q .; then

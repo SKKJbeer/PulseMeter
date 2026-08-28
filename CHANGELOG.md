@@ -9,6 +9,32 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.95.7 — 2026-08-28
+
+**Die Website steht.** `https://pulsemeter.pages.dev` antwortet, und der erste
+Aufruf der fertigen Seite hat sofort etwas gezeigt, das kein Lauf und keine
+Prüfung sehen konnte.
+
+### Behoben
+- **Cloudflare Pages kürzt `.html` weg.** `/datenschutz.html` wird nicht
+  ausgeliefert, sondern leitet mit 308 auf `/datenschutz`. Damit zeigte jedes
+  `canonical` auf eine Adresse, die weiterleitet, und die Sitemap meldete fünf
+  Adressen an, die es so nicht gibt. Google hält `canonical` für die Wahrheit;
+  ein Widerspruch dort kostet Sichtbarkeit — genau die Falle, vor der die
+  eigene Anleitung seit Wochen warnt.
+
+  `website-fertig.sh` schreibt Verweise, `canonical`, `og:url` und Sitemap im
+  **Auslieferordner** auf Adressen ohne Endung um. Im Repository bleiben die
+  `.html`: Sonst ließe sich die Seite lokal nicht mehr durchklicken, und die
+  Prüfung fände ihre Verweise nicht.
+- Das Umschreiben zählt danach nach. Bleibt ein `.html`-Verweis stehen, bricht
+  es ab, statt eine halb umgestellte Seite auszuliefern.
+
+**Gemessen, nicht vermutet:** `/bilder/` liefert die Startseite und keine
+Dateiliste — die Ablage steht nicht offen.
+
+---
+
 ## 0.95.6 — 2026-08-28
 
 **Die Geheimnisse des Gründers sind angekommen.** Der Lauf fiel nicht an der
