@@ -9,6 +9,27 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.95.8 — 2026-08-28
+
+**Der Lauf war grün und hatte nichts getan.** Fünfmal stand im Protokoll „Preis
+stand schon" — bei Apple standen weiter 2,99 € und 9,99 €, in der App die neuen
+1,99 € und 4,99 €.
+
+### Behoben
+- **Nachgelesen wurde die Existenz eines Preisplans, nicht der Preis.** Damit
+  war jede spätere Preisänderung unsichtbar: Der Lauf sah einen Plan, meldete
+  Erfolg und ließ die alten Beträge stehen. Gemerkt hätte es ein Käufer, der
+  einen anderen Preis sieht als angeschrieben.
+
+  `preis_jetzt()` liest jetzt den tatsächlichen Betrag und vergleicht ihn.
+  Weicht er ab, wird er gesetzt, und das Protokoll sagt es: „war 2,99 €, soll
+  1,99 € sein — wird geändert."
+- Im Baukasten steht die Regel als eigener Abschnitt: **„Vorhanden" ist auch
+  nicht „richtig".** Die Stufe nach „vorhanden ist nicht wirkt", und die
+  teurere — weil nichts rot wird.
+
+---
+
 ## 0.95.7 — 2026-08-28
 
 **Die Website steht.** `https://pulsemeter.pages.dev` antwortet, und der erste

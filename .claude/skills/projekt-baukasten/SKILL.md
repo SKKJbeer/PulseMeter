@@ -583,6 +583,22 @@ lang wurde überall gesucht, nur nicht an der Stelle, die die Antwort hatte.
 > fragen" und „die Gegenseite sagt nein": Ein Fehler auf der eigenen Seite darf
 > nie wie eine Antwort der Gegenseite aussehen.
 
+### „Vorhanden" ist auch nicht „richtig"
+
+Die Stufe nach „vorhanden ist nicht wirkt", und sie kostet mehr, weil nichts
+rot wird. Ein Einrichtungslauf las nach, **ob** ein Preisplan existiert, und
+meldete „Preis stand schon". Als die Preise geändert wurden, lief er grün durch
+und änderte nichts: Bei Apple standen die alten Beträge, in der App die neuen.
+Aufgefallen wäre es einem Käufer, der einen anderen Preis sieht als
+angeschrieben.
+
+> Ein Nachlesen, das nur die **Existenz** prüft, macht jede spätere Änderung
+> unsichtbar. Verglichen wird der **Wert** — und wenn er abweicht, wird er
+> gesetzt und das im Protokoll benannt: „war X, soll Y sein, wird geändert."
+
+Erkennungsmerkmal: Steht im Code `if vorhanden: return`, gehört daneben die
+Frage, was passiert, wenn sich der Sollwert ändert.
+
 ### Wer nur dort sucht, wo der Fehler auftritt, findet ihn nicht
 
 Der Kauf war vollständig, fünfmal. Die Ursache saß eine Ebene höher, an der

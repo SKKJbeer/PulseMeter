@@ -224,11 +224,40 @@ def preispunkt(apple: Apple, kauf_id: str, betrag: str, produkt_id: str):
         pfad, werte = weiter[len(BASIS) + 1:], {}
 
 
+def preis_jetzt(apple: Apple, kauf_id: str) -> str | None:
+    """Was der Kauf **heute** kostet — der Betrag, nicht die Existenz eines Plans.
+
+    **Warum das dazukam.** Der Lauf las bis 0.95.8 nur nach, *ob* ein Preisplan
+    da ist, und meldete dann „Preis stand schon". Als die Preise von 2,99/9,99
+    auf 1,99/4,99 geändert wurden, lief er grün durch und änderte nichts. Bei
+    Apple standen weiter die alten Beträge, in der App die neuen — und niemand
+    hätte es gemerkt, bis ein Käufer einen anderen Preis sieht als angeschrieben.
+
+    Dieselbe Fehlerklasse wie „vorhanden ist nicht wirkt", nur eine Stufe
+    weiter: **Vorhanden ist auch nicht richtig.**
+    """
+    stand, antwort = apple.holen(
+        f"v2/inAppPurchases/{kauf_id}/iapPriceSchedule/manualPrices",
+        **{"include": "inAppPurchasePricePoint", "limit": 20})
+    if stand != 200:
+        return None
+    for punkt in antwort.json().get("included", []):
+        if punkt.get("type") == "inAppPurchasePricePoints":
+            preis = punkt.get("attributes", {}).get("customerPrice")
+            if preis:
+                return preis
+    return None
+
+
 def preis_setzen(apple: Apple, kauf_id: str, kauf: dict, produkt_id: str) -> None:
-    stand, antwort = apple.holen(f"v2/inAppPurchases/{kauf_id}/iapPriceSchedule")
-    if stand == 200 and antwort.json().get("data"):
-        getan.append(f"{produkt_id}: Preis stand schon")
+    steht = preis_jetzt(apple, kauf_id)
+    if steht == kauf["preis"]:
+        getan.append(f"{produkt_id}: Preis steht auf "
+                     f"{steht.replace('.', ',')} €")
         return
+    if steht:
+        getan.append(f"{produkt_id}: Preis war {steht.replace('.', ',')} €, "
+                     f"soll {kauf['preis'].replace('.', ',')} € sein — wird geändert")
 
     punkt = preispunkt(apple, kauf_id, kauf["preis"], produkt_id)
     if not punkt:
