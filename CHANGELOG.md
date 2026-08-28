@@ -9,6 +9,25 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.90.1 — 2026-08-28
+
+### Behoben
+- Die neue Prüfung fiel — und ihre eigene Ausgabe hat gesagt, warum. Auf der
+  Kaufseite im Simulator standen **`$2.99` und `$8.99`**: echte Preise aus der
+  Sandbox, in Dollar, weil der Simulator in der US-Region läuft. Der Store
+  liefert unsere fünf Käufe also sehr wohl aus. Im Test stand als Begründung
+  „im Simulator gibt es keinen Store" — eine Annahme, aufgeschrieben
+  ausgerechnet in der Version, die die Regel dagegen eingeführt hat.
+- `-pulse-ohne-store` setzt den Fall jetzt, statt ihn von der Umgebung zu
+  erwarten: Der Startschalter hängt `UnavailablePurchaseGateway` ein, und die
+  Prüfung verlangt die Befundzeile dort, wo wirklich nichts geliefert wird.
+
+**Und der Nebenbefund wiegt schwerer als der Fehler:** Ein Bau, der heute
+gegen Apples Sandbox läuft, bekommt die Käufe mit Preisen. Was auf dem Telefon
+fehlt, fehlt also nicht bei Apple.
+
+---
+
 ## 0.90.0 — 2026-08-28
 
 ### Behoben

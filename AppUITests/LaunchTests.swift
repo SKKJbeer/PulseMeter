@@ -1708,11 +1708,17 @@ final class LaunchTests: XCTestCase {
     /// derweil in App Store Connect, bei den Käufen und bei den Verträgen; die
     /// einzige Stelle, die die Antwort hatte, verschwieg sie.
     ///
-    /// Im Simulator gibt es keinen Store, also greift genau dieser Fall, und
-    /// die Zeile muss dastehen. Geprüft wird über die Kennung, nicht über den
-    /// Wortlaut: Was der Store antwortet, soll sich ändern dürfen.
+    /// **`-pulse-ohne-store`, nicht „im Simulator gibt es ja keinen Store".**
+    /// Genau das stand hier im ersten Anlauf, und der Lauf hat es widerlegt:
+    /// Auf der Kaufseite standen `$2.99` und `$8.99` — echte Preise aus der
+    /// Sandbox, in Dollar, weil der Simulator in der US-Region läuft. Eine
+    /// Prüfung für „der Store liefert nichts" darf sich das nicht von der
+    /// Umgebung schenken lassen; sie schaltet es ein.
+    ///
+    /// Geprüft wird über die Kennung, nicht über den Wortlaut: Was der Store
+    /// antwortet, soll sich ändern dürfen.
     func testThePurchasePageSaysWhyNothingCanBeBought() {
-        let app = launchFree("-pulse-kaufen")
+        let app = launchFree("-pulse-kaufen", "-pulse-ohne-store")
 
         let kostenlos = app.staticTexts.containing(
             NSPredicate(format: "label CONTAINS[c] 'Dauerhaft kostenlos'")
