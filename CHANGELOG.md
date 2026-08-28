@@ -9,6 +9,24 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.92.1 — 2026-08-28
+
+### Behoben
+- Die neue Prüfung suchte die Zeile zur Kaufübersicht unter `otherElements`.
+  Auf dem Schirm stand sie — als **Knopf**: `accessibilityElement(children:
+  .combine)` über einem Knopf ergibt einen Knopf, und welcher Typ dabei
+  herauskommt, hängt am Inhalt und nicht an der Absicht.
+- Ein Helfer sucht jetzt über die Kennung und lässt den Typ offen. Eine
+  Prüfung, die den Typ festlegt, prüft die Zusammenfassung von SwiftUI statt
+  die App.
+
+Dieselbe Klasse wie an diesem Tag schon mehrfach: **eine Annahme, die man
+messen kann, aber nicht gemessen hat.** Der Fehlschlag hat sie diesmal von
+selbst ausgeschrieben — die Liste der sichtbaren Beschriftungen stand im
+Protokoll, und darin war die Zeile mit `K:` markiert.
+
+---
+
 ## 0.92.0 — 2026-08-28
 
 Vom Gründer vor dem Start verlangt: „das alles kaufen ist noch nicht klar, da

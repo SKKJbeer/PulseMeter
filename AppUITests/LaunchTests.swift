@@ -1539,6 +1539,18 @@ final class LaunchTests: XCTestCase {
     /// enthalten können und tat es nicht. Die Lehre aus `docs/08-baukasten.md`:
     /// nach dem zweiten Fehlversuch nicht raten, sondern die Ansicht ihre
     /// eigenen Beschriftungen berichten lassen.
+    /// Ein Element über seine Kennung, **ohne den Typ zu erraten**.
+    ///
+    /// Der Lauf zu 0.92.0 ist genau daran gefallen: Die Zeile stand auf dem
+    /// Schirm, die Prüfung suchte sie unter `otherElements`, und XCUITest führt
+    /// sie als Knopf — weil `accessibilityElement(children: .combine)` über
+    /// einem Knopf einen Knopf ergibt. Welcher Typ dabei herauskommt, hängt am
+    /// Inhalt und nicht an der Absicht; eine Prüfung, die ihn festlegt, prüft
+    /// die Zusammenfassung von SwiftUI statt die App.
+    private func element(_ kennung: String, in app: XCUIApplication) -> XCUIElement {
+        app.descendants(matching: .any).matching(identifier: kennung).firstMatch
+    }
+
     private func beschriftungen(in app: XCUIApplication, limit: Int = 40) -> String {
         let texte = app.staticTexts.allElementsBoundByIndex.prefix(limit).map { "T:\($0.label)" }
         let knoepfe = app.buttons.allElementsBoundByIndex.prefix(limit).map { "K:\($0.label)" }
@@ -1726,7 +1738,7 @@ final class LaunchTests: XCTestCase {
 
         guard wechsel(zu: "Zähler", in: app) else { return }
 
-        let zeile = app.otherElements["freischalten-zeile"]
+        let zeile = element("freischalten-zeile", in: app)
         guard scroll(to: zeile, in: app) else {
             XCTFail("Kein Weg zur Kaufübersicht. Zu sehen war: \(beschriftungen(in: app))")
             return
@@ -1737,14 +1749,14 @@ final class LaunchTests: XCTestCase {
 
         for produkt in ["additionalMeters", "multipleRegisters",
                         "costsAndTariffs", "pdfReport", "everything"] {
-            let karte = app.otherElements["kaufkarte-\(produkt)"]
+            let karte = element("kaufkarte-\(produkt)", in: app)
             XCTAssertTrue(karte.waitForExistence(timeout: erscheint),
                           "\(produkt) fehlt in der Übersicht")
         }
 
         // Was kostenlos bleibt, steht neben den Preisen — nicht im
         // Kleingedruckten und nicht auf einem anderen Schirm.
-        XCTAssertTrue(app.otherElements["kostenlos-karte"].exists,
+        XCTAssertTrue(element("kostenlos-karte", in: app).exists,
                       "Die Übersicht verschweigt, was dauerhaft nichts kostet")
     }
 
