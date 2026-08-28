@@ -18,6 +18,7 @@ struct MetersView: View {
 
     @State private var meters: [MeteringPoint] = []
     @State private var showingPaywall = false
+    @State private var showingStore = false
     @State private var readingCounts: [MeteringPoint.ID: Int] = [:]
     @State private var lastReadings: [MeteringPoint.ID: Reading] = [:]
     @State private var archived: [MeteringPoint] = []
@@ -86,6 +87,8 @@ struct MetersView: View {
                     if !archived.isEmpty {
                         archivedSection
                     }
+
+                    freischaltenSection
                 }
                 .padding(.horizontal, 18)
                 .padding(.bottom, 28)
@@ -112,6 +115,9 @@ struct MetersView: View {
             }
             .sheet(isPresented: $showingPaywall) {
                 UnlockSheet(product: .additionalMeters)
+            }
+            .sheet(isPresented: $showingStore) {
+                StoreView()
             }
         }
     }
@@ -218,6 +224,68 @@ struct MetersView: View {
     }
 
 
+
+    /// Der Weg zur Kaufübersicht — eine Zeile, ganz unten, ohne Werbung.
+    ///
+    /// **Warum hier und nicht als vierter Tab.** Ein Tab ist ein Ort, an dem
+    /// man ständig vorbeikommt; ein Laden gehört dorthin nicht. Diese Zeile
+    /// steht am Ende des Zähler-Schirms, dort, wo ohnehin die Einstellungen
+    /// stehen — sichtbar für den, der sucht, und stumm für alle anderen.
+    ///
+    /// Sie sagt außerdem, wie viel schon freigeschaltet ist. Wer alles hat,
+    /// soll das sehen und nicht noch einmal auf ein Angebot stoßen.
+    private var freischaltenSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Freischalten")
+                .font(PulseText.sectionLabel)
+                .textCase(.uppercase)
+                .foregroundStyle(PulseColor.inkTertiary)
+                .padding(.top, 6)
+
+            PulseCard {
+                Button {
+                    showingStore = true
+                } label: {
+                    HStack(spacing: 10) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Was PulseMeter noch kann")
+                                .font(.system(.body, weight: .medium))
+                                .foregroundStyle(PulseColor.ink)
+                            Text(freischaltStand)
+                                .font(PulseText.caption)
+                                .foregroundStyle(PulseColor.inkTertiary)
+                        }
+                        Spacer(minLength: 8)
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(PulseColor.inkTertiary)
+                    }
+                    .padding(.horizontal, 15)
+                    .padding(.vertical, 12)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityIdentifier("freischalten-zeile")
+            .accessibilityHint("Zeigt alle Freischaltungen mit Preisen")
+        }
+    }
+
+    /// Wie viel schon freigeschaltet ist — gezählt, nicht behauptet.
+    private var freischaltStand: String {
+        let offen = ProductID.individually.filter { !purchase.allows($0) }
+        if offen.isEmpty { return "Alles freigeschaltet" }
+        if offen.count == ProductID.individually.count {
+            return "\(offen.count) Freischaltungen ab \(guenstigste)"
+        }
+        return "Noch \(offen.count) von \(ProductID.individually.count) offen"
+    }
+
+    private var guenstigste: String {
+        let kleinster = ProductID.individually.map(\.suggestedPrice).min() ?? 0
+        return kleinster.formatted(.currency(code: "EUR").locale(Locale(identifier: "de_DE")))
+    }
 
     /// Erinnerungen — der Grund, warum jemand in drei Monaten noch da ist.
     ///

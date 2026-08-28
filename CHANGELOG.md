@@ -9,6 +9,54 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.92.0 — 2026-08-28
+
+Vom Gründer vor dem Start verlangt: „das alles kaufen ist noch nicht klar, da
+soll nicht so viel Fließtext, sondern einfach nur die klaren Stichpunkte, was
+alles enthalten ist."
+
+### Hinzugefügt
+- **Eine Kaufübersicht, erreichbar ohne an eine Grenze zu stoßen.** Bis hierher
+  öffnete sich die Kaufseite ausschließlich vor einer Sperre — wer wissen
+  wollte, was die App überhaupt kann, fand nirgends eine Antwort. Der Weg ist
+  eine Zeile am Ende des Zähler-Schirms: „Was PulseMeter noch kann", mit dem
+  Stand daneben („Noch 2 von 4 offen", „Alles freigeschaltet"). Kein vierter
+  Tab — ein Tab ist ein Ort, an dem man ständig vorbeikommt, und ein Laden
+  gehört dorthin nicht.
+- Dort steht alles nebeneinander und ist **direkt kaufbar**: das Bündel oben,
+  darunter die vier Einzelkäufe mit Haken bei dem, was schon offensteht, und
+  darunter, was dauerhaft nichts kostet.
+- **`ProductID.includes`** — was in einem Kauf steckt, als zwei bis drei
+  Stichpunkte statt eines Absatzes. Der erklärende Satz bleibt, wo er trägt:
+  auf dem Kaufblatt vor genau der Sperre, an der jemand gerade steht.
+- **`ProductID.alwaysFree`** nennt jetzt auch den **Abgleich zwischen Geräten**.
+  Er ist seit 0.55.0 gebaut und läuft in jedem Bau mit — genannt wurde er
+  nirgends, und was niemand nennt, bemerkt niemand. Er bleibt kostenlos: Ihn
+  nachträglich zu sperren hieße, etwas wegzunehmen, das schon da war.
+
+### Behoben
+- **Der Bericht stand zweimal auf demselben Schirm** — einmal im Menü
+  „Herunterladen" als fertige Datei, einmal als eigene Zeile darunter. Vom
+  Gründer benannt: „das mit dem Bericht ist glaub doppelt." Das Menü heißt
+  jetzt **Tabellen** und enthält die zwei CSV-Dateien; der Bericht ist ein
+  Dokument mit Zeitraum und Vorschau und hat seine eigene Zeile.
+
+  Beide früheren Einwände bleiben erfüllt: 0.62.2 kam von „gar kein Weg zur
+  Datei" — den gibt es weiterhin, nur einmal statt zweimal.
+- **Im Entwurf fehlte die Berichtszeile ganz**, während sie in der App seit
+  0.62.2 stand. Eine Abweichung nach Regel 2, aufgefallen erst, als der
+  doppelte Eintrag im Menü wegfiel und der Weg zum Bericht plötzlich abriss.
+
+### Entfernt
+- `PDFAusgabe` — der Transfertyp hinter dem doppelten Menüeintrag. Er hatte
+  nach dem Aufräumen keinen Aufrufer mehr.
+
+Geprüft: 21 Zugriffsprüfungen im Rechenkern, 220 im Entwurf (vorher 204), dazu
+zwei neue Oberflächenprüfungen — dass die Übersicht ohne Sperre erreichbar ist
+und alle fünf Käufe zeigt, und dass das Tabellenmenü ohne den Bericht auskommt.
+
+---
+
 ## 0.91.0 — 2026-08-28
 
 **Es geht.** Vom Gerät gemeldet: „ok geht jetzt, ist zwar in dollar aber ok."

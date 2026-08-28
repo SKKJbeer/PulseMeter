@@ -1634,7 +1634,10 @@ final class LaunchTests: XCTestCase {
         // die Einträge dahinter: Was im Menü steht, entscheidet iOS in einem
         // eigenen Fenster, und eine Prüfung, die es aufklappt, prüft dann die
         // Menüdarstellung von iOS statt unsere App.
-        XCTAssertTrue(app.buttons["Herunterladen"].exists,
+        // Seit 0.92.0 heißt der Knopf „Tabellen": Der Bericht stand vorher in
+        // diesem Menü **und** in der Zeile darunter, also zweimal auf einem
+        // Schirm. Jetzt trägt das Menü, was es wirklich enthält.
+        XCTAssertTrue(app.buttons["Tabellen herunterladen"].exists,
                       "Der Export muss ohne Kauf erreichbar sein — dauerhaft")
 
         bericht.tap()
@@ -1708,6 +1711,43 @@ final class LaunchTests: XCTestCase {
     /// derweil in App Store Connect, bei den Käufen und bei den Verträgen; die
     /// einzige Stelle, die die Antwort hatte, verschwieg sie.
     ///
+    /// **Die Kaufübersicht ist erreichbar, ohne an eine Grenze zu stoßen.**
+    ///
+    /// Bis 0.92.0 öffnete sich die Kaufseite ausschließlich vor einer Sperre.
+    /// Wer wissen wollte, was die App überhaupt kann, fand nirgends eine
+    /// Antwort. Vom Gründer benannt: „bei so vielen Möglichkeiten zum Kaufen
+    /// benötigt es einen Menüpunkt, dezent, wo man drauf kann und eine
+    /// Übersicht bekommt was man kaufen kann."
+    ///
+    /// Geprüft wird der **Weg** und die **Vollständigkeit**: alle vier Stücke,
+    /// das Bündel und die Liste dessen, was kostenlos bleibt.
+    func testTheStoreIsReachableWithoutHittingALimit() {
+        let app = launchFree()
+
+        guard wechsel(zu: "Zähler", in: app) else { return }
+
+        let zeile = app.otherElements["freischalten-zeile"]
+        guard scroll(to: zeile, in: app) else {
+            XCTFail("Kein Weg zur Kaufübersicht. Zu sehen war: \(beschriftungen(in: app))")
+            return
+        }
+        guard oeffne(zeile, bis: app.navigationBars["Freischalten"], in: app, "Kaufübersicht") else {
+            return
+        }
+
+        for produkt in ["additionalMeters", "multipleRegisters",
+                        "costsAndTariffs", "pdfReport", "everything"] {
+            let karte = app.otherElements["kaufkarte-\(produkt)"]
+            XCTAssertTrue(karte.waitForExistence(timeout: erscheint),
+                          "\(produkt) fehlt in der Übersicht")
+        }
+
+        // Was kostenlos bleibt, steht neben den Preisen — nicht im
+        // Kleingedruckten und nicht auf einem anderen Schirm.
+        XCTAssertTrue(app.otherElements["kostenlos-karte"].exists,
+                      "Die Übersicht verschweigt, was dauerhaft nichts kostet")
+    }
+
     /// **`-pulse-ohne-store`, nicht „im Simulator gibt es ja keinen Store".**
     /// Genau das stand hier im ersten Anlauf, und der Lauf hat es widerlegt:
     /// Auf der Kaufseite standen `$2.99` und `$8.99` — echte Preise aus der

@@ -77,6 +77,54 @@ public enum ProductID: String, Hashable, Codable, Sendable, CaseIterable {
         }
     }
 
+    /// Was darin enthalten ist — als Stichpunkte, nicht als Absatz.
+    ///
+    /// **Warum zusätzlich zu ``explanation``.** Der Satz sagt, *wozu* etwas gut
+    /// ist, und das trägt, solange man vor genau dieser einen Sperre steht. Wer
+    /// dagegen vor der Liste aller Käufe steht, will nicht vier Absätze lesen,
+    /// sondern in fünf Sekunden sehen, was er bekommt. Vom Gründer verlangt:
+    /// „nicht so viel Fließtext, sondern einfach nur die klaren Stichpunkte,
+    /// was alles enthalten ist."
+    ///
+    /// Drei Zeilen sind die Grenze, und jede beginnt mit dem Gegenstand, nicht
+    /// mit einem Verb: In einer Liste liest man die erste Spalte.
+    public var includes: [String] {
+        switch self {
+        case .additionalMeters:
+            return ["Beliebig viele Zähler statt zwei",
+                    "Strom, Gas, Wasser und Wärme nebeneinander"]
+        case .multipleRegisters:
+            return ["Zwei Zählwerke an einem Gerät",
+                    "Tag- und Nachtstrom getrennt",
+                    "Einspeisung neben dem Bezug"]
+        case .costsAndTariffs:
+            return ["Grundpreis und Arbeitspreis eintragen",
+                    "Kosten statt nur Verbrauch",
+                    "Abschlagsvergleich und Vorschau aufs Jahresende"]
+        case .pdfReport:
+            return ["Bericht ohne Wasserzeichen",
+                    "Zum Weitergeben an Vermieter oder Versorger"]
+        case .everything:
+            return ProductID.individually.map(\.title)
+        }
+    }
+
+    /// Was dauerhaft nichts kostet — und deshalb genannt gehört.
+    ///
+    /// **Die Liste steht neben den Preisen, nicht im Kleingedruckten.** Die
+    /// häufigste Sorge bei einer Zähler-App ist nicht der Preis, sondern die
+    /// Angst, später nicht mehr an die eigenen Zahlen zu kommen. Der freie
+    /// Export ist die Antwort darauf (Produktprinzip 5), und der Abgleich
+    /// zwischen Geräten gehört genannt, weil ihn sonst niemand bemerkt: Er
+    /// läuft von selbst und kostet nichts.
+    public static let alwaysFree: [String] = [
+        "Zwei Zähler mit unbegrenzt vielen Ablesungen",
+        "Die ganze Historie und der Vorjahresvergleich",
+        "Abgleich zwischen deinen Geräten über iCloud",
+        "Erinnerungen an fällige Ablesungen",
+        "Export aller Daten als Tabelle — dauerhaft kostenlos",
+    ]
+
     /// Der Preis, den die App nennt, solange StoreKit keinen liefert.
     ///
     /// **Nur ein Platzhalter.** Sobald die App im Store ist, kommt der Preis

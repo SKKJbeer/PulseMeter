@@ -379,41 +379,25 @@ struct HistoryView: View {
                       preview: SharePreview(auswertungAusgabe.dateiname)) {
                 Label("Auswertung als CSV", systemImage: "tablecells")
             }
-            Divider()
-            // **Der Bericht ist hier eine Datei, kein Schirm.**
+            // **Der Bericht steht hier nicht mehr.**
             //
-            // Bis 0.62.2 öffnete dieser Eintrag den Berichtsschirm mit Auswahl
-            // und Vorschau. Der Gründer beim ersten Gebrauch: „gar kein Weg zur
-            // Datei". Er hatte recht — in einem Menü, in dem zwei Einträge eine
-            // Datei liefern, ist der dritte, der einen Schirm aufmacht, ein
-            // Bruch im Versprechen.
+            // Bis 0.62.2 öffnete dieses Menü den Berichtsschirm — der Gründer
+            // damals: „gar kein Weg zur Datei". Die Antwort war, den Bericht
+            // hier als fertige Datei anzubieten. Damit stand er an zwei Stellen
+            // desselben Schirms, und der Gründer hat beim zweiten Hinsehen
+            // genau das benannt: „das mit dem Bericht ist glaub doppelt, das
+            // muss sauber an einer Stelle gemacht werden."
             //
-            // Genommen wird der Zeitraum, den der Berichtsschirm auch
-            // voreinstellt: der erste zum Abrechnungsrhythmus dieses Zählers.
-            // Wer einen anderen braucht, geht über die Zeile „Verbrauchsbericht"
-            // darunter — dort steht die Wahl, und der Weg dorthin bleibt.
-            if let ausgabe = berichtAusgabe {
-                ShareLink(item: ausgabe, preview: SharePreview(ausgabe.dateiname)) {
-                    Label(berichtTitel, systemImage: "doc.richtext")
-                }
-            } else {
-                Button { showingReport = true } label: {
-                    Label(berichtTitel, systemImage: "doc.richtext")
-                }
-            }
+            // Beide Einwände sind richtig, und sie widersprechen einander
+            // nicht: Das Menü liefert **Tabellen**, der Bericht ist ein
+            // **Dokument** mit Zeitraum und Vorschau und hat deshalb eine
+            // eigene Zeile darunter. Das Menü heißt jetzt nach dem, was es
+            // wirklich enthält.
         } label: {
-            exportLabel("Herunterladen", symbol: "square.and.arrow.down")
+            exportLabel("Tabellen", symbol: "square.and.arrow.down")
         }
-        .accessibilityLabel("Herunterladen")
-        .accessibilityHint("Ablesungen oder Auswertung als CSV, oder den Verbrauchsbericht als PDF")
-    }
-
-    /// Das Wasserzeichen steht im Titel, bevor jemand die Datei verschickt —
-    /// nicht danach, wenn er den Schriftzug darauf entdeckt.
-    private var berichtTitel: String {
-        purchase.reportIsWatermarked
-            ? "Verbrauchsbericht als PDF (mit Wasserzeichen)"
-            : "Verbrauchsbericht als PDF"
+        .accessibilityLabel("Tabellen herunterladen")
+        .accessibilityHint("Ablesungen oder Auswertung als CSV. Der Verbrauchsbericht als PDF steht darunter")
     }
 
     /// Der Bericht steht unter dem Export und nicht daneben.
@@ -1165,26 +1149,13 @@ struct HistoryView: View {
         }
     }
 
-    /// Der Zeitraum, den ein Bericht aus dem Menü abdeckt.
+    /// Der Zeitraum, den der Bericht voreinstellt.
     ///
-    /// Derselbe, den der Berichtsschirm voreinstellt: der erste zum
-    /// Abrechnungsrhythmus dieses Zählers. Zwei verschiedene Voreinstellungen
-    /// wären zwei verschiedene Berichte für dieselbe Handlung.
+    /// Der erste zum Abrechnungsrhythmus dieses Zählers. Zwei verschiedene
+    /// Voreinstellungen wären zwei verschiedene Berichte für dieselbe
+    /// Handlung.
     private var berichtsZeitraum: ReportBuilder.Period? {
         ReportBuilder.periods(today: today, billingCycle: meter?.billingCycle).first
-    }
-
-    /// Der Verbrauchsbericht als PDF — gezeichnet erst beim Teilen.
-    ///
-    /// `nil`, solange für den Zeitraum nichts vorliegt. Dann bleibt im Menü ein
-    /// Knopf zum Berichtsschirm stehen, statt dass der Eintrag verschwindet:
-    /// Eine Auswahl, in der ein Eintrag je nach Datenlage da ist oder nicht,
-    /// erklärt sich nicht mehr selbst.
-    private var berichtAusgabe: PDFAusgabe? {
-        guard let bericht else { return nil }
-        return PDFAusgabe(dateiname: ReportPDF.fileName(for: bericht),
-                          bericht: bericht,
-                          wasserzeichen: purchase.reportIsWatermarked)
     }
 
     private func cellText(for bucket: PeriodEngine.Bucket) -> String {
@@ -1609,36 +1580,3 @@ struct CSVAusgabe: Transferable {
     }
 }
 
-/// Der Verbrauchsbericht als PDF, zum Weitergeben.
-///
-/// **Der Bericht ist fertig gerechnet, aber noch nicht gezeichnet.** Er steckt
-/// hier als Ergebnis — ein Wertetyp, kein Zugriff auf den Speicher — und wird
-/// erst zu Papier, wenn ein Ziel für die Datei gewählt ist. Das Zeichnen läuft
-/// auf dem Hauptakteur, weil `ImageRenderer` dort zu Hause ist; deshalb ist der
-/// Bericht `Sendable` und die Zeichenarbeit in ``MainActor/run(resultType:body:)``
-/// eingepackt und nicht umgekehrt.
-struct PDFAusgabe: Transferable, Sendable {
-
-    let dateiname: String
-    let bericht: ReportBuilder.Report
-    let wasserzeichen: Bool
-
-    /// Kein erwarteter Fall: Der Bericht steht, das Papier nicht.
-    /// `DataRepresentation` verlangt Daten oder einen Fehler — ein leeres PDF
-    /// wäre die dritte Möglichkeit und die schlechteste.
-    enum Ausfall: LocalizedError {
-        case nichtGezeichnet
-        var errorDescription: String? { "Das PDF ließ sich nicht erzeugen." }
-    }
-
-    static var transferRepresentation: some TransferRepresentation {
-        DataRepresentation(exportedContentType: .pdf) { ausgabe in
-            let daten = await MainActor.run {
-                ReportPDF.data(ausgabe.bericht, watermarked: ausgabe.wasserzeichen)
-            }
-            guard let daten else { throw Ausfall.nichtGezeichnet }
-            return daten
-        }
-        .suggestedFileName { $0.dateiname }
-    }
-}
