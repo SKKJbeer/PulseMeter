@@ -9,6 +9,25 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.95.6 — 2026-08-28
+
+**Die Geheimnisse des Gründers sind angekommen.** Der Lauf fiel nicht an der
+Anmeldung, sondern danach: `Project not found`. Das Token hatte sich bei
+Cloudflare ausgewiesen, es gab nur kein Pages-Projekt namens `pulsemeter`.
+
+### Hinzugefügt
+- **`scripts/cloudflare-projekt.sh`** legt das Projekt an, wenn es fehlt. Von
+  Hand ist das zweimal schiefgegangen — einmal über „Connect to Git" mit
+  `Could not detect a directory to deploy`, einmal weil danach kein Projekt
+  existierte. Ein Schritt, den ein Token erledigen kann, gehört nicht auf eine
+  Klickliste. `Cloudflare Pages: Edit` darf das ohne Zusatzrechte.
+
+### Geändert
+- Die Anleitung hat einen Schritt weniger: Konto, Token, Geheimnisse. Das
+  Projekt steht jetzt unter „Und was du nicht tun musst".
+
+---
+
 ## 0.95.5 — 2026-08-28
 
 Der erste Lauf der Website-Veröffentlichung fiel nach 39 Sekunden mit

@@ -1,4 +1,4 @@
-# Die Website online bringen — kostenlos, in vier Schritten
+# Die Website online bringen — kostenlos, in drei Schritten
 
 Alles hier ist im **kostenlosen** Tarif von Cloudflare enthalten. Keine
 Kreditkarte, keine Testphase, kein Betrag, der später fällig wird. Pages
@@ -30,25 +30,19 @@ Passwort, mehr nicht. Beim Einrichten fragt Cloudflare nach einer Domain: **Das
 Das Dashboard läuft im Browser des Telefons. Es gibt keine App, die den Link
 abfängt.
 
-## Schritt 2 — Ein Projekt, das nichts selbst baut
+## Und was du nicht tun musst
 
-**Workers & Pages** › **Create** › Reiter **Pages** › **Upload assets**.
+**Das Pages-Projekt legt der Ablauf selbst an.** Von Hand ist es zweimal
+schiefgegangen: einmal über „Connect to Git" mit `Could not detect a directory
+to deploy`, einmal weil danach kein Projekt namens `pulsemeter` existierte.
+`scripts/cloudflare-projekt.sh` sieht nach und legt es an, wenn es fehlt — das
+Token darf das.
 
-- Projektname: **`pulsemeter`** — exakt so. Der Ablauf sucht danach, und aus
-  dem Namen entsteht die Adresse `pulsemeter.pages.dev`.
-- Es will einmal Dateien sehen, um das Projekt anzulegen. Irgendetwas Kleines
-  genügt; der richtige Stand kommt eine Minute später von GitHub.
+*(Falls doch ein Projekt mit Git-Anbindung herumsteht: Projekt › **Settings** ›
+**Builds** › **Disconnect**. Sonst baut Cloudflare parallel weiter und die
+Läufe scheitern nebeneinander.)*
 
-**Nicht „Connect to Git".** Das sieht bequemer aus und war der erste Versuch —
-er ist mit `Could not detect a directory to deploy` gescheitert. Dahinter
-steckt kein Tippfehler, sondern eine Arbeitsteilung, die nicht trägt: Baut
-Cloudflare selbst, liegt der Fehler in einer Kiste, an die von hier aus niemand
-herankommt. Baut GitHub, steht der Befehl im Repository und lässt sich ändern.
-
-*(Ist das Projekt schon mit Git verbunden: Projekt › **Settings** › **Builds**
-› **Disconnect**. Das Projekt bleibt, nur der Bau geht weg.)*
-
-## Schritt 3 — Ein Token, das genau eine Sache darf
+## Schritt 2 — Ein Token, das genau eine Sache darf
 
 [dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens)
 › **Create Token** › bei **Create Custom Token** auf **Get started**.
@@ -69,14 +63,14 @@ einmal.
 Die **Account ID** steht in der Adresszeile, sobald du im Dashboard bist:
 `dash.cloudflare.com/`**`<das ist sie>`**`/…`
 
-## Schritt 4 — Beides ins Repository
+## Schritt 3 — Beides ins Repository
 
 [github.com/SKKJbeer/PulseMeter/settings/secrets/actions](https://github.com/SKKJbeer/PulseMeter/settings/secrets/actions)
 › **New repository secret**, zweimal:
 
 | Name | Wert |
 |---|---|
-| `CLOUDFLARE_API_TOKEN` | das Token aus Schritt 3 |
+| `CLOUDFLARE_API_TOKEN` | das Token von eben |
 | `CLOUDFLARE_ACCOUNT_ID` | die Kennung aus der Adresszeile |
 
 **Am Telefon nur im Browser**, nicht in der GitHub-App: Die hat überhaupt

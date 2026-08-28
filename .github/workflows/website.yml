@@ -97,6 +97,17 @@ jobs:
         if: steps.zugang.outputs.bereit == 'ja'
         run: scripts/website-fertig.sh build/website
 
+      # **Auch das Projekt legt der Ablauf an.** Der erste Versuch von Hand
+      # endete in Cloudflares eigenem Bau, der zweite mit „Project not found".
+      # Ein Schritt, den ein Token erledigen kann, gehört nicht auf eine
+      # Klickliste.
+      - name: Pages-Projekt sicherstellen
+        if: steps.zugang.outputs.bereit == 'ja'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: scripts/cloudflare-projekt.sh pulsemeter main
+
       - name: Zu Cloudflare Pages hochladen
         if: steps.zugang.outputs.bereit == 'ja'
         uses: cloudflare/wrangler-action@v3
