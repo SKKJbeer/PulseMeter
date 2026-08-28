@@ -9,6 +9,45 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.97.0 — 2026-08-28
+
+Vom Gründer: „Die Texte dürfen nicht nach KI oder Werbeagentur klingen. Schreibe
+so, wie ein Mensch einem anderen Menschen die App erklären würde."
+
+### Geändert
+- **Die Startseite hatte 25 Gedankenstriche auf 1150 Wörter**, einen alle 46.
+  Jetzt keinen. Der Strich schiebt an jeden Satz noch einen Nachsatz und lässt
+  den Text atemlos klingen; ein Punkt oder ein Doppelpunkt tut es fast immer.
+  Auch die Hilfeseite und die beiden Ratgeber sind durch.
+- **Drei Überschriften waren austauschbar.** „Verbrauch, Vorjahr und Kosten auf
+  einem Bildschirm" ist eine Dreierkette und sagt nichts, was nicht auf jede
+  Verbrauchs-App passt. Jetzt: „Du siehst sofort, ob mehr zusammenkommt als
+  letztes Jahr". Aus „Wir sehen deine Zählerstände nicht. **Nie.**" ist der
+  erste Satz allein geworden — das nachgeschobene Wort macht die Aussage nicht
+  wahrer. Und aus „Ein paar Euro, einmal. Kein Abo." wurde „Du kaufst einmal,
+  was dir fehlt".
+- **„Geschätztes ist gekennzeichnet"** heißt jetzt **„Wenn PulseMeter einen Wert
+  schätzt, siehst du das"** — der Vorschlag kam wörtlich vom Gründer und ist
+  besser, weil jemand darin vorkommt.
+- Der Vorspann sagt zuerst, was man tut, und dann, was die App tut: „Du trägst
+  deinen Zählerstand ein, PulseMeter macht den Rest."
+- „Tracking" ist raus, an drei Stellen. „Keine Werbung, keine Auswertung" und
+  „Nichts zählt mit" sagen dasselbe auf Deutsch.
+
+### Hinzugefügt
+- **Zwei Prüfungen, die den Rückfall verhindern.** Höchstens ein Gedankenstrich
+  je 250 Wörter, Titel und Fußzeile ausgenommen; dazu eine Liste von Wörtern,
+  die auf jede App passen und über keine etwas sagen — „smart", „intelligent",
+  „nahtlos", „mühelos", „erlebe", „entdecke" und ein paar mehr.
+
+  Die Regel „jeder Satz begründet sich selbst mit einem Gedankenstrich" stand
+  in `CLAUDE.md` schon lange. Die Seite hatte trotzdem 25. **Eine Regel, die
+  niemand zählt, wird nicht befolgt.**
+
+407 Prüfungen für die Website, vorher 394.
+
+---
+
 ## 0.96.4 — 2026-08-28
 
 Vom Gerät, mit Bildschirmfoto: ein leerer grauer Kasten über dem Knopf „Jetzt

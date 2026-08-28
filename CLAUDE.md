@@ -256,6 +256,33 @@ Konkrete Zahlen, konkrete Orte, konkrete Gegenstände: Keller, Sicherungskasten,
 Februar, Kubikmeter, Wallbox in der Garage. Sie tragen den Text, nicht die
 Adjektive.
 
+#### Nachgeschärft am 28. August: nicht nach Werbeagentur
+
+Die Zeile „jeder Satz begründet sich selbst mit einem Gedankenstrich" stand
+oben schon — und die Website hatte trotzdem **25 Striche auf 1150 Wörter**,
+einen alle 46. Eine Regel, die niemand zählt, wird nicht befolgt. Deshalb zählt
+`check-website.mjs` jetzt mit: höchstens einer je 250 Wörter, Titel und Fußzeile
+ausgenommen, dazu eine Liste von Wörtern, die auf jede App passen.
+
+Vom Gründer wörtlich: „Schreibe so, wie ein Mensch einem anderen Menschen die
+App erklären würde. Wenn eine einfache Aussage ausreicht, nimm die einfache
+Aussage."
+
+| Nicht so | Sondern |
+|---|---|
+| „PulseMeter ermöglicht dir eine intelligente Analyse deiner Verbrauchsdaten" | „PulseMeter zeigt dir, wie sich dein Verbrauch und deine Kosten entwickeln" |
+| „Keine stillen Annahmen." | „Wenn PulseMeter einen Wert schätzt, siehst du das." |
+| „Deine Daten gehören dir." | „Deine Zählerstände bleiben bei dir." |
+| „Eine Zahl eintragen. Den Überblick behalten." | „Du trägst deinen Zählerstand ein, PulseMeter macht den Rest." |
+
+Außerdem draußen: „smart", „intelligent", „nahtlos", „mühelos", „erlebe",
+„entdecke", „revolutionieren", „maximieren" — und Dreierketten wie „Verbrauch.
+Kosten. Kontrolle." Ein kurzer Satz darf stehen, wenn er einen konkreten
+Gedanken trägt. Drei hintereinander tun das nie.
+
+**Wenn eine klügere und eine natürlichere Formulierung zur Wahl stehen, nimm die
+natürlichere.**
+
 Was sich dabei **nicht** ändert: Nichts versprechen, was es nicht gibt
 (`09-appstore.md`), und geschätzte Zahlen bleiben gekennzeichnet
 (Produktprinzip 7). Lockerer Ton ist kein Freibrief für großzügige Aussagen.

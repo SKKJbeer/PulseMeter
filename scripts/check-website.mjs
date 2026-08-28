@@ -131,6 +131,56 @@ note(adressen.size === 1,
        ? `Alle Seiten zeigen auf ${[...adressen][0]}`
        : `Die Seiten zeigen auf verschiedene Adressen: ${[...adressen].join(", ")}`);
 
+// **Wie ein Mensch, nicht wie eine Werbeagentur.**
+//
+// Vom Gründer am 28. August verlangt: „Die Texte dürfen nicht nach KI oder
+// Werbeagentur klingen. Schreibe so, wie ein Mensch einem anderen Menschen die
+// App erklären würde."
+//
+// Zwei Dinge lassen sich zählen, und beide waren der Grund für die Ansage:
+//
+// 1. **Der Gedankenstrich.** Die Startseite hatte 25 auf 1150 Wörter, einen
+//    alle 46. Er schiebt einen Nachsatz an jeden Satz und lässt den Text
+//    atemlos klingen. Ein Punkt oder ein Doppelpunkt tut es fast immer.
+// 2. **Wörter, die nichts sagen.** „smart", „intelligent", „nahtlos",
+//    „mühelos", „erlebe", „entdecke". Sie passen auf jede App und sagen über
+//    keine etwas.
+//
+// Die Schwelle liegt bei einem Strich je 250 Wörter. Das ist keine Null: Als
+// Trenner in einem Titel ist er richtig, und ein echter Einschub darf sein.
+const VERBOTEN = [
+  "smart", "intelligent", "nahtlos", "mühelos", "erlebe ", "entdecke ",
+  "revolutio", "maximier", "innovativ", "modernste", "einzigartig",
+  "leistungsstark", "benutzerfreundlich", "state of the art"
+];
+
+for (const datei of seiten) {
+  const roh = readFileSync(`${dir}/${datei}`, "utf8");
+  // Titel und Fußzeile benutzen den Strich als **Trenner** — „Hilfe —
+  // PulseMeter". Das ist Typografie und kein Tick, also fallen beide vor dem
+  // Zählen heraus. Im ersten Anlauf tat das nur der Kommentar und nicht der
+  // Code, und die Prüfung schlug auf vier Seiten wegen ihrer eigenen Titel an.
+  const sichtbar = roh
+    .replace(/<!--[\s\S]*?-->/g, " ")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<title>[\s\S]*?<\/title>/gi, " ")
+    .replace(/<footer[\s\S]*?<\/footer>/gi, " ")
+    .replace(/<[^>]+>/g, " ");
+  const woerter = sichtbar.split(/\s+/).filter(Boolean).length;
+  const striche = (sichtbar.match(/\w\s—\s\w/g) || []).length;
+  const erlaubt = Math.max(1, Math.round(woerter / 250));
+  note(striche <= erlaubt,
+       `${datei}: ${striche} Gedankenstriche auf ${woerter} Wörter (bis ${erlaubt})`);
+
+  const klein = sichtbar.toLowerCase();
+  const gefunden = VERBOTEN.filter(w => klein.includes(w));
+  note(gefunden.length === 0,
+       gefunden.length === 0
+         ? `${datei}: keine Wörter, die auf jede App passen`
+         : `${datei}: ${gefunden.join(", ")} — sagt über diese App nichts`);
+}
+
 // **Jede benutzte CSS-Variable muss es geben.**
 //
 // `var(--bg)` stand im Stil des App-Store-Abzeichens, und die Datei kennt nur
