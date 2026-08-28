@@ -246,7 +246,16 @@ struct MetersView: View {
                 Button {
                     showingStore = true
                 } label: {
-                    HStack(spacing: 10) {
+                    HStack(spacing: 11) {
+                        // **Ein Einkaufssymbol, weil die Zeile ein Laden ist.**
+                        // Vom Gründer verlangt. Ohne Zeichen liest sich die
+                        // Zeile wie eine weitere Einstellung; mit dem Wagen
+                        // sieht man in einer Zehntelsekunde, worum es geht.
+                        Image(systemName: "cart")
+                            .accessibilityHidden(true)
+                            .font(.system(.subheadline, weight: .semibold))
+                            .foregroundStyle(PulseColor.tintInk)
+                            .frame(width: 20, height: 22)
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Was PulseMeter noch kann")
                                 .font(.system(.body, weight: .medium))

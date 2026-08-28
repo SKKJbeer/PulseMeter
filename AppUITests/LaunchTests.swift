@@ -1723,6 +1723,30 @@ final class LaunchTests: XCTestCase {
     /// derweil in App Store Connect, bei den Käufen und bei den Verträgen; die
     /// einzige Stelle, die die Antwort hatte, verschwieg sie.
     ///
+    /// **Ein kostenloser Nutzer sieht, dass es Kosten gibt — und was sie kosten.**
+    ///
+    /// Der Umschalter „Menge / Kosten" erscheint erst, wenn Tarife vorliegen,
+    /// und Tarife lassen sich erst mit dem Kauf eintragen. Für einen
+    /// kostenlosen Nutzer gab es Kosten damit **nirgends** — nicht als Sperre,
+    /// nicht als Preis, gar nicht. Der Gründer: „so sieht es ein User bisher
+    /// nicht und würde es wahrscheinlich nie kaufen."
+    func testTheHistoryShowsThatCostsExistAndWhatTheyCost() {
+        let app = launchFree()
+
+        let sperre = element("kosten-sperre", in: app)
+        guard scroll(to: sperre, in: app) else {
+            XCTFail("Im Verlauf steht nicht, dass es Kosten gibt. Zu sehen war: \(beschriftungen(in: app))")
+            return
+        }
+        // Der Preis steht **an** der Zeile, nicht erst hinter einem Tipp: Wer
+        // ihn erst nach dem Öffnen erfährt, öffnet nicht.
+        XCTAssertTrue(sperre.label.contains("Kosten und Preise"),
+                      "Die Zeile nennt nicht, worum es geht: \(sperre.label)")
+        guard oeffne(sperre, bis: app.navigationBars["Kosten und Preise"], in: app, "Kostensperre") else {
+            return
+        }
+    }
+
     /// **Die Kaufübersicht ist erreichbar, ohne an eine Grenze zu stoßen.**
     ///
     /// Bis 0.92.0 öffnete sich die Kaufseite ausschließlich vor einer Sperre.

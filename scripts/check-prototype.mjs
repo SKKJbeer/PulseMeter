@@ -785,6 +785,52 @@ for (const scheme of ["light", "dark"]) {
   await page.waitForTimeout(250);
   await page.locator('[data-pane="history"]').first().click();
   await page.waitForTimeout(250);
+  // **Ein kostenloser Nutzer sieht, dass es Kosten gibt — und was sie kosten.**
+  //
+  // Der Umschalter „Menge / Kosten" erscheint erst mit Tarifen, und Tarife
+  // gibt es erst mit dem Kauf. Ohne diese Zeile hätte jemand ohne Kauf nie
+  // erfahren, dass die App Beträge kann.
+  //
+  // Der Schalter für den Kaufzustand steht im Zähler-Schirm; von einem anderen
+  // Tab aus ist er da, aber nicht sichtbar — und ein Klick darauf wartet
+  // dreißig Sekunden ins Leere.
+  await page.locator('[data-pane="meters"]').first().click();
+  await page.waitForTimeout(250);
+  await page.locator('[data-pro="0"]').first().click();
+  await page.waitForTimeout(250);
+  await page.locator('[data-pane="history"]').first().click();
+  await page.waitForTimeout(250);
+  const sperre = await page.evaluate(() => {
+    const box = document.getElementById("cost-lock");
+    return { sichtbar: box && box.style.display !== "none",
+             text: box ? box.innerText.replace(/\s+/g, " ") : "" };
+  });
+  note(sperre.sichtbar, "Ohne Kauf steht im Verlauf, dass es Kosten gibt");
+  note(/3,99/.test(sperre.text), `Und was sie kosten: ${sperre.text.slice(0, 60)}`);
+
+  await page.locator('[data-pane="meters"]').first().click();
+  await page.waitForTimeout(200);
+  await page.locator('[data-pro="1"]').first().click();
+  await page.waitForTimeout(250);
+  const nachKauf = await page.evaluate(() => {
+    const box = document.getElementById("cost-lock");
+    return box ? box.style.display === "none" : false;
+  });
+  note(nachKauf, "Nach dem Kauf verschwindet sie — kein Banner, das bleibt");
+
+  // **Den Zustand zurückstellen.** Die Prüfungen danach rechnen mit einem
+  // Nutzer ohne Kauf — Bündel, Wasserzeichen, Preise. Ein Block, der den
+  // Kaufzustand verstellt zurücklässt, macht die nächsten drei rot und
+  // sieht dann aus wie drei neue Fehler.
+  await page.locator('[data-pro="0"]').first().click();
+  await page.waitForTimeout(250);
+
+  // Das Einkaufssymbol an der Zeile zur Übersicht. Vom Gründer verlangt: Ohne
+  // Zeichen liest sie sich wie eine weitere Einstellung.
+  const symbol = await page.evaluate(() =>
+    !!document.querySelector("#store-row svg circle"));
+  note(symbol, "Die Zeile zur Übersicht trägt ein Einkaufssymbol");
+
   // **Die Kaufübersicht ist erreichbar, ohne an eine Grenze zu stoßen.**
   //
   // Bis 0.92.0 öffnete sich die Kaufseite ausschließlich vor einer Sperre. Wer

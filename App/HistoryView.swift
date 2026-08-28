@@ -38,6 +38,16 @@ struct HistoryView: View {
 
     @State private var meters: [MeteringPoint] = []
     @State private var showingPaywall = false
+
+    /// Welcher Kauf auf dem Blatt steht, wenn es aufgeht.
+    ///
+    /// Das Blatt stand fest auf dem Bericht, obwohl es niemand öffnete — der
+    /// Bericht führt seit 0.40.0 auf seinen eigenen Schirm und nicht zur
+    /// Kaufseite. Mit der Kostenzeile gibt es hier zum ersten Mal einen echten
+    /// Aufrufer, und der entscheidet, was angeboten wird: Ein Blatt, das etwas
+    /// anderes zeigt als das, worauf jemand getippt hat, ist eine Sackgasse
+    /// mit Umweg.
+    @State private var paywallProdukt: ProductID = .pdfReport
     @State private var selectedMeterID: MeteringPoint.ID?
     @State private var granularity: PeriodEngine.Granularity = .month
     @State private var buckets: [PeriodEngine.Bucket] = []
@@ -125,6 +135,7 @@ struct HistoryView: View {
                             tableCard
                         }
                         if !buckets.isEmpty { exportRow }
+                        kostenSperre
                         reportRow
                         readingsRow
                     }
@@ -171,7 +182,7 @@ struct HistoryView: View {
                              })
             }
             .sheet(isPresented: $showingPaywall) {
-                UnlockSheet(product: .pdfReport)
+                UnlockSheet(product: paywallProdukt)
             }
         }
     }
@@ -398,6 +409,33 @@ struct HistoryView: View {
         }
         .accessibilityLabel("Tabellen herunterladen")
         .accessibilityHint("Ablesungen oder Auswertung als CSV. Der Verbrauchsbericht als PDF steht darunter")
+    }
+
+    /// **Was fehlt, steht da — mit seinem Preis.**
+    ///
+    /// Der Umschalter „Menge / Kosten" erscheint erst, wenn Tarife vorliegen,
+    /// und Tarife lassen sich erst eintragen, wenn `costsAndTariffs` gekauft
+    /// ist. Für einen kostenlosen Nutzer gab es Kosten damit **nirgends** —
+    /// nicht als Sperre, nicht als Preis, gar nicht. Der Gründer: „so sieht es
+    /// ein User bisher nicht und würde es wahrscheinlich nie kaufen."
+    ///
+    /// Dieselbe Antwort wie im Zählerformular seit 0.40.0, nur an der Stelle,
+    /// an der Menschen wirklich sind: Versteckt man „Preise" ganz, vermisst
+    /// sie niemand — und niemand kauft. Eine Zeile, kein Banner: Sie sagt, was
+    /// es gibt und was es kostet, und verschwindet nach dem Kauf.
+    @ViewBuilder
+    private var kostenSperre: some View {
+        if tariffs.isEmpty && !purchase.allows(.costsAndTariffs) && !buckets.isEmpty {
+            PulseCard {
+                ProLockRow(product: .costsAndTariffs) {
+                    paywallProdukt = .costsAndTariffs
+                    showingPaywall = true
+                }
+                .padding(.horizontal, 15)
+                .padding(.vertical, 11)
+            }
+            .accessibilityIdentifier("kosten-sperre")
+        }
     }
 
     /// Der Bericht steht unter dem Export und nicht daneben.

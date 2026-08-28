@@ -9,6 +9,41 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.93.0 — 2026-08-28
+
+Vom Gerät gemeldet: „so sieht es ein User bisher nicht und würde es
+wahrscheinlich nie kaufen."
+
+### Hinzugefügt
+- **Im Verlauf steht jetzt, dass es Kosten gibt — und was sie kosten.** Der
+  Umschalter „Menge / Kosten" erscheint erst, wenn Tarife vorliegen, und Tarife
+  lassen sich erst mit dem Kauf eintragen. Für einen kostenlosen Nutzer gab es
+  Kosten damit **nirgends**: nicht als Sperre, nicht als Preis, gar nicht. Die
+  einzige Stelle, an der davon je die Rede war, lag im Zählerformular — und
+  dorthin geht niemand, der nur seine Zahlen ansieht.
+
+  Dieselbe Antwort wie dort seit 0.40.0, nur an der Stelle, an der Menschen
+  wirklich sind: eine Zeile mit Titel, einem Satz und dem Preis. Kein Banner —
+  sie verschwindet nach dem Kauf.
+- **Ein Einkaufswagen an der Zeile zur Kaufübersicht.** Ohne Zeichen liest sie
+  sich wie eine weitere Einstellung; mit ihm sieht man in einer Zehntelsekunde,
+  worum es geht.
+- Das Kaufblatt im Verlauf zeigt jetzt den Kauf, auf den getippt wurde. Es
+  stand fest auf dem Bericht — was niemandem auffiel, weil es bis hierher
+  keinen Aufrufer hatte.
+
+### Behoben
+- **Im Entwurf zeichnete der Kaufzustand-Schalter drei Zeilen nicht mit.** Nach
+  dem Umschalten blieben der Stand an der Kaufzeile, das Preisschild am Bericht
+  und die neue Kostensperre stehen und behaupteten etwas anderes als der Rest
+  des Schirms. Aufgefallen, weil die neue Prüfung genau diesen Weg ging.
+
+Geprüft: 228 Prüfungen im Entwurf (vorher 220), dazu eine neue
+Oberflächenprüfung — dass die Zeile im Verlauf steht, ihren Preis nennt und auf
+das richtige Kaufblatt führt.
+
+---
+
 ## 0.92.1 — 2026-08-28
 
 ### Behoben
