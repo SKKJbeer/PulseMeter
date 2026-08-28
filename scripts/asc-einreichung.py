@@ -20,8 +20,10 @@ Aufruf (Umgebung wie bei `asc-profil.py`):
     ASC_KEY_ID=… ASC_ISSUER_ID=… ASC_KEY_P8=… python3 scripts/asc-einreichung.py
 """
 
+import hashlib
 import json
 import os
+import pathlib
 import re
 import sys
 import time
@@ -261,6 +263,101 @@ def eintrag_fuellen(apple: Apple, app_id: str) -> None:
            alter["id"], antworten, "Altersfreigabe 4+")
 
 
+# **Welche Größe der Store verlangt.** Apple nimmt für eine neue Einreichung
+# das 6,9-Zoll-Format; die Simulator-Bilder kommen von einem iPhone 17 Pro Max
+# und haben genau diese Auflösung. Hochskalieren wäre sichtbar — deshalb kommen
+# sie seit 0.96.3 zusätzlich in voller Größe in den Zweig `screenshots`.
+BILDSCHIRM = "APP_IPHONE_67"
+
+# Die Reihenfolge ist die Reihenfolge auf der Store-Seite. Erst das, was die
+# App tut, dann wofür sie es tut.
+BILDER = [
+    ("screenshot-light.jpg", "Übersicht"),
+    ("screenshot-capture-light.jpg", "Ablesen"),
+    ("screenshot-verlauf-light.jpg", "Verlauf"),
+    ("screenshot-bericht-light.jpg", "Bericht"),
+    ("screenshot-zaehler-light.jpg", "Zähler"),
+]
+
+
+def bild_hochladen(apple: Apple, satz_id: str, pfad: str, nummer: int) -> str | None:
+    """Anmelden, Bytes schicken, Vollzug melden — wie beim Prüfbild der Käufe."""
+    daten = pathlib.Path(pfad).read_bytes()
+    stand, antwort = apple.anlegen("v1/appScreenshots", {"data": {
+        "type": "appScreenshots",
+        "attributes": {"fileSize": len(daten),
+                       "fileName": os.path.basename(pfad)},
+        "relationships": {"appScreenshotSet": {
+            "data": {"type": "appScreenshotSets", "id": satz_id}}},
+    }})
+    if stand not in (200, 201):
+        return f"nicht angemeldet ({stand}) — {kurz(antwort)}"
+
+    inhalt = antwort.json().get("data", {})
+    bild_id = inhalt.get("id")
+    for zug in inhalt.get("attributes", {}).get("uploadOperations", []):
+        teil = daten[zug["offset"]:zug["offset"] + zug["length"]]
+        kopf = {k["name"]: k["value"] for k in zug.get("requestHeaders", [])}
+        gesendet = requests.request(zug["method"], zug["url"], headers=kopf,
+                                    data=teil, timeout=120)
+        if gesendet.status_code >= 300:
+            return f"nicht übertragen ({gesendet.status_code})"
+
+    stand, antwort = apple.aendern(f"v1/appScreenshots/{bild_id}", {"data": {
+        "type": "appScreenshots", "id": bild_id,
+        "attributes": {"uploaded": True,
+                       "sourceFileChecksum": hashlib.md5(daten).hexdigest()},
+    }})
+    if stand not in (200, 201):
+        return f"nicht bestätigt ({stand}) — {kurz(antwort)}"
+    return None
+
+
+def bilder_fuellen(apple: Apple, ort_id: str) -> None:
+    """Die Bildschirmfotos aus dem Zweig `screenshots`, in voller Größe."""
+    ordner = os.path.join(os.path.dirname(__file__), "..", "build", "store")
+    if not os.path.isdir(ordner):
+        offen.append("Bildschirmfotos: der Ordner build/store fehlt — "
+                     "der Ablauf holt ihn aus dem Zweig screenshots")
+        return
+
+    stand, satz = erste(apple, f"v1/appStoreVersionLocalizations/{ort_id}"
+                                "/appScreenshotSets", **{"limit": 20})
+    if satz is None:
+        stand, antwort = apple.anlegen("v1/appScreenshotSets", {"data": {
+            "type": "appScreenshotSets",
+            "attributes": {"screenshotDisplayType": BILDSCHIRM},
+            "relationships": {"appStoreVersionLocalization": {
+                "data": {"type": "appStoreVersionLocalizations", "id": ort_id}}},
+        }})
+        if stand not in (200, 201):
+            offen.append(f"Bildersatz ließ sich nicht anlegen ({stand}) "
+                         f"— {kurz(antwort)}")
+            return
+        satz = antwort.json()["data"]
+
+    # **Nicht doppelt hochladen.** Ein zweiter Lauf soll die Seite nicht mit
+    # denselben Bildern zweimal füllen.
+    stand, vorhanden = apple.holen(f"v1/appScreenshotSets/{satz['id']}/appScreenshots",
+                                   **{"limit": 20})
+    schon = {e["attributes"].get("fileName")
+             for e in (vorhanden.json().get("data", []) if stand == 200 else [])}
+
+    for nummer, (datei, was) in enumerate(BILDER, start=1):
+        if datei in schon:
+            getan.append(f"Bild {nummer} ({was}): stand schon")
+            continue
+        pfad = os.path.join(ordner, datei)
+        if not os.path.isfile(pfad):
+            offen.append(f"Bild {nummer} ({was}): {datei} liegt nicht im Zweig")
+            continue
+        fehler = bild_hochladen(apple, satz["id"], pfad, nummer)
+        if fehler:
+            offen.append(f"Bild {nummer} ({was}): {fehler}")
+        else:
+            getan.append(f"Bild {nummer} ({was}): hochgeladen")
+
+
 def fassung_fuellen(apple: Apple, app_id: str) -> None:
     """Die Fassung 1.0 und ihre Texte."""
     stand, fassung = erste(apple, f"v1/apps/{app_id}/appStoreVersions",
@@ -305,6 +402,8 @@ def fassung_fuellen(apple: Apple, app_id: str) -> None:
             "supportUrl": SUPPORT,
             "marketingUrl": WEBSITE},
            "Beschreibung, Schlagworte, Werbetext, Support-URL")
+
+    bilder_fuellen(apple, ort["id"])
 
 
 def app_finden(apple: Apple):
@@ -389,14 +488,22 @@ def fassung_pruefen(apple: Apple, app_id: str) -> None:
         offen.append(f"Die Texte der Fassung sind nicht lesbar ({stand})")
         return
 
-    for name, was, wem in (("description", "Beschreibung", None),
-                           ("keywords", "Schlagworte", None),
-                           ("promotionalText", "Werbetext", None),
-                           ("whatsNew", "Neue Funktionen", None),
-                           # Standen als „kann nur der Gründer", solange die
-                           # Website nicht veröffentlicht war. Sie steht.
-                           ("supportUrl", "Support-URL", None),
-                           ("marketingUrl", "Marketing-URL", None)):
+    felder = [("description", "Beschreibung"),
+              ("keywords", "Schlagworte"),
+              ("promotionalText", "Werbetext"),
+              # Standen als „kann nur der Gründer", solange die Website nicht
+              # veröffentlicht war. Sie steht.
+              ("supportUrl", "Support-URL"),
+              ("marketingUrl", "Marketing-URL")]
+    # **„Neue Funktionen" gehört nicht zur ersten Fassung.** Apple lehnt das
+    # Feld dort ab — „cannot be edited at this time" —, und das ist richtig: Es
+    # gibt nichts, was neu wäre. Als „fehlt" zu melden, was gar nicht sein
+    # darf, macht die Liste unbrauchbar.
+    if feld(fassung, "versionString") != "1.0":
+        felder.insert(3, ("whatsNew", "Neue Funktionen"))
+
+    for name, was in felder:
+        wem = None
         wert = feld(ort, name) or ""
         pruefe(bool(wert.strip()),
                f"{was} ({len(wert)} Zeichen)" if wert else f"{was} fehlt", wem)

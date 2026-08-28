@@ -9,6 +9,32 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.96.3 — 2026-08-28
+
+**14 von 17 Punkten stehen.** Beschreibung, Schlagworte, Werbetext,
+Altersfreigabe mit 27 Angaben, Support- und Marketing-Adresse — alles
+eingetragen. Es fehlen die Bildschirmfotos.
+
+### Hinzugefügt
+- **Die Bildschirmfotos gehen jetzt mit hoch**, in der Reihenfolge, in der sie
+  auf der Store-Seite stehen sollen: Übersicht, Ablesen, Verlauf, Bericht,
+  Zähler. Angemeldet, übertragen, bestätigt — dieselben drei Züge wie beim
+  Prüfbild der Käufe. Ein zweiter Lauf lädt nichts doppelt hoch.
+- **Die CI legt sie dafür in voller Größe ab.** Bisher landeten im Zweig
+  `screenshots` nur auf 1000 Pixel verkleinerte Fassungen; die genügen zum
+  Ansehen, aber Apple will die echte Auflösung des Geräts, und ein
+  hochskaliertes Bild sieht man ihm an. Der Zweig führt beide.
+
+### Behoben
+- **„Neue Funktionen fehlt" stand als Mangel da und war keiner.** Apple lehnt
+  das Feld bei einer ersten Fassung ab, und das zu Recht: Es gibt nichts, was
+  neu wäre. Eine Liste, die verlangt, was gar nicht sein darf, ist unbrauchbar.
+
+**Was jetzt nur noch der Gründer liefern kann:** Name, Telefon und E-Mail als
+Kontakt für die Prüfung.
+
+---
+
 ## 0.96.2 — 2026-08-28
 
 Name, Untertitel, Datenschutz-URL und beide Kategorien stehen — **8 von 17

@@ -32,6 +32,17 @@ jobs:
       - name: Abhängigkeiten
         run: pip3 install --quiet "pyjwt[crypto]" requests
 
+      # Die Bilder in voller Größe liegen im Zweig `screenshots`, den die CI
+      # bei jedem Lauf überschreibt. Sie hier zu erzeugen bräuchte einen
+      # Simulator und damit einen Mac; dort liegen sie schon.
+      - name: Bildschirmfotos holen
+        run: |
+          git fetch --depth 1 origin screenshots
+          mkdir -p build/store
+          git archive origin/screenshots store 2>/dev/null | tar -x -C build --strip-components=1 || \
+            echo "::notice::Im Zweig screenshots gibt es noch keine Bilder in voller Größe — der nächste Mac-Lauf legt sie an."
+          ls -la build/store 2>/dev/null | head -8
+
       - name: Nachsehen
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}

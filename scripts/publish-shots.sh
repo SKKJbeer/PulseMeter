@@ -62,6 +62,22 @@ for png in "${shots[@]}"; do
   sips -Z 1000 -s format jpeg -s formatOptions 72 "$png" --out "$WORK/$name.jpg" >/dev/null
 done
 
+# **Und dieselben Bilder noch einmal in voller Größe** — für den App Store.
+#
+# Die verkleinerten oben sind zum Ansehen da; 1000 Pixel Höhe genügen, um
+# Anordnung, Kontrast und Zahlen zu beurteilen. Apple will für die Store-Seite
+# die echte Auflösung des Geräts, und ein hochskaliertes Bild sieht man ihm an.
+# Hochgeladen wird daraus nur eine Handvoll, aber welche entscheidet sich
+# später — also kommen alle mit.
+#
+# Der Zweig wächst dadurch auf etwa das Vierfache. Er wird bei jedem Lauf
+# überschrieben, also bleibt es dabei und wächst nicht weiter.
+mkdir -p "$WORK/store"
+for png in "${shots[@]}"; do
+  name=$(basename "$png" .png)
+  sips -s format jpeg -s formatOptions 88 "$png" --out "$WORK/store/$name.jpg" >/dev/null
+done
+
 {
   echo "# Screenshots"
   echo
