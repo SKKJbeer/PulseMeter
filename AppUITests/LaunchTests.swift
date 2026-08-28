@@ -1787,6 +1787,12 @@ final class LaunchTests: XCTestCase {
             XCTFail("Kein Weg zur Kaufübersicht. Zu sehen war: \(beschriftungen(in: app))")
             return
         }
+        // **Die Zeile sagt in ganzen Worten, was sie tut.** Sie hieß „Was
+        // PulseMeter noch kann" — eine Umschreibung, die alles Mögliche meinen
+        // kann. Vom Gründer am Bildschirmfoto benannt: „nenne das ‚Alle
+        // Funktionen freischalten‘."
+        XCTAssertTrue(zeile.label.contains("Alle Funktionen freischalten"),
+                      "Die Zeile umschreibt, statt es zu sagen: \(zeile.label)")
         guard oeffne(zeile, bis: app.navigationBars["Freischalten"], in: app, "Kaufübersicht") else {
             return
         }

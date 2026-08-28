@@ -9,6 +9,27 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.94.0 — 2026-08-28
+
+Vom Gerät benannt, mit Bildschirmfoto: „nenne das ‚Alle Funktionen
+freischalten'."
+
+### Geändert
+- **Die Zeile heißt jetzt „Alle Funktionen freischalten".** Vorher stand dort
+  „Was PulseMeter noch kann" — eine Umschreibung, die alles Mögliche meinen
+  kann: eine Anleitung, eine Merkmalsliste, ein Blick in die Zukunft. Sie sagt
+  jetzt, was passiert, wenn man tippt.
+- **Die Überschrift „FREISCHALTEN" darüber ist weg.** Das Wort stand danach
+  zweimal untereinander, und zweimal dasselbe ist nicht doppelt so deutlich,
+  sondern nur doppelt. Den Abstand, den die Überschrift mitbrachte, behält die
+  Zeile.
+
+Geprüft: 234 Prüfungen im Entwurf (vorher 228) — der Name, die fehlende
+Überschrift und der Stand an der Zeile —, dazu dieselbe Zusicherung in der
+Oberflächenprüfung.
+
+---
+
 ## 0.93.3 — 2026-08-28
 
 Bau 23 ging mit dem Satz **„Neuer Stand zum Ausprobieren."** zu den Testern.

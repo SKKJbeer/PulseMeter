@@ -831,6 +831,28 @@ for (const scheme of ["light", "dark"]) {
     !!document.querySelector("#store-row svg circle"));
   note(symbol, "Die Zeile zur Übersicht trägt ein Einkaufssymbol");
 
+  // **Die Zeile sagt in ganzen Worten, was sie tut.** Sie hieß „Was
+  // PulseMeter noch kann" — eine Umschreibung, die alles Mögliche meinen kann,
+  // und über ihr stand als Überschrift „FREISCHALTEN". Vom Gründer benannt:
+  // „nenne das ‚Alle Funktionen freischalten'." Die Überschrift ist damit weg;
+  // zweimal dasselbe ist nicht doppelt so deutlich, sondern nur doppelt.
+  const beschriftung = await page.evaluate(() => {
+    const zeile = document.querySelector("#store-row .rl");
+    const klein = zeile?.querySelector("small");
+    return {
+      titel: (zeile?.firstChild?.textContent || "").trim(),
+      ueberschrift: [...document.querySelectorAll('[data-pane="meters"] .section-label')]
+        .map(x => x.textContent.trim().toLowerCase()),
+      stand: (klein?.textContent || "").trim(),
+    };
+  });
+  note(beschriftung.titel === "Alle Funktionen freischalten",
+       `Die Zeile heißt „Alle Funktionen freischalten" (steht: „${beschriftung.titel}")`);
+  note(!beschriftung.ueberschrift.includes("freischalten"),
+       "Über der Zeile steht das Wort nicht noch einmal als Überschrift");
+  note(beschriftung.stand.length > 0,
+       "An der Zeile steht, wie viel schon freigeschaltet ist");
+
   // **Die Kaufübersicht ist erreichbar, ohne an eine Grenze zu stoßen.**
   //
   // Bis 0.92.0 öffnete sich die Kaufseite ausschließlich vor einer Sperre. Wer

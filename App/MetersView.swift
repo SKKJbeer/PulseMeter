@@ -235,13 +235,12 @@ struct MetersView: View {
     /// Sie sagt außerdem, wie viel schon freigeschaltet ist. Wer alles hat,
     /// soll das sehen und nicht noch einmal auf ein Angebot stoßen.
     private var freischaltenSection: some View {
+        // **Ohne Abschnittsüberschrift.** Über der Zeile stand „FREISCHALTEN",
+        // in der Zeile steht seit 0.94.0 dasselbe Wort noch einmal. Zweimal
+        // dasselbe ist nicht doppelt so deutlich, sondern nur doppelt. Die
+        // Zeile sagt es jetzt in ganzen Worten und braucht niemanden mehr, der
+        // sie ankündigt.
         VStack(alignment: .leading, spacing: 8) {
-            Text("Freischalten")
-                .font(PulseText.sectionLabel)
-                .textCase(.uppercase)
-                .foregroundStyle(PulseColor.inkTertiary)
-                .padding(.top, 6)
-
             PulseCard {
                 Button {
                     showingStore = true
@@ -257,7 +256,7 @@ struct MetersView: View {
                             .foregroundStyle(PulseColor.tintInk)
                             .frame(width: 20, height: 22)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Was PulseMeter noch kann")
+                            Text("Alle Funktionen freischalten")
                                 .font(.system(.body, weight: .medium))
                                 .foregroundStyle(PulseColor.ink)
                             Text(freischaltStand)
@@ -277,6 +276,10 @@ struct MetersView: View {
             }
             .accessibilityElement(children: .combine)
             .accessibilityIdentifier("freischalten-zeile")
+            // Den Abstand, den vorher die Überschrift mitbrachte, behält die
+            // Zeile: Sie soll weiter als eigener Block stehen, nicht als
+            // vierte Zeile der Erinnerungen darüber.
+            .padding(.top, 6)
             .accessibilityHint("Zeigt alle Freischaltungen mit Preisen")
         }
     }
