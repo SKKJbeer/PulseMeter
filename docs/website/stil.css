@@ -386,6 +386,10 @@ p { margin: 0 0 16px; max-width: var(--w-text); text-wrap: pretty; }
   padding: 22px;
 }
 .preis-frei { border-color: var(--tint); }
+/* Das Bündel ist der Kauf, der sich lohnt — sechs gleich aussehende Karten
+   überlassen dem Leser die Rechnerei. Ein Rand statt einer Farbfläche: Es
+   soll auffallen, nicht schreien. */
+.preis-bundle { border-color: var(--tint); border-width: 2px; padding: 21px; }
 .preis b { display: block; font-size: 15px; margin-bottom: 3px; }
 .preis .betrag {
   font-size: 25px;

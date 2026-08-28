@@ -60,11 +60,11 @@ wiederkehrender Nutzen entsteht.
 
 | Was | Preis | Wofür |
 |---|---|---|
-| Unbegrenzt viele Zähler | **2,99 €** | ab dem dritten Zähler |
-| Tag- und Nachtstrom, Einspeisung | **2,99 €** | ein Gerät mit zwei Zahlen |
-| Kosten und Preise | **3,99 €** | Preise, Tarifhistorie, Abschlagsvergleich, Jahresvorschau |
-| Bericht ohne Wasserzeichen | **2,99 €** | das Dokument zum Weitergeben |
-| **Alles freischalten** | **9,99 €** | alle vier zusammen, rund 23 % günstiger |
+| Unbegrenzt viele Zähler | **1,99 €** | ab dem dritten Zähler |
+| Tag- und Nachtstrom, Einspeisung | **1,99 €** | ein Gerät mit zwei Zahlen |
+| Kosten und Preise | **1,99 €** | Preise, Tarifhistorie, Abschlagsvergleich, Jahresvorschau |
+| Bericht ohne Wasserzeichen | **1,99 €** | das Dokument zum Weitergeben |
+| **Alles freischalten** | **4,99 €** | alle vier zusammen, rund 37 % günstiger |
 
 ### Warum der Bericht ein Wasserzeichen statt einer Sperre bekommt
 

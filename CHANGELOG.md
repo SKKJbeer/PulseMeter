@@ -9,6 +9,52 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.95.0 — 2026-08-28
+
+Vom Gründer: „setze alles auf 1 € für den Start und 5 € für das Bündel."
+
+### Geändert
+- **Jede Freischaltung kostet 1,99 €, alle vier zusammen 4,99 €.** Vorher
+  standen dort 2,99 € / 3,99 € und 9,99 € im Bündel.
+
+  **1 € und 5 € gingen nicht, und das war rechnerisch:** Es gibt vier
+  Einzelkäufe. Zu je einem Euro wären das vier zusammen — ein Bündel für fünf
+  wäre teurer als alles einzeln, und die App zeigt die Ersparnis an. Sie stünde
+  negativ da. Der Gründer hat 1,99 / 4,99 gewählt: Einstieg unter zwei Euro,
+  Bündel spart 37 %. Eine bestehende Prüfung verlangt zwischen 20 und 60 % —
+  sie greift weiter.
+- **„Kosten und Preise" kostet nicht mehr einen Euro mehr als die anderen.**
+  Der Aufschlag war von innen gedacht: Dort steckt am meisten drin. Wer die
+  Kaufseite ansieht, liest vier Zeilen und stolpert über die eine, die aus der
+  Reihe fällt.
+
+### Website
+- **Preise, Bericht und Widget nachgezogen.** Die Seite war vom 16. August und
+  kannte den Verbrauchsbericht nur als Fußnote, das Widget gar nicht und die
+  Kaufübersicht nicht. Der Bericht hat jetzt einen eigenen Abschnitt mit Bild:
+  Zeitraum frei wählbar, ansehen und drucken kostenlos, Schriftzug bis zum Kauf.
+- **Alle Bildschirmfotos ersetzt** — die alten zeigten die App vor dem
+  Einkaufswagen und der Preiszeile. Die neuen stammen aus dem CI-Lauf von
+  heute 17:02.
+- **Für Suchmaschinen:** Angebot und die fünf häufigsten Fragen als
+  strukturierte Daten, damit die Antworten im Ergebnis selbst stehen können.
+  Der Wortlaut kommt aus der Hilfeseite — kein zweiter Text, der auseinander
+  läuft. Dazu Verweise mitten im Text auf die beiden Ratgeber statt nur in der
+  Fußzeile, und Datenschutz im Satz, den Google anzeigt.
+- **Ein Satz ist wieder rausgeflogen**, bevor er online ging: „Eine zu niedrig
+  angesetzte Abschlagszahlung kostet das Zwanzigfache." Klingt gut, hat niemand
+  gemessen.
+
+### Behoben
+- Die Platzhalter-Prüfung der Website hielt die eckigen Klammern in den
+  strukturierten Daten für eine offene Textlücke. Sie sieht jetzt nur noch an,
+  was im Browser als Text erscheint.
+
+**Offen bleibt genau eine Stelle:** der Name des Hosters in `datenschutz.html`.
+Das ist ein Rechtstext, und was dort steht, wird nicht angenommen.
+
+---
+
 ## 0.94.0 — 2026-08-28
 
 Vom Gerät benannt, mit Bildschirmfoto: „nenne das ‚Alle Funktionen

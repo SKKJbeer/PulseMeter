@@ -168,7 +168,7 @@ Verlauf, der Vorjahresvergleich, Erinnerungen und der Export.
 Wenn dir später etwas fehlt, kaufst du genau das frei — und nicht ein Paket, in
 dem drei Dinge stecken, die du nie brauchst. Unbegrenzt viele Zähler. Zähler
 mit zwei Zahlen. Kosten und Preise. Den Verbrauchsbericht ohne Schriftzug. Je
-ein paar Euro, alle zusammen ein Drittel günstiger. Einmal bezahlt, auf allen
+1,99 €, alle vier zusammen 4,99 €. Einmal bezahlt, auf allen
 deinen Geräten, und es bleibt.
 
 Den Bericht kannst du dir immer ansehen und ausdrucken. Freischalten musst du
@@ -215,7 +215,7 @@ ist keine Versionsinformation, sondern deren Verweigerung.
 | Sekundäre Kategorie | **Finanzen** | Kosten und Abschlagsvergleich; bringt eine zweite Bestenliste |
 | Altersfreigabe | **4+** | Keine Inhalte, die etwas anderes rechtfertigten |
 | Preis | **Kostenlos** mit In-App-Käufen | Der Einstieg darf nichts kosten, sonst gibt es keinen |
-| In-App-Käufe | Fünf nicht verbrauchbare Produkte: drei zu 2,99 €, eines zu 3,99 €, Bündel 9,99 € | Begründung in `04-monetarisierung.md` |
+| In-App-Käufe | Fünf nicht verbrauchbare Produkte: vier zu 1,99 €, Bündel 4,99 € | Begründung in `04-monetarisierung.md` |
 | Länder | Zunächst **Deutschland, Österreich, Schweiz** | Die App ist deutsch, die Rechnungslogik auch |
 
 ---

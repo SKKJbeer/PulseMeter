@@ -71,7 +71,16 @@ for (const datei of seiten) {
   // markiert sein.** Sonst rutscht ein `[USt-IdNr. eintragen]` durch, weil der
   // dazugehörige Kommentar beim Bearbeiten verlorenging: Die Zählung stünde auf
   // null, und im Impressum stünde trotzdem eine Klammer.
-  const sichtbar = html.replace(/<!--[\s\S]*?-->/g, "").replace(/<[^>]+>/g, " ");
+  //
+  // **Skripte zählen nicht dazu.** Die strukturierten Daten für Suchmaschinen
+  // stehen als JSON in der Seite, und eine Liste in JSON ist eine eckige
+  // Klammer. Sie stand als „Platzhalter im Impressum" da, obwohl sie nichts
+  // ist, was jemand liest — der Text zwischen den Klammern kommt ohnehin aus
+  // der Hilfeseite. Geprüft wird, was im Browser als Text erscheint.
+  const sichtbar = html
+    .replace(/<!--[\s\S]*?-->/g, "")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<[^>]+>/g, " ");
   const klammern = sichtbar.match(/\[[^\]]{3,}\]/g) || [];
   const markiert = (html.match(/PLATZHALTER/g) || []).length;
   note(klammern.length === 0 || markiert > 0,

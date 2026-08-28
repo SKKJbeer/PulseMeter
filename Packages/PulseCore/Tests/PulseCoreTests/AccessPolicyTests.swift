@@ -115,8 +115,8 @@ final class AccessPolicyTests: XCTestCase {
         let einzeln = ProductID.individually.reduce(Decimal(0)) { $0 + $1.suggestedPrice }
         XCTAssertGreaterThan(approx(einzeln), approx(ProductID.everything.suggestedPrice),
                              "Ein Bündel, das nicht spart, kauft niemand")
-        // Und zwar spürbar. Gerechnet: 2,99 + 2,99 + 3,99 + 2,99 = 12,96 €
-        // einzeln gegen 9,99 € im Bündel — knapp **23 %**. Die Schranke steht
+        // Und zwar spürbar. Gerechnet: viermal 1,99 = 7,96 € einzeln gegen
+        // 4,99 € im Bündel — **37 %**. Die Schranke steht
         // bei 20 %, nicht bei 25: Die Preise hat der Gründer gesetzt, und eine
         // Prüfung, die seine Entscheidung überstimmt, ist keine Prüfung,
         // sondern eine Meinung.

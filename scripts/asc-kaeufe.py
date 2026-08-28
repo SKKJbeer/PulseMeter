@@ -58,19 +58,19 @@ GEBIET = "DEU"
 KAEUFE = [
     {"kennung": "additionalmeters",  "referenz": "Unbegrenzt viele Zähler",
      "name": "Unbegrenzt viele Zähler",     "text": "Mehr als zwei Zähler führen.",
-     "preis": "2.99"},
+     "preis": "1.99"},
     {"kennung": "multipleregisters", "referenz": "Nachtstrom und Einspeisung",
      "name": "Nachtstrom und Einspeisung",  "text": "Ein Zähler mit zwei Zahlen darauf.",
-     "preis": "2.99"},
+     "preis": "1.99"},
     {"kennung": "costsandtariffs",   "referenz": "Kosten und Preise",
      "name": "Kosten und Preise",           "text": "Aus Verbrauch wird ein Betrag.",
-     "preis": "3.99"},
+     "preis": "1.99"},
     {"kennung": "pdfreport",         "referenz": "Bericht ohne Wasserzeichen",
      "name": "Bericht ohne Wasserzeichen",  "text": "Der Bericht zum Weitergeben.",
-     "preis": "2.99"},
+     "preis": "1.99"},
     {"kennung": "everything",        "referenz": "Alles freischalten",
      "name": "Alles freischalten",          "text": "Alle vier Freischaltungen zusammen.",
-     "preis": "9.99"},
+     "preis": "4.99"},
 ]
 
 offen: list[str] = []
@@ -201,7 +201,7 @@ def preispunkt(apple: Apple, kauf_id: str, betrag: str, produkt_id: str):
     """Der Preispunkt zu einem Betrag — Apple verkauft nicht in freien Zahlen.
 
     Gesucht wird über alle Seiten: Für Deutschland gibt es mehrere hundert
-    Punkte, und 2,99 € liegt nicht auf der ersten Seite.
+    Punkte, und 1,99 € liegt nicht auf der ersten Seite.
     """
     pfad = f"v2/inAppPurchases/{kauf_id}/pricePoints"
     werte = {"filter[territory]": GEBIET, "limit": 200}
