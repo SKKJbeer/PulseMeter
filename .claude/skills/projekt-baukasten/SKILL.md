@@ -436,12 +436,36 @@ Prüfbild. Was dabei zuschlägt:
 - **Ein neu angelegter Kauf ist ein Entwurf**, kein Verkaufsangebot: in der
   Sandbox sichtbar und dort kostenlos, verkauft wird er erst mit der
   Einreichung der App.
+- **Die App selbst muss in Ländern verfügbar sein.** Der Kauf hat eine
+  Verfügbarkeit *und die App auch*, und die des Kaufs beschreibt nur, wo er
+  gälte, wenn es die App dort gäbe. Fehlt sie an der App, antwortet
+  `GET /v1/apps/<id>/appAvailabilityV2` mit **404** — „There is no resource of
+  type 'appAvailabilities'". Setzen über `POST /v2/appAvailabilities`; die
+  Länder gehen als `included` mit und ihre Kennung muss wörtlich `${AFG}`
+  lauten, mit geschweiften Klammern. Das veröffentlicht nichts: Die App bleibt
+  auf `PREPARE_FOR_SUBMISSION`.
 - **Vertrag für bezahlte Apps.** Steht auch nur eine Zeile unter „Geschäftlich"
-  — Kontaktangaben, Bankverbindung, Steuerangaben — nicht auf „Aktiv", liefert
-  StoreKit nach allem, was wir sehen, nichts aus. *Bei uns noch nicht bewiesen:
-  Es ist der letzte verbliebene Kandidat, nachdem alle fünf Käufe auf
-  `READY_TO_SUBMIT` standen und die Kaufseite trotzdem leer blieb.* Wer das
-  Gegenteil misst, korrigiert diese Zeile.
+  — Kontaktangaben, Bankverbindung, Steuerangaben — nicht auf „Aktiv", gibt
+  StoreKit in der Sandbox eine **leere** Produktliste zurück, ohne Fehler und
+  ohne Hinweis. Das ist die häufigste Ursache für „im TestFlight kommt nichts",
+  wenn an den Käufen nachweislich alles steht. Eine Schnittstelle dafür gibt es
+  nicht — nur der Browser, unter **appstoreconnect.apple.com/business**.
+
+### Was in TestFlight mit Käufen wirklich geht
+
+Nachgeschlagen, nachdem ich es drei Tage lang **behauptet** hatte:
+
+| Frage | Antwort |
+|---|---|
+| Kann man in einem TestFlight-Bau kaufen? | **Ja.** TestFlight-Bauten laufen gegen die Sandbox |
+| Kostet es den Tester etwas? | **Nein**, in der Sandbox ist jeder Kauf kostenlos |
+| Muss der Kauf genehmigt sein? | **Nein**, `READY_TO_SUBMIT` genügt |
+| Muss die App genehmigt sein? | **Nein** |
+| Braucht es einen Sandbox-Zugang? | **Nein**, in TestFlight nicht |
+
+Bleibt die Produktliste trotzdem leer, sind es erfahrungsgemäß zwei Dinge:
+die **Verfügbarkeit der App** und der **Vertrag für bezahlte Apps**. Beide
+liegen außerhalb des Kaufs, und genau deshalb sucht man sie zuletzt.
 
 ---
 
@@ -460,8 +484,16 @@ Dreimal an einem einzigen Tag, jedes Mal in anderer Verkleidung:
    und die Maße gelten, sagt `assetDeliveryState` — ein Bild in `FAILED` ist
    vorhanden und zählt trotzdem nicht.
 
+Und ein viertes Mal, diesmal in der Diagnose selbst: Drei Abfragen kamen mit
+`400 — nicht lesbar` zurück und sahen aus wie eine Auskunft von Apple. Es war
+ein Fehler in meiner Abfrage — ein `limit` an einem Einzelstück statt an einer
+Liste. Ausgerechnet die zwei Felder, wegen derer die Aufstellung geschrieben
+worden war.
+
 > **Jedes Nachlesen muss zwei Fragen stellen: Ist es da, und wirkt es?** Und
-> zwei Sachverhalte gehören nie unter einen Wert.
+> zwei Sachverhalte gehören nie unter einen Wert. Auch nicht „ich konnte nicht
+> fragen" und „die Gegenseite sagt nein": Ein Fehler auf der eigenen Seite darf
+> nie wie eine Antwort der Gegenseite aussehen.
 
 Dieselbe Regel greift beim Signieren: Erst wenn die App-ID **noch einmal
 abgefragt** wurde und alles steht, darf der Bau die Berechtigungsdateien
@@ -485,6 +517,17 @@ war und die Karte zu Recht unverändert blieb.
 ---
 
 ## 7. Wie ermittelt wird, wenn etwas nicht geht
+
+**Die Voraussetzung wird zuerst geprüft, nicht zuletzt.** Drei Tage lang stand
+in jedem Lauf „In einem TestFlight-Bau lassen sie sich kostenlos ausprobieren."
+Nachgeschlagen hatte ich das nie. Es stimmte — aber es war eine **Annahme**, und
+sie war die Grundlage aller anderen Schritte. Hätte sie nicht gestimmt, wäre die
+ganze Suche in die falsche Richtung gelaufen, und niemand hätte es gemerkt.
+
+> **Was die Suche trägt, wird belegt, bevor gesucht wird.** Und solange es nicht
+> belegt ist, steht es als Annahme da — nicht als Satz im Protokoll, den beim
+> zehnten Lesen niemand mehr hinterfragt. Der Gründer hat es benannt: „rate
+> niemals."
 
 **Der Fehlschlag ist die Auskunft.** Der Reflex, aus einer Meldung eine
 Erklärung zu bauen und danach zu handeln, hat mehr gekostet als das Lesen.

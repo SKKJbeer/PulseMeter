@@ -9,6 +9,130 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.89.0 — 2026-08-28
+
+### Hinzugefügt
+- **Was in TestFlight mit Käufen wirklich geht — nachgeschlagen statt
+  behauptet.** Der Gründer hat den wunden Punkt getroffen: „geht überhaupt
+  kaufen in TestFlight? rate niemals." Drei Tage lang stand in jedem Lauf „In
+  einem TestFlight-Bau lassen sie sich kostenlos ausprobieren", ohne dass ich
+  das je geprüft hätte. Es stimmt — TestFlight-Bauten laufen gegen die Sandbox,
+  der Kauf kostet nichts, `READY_TO_SUBMIT` genügt, weder App noch Kauf müssen
+  genehmigt sein, ein Sandbox-Zugang ist nicht nötig. Aber es war eine Annahme,
+  und sie trug die ganze Suche.
+- Die Tabelle dazu steht jetzt in Abschnitt 5 des Baukastens, zusammen mit den
+  zwei Ursachen, die eine leere Produktliste erfahrungsgemäß wirklich
+  verursachen: die **Verfügbarkeit der App** und der **Vertrag für bezahlte
+  Apps**. Beide liegen außerhalb des Kaufs — deshalb sucht man sie zuletzt.
+- Der Befund aus 0.88.x ist dort ebenfalls festgehalten: `appAvailabilityV2`
+  antwortet mit 404, wenn die App in keinem Land verfügbar ist, und die
+  Länderkennungen müssen beim Anlegen wörtlich `${AFG}` lauten.
+
+### Behoben
+- `testExistingMetersStayUsableWithoutPro` fiel im Lauf zu 0.88.1 mit „Der
+  Ziffernblock erschien nicht" — bei unverändertem App-Code. Die Stelle tippte
+  nackt auf „Stand eintragen" und prüfte danach. Für genau diesen Fall gibt es
+  seit Längerem `oeffne()`: Es tippt ein zweites Mal, wenn der erste Tipp nicht
+  ankam, und schreibt bei einem Fehlschlag auf, was stattdessen zu sehen war.
+  Der Helfer war da, diese eine Stelle benutzte ihn nur nicht. Sechs weitere
+  Stellen tippen noch nackt; sie kommen dran, wenn sie fallen.
+
+### Geändert
+- Neue Regel in Abschnitt 7: **Die Voraussetzung wird zuerst geprüft, nicht
+  zuletzt.** Was die Suche trägt, wird belegt, bevor gesucht wird — und solange
+  es nicht belegt ist, steht es als Annahme da, nicht als Satz im Protokoll, den
+  beim zehnten Lesen niemand mehr hinterfragt.
+
+---
+
+## 0.88.1 — 2026-08-28
+
+### Behoben
+- Apple hat die Kennung der eingebetteten Länder abgelehnt:
+
+  ```
+  409 — The provided included entity id '$AFG' has invalid format.
+        For inline creation, the id must be a local id with the
+        format '${local-id}'.
+  ```
+
+  Geschrieben war `f"${gebiet['id']}"`. In einem f-String ist `$` ein
+  gewöhnliches Zeichen und die geschweifte Klammer der Platzhalter — heraus kam
+  `$AFG` statt `${AFG}`. Dieselbe Klasse wie der Backtick im Here-Dokument
+  einen Tag zuvor: **ein Zeichen, das in zwei Sprachen zugleich etwas
+  bedeutet.**
+
+---
+
+## 0.88.0 — 2026-08-28
+
+### Behoben
+- **Die App war in keinem Land verfügbar.** Das ist der Befund, auf den zwei
+  Tage zugelaufen sind. Apple sagt es wörtlich:
+
+  ```
+  appPriceSchedule: 1
+  appAvailabilityV2: 404 — There is no resource of type
+                     'appAvailabilities' with id '6802262743'
+  ```
+
+  Der Preisplan der App steht, ihre Verfügbarkeit nicht. Eine App, die es in
+  keinem Laden gibt, hat auch keinen Laden, in dem ein Kauf angeboten werden
+  könnte — StoreKit gibt dann nichts zurück, und die Kaufseite bleibt ohne
+  Knopf. Die Verfügbarkeit der **Käufe** half dabei nicht: Sie beschreibt, wo
+  ein Kauf gälte, wenn es die App dort gäbe.
+- `app_verfuegbar()` setzt sie über `POST /v2/appAvailabilities`, mit
+  denselben Ländern wie die Käufe, und läuft **vor** den Käufen.
+
+Das veröffentlicht nichts. Die App steht auf `PREPARE_FOR_SUBMISSION` und
+bleibt dort; Verfügbarkeit ist eine Angabe, keine Einreichung.
+
+Und es ist dieselbe Lehre wie beim Prüfbild, nur eine Ebene höher: **Wer nur
+dort sucht, wo der Fehler auftritt, findet ihn nicht.** Fünf Käufe waren
+vollständig — die Ursache lag an der App, nach der niemand gefragt hatte.
+
+---
+
+## 0.87.1 — 2026-08-28
+
+### Behoben
+- Die neue Aufstellung hat sich an drei Stellen selbst blind gemacht.
+  `appPriceSchedule`, `appAvailabilityV2` und die Lizenzvereinbarung sind
+  **Einzelstücke, keine Listen** und antworten auf `limit` mit 400. Im
+  Protokoll stand dreimal „nicht lesbar (400)" — das sah nach einer Auskunft
+  von Apple aus und war ein Fehler in der Abfrage. Ausgerechnet die beiden
+  Felder, wegen derer die Aufstellung geschrieben wurde: Preis und
+  Verfügbarkeit der App.
+
+Dieselbe Fehlerklasse wie in 0.79.1 und 0.82.1, zum dritten Mal in anderer
+Verkleidung: **„konnte ich nicht lesen" und „ist nicht gesetzt" dürfen nicht
+gleich aussehen** — und ein Fehler auf meiner Seite darf nicht wie eine Antwort
+der Gegenseite aussehen. Steht in Abschnitt 6 des Baukastens.
+
+---
+
+## 0.87.0 — 2026-08-27
+
+### Hinzugefügt
+- **Die Diagnose fragt jetzt eine Ebene höher.** Vom Gerät gemeldet: „ich kann
+  immer noch nicht in TestFlight kaufen" — bei fünf Käufen auf
+  `READY_TO_SUBMIT`, angenommenem Prüfbild, gesetztem Preis und gesetzter
+  Verfügbarkeit. Damit kann die Ursache nicht mehr am Kauf liegen.
+  `was_die_app_fuehrt()` schreibt aus, was Apple über die **App** führt: alle
+  Merkmale und zu `appPriceSchedule`, `appAvailabilityV2`, `appStoreVersions`,
+  `appInfos`, `builds`, `inAppPurchasesV2` und der Lizenzvereinbarung jeweils,
+  ob es sie gibt und mit welcher Antwort.
+- `PULSE_DIAGNOSE=1` lässt die Aufstellung **auch dann** laufen, wenn alles
+  grün aussieht. Der bisherige Weg schrieb nur bei einem nicht lieferbaren Kauf
+  etwas aus — also genau dann nicht, wenn man es jetzt braucht. Der Ablauf
+  „Einrichtung bei Apple" setzt die Variable.
+
+Verträge — bezahlte Apps, Bank, Steuer — hat Apples Schnittstelle nicht. Bleibt
+die Aufstellung ohne Befund, ist das der letzte verbliebene Kandidat, und er
+lässt sich nur im Browser ansehen.
+
+---
+
 ## 0.86.0 — 2026-08-27
 
 ### Hinzugefügt

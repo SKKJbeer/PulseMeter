@@ -65,4 +65,8 @@ jobs:
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
           PULSE_KAUFBILD: build/kaufseite.jpg
+          # Schreibt am Ende aus, was Apple über die App und über einen Kauf
+          # führt — auch dann, wenn alle fünf grün aussehen. Genau dieser Fall
+          # steht an: fünfmal READY_TO_SUBMIT, und auf dem Gerät kein Knopf.
+          PULSE_DIAGNOSE: "1"
         run: python3 scripts/asc-kaeufe.py

@@ -269,6 +269,67 @@ def gebiete(apple: Apple) -> list[dict]:
             for e in antwort.json().get("data", [])]
 
 
+def app_verfuegbar(apple: Apple, app_id: str, wo: list[dict]) -> None:
+    """Die **App** in Länder bringen — nicht den Kauf.
+
+    **Der Befund, auf den zwei Tage zugelaufen sind.** Alle fünf Käufe standen
+    auf `READY_TO_SUBMIT`, jedes Feld gesetzt, und auf dem Gerät blieb die
+    Kaufseite leer. Die Aufstellung eine Ebene höher hat es dann gesagt:
+
+        appPriceSchedule: 1
+        appAvailabilityV2: 404 — There is no resource of type
+                           'appAvailabilities' with id '…'
+
+    Der Preisplan der App steht, ihre Verfügbarkeit nicht. Eine App, die in
+    keinem Land verfügbar ist, hat auch keinen Laden, in dem ein Kauf angeboten
+    werden könnte — und StoreKit gibt nichts zurück. Die Verfügbarkeit des
+    Kaufs half nicht: Sie beschreibt, wo der Kauf gälte, wenn es die App dort
+    gäbe.
+
+    **Das veröffentlicht nichts.** Die App steht auf `PREPARE_FOR_SUBMISSION`
+    und bleibt dort; Verfügbarkeit ist eine Angabe, keine Einreichung.
+    """
+    stand, _ = apple.holen(f"v1/apps/{app_id}/appAvailabilityV2")
+    if stand == 200:
+        getan.append("Die App ist bereits in Ländern verfügbar")
+        return
+
+    # Jedes Land wird einzeln mitgeschickt: `territoryAvailabilities` ist eine
+    # eigene Ressource, keine Liste von Kennungen wie beim Kauf.
+    # **Die Kennung muss `${…}` lauten, mit geschweiften Klammern.** Der erste
+    # Anlauf schrieb `f"${gebiet['id']}"` — und in einem f-String ist `$` ein
+    # gewöhnliches Zeichen, die Klammern dagegen der Platzhalter. Heraus kam
+    # `$AFG`, und Apple hat es benannt: „the id must be a local id with the
+    # format '${local-id}'". Dieselbe Klasse wie der Backtick im Here-Dokument:
+    # ein Zeichen, das in zwei Sprachen zugleich etwas bedeutet.
+    enthalten = [{
+        "type": "territoryAvailabilities",
+        "id": "${" + gebiet["id"] + "}",
+        "attributes": {"available": True},
+        "relationships": {"territory": {"data": gebiet}},
+    } for gebiet in wo]
+
+    stand, antwort = apple.anlegen("v2/appAvailabilities", {
+        "data": {
+            "type": "appAvailabilities",
+            "attributes": {"availableInNewTerritories": True},
+            "relationships": {
+                "app": {"data": {"type": "apps", "id": app_id}},
+                "territoryAvailabilities": {
+                    "data": [{"type": "territoryAvailabilities", "id": e["id"]}
+                             for e in enthalten]},
+            },
+        },
+        "included": enthalten,
+    })
+    if stand in (200, 201):
+        getan.append(f"Die App ist jetzt in {len(wo)} Ländern verfügbar")
+        return
+    offen.append(f"Die App ist in keinem Land verfügbar, und das ließ sich "
+                 f"hier nicht setzen ({stand}) — {kurz(antwort)}. "
+                 "In App Store Connect: Preise und Verfügbarkeit")
+
+
 def verfuegbar(apple: Apple, kauf_id: str, produkt_id: str, wo: list[dict]) -> None:
     # **Zwei Namen für dieselbe Beziehung.** Der Preisplan heißt
     # `iapPriceSchedule`, die Verfügbarkeit aber `inAppPurchaseAvailability` —
@@ -451,6 +512,10 @@ def main() -> None:
     vorhanden = bestand(apple, app_id)
     wo = gebiete(apple)
 
+    # Zuerst die App, dann die Käufe: Ein Kauf in einer App, die es in keinem
+    # Land gibt, wird von StoreKit nicht ausgeliefert.
+    app_verfuegbar(apple, app_id, wo)
+
     # Dasselbe Bild für alle fünf: Die Kaufseite zeigt sie gemeinsam, und
     # Apple will sehen, wo im Programm der Kauf vorkommt.
     quelle = os.environ.get("PULSE_KAUFBILD", "")
@@ -504,7 +569,60 @@ def main() -> None:
                 was_fehlt(apple, eintrag[0], produkt_id)
                 gemeldet = True
 
+    # **Auch dann ausschreiben, wenn alles grün aussieht.** Genau dieser Fall
+    # steht gerade an: fünfmal READY_TO_SUBMIT, und auf dem Gerät trotzdem kein
+    # Knopf. Ein Lauf, der nur „alles steht" sagt, hilft dann nicht weiter.
+    if os.environ.get("PULSE_DIAGNOSE") and not gemeldet:
+        was_die_app_fuehrt(apple, app_id)
+        erster = danach.get(f"{BUNDLE}.{KAEUFE[0]['kennung']}")
+        if erster:
+            was_fehlt(apple, erster[0], f"{BUNDLE}.{KAEUFE[0]['kennung']}")
+
     melden()
+
+
+def was_die_app_fuehrt(apple: Apple, app_id: str) -> None:
+    """Alles ausschreiben, was Apple über die **App** führt.
+
+    **Weil die Käufe es nicht mehr sein können.** Alle fünf stehen auf
+    `READY_TO_SUBMIT`, das Prüfbild ist angenommen, Preis und Verfügbarkeit
+    stehen — und auf dem Gerät bleibt die Kaufseite leer. Damit ist die Ursache
+    nicht mehr am Kauf, sondern eine Ebene darüber: an der App selbst oder an
+    einem Vertrag.
+
+    Verträge hat Apples Schnittstelle nicht. Die App hat sie, und ein Feld, das
+    hier fehlt, ist mehr wert als die nächste Vermutung.
+    """
+    stand, antwort = apple.holen(f"v1/apps/{app_id}")
+    if stand == 200:
+        merkmale = antwort.json().get("data", {}).get("attributes", {})
+        print("\n  Was Apple über die App führt:")
+        for schluessel, wert in sorted(merkmale.items()):
+            print(f"      {schluessel}: {wert}")
+
+    # Preis und Verfügbarkeit der **App**: Ohne sie ist die App nirgends zu
+    # haben — und ein Kauf in einer App, die es in keinem Land gibt, kann von
+    # StoreKit nicht ausgeliefert werden. Das ist die Vermutung, die diese
+    # Abfrage prüfen soll; ob sie stimmt, sagt die Antwort.
+    # **Ohne `limit`.** Der erste Lauf hat sich an genau dieser Stelle selbst
+    # blind gemacht: `appPriceSchedule`, `appAvailabilityV2` und die
+    # Lizenzvereinbarung sind Einzelstücke, keine Listen, und antworten auf
+    # `limit` mit 400. Im Protokoll stand dreimal „nicht lesbar" — was wie eine
+    # Auskunft von Apple aussah und ein Fehler von mir war.
+    for name in ("appPriceSchedule", "appAvailabilityV2", "appStoreVersions",
+                 "appInfos", "builds", "inAppPurchasesV2", "endUserLicenseAgreement"):
+        stand, antwort = apple.holen(f"v1/apps/{app_id}/{name}")
+        if stand != 200:
+            print(f"      {name}: nicht lesbar ({stand}) — {kurz(antwort)}")
+            continue
+        inhalt = antwort.json().get("data")
+        anzahl = len(inhalt) if isinstance(inhalt, list) else (1 if inhalt else 0)
+        print(f"      {name}: {anzahl}")
+        for eintrag in (inhalt if isinstance(inhalt, list) else [inhalt])[:2]:
+            if not eintrag:
+                continue
+            for schluessel, wert in sorted(eintrag.get("attributes", {}).items()):
+                print(f"          {schluessel}: {wert}")
 
 
 def was_fehlt(apple: Apple, kauf_id: str, produkt_id: str) -> None:
