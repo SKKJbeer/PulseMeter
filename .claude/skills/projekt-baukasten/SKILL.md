@@ -404,6 +404,22 @@ Es bleiben also genau **zwei Klicks im Portal**: die App-Gruppe und der
 iCloud-Behälter. Angelegt werden sie dort, **zugeordnet** an der App-ID — und
 die Häkchen dafür setzt der Lauf.
 
+### Eine Fortschrittsliste von Hand ist am nächsten Tag falsch
+
+Im Projektdokument stand „was vor dem Einreichen noch fehlt", gepflegt von
+Hand. Beim Nachsehen war der Punkt StoreKit offen — obwohl die fünf Käufe seit
+Tagen bereit waren und sich in TestFlight kaufen ließen. Nach der Liste hätte
+man Arbeit gemacht, die längst getan war.
+
+> Für alles, was eine Schnittstelle beantworten kann, wird **gefragt statt
+> erinnert**: ein Lauf, der liest und nichts schreibt, in Sekunden, so oft man
+> will. Von Hand bleibt nur, was keine Schnittstelle kennt — Entscheidungen,
+> Angaben über Menschen, Messungen am Gerät.
+
+Nützlich ist dabei die Dreiteilung der Ausgabe: **steht** / **mache ich** /
+**kann nur der Auftraggeber**. Der dritte Block ist die Liste, die er wirklich
+braucht; die ersten beiden gehen ihn nichts an.
+
 ### Der Berechtigungsteil gehört nicht in den TestFlight-Lauf
 
 Er spricht nur HTTP: kein Xcode, kein Simulator, kein Mac. Als Schritt im

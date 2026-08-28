@@ -337,37 +337,41 @@ App startet und nicht weiß, wo etwas herkommt, bewertet eine leere App.
 
 ## 6. Was vor dem Einreichen noch fehlt
 
-Diese Liste ist der Rest von `07-v1-plan.md`, hier auf die Einreichung
-verkürzt:
+**Diese Liste stand hier von Hand — und war beim Nachsehen falsch.** StoreKit
+war als offen eingetragen, obwohl die fünf Käufe seit Tagen bereit sind und
+sich in TestFlight kaufen lassen. Eine Liste, die nachgeführt werden muss, ist
+am Tag nach dem Nachführen wieder veraltet.
 
-- [ ] **Apple Developer Program** (99 €) — blockiert alles Weitere
-- [ ] **StoreKit**: fünf Produkte in App Store Connect anlegen —
-      `de.karjoth.pulsemeter.additionalmeters`, `.multipleregisters`,
-      `.costsandtariffs`, `.pdfreport`, `.everything` — und `PurchaseGateway`
-      dagegen implementieren. Die Kennungen stehen in `ProductID` und dürfen
-      sich nie ändern: Ein umbenanntes Produkt ist für jeden Käufer ein
-      verlorener Kauf.
-- [ ] **CloudKit einschalten** (`PulseStore.container(cloudKit:)` steht auf
-      `false`) und die Berechtigung eintragen
-- [ ] **`.entitlements`**: App-Gruppe `group.de.karjoth.pulsemeter` fürs Widget,
-      iCloud für die Synchronisation
-- [x] **`PrivacyInfo.xcprivacy`** — liegt seit 0.55.0 in `App/` und `Widget/`,
-      je eines. Inhalt: kein Tracking, keine Tracking-Domänen, keine erfassten
-      Daten, und als einzige begründungspflichtige Schnittstelle
-      `UserDefaults` mit Grund `CA92.1` (nur die Voreinstellungen dieser App,
-      für den Kaufzustand in `Purchase.swift`).
-      **Einmal auf dem Mac nachsehen**, dass die Datei auch im gebauten Bündel
-      landet — XcodeGen nimmt sie als Ressource mit, geprüft ist das hier
-      nicht: `find build/DerivedData -name PrivacyInfo.xcprivacy`
-- [ ] **Datenschutzerklärung veröffentlichen** und die URL eintragen
-- [ ] **Support-Seite** einrichten und die URL eintragen
-- [ ] **Bildschirmfotos neu erzeugen**, nachdem StoreKit steht
+Gefragt wird jetzt Apple:
+
+```
+Actions › Einreichung nachsehen › Run workflow
+```
+
+Sekunden, schreibt nichts, sagt in drei Blöcken, was steht, was ich mache und
+was nur der Gründer liefern kann. `scripts/asc-einreichung.py` ist dasselbe
+Skript und läuft überall, wo der Schlüssel liegt.
+
+### Was kein Skript beantworten kann
+
+- [ ] **Datenschutzerklärung und Support-Seite müssen im Netz stehen.** Apple
+      will zwei URLs, und beide zeigen auf die Website. Sie ist gebaut und
+      geprüft, aber nicht veröffentlicht — und in `datenschutz.html` steht noch
+      ein `PLATZHALTER`. Ohne diese zwei Felder gibt es keine Einreichung.
+- [ ] **Kontakt für die Prüfung** — Name, Telefon, E-Mail. Das sind Angaben
+      über den Gründer und werden nicht erfunden (CLAUDE.md, „Keine Annahmen in
+      Texten, die jemand anderes liest").
 - [ ] **Zwei Wochen echte Eigennutzung** — der Punkt, der bisher am meisten
-      gefunden hat
-- [ ] **800 ms Kaltstart** auf einem Gerät messen
+      gefunden hat, und eine Entscheidung, kein Arbeitsschritt.
+- [ ] **800 ms Kaltstart** auf einem Gerät messen. Im Simulator sagt die Zahl
+      nichts.
 
-Texte, Icon, Bilder, Kategorien und Datenschutzangaben sind damit erledigt.
-Alles Übrige hängt am Developer Program oder am Gerät.
+### Was am Mac einmal nachzusehen ist
+
+- [ ] **`PrivacyInfo.xcprivacy` im gebauten Bündel.** Sie liegt seit 0.55.0 in
+      `App/` und `Widget/`; dass XcodeGen sie als Ressource mitnimmt, ist
+      angenommen und nicht geprüft:
+      `find build/DerivedData -name PrivacyInfo.xcprivacy`
 
 **Gefunden werden** ist ein eigenes Thema und steht in
 [`10-sichtbarkeit.md`](10-sichtbarkeit.md): welche Felder der App Store

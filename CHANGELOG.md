@@ -12,7 +12,21 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 ## 0.94.0 — 2026-08-28
 
 Vom Gerät benannt, mit Bildschirmfoto: „nenne das ‚Alle Funktionen
-freischalten'."
+freischalten'." Und danach: „mache alles bereit für den Release auf den App
+Store."
+
+### Hinzugefügt
+- **„Einreichung nachsehen"** — ein Lauf, der App Store Connect fragt, was für
+  die Einreichung noch fehlt, und die Antwort dreiteilt: was steht, was ich
+  mache, was nur der Gründer liefern kann. Er schreibt nichts und kostet
+  Sekunden.
+
+  Der Anlass: Die Liste in `docs/09-appstore.md` wurde von Hand gepflegt und
+  war beim Nachsehen falsch. StoreKit stand als offen, obwohl die fünf Käufe
+  seit Tagen bereit sind und sich in TestFlight kaufen lassen — nach dieser
+  Liste hätte man Arbeit gemacht, die längst getan war. Von Hand bleibt jetzt
+  nur, was keine Schnittstelle kennt: Entscheidungen, Angaben über Menschen,
+  Messungen am Gerät.
 
 ### Geändert
 - **Die Zeile heißt jetzt „Alle Funktionen freischalten".** Vorher stand dort
