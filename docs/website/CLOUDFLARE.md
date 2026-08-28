@@ -1,4 +1,4 @@
-# Die Website online bringen — kostenlos, in zwei Schritten
+# Die Website online bringen — kostenlos, in vier Schritten
 
 Alles hier ist im **kostenlosen** Tarif von Cloudflare enthalten. Keine
 Kreditkarte, keine Testphase, kein Betrag, der später fällig wird. Pages
@@ -30,56 +30,73 @@ Passwort, mehr nicht. Beim Einrichten fragt Cloudflare nach einer Domain: **Das
 Das Dashboard läuft im Browser des Telefons. Es gibt keine App, die den Link
 abfängt.
 
-## Schritt 2 — An den Zweig `website` hängen
+## Schritt 2 — Ein Projekt, das nichts selbst baut
 
-Im Dashboard links auf **Workers & Pages** › **Create** › Reiter **Pages** ›
-**Connect to Git** › das Repository `SKKJbeer/PulseMeter` auswählen.
+**Workers & Pages** › **Create** › Reiter **Pages** › **Upload assets**.
+
+- Projektname: **`pulsemeter`** — exakt so. Der Ablauf sucht danach, und aus
+  dem Namen entsteht die Adresse `pulsemeter.pages.dev`.
+- Es will einmal Dateien sehen, um das Projekt anzulegen. Irgendetwas Kleines
+  genügt; der richtige Stand kommt eine Minute später von GitHub.
+
+**Nicht „Connect to Git".** Das sieht bequemer aus und war der erste Versuch —
+er ist mit `Could not detect a directory to deploy` gescheitert. Dahinter
+steckt kein Tippfehler, sondern eine Arbeitsteilung, die nicht trägt: Baut
+Cloudflare selbst, liegt der Fehler in einer Kiste, an die von hier aus niemand
+herankommt. Baut GitHub, steht der Befehl im Repository und lässt sich ändern.
+
+*(Ist das Projekt schon mit Git verbunden: Projekt › **Settings** › **Builds**
+› **Disconnect**. Das Projekt bleibt, nur der Bau geht weg.)*
+
+## Schritt 3 — Ein Token, das genau eine Sache darf
+
+[dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens)
+› **Create Token** › bei **Create Custom Token** auf **Get started**.
 
 | Feld | Eintrag |
 |---|---|
-| Project name | `pulsemeter` |
-| Production branch | **`website`** — nicht `main` |
-| Framework preset | **None** |
-| Build command | *leer lassen* |
-| Build output directory | `/` |
+| Token name | `PulseMeter Pages` |
+| Permissions | **Account** › **Cloudflare Pages** › **Edit** |
+| Account Resources | Include › dein Konto |
 
-**Save and Deploy.** Nach etwa einer Minute steht die Seite auf
-`https://pulsemeter.pages.dev`.
+Das ist die **einzige** Berechtigung, die es braucht. Nicht „Edit Cloudflare
+Workers" aus den Vorlagen — die darf viel mehr, und ein Token, das mehr darf
+als nötig, ist ein Token, das mehr kaputtmachen kann.
 
-### Warum `website` und nicht `main`
+**Create Token**, und den Wert **sofort kopieren** — Cloudflare zeigt ihn genau
+einmal.
 
-Im Zweig `website` liegen die fertigen Seiten in der Wurzel — kein
-`docs/website/` davor, keine Skripte, keine Dokumente. Und vor allem: Der Zweig
-entsteht **nur nach einer bestandenen Prüfung.** Der Ablauf „Website
-veröffentlichen" prüft erst `check-website.mjs` und schreibt ihn dann. Hinge
-Cloudflare an `main`, ginge auch online, was die Prüfung nicht durchgelassen
-hat — etwa eine Seite mit einer offenen Textlücke im Impressum.
+Die **Account ID** steht in der Adresszeile, sobald du im Dashboard bist:
+`dash.cloudflare.com/`**`<das ist sie>`**`/…`
 
-Der Zweig wird bei jeder Änderung überschrieben. Er ist keine Historie, sondern
-der jeweils geprüfte Stand.
+## Schritt 4 — Beides ins Repository
+
+[github.com/SKKJbeer/PulseMeter/settings/secrets/actions](https://github.com/SKKJbeer/PulseMeter/settings/secrets/actions)
+› **New repository secret**, zweimal:
+
+| Name | Wert |
+|---|---|
+| `CLOUDFLARE_API_TOKEN` | das Token aus Schritt 3 |
+| `CLOUDFLARE_ACCOUNT_ID` | die Kennung aus der Adresszeile |
+
+**Am Telefon nur im Browser**, nicht in der GitHub-App: Die hat überhaupt
+keinen Einstellungsbereich und schluckt den Verweis, ohne ihn zeigen zu können.
+Den Link lange gedrückt halten und „In Safari öffnen" wählen — oder die Adresse
+von Hand eintippen.
+
+Danach: **Actions › Website veröffentlichen › Run workflow.**
 
 ---
 
-## Der andere Weg: über ein Token
+## Der Zweig `website` — falls Git-Anbindung doch einmal sein soll
 
-Braucht man nicht, wenn Schritt 2 steht. Er ist hier, weil er ohne Cloudflares
-Zugriff aufs Repository auskommt — und weil der Ablauf ihn schon kann, sobald
-zwei Geheimnisse hinterlegt sind.
+Der Ablauf legt die geprüften Seiten zusätzlich in einen Zweig namens
+`website`, in die Wurzel, ohne die Anleitungen. Wer ein Pages-Projekt daran
+hängen will, nimmt: Production branch `website`, Framework preset **None**,
+Build command **leer**, Build output directory `/`.
 
-**Am Telefon geht das nicht:** Die GitHub-App hat überhaupt keinen
-Einstellungsbereich, und der Link dorthin läuft ins Leere. Es braucht einen
-Browser mit Desktop-Ansicht oder einen Rechner.
-
-1. Profil › **API Tokens** › **Create Custom Token**, Berechtigung
-   **Account** › **Cloudflare Pages** › **Edit**. Wert sofort kopieren,
-   Cloudflare zeigt ihn genau einmal.
-2. Die **Account ID** steht in der Adresszeile des Dashboards.
-3. Beides unter
-   [Settings › Secrets and variables › Actions](https://github.com/SKKJbeer/PulseMeter/settings/secrets/actions)
-   als `CLOUDFLARE_API_TOKEN` und `CLOUDFLARE_ACCOUNT_ID` hinterlegen.
-
-Sind sie da, lädt der Ablauf zusätzlich direkt hoch. Sind sie nicht da, macht
-er nichts weiter — der Zweig steht trotzdem, und Cloudflare holt ihn sich.
+Der Zweig ist auch ohne das nützlich: Dort steht schwarz auf weiß, was zuletzt
+die Prüfung bestanden hat.
 
 ---
 

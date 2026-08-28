@@ -9,6 +9,40 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.95.3 — 2026-08-28
+
+Cloudflares eigener Bau ist gescheitert: `Could not detect a directory to
+deploy`. Der Befehl bekam nie gesagt, welchen Ordner er hochladen soll.
+
+### Behoben
+- **Zwei Wege, die dasselbe tun sollten, taten es nicht.** Der Zweigweg nahm
+  `EINTRAGEN.md` und `CLOUDFLARE.md` heraus — die Anschrift des Gründers und
+  die Einrichtungsanleitung —, der Upload über wrangler hätte beide **ins Netz
+  gestellt**. Aufgefallen beim Nachsehen, nicht durch einen Fehlschlag: Der
+  Upload lief nie, weil die Geheimnisse fehlten.
+
+  `scripts/website-fertig.sh` ist jetzt die eine Stelle, an der entschieden
+  wird, was ausgeliefert wird. Beide Wege rufen sie auf, und sie bricht ab,
+  wenn im Auslieferordner noch eine Markdown-Datei liegt.
+- Der Upload nimmt den Auslieferordner statt `docs/website/`, setzt
+  `--branch=main` (sonst wäre es eine Vorschau statt der Produktionsfassung)
+  und `--commit-dirty=true`.
+
+### Geändert
+- **Die Anleitung führt jetzt über ein Token, nicht über Cloudflares Bau.**
+  Nicht wegen des Tippfehlers, sondern wegen der Arbeitsteilung: Baut
+  Cloudflare selbst, liegt der Fehler in einer Kiste, an die von hier aus
+  niemand herankommt. Baut GitHub, steht der Befehl im Repository und lässt
+  sich ändern. Vom Gründer so verlangt: „ich will, dass du alles für mich
+  automatisierst."
+- Welches Token: **Account › Cloudflare Pages › Edit**, sonst nichts. Nicht die
+  Vorlage „Edit Cloudflare Workers" — die darf viel mehr, und ein Token, das
+  mehr darf als nötig, kann mehr kaputtmachen.
+- Der Zweig `website` bleibt und steht jetzt im Repository. Er ist der zweite
+  Weg, und er zeigt schwarz auf weiß, was zuletzt die Prüfung bestanden hat.
+
+---
+
 ## 0.95.2 — 2026-08-28
 
 Vom Gerät: „der Link geht nicht, bin am Handy."

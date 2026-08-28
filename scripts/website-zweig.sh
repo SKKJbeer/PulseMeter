@@ -39,20 +39,11 @@ fi
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 
-cp -R "$QUELLE"/. "$WORK"/
-
-# Was Cloudflare nicht ausliefern soll: die Anleitungen für den Gründer. Sie
-# gehören ins Repository, nicht auf eine öffentliche Adresse.
-rm -f "$WORK"/EINTRAGEN.md "$WORK"/CLOUDFLARE.md
-
-# **Kein Verzeichnis auflisten.** Cloudflare Pages liefert `/bilder/` sonst als
-# Liste aus, und damit stünde die Dateiablage offen im Netz.
-cat > "$WORK/_headers" <<'ENDE'
-/*
-  X-Content-Type-Options: nosniff
-  Referrer-Policy: strict-origin-when-cross-origin
-  X-Frame-Options: SAMEORIGIN
-ENDE
+# **Ein Ort, an dem entschieden wird, was ausgeliefert wird.** Vorher stand die
+# Auswahl hier und beim Upload über wrangler getrennt — und die beiden Wege
+# taten nicht dasselbe: Der eine entfernte die Anleitungen des Gründers, der
+# andere hätte sie mitgeschickt.
+scripts/website-fertig.sh "$WORK"
 
 cd "$WORK"
 git init -q -b "$BRANCH"

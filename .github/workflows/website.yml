@@ -85,13 +85,25 @@ jobs:
             echo "bereit=ja" >> "$GITHUB_OUTPUT"
           fi
 
+      # Hochgeladen wird der **Auslieferordner**, nicht `docs/website/`. Dort
+      # liegen zwei Anleitungen, die niemanden außer dem Gründer etwas angehen;
+      # `website-fertig.sh` nimmt sie heraus — dasselbe Skript, das auch den
+      # Zweig füllt.
+      - name: Auslieferordner bauen
+        if: steps.zugang.outputs.bereit == 'ja'
+        run: scripts/website-fertig.sh build/website
+
       - name: Zu Cloudflare Pages hochladen
         if: steps.zugang.outputs.bereit == 'ja'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy docs/website --project-name=pulsemeter --branch=main
+          # `--branch=main` macht daraus die **Produktionsfassung**, nicht eine
+          # Vorschau. `--commit-dirty` schweigt die Warnung, dass der
+          # Arbeitsordner Dateien enthält, die nicht im Repository stehen —
+          # das ist hier der frisch gebaute Ordner selbst.
+          command: pages deploy build/website --project-name=pulsemeter --branch=main --commit-dirty=true
 
       - name: Was jetzt dasteht
         if: steps.zugang.outputs.bereit == 'ja'
