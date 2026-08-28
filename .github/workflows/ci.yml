@@ -63,9 +63,7 @@ jobs:
         with:
           node-version: "22"
       - name: Chromium
-        run: |
-          npm install --no-save playwright@1.62.1
-          npx playwright install --with-deps chromium
+        run: scripts/chromium-holen.sh
       - name: Klick-Dummy prüfen
         run: node scripts/check-prototype.mjs
 

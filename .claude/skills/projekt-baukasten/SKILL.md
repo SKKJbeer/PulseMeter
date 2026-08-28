@@ -628,6 +628,23 @@ Oberfläche in die Domäne zu tragen. Sie trug nicht — `Identifiable` steht in
 Standardbibliothek, nicht in SwiftUI. **Eine Begründung, die im Code steht, ist
 deshalb noch nicht geprüft.**
 
+### Dieselbe Sache an zwei Orten läuft auseinander — jedes Mal
+
+Drei Fälle an einem Nachmittag, alle mit derselben Form:
+
+| Was doppelt stand | Was passierte |
+|---|---|
+| Welche Dateien ausgeliefert werden | Ein Weg entfernte die privaten Anleitungen, der andere hätte sie **ins Netz gestellt** |
+| Die Version des Prüfbrowsers | Drei Orte, zwei Versionen, und einer installierte nur den Browser ohne das Paket — Lauf rot mit einer Meldung, die nach einem Fehler in der Prüfung aussah |
+| Ein Schalter „Blatt offen" plus die Merkstelle, **was** darauf steht | Das Blatt ging mit dem Inhalt von vorher auf |
+
+> Wo etwas zweimal steht, steht es früher oder später verschieden. Der Ausweg
+> ist immer derselbe: **ein Ort**, an dem es steht, und alle rufen ihn auf.
+
+Erkennungsmerkmal beim Schreiben: Wenn zwei Stellen denselben Satz enthalten —
+eine Versionsnummer, eine Dateiliste, einen Pfad —, ist das keine Wiederholung,
+sondern eine Verabredung ohne Vertrag.
+
 ### Ein zweiter Versuch, der über den ersten hinweggeht, meldet das Falsche
 
 Die Prüfhilfe tippte einen Knopf, wartete auf einen Anker und tippte bei

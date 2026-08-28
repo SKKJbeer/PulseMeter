@@ -9,6 +9,38 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.95.5 — 2026-08-28
+
+Der erste Lauf der Website-Veröffentlichung fiel nach 39 Sekunden mit
+`Cannot find package 'playwright'`. Das sah nach einem Fehler in der Prüfung
+aus und war einer im Aufruf.
+
+### Behoben
+- **Die Version des Prüfbrowsers stand an drei Orten.** `ci.yml` und
+  `pruefen.sh` sagten 1.62.1, der neue Ablauf 1.47.0 — und er installierte
+  obendrein nur den Browser, nicht das Paket. `scripts/chromium-holen.sh` ist
+  jetzt die eine Stelle; alle drei rufen sie auf.
+
+  Dritter Fall derselben Form an einem Nachmittag: Was zweimal dasteht, steht
+  früher oder später verschieden. Im Baukasten steht das jetzt als eigener
+  Abschnitt, mit allen drei Fällen nebeneinander.
+- Der Eintrag zu 0.95.4 fehlte hier. Nachgetragen.
+
+---
+
+## 0.95.4 — 2026-08-28
+
+### Geändert
+- **Der Hoster in der Datenschutzerklärung steht ohne Klammern.** Er war
+  geplant, aber nicht bestätigt, und was dort steht, ist ein Rechtstext.
+  Bestätigt hat der Gründer ihn nicht mit einem Wort, sondern mit einer
+  Handlung: Konto bei Cloudflare, Pages-Projekt, Token ausgestellt und im
+  Repository hinterlegt.
+- Damit ist kein `PLATZHALTER` mehr im Quelltext der Website — 394 Prüfungen
+  statt 393, und der Veröffentlichungsablauf lässt die Seite durch.
+
+---
+
 ## 0.95.3 — 2026-08-28
 
 Cloudflares eigener Bau ist gescheitert: `Could not detect a directory to

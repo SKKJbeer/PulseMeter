@@ -158,10 +158,10 @@ if [ "$SCOPE" != "bilder" ] && [ "$SCOPE" != "app" ]; then
   if [ ! -d node_modules/playwright ]; then
     step "Chromium für den Entwurf einrichten"
     note "Einmalig, danach nie wieder."
-    npm install --no-save playwright@1.62.1 >/dev/null 2>&1
-    # In einer vorbereiteten Umgebung liegt Chromium schon da; dann spart der
-    # Schalter den Nachladeversuch, der dort ohnehin geblockt wäre.
-    [ -n "${PULSE_CHROMIUM:-}" ] || npx playwright install chromium >/dev/null 2>&1
+    # Dasselbe Skript wie in der CI. Die Version stand hier und dort getrennt,
+    # und in einem dritten Ablauf stand eine andere — das hat einen Lauf
+    # gekostet.
+    scripts/chromium-holen.sh >/dev/null 2>&1
   fi
   # Nebenher: Der Entwurf braucht vierzehn Sekunden, Xcode braucht länger.
   # Beides gleichzeitig kostet nichts und spart die kürzere der beiden Zeiten.

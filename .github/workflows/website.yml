@@ -51,8 +51,12 @@ jobs:
         with:
           node-version: "20"
 
+      # Dasselbe Skript wie in `ci.yml` und `pruefen.sh`. Hier stand einmal ein
+      # eigener Aufruf mit einer anderen Version — er installierte den Browser
+      # ohne das Paket, und der Lauf fiel mit „Cannot find package
+      # 'playwright'".
       - name: Chromium
-        run: npx --yes playwright@1.47.0 install --with-deps chromium
+        run: scripts/chromium-holen.sh
 
       # **Erst prüfen, dann veröffentlichen.** Eine Seite mit einer offenen
       # Textlücke im Impressum ist schlimmer als keine Seite.
