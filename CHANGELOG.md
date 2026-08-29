@@ -9,6 +9,56 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.105.0 — 2026-08-29
+
+**Der Baukasten beschrieb das Gerüst und keine einzige Prüfung.**
+
+Nachgesehen auf die Frage des Gründers, ob das Wissen für eine zweite App
+bereitliegt. Antwort: die Lehren ja, die Werkzeuge nein.
+
+- Die Tabelle „Die Teile" nannte `pruefen.sh`, `mac-start.sh`, `melden.sh` und
+  die Abläufe — **keine der elf Prüfungen**, die darin laufen. Dabei ist jede
+  davon aus einem Schaden entstanden und trägt ihren Anlass im eigenen Kopf.
+- `scripts/neues-projekt.sh` kopierte Skills, Melder und Push-Haken. In das
+  erzeugte `pruefen.sh` schrieb es `check-strings.py` als **auskommentiertes
+  Beispiel**. Ein neues Vorhaben fing bei null an.
+
+### Hinzugefügt
+
+- **Die Tabelle „Die Prüfungen"** im Baukasten: alle elf mit dem, was sie
+  fangen, was es ohne sie gekostet hat, und wie übertragbar jede ist.
+- `neues-projekt.sh` bringt die vier ohne Projektbezug jetzt mit
+  (`check-strings`, `check-namen`, `check-sicherheit`, `check-trefferflaechen`)
+  und trägt sie in das erzeugte `pruefen.sh` ein. `check-versprechen.py` kommt
+  als Vorlage nach `scripts/vorlagen/`.
+- Zwei Lehren von heute: **jedes Store-Feld nennt seine Zeichengrenze in der
+  eigenen Überschrift** und wird von dort geprüft, und **eine Gegenprobe wird
+  zurückgenommen, nicht zurückgesetzt** — `git checkout <datei>` nimmt nicht
+  die letzte Änderung zurück, sondern alle. Mir sind dabei heute drei
+  ungespeicherte Korrekturen abhandengekommen.
+
+### Behoben
+
+Zwei Fehler, gefunden beim Ausprobieren der Übertragung selbst:
+
+- **`neues-projekt.sh` legte den Ordner im Quell-Repo an.** Ein relatives Ziel
+  löste sich gegen das Quellprojekt auf, weil das Skript vorher dorthin
+  wechselt. Wer im Heimatverzeichnis `neues-projekt.sh zweitapp` tippte, bekam
+  die zweite App **innerhalb** der ersten, mit eigenem `git init` — ein Depot
+  im Depot. Jetzt entsteht sie beim Aufrufer, und ein Ziel im Quellprojekt
+  wird abgelehnt.
+- **`check-sicherheit.sh` hätte in einem neuen Projekt neun grüne Haken über
+  ungelesenen Code gemeldet.** Die Ordnerliste ist projektspezifisch, `grep -r`
+  über nicht existierende Pfade findet nichts, und nichts ist kein Treffer. Sie
+  bricht jetzt ab und sagt, was zu tun ist. Der erste Prüflauf eines neuen
+  Projekts ist deshalb rot — mit Absicht, und die Abschlussliste sagt es vorher.
+
+_231 Tests in PulseCore, alle grün. Klick-Dummy und Website geprüft. Die
+Übertragung selbst ausprobiert: ein Projekt aufgesetzt, den erzeugten Prüflauf
+gestartet, beide neuen Wächter gegengeprüft. Kein App-Code berührt._
+
+---
+
 ## 0.104.2 — 2026-08-29
 
 **Die App-Store-Beschreibung hatte dieselben drei falschen Zusagen wie die

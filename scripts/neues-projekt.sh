@@ -31,6 +31,19 @@
 #   --trocken     nur zeigen, was geschähe
 #   --ohne-git    im Zielordner kein `git init` ausführen
 set -uo pipefail
+
+# **Der Ordner entsteht dort, wo der Aufrufer steht — nicht im Quell-Repo.**
+#
+# Hier stand nur `cd "$(dirname "$0")/.."`, und damit lösten sich relative
+# Zielangaben gegen das Quellprojekt auf. Wer im Heimatverzeichnis
+# `neues-projekt.sh zweitapp` tippte, bekam die zweite App **innerhalb** der
+# ersten — mit eigenem `git init`, also einem Depot im Depot. Aufgefallen beim
+# Ausprobieren der Übertragung, nicht in einem Lauf: Das Skript meldete für
+# jede Datei einen grünen Haken, und der Ordner lag nur woanders.
+#
+# Also wird das Verzeichnis des Aufrufers festgehalten, **bevor** irgendetwas
+# wechselt, und ein relatives Ziel dagegen aufgelöst.
+VONWO="$PWD"
 cd "$(dirname "$0")/.."
 QUELLE="$PWD"
 
@@ -196,6 +209,23 @@ fi
 [ -n "$NAME" ] || NAME="$(basename "$ZIEL")"
 KLEIN="$(printf '%s' "$NAME" | tr '[:upper:]' '[:lower:]')"
 
+# Ein relatives Ziel gehört dorthin, wo der Aufrufer steht. Ein absolutes
+# bleibt, wie es ist.
+case "$ZIEL" in
+  /*) ;;
+  *)  ZIEL="$VONWO/$ZIEL" ;;
+esac
+
+# Und niemals in das Quellprojekt hinein: Ein Depot im Depot ist die Art
+# Fehler, die man erst drei Commits später bemerkt.
+case "$ZIEL/" in
+  "$QUELLE"/*)
+    printf "%s✗ %s liegt innerhalb von %s.%s\n" "$YELLOW" "$ZIEL" "$QUELLE" "$RESET"
+    printf "  Ein neues Vorhaben gehört daneben, nicht hinein — sonst entsteht\n"
+    printf "  ein Depot im Depot. Bitte einen Ordner ausserhalb wählen.\n"
+    exit 2 ;;
+esac
+
 # ------------------------------------------------------------ Neues Projekt
 
 titel "Neues Projekt: $NAME in $ZIEL"
@@ -231,6 +261,29 @@ titel "Die Teile, die unverändert übertragbar sind"
 kopiere "scripts/melden.sh"        "scripts/melden.sh"
 kopiere "scripts/publish-shots.sh" "scripts/publish-shots.sh"
 kopiere ".githooks/pre-push"       ".githooks/pre-push"
+
+# **Die Prüfungen ohne Projektbezug — der eigentliche Wert dieser Übertragung.**
+#
+# Bis heute kopierte dieses Skript das Gerüst und keine einzige Prüfung; in das
+# erzeugte `pruefen.sh` schrieb es `check-strings.py` als **auskommentiertes
+# Beispiel**. Ein neues Vorhaben fing damit bei null an und bezahlte dieselben
+# Lehrgelder ein zweites Mal.
+#
+# Diese vier hängen an nichts, was diesem Projekt gehört. Was jede von ihnen
+# einmal gekostet hat, steht in der Tabelle im Baukasten und im Kopf jeder
+# Datei — vor dem Gebrauch einmal lesen.
+titel "Die Prüfungen, die sofort tragen"
+kopiere "scripts/check-strings.py"        "scripts/check-strings.py"
+kopiere "scripts/check-namen.py"          "scripts/check-namen.py"
+kopiere "scripts/check-sicherheit.sh"     "scripts/check-sicherheit.sh"
+kopiere "scripts/check-trefferflaechen.py" "scripts/check-trefferflaechen.py"
+
+# **`check-versprechen.py` kommt als Vorlage mit, nicht als fertige Prüfung.**
+# Sie liest eine bestimmte Swift-Datei und bestimmte HTML-Seiten; in einem
+# anderen Vorhaben heißen beide anders. Der Wert liegt im Muster: Ein Preis
+# steht immer an zwei Orten, und wenn sich der zweite nicht abschaffen lässt,
+# tritt eine Prüfung an die Stelle der einen Quelle.
+kopiere "scripts/check-versprechen.py" "scripts/vorlagen/check-versprechen.py"
 
 # Die beiden Skripte tragen an je einer Stelle den Namen dieses Projekts — als
 # Autor der Commits in den Nebenzweigen. Der wandert mit.
@@ -299,8 +352,13 @@ run() {
 }
 
 step "Sofortprüfungen"
-# HIER EINTRAGEN: was in Sekunden bricht — Syntax, Zeichenketten, Einheitstests.
-# run "Zeichenketten" scripts/check-strings.py
+# Diese vier kamen mit und laufen sofort. Zusammen unter fünf Sekunden.
+# Was jede einmal gekostet hat, steht in ihrem eigenen Kopf.
+run "Zeichenketten" python3 scripts/check-strings.py || true
+run "Unbekannte Namen" python3 scripts/check-namen.py || true
+run "Angriffsfläche" scripts/check-sicherheit.sh || true
+run "Trefferflächen" python3 scripts/check-trefferflaechen.py || true
+# HIER EINTRAGEN: was sonst noch in Sekunden bricht — Syntax, Einheitstests.
 
 if [ "\$SCOPE" = "alles" ]; then
   step "Das Teure"
@@ -475,10 +533,19 @@ cat <<ENDE
 
   Was jetzt noch von Hand kommt — und nur das:
 
-    1. In scripts/pruefen.sh die Schritte eintragen. Nach Kosten sortiert.
-    2. In CLAUDE.md die Produktprinzipien schreiben.
-    3. Bei einem iOS-Projekt: Abschnitt 4 und 5 des Baukastens durchgehen,
+    1. In scripts/check-sicherheit.sh die Liste QUELLEN auf die Ordner dieses
+       Projekts setzen. **Der erste Prüflauf ist genau deswegen rot** — die
+       Prüfung sagt lieber „ich sehe nichts" als grün über ungelesenen Code.
+    2. In scripts/pruefen.sh die weiteren Schritte eintragen. Nach Kosten
+       sortiert: was in einer Sekunde brechen kann, zuerst.
+    3. In CLAUDE.md die Produktprinzipien schreiben.
+    4. Bei einem iOS-Projekt: Abschnitt 4 und 5 des Baukastens durchgehen,
        **bevor** der erste Bau läuft. Die Bundle-ID zuerst.
+
+  Vier Prüfungen liegen schon in scripts/ und laufen sofort. Was jede von
+  ihnen einmal gekostet hat, steht in ihrem eigenen Kopf und in der Tabelle
+  „Die Prüfungen" im Baukasten. In scripts/vorlagen/ liegt eine fünfte als
+  Muster: Sie hält Preise auf einer Website gegen den Quelltext.
 
   Der Baukasten liegt in $ZIEL/.claude/skills/projekt-baukasten/SKILL.md
   und gilt dort auch in einer Cloud-Sitzung, sobald er committet ist.

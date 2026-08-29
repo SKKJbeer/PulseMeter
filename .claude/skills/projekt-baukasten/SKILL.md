@@ -177,6 +177,40 @@ Erinnerung warten, nie mit `sleep` blockieren.
 | `.claude/settings.json` | die Befehle des Projekts ohne Rückfrage, `sudo` gesperrt | Liste anpassen |
 | `docs/06-uebergabe.md` | der laufende Zustand für eine Sitzung, die kalt startet | Vorlage, wird **überschrieben**, nicht fortgeschrieben |
 
+### Die Prüfungen — und was jede gekostet hat, bevor es sie gab
+
+**Die Tabelle oben beschreibt das Gerüst. Diese hier beschreibt den Inhalt, und
+der ist das eigentliche Erbe.** Jede dieser Prüfungen ist aus einem Schaden
+entstanden, nicht aus einer Vorstellung von Gründlichkeit. Wer sie in ein neues
+Vorhaben mitnimmt, kauft elf bezahlte Lehrgelder für eine Kopieroperation.
+
+Jede Datei trägt ihren Anlass im eigenen Kopf — vor dem Übernehmen einmal
+lesen; dort steht, ob sie für das neue Vorhaben überhaupt zutrifft.
+
+| Prüfung | Was sie fängt | Was es ohne sie gekostet hat | Übertragbar? |
+|---|---|---|---|
+| `check-strings.py` | ein `„` in einem Swift-Literal, das die Zeichenkette zerreißt; ungültiges Python, YAML und Shell in Arbeitsabläufen; Store-Felder über ihrer Zeichengrenze | ein macOS-Lauf von fünfzehn Minuten für ein einzelnes Zeichen; zweimal ein TestFlight-Lauf an kaputter Shell; eine Beschreibung mit 4152 von 4000 Zeichen, die Apple erst am Ende einer Einreichung abgelehnt hätte | **unverändert**, sobald Swift und ein Store im Spiel sind |
+| `check-namen.py` | Namen, die kein Import und keine Zuweisung kennt (pyflakes) | Bau 24 lag schon in TestFlight, als ein fehlendes `import re` den Schritt danach umbrachte — die Testhinweise fielen aus, die Nummer war verbraucht | **unverändert**, überall wo Python-Skripte laufen |
+| `check-sicherheit.sh` | Netzverkehr, Protokollausgabe, Analyse-Bausteine, fremde Pakete, öffentliche Cloud-Datenbank, ungenutzte Berechtigungen, widersprüchliche Privacy-Manifeste | nichts — sie war früh da. Genau das ist der Punkt: Ein Datenschutzversprechen hält so lange, wie niemand an einem Dienstagnachmittag eine bequeme Zeile einbaut | **Liste anpassen**, Aufbau unverändert |
+| `check-versprechen.py` | Beträge und Anzahlen auf der Website gegen die eine Quelle im Quelltext; Markup gegen sichtbaren Text | zwei Wochen lang bot eine öffentliche Seite ein Feature gratis an, das 0,99 € kostet — während die Preisseite daneben stimmte | **Muster übertragbar**, Pfade projektspezifisch |
+| `check-trefferflaechen.py` | Knöpfe ohne `contentShape`, die nur dort reagieren, wo sie zeichnen | ein Fehlerbericht vom Gerät: zwei Drittel einer Zeile reagierten nicht, und wer dort tippt, tippt ein zweites und drittes Mal | **unverändert** bei SwiftUI |
+| `check-aktualisierung.py` | eine Ansicht, die eine Änderung an den Daten nicht mitbekommt | ein gelöschter Eintrag blieb auf einem anderen Schirm stehen — vom Gerät gemeldet, nicht von einer Prüfung | **unverändert** bei SwiftUI mit geteiltem Bestand |
+| `check-prototype.mjs` | Hauptflüsse, JS-Fehler, horizontaler Überlauf, Hell **und** Dunkel im Klick-Dummy | der Entwurf ist der produktivste Fehlerfinder des Projekts und wurde geprüft, wenn jemand daran dachte | **Muster übertragbar**, wenn es einen Klick-Dummy gibt |
+| `check-nichtfunktional.mjs` | Trefferflächen, Kontrast nach AA, Zeiten, und die Produktprinzipien als **gezählte** Bedingung | „drei Berührungen" und „fünf Sekunden" standen als Zusage im Strategiepapier und wurden nie gemessen | **Aufbau übertragbar**, Prinzipien austauschen |
+| `check-website.mjs` | Aufbau, Verweise ins Leere, Überlauf von 320 bis 1280 Pixel, fremde Anfragen — und den **Ton**: Gedankenstriche je 250 Wörter, verbotene Werbewörter | eine Regel, die niemand zählt, wird nicht befolgt: 25 Gedankenstriche auf 1150 Wörter, obwohl die Regel seit Wochen dastand | **unverändert**, wenn eine Website dazugehört |
+| `check-buendel.mjs` | dasselbe für die zu einer Datei gepackte Fassung | ein Bündel zeigte im Dunkeln drei leere Rahmen, weil nur `src` ersetzt wurde und nicht `srcset` | nur mit Bündel |
+| `check-entwuerfe.mjs` | Vorschlagsseiten, die beim Antippen nichts tun | ein Entwurf sieht auf einem Bild fertig aus, auch wenn nichts dahinterliegt | nur mit Entwurfsseiten |
+
+**Die Reihenfolge in `pruefen.sh` ist nach Kosten sortiert, nicht nach
+Wichtigkeit.** Die ersten sechs zusammen brauchen unter fünf Sekunden. Was in
+einer Sekunde brechen kann, soll auch in einer Sekunde brechen — und nicht nach
+sechzehn Minuten auf einem gemieteten Mac.
+
+`scripts/neues-projekt.sh <ordner>` bringt die vier ohne Projektbezug
+(`check-strings.py`, `check-namen.py`, `check-sicherheit.sh`,
+`check-trefferflaechen.py`) direkt mit und trägt sie in das erzeugte
+`pruefen.sh` ein. Die übrigen sind Vorlagen: hinsehen, anpassen, übernehmen.
+
 ### In zehn Schritten übertragen
 
 1. `scripts/`, `.githooks/`, `.claude/` und `.github/workflows/ci.yml` kopieren.
@@ -527,6 +561,29 @@ Nachmessen nach zehn Minuten hätte „geht immer noch nicht" ergeben und die
 richtige Änderung fälschlich verworfen. Wer etwas an der Storefront ändert,
 misst am nächsten Tag nach — oder wartet mindestens ein paar Stunden, bevor er
 weitersucht.
+
+### Jedes Store-Feld hat eine Zeichengrenze, und Apple prüft sie zuletzt
+
+Name 30, Untertitel 30, Werbetext 170, Schlagworte 100, Beschreibung 4000. Wer
+darüber liegt, erfährt es **am Ende einer Einreichung** — nicht beim Schreiben,
+nicht beim Übertragen, sondern nachdem alles andere schon stand.
+
+Zwei Fallen darin, beide erlebt:
+
+- **Die Schlagworte wurden stillschweigend abgeschnitten.** Die Liste kam auf
+  101 Zeichen, und App Store Connect hat sie beim Einfügen am Ende gekürzt.
+  Kein Fehler, keine Warnung, ein Wort weniger.
+- **Eine von Hand gepflegte Zahl im Dokument war beim nächsten Satz falsch.**
+  Unter der Beschreibung stand „3844 Zeichen". Nach einer Korrektur waren es
+  4152, und die Zahl stand unverändert da.
+
+> **Schreib die Grenze in die Überschrift des Feldes und lass sie von dort
+> lesen.** „Beschreibung (max. 4000 Zeichen)" ist dann nicht Zierde, sondern
+> die Prüfvorschrift: Ein Ausdruck zieht die Zahl heraus und misst den Block
+> darunter. Kein zweiter Ort, keine gepflegte Zahl, keine Abweichung möglich.
+
+Das ist derselbe Handgriff wie bei den Preisen: Wo sich der zweite Ort nicht
+abschaffen lässt, wird er gemessen statt gepflegt.
 
 ### Die Währung kommt vom Gerät, nicht vom Entwickler
 
@@ -954,6 +1011,26 @@ Zwei Regeln, die dabei den Unterschied machen:
   dauerhaft frei, weil die Sperre danach fragte, *ob Tarife vorhanden sind*,
   statt *ob gekauft wurde*. Wer eine Grenze prüft, prüft sie am Kauf und nie
   an einem Nebenprodukt davon.
+
+### Eine Gegenprobe wird zurückgenommen, nicht zurückgesetzt
+
+Eine neue Prüfung ist erst dann eine, wenn sie mit dem alten Verhalten **rot**
+wird. Also wird das alte Verhalten kurz wiederhergestellt, der Lauf angesehen
+und der Eingriff rückgängig gemacht. Der letzte Schritt ist die Falle.
+
+Ich habe dafür `git checkout <datei>` benutzt. Die Datei enthielt neben den
+zwei Zeilen der Gegenprobe **drei echte, noch nicht committete Korrekturen**,
+und die waren damit weg. Gemerkt habe ich es nur, weil die Umgebung mir den
+neuen Dateiinhalt vorlegte.
+
+> **`git checkout <datei>` nimmt nicht die letzte Änderung zurück, sondern
+> alle.** Für eine Gegenprobe gilt deshalb: entweder vorher committen und
+> danach den einen Eingriff mit derselben Ersetzung rückwärts aufheben, oder
+> die Gegenprobe an einer **Kopie** durchführen und die Quelle nie anfassen.
+
+Der billigste Weg ist die gezielte Umkehrung: Wer mit `sed 's/A/B/'` verändert,
+stellt mit `sed 's/B/A/'` wieder her. Das trifft genau eine Stelle, und wenn es
+danebengeht, sagt es der Vergleich.
 
 ### Ein zweiter Versuch, der über den ersten hinweggeht, meldet das Falsche
 

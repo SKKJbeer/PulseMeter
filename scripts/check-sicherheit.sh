@@ -15,6 +15,28 @@ GRUEN=$'\033[32m'; ROT=$'\033[31m'; AUS=$'\033[0m'; MATT=$'\033[2m'
 FEHLER=0
 QUELLEN=(App Widget Shared Packages/PulseCore/Sources Packages/PulseData/Sources Packages/PulseUI/Sources)
 
+# **Die Liste oben ist projektspezifisch, und das ist die Gefahr.**
+#
+# Wird diese Datei in ein anderes Vorhaben kopiert — wozu sie ausdrücklich
+# gedacht ist —, heißen die Ordner dort anders. `grep -r` über nicht
+# existierende Pfade findet nichts, nichts ist kein Treffer, und die Prüfung
+# meldet neun grüne Haken über einen Quelltext, den sie nie gesehen hat.
+#
+# Das ist die teuerste Fehlerart dieses Projekts in ihrer stillsten Form: eine
+# Prüfung, die sich selbst abschaltet, meldet für immer grün. Also wird zuerst
+# geprüft, ob es überhaupt etwas zu prüfen gibt.
+VORHANDEN=()
+for ordner in "${QUELLEN[@]}"; do
+  [ -d "$ordner" ] && VORHANDEN+=("$ordner")
+done
+if [ "${#VORHANDEN[@]}" -eq 0 ]; then
+  printf "%s✗ Keiner der Quellordner existiert: %s%s\n" "$ROT" "${QUELLEN[*]}" "$AUS"
+  printf "%s  Beim Übernehmen in ein anderes Projekt QUELLEN anpassen — sonst%s\n" "$MATT" "$AUS"
+  printf "%s  meldet diese Prüfung grün, ohne eine Zeile gelesen zu haben.%s\n" "$MATT" "$AUS"
+  exit 1
+fi
+QUELLEN=("${VORHANDEN[@]}")
+
 pruefe() {           # pruefe "Name" "Muster" [zusätzliche grep-Schalter]
   local name="$1" muster="$2"; shift 2
   local treffer
