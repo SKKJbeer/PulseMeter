@@ -9,6 +9,47 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.104.2 — 2026-08-29
+
+**Die App-Store-Beschreibung hatte dieselben drei falschen Zusagen wie die
+Website — und lag schon bei Apple.**
+
+Der Audit vom 29. August hat die Website Satz für Satz gegen den Quelltext
+gehalten. Die Store-Texte standen nicht auf dieser Liste, obwohl sie aus
+denselben Behauptungen gebaut sind und obwohl sie der Text sind, den ein Käufer
+liest, bevor er zahlt.
+
+### Behoben
+
+- „bei der Heizung sogar Heizperiode gegen Heizperiode" — gibt es nicht. Steht
+  jetzt als das da, was es gibt: der Vergleich auf demselben Ausschnitt, und
+  der Abrechnungsstichtag für Bericht und Vorschau.
+- „Monatlich, vierteljährlich oder wann du willst" — es sind vier feste
+  Rhythmen. Dafür steht dort jetzt das Feld auf dem Sperrbildschirm, das es
+  seit 0.104.0 wirklich gibt.
+- „Du entfernst die App, und die Daten sind weg" — gilt nicht für die
+  iCloud-Kopie. Derselbe Satz wie auf der Startseite, dieselbe Korrektur.
+
+### Und die Beschreibung war zu lang
+
+Nach der Korrektur stand sie bei **4152 Zeichen**. Apple erlaubt 4000 und
+lehnt darüber ab — am Ende einer Einreichung, nicht davor. Gekürzt auf 3966.
+
+Darunter stand seit Monaten eine von Hand gepflegte Zahl („3844 Zeichen"), die
+mit dem nächsten Satz falsch geworden wäre. Sie ist weg. Stattdessen zählt
+`check-strings.py` mit: Jedes Feld trägt seine Grenze in der eigenen
+Überschrift („max. 4000 Zeichen", „max. 30 Zeichen"), und die Prüfung liest sie
+von dort und misst den Block darunter. Gegengeprüft mit 200 Zeichen zu viel —
+sie schlägt an.
+
+_231 Tests in PulseCore, alle grün. Klick-Dummy, Website und Zeichenketten
+geprüft. Kein App-Code berührt; diese Version endet in `main`._
+
+_**Die Texte liegen schon bei Apple** und werden mit dem Ablauf „Einreichung"
+nachgezogen._
+
+---
+
 ## 0.104.1 — 2026-08-29
 
 **Bau 25 steht in TestFlight, und der Starttag ist aufgeschrieben.**

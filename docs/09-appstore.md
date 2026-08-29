@@ -1,6 +1,6 @@
 # 09 – Material für den App Store
 
-Stand: 2026-08-16, Version 0.53.0
+Stand: 2026-08-29, Version 0.104.2
 
 Alles, was App Store Connect zur Einreichung verlangt, fertig zum Einfügen.
 Was hier steht, ist geprüft gegen das, was die App **heute** kann — nicht
@@ -113,8 +113,11 @@ geschätzt da. Diese App rechnet nie still.
 VERLAUF, DER ETWAS ZEIGT
 
 Monat, Quartal oder Jahr, als Diagramm oder als Tabelle, immer neben demselben
-Zeitraum des Vorjahres. Mai gegen Mai, bei der Heizung sogar Heizperiode gegen
-Heizperiode. Klingt selbstverständlich. Ist es nicht.
+Zeitraum des Vorjahres. Mai gegen Mai — und wenn der Mai noch läuft, gegen
+denselben Ausschnitt. Klingt selbstverständlich. Ist es nicht.
+
+Trag den Stichtag deines Versorgers ein, und Bericht und Vorschau rechnen nach
+deinem Abrechnungsjahr. Bei Gas fängt das oft im Oktober an.
 
 Tipp einen Monat an, und du siehst, woher der Unterschied kommt.
 
@@ -142,9 +145,9 @@ AUCH DIE FÄLLE, DIE ANDERE APPS NICHT KENNEN
 
 DAMIT DU NICHT DARAN DENKEN MUSST
 
-Monatlich, vierteljährlich oder wann du willst: Die App meldet sich, wenn eine
-Ablesung fällig ist. Ein Widget auf dem Startbildschirm zeigt, ob etwas
-ansteht.
+Wöchentlich, monatlich, vierteljährlich oder jährlich, je Zähler: Die App
+meldet sich abends, wenn eine Ablesung fällig ist. Und ein Feld auf dem
+Sperrbildschirm zeigt es auch ohne Mitteilung.
 
 
 WIR WISSEN NICHT, WIE VIEL STROM DU VERBRAUCHST
@@ -155,13 +158,11 @@ und, wenn du magst, in deiner eigenen iCloud. Auf unseren Servern liegen sie
 nicht — wir haben keine. Deshalb steht über dieser App im Store „Keine Daten
 erfasst", und nicht die lange Liste, die du sonst kennst.
 
-Du entfernst die App, und die Daten sind weg. Es gibt keine Kopie, die
-irgendwer behalten könnte.
+Du entfernst die App, und die Daten auf dem Gerät sind weg. Nutzt du iCloud,
+löschst du die Kopie dort in den Einstellungen mit. Bei uns gibt es keine.
 
 Und du kommst jederzeit wieder heraus. Der Export als Tabelle ist kostenlos und
-bleibt es, auch wenn du nie einen Cent ausgibst. Apps, die die eigenen Daten
-als Pfand nehmen, sind der Grund, warum so viele Leute lieber bei Excel
-bleiben.
+bleibt es, auch wenn du nie einen Cent ausgibst.
 
 
 EIN PAAR EURO, EINMAL. KEIN ABO.
@@ -179,9 +180,17 @@ Den Bericht kannst du dir immer ansehen und ausdrucken. Freischalten musst du
 ihn erst, wenn du ihn jemandem geben willst.
 ```
 
-3844 Zeichen. Aufbau mit Absicht: Die ersten zwei Zeilen stehen in der
-Vorschau, bevor jemand „mehr" tippt — sie müssen allein tragen. Der Preis
-steht ganz unten, weil bis dorthin nur liest, wer die App ohnehin will.
+Aufbau mit Absicht: Die ersten zwei Zeilen stehen in der Vorschau, bevor jemand
+„mehr" tippt — sie müssen allein tragen. Der Preis steht ganz unten, weil bis
+dorthin nur liest, wer die App ohnehin will.
+
+**Die Zeichenzahl steht hier nicht mehr.** Sie stand als „3844 Zeichen" da, von
+Hand gepflegt, und war beim nächsten Satz falsch. Beim Nachschärfen am
+29. August lag die Beschreibung bei **4152** — Apple hätte sie abgelehnt, und
+zwar erst am Ende einer Einreichung. Seit 0.104.2 zählt `check-strings.py` mit:
+Es liest die Grenze aus der Überschrift („max. 4000 Zeichen") und misst den
+Block darunter. Jedes Feld hier trägt seine Grenze im Namen; keins muss von
+Hand nachgezählt werden.
 
 **Zum Ton dieser Texte.** Seit 0.44.0 stehen sie im selben Register wie die
 Website: konkrete Lage statt Merkmalsliste, kurze Sätze neben langen, ein

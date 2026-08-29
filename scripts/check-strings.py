@@ -181,13 +181,32 @@ if einreichung.exists() and appstore.exists():
         kopf = re.compile(r"^#{2,4} (?:\d+\. )?" + re.escape(ueberschrift) + r"\s*$",
                           re.M)
         treffer = kopf.search(inhalt)
+        block = None
+        if treffer is not None:
+            block = re.search(r"```\n(.*?)```", inhalt[treffer.end():], re.S)
         if treffer is None:
             problems.append(f"{appstore}: keine Ueberschrift {ueberschrift!r} — "
                             f"store_text() liefert dafuer stillschweigend "
                             f"einen leeren Text")
-        elif not re.search(r"```\n(.*?)```", inhalt[treffer.end():], re.S):
+        elif block is None:
             problems.append(f"{appstore}: unter {ueberschrift!r} steht kein "
                             f"Codeblock — es gibt nichts einzutragen")
+        else:
+            # **Die Ueberschrift nennt ihre eigene Grenze, also wird sie auch
+            # daran gemessen.** „Beschreibung (max. 4000 Zeichen)" — die Zahl
+            # steht da, und bis 0.104.2 hat sie niemand nachgezaehlt. Beim
+            # Nachschaerfen der Store-Texte am 29. August lag die Beschreibung
+            # bei 4152 Zeichen; Apple haette sie abgelehnt, und zwar erst am
+            # Ende einer Einreichung. Danach stand im Dokument eine von Hand
+            # gepflegte Zahl („3844 Zeichen"), die schon beim naechsten Satz
+            # falsch gewesen waere.
+            grenze = re.search(r"max\.\s*(\d+)\s*Zeichen", ueberschrift)
+            if grenze:
+                laenge = len(block.group(1).rstrip("\n"))
+                if laenge > int(grenze.group(1)):
+                    problems.append(
+                        f"{appstore}: {ueberschrift!r} ist {laenge} Zeichen lang, "
+                        f"erlaubt sind {grenze.group(1)} — Apple lehnt das ab")
 
 # Derselbe Fallstrick eine Ebene weiter: `kontakt_aus_impressum()` liest Name
 # und E-Mail aus `impressum.html` und gibt bei jeder Abweichung leere Felder
