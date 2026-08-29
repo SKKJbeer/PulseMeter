@@ -1,6 +1,6 @@
 # 12 – Auslieferung: vom Code in den App Store, ohne Mac
 
-Stand: 2026-08-29, Version 0.103.0
+Stand: 2026-08-29, Version 0.104.0
 
 Am 17. August ist Zählora zum ersten Mal in TestFlight gelandet — **ohne
 Kabel, ohne Xcode auf dem Rechner des Gründers, ohne einen Klick im
@@ -261,6 +261,7 @@ Store Connect deshalb nie gesehen.
 | 22 | 0.92.1 | 28.08. 11:48 | ✓ | Kaufübersicht über eine eigene Zeile im Zähler-Schirm, Stichpunkte statt Fließtext, der Bericht an genau einer Stelle |
 | 23 | 0.93.2 | 28.08. 14:51 | ✓ | Einkaufswagen an der Zeile, Preise im Verlauf für einen kostenlosen Nutzer — und dahinter das Blatt zum angetippten Kauf statt zum vorletzten |
 | 24 | 0.100.1 | 29.08. 11:35 | ✓ | **Der erste Bau, der Zählora heißt.** Dazu die Erinnerungen als sechster Kauf zu 0,99 €. Die Testhinweise fielen zunächst aus — ein fehlendes `import re` — und wurden über „Testhinweise nachtragen" gesetzt, ohne einen zweiten Bau zu kosten |
+| 25 | 0.104.0 | 29.08. 17:45 | … läuft | Kosten hängen am Kauf statt an „gibt es Tarife" — der Knopf „Beispieldaten anlegen" verschenkte bis dahin drei von fünf Käufen. Dazu das Widget auf dem Sperrbildschirm (`accessoryRectangular`, `accessoryInline`) |
 
 Zeitangaben in UTC. Ein ✗ heißt: hochgeladen wurde nichts, die Nummer ist
 trotzdem verbraucht.
