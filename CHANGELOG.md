@@ -9,6 +9,36 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.98.2 — 2026-08-29
+
+**Die Hinweise an die Prüfung standen nur im Dokument.** Der Lauf trug sie
+nirgends ein und fragte auch nicht danach. Fünfzehn Punkte standen grün, und
+dieser fehlte — kein Fehler, keine rote Zeile, nur eine Lücke, die niemandem
+abging.
+
+Der Text sagt einem Prüfer, dass die App kein Konto braucht und wo die Zahlen
+herkommen. Ohne ihn startet er eine leere App und bewertet eine leere App.
+Genau davor warnt der Absatz unter dem Text seit Wochen, während der Text
+selbst nie ankam.
+
+### Behoben
+- `--fuellen` überträgt jetzt den Block aus `docs/09-appstore.md`, und der
+  Leser zählt seine Zeichen — was nicht geprüft wird, fällt beim nächsten Mal
+  wieder still aus.
+- **Der Textleser fand die Überschrift gar nicht.** Er suchte ausschließlich
+  nach `###`; dieser eine Block steht unter `## 5. Hinweise für die Prüfung`,
+  mit Nummer davor. Er gab dann keinen Fehler zurück, sondern einen leeren
+  Text. Jetzt greift er von der zweiten bis zur vierten Ebene, Nummer
+  eingeschlossen.
+- Name, Telefon und E-Mail bleiben ausdrücklich draußen. Das sind Angaben über
+  den Gründer, und die werden nicht erfunden.
+
+### Nachgeführt
+`docs/09-appstore.md` führte „Datenschutzerklärung und Support-Seite müssen ins
+Netz" noch als offen. Beide stehen seit 0.95.7 und sind bei Apple eingetragen.
+
+---
+
 ## 0.98.1 — 2026-08-29
 
 **Die fünf Bildschirmfotos landen jetzt wirklich beim App Store.** Der

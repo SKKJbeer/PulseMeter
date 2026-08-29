@@ -599,6 +599,30 @@ angeschrieben.
 Erkennungsmerkmal: Steht im Code `if vorhanden: return`, gehört daneben die
 Frage, was passiert, wenn sich der Sollwert ändert.
 
+### Eine vollständige Liste beweist nur, dass alle Punkte darauf abgehakt sind
+
+Die dritte Stufe, und die stillste: Der Lauf meldete „15 steht, 0 offen". Was
+fehlte, war der Hinweistext an die Prüfung — er stand im Dokument, wurde nie
+übertragen und **stand auch auf keiner Liste**. Keine rote Zeile, kein Einwand,
+niemand hat ihn vermisst. Eine Prüfliste sagt nichts über das, was nicht auf
+ihr steht.
+
+Zwei Dinge helfen, und beide kosten Minuten:
+
+1. **Von der Gegenseite her zählen.** Nicht die eigene Liste durchgehen,
+   sondern das fremde Formular: Welche Felder gibt es dort, und welche davon
+   berührt der Lauf? Was er nicht anfasst, gehört auf die Liste oder ausdrücklich
+   in ein „braucht einen Menschen".
+2. **Jeder Text im Dokument braucht einen Abnehmer.** Steht ein Block da, den
+   kein Aufruf liest, ist er Deko. Ein Test, der jede Überschrift mit einem
+   Codeblock einmal abfragt, findet das in Sekunden.
+
+Der Nachschlag: Der Leser fand die Überschrift gar nicht — er suchte nur nach
+`###`, dieser eine Block stand unter `##` mit einer Nummer davor. Und er gab
+dann keinen Fehler zurück, sondern **einen leeren Text**. Ein Sucher, der bei
+Misserfolg etwas Harmloses liefert statt zu lärmen, verschiebt den Fehler
+dorthin, wo ihn niemand mehr mit ihm in Verbindung bringt.
+
 ### Ein unbekannter Name ist nicht immer ein Fehler — manchmal nur ein Rückfall
 
 `var(--bg)` stand im Stil eines Knopfes, und die Datei kannte nur `--ground`,

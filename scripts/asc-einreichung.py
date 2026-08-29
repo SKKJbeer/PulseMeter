@@ -128,11 +128,17 @@ def store_text(ueberschrift: str) -> str:
             inhalt = datei.read()
     except OSError:
         return ""
-    stelle = inhalt.find("### " + ueberschrift)
-    if stelle < 0:
+    # **Nicht auf `###` festgenagelt.** Die Store-Texte stehen unter dritter
+    # Ebene, die Hinweise für die Prüfung unter „## 5. Hinweise für die
+    # Prüfung" — mit Nummer davor. Wer nur eine Schreibweise sucht, bekommt
+    # stillschweigend einen leeren Text zurück und trägt nichts ein.
+    kopf = re.compile(r"^#{2,4} (?:\d+\. )?" + re.escape(ueberschrift) + r"\s*$",
+                      re.M)
+    treffer = kopf.search(inhalt)
+    if treffer is None:
         return ""
-    treffer = re.search(r"```\n(.*?)```", inhalt[stelle:], re.S)
-    return treffer.group(1).strip() if treffer else ""
+    block = re.search(r"```\n(.*?)```", inhalt[treffer.end():], re.S)
+    return block.group(1).strip() if block else ""
 
 
 # Aus derselben Datei, Abschnitt 2 „Einordnung".
@@ -404,6 +410,43 @@ def fassung_fuellen(apple: Apple, app_id: str) -> None:
            "Beschreibung, Schlagworte, Werbetext, Support-URL")
 
     bilder_fuellen(apple, ort["id"])
+    pruefung_fuellen(apple, fassung["id"])
+
+
+# **Der Hinweistext an die Prüfung stand nur im Dokument.** Der Lauf trug ihn
+# nirgends ein und fragte auch nicht danach — 15 Punkte standen grün, und
+# dieser fehlte, ohne dass ihn jemand vermisst hätte. Ein Prüfer, der eine
+# leere App startet und nicht weiß, wo Daten herkommen, bewertet eine leere
+# App; genau davor warnt der Absatz unter dem Text seit Wochen.
+#
+# Nicht eingetragen werden Name, Telefon und E-Mail. Das sind Angaben über den
+# Gründer, und die werden nicht erfunden (CLAUDE.md).
+def pruefung_fuellen(apple: Apple, fassung_id: str) -> None:
+    text = store_text("Hinweise für die Prüfung")
+    if not text:
+        offen.append("Hinweise für die Prüfung: kein Text in docs/09-appstore.md")
+        return
+
+    stand, pruefung = erste(apple,
+                            f"v1/appStoreVersions/{fassung_id}/appStoreReviewDetail")
+    if pruefung is None:
+        stand, antwort = apple.anlegen("v1/appStoreReviewDetails", {"data": {
+            "type": "appStoreReviewDetails",
+            "attributes": {"notes": text, "demoAccountRequired": False},
+            "relationships": {"appStoreVersion": {
+                "data": {"type": "appStoreVersions", "id": fassung_id}}},
+        }})
+        if stand in (200, 201):
+            getan.append(f"Hinweise für die Prüfung angelegt ({len(text)} Zeichen)")
+        else:
+            offen.append(f"Hinweise für die Prüfung: ging nicht ({stand}) "
+                         f"— {kurz(antwort)}")
+        return
+
+    setzen(apple, "v1/appStoreReviewDetails", "appStoreReviewDetails",
+           pruefung["id"],
+           {"notes": text, "demoAccountRequired": False},
+           f"Hinweise für die Prüfung ({len(text)} Zeichen)")
 
 
 def app_finden(apple: Apple):
@@ -520,6 +563,11 @@ def fassung_pruefen(apple: Apple, app_id: str) -> None:
 
     stand, pruefung = erste(apple,
                             f"v1/appStoreVersions/{fassung['id']}/appStoreReviewDetail")
+    hinweise = feld(pruefung, "notes") or ""
+    pruefe(bool(hinweise.strip()),
+           f"Hinweise für die Prüfung ({len(hinweise)} Zeichen)"
+           if hinweise else "Hinweise für die Prüfung fehlen")
+
     hat_kontakt = bool(feld(pruefung, "contactEmail"))
     pruefe(hat_kontakt,
            "Kontakt für die Prüfung — Name, Telefon, E-Mail des Gründers",

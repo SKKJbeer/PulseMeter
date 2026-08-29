@@ -167,6 +167,28 @@ for pfad in [pathlib.Path("docs/prototype/index.html"),
         problems.append(f"{pfad}: {ALTER_NAME} steht im sichtbaren Text — "
                         "die App heisst Zaehlora")
 
+# **Jeder Store-Text braucht einen Abnehmer, und jeder Abnehmer einen Text.**
+# `store_text("…")` gab bei einer unbekannten Überschrift einen leeren String
+# zurück statt zu lärmen. Genau eine Überschrift stand unter `##` statt `###`,
+# der Aufruf lief still ins Leere, und der Hinweistext an die Prüfung kam bei
+# Apple nie an — ohne dass irgendwo etwas rot wurde.
+einreichung = pathlib.Path("scripts/asc-einreichung.py")
+appstore = pathlib.Path("docs/09-appstore.md")
+if einreichung.exists() and appstore.exists():
+    inhalt = appstore.read_text(encoding="utf-8")
+    for ueberschrift in re.findall(r'store_text\("([^"]+)"\)',
+                                   einreichung.read_text(encoding="utf-8")):
+        kopf = re.compile(r"^#{2,4} (?:\d+\. )?" + re.escape(ueberschrift) + r"\s*$",
+                          re.M)
+        treffer = kopf.search(inhalt)
+        if treffer is None:
+            problems.append(f"{appstore}: keine Ueberschrift {ueberschrift!r} — "
+                            f"store_text() liefert dafuer stillschweigend "
+                            f"einen leeren Text")
+        elif not re.search(r"```\n(.*?)```", inhalt[treffer.end():], re.S):
+            problems.append(f"{appstore}: unter {ueberschrift!r} steht kein "
+                            f"Codeblock — es gibt nichts einzutragen")
+
 if problems:
     print("\n".join(problems))
     print(f"\n{len(problems)} Fund(e).")

@@ -337,6 +337,11 @@ Wasserzeichen.
 Der Hinweis auf die Beispieldaten ist kein Beiwerk: Ein Prüfer, der eine leere
 App startet und nicht weiß, wo etwas herkommt, bewertet eine leere App.
 
+**Und genau deshalb steht der Text nicht mehr nur hier.** Bis 0.98.2 hat ihn
+niemand eingetragen: Der Lauf schrieb ihn nicht und fragte auch nicht danach,
+15 Punkte standen grün, und dieser fehlte, ohne dass er jemandem abging.
+`--fuellen` überträgt jetzt diesen Block, und der Leser zählt seine Zeichen.
+
 ---
 
 ## 6. Was vor dem Einreichen noch fehlt
@@ -358,10 +363,9 @@ Skript und läuft überall, wo der Schlüssel liegt.
 
 ### Was kein Skript beantworten kann
 
-- [ ] **Datenschutzerklärung und Support-Seite müssen im Netz stehen.** Apple
-      will zwei URLs, und beide zeigen auf die Website. Sie ist gebaut und
-      geprüft, aber nicht veröffentlicht — und in `datenschutz.html` steht noch
-      ein `PLATZHALTER`. Ohne diese zwei Felder gibt es keine Einreichung.
+- [x] **Datenschutzerklärung und Support-Seite stehen im Netz.** Beide URLs
+      zeigen auf `pulsemeter.pages.dev`, der Platzhalter in `datenschutz.html`
+      ist raus, und beide Felder sind bei Apple eingetragen.
 - [ ] **Kontakt für die Prüfung** — Name, Telefon, E-Mail. Das sind Angaben
       über den Gründer und werden nicht erfunden (CLAUDE.md, „Keine Annahmen in
       Texten, die jemand anderes liest").
