@@ -57,7 +57,7 @@ Aufbau von oben nach unten:
 
 ## 3. Erfassung – der Screen, an dem sich alles entscheidet
 
-**Problem.** Der Nutzer steht im Keller. Schlechtes Licht, kalt, vielleicht eine Taschenlampe in der anderen Hand. Wenn hier Reibung entsteht, hört er nach drei Monaten auf — und alle anderen Features werden wertlos.
+**Problem.** Der Nutzer steht am Zähler. Schlechtes Licht, kalt, vielleicht eine Taschenlampe in der anderen Hand. Wenn hier Reibung entsteht, hört er nach drei Monaten auf — und alle anderen Features werden wertlos.
 
 **Ablauf (Ziel: 3 Berührungen).**
 

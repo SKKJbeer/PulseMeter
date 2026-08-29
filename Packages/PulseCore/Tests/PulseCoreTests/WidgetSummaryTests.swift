@@ -179,7 +179,7 @@ final class WidgetSummaryTests: XCTestCase {
     /// unwichtigste — und er hat kein Datum, auf das sich „seit" beziehen ließe.
     func testNeverReadSaysSoInsteadOfCountingFromNothing() {
         let meter = WidgetSummary.Meter(
-            id: UUID(), name: "Keller", symbolName: "bolt", colorToken: "amber",
+            id: UUID(), name: "Garage", symbolName: "bolt", colorToken: "amber",
             unit: "kWh", quantity: nil, isApproximate: false,
             periodCaption: "Noch keine Ablesung", isDue: true, daysSinceReading: nil)
 

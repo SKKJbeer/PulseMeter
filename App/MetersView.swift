@@ -73,7 +73,7 @@ struct MetersView: View {
                     .buttonStyle(.plain)
                     .accessibilityHint(canAddMeter
                                        ? "Öffnet das Formular für einen neuen Zähler"
-                                       : "Kostenlos sind \(AccessPolicy.freeMeterLimit) Zähler. Doppeltippen, um PulseMeter Pro anzusehen")
+                                       : "Kostenlos sind \(AccessPolicy.freeMeterLimit) Zähler. Doppeltippen, um die Freischaltungen anzusehen")
 
                     if let note = limitNote {
                         Text(note)
@@ -142,7 +142,7 @@ struct MetersView: View {
         guard let remaining = purchase.policy.remainingMeters(existingCount: total),
               total > 0 else { return nil }
         switch remaining {
-        case 0:  return "Kostenlos sind \(AccessPolicy.freeMeterLimit) Zähler. Mit Pro werden es beliebig viele."
+        case 0:  return "Kostenlos sind \(AccessPolicy.freeMeterLimit) Zähler. Freigeschaltet werden es beliebig viele."
         case 1:  return "Noch ein Zähler ist kostenlos."
         default: return "Noch \(remaining) Zähler sind kostenlos."
         }
@@ -435,7 +435,7 @@ struct MetersView: View {
             remindersOn = false
             // Ehrlich benennen, was zu tun ist: iOS fragt kein zweites Mal,
             // und ein Schalter, der wortlos zurückspringt, sieht kaputt aus.
-            reminderNote = "Mitteilungen sind für PulseMeter ausgeschaltet. Das lässt sich nur in den Einstellungen des Geräts ändern."
+            reminderNote = "Mitteilungen sind für Zählora ausgeschaltet. Das lässt sich nur in den Einstellungen des Geräts ändern."
             return
         }
 
@@ -609,7 +609,7 @@ struct MeterEditor: View {
                 } header: {
                     Text("Name")
                 } footer: {
-                    Text("So heißt der Zähler in der Übersicht — „Strom“, „Gas Keller“, „Wohnung oben“.")
+                    Text("So heißt der Zähler in der Übersicht: „Strom“, „Gas“, „Wohnung oben“.")
                 }
 
                 Section {
@@ -662,7 +662,7 @@ struct MeterEditor: View {
                 } header: {
                     Text("Anzeige am Gerät")
                 } footer: {
-                    Text("So viele Stellen zeigt das Gerät. Die Eingabe sieht dann genauso aus wie der Zähler im Keller.")
+                    Text("So viele Stellen zeigt das Gerät. Die Eingabe sieht dann genauso aus wie der Zähler selbst.")
                 }
 
                 if kind == .electricity {

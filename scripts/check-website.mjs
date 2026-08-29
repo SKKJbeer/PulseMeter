@@ -131,6 +131,78 @@ note(adressen.size === 1,
        ? `Alle Seiten zeigen auf ${[...adressen][0]}`
        : `Die Seiten zeigen auf verschiedene Adressen: ${[...adressen].join(", ")}`);
 
+// **Wie ein Mensch, nicht wie eine Werbeagentur.**
+//
+// Vom Gründer am 28. August verlangt: „Die Texte dürfen nicht nach KI oder
+// Werbeagentur klingen. Schreibe so, wie ein Mensch einem anderen Menschen die
+// App erklären würde."
+//
+// Zwei Dinge lassen sich zählen, und beide waren der Grund für die Ansage:
+//
+// 1. **Der Gedankenstrich.** Die Startseite hatte 25 auf 1150 Wörter, einen
+//    alle 46. Er schiebt einen Nachsatz an jeden Satz und lässt den Text
+//    atemlos klingen. Ein Punkt oder ein Doppelpunkt tut es fast immer.
+// 2. **Wörter, die nichts sagen.** „smart", „intelligent", „nahtlos",
+//    „mühelos", „erlebe", „entdecke". Sie passen auf jede App und sagen über
+//    keine etwas.
+//
+// Die Schwelle liegt bei einem Strich je 250 Wörter. Das ist keine Null: Als
+// Trenner in einem Titel ist er richtig, und ein echter Einschub darf sein.
+const VERBOTEN = [
+  "smart", "intelligent", "nahtlos", "mühelos", "erlebe ", "entdecke ",
+  "revolutio", "maximier", "innovativ", "modernste", "einzigartig",
+  "leistungsstark", "benutzerfreundlich", "state of the art"
+];
+
+for (const datei of seiten) {
+  const roh = readFileSync(`${dir}/${datei}`, "utf8");
+  // Titel und Fußzeile benutzen den Strich als **Trenner** — „Hilfe —
+  // PulseMeter". Das ist Typografie und kein Tick, also fallen beide vor dem
+  // Zählen heraus. Im ersten Anlauf tat das nur der Kommentar und nicht der
+  // Code, und die Prüfung schlug auf vier Seiten wegen ihrer eigenen Titel an.
+  const sichtbar = roh
+    .replace(/<!--[\s\S]*?-->/g, " ")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<title>[\s\S]*?<\/title>/gi, " ")
+    .replace(/<footer[\s\S]*?<\/footer>/gi, " ")
+    .replace(/<[^>]+>/g, " ");
+  const woerter = sichtbar.split(/\s+/).filter(Boolean).length;
+  const striche = (sichtbar.match(/\w\s—\s\w/g) || []).length;
+  const erlaubt = Math.max(1, Math.round(woerter / 250));
+  note(striche <= erlaubt,
+       `${datei}: ${striche} Gedankenstriche auf ${woerter} Wörter (bis ${erlaubt})`);
+
+  const klein = sichtbar.toLowerCase();
+  const gefunden = VERBOTEN.filter(w => klein.includes(w));
+  note(gefunden.length === 0,
+       gefunden.length === 0
+         ? `${datei}: keine Wörter, die auf jede App passen`
+         : `${datei}: ${gefunden.join(", ")} — sagt über diese App nichts`);
+}
+
+// **Jede benutzte CSS-Variable muss es geben.**
+//
+// `var(--bg)` stand im Stil des App-Store-Abzeichens, und die Datei kennt nur
+// `--ground`, `--raised` und `--surface`. Ein unbekannter Name ist im Browser
+// keine Fehlermeldung, sondern ein Rückfall auf den geerbten Wert — im Dunkeln
+// also fast dasselbe Weiß wie der Grund. Auf dem Telefon des Gründers stand
+// ein leerer grauer Kasten, und keine der 393 Prüfungen sah etwas: Der Text
+// war da, nur unsichtbar.
+{
+  // Ohne Kommentare: Der Hinweis, warum `var(--bg)` hier einmal stand, ist
+  // kein Gebrauch der Variable — sonst schlägt die Prüfung auf ihrer eigenen
+  // Begründung an.
+  const css = readFileSync(`${dir}/stil.css`, "utf8").replace(/\/\*[\s\S]*?\*\//g, " ");
+  const definiert = new Set([...css.matchAll(/(--[a-z0-9-]+)\s*:/g)].map(m => m[1]));
+  const benutzt = new Set([...css.matchAll(/var\((--[a-z0-9-]+)/g)].map(m => m[1]));
+  const fehlend = [...benutzt].filter(name => !definiert.has(name));
+  note(fehlend.length === 0,
+       fehlend.length === 0
+         ? `Alle ${benutzt.size} benutzten CSS-Variablen sind definiert`
+         : `Nicht definiert: ${fehlend.join(", ")} — der Browser meldet das nicht, er erbt`);
+}
+
 // Platzhalter sind ein **Hinweis**, kein Fehlschlag — solange die Seite nicht
 // online ist. Sonst stünde die CI dauerhaft auf Rot für etwas, das nur der
 // Gründer eintragen kann, und ein dauerhaft roter Lauf wird nach drei Tagen

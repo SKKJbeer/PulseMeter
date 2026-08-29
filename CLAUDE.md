@@ -1,5 +1,17 @@
 # Arbeitsweise in diesem Projekt
 
+> **Die App heißt „Zählora".** Umbenannt am 28. August, vorher „PulseMeter".
+> Im App Store steht sie als **„Zählora – Zähler & Verbrauch"** (28 von 30
+> Zeichen), auf dem Homescreen als **„Zählora"**.
+>
+> **Was den alten Namen behalten hat, und mit Absicht:** die Bundle-ID
+> `de.karjoth.pulsemeter`, die fünf Kauf-Kennungen, die Swift-Module
+> `PulseCore`, `PulseData`, `PulseUI`, das Xcode-Ziel, das Repository und die
+> Adresse `pulsemeter.pages.dev`. Sie sieht kein Nutzer, und eine Kauf-Kennung
+> zu ändern heißt, jedem Käufer seinen Kauf zu nehmen. Wer das trotzdem
+> umziehen will, braucht einen neuen App-Eintrag bei Apple — und muss es tun,
+> **bevor** jemand kauft.
+
 ## Regel 1 — Jede Änderung kommt sofort in den Klick-Dummy
 
 Sobald sich etwas am Produkt ändert — neue Ansicht, geänderter Ablauf, andere
@@ -26,7 +38,7 @@ eine Anmeldemaske. Ein frisch erzeugtes Artifact geht dagegen sofort auf.
   einmal unter einem deutlich anderen Dateinamen veröffentlichen
   (`entwurf-v0130-zeitraum.html` hat eine frische URL erzeugt) und erst diese
   weitergeben.
-- `title` immer identisch setzen: „PulseMeter – Klickbarer Entwurf".
+- `title` immer identisch setzen: „Zählora – Klickbarer Entwurf".
   `favicon` bleibt ⚡. `label` kurz und beschreibend.
 - Danach dieselbe Datei nach `docs/prototype/index.html` kopieren und
   mitcommitten — der Container wird irgendwann abgeräumt, das Repo nicht.
@@ -246,15 +258,48 @@ Woran man den maschinellen Klang erkennt und was stattdessen dasteht:
 | Nicht so | Sondern |
 |---|---|
 | Jeder Satz begründet sich selbst mit einem Gedankenstrich | Behaupten und weitergehen. Die Begründung nur, wo sie überrascht |
-| „Ein großer Ziffernblock, bedienbar bei schlechtem Licht" | „Groß genug, dass man ihn im Keller einhändig trifft" |
+| „Ein großer Ziffernblock, bedienbar bei schlechtem Licht" | „Groß genug, dass man ihn am Zähler einhändig trifft" |
 | Gleich lange, gleich gebaute Sätze | Kurz. Dann einer, der ausholt und die Sache zu Ende bringt. Dann wieder kurz |
 | Merkmale aufzählen | Die Lage beschreiben, in der jemand steckt |
 | „ermöglicht", „bietet", „verfügt über" | „macht", „zeigt", „rechnet", „fragt nach" |
 | Alles abwägen und absichern | Einen Standpunkt haben |
 
-Konkrete Zahlen, konkrete Orte, konkrete Gegenstände: Keller, Sicherungskasten,
+Konkrete Zahlen, konkrete Orte, konkrete Gegenstände: Sicherungskasten,
 Februar, Kubikmeter, Wallbox in der Garage. Sie tragen den Text, nicht die
 Adjektive.
+
+**„Keller" gehört nicht dazu.** Er stand hier als Vorbild und deshalb überall im
+Produkt — und der Gründer mag ihn nicht. Er stimmt auch nicht: In einer Wohnung
+hängt der Zähler im Flur, bei manchen außen am Haus. Wo jemand steht, heißt
+**„am Zähler"**. Was gemeint war, bleibt: schlechtes Licht, eine Hand frei,
+kalte Finger.
+
+#### Nachgeschärft am 28. August: nicht nach Werbeagentur
+
+Die Zeile „jeder Satz begründet sich selbst mit einem Gedankenstrich" stand
+oben schon — und die Website hatte trotzdem **25 Striche auf 1150 Wörter**,
+einen alle 46. Eine Regel, die niemand zählt, wird nicht befolgt. Deshalb zählt
+`check-website.mjs` jetzt mit: höchstens einer je 250 Wörter, Titel und Fußzeile
+ausgenommen, dazu eine Liste von Wörtern, die auf jede App passen.
+
+Vom Gründer wörtlich: „Schreibe so, wie ein Mensch einem anderen Menschen die
+App erklären würde. Wenn eine einfache Aussage ausreicht, nimm die einfache
+Aussage."
+
+| Nicht so | Sondern |
+|---|---|
+| „PulseMeter ermöglicht dir eine intelligente Analyse deiner Verbrauchsdaten" | „PulseMeter zeigt dir, wie sich dein Verbrauch und deine Kosten entwickeln" |
+| „Keine stillen Annahmen." | „Wenn PulseMeter einen Wert schätzt, siehst du das." |
+| „Deine Daten gehören dir." | „Deine Zählerstände bleiben bei dir." |
+| „Eine Zahl eintragen. Den Überblick behalten." | „Du trägst deinen Zählerstand ein, PulseMeter macht den Rest." |
+
+Außerdem draußen: „smart", „intelligent", „nahtlos", „mühelos", „erlebe",
+„entdecke", „revolutionieren", „maximieren" — und Dreierketten wie „Verbrauch.
+Kosten. Kontrolle." Ein kurzer Satz darf stehen, wenn er einen konkreten
+Gedanken trägt. Drei hintereinander tun das nie.
+
+**Wenn eine klügere und eine natürlichere Formulierung zur Wahl stehen, nimm die
+natürlichere.**
 
 Was sich dabei **nicht** ändert: Nichts versprechen, was es nicht gibt
 (`09-appstore.md`), und geschätzte Zahlen bleiben gekennzeichnet

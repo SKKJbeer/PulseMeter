@@ -1,4 +1,4 @@
-<title>PulseMeter – Klickbarer Entwurf</title>
+<title>Zählora – Klickbarer Entwurf</title>
 <style>
 /* ============================================================
    TOKENS
@@ -381,7 +381,7 @@ ul.includes.done li::before { content: "✓"; color: var(--tint); font-size: 12p
      drei Entwürfen gewählt (`docs/entwuerfe/zaehlereingabe.html`): Die Ziffern
      laufen von rechts ein wie am Geldautomaten, die Tausenderpunkte setzen
      sich selbst, die Nachkommastellen bleiben rot wie am Gerät. Der Grund für
-     die Wahl war Tempo — sechs Rollen einzeln zu drehen dauert im Keller
+     die Wahl war Tempo — sechs Rollen einzeln zu drehen dauert am Zähler
      länger, als eine Zahl einzutippen. */
   text-align: right;
   padding: 18px 16px 15px;
@@ -452,7 +452,7 @@ ul.includes.done li::before { content: "✓"; color: var(--tint); font-size: 12p
   border: 0; border-radius: 14px; padding: 16px; cursor: pointer;
   /* 44 Punkte, nicht 43. Die nicht-funktionale Prüfung hat den einen Punkt
      gemeldet, der fehlte — Apples Mindestmaß für eine Fläche, die man im
-     Keller einhändig trifft. */
+     Zähler einhändig trifft. */
   min-height: 44px;
 }
 /* Eigene Farben statt durchscheinender Akzentfläche: Mit `opacity` stand im
@@ -479,7 +479,7 @@ ul.includes.done li::before { content: "✓"; color: var(--tint); font-size: 12p
   text-align: center; font-size: var(--fs-cap); color: var(--ink-3);
   margin-top: 9px;
 }
-/* Datum und Uhrzeit der Ablesung. Eine Zeile, kein Formular — im Keller tippt
+/* Datum und Uhrzeit der Ablesung. Eine Zeile, kein Formular — am Zähler tippt
    niemand ein Datum ein, er tippt eine Zahl und drückt Sichern. */
 .momentrow {
   display: flex; align-items: center; gap: 8px; margin-top: 11px;
@@ -796,8 +796,8 @@ select.field { cursor: pointer; }
           fill="none" stroke="#FDF8EF" stroke-width="56"
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
-  <h1>PulseMeter</h1>
-  <p>Klickbarer Entwurf · v0.96.3</p>
+  <h1>Zählora</h1>
+  <p>Klickbarer Entwurf · v0.98.0</p>
 </div>
 
 <div class="device">
@@ -1095,10 +1095,14 @@ select.field { cursor: pointer; }
   </div>
 
   <!-- Kaufseite -->
-  <div class="sheet" id="sheet-pro" role="dialog" aria-modal="true" aria-label="PulseMeter Pro">
+  <!-- Der Titel trägt den Kauf, auf den getippt wurde. Bis 0.98.0 stand hier
+       fest „Pro" — ein Wort aus dem alten Bündelkonzept, das es seit den
+       Einzelkäufen nicht mehr gibt, und in der App stand längst der Name des
+       Kaufs. Eine Abweichung nach Regel 2. -->
+  <div class="sheet" id="sheet-pro" role="dialog" aria-modal="true" aria-label="Freischalten">
     <div class="grabber"></div>
     <div class="sheet-head">
-      <div class="sheet-title">PulseMeter Pro</div>
+      <div class="sheet-title" id="pro-title">Freischalten</div>
       <button type="button" class="sheet-close" data-close>Fertig</button>
     </div>
     <div class="sheet-body" id="pro-body"></div>
@@ -3047,7 +3051,7 @@ function renderReport() {
     ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
                    pointer-events:none;overflow:hidden" aria-hidden="true">
          <div style="transform:rotate(-32deg);font-size:44px;font-weight:600;
-                     color:rgba(26,23,20,.11);white-space:nowrap">PulseMeter · Vorschau</div>
+                     color:rgba(26,23,20,.11);white-space:nowrap">Zählora · Vorschau</div>
        </div>`
     : "";
   const doc = document.getElementById("doc");
@@ -3104,7 +3108,7 @@ function openExport(kind) {
     const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `PulseMeter-${name}-2026-08-04.csv`;
+    a.download = `Zählora-${name}-2026-08-04.csv`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   };
@@ -3229,7 +3233,8 @@ function openPaywall(id) {
     <div class="section-label">Dauerhaft kostenlos</div>
     ${bulletList(ALWAYS_FREE, true)}
     <div class="note">Im Entwurf schalten die Knöpfe frei, ohne zu bezahlen. In der App
-    übernimmt das StoreKit, sobald PulseMeter im App Store ist.</div>`;
+    übernimmt das StoreKit, sobald Zählora im App Store ist.</div>`;
+  document.getElementById("pro-title").textContent = p.title;
   openSheet("sheet-pro");
   document.getElementById("pro-buy").onclick = () => unlock(p.id);
   const bundle = document.getElementById("pro-bundle");
@@ -3383,7 +3388,7 @@ function openMeterEditor(id) {
     <div class="section-label">Name</div>
     <div class="list"><div class="row"><input class="field" id="ed-name" type="text"
       value="${editMeter ? editMeter.name.replace(/"/g, "&quot;") : ""}"
-      placeholder="Strom, Gas Keller, Wohnung oben"></div></div>
+      placeholder="Strom, Gas, Wohnung oben"></div></div>
 
     <div class="section-label">Art</div>
     <div class="list"><div class="row"><select class="field" id="ed-kind"

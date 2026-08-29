@@ -31,8 +31,8 @@ scripts/mac-start.sh          # Stand holen, einrichten, alles prüfen
 Hast du das Repository noch gar nicht:
 
 ```bash
-git clone https://github.com/SKKJbeer/PulseMeter.git
-cd PulseMeter && scripts/mac-start.sh
+git clone https://github.com/SKKJbeer/Zählora.git
+cd Zählora && scripts/mac-start.sh
 ```
 
 ---

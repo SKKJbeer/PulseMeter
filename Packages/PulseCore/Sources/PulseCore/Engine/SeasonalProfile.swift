@@ -13,7 +13,7 @@ import Foundation
 /// Beispieldaten dieses Projekts, sondern aus veröffentlichten Quellen — die
 /// Herkunft steht bei jedem Profil. Ein selbst ausgedachtes Profil würde in
 /// einer Prüfung wunderbar aussehen, die es gegen sich selbst hält, und im
-/// Keller eines echten Nutzers versagen.
+/// Zähler eines echten Nutzers versagen.
 ///
 /// **Was es nicht ist.** Kein Ersatz für die eigene Historie. Sobald ein Jahr
 /// eigener Ablesungen vorliegt, gewinnt die immer — ein Referenzprofil ist der

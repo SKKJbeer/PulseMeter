@@ -77,7 +77,7 @@ Das ist ehrlicher als eine Sperre — man sieht vorher, was man bekommt — und 
 verkauft besser: Ein Schloss weckt Widerstand, ein fertiges Dokument mit einem
 Schriftzug weckt den Wunsch, ihn loszuwerden.
 
-**PulseMeter Vermieter — Abo, ca. 29,99 €/Jahr**
+**Zählora Vermieter — Abo, ca. 29,99 €/Jahr**
 - Mehrere Objekte und Einheiten
 - Mieterzuordnung mit Ein-/Auszugsdaten
 - Ableseprotokolle als PDF (Foto, Zeitstempel, Unterschrift)

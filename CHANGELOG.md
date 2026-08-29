@@ -9,6 +9,139 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.98.0 — 2026-08-28
+
+**Die App heißt jetzt Zählora.** Vom Gründer gewählt: „Zählora – Zähler &
+Verbrauch", 28 von 30 erlaubten Zeichen. Vorher „PulseMeter".
+
+Vorher geprüft, nicht angenommen: In der Suche des deutschen App Store gibt es
+keine App dieses Namens — weder mit Umlaut noch als „Zaehlora" oder „Zahlora".
+
+### Geändert
+- **Umbenannt, wo ein Nutzer hinsieht:** Homescreen, sieben Texte in der App,
+  das Widget, der Verbrauchsbericht samt Wasserzeichen und Dateinamen, die
+  sechs Seiten der Website, der Entwurf und alle Dokumente.
+- **Der Untertitel im Store ist mitgezogen:** aus „Zähler ablesen, Kosten
+  sehen" wurde **„Strom, Gas und Wasser ablesen"**. Beide alten Wörter stehen
+  seit der Umbenennung schon im Namen, und Apple wertet jedes Feld einmal —
+  dasselbe Wort zweimal ist ein verschenktes Suchfeld.
+- **„Mit Pro werden es beliebig viele"** ist raus. Ein „Pro" gibt es seit den
+  Einzelkäufen nicht mehr; der Satz stand seit Wochen falsch da. Im Entwurf
+  trug das Kaufblatt aus demselben Grund noch den festen Titel „Pro", während
+  die App längst den Namen des Kaufs zeigte — eine Abweichung nach Regel 2.
+
+### Was den alten Namen behält, und mit Absicht
+Die Bundle-ID `de.karjoth.pulsemeter`, die fünf Kauf-Kennungen, die Module
+`PulseCore`, `PulseData`, `PulseUI`, das Xcode-Ziel, das Repository und die
+Adresse `pulsemeter.pages.dev`. **Kein Nutzer sieht davon etwas**, und eine
+Kauf-Kennung zu ändern hieße, jedem Käufer seinen Kauf zu nehmen. Wer das
+trotzdem umziehen will, braucht einen neuen App-Eintrag bei Apple — und muss es
+tun, bevor jemand kauft. Steht als Absatz oben in `CLAUDE.md`.
+
+### Hinzugefügt
+- **Eine Prüfung, die den alten Namen fängt.** Nicht auf Dateiebene, sondern in
+  den Zeichenketten: alles zwischen Anführungszeichen in Swift und der sichtbare
+  Text von Website und Entwurf. Kennungen sind ausgenommen und benannt.
+
+  Beim Schreiben hat die bestehende Zeichenkettenprüfung zugeschlagen: ein
+  deutsches öffnendes Anführungszeichen, mit einem geraden geschlossen, mitten
+  in einem f-String. Fünfter Fang derselben Art — diesmal an mir.
+
+**Nichts davon geht in den Store.** Die App steht bei Apple weiter auf „In
+Vorbereitung", und in keinem Skript gibt es einen Aufruf, der einreicht oder
+veröffentlicht.
+
+---
+
+## 0.97.1 — 2026-08-28
+
+Vom Gründer: „das mit dem Keller stört mich und mag ich nicht."
+
+### Geändert
+- **Der Keller ist raus, an 22 Stellen.** Website, App-Store-Beschreibung,
+  zwei Hinweistexte in der App, der Entwurf, sechs Kommentare im Quelltext,
+  zwei Dokumente und drei Testnamen. Wo jemand steht, heißt jetzt **„am
+  Zähler"**.
+- **Und aus `CLAUDE.md`, wo er als Vorbild stand.** Dort war er unter „konkrete
+  Orte" empfohlen, und genau deshalb kam er überall wieder. Eine Formulierung,
+  die in der Anleitung steht, schreibt sich von selbst weiter.
+
+Er war außerdem falsch: In einer Wohnung hängt der Zähler im Flur, bei manchen
+außen am Haus. Was gemeint war, bleibt stehen — schlechtes Licht, eine Hand
+frei, kalte Finger.
+
+Aus „ABLESEN, BEVOR DAS LICHT AUSGEHT" in der Store-Beschreibung ist „ZEHN
+SEKUNDEN AM ZÄHLER" geworden. Die alte Überschrift war ein Bild ohne Inhalt.
+
+---
+
+## 0.97.0 — 2026-08-28
+
+Vom Gründer: „Die Texte dürfen nicht nach KI oder Werbeagentur klingen. Schreibe
+so, wie ein Mensch einem anderen Menschen die App erklären würde."
+
+### Geändert
+- **Die Startseite hatte 25 Gedankenstriche auf 1150 Wörter**, einen alle 46.
+  Jetzt keinen. Der Strich schiebt an jeden Satz noch einen Nachsatz und lässt
+  den Text atemlos klingen; ein Punkt oder ein Doppelpunkt tut es fast immer.
+  Auch die Hilfeseite und die beiden Ratgeber sind durch.
+- **Drei Überschriften waren austauschbar.** „Verbrauch, Vorjahr und Kosten auf
+  einem Bildschirm" ist eine Dreierkette und sagt nichts, was nicht auf jede
+  Verbrauchs-App passt. Jetzt: „Du siehst sofort, ob mehr zusammenkommt als
+  letztes Jahr". Aus „Wir sehen deine Zählerstände nicht. **Nie.**" ist der
+  erste Satz allein geworden — das nachgeschobene Wort macht die Aussage nicht
+  wahrer. Und aus „Ein paar Euro, einmal. Kein Abo." wurde „Du kaufst einmal,
+  was dir fehlt".
+- **„Geschätztes ist gekennzeichnet"** heißt jetzt **„Wenn PulseMeter einen Wert
+  schätzt, siehst du das"** — der Vorschlag kam wörtlich vom Gründer und ist
+  besser, weil jemand darin vorkommt.
+- Der Vorspann sagt zuerst, was man tut, und dann, was die App tut: „Du trägst
+  deinen Zählerstand ein, PulseMeter macht den Rest."
+- „Tracking" ist raus, an drei Stellen. „Keine Werbung, keine Auswertung" und
+  „Nichts zählt mit" sagen dasselbe auf Deutsch.
+
+### Hinzugefügt
+- **Zwei Prüfungen, die den Rückfall verhindern.** Höchstens ein Gedankenstrich
+  je 250 Wörter, Titel und Fußzeile ausgenommen; dazu eine Liste von Wörtern,
+  die auf jede App passen und über keine etwas sagen — „smart", „intelligent",
+  „nahtlos", „mühelos", „erlebe", „entdecke" und ein paar mehr.
+
+  Die Regel „jeder Satz begründet sich selbst mit einem Gedankenstrich" stand
+  in `CLAUDE.md` schon lange. Die Seite hatte trotzdem 25. **Eine Regel, die
+  niemand zählt, wird nicht befolgt.**
+
+407 Prüfungen für die Website, vorher 394.
+
+---
+
+## 0.96.4 — 2026-08-28
+
+Vom Gerät, mit Bildschirmfoto: ein leerer grauer Kasten über dem Knopf „Jetzt
+ausprobieren". Kein Text, kein Apfel.
+
+### Behoben
+- **Eine CSS-Variable, die es nicht gibt.** Im Stil des App-Store-Abzeichens
+  stand `var(--bg)`; die Datei kennt `--ground`, `--raised` und `--surface`.
+  Der Browser meldet so etwas **nicht** — ein `var()` auf einen unbekannten
+  Namen fällt auf den geerbten Wert zurück. Im Dunkeln war das fast dasselbe
+  Weiß wie der Grund, und die Deckkraft von 55 % machte daraus den grauen
+  Kasten. Der Text war die ganze Zeit da, nur unsichtbar.
+- Der Wartezustand ist jetzt eine ruhige Karte statt eines gedimmten schwarzen
+  Abzeichens: lesbar in beiden Erscheinungsbildern, ohne Deckkraft — die dämpft
+  auch die Schrift.
+
+### Hinzugefügt
+- **Eine Prüfung, die jede benutzte CSS-Variable gegen die definierten hält.**
+  Zehn Zeilen, und sie hätte das hier vor dem Veröffentlichen gefunden. Von 393
+  Prüfungen sah keine etwas, weil alle nach Text, Überlauf und Kontrast fragen
+  — und der Text war ja da.
+
+Im Baukasten steht die verallgemeinerte Form: **Wo eine Sprache einen
+unbekannten Namen still auflöst statt abzubrechen, gehört eine Prüfung daneben,
+die die Namen gegeneinander hält.**
+
+---
+
 ## 0.96.3 — 2026-08-28
 
 **14 von 17 Punkten stehen.** Beschreibung, Schlagworte, Werbetext,

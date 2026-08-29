@@ -35,7 +35,7 @@ public enum PulseColor {
     /// herauskommt — gleicher Farbton, nur lesbar. Die Hierarchie bleibt
     /// erkennbar: 16:1, 7,9:1, 5,2:1.
     ///
-    /// Es geht dabei nicht um eine Norm, sondern um den Keller: schlechtes
+    /// Es geht dabei nicht um eine Norm, sondern um die Lage am Zähler: schlechtes
     /// Licht, Telefon in einer Hand, und die Zeitangabe unter der Zahl ist
     /// genau das, was man dort lesen will.
     public static var inkTertiary: Color { .adaptive(light: 0x6B6457, dark: 0x928B7C) }

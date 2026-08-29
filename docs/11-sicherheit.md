@@ -17,7 +17,7 @@ Durchsuchte Fläche: `App/`, `Widget/`, `Shared/`, `Packages/PulseCore`,
 ## 1. Warum die Fläche so klein ist
 
 Die meisten Sicherheitslücken einer App entstehen dort, wo sie mit der Welt
-spricht. PulseMeter spricht mit niemandem:
+spricht. Zählora spricht mit niemandem:
 
 | Gesucht | Gefunden |
 |---|---|
@@ -114,7 +114,7 @@ eigenen Ordner der App, und das Widget bleibt leer, statt dass etwas abstürzt.
 
 **Die Exportdateien.** Sie entstehen unter `temporaryDirectory` — innerhalb der
 Sandbox, für andere Apps unerreichbar. iOS räumt dort selbst auf. Der Name ist
-vorhersagbar (`PulseMeter-Strom-Ablesungen.csv`), was nichts ausmacht, solange
+vorhersagbar (`Zählora-Strom-Ablesungen.csv`), was nichts ausmacht, solange
 niemand sonst in den Ordner sehen kann.
 
 **Der gespeicherte Kaufzustand.** Er liegt in `UserDefaults` und ist

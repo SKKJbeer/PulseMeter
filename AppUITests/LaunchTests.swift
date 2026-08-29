@@ -268,11 +268,11 @@ final class LaunchTests: XCTestCase {
                      "Ersten Zähler anlegen") else { return }
 
         let field = app.textFields["Name"]
-        guard tippe("Keller", in: field, app: app) else { return }
+        guard tippe("Garage", in: field, app: app) else { return }
         app.buttons["Sichern"].tap()
 
         // Die Karte steht und sagt, dass noch nichts abgelesen wurde.
-        XCTAssertTrue(app.staticTexts["Keller"].waitForExistence(timeout: erscheint),
+        XCTAssertTrue(app.staticTexts["Garage"].waitForExistence(timeout: erscheint),
                       "Der neue Zähler erscheint nicht auf der Übersicht")
         let never = app.staticTexts.containing(
             NSPredicate(format: "label CONTAINS 'noch nie abgelesen' OR label CONTAINS 'Noch nie abgelesen'")

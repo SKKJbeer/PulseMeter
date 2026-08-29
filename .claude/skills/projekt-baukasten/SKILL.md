@@ -599,6 +599,23 @@ angeschrieben.
 Erkennungsmerkmal: Steht im Code `if vorhanden: return`, gehört daneben die
 Frage, was passiert, wenn sich der Sollwert ändert.
 
+### Ein unbekannter Name ist nicht immer ein Fehler — manchmal nur ein Rückfall
+
+`var(--bg)` stand im Stil eines Knopfes, und die Datei kannte nur `--ground`,
+`--raised` und `--surface`. Der Browser meldet das **nicht**: Ein `var()` auf
+einen unbekannten Namen fällt auf den geerbten Wert zurück. Im dunklen
+Erscheinungsbild war das fast dasselbe Weiß wie der Hintergrund — auf dem
+Telefon des Gründers stand ein leerer grauer Kasten, und keine der 393
+Prüfungen sah etwas. Der Text war da, nur unsichtbar.
+
+> Wo eine Sprache einen unbekannten Namen **still** auflöst statt abzubrechen,
+> gehört eine Prüfung daneben, die die Namen gegeneinander hält. Zehn Zeilen:
+> alle Definitionen sammeln, alle Verwendungen sammeln, die Differenz melden.
+
+Dieselbe Form auch anderswo: Umgebungsvariablen, die leer statt undefiniert
+sind; Wörterbuchzugriffe mit Vorgabewert; Vorlagen, die einen fehlenden
+Platzhalter als leere Zeichenkette einsetzen.
+
 ### Der Einwand der Gegenseite nennt oft das Feld — dann wird gelesen, nicht geraten
 
 Zwei Ablehnungen beim ersten Eintragen der Store-Daten:

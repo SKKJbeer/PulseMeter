@@ -1,14 +1,14 @@
 /* Nicht-funktionale Prüfungen am Klick-Dummy: Bedienbarkeit und Geschwindigkeit.
  *
  * **Warum getrennt von `check-prototype.mjs`.** Die dort prüft, ob die App das
- * Richtige *tut*. Hier steht, ob man es auch *kann*: ob ein Knopf im Keller mit
+ * Richtige *tut*. Hier steht, ob man es auch *kann*: ob ein Knopf am Zähler mit
  * dem Daumen zu treffen ist, ob die Schrift auf ihrem Untergrund lesbar bleibt,
  * ob jede Fläche einen Namen hat, den eine Vorlesefunktion aussprechen kann —
  * und ob das alles schnell genug passiert, dass niemand wartet.
  *
  * Die Maßstäbe sind nicht erfunden:
  *   - 44 × 44 Punkte Mindestgröße für alles Antippbare (Apple, Human Interface
- *     Guidelines). Der Nutzer steht im Keller, einhändig, bei schlechtem Licht.
+ *     Guidelines). Der Nutzer steht am Zähler, einhändig, bei schlechtem Licht.
  *   - Kontrast 4,5:1 für normale Schrift, 3:1 für große (WCAG 2.2 AA).
  *   - Produktprinzip 2: drei Berührungen von App-Start bis zur gesicherten
  *     Folge-Ablesung. Wird hier gezählt, nicht behauptet.

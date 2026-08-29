@@ -10,7 +10,7 @@ import PulseUI
 
 /// Der Screen, an dem das Produkt gewinnt oder verliert.
 ///
-/// Der Nutzer steht im Keller: schlechtes Licht, kalt, vielleicht eine Lampe in
+/// Der Nutzer steht am Zähler: schlechtes Licht, kalt, vielleicht eine Lampe in
 /// der anderen Hand. Entsteht hier Reibung, hört er nach drei Monaten auf — und
 /// alle anderen Funktionen werden wertlos (docs/03-ux-konzept.md, Abschnitt 3).
 ///
@@ -76,7 +76,7 @@ struct CaptureView: View {
     var body: some View {
         NavigationStack {
             // Der Ziffernblock gehört an den unteren Rand, nicht an den oberen.
-            // Der Nutzer steht im Keller und hält das Gerät in einer Hand; was
+            // Der Nutzer steht am Zähler und hält das Gerät in einer Hand; was
             // er antippt, muss der Daumen erreichen. Auf hohen Geräten schiebt
             // der Abstandhalter Block und Schaltfläche nach unten, auf kleinen
             // greift der Bildlauf.
@@ -163,7 +163,7 @@ struct CaptureView: View {
 
     /// Wann abgelesen wurde — unter dem Sichern-Knopf, nicht darüber.
     ///
-    /// **Es bleibt eine Zeile, kein Formular.** Im Keller tippt niemand ein
+    /// **Es bleibt eine Zeile, kein Formular.** Am Zähler tippt niemand ein
     /// Datum ein; er tippt eine Zahl und drückt Sichern. Voreingestellt ist
     /// jetzt, und wer nichts anfasst, merkt von dieser Zeile nichts (60 Sekunden,
     /// 3 Berührungen). Sie steht trotzdem sichtbar da, weil ungefragt eine

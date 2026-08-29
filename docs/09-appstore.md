@@ -19,20 +19,24 @@ gegen die Roadmap.
 ### Name (max. 30 Zeichen)
 
 ```
-PulseMeter – Zählerstände
+Zählora – Zähler & Verbrauch
 ```
 
-25 Zeichen. Der Zusatz kostet nichts und bringt das wichtigste Suchwort in das
-Feld, das am stärksten gewichtet wird. „PulseMeter" allein sucht niemand.
+28 Zeichen von 30. Vom Gründer am 28. August gewählt. Der Zusatz trägt die
+beiden Wörter, nach denen jemand sucht: „Zählora" allein sucht niemand, weil es
+das Wort vorher nicht gab. Geprüft am selben Tag über die Suche des App Store —
+in Deutschland gibt es keine App dieses Namens.
 
 ### Untertitel (max. 30 Zeichen)
 
 ```
-Zähler ablesen, Kosten sehen
+Strom, Gas und Wasser ablesen
 ```
 
-28 Zeichen. Zwei Suchwörter und ein Nutzen in einer Zeile. Nicht „Die App für
-Ihre Zählerstände" — das sagt dasselbe und nutzt nichts.
+29 Zeichen. **Geändert mit dem Namen:** Vorher stand hier „Zähler ablesen,
+Kosten sehen", und beide Wörter stehen seit der Umbenennung schon im Namen.
+Apple wertet jedes Feld einmal; dasselbe Wort zweimal ist ein verschenktes Feld.
+Die drei Energiearten sind das, was jemand tatsächlich eintippt.
 
 ### Werbetext (max. 170 Zeichen, jederzeit ohne neue Version änderbar)
 
@@ -76,24 +80,24 @@ Fall, den kaum eine andere Zähler-App kennt.
 ### Beschreibung (max. 4000 Zeichen)
 
 ```
-Du trägst eine Zahl ein. PulseMeter sagt dir, ob alles im Rahmen ist.
+Du trägst eine Zahl ein. Zählora sagt dir, ob alles im Rahmen ist.
 
 Zählerstände landen auf einem Zettel am Sicherungskasten, in einer Tabelle, die
 niemand pflegt, oder nirgends. Und im Frühjahr kommt die Abrechnung, und man
-glaubt ihr einfach. PulseMeter macht aus zehn Sekunden im Keller eine Zahl, mit
+glaubt ihr einfach. Zählora macht aus zehn Sekunden am Zähler eine Zahl, mit
 der sich etwas anfangen lässt.
 
 
-ABLESEN, BEVOR DAS LICHT AUSGEHT
+ZEHN SEKUNDEN AM ZÄHLER
 
 App öffnen, Zahl eintippen, sichern. Das Datum steht schon auf heute, der
-Ziffernblock ist groß genug, dass man ihn einhändig trifft — im Keller, im
-Halbdunkel, mit klammen Fingern.
+Ziffernblock ist groß genug, dass man ihn einhändig trifft. Auch im
+Halbdunkel und mit klammen Fingern.
 
 Und bevor der Wert in deinen Daten landet, sieht die App ihn sich an. Eine Zahl
 unter dem letzten Stand, eine Zahl weit über dem, was bei dir üblich ist — dann
-fragt sie nach. Im Keller, wo du noch einmal hinsehen kannst, nicht im Februar
-beim Blick aufs Diagramm.
+fragt sie nach. Am Zähler kannst du noch einmal hinsehen, im Februar vor dem
+Diagramm nicht mehr.
 
 
 FÜNF SEKUNDEN, UND DU WEISST, WO DU STEHST
@@ -118,7 +122,7 @@ Tipp einen Monat an, und du siehst, woher der Unterschied kommt.
 DIE NACHZAHLUNG SIEHST DU IM OKTOBER
 
 Zwei Zahlen von deiner Rechnung genügen: Arbeitspreis und Grundpreis. Ab da
-rechnet PulseMeter mit. Kommt dein Abschlag hin, oder legst du im Frühjahr
+rechnet Zählora mit. Kommt dein Abschlag hin, oder legst du im Frühjahr
 nach? Die Antwort steht auf der Übersicht, das ganze Jahr über.
 
 Bei Gas mit Zustandszahl und Brennwert. Wer Kubikmeter einfach mal zehn nimmt,
@@ -295,7 +299,7 @@ begründet. Nur die **ersten beiden** erscheinen in der Suchliste; sie müssen
 allein tragen.
 
 > ⚠️ **Nach dem Einbau von StoreKit neu erzeugen.** Das sechste Bild zeigt die
-> Kaufseite, und dort steht heute „Der Kauf steht bereit, sobald PulseMeter im
+> Kaufseite, und dort steht heute „Der Kauf steht bereit, sobald Zählora im
 > App Store ist". Im Store selbst wäre dieser Satz absurd — und er stünde
 > ausgerechnet auf dem Bild, das verkaufen soll.
 

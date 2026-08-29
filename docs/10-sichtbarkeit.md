@@ -2,7 +2,7 @@
 
 Stand: 2026-08-13, Version 0.42.0
 
-Dieses Dokument beantwortet eine Frage: **Wie erfährt jemand von PulseMeter,
+Dieses Dokument beantwortet eine Frage: **Wie erfährt jemand von Zählora,
 der uns nicht kennt?** Es ist bewusst kein Marketingplan mit Kanälen und
 Budgets — für eine App, deren teuerstes Stück 4,99 € kostet, rechnet sich
 bezahlte Werbung nicht (Abschnitt 7 rechnet es vor).
@@ -126,7 +126,7 @@ Geordnet nach vermuteter Nützlichkeit, nicht nach Volumen:
 Name und Untertitel bleiben wie in `09-appstore.md`:
 
 ```
-PulseMeter – Zählerstände
+Zählora – Zählerstände
 Zähler ablesen, Kosten sehen
 ```
 
@@ -165,7 +165,7 @@ Store darübersteht, ist frei.
 | `multipleregisters` | Tag- und Nachtstrom, Einspeisung | Nachtstrom & Einspeisung erfassen |
 | `costsandtariffs` | Kosten und Preise | Stromkosten & Gaskosten berechnen |
 | `pdfreport` | Bericht ohne Wasserzeichen | Verbrauchsbericht als PDF |
-| `everything` | Alles freischalten | PulseMeter komplett |
+| `everything` | Alles freischalten | Zählora komplett |
 
 Zwei verschiedene Namen für dasselbe Produkt sind kein Widerspruch: In der App
 steht, **was es tut**; im Store steht zusätzlich, **wonach jemand sucht**. Die

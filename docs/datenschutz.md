@@ -1,10 +1,10 @@
-# Datenschutzerklärung für PulseMeter
+# Datenschutzerklärung für Zählora
 
 Stand: 10. August 2026
 
 ## Kurz gesagt
 
-PulseMeter erhebt keine personenbezogenen Daten. Es gibt kein Konto, keine
+Zählora erhebt keine personenbezogenen Daten. Es gibt kein Konto, keine
 Anmeldung, keine Werbung und keine Analyse. Ihre Zählerstände liegen auf Ihrem
 Gerät. Wir betreiben keine Server, auf denen etwas von Ihnen liegen könnte.
 
@@ -30,7 +30,7 @@ E-Mail: [Adresse]
 
 ## 2. Welche Daten die App verarbeitet
 
-PulseMeter speichert ausschließlich das, was Sie selbst eintragen:
+Zählora speichert ausschließlich das, was Sie selbst eintragen:
 
 - Namen und Art Ihrer Zähler,
 - Zählerstände mit Datum,
@@ -45,7 +45,7 @@ Standort, Kontakte, Fotos, Gerätekennungen zu Werbezwecken, Nutzungsverhalten.
 
 ## 3. Synchronisation über iCloud
 
-Wenn Sie iCloud auf Ihrem Gerät verwenden, gleicht PulseMeter Ihre Daten über
+Wenn Sie iCloud auf Ihrem Gerät verwenden, gleicht Zählora Ihre Daten über
 die **private iCloud-Datenbank Ihres Apple-Kontos** zwischen Ihren Geräten ab.
 
 Dabei gilt:
@@ -67,14 +67,14 @@ Erlaubnis jederzeit in den iOS-Einstellungen widerrufen.
 
 ## 5. Käufe
 
-Der Kauf von „PulseMeter Pro" wird vollständig über den App Store
+Der Kauf von „Zählora Pro" wird vollständig über den App Store
 abgewickelt. Zahlungsdaten erhalten wir zu keinem Zeitpunkt; wir erfahren von
 Apple nur, ob ein Kauf vorliegt. Es gelten die Datenschutzbestimmungen von
 Apple.
 
 ## 6. Keine Analyse, keine Werbung, kein Tracking
 
-PulseMeter enthält keine Analysewerkzeuge, keine Werbenetzwerke und keine
+Zählora enthält keine Analysewerkzeuge, keine Werbenetzwerke und keine
 Bibliotheken Dritter, die Daten übertragen. Es findet kein Tracking über Apps
 oder Websites hinweg statt. Es werden keine Profile gebildet.
 
@@ -109,7 +109,7 @@ also damit die App das tut, wofür Sie sie installiert haben.
 
 ## 9. Kinder
 
-PulseMeter richtet sich nicht besonders an Kinder und erhebt wissentlich keine
+Zählora richtet sich nicht besonders an Kinder und erhebt wissentlich keine
 Daten von Kindern. Da überhaupt keine personenbezogenen Daten erhoben werden,
 ist die App auch für jedes Alter unbedenklich.
 

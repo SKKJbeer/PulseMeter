@@ -156,7 +156,7 @@ final class TableExportTests: XCTestCase {
         XCTAssertEqual(TableExport.escape("Strom"), "Strom")
         XCTAssertEqual(TableExport.escape("Wärmepumpe (Garage)"), "Wärmepumpe (Garage)")
         // Semikolon bleibt der Grund fürs Einfassen, ohne Apostroph davor.
-        XCTAssertEqual(TableExport.escape("Keller; hinten"), "\"Keller; hinten\"")
+        XCTAssertEqual(TableExport.escape("Garage; hinten"), "\"Garage; hinten\"")
     }
 
 }

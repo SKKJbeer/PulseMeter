@@ -149,7 +149,7 @@ struct PulseWidgetView: View {
     /// Ein Widget ohne Daten sagt, was zu tun ist — statt leer zu bleiben.
     private var emptyState: some View {
         VStack(alignment: .leading, spacing: 3) {
-            Text("PulseMeter").font(.system(.caption, weight: .semibold))
+            Text("Zählora").font(.system(.caption, weight: .semibold))
             Text("Öffne die App und trag deinen ersten Stand ein.")
                 .font(.system(.caption2))
                 .foregroundStyle(.secondary)
@@ -166,7 +166,7 @@ struct PulseWidgetView: View {
     /// sieht niemand nach.
     private func spoken(_ meter: WidgetSummary.Meter?) -> String {
         guard let meter else {
-            return "PulseMeter. Öffne die App und trag deinen ersten Stand ein."
+            return "Zählora. Öffne die App und trag deinen ersten Stand ein."
         }
         return meter.spokenSummary(number: number)
     }
