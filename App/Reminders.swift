@@ -60,12 +60,20 @@ enum Reminders {
     /// nächsten Termin, und eine stehengebliebene alte Mitteilung würde zu
     /// einem Zeitpunkt kommen, an dem längst nichts mehr fällig ist. Genau so
     /// verlieren Apps das Vertrauen in ihre eigenen Hinweise.
+    /// - Parameter darfErinnern: Ob der Kauf ``ProductID/reminders`` vorliegt.
+    ///   **Die Sperre sitzt hier und nicht nur am Schalter.** Ein Bestand
+    ///   geplanter Mitteilungen überlebt sonst den Kauf, der ihn erlaubt hat —
+    ///   nach einer Rückerstattung käme monatelang weiter eine Meldung. Das
+    ///   Löschen steht deshalb **vor** der Prüfung: Wer nicht mehr darf, hat
+    ///   danach auch nichts mehr anstehen.
     static func reschedule(meteringPoints: [MeteringPoint],
                            readings: [MeteringPoint.ID: [Reading]],
-                           today: CalendarDay) async {
+                           today: CalendarDay,
+                           darfErinnern: Bool) async {
         let center = UNUserNotificationCenter.current()
         center.removeAllPendingNotificationRequests()
 
+        guard darfErinnern else { return }
         guard await authorizationStatus() == .authorized else { return }
 
         let plan = ReminderEngine.schedule(meteringPoints: meteringPoints,

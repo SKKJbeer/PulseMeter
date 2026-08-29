@@ -864,14 +864,18 @@ for (const scheme of ["light", "dark"]) {
   const laden = await page.evaluate(() => ({
     offen: document.getElementById("sheet-store").classList.contains("on"),
     karten: [...document.querySelectorAll("#store-body [data-karte]")].map(x => x.dataset.karte),
+    // **Die Zahl kommt aus dem Modell, nicht aus dieser Datei.** Sie stand
+    // hier als 4 und musste beim fünften Kauf von Hand nachgezogen werden —
+    // die Prüfung schlug an, aber sie prüfte den Zähler statt die Sache.
+    erwartet: PRODUCTS.length,
     punkte: document.querySelectorAll("#store-body ul.includes li").length,
     absatz: document.getElementById("store-body").innerText.split("\n")
               .filter(z => z.trim().length > 120).length,
     text: document.getElementById("store-body").innerText
   }));
   note(laden.offen, "Die Kaufübersicht öffnet sich über eine eigene Zeile");
-  note(laden.karten.length === 4,
-       `Alle vier Einzelkäufe stehen darin: ${laden.karten.join(", ")}`);
+  note(laden.karten.length === laden.erwartet,
+       `Alle ${laden.erwartet} Einzelkäufe stehen darin: ${laden.karten.join(", ")}`);
   note(/Alles freischalten/.test(laden.text) && /4,99/.test(laden.text),
        "Das Bündel steht oben, mit Preis");
   note(laden.punkte >= 14,

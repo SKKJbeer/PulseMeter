@@ -26,6 +26,7 @@ struct MetersView: View {
     @State private var showingArchived = false
     @State private var remindersOn = false
     @State private var reminderNote: String?
+    @State private var paywallErinnerung = false
     @State private var problem: String?
 
     var body: some View {
@@ -115,6 +116,9 @@ struct MetersView: View {
             }
             .sheet(isPresented: $showingPaywall) {
                 UnlockSheet(product: .additionalMeters)
+            }
+            .sheet(isPresented: $paywallErinnerung) {
+                UnlockSheet(product: .reminders)
             }
             .sheet(isPresented: $showingStore) {
                 StoreView()
@@ -313,6 +317,23 @@ struct MetersView: View {
                 .foregroundStyle(PulseColor.inkTertiary)
                 .padding(.top, 6)
 
+            // **Ungekauft steht hier eine Zeile statt eines toten Schalters.**
+            // Ein ausgegrauter Schalter sagt nur, dass etwas nicht geht; diese
+            // Zeile sagt, was es ist und was es kostet — und führt dorthin.
+            if !purchase.policy.canRemind {
+                PulseCard {
+                    ProLockRow(product: .reminders) {
+                        paywallErinnerung = true
+                    }
+                }
+            } else {
+                reminderCard
+            }
+        }
+    }
+
+    private var reminderCard: some View {
+        Group {
             PulseCard {
                 VStack(spacing: 0) {
                     Toggle(isOn: $remindersOn) {
@@ -451,7 +472,8 @@ struct MetersView: View {
                 byMeter[point.id] = try repository.readings(for: register.id)
             }
             await Reminders.reschedule(meteringPoints: meters, readings: byMeter,
-                                       today: CalendarDay.containing(Date(), in: .current))
+                                       today: CalendarDay.containing(Date(), in: .current),
+                                       darfErinnern: purchase.policy.canRemind)
             let count = await Reminders.pendingCount()
             reminderNote = count == 1 ? "Eine Erinnerung steht bereit."
                                       : "\(count) Erinnerungen stehen bereit."

@@ -52,7 +52,6 @@ wiederkehrender Nutzen entsteht.
 - Bis zu **2 Zähler**
 - Unbegrenzt viele Ablesungen, unbegrenzte Historie
 - Verlauf und Vorjahresvergleich
-- Erinnerungen
 - **CSV-Export** — dauerhaft und uneingeschränkt
 - **Der Verbrauchsbericht zum Ansehen und Drucken**, mit Wasserzeichen
 
@@ -60,11 +59,29 @@ wiederkehrender Nutzen entsteht.
 
 | Was | Preis | Wofür |
 |---|---|---|
+| Erinnerungen | **0,99 €** | die App meldet sich, wenn ein Zähler dran ist |
 | Unbegrenzt viele Zähler | **1,99 €** | ab dem dritten Zähler |
 | Tag- und Nachtstrom, Einspeisung | **1,99 €** | ein Gerät mit zwei Zahlen |
 | Kosten und Preise | **1,99 €** | Preise, Tarifhistorie, Abschlagsvergleich, Jahresvorschau |
 | Bericht ohne Wasserzeichen | **1,99 €** | das Dokument zum Weitergeben |
-| **Alles freischalten** | **4,99 €** | alle vier zusammen, rund 37 % günstiger |
+| **Alles freischalten** | **4,99 €** | alle fünf zusammen, 8,95 € einzeln — 44 % günstiger |
+
+**Warum die Erinnerung einen Euro unter den anderen liegt, seit 0.100.0.** Sie
+war bis dahin kostenlos, und der Gründer wollte sie kostenpflichtig, damit das
+Bündel deutlicher lohnt. Beides ist eingetreten: Die Summe der Einzelkäufe
+steigt von 7,96 € auf 8,95 €, das Bündel bleibt bei 4,99 € und liegt damit
+nicht mehr knapp, sondern klar darunter.
+
+Der Preis ist trotzdem **nicht** 1,99 €. Die Erinnerung ist der einzige Kauf,
+vor dem niemand steht, weil ihm etwas fehlt — er steht davor, weil er weiß,
+dass er es sonst vergisst. Das ist ein schwächerer Antrieb als eine erreichte
+Grenze, und er trägt keine zwei Euro. Ein Euro ist keine Entscheidung.
+
+**Der Zeitpunkt war die Bedingung.** Eine kostenlose Funktion kostenpflichtig
+zu machen, ist vor dem Verkaufsstart eine Preisentscheidung und danach ein
+Wegnehmen. Zum Zeitpunkt der Änderung hatte niemand gekauft; die Zusage stand
+allerdings schon in der Store-Beschreibung und auf der Website und ist im
+selben Zug mitgezogen.
 
 ### Warum der Bericht ein Wasserzeichen statt einer Sperre bekommt
 

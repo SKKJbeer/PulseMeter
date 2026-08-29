@@ -9,6 +9,64 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.100.0 — 2026-08-29
+
+**Erinnerungen kosten 0,99 €.** Vom Gründer angeordnet, damit das Bündel
+deutlicher lohnt. Es wirkt: Die Summe der Einzelkäufe steigt von 7,96 € auf
+**8,95 €**, das Bündel bleibt bei **4,99 €** — vorher knapp die Hälfte, jetzt
+44 % darunter.
+
+**Der Zeitpunkt war die Bedingung.** Eine kostenlose Funktion kostenpflichtig
+zu machen ist vor dem Verkaufsstart eine Preisentscheidung und danach ein
+Wegnehmen. Gekauft hat noch niemand. Versprochen war es allerdings schon: in
+der Store-Beschreibung, auf der Website, im Kaufblatt der App und im
+Monetarisierungspapier. Alle vier sind mitgezogen — sonst stünde dort eine
+Zusage, die die App nicht hält.
+
+### Warum 0,99 € und nicht 1,99 €
+Die Erinnerung ist der einzige Kauf, vor dem niemand steht, weil ihm etwas
+fehlt — er steht davor, weil er weiß, dass er es sonst vergisst. Das ist ein
+schwächerer Antrieb als eine erreichte Grenze und trägt keine zwei Euro. Sie
+steht deshalb **vorn** in der Liste: der billigste Einstieg, und der einzige,
+den jemand tätigt, ohne angestoßen zu sein.
+
+### Wo die Sperre sitzt
+- Nicht am Schalter, sondern beim **Planen**. Ein Bestand geplanter
+  Mitteilungen überlebt sonst den Kauf, der ihn erlaubt hat — nach einer
+  Rückerstattung käme monatelang weiter eine Meldung. `Reminders.reschedule`
+  löscht **vor** der Prüfung: Wer nicht mehr darf, hat danach nichts mehr
+  anstehen.
+- Auf dem Zähler-Schirm steht ungekauft eine Zeile mit Schloss und Preis statt
+  eines ausgegrauten Schalters. Ein toter Schalter sagt nur, dass etwas nicht
+  geht; diese Zeile sagt, was es ist, was es kostet, und führt dorthin
+  (Produktprinzip 4).
+
+### Drei Prüfungen haben angeschlagen, und alle drei zu Recht
+1. **`suggestedPrice` musste „größer als 0,99 €" sein.** Genau diesen Preis
+   bekamen die Erinnerungen. Die Grenze bleibt dieselbe Zahl, ist jetzt aber
+   erlaubt statt verboten — 0,99 € ist der billigste Preis, den der App Store
+   kennt.
+2. **Das Bündel zählte fünf Zeilen auf, erlaubt waren vier.** Ausgenommen ist
+   jetzt nur das Bündel, und begründet: Es nennt genau die Stücke, die es
+   ersetzt. Zu kürzen hieße, einen Kauf zu verschweigen, den jemand mitbezahlt.
+3. **„Erinnerungen an fällige Ablesungen" enthielt das Wort „Ablesung".** Eine
+   Prüfung wacht darüber, dass Ablesungen und Historie nie verkauft werden. Sie
+   hatte recht: Der Titel las sich, als stünde das Ablesen zum Verkauf. Er
+   heißt jetzt **„Erinnerung, wenn ein Zähler dran ist"** — geändert wurde der
+   Titel, nicht die Prüfung.
+
+### Neu geprüft
+- `canRemind` gegen alle vier Bestände: ohne Kauf, einzeln, im Bündel, und mit
+  einem fremden Kauf.
+- **Nichts, was als dauerhaft kostenlos beworben wird, darf zugleich ein Kauf
+  sein.** Genau dieser Widerspruch stand einen Commit lang da, und beide
+  Stellen waren für sich stimmig.
+- Die Prüfung des Entwurfs zählte „alle vier Einzelkäufe" ab. Sie nimmt die
+  Zahl jetzt aus dem Modell — sie schlug an, prüfte aber den Zähler statt die
+  Sache.
+
+---
+
 ## 0.99.1 — 2026-08-29
 
 **Fünf Stellen, an denen der alte Name noch sichtbar war.** Gefunden nicht

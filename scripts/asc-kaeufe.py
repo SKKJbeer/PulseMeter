@@ -68,8 +68,15 @@ KAEUFE = [
     {"kennung": "pdfreport",         "referenz": "Bericht ohne Wasserzeichen",
      "name": "Bericht ohne Wasserzeichen",  "text": "Der Bericht zum Weitergeben.",
      "preis": "1.99"},
+    # **Der günstigste, und er steht zuletzt in dieser Liste, nicht in der
+    # App.** Hier zählt nur, dass er nach den vier anderen angelegt wird —
+    # `KAEUFE[0]` dient an einer Stelle als Stichprobe, und die soll ein Kauf
+    # zu 1,99 € bleiben.
+    {"kennung": "reminders",         "referenz": "Erinnerungen",
+     "name": "Erinnerungen",                "text": "Die App meldet sich, wenn ein Zähler dran ist.",
+     "preis": "0.99"},
     {"kennung": "everything",        "referenz": "Alles freischalten",
-     "name": "Alles freischalten",          "text": "Alle vier Freischaltungen zusammen.",
+     "name": "Alles freischalten",          "text": "Alle fünf Freischaltungen zusammen.",
      "preis": "4.99"},
 ]
 

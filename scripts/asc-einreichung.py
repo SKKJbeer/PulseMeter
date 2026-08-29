@@ -662,8 +662,8 @@ def kaeufe_pruefen(apple: Apple, app_id: str) -> None:
     zustaende = [e["attributes"].get("state", "?")
                  for e in antwort.json().get("data", [])]
     bereit = [z for z in zustaende if z in ("READY_TO_SUBMIT", "APPROVED")]
-    pruefe(len(bereit) == 5,
-           f"Fünf Käufe bereit ({len(bereit)} von {len(zustaende)}: "
+    pruefe(len(bereit) == 6,
+           f"Sechs Käufe bereit ({len(bereit)} von {len(zustaende)}: "
            f"{', '.join(sorted(set(zustaende)))})")
 
 

@@ -797,7 +797,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>Zählora</h1>
-  <p>Klickbarer Entwurf · v0.99.1</p>
+  <p>Klickbarer Entwurf · v0.100.0</p>
 </div>
 
 <div class="device">
@@ -941,7 +941,23 @@ select.field { cursor: pointer; }
       </button>
       <div class="note" id="limit-note" style="text-align:center"></div>
       <div class="section-label">Erinnerungen</div>
-      <div class="list">
+      <!-- Ungekauft steht hier eine Sperre statt eines toten Schalters. Ein
+           ausgegrauter Schalter sagt nur, dass etwas nicht geht; diese Zeile
+           sagt, was es ist und was es kostet — und führt dorthin
+           (Produktprinzip 4, keine Sackgasse). -->
+      <div class="list" id="reminder-lock" style="display:none">
+        <button type="button" class="rowbtn" data-unlock="reminders">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+               style="width:18px;height:18px;flex:none;color:var(--tint-ink);margin-right:11px">
+            <rect x="4" y="10.5" width="16" height="10" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/>
+          </svg>
+          <div class="rl">Erinnerung, wenn ein Zähler dran ist<small>Am Abend, im Rhythmus, den du je Zähler einstellst</small></div>
+          <span class="freebadge pro"></span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+        </button>
+      </div>
+      <div class="list" id="reminder-list">
         <div class="row"><div class="rl">Monatlich am 1.<small>Für Strom, Wasser, Wärmepumpe</small></div><div class="rv" style="color:var(--good)">An</div></div>
         <div class="row"><div class="rl">Gas<small>Monatlich am 1.</small></div><div class="rv" style="color:var(--good)">An</div></div>
       </div>
@@ -3142,6 +3158,10 @@ let OWNED = new Set(["everything"]);
 const FREE_METER_LIMIT = 2;
 
 const PRODUCTS = [
+  /* Vorn, weil am günstigsten und weil es der einzige Kauf ist, vor dem
+     jemand steht, ohne an eine Grenze gestoßen zu sein. */
+  { id: "reminders", price: 0.99, title: "Erinnerung, wenn ein Zähler dran ist",
+    text: "Am Abend, im Rhythmus, den du je Zähler einstellst. Sonst fällt es einem im Februar ein, wenn die Abrechnung kommt." },
   { id: "additionalMeters", price: 1.99, title: "Unbegrenzt viele Zähler",
     text: "Kostenlos sind zwei. Wer Strom, Gas und Wasser führt, braucht den dritten." },
   { id: "multipleRegisters", price: 1.99, title: "Tag- und Nachtstrom, Einspeisung",
@@ -3152,7 +3172,7 @@ const PRODUCTS = [
     text: "Der Bericht zum Weitergeben, ohne den Schriftzug quer darüber. Ansehen und drucken kannst du ihn auch so." }
 ];
 const BUNDLE = { id: "everything", price: 4.99, title: "Alles freischalten",
-                 text: "Alle vier Freischaltungen zusammen, dauerhaft. Günstiger als einzeln." };
+                 text: "Alle fünf Freischaltungen zusammen, dauerhaft. Günstiger als einzeln." };
 
 /* Was in einem Kauf steckt — als Stichpunkte, nicht als Absatz.
 
@@ -3162,6 +3182,9 @@ const BUNDLE = { id: "everything", price: 4.99, title: "Alles freischalten",
    Zeilen stehen in `ProductID.includes` — weichen sie ab, ist das ein Fehler
    und kein Zustand (Regel 2). */
 const INCLUDES = {
+  reminders: ["Meldung, sobald ein Zähler dran ist",
+              "Monatlich, vierteljährlich oder jährlich",
+              "Läuft auf dem Gerät, ohne Konto"],
   additionalMeters: ["Beliebig viele Zähler statt zwei",
                      "Strom, Gas, Wasser und Wärme nebeneinander"],
   multipleRegisters: ["Zwei Zählwerke an einem Gerät",
@@ -3183,7 +3206,6 @@ const ALWAYS_FREE = [
   "Zwei Zähler mit unbegrenzt vielen Ablesungen",
   "Die ganze Historie und der Vorjahresvergleich",
   "Abgleich zwischen deinen Geräten über iCloud",
-  "Erinnerungen an fällige Ablesungen",
   "Export aller Daten als Tabelle — dauerhaft kostenlos"
 ];
 
@@ -3318,6 +3340,7 @@ function setPro(on) {
   renderStoreRow();
   renderReportRow();
   renderCostLock();
+  renderReminderLock();
 }
 
 function renderLimitNote() {
@@ -3914,6 +3937,7 @@ function renderAll() {
   renderStoreRow();
   renderReportRow();
   renderCostLock();
+  renderReminderLock();
 }
 
 /* Das Wasserzeichen steht am Weg zum Bericht, bevor jemand ihn verschickt —
@@ -3924,6 +3948,18 @@ function renderCostLock() {
   const zeigen = !owns("costsAndTariffs");
   box.style.display = zeigen ? "" : "none";
   if (zeigen) box.querySelector(".freebadge").textContent = price("costsAndTariffs");
+}
+
+/* Dieselbe Form wie `renderCostLock`: Die Sperre ersetzt den Inhalt, statt ihn
+   auszugrauen. In der App macht das `MetersView.reminderSection`. */
+function renderReminderLock() {
+  const sperre = document.getElementById("reminder-lock");
+  const liste = document.getElementById("reminder-list");
+  if (!sperre || !liste) return;
+  const zeigen = !owns("reminders");
+  sperre.style.display = zeigen ? "" : "none";
+  liste.style.display = zeigen ? "none" : "";
+  if (zeigen) sperre.querySelector(".freebadge").textContent = price("reminders");
 }
 
 function renderReportRow() {

@@ -8,7 +8,7 @@ import Foundation
 /// gerade fehlt, sind keine Entscheidung, sondern ein Tipp. Wer später mehr
 /// braucht, kauft mehr; wer alles will, nimmt das Bündel und spart ein Drittel.
 ///
-/// **Warum vier und nicht sechs.** Abschlagsvergleich und Jahresvorschau
+/// **Warum fünf und nicht sieben.** Abschlagsvergleich und Jahresvorschau
 /// lassen sich ohne Preise gar nicht rechnen — sie einzeln zu verkaufen hieße,
 /// etwas anzubieten, das ohne einen zweiten Kauf nichts tut. Sie gehören
 /// deshalb zu ``costsAndTariffs``.
@@ -45,6 +45,18 @@ public enum ProductID: String, Hashable, Codable, Sendable, CaseIterable, Identi
     /// eine Sperre: Man sieht vorher, was man bekommt.
     case pdfReport
 
+    /// Die App meldet sich, wenn eine Ablesung fällig ist.
+    ///
+    /// **Der billigste Kauf, und mit Absicht.** 0,99 € statt 1,99 €: Er ist
+    /// der erste, den jemand tätigt — nicht weil ihm etwas fehlt, sondern weil
+    /// er weiß, dass er es sonst vergisst. Ein Euro ist dafür keine
+    /// Entscheidung.
+    ///
+    /// Er hebt zugleich die Summe der Einzelkäufe auf 8,95 €, während das
+    /// Bündel bei 4,99 € steht. Das Bündel war vorher knapp die Hälfte der
+    /// Summe; jetzt ist es deutlich darunter.
+    case reminders
+
     /// Alles auf einmal, günstiger als die Summe.
     case everything
 
@@ -64,6 +76,7 @@ public enum ProductID: String, Hashable, Codable, Sendable, CaseIterable, Identi
         case .multipleRegisters: return "Tag- und Nachtstrom, Einspeisung"
         case .costsAndTariffs:   return "Kosten und Preise"
         case .pdfReport:         return "Bericht ohne Wasserzeichen"
+        case .reminders:         return "Erinnerung, wenn ein Zähler dran ist"
         case .everything:        return "Alles freischalten"
         }
     }
@@ -79,8 +92,10 @@ public enum ProductID: String, Hashable, Codable, Sendable, CaseIterable, Identi
             return "Zwei Zahlen von der Rechnung, und aus dem Verbrauch wird ein Betrag — mit Abschlagsvergleich und Vorschau aufs Jahresende."
         case .pdfReport:
             return "Der Bericht zum Weitergeben, ohne den Schriftzug quer darüber. Ansehen und drucken kannst du ihn auch so."
+        case .reminders:
+            return "Am Abend, im Rhythmus, den du je Zähler einstellst. Sonst fällt es einem im Februar ein, wenn die Abrechnung kommt."
         case .everything:
-            return "Alle vier Freischaltungen zusammen, dauerhaft. Günstiger als einzeln."
+            return "Alle fünf Freischaltungen zusammen, dauerhaft. Günstiger als einzeln."
         }
     }
 
@@ -111,6 +126,10 @@ public enum ProductID: String, Hashable, Codable, Sendable, CaseIterable, Identi
         case .pdfReport:
             return ["Bericht ohne Wasserzeichen",
                     "Zum Weitergeben an Vermieter oder Versorger"]
+        case .reminders:
+            return ["Meldung, sobald ein Zähler dran ist",
+                    "Monatlich, vierteljährlich oder jährlich",
+                    "Läuft auf dem Gerät, ohne Konto"]
         case .everything:
             return ProductID.individually.map(\.title)
         }
@@ -128,7 +147,6 @@ public enum ProductID: String, Hashable, Codable, Sendable, CaseIterable, Identi
         "Zwei Zähler mit unbegrenzt vielen Ablesungen",
         "Die ganze Historie und der Vorjahresvergleich",
         "Abgleich zwischen deinen Geräten über iCloud",
-        "Erinnerungen an fällige Ablesungen",
         "Export aller Daten als Tabelle — dauerhaft kostenlos",
     ]
 
@@ -141,6 +159,10 @@ public enum ProductID: String, Hashable, Codable, Sendable, CaseIterable, Identi
     public var suggestedPrice: Decimal {
         switch self {
         case .everything: return Decimal(string: "4.99")!
+        // **Erinnerungen liegen darunter, seit 0.100.0.** Sie sind der Kauf,
+        // vor dem niemand steht, weil ihm etwas fehlt — sondern weil er weiß,
+        // dass er es sonst vergisst. Ein Euro ist dafür keine Entscheidung.
+        case .reminders:  return Decimal(string: "0.99")!
         // **Alle vier gleich teuer, seit 0.95.0.** „Kosten und Preise" stand
         // einen Euro über den anderen, weil dort am meisten drinsteckt. Das
         // war von innen gedacht: Wer die Kaufseite ansieht, liest vier Zeilen
@@ -151,10 +173,14 @@ public enum ProductID: String, Hashable, Codable, Sendable, CaseIterable, Identi
         }
     }
 
-    /// Die vier einzeln käuflichen Stücke, in der Reihenfolge, in der sie auf
+    /// Die fünf einzeln käuflichen Stücke, in der Reihenfolge, in der sie auf
     /// der Kaufseite stehen. Das Bündel gehört nicht dazu — es steht darunter.
+    ///
+    /// ``reminders`` steht vorn: Es ist der günstigste und der einzige, den
+    /// jemand kauft, bevor er an eine Grenze stößt.
     public static var individually: [ProductID] {
-        [.additionalMeters, .multipleRegisters, .costsAndTariffs, .pdfReport]
+        [.reminders, .additionalMeters, .multipleRegisters, .costsAndTariffs,
+         .pdfReport]
     }
 }
 
@@ -266,6 +292,18 @@ public struct AccessPolicy: Hashable, Sendable {
     public func remainingMeters(existingCount: Int) -> Int? {
         allows(.additionalMeters) ? nil : max(0, Self.freeMeterLimit - existingCount)
     }
+
+    /// Ob die App an fällige Ablesungen erinnern darf.
+    ///
+    /// **Die Sperre greift beim Planen, nicht beim Schalter.** Wer den Kauf
+    /// nicht hat, sieht den Schalter trotzdem — er führt aufs Kaufblatt statt
+    /// ins Leere. Ein ausgegrauter Schalter erklärt nichts; einer, der etwas
+    /// tut, schon.
+    ///
+    /// Geprüft wird zusätzlich beim Nachziehen nach jeder Ablesung: Ein
+    /// Bestand geplanter Mitteilungen darf einen Kauf nicht überleben, der
+    /// zurückerstattet wurde.
+    public var canRemind: Bool { allows(.reminders) }
 
     /// Ob der Bericht ein Wasserzeichen trägt.
     ///

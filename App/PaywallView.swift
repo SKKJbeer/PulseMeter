@@ -152,7 +152,7 @@ struct UnlockSheet: View {
         VStack(alignment: .leading, spacing: 5) {
             Text("Dauerhaft kostenlos")
                 .pulseSectionLabel()
-            Text("Zwei Zähler, unbegrenzt viele Ablesungen, die ganze Historie, der Vorjahresvergleich, Erinnerungen — und der Export deiner Daten als Tabelle. Der Export bleibt kostenlos, auch wenn du nie kaufst.")
+            Text("Zwei Zähler, unbegrenzt viele Ablesungen, die ganze Historie, der Vorjahresvergleich — und der Export deiner Daten als Tabelle. Der Export bleibt kostenlos, auch wenn du nie kaufst.")
                 .font(PulseText.detail)
                 .foregroundStyle(PulseColor.inkSecondary)
                 .fixedSize(horizontal: false, vertical: true)

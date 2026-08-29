@@ -167,13 +167,13 @@ bleiben.
 EIN PAAR EURO, EINMAL. KEIN ABO.
 
 Kostenlos bleiben: zwei Zähler, so viele Ablesungen du willst, der ganze
-Verlauf, der Vorjahresvergleich, Erinnerungen und der Export.
+Verlauf, der Vorjahresvergleich und der Export.
 
 Wenn dir später etwas fehlt, kaufst du genau das frei — und nicht ein Paket, in
 dem drei Dinge stecken, die du nie brauchst. Unbegrenzt viele Zähler. Zähler
 mit zwei Zahlen. Kosten und Preise. Den Verbrauchsbericht ohne Schriftzug. Je
-1,99 €, alle vier zusammen 4,99 €. Einmal bezahlt, auf allen
-deinen Geräten, und es bleibt.
+1,99 €. Die Erinnerung, wenn ein Zähler dran ist, kostet 0,99 €. Alle fünf
+zusammen 4,99 €. Einmal bezahlt, auf allen deinen Geräten, und es bleibt.
 
 Den Bericht kannst du dir immer ansehen und ausdrucken. Freischalten musst du
 ihn erst, wenn du ihn jemandem geben willst.
@@ -219,7 +219,7 @@ ist keine Versionsinformation, sondern deren Verweigerung.
 | Sekundäre Kategorie | **Finanzen** | Kosten und Abschlagsvergleich; bringt eine zweite Bestenliste |
 | Altersfreigabe | **4+** | Keine Inhalte, die etwas anderes rechtfertigten |
 | Preis | **Kostenlos** mit In-App-Käufen | Der Einstieg darf nichts kosten, sonst gibt es keinen |
-| In-App-Käufe | Fünf nicht verbrauchbare Produkte: vier zu 1,99 €, Bündel 4,99 € | Begründung in `04-monetarisierung.md` |
+| In-App-Käufe | Sechs nicht verbrauchbare Produkte: vier zu 1,99 €, Erinnerungen 0,99 €, Bündel 4,99 € | Begründung in `04-monetarisierung.md` |
 | Länder | Zunächst **Deutschland, Österreich, Schweiz** | Die App ist deutsch, die Rechnungslogik auch |
 
 ---

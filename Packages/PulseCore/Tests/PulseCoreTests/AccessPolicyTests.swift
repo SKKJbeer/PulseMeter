@@ -3,7 +3,7 @@ import XCTest
 
 /// Die Grenze zwischen Kostenlos und Gekauft.
 ///
-/// Seit 0.40.0 wird **einzeln** freigeschaltet: vier Stücke zu ein paar Euro
+/// Seit 0.40.0 wird **einzeln** freigeschaltet: fünf Stücke zu ein paar Euro
 /// und ein Bündel. Diese Prüfungen sind die Beschreibung des Modells — eine
 /// Grenze, die nur in einem Dokument steht, verrutscht beim ersten Umbau.
 final class AccessPolicyTests: XCTestCase {
@@ -30,7 +30,7 @@ final class AccessPolicyTests: XCTestCase {
     }
 
     /// Das Bündel schaltet alles frei, ohne dass die einzelnen Kennungen im
-    /// Bestand liegen müssen. Sonst müsste jeder Kauf des Bündels vier
+    /// Bestand liegen müssen. Sonst müsste jeder Kauf des Bündels fünf
     /// Einträge schreiben — und ein vergessener wäre ein bezahltes, aber
     /// gesperrtes Merkmal.
     func testTheBundleUnlocksEverythingWithoutListingIt() {
@@ -115,8 +115,8 @@ final class AccessPolicyTests: XCTestCase {
         let einzeln = ProductID.individually.reduce(Decimal(0)) { $0 + $1.suggestedPrice }
         XCTAssertGreaterThan(approx(einzeln), approx(ProductID.everything.suggestedPrice),
                              "Ein Bündel, das nicht spart, kauft niemand")
-        // Und zwar spürbar. Gerechnet: viermal 1,99 = 7,96 € einzeln gegen
-        // 4,99 € im Bündel — **37 %**. Die Schranke steht
+        // Und zwar spürbar. Gerechnet: viermal 1,99 plus einmal 0,99 = 8,95 €
+        // einzeln gegen 4,99 € im Bündel — **44 %**. Die Schranke steht
         // bei 20 %, nicht bei 25: Die Preise hat der Gründer gesetzt, und eine
         // Prüfung, die seine Entscheidung überstimmt, ist keine Prüfung,
         // sondern eine Meinung.
@@ -131,9 +131,46 @@ final class AccessPolicyTests: XCTestCase {
     /// eine Entscheidung, die man vertagt. Drei Euro sind ein Tipp.
     func testEveryPieceCostsAFewEuros() {
         for product in ProductID.individually {
-            XCTAssertGreaterThan(approx(product.suggestedPrice), 0.99)
+            // **Bis 0.100.0 stand hier „größer als 0,99".** Dann bekamen die
+            // Erinnerungen genau diesen Preis, und die Prüfung fiel — zu Recht,
+            // sie hat eine bewusste Untergrenze verteidigt. Die Grenze bleibt
+            // dieselbe Zahl, nur ist sie jetzt erlaubt statt verboten:
+            // 0,99 € ist der billigste Preis, den der App Store kennt.
+            XCTAssertGreaterThanOrEqual(approx(product.suggestedPrice), 0.99)
             XCTAssertLessThan(approx(product.suggestedPrice), 5,
                               "\(product) ist kein kleiner Kauf mehr")
+        }
+    }
+
+    /// Erinnerungen sind gesperrt, bis sie gekauft sind — einzeln oder im Bündel.
+    ///
+    /// **Warum das eine eigene Prüfung bekommt.** Sie waren bis 0.100.0
+    /// kostenlos, und in drei Texten stand das ausdrücklich. Eine Leistung, die
+    /// einmal frei war, rutscht bei der nächsten Änderung leicht wieder heraus:
+    /// Es genügt, `canRemind` zu vergessen, und niemandem fällt etwas auf,
+    /// weil nichts kaputtgeht — es wird nur nichts mehr verkauft.
+    func testRemindersNeedTheirPurchase() {
+        XCTAssertFalse(AccessPolicy(.none).canRemind,
+                       "Ohne Kauf darf nichts geplant werden")
+        XCTAssertTrue(AccessPolicy(Entitlement([.reminders])).canRemind)
+        XCTAssertTrue(AccessPolicy(.everything).canRemind,
+                      "Das Bündel schließt die Erinnerungen ein")
+        XCTAssertFalse(AccessPolicy(Entitlement([.pdfReport])).canRemind,
+                       "Ein anderer Kauf schaltet sie nicht mit frei")
+    }
+
+    /// Was als dauerhaft kostenlos beworben wird, darf kein Kauf sein.
+    ///
+    /// Die Liste stand einmal neben „Erinnerungen an fällige Ablesungen",
+    /// während dieselbe Zeile zum Kauf wurde. Ein Versprechen und eine Sperre
+    /// über derselben Sache ist der Fehler, den niemand bemerkt, weil beide
+    /// Stellen für sich stimmen.
+    func testNothingAdvertisedAsFreeIsAlsoForSale() {
+        for zeile in ProductID.alwaysFree {
+            for product in ProductID.allCases {
+                XCTAssertNotEqual(zeile, product.title,
+                                  "„\(zeile)“ steht als kostenlos und als Kauf")
+            }
         }
     }
 
@@ -148,7 +185,12 @@ final class AccessPolicyTests: XCTestCase {
         for product in ProductID.allCases {
             let zeilen = product.includes
             XCTAssertFalse(zeilen.isEmpty, "\(product) sagt nicht, was enthalten ist")
-            XCTAssertLessThanOrEqual(zeilen.count, 4,
+            // **Das Bündel ist ausgenommen, und zwar begründet.** Es nennt
+            // genau die Stücke, die es ersetzt — die Zahl steht also nicht zur
+            // Wahl. Sie zu kürzen hieße, einen Kauf zu verschweigen, den
+            // jemand mitbezahlt. Für die Einzelnen bleibt es bei vier.
+            let grenze = product == .everything ? ProductID.individually.count : 4
+            XCTAssertLessThanOrEqual(zeilen.count, grenze,
                                      "\(product) zählt mehr auf, als jemand überfliegt")
             for zeile in zeilen {
                 XCTAssertFalse(zeile.isEmpty)
@@ -159,7 +201,7 @@ final class AccessPolicyTests: XCTestCase {
         }
     }
 
-    /// Das Bündel nennt genau die vier Stücke, die es ersetzt.
+    /// Das Bündel nennt genau die Stücke, die es ersetzt.
     ///
     /// Sonst steht dort eine Liste, die nicht mit dem übereinstimmt, was
     /// gekauft wird — und das merkt jemand erst nach dem Kauf.

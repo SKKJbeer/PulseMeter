@@ -671,6 +671,29 @@ Schnittstelle kennt ihn nicht.** Der Prüflauf, der sonst alles nachsieht, wird
 ihn nie melden — weder grün noch rot. Was kein Skript sehen kann, gehört
 ausdrücklich in die Liste für Menschen, mit dem Satz dazu, warum es dort steht.
 
+### Eine Prüfung, die anschlägt, hat meistens recht — auch gegen den Auftrag
+
+Aus einer kostenlosen Funktion eine kostenpflichtige zu machen, ließ drei
+Prüfungen fallen. Der erste Reflex ist, sie anzupassen, weil ja die Änderung
+gewollt war. Bei einer davon war das richtig, bei zweien nicht:
+
+| Was fiel | Was stimmte nicht |
+|---|---|
+| Preis muss über 0,99 € liegen | Die **Prüfung**. Der Preis war eine Entscheidung, die Grenze eine Vermutung |
+| Bündel zählt mehr Zeilen auf als erlaubt | Die **Prüfung**, aber nur fürs Bündel — es nennt, was es ersetzt, und das ist keine Wahl |
+| Titel enthält das Wort „Ablesung" | Der **Titel**. Die Prüfung wachte darüber, dass Ablesungen nie verkauft werden, und der Titel las sich genau so |
+
+> Vor jeder Anpassung einer gefallenen Prüfung: **Was verteidigt sie?** Steht
+> dahinter ein Prinzip, wird der Code geändert. Steht dahinter eine Zahl aus
+> einer alten Lage, wird die Prüfung geändert — mit einem Kommentar, der die
+> neue Lage nennt.
+
+Was dabei außerdem auffiel: Eine Zusage und eine Sperre über derselben Sache
+sind der Fehler, den niemand bemerkt, weil **beide Stellen für sich stimmen**.
+Die Liste „dauerhaft kostenlos" und die Liste der Käufe standen einen Commit
+lang beide richtig da und widersprachen einander. Dagegen hilft nur eine
+Prüfung, die beide Listen gegeneinander hält.
+
 ### Ein unbekannter Name ist nicht immer ein Fehler — manchmal nur ein Rückfall
 
 `var(--bg)` stand im Stil eines Knopfes, und die Datei kannte nur `--ground`,

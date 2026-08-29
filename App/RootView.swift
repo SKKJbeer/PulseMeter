@@ -125,6 +125,10 @@ struct OverviewView: View {
 
     @Environment(\.modelContext) private var context
     @Environment(Datenstand.self) private var datenstand
+    // Gebraucht wird davon nur eines: ob erinnert werden darf. Die Planung
+    // laeuft nach jeder Ablesung mit und darf einen fehlenden Kauf nicht
+    // uebergehen.
+    @Environment(Purchase.self) private var purchase
     @State private var rows: [MeterRow] = []
     @State private var points: [MeteringPoint] = []
     @State private var capturing: MeteringPoint?
@@ -621,7 +625,9 @@ struct OverviewView: View {
                 guard let register = point.primaryRegister else { continue }
                 byMeter[point.id] = try repository.readings(for: register.id)
             }
-            await Reminders.reschedule(meteringPoints: points, readings: byMeter, today: today)
+            await Reminders.reschedule(meteringPoints: points, readings: byMeter,
+                                       today: today,
+                                       darfErinnern: purchase.policy.canRemind)
         } catch {
             // Erinnerungen sind Beiwerk. Wenn sie sich nicht planen lassen,
             // darf das die Übersicht nicht mit einer Fehlermeldung belegen.
