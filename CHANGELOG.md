@@ -9,6 +9,57 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.101.2 — 2026-08-29
+
+**Bau 24 lag schon in TestFlight, als der Schritt danach abbrach.**
+
+```
+NameError: name 're' is not defined. Did you forget to import 're'?
+```
+
+`asc-testflight.py` benutzt `re` an sechs Stellen und importierte es nicht. Der
+Bau ist oben, der gemietete Mac ist bezahlt, die Nummer verbraucht — gefehlt
+haben am Ende die Testhinweise.
+
+**Kein bestehender Haken konnte das sehen.** Die Datei ist syntaktisch
+fehlerfrei; `ast.parse` prüft die Grammatik, und ein fehlender Import ist keine
+Grammatikfrage. Der Fehler entsteht erst beim Ausführen, in einem Zweig, den
+nur ein echter Bau erreicht.
+
+### Neu: `scripts/check-namen.py`
+Sucht mit `pyflakes` nach Namen, die kein Import und keine Zuweisung kennt.
+Läuft in `pruefen.sh` und in der CI, dauert eine Sekunde. Gegengeprüft, indem
+der Import noch einmal entfernt wurde: sieben Treffer, Rückgabe 1.
+
+**Ungenutzte Importe sind ausdrücklich kein Fehler.** Sie kosten nichts, und
+eine Prüfung, die über Aufräumarbeiten meckert, wird abgeschaltet. Gemeldet
+wird nur, was beim Ausführen abbricht.
+
+**Und pyflakes fehlen zu lassen, ist ebenfalls ein Fehler** — kein
+Überspringen. Eine Prüfung, die sich still abschaltet, meldet danach für immer
+grün.
+
+---
+
+## 0.101.1 — 2026-08-29
+
+**Die neue Länderprüfung meldete „verkäuflich in 0 Ländern" — und lag falsch.**
+Richtig gezählt, falsch geschlossen: Die leere Liste kam aus der eigenen
+Anfrage. `filter[available]` gibt es an dieser Stelle nicht, Apple antwortete
+mit 400, und der Zähler zählte anschließend brav nichts.
+
+Das ist dieselbe Verwechslung, über die im Baukasten seit heute früh ein
+Abschnitt steht — und ich bin am selben Tag hineingelaufen, beim Schreiben
+genau der Prüfung, die den Fehler finden sollte.
+
+### Geändert
+- Gefragt wird ohne Filter; ausgewertet wird das Feld `available` je Land.
+- **Schlägt die Abfrage fehl, steht Apples Einwand im Protokoll** statt einer
+  gezählten Null. Eine Prüfung, die aus einem Fehlschlag eine Aussage über den
+  Laden macht, ist schlimmer als keine: Sie klingt wie ein Befund.
+
+---
+
 ## 0.101.0 — 2026-08-29
 
 **Zwei Punkte vor dem Start, die bisher nur auf Vorhandensein geprüft wurden.**

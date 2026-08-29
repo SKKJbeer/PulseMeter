@@ -127,6 +127,14 @@ jobs:
       # das eine Swift-Zeichenkette an der falschen Stelle beendet.
       - name: Zeichenketten
         run: python3 scripts/check-strings.py
+      # Ein fehlender Import ist syntaktisch fehlerfrei und bricht erst beim
+      # Ausführen ab. Bau 24 lag schon in TestFlight, als der Schritt danach an
+      # einem fehlenden `import re` starb — der Bau war bezahlt, die Testhinweise
+      # fehlten, und gesehen hat es niemand vorher.
+      - name: Unbekannte Namen
+        run: |
+          pip3 install --quiet --break-system-packages pyflakes
+          python3 scripts/check-namen.py
       - name: Angriffsfläche
         run: scripts/check-sicherheit.sh
 

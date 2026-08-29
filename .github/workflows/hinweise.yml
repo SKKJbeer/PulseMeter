@@ -38,7 +38,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Abhängigkeiten
-        run: pip3 install --quiet "pyjwt[crypto]" requests
+        run: pip3 install --quiet "pyjwt[crypto]" requests pyflakes
 
       # Die Buildnummer ist sonst die Laufnummer dieses Ablaufs — und die
       # gehört zu einem anderen Ablauf und meint nichts.

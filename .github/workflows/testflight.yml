@@ -222,7 +222,7 @@ jobs:
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
         run: |
-          pip3 install --quiet --break-system-packages "pyjwt[crypto]" requests
+          pip3 install --quiet --break-system-packages "pyjwt[crypto]" requests pyflakes
           python3 scripts/asc-berechtigungen.py
 
       - name: Verteilprofile anlegen
@@ -232,7 +232,7 @@ jobs:
           ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
           PULSE_BUNDLE_IDS: "de.karjoth.pulsemeter de.karjoth.pulsemeter.widget"
         run: |
-          pip3 install --quiet --break-system-packages "pyjwt[crypto]" requests
+          pip3 install --quiet --break-system-packages "pyjwt[crypto]" requests pyflakes
           python3 scripts/asc-profil.py
 
       - name: Archivieren und signieren
@@ -379,7 +379,7 @@ jobs:
           # Noch einmal, obwohl der Profilschritt es schon getan hat: Dieser
           # Schritt soll auch dann stehen, wenn die Reihenfolge sich einmal
           # ändert. Ist alles da, kostet es zwei Sekunden.
-          pip3 install --quiet --break-system-packages "pyjwt[crypto]" requests
+          pip3 install --quiet --break-system-packages "pyjwt[crypto]" requests pyflakes
           python3 scripts/asc-testflight.py
 
       - name: Was jetzt passiert

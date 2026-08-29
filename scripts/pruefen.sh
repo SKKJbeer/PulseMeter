@@ -111,6 +111,9 @@ fi
 if [ "$SCOPE" != "bilder" ]; then
   step "Sofortprüfungen"
   run "Zeichenketten" python3 scripts/check-strings.py || true
+  # Ein fehlender Import ist syntaktisch fehlerfrei und bricht erst beim
+  # Ausführen ab — Bau 24 lag schon in TestFlight, als `import re` fehlte.
+  run "Unbekannte Namen" python3 scripts/check-namen.py || true
   # Ein Knopf, der breiter ist als sein Inhalt, reagiert ohne `contentShape`
   # nur dort, wo er zeichnet. Das sieht man ihm nicht an — es hat einen
   # Fehlerbericht vom Gerät gebraucht (0.72.2).

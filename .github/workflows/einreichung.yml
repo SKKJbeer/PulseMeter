@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Abhängigkeiten
-        run: pip3 install --quiet "pyjwt[crypto]" requests
+        run: pip3 install --quiet "pyjwt[crypto]" requests pyflakes
 
       # Die Bilder in voller Größe liegen im Zweig `screenshots`, den die CI
       # bei jedem Lauf überschreibt. Sie hier zu erzeugen bräuchte einen

@@ -680,18 +680,30 @@ def verfuegbarkeit_pruefen(apple: Apple, app_id: str) -> None:
     if wo is None:
         offen.append(f"Verfügbarkeit nicht lesbar (Antwort {stand})")
     else:
+        # **`filter[available]` hat Apple mit 400 abgelehnt.** Der erste Anlauf
+        # meldete daraufhin „verkäuflich in 0 Ländern" — richtig gezählt, falsch
+        # geschlossen: Die leere Liste kam von der eigenen Anfrage, nicht vom
+        # Laden. Genau diese Verwechslung hat schon einmal einen halben Tag
+        # gekostet (Baukasten, „Eine richtige Meldung mit einer falschen
+        # Ursache"). Gefragt wird jetzt ohne Filter, und was Apple einwendet,
+        # steht im Protokoll statt einer Vermutung.
         stand, antwort = apple.holen(
             f"v2/appAvailabilities/{wo['id']}/territoryAvailabilities",
-            **{"limit": 200, "filter[available]": "true"})
-        laender = ([e.get("relationships", {}).get("territory", {})
-                     .get("data", {}).get("id")
-                    for e in antwort.json().get("data", [])]
-                   if stand == 200 else [])
+            **{"limit": 200, "include": "territory"})
+        if stand != 200:
+            offen.append(f"Die Länder ließen sich nicht lesen ({stand}) "
+                         f"— {kurz(antwort)}")
+            return
+        eintraege = antwort.json().get("data", [])
+        laender = [e.get("relationships", {}).get("territory", {})
+                    .get("data", {}).get("id")
+                   for e in eintraege
+                   if e.get("attributes", {}).get("available") is not False]
         pruefe(len(laender) > 0 and "DEU" in laender,
                f"Verkäuflich in {len(laender)} Ländern, Deutschland dabei"
                if "DEU" in laender else
-               f"Verkäuflich in {len(laender)} Ländern — **ohne Deutschland** "
-               f"(Antwort {stand})")
+               f"Verkäuflich in {len(laender)} von {len(eintraege)} Ländern "
+               f"— Deutschland nicht dabei")
 
 
 def freigabe_pruefen(apple: Apple, app_id: str) -> None:
