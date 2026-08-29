@@ -35,13 +35,19 @@ jobs:
       # Die Bilder in voller Größe liegen im Zweig `screenshots`, den die CI
       # bei jedem Lauf überschreibt. Sie hier zu erzeugen bräuchte einen
       # Simulator und damit einen Mac; dort liegen sie schon.
+      # **Ohne `--strip-components`.** Der erste Anlauf hatte es gesetzt, und
+      # damit schnitt es genau den Ordner weg, den es behalten sollte: Das
+      # Archiv führt `store/…`, gestrippt landete alles direkt in `build/`, und
+      # `build/store` blieb leer. Der Lauf meldete brav fünfmal „liegt nicht im
+      # Zweig" — richtig beobachtet, falsche Ursache vermutet.
       - name: Bildschirmfotos holen
         run: |
+          mkdir -p build
           git fetch --depth 1 origin screenshots
-          mkdir -p build/store
-          git archive origin/screenshots store 2>/dev/null | tar -x -C build --strip-components=1 || \
-            echo "::notice::Im Zweig screenshots gibt es noch keine Bilder in voller Größe — der nächste Mac-Lauf legt sie an."
-          ls -la build/store 2>/dev/null | head -8
+          git archive origin/screenshots store | tar -x -C build
+          anzahl=$(find build/store -name "*.jpg" 2>/dev/null | wc -l | tr -d " ")
+          echo "::notice::$anzahl Bilder in voller Größe aus dem Zweig screenshots."
+          [ "$anzahl" -gt 0 ] || echo "::warning::Keine Bilder — der nächste Mac-Lauf legt sie an."
 
       - name: Nachsehen
         env:

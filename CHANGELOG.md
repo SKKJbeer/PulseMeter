@@ -9,6 +9,24 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.98.1 — 2026-08-29
+
+**Die fünf Bildschirmfotos landen jetzt wirklich beim App Store.** Der
+Einreichungslauf holt sie aus dem Zweig `screenshots` und meldete fünfmal
+„liegt nicht im Zweig" — obwohl sie dort lagen.
+
+### Behoben
+- **`--strip-components=1` schnitt genau den Ordner weg, den es behalten
+  sollte.** Das Archiv führt `store/…`, gestrippt landete alles direkt in
+  `build/`, und `build/store` blieb leer. Die Beobachtung des Laufs war
+  richtig, die vermutete Ursache falsch: Nicht der Zweig war leer, sondern der
+  Ort, an dem nachgesehen wurde.
+- Der Schritt **zählt jetzt und meldet die Zahl**, statt stillschweigend
+  weiterzulaufen. Null Bilder ergeben eine Warnung im Lauf, nicht erst fünf
+  Fehlzeilen zwei Schritte später.
+
+---
+
 ## 0.98.0 — 2026-08-28
 
 **Die App heißt jetzt Zählora.** Vom Gründer gewählt: „Zählora – Zähler &

@@ -653,6 +653,29 @@ abgefragt** wurde und alles steht, darf der Bau die Berechtigungsdateien
 anziehen. Ein Bau, der auf einer Vermutung signiert, scheitert zwanzig Minuten
 später an einer Meldung, die den Grund nicht nennt.
 
+### Eine richtige Meldung mit einer falschen Ursache dahinter
+
+Der Einreichungslauf meldete fünfmal „Bild liegt nicht im Zweig". Die Meldung
+war wahr — an der Stelle, an der er nachsah, lag nichts. Nur lag es woanders:
+`tar -x --strip-components=1` schneidet die erste Pfadebene ab, und genau die
+war der Ordner, um den es ging. Das Archiv führte `store/…`, gestrippt landete
+alles direkt daneben, und `store/` blieb leer.
+
+> Eine Meldung sagt, **wo** vergeblich gesucht wurde, nie **warum** dort nichts
+> liegt. Bevor die Quelle verdächtigt wird, einmal auflisten, was am Zielort
+> tatsächlich angekommen ist.
+
+Zwei Minuten, die den Fehler sofort zeigen:
+
+```bash
+git archive origin/<zweig> <ordner> | tar -x -C /tmp/probe && find /tmp/probe
+```
+
+Und die Verallgemeinerung, die mehr trägt als der eine Schalter: **Jeder
+Schritt, der Dateien von einem Ort zum anderen bringt, zählt danach und meldet
+die Zahl.** Null ist dann eine Warnung an Ort und Stelle statt fünf Fehlzeilen
+zwei Schritte später, die auf den falschen Verdächtigen zeigen.
+
 ### Zwei Zeitausschnitte, die einander nicht decken
 
 Bisher entstand **jeder** gefundene Rechenfehler dadurch, dass ein Zeitraum,
