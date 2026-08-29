@@ -199,4 +199,51 @@ final class WidgetSummaryTests: XCTestCase {
                            "\(unit.symbol) findet seine gesprochene Form nicht")
         }
     }
+
+    // MARK: - Die Zeile auf dem Sperrbildschirm
+
+    private func meter(quantity: Decimal?, isDue: Bool, tage: Int?,
+                       geschaetzt: Bool = false) -> WidgetSummary.Meter {
+        WidgetSummary.Meter(
+            id: UUID(), name: "Gas", symbolName: "flame", colorToken: "orange",
+            unit: "m³", quantity: quantity, isApproximate: geschaetzt,
+            periodCaption: "Seit Jahresbeginn", isDue: isDue, daysSinceReading: tage)
+    }
+
+    private func zahl(_ wert: Decimal) -> String {
+        NSDecimalNumber(decimal: wert).stringValue
+    }
+
+    /// Auf dem Sperrbildschirm gewinnt die Fälligkeit, und zwar gegen die Zahl.
+    ///
+    /// In ``WidgetSummary/Meter/statusText`` stehen Zeile und Menge
+    /// nebeneinander; hier ist Platz für eines von beiden. Wer im Vorbeigehen
+    /// auf den gesperrten Schirm sieht, soll erfahren, dass er zum Zähler muss.
+    func testLockScreenLinePutsDueBeforeTheNumber() {
+        let faellig = meter(quantity: 1234, isDue: true, tage: 92)
+        XCTAssertEqual(faellig.inlineSummary(number: zahl), "Gas: seit 92 Tagen fällig")
+
+        let ruhig = meter(quantity: 1234, isDue: false, tage: 3)
+        XCTAssertEqual(ruhig.inlineSummary(number: zahl), "Gas: 1234 m³")
+    }
+
+    /// Ohne Ablesung gibt es kein Datum, auf das sich „seit" beziehen ließe —
+    /// derselbe Fall wie bei ``statusText``, und er darf nicht in „seit 0 Tagen"
+    /// umschlagen.
+    func testLockScreenLineNamesTheNeverReadCase() {
+        XCTAssertEqual(meter(quantity: nil, isDue: true, tage: nil).inlineSummary(number: zahl),
+                       "Gas: noch nie abgelesen")
+        XCTAssertEqual(meter(quantity: nil, isDue: false, tage: 5).inlineSummary(number: zahl),
+                       "Gas: noch keine Zahl")
+    }
+
+    /// **Auch auf dem engsten Platz bleibt das Zeichen stehen.**
+    ///
+    /// Produktprinzip 7: Eine geschätzte Zahl ist gekennzeichnet. Der
+    /// Sperrbildschirm ist die Stelle, an der am ehesten gekürzt würde — und
+    /// zugleich die, an der niemand nachprüft, was er liest.
+    func testLockScreenLineKeepsTheEstimateMark() {
+        let geschaetzt = meter(quantity: 900, isDue: false, tage: 3, geschaetzt: true)
+        XCTAssertEqual(geschaetzt.inlineSummary(number: zahl), "Gas: ≈ 900 m³")
+    }
 }

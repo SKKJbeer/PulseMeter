@@ -103,6 +103,33 @@ public struct WidgetSummary: Codable, Hashable, Sendable {
             return "\(name). \(statusText). \(prefix)\(number(quantity)) \(spokenUnit)."
         }
 
+        /// Die **eine** Zeile für den Sperrbildschirm.
+        ///
+        /// Dort steht neben der Uhr ein schmaler Streifen, und was nicht
+        /// hineinpasst, wird abgeschnitten statt umgebrochen. Deshalb Name und
+        /// eine Auskunft, sonst nichts.
+        ///
+        /// **Fälligkeit schlägt die Zahl, und zwar deutlicher als in
+        /// ``statusText``.** Dort stehen Zeile und Menge nebeneinander, hier
+        /// muss eines von beiden weichen. Wer im Vorbeigehen auf den
+        /// gesperrten Schirm sieht, soll erfahren, dass er zum Zähler muss —
+        /// wie viel seit Januar zusammengekommen ist, kann warten, bis er die
+        /// App öffnet.
+        ///
+        /// - Parameter number: Wie die Zahl geschrieben wird, aus demselben
+        ///   Grund hineingereicht wie bei ``spokenSummary(number:)``.
+        public func inlineSummary(number: (Decimal) -> String) -> String {
+            if isDue {
+                return daysSinceReading.map { "\(name): seit \($0) Tagen fällig" }
+                    ?? "\(name): noch nie abgelesen"
+            }
+            guard let quantity else { return "\(name): noch keine Zahl" }
+            // Das „≈" bleibt auch auf dem engsten Platz stehen. Es ist keine
+            // Zierde, sondern Produktprinzip 7 — und eine geschätzte Zahl ohne
+            // Kennzeichnung ist schlimmer als gar keine.
+            return "\(name): \(isApproximate ? "≈ " : "")\(number(quantity)) \(unit)"
+        }
+
         /// Die Einheit ausgeschrieben — „Kilowattstunden" statt „kWh".
         ///
         /// Über das Zeichen nachgeschlagen statt mitgeführt: Ein zusätzliches

@@ -609,13 +609,21 @@ struct MeterEditor: View {
         purchase.allows(.multipleRegisters) || (draft.existing?.registers.count ?? 0) > 1
     }
 
-    /// Dieselbe Regel für die Preise: Wer schon einen Tarif hat, behält ihn.
+    /// Bei den Preisen entscheidet allein der Kauf.
     ///
-    /// Sonst stünden auf der Übersichtskarte Beträge, die sich nicht mehr
-    /// nachsehen und nicht mehr berichtigen ließen — eine Sackgasse
-    /// (Produktprinzip 4).
+    /// **Hier stand bis 0.104.0 dieselbe Ausnahme wie beim Zählwerk darüber:
+    /// „Wer schon einen Tarif hat, behält ihn."** Die Begründung war richtig
+    /// und ist entfallen — sie lautete, sonst stünden auf der Übersichtskarte
+    /// Beträge, die sich nicht mehr berichtigen ließen, also eine Sackgasse.
+    /// Seit 0.104.0 zeigt die Karte ohne den Kauf **gar keine** Beträge; damit
+    /// gibt es nichts mehr zu berichtigen, und die Ausnahme öffnete nur noch
+    /// eine Tür: Die Beispieldaten legen Tarife an, und wer sie antippte,
+    /// hatte den Preiseditor umsonst.
+    ///
+    /// Die eingetragenen Tarife bleiben gespeichert. Nach dem Kauf ist alles
+    /// wieder da, so wie es war.
     private var canUseTariffs: Bool {
-        purchase.allows(.costsAndTariffs) || existingTariff != nil || !existingTariffs.isEmpty
+        purchase.allows(.costsAndTariffs)
     }
 
     private func openPaywall(_ product: ProductID) {

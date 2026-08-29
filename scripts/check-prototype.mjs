@@ -825,6 +825,52 @@ for (const scheme of ["light", "dark"]) {
   await page.locator('[data-pro="0"]').first().click();
   await page.waitForTimeout(250);
 
+  // --- Ohne Kauf steht auf der Übersicht kein einziger Betrag
+  //
+  // **Der Fehler, den diese Prüfung gefangen hätte.** Bis 0.104.0 hing die
+  // Kostenanzeige daran, *ob ein Preis hinterlegt ist* — nicht daran, ob
+  // jemand ihn freigeschaltet hat. Alle Beispielzähler haben einen Preis.
+  // Also standen Kosten, Abschlagsvorschau und Einspeisevergütung auch ohne
+  // Kauf auf der Karte, während im Verlauf daneben die Sperre mit dem Preis
+  // stand. In der App war es dieselbe Zeile mit denselben Folgen: Der Knopf
+  // „Beispieldaten anlegen" legte Tarife an und schenkte damit „Kosten und
+  // Preise". Gefunden hat es ein Audit, keine Prüfung.
+  //
+  // Geprüft wird der sichtbare Text, nicht die Funktion dahinter: Ein Betrag
+  // ist ein Betrag, egal welcher Rechenweg ihn erzeugt hat.
+  await page.locator('[data-pane="home"]').first().click();
+  await page.waitForTimeout(250);
+  const ohneKauf = await page.evaluate(() =>
+    document.getElementById("pane-home").innerText);
+  const betraege = (ohneKauf.match(/\d[\d.]*,?\d*\s*€/g) || []);
+  note(betraege.length === 0,
+       betraege.length === 0
+         ? "Ohne Kauf steht auf der Übersicht kein Betrag"
+         : `Ohne Kauf stehen Beträge auf der Übersicht: ${betraege.join(", ")}`);
+  note(!/Guthaben|Nachzahlung/.test(ohneKauf),
+       "Und keine Abschlagsvorschau");
+  note(!/vergütet/.test(ohneKauf),
+       "Und keine Einspeisevergütung — die Menge bleibt, der Betrag geht");
+
+  // Die Gegenprobe: Mit Kauf ist alles wieder da. Ohne sie prüfte das obige
+  // nur, dass die Übersicht leer ist — und das wäre sie auch, wenn die
+  // Kostenrechnung ganz kaputt wäre.
+  await page.locator('[data-pane="meters"]').first().click();
+  await page.waitForTimeout(200);
+  await page.locator('[data-pro="1"]').first().click();
+  await page.waitForTimeout(250);
+  await page.locator('[data-pane="home"]').first().click();
+  await page.waitForTimeout(250);
+  const mitKauf = await page.evaluate(() =>
+    document.getElementById("pane-home").innerText);
+  note(/€/.test(mitKauf) && /Guthaben|Nachzahlung/.test(mitKauf),
+       "Nach dem Kauf stehen Beträge und Abschlagsvorschau wieder da");
+
+  await page.locator('[data-pane="meters"]').first().click();
+  await page.waitForTimeout(200);
+  await page.locator('[data-pro="0"]').first().click();
+  await page.waitForTimeout(250);
+
   // Das Einkaufssymbol an der Zeile zur Übersicht. Vom Gründer verlangt: Ohne
   // Zeichen liest sie sich wie eine weitere Einstellung.
   const symbol = await page.evaluate(() =>
@@ -961,6 +1007,15 @@ for (const scheme of ["light", "dark"]) {
        `Januar bis März tragen ${(profile.winterquartal * 100).toFixed(1)} % des Heizjahres`);
 
   // Und die Grundlage steht auf dem Schirm, nicht nur im Code.
+  //
+  // **Erst freischalten.** Die Abschlagszeile mit dem Erklärknopf ist seit
+  // 0.104.0 Teil von „Kosten und Preise"; ohne den Kauf steht sie nicht da,
+  // und der Klick lief dreißig Sekunden ins Leere. Der Zustand wird danach
+  // wieder zurückgestellt.
+  await page.locator('[data-pane="meters"]').first().click();
+  await page.waitForTimeout(200);
+  await page.locator('[data-pro="1"]').first().click();
+  await page.waitForTimeout(250);
   await page.locator('[data-pane="home"]').first().click();
   await page.waitForTimeout(200);
   await page.locator('[data-explain]').first().click();
@@ -972,6 +1027,11 @@ for (const scheme of ["light", "dark"]) {
        "Und sie sagt, worauf die Zahl beruht");
   await page.locator("#sheet-explain [data-close]").first().click();
   await page.waitForTimeout(200);
+  // Zustand zurückstellen, aus demselben Grund wie oben.
+  await page.locator('[data-pane="meters"]').first().click();
+  await page.waitForTimeout(200);
+  await page.locator('[data-pro="0"]').first().click();
+  await page.waitForTimeout(250);
 
   // --- Keine Taste, die nichts tut
   //

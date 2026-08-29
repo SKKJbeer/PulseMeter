@@ -898,7 +898,12 @@ struct HistoryView: View {
             // Verlauf sonst den Hochtarif und die Karte darüber beide — zwei
             // Zahlen über verschiedene Sachverhalte, direkt untereinander.
             readings = try repository.readings(for: meter)
-            tariffs = try repository.tariffs(for: meter.id)
+            // Dieselbe Sperre wie auf der Übersicht (0.104.0): ohne den Kauf
+            // keine Tarife, also kein Umschalter „Menge / Kosten" und keine
+            // Beträge. `kostenSperre` darunter zeigt dann die Zeile mit dem
+            // Preis — sie fragt genau diesen leeren Bestand ab.
+            tariffs = purchase.allows(.costsAndTariffs)
+                ? try repository.tariffs(for: meter.id) : []
             if granularity == .year {
                 // Ein Jahr hat genau einen Abschnitt — als Diagramm wäre das
                 // ein einzelner Balken und damit keine Aussage. Bei „Jahr"
@@ -972,7 +977,8 @@ struct HistoryView: View {
             return
         }
         bericht = try? ReportComposer(context: context)
-            .report(scope: selectedMeterID, period: zeitraum, today: today)
+            .report(scope: selectedMeterID, period: zeitraum, today: today,
+                    mitKosten: purchase.allows(.costsAndTariffs))
     }
 
     /// Die zwölf Monate des gezeigten Jahres — woher das Jahr kommt.

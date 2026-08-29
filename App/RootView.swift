@@ -555,7 +555,23 @@ struct OverviewView: View {
                     ? try repository.readings(for: point)
                     : primary
                 let last = primary.last
-                let tariffs = try repository.tariffs(for: point.id)
+                // **Ohne den Kauf keine Tarife, und damit nirgends ein
+                // Betrag.**
+                //
+                // Bis 0.104.0 hing die Kostenanzeige daran, *ob Tarife
+                // vorliegen* — nicht daran, ob jemand sie freigeschaltet hat.
+                // Der Knopf „Beispieldaten anlegen" legt welche an, und damit
+                // bekam jeder Kosten, Abschlagsvorschau und Einspeisevergütung
+                // geschenkt. Gefunden hat es ein Audit der Website gegen den
+                // Quelltext; drei von fünf Käufen waren mit einem Tipp offen.
+                //
+                // Die Sperre sitzt hier und nicht an den drei Stellen darunter:
+                // Kosten, Vorschau und Vergütung rechnen alle aus dieser Liste,
+                // und drei Prüfungen wären drei Gelegenheiten, dass eine davon
+                // beim nächsten Umbau vergessen wird. Die Daten bleiben
+                // unangetastet — nach dem Kauf ist alles sofort wieder da.
+                let tariffs = purchase.allows(.costsAndTariffs)
+                    ? try repository.tariffs(for: point.id) : []
                 let periods = try repository.billingPeriods(for: point.id)
                 let costs = cost(point: point, readings: everything,
                                  tariffs: tariffs, in: yearRange)

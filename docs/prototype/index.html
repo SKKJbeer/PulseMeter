@@ -797,7 +797,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>Zählora</h1>
-  <p>Klickbarer Entwurf · v0.103.1</p>
+  <p>Klickbarer Entwurf · v0.104.0</p>
 </div>
 
 <div class="device">
@@ -1723,6 +1723,7 @@ function billedUnits(meter, cubicOrKwh) {
    und Einspeisung laufen gegenläufig durchs Jahr. Im August ist der Bezug fast
    durch, die Einspeisung noch lange nicht. */
 function projectedCost(m, fc) {
+  if (!darfKosten()) return null;
   let energy = billedUnits(m, fc.value) * m.price;
   const second = m.registers[1];
   if (second && m.feedInPrice) {
@@ -1731,7 +1732,21 @@ function projectedCost(m, fc) {
   }
   return energy + m.base * 12;
 }
-const balance = (m, fc) => m.prepay * 12 - projectedCost(m, fc);
+const balance = (m, fc) => {
+  const cost = projectedCost(m, fc);
+  return cost === null ? null : m.prepay * 12 - cost;
+};
+
+/* **Ohne den Kauf steht nirgends ein Betrag — wie in der App seit 0.104.0.**
+
+   Dort hing die Kostenanzeige daran, *ob Tarife vorliegen*, nicht daran, ob
+   jemand sie freigeschaltet hat. Der Knopf „Beispieldaten anlegen" legt welche
+   an, und damit war „Kosten und Preise" mit einem Tipp offen. Der Entwurf hatte
+   denselben Fehler in seiner eigenen Gestalt: Er fragte `if (m.price)`, und
+   seine Beispielzähler haben alle einen Preis.
+
+   Geprüft wird deshalb hier, an einer Stelle, durch die jeder Betrag muss. */
+function darfKosten() { return owns("costsAndTariffs"); }
 
 /* Zählerarten mit gefülltem und mit gezeichnetem Symbol. */
 function icon(m) {
@@ -1895,8 +1910,13 @@ function renderCards() {
     const second = m.registers[1];
     if (second) {
       const s = yearToDate(second);
+      // Die **Menge** gehört zum Zähler und bleibt. Was sie eingebracht hat,
+      // ist ein Betrag und hängt am Kauf — sonst stünde die Vergütung da,
+      // während die Kostenzeile darunter gesperrt ist.
+      const verguetet = darfKosten() && m.feedInPrice
+        ? `<span>≈ ${moneyRound(s.value * m.feedInPrice)} vergütet</span>` : "";
       extra += `<div class="card-extra"><span>Einspeisung <strong>${nf(s.value, 0)} kWh</strong></span>
-        <span>≈ ${moneyRound(s.value * m.feedInPrice)} vergütet</span></div>`;
+        ${verguetet}</div>`;
     }
 
     const ytdCost = costYearToDate(m);
@@ -1904,8 +1924,8 @@ function renderCards() {
       extra += `<div class="card-extra"><span>${costCaption(ytd)}</span>
         <strong>${money(ytdCost)}</strong></div>`;
     }
-    if (m.prepay && fc) {
-      const bal = balance(m, fc);
+    const bal = m.prepay && fc ? balance(m, fc) : null;
+    if (bal !== null) {
       extra += `<div class="card-extra"><span>Abschlag ${moneyRound(m.prepay)} monatlich</span>
         <button class="explain" data-explain="${m.id}">${bal >= 0 ? "≈ " + moneyRound(bal) + " Guthaben" : "≈ " + moneyRound(-bal) + " Nachzahlung"}
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button></div>`;
@@ -2100,7 +2120,7 @@ function renderCompare(m, reg, idx) {
     // jetzt in der Überschrift, und was ≈ heißt, gehört in drei Wörter.
     foot = `<div class="cmp-foot"><b>${nf(cur.v / cur.days, 2)} ${m.unit}</b> pro Tag,
       im Vorjahr ${nf(prev.v / prev.days, 2)}.`;
-    if (m.price) {
+    if (darfKosten() && m.price) {
       const c1 = billedUnits(m, cur.v) * m.price, c0 = billedUnits(m, prev.v) * m.price;
       foot += ` <b>${money(c1)}</b> statt ${money(c0)}.`;
     }
@@ -2552,6 +2572,7 @@ function registerPrice(m, reg) {
    `CostEngine` seit 0.22.1 — dort war sie ein Fehler, den ein Bildschirmfoto
    aufgedeckt hat. */
 function costFor(m, p) {
+  if (!darfKosten()) return null;
   const first = consumption(m.registers[0], p.from, p.to);
   if (!first || !first.complete) return null;
 
@@ -3174,6 +3195,13 @@ const PRODUCTS = [
 const BUNDLE = { id: "everything", price: 4.99, title: "Alles freischalten",
                  text: "Alle fünf Freischaltungen zusammen, dauerhaft. Günstiger als einzeln." };
 
+/* **Die Anzahl wird gezählt, nicht getippt.** Hier stand zweimal „Alle vier
+   zusammen" — geschrieben, als es vier waren, und stehengeblieben, als die
+   Erinnerungen dazukamen. Derselbe Satz stand zur selben Zeit falsch auf der
+   Hilfeseite der Website (0.103.1). Eine Anzahl, die man abschreibt, ist eine
+   Anzahl, die irgendwann nicht mehr stimmt. */
+const ZAHLWORT = { 1: "eine", 2: "zwei", 3: "drei", 4: "vier", 5: "fünf", 6: "sechs" };
+
 /* Was in einem Kauf steckt — als Stichpunkte, nicht als Absatz.
 
    Der Satz in `text` sagt, wozu etwas gut ist; er trägt, solange man vor genau
@@ -3251,7 +3279,7 @@ function openPaywall(id) {
         <div class="rl">${BUNDLE.title}${bulletList(INCLUDES.everything, false)}</div>
         <span class="freebadge pro">${money(BUNDLE.price)}</span>
       </button>
-      <div class="note">Alle vier zusammen — ${money(spart)} günstiger als einzeln.</div>` : ""}
+      <div class="note">Alle ${ZAHLWORT[PRODUCTS.length] || PRODUCTS.length} zusammen — ${money(spart)} günstiger als einzeln.</div>` : ""}
     <div class="section-label">Dauerhaft kostenlos</div>
     ${bulletList(ALWAYS_FREE, true)}
     <div class="note">Im Entwurf schalten die Knöpfe frei, ohne zu bezahlen. In der App
@@ -3277,7 +3305,7 @@ function openStore() {
     <div class="card" style="margin-bottom:14px">
       <div class="cardtitle">${BUNDLE.title}</div>
       ${bulletList(INCLUDES.everything, false)}
-      <div class="note">Alle vier zusammen — ${money(spart)} günstiger als einzeln.</div>
+      <div class="note">Alle ${ZAHLWORT[PRODUCTS.length] || PRODUCTS.length} zusammen — ${money(spart)} günstiger als einzeln.</div>
       <button type="button" class="save" data-kaufen="everything"
               style="--c:var(--tint);--c-ink:var(--tint-ink)">Freischalten · ${money(BUNDLE.price)}</button>
     </div>`;
@@ -3400,11 +3428,13 @@ function openMeterEditor(id) {
   editMeter = id ? METERS.find(m => m.id === id) : null;
   const readingCount = editMeter ? editMeter.registers[0].readings.length : 0;
   const kindID = editMeter ? (editMeter.kind || "electricity") : "electricity";
-  /* Wer schon einen Preis hinterlegt hat, behält ihn — sonst stünden auf der
-     Übersicht Beträge, die sich nicht mehr nachsehen und nicht berichtigen
-     ließen (Produktprinzip 4). Dieselbe Regel wie `canUseTariffs` in
-     `MeterEditor`. */
-  const priceOpen = mayUse("costsAndTariffs") || !!(editMeter && editMeter.price);
+  /* **Allein der Kauf entscheidet, seit 0.104.0.** Hier stand die Ausnahme
+     „wer schon einen Preis hinterlegt hat, behält ihn", begründet damit, dass
+     sonst auf der Übersicht Beträge stünden, die sich nicht mehr berichtigen
+     ließen. Die Begründung ist entfallen: Ohne den Kauf stehen dort keine
+     Beträge mehr. Übrig blieb eine offene Tür — die Beispielzähler haben
+     Preise. Dieselbe Regel wie `canUseTariffs` in `MeterEditor`. */
+  const priceOpen = mayUse("costsAndTariffs");
 
   document.getElementById("editor-title").textContent = editMeter ? "Zähler" : "Neuer Zähler";
   document.getElementById("editor-body").innerHTML = `
@@ -3885,6 +3915,10 @@ function commitReadings() {
    Erklärung — Prinzip 4: keine Sackgasse
    ============================================================ */
 function openExplain(id) {
+  // Erreichbar ist dieser Schirm nur über die Abschlagszeile, und die steht
+  // ohne den Kauf nicht da. Die Prüfung trotzdem: Ein Weg, den es heute nicht
+  // gibt, entsteht beim nächsten Umbau.
+  if (!darfKosten()) return;
   const m = METERS.find(x => x.id === id);
   const reg = m.registers[0];
   const fc = forecast(reg, m), ytd = yearToDate(reg);

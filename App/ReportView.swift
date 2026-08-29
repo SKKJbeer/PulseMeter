@@ -160,6 +160,13 @@ struct ReportView: View {
             .onChange(of: purchase.reportIsWatermarked) { _, _ in
                 if report != nil { build() }
             }
+            // Und dasselbe für die Preise: Seit 0.104.0 entsteht der Bericht
+            // ohne Tarife, solange der Kauf fehlt. Wer ihn im geöffneten
+            // Bericht tätigt, soll die Beträge sehen, ohne den Schirm zu
+            // schließen und wieder aufzumachen.
+            .onChange(of: purchase.allows(.costsAndTariffs)) { _, _ in
+                if report != nil { build() }
+            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     if report == nil {
@@ -412,7 +419,8 @@ struct ReportView: View {
             // Zusammengestellt wird in ``ReportComposer`` — dieselbe Stelle, die
             // auch das Herunterladen-Menü im Verlauf benutzt.
             let built = try ReportComposer(context: context)
-                .report(scope: scope, period: period, today: today)
+                .report(scope: scope, period: period, today: today,
+                        mitKosten: purchase.allows(.costsAndTariffs))
             problem = nil
             report = built
 

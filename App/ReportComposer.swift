@@ -31,10 +31,20 @@ struct ReportComposer {
     let context: ModelContext
 
     /// - Parameter scope: Ein einzelner Zähler, oder `nil` für alle zusammen.
+    /// - Parameter mitKosten: Ob ``ProductID/costsAndTariffs`` freigeschaltet
+    ///   ist. Ohne den Kauf bleiben Tarife und Abschläge leer, und der Bericht
+    ///   zeigt Mengen statt Beträge.
+    ///
+    ///   **Als Wert und nicht als Abfrage hier drin.** Diese Struktur kennt den
+    ///   Kaufzustand nicht und soll ihn nicht kennen; sie liest den Speicher.
+    ///   Beide Aufrufer sind Ansichten und haben ihn zur Hand. Ein Vorgabewert
+    ///   steht bewusst nicht da: Ein vergessener Parameter soll den Übersetzer
+    ///   stören und nicht stillschweigend Beträge ausgeben.
     func report(
         scope: MeteringPoint.ID?,
         period: ReportBuilder.Period,
-        today: CalendarDay
+        today: CalendarDay,
+        mitKosten: Bool
     ) throws -> ReportBuilder.Report {
         let repository = PulseRepository(context: context)
         let alle = try repository.meteringPoints()
@@ -45,6 +55,7 @@ struct ReportComposer {
         var prepayments: [MeteringPoint.ID: Decimal] = [:]
         for meter in gewaehlt {
             readings[meter.id] = try repository.readings(for: meter)
+            guard mitKosten else { continue }
             tariffs[meter.id] = try repository.tariffs(for: meter.id)
             // Der Abschlag des Zeitraums, in dem der Bericht liegt — nicht
             // irgendeiner. Ein Abschlag aus einem anderen Jahr gegen die Kosten

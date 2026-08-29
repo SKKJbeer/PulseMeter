@@ -37,6 +37,20 @@ Die Nutzungsfrequenz einer Zähler-App liegt bei 1–12 Öffnungen pro Jahr und 
 > Benutzen** — ein Bestand über der Grenze bleibt vollständig zugänglich. Und
 > **der Export ist unverkäuflich**; er stand am 11. August ausdrücklich zur
 > Entscheidung und blieb frei.
+>
+> **Die erste Regel gilt für Zähler und Ablesungen, nicht für Beträge.** So
+> stand sie bis 0.104.0 ohne diesen Zusatz da, und daraus wurde eine offene
+> Tür: Weil das Anlegen gesperrt war und das Benutzen nie, hing die
+> Kostenanzeige daran, *ob Tarife vorliegen*. Der Knopf „Beispieldaten
+> anlegen" legt welche an — und schenkte damit „Kosten und Preise", „Weitere
+> Zähler" und „Tag- und Nachtstrom" auf einen Tipp. Gefunden hat es ein Audit
+> der Website gegen den Quelltext, kein Nutzer und keine Prüfung.
+>
+> Der Unterschied, auf den es ankommt: Eine Ablesung ist die Arbeit des
+> Nutzers, und sie ihm wegzunehmen wäre unverzeihlich (Produktprinzip 5). Ein
+> Euro-Betrag ist keine Eingabe, sondern das **Erzeugnis der gekauften
+> Leistung**. Er hängt deshalb am Kauf und an nichts sonst. Die eingetragenen
+> Preise bleiben gespeichert; nach dem Kauf ist alles unverändert wieder da.
 
 ### Warum kleine Stücke statt eines großen Kaufs
 

@@ -9,6 +9,79 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.104.0 — 2026-08-29
+
+**Der Knopf „Beispieldaten anlegen" verschenkte drei von fünf Käufen.**
+
+Er steht im leeren Startzustand, ist in jedem Auslieferungsbau erreichbar und
+legt vier Zähler an — mit Photovoltaik, Doppeltarif, Gas-Umrechnung, Arbeits-
+und Grundpreisen und Abschlägen. Danach war „Weitere Zähler" überschritten,
+„Tag- und Nachtstrom" in Gebrauch und „Kosten und Preise" offen. Dauerhaft.
+
+Die eigentliche Ursache war eine Zeile, die sinnvoll aussieht:
+
+```swift
+if tariffs.isEmpty && !purchase.allows(.costsAndTariffs) { … }
+```
+
+Die Kostenanzeige fragte, **ob Tarife vorliegen** — nicht, ob jemand sie
+gekauft hat. Wer welche hat, sieht Beträge. Beispieldaten legen welche an.
+
+### Behoben
+
+- Ohne den Kauf lädt die App gar keine Tarife mehr in die Ansicht. Damit
+  entfallen Kosten, Abschlagsvorschau, Einspeisevergütung und die Beträge im
+  Bericht an **einer** Stelle statt an vier. Die eingetragenen Preise bleiben
+  gespeichert; nach dem Kauf ist alles unverändert wieder da.
+- Der Preiseditor im Zählerformular hing an derselben Ausnahme („wer schon
+  einen Tarif hat, behält ihn"). Ihre Begründung war, dass sonst
+  unberichtigbare Beträge auf der Übersicht stünden — die stehen jetzt nicht
+  mehr da, also ist die Ausnahme entfallen.
+- Der Entwurf hatte denselben Fehler in eigener Gestalt: Er fragte
+  `if (m.price)`, und alle seine Beispielzähler haben einen Preis. Gegenprobe
+  mit dem alten Verhalten: **zwölf Beträge** standen einem Nutzer ohne Kauf auf
+  der Übersicht.
+- Im Entwurf stand zweimal „Alle vier zusammen" — geschrieben, als es vier
+  waren. Die Anzahl wird jetzt gezählt.
+
+### Hinzugefügt
+
+**Das Widget gibt es jetzt auf dem Sperrbildschirm.** Die Website versprach
+„ein Feld auf dem Sperrbildschirm", und die Erweiterung kannte nur
+`systemSmall` und `systemMedium` — also den Startbildschirm. Gefunden hat es
+ein Audit der Website gegen den Quelltext.
+
+- `accessoryRectangular`: Name, Zahl, darunter die Auskunft. Fällt die Ablesung
+  an, steht dort die Fälligkeit statt des Zeitraums.
+- `accessoryInline`: die eine Zeile neben der Uhr. Der Satz entsteht in
+  `WidgetSummary.Meter.inlineSummary(number:)` und ist damit ohne Simulator
+  geprüft — Fälligkeit vor Zahl, „noch nie abgelesen" statt „seit 0 Tagen",
+  und das „≈" bleibt auch auf dem engsten Platz stehen (Produktprinzip 7).
+- `accessoryCircular` fehlt mit Absicht: Ein Ring will einen Anteil zeigen, und
+  „wie viel des Jahres ist verbraucht" ist keine Zahl, die diese App kennt.
+
+### Geändert
+
+- `docs/04-monetarisierung.md`: Die Regel „Gesperrt ist das Anlegen, nie das
+  Benutzen" stand ohne Einschränkung da und hat genau diese Tür geöffnet. Sie
+  gilt für Zähler und Ablesungen — die Arbeit des Nutzers. Ein Euro-Betrag ist
+  keine Eingabe, sondern das Erzeugnis der gekauften Leistung und hängt am
+  Kauf.
+
+_231 Tests in PulseCore, alle grün (3 neue für die Sperrbildschirm-Zeile).
+242 Prüfungen im Entwurf, hell und dunkel (8 neue: ohne Kauf kein Betrag auf
+der Übersicht, mit Kauf wieder da). Gegengeprüft, dass die neuen Prüfungen mit
+dem alten Verhalten rot werden._
+
+_**Ungeprüft: der Sperrbildschirm selbst.** `accessoryRectangular` und
+`accessoryInline` sind ohne Xcode weder baubar noch anzusehen; geprüft ist nur
+der Satz, den sie anzeigen. Zu erwarten wäre ein Fehler beim Zuschnitt — der
+Streifen ist zwei Zeilen hoch, die Ansicht setzt drei — oder bei
+`containerBackground`, das für diese Familien durchsichtig sein muss. Beides
+zeigt sich im ersten Simulatorlauf._
+
+---
+
 ## 0.103.1 — 2026-08-29
 
 **Die Hilfeseite verkaufte etwas als kostenlos, das 0,99 € kostet.**

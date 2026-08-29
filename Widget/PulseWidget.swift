@@ -47,9 +47,34 @@ struct PulseWidgetView: View {
     let entry: PulseEntry
 
     var body: some View {
+        inhalt.containerBackground(hintergrund, for: .widget)
+    }
+
+    @ViewBuilder
+    private var inhalt: some View {
         switch family {
         case .systemMedium: medium
+        case .accessoryRectangular: rechteckig
+        case .accessoryInline: einzeilig
         default: small
+        }
+    }
+
+    /// **Auf dem Sperrbildschirm gibt es keinen Untergrund.**
+    ///
+    /// Dort zeichnet das System selbst, und eine eigene Fläche darunter
+    /// erscheint als heller Kasten über dem Hintergrundbild. Auf dem
+    /// Startbildschirm ist es umgekehrt: Ohne Fläche steht die Kachel
+    /// durchsichtig da.
+    ///
+    /// `AnyShapeStyle`, weil beide Zweige verschiedene Typen liefern und ein
+    /// `switch` in einem Rückgabewert `some ShapeStyle` nicht übersetzt.
+    private var hintergrund: AnyShapeStyle {
+        switch family {
+        case .accessoryRectangular, .accessoryInline, .accessoryCircular:
+            return AnyShapeStyle(Color.clear)
+        default:
+            return AnyShapeStyle(PulseColor.surface)
         }
     }
 
@@ -144,6 +169,72 @@ struct PulseWidgetView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
+    // MARK: - Sperrbildschirm
+
+    /// Der breite Streifen unter der Uhr.
+    ///
+    /// **Warum es ihn seit 0.104.0 gibt.** Die Website versprach „ein Feld auf
+    /// dem Sperrbildschirm", und das Widget kannte nur `systemSmall` und
+    /// `systemMedium` — also den Startbildschirm. Ein Audit hat es gefunden,
+    /// kein Nutzer; gebaut wurde es, statt den Satz zu streichen, weil der
+    /// Sperrbildschirm der Ort ist, an dem eine fällige Ablesung tatsächlich
+    /// auffällt.
+    ///
+    /// Drei Zeilen, nicht mehr: Name, Zahl, Auskunft. Der Streifen ist etwa so
+    /// hoch wie zwei Zeilen Text und wird beschnitten, nicht umgebrochen.
+    private var rechteckig: some View {
+        VStack(alignment: .leading, spacing: 1) {
+            if let meter = entry.summary?.headline {
+                // `widgetAccentable` färbt die Zeile in die Tönung, die der
+                // Nutzer für seinen Sperrbildschirm gewählt hat. Eine eigene
+                // Farbe stünde dort fremd — und auf einem getönten Schirm
+                // womöglich unlesbar.
+                Text(meter.name)
+                    .font(.system(.caption2, weight: .semibold))
+                    .widgetAccentable()
+                    .lineLimit(1)
+                if let quantity = meter.quantity {
+                    Text("\(meter.isApproximate ? "≈ " : "")\(number(quantity)) \(meter.unit)")
+                        .font(.system(.body, weight: .semibold))
+                        .minimumScaleFactor(0.7)
+                        .lineLimit(1)
+                } else {
+                    Text("—").font(.system(.body, weight: .semibold))
+                }
+                Text(meter.statusText)
+                    .font(.system(.caption2))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            } else {
+                Text("Zählora").font(.system(.caption2, weight: .semibold)).widgetAccentable()
+                Text("Ersten Stand eintragen")
+                    .font(.system(.caption2))
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(spoken(entry.summary?.headline))
+    }
+
+    /// Die schmale Zeile neben der Uhr.
+    ///
+    /// Ein einziges `Text` und sonst nichts: Diese Familie erlaubt keine
+    /// Anordnung, kein Bild und keine eigene Schrift. Was nicht hineinpasst,
+    /// schneidet das System ab — deshalb kommt der Satz aus `PulseCore`, wo er
+    /// ohne Simulator geprüft ist.
+    private var einzeilig: some View {
+        // Schrittweise statt in einer Kette: Ein `map` innerhalb einer
+        // Optionalkette ist gültiges Swift und hier trotzdem die falsche Wahl —
+        // dieses Ziel wird ohne Compiler zur Hand geschrieben, und drei Zeilen,
+        // die nicht überraschen können, sind mehr wert als eine kurze.
+        var zeile = "Zählora"
+        if let meter = entry.summary?.headline {
+            zeile = meter.inlineSummary(number: number)
+        }
+        return Text(zeile)
+    }
+
     // MARK: - Bausteine
 
     /// Ein Widget ohne Daten sagt, was zu tun ist — statt leer zu bleiben.
@@ -181,12 +272,20 @@ struct PulseWidget: Widget {
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: PulseProvider()) { entry in
+            // Die Fläche setzt die Ansicht selbst — auf dem Sperrbildschirm
+            // gehört keine darunter. Siehe `PulseWidgetView.hintergrund`.
             PulseWidgetView(entry: entry)
-                .containerBackground(PulseColor.surface, for: .widget)
         }
         .configurationDisplayName("Zählerstände")
         .description("Zeigt, ob eine Ablesung fällig ist und wie viel bisher verbraucht wurde.")
-        .supportedFamilies([.systemSmall, .systemMedium])
+        // **Sperrbildschirm seit 0.104.0.** Vorher standen hier nur die beiden
+        // Startbildschirm-Familien, während die Website ein Feld auf dem
+        // Sperrbildschirm versprach. `accessoryCircular` fehlt mit Absicht: Ein
+        // Ring will einen Anteil zeigen, und „wie viel des Jahres ist
+        // verbraucht" ist keine Zahl, die diese App kennt — eine erfundene
+        // wäre schlimmer als keine Kachel.
+        .supportedFamilies([.systemSmall, .systemMedium,
+                            .accessoryRectangular, .accessoryInline])
     }
 }
 
