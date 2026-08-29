@@ -195,6 +195,17 @@ def setzen(apple: Apple, pfad: str, typ: str, kennung: str,
 
         text = kurz(antwort)
         treffer = FELD_IM_FEHLER.search(text)
+
+        # **Ein genanntes Feld, das gar nicht mitgeschickt wurde, fehlt.** Die
+        # beiden bekannten Einwände nennen ein Feld, das dabei war — falscher
+        # Typ, nicht änderbar. Dieser hier nennt eines, das fehlt, und dann
+        # hilft weder Umdrehen noch Weglassen. Er wird deshalb als das gemeldet,
+        # was er ist: eine fehlende Angabe, mit Namen.
+        if treffer and treffer.group(1) not in bleibt:
+            offen.append(f"{was}: Apple verlangt zusätzlich "
+                         f"„{treffer.group(1)}“ — {text}")
+            return False
+
         if stand != 409 or not treffer or treffer.group(1) not in bleibt:
             offen.append(f"{was}: ging nicht ({stand}) — {text}")
             return False
@@ -456,12 +467,33 @@ def pruefung_fuellen(apple: Apple, fassung_id: str) -> None:
     vorname, nachname, post = kontakt_aus_impressum()
     if not post:
         offen.append("Kontakt: aus dem Impressum ließ sich nichts lesen")
-    werte = {"notes": text, "demoAccountRequired": False,
-             "contactFirstName": vorname, "contactLastName": nachname,
-             "contactEmail": post}
+
+    # **Apple nimmt den Kontakt nur vollständig.** Der erste Versuch, Name und
+    # E-Mail allein einzutragen, kam mit 409 zurück:
+    #
+    #     You must provide a value for the attribute 'contactPhone'
+    #
+    # Ohne Nummer wandert also auch der Name nicht hinüber — und die Nummer
+    # steht nicht im Impressum. Sie kommt deshalb aus einem Geheimnis und nicht
+    # aus dem Repository: Eine private Telefonnummer gehört in keine Datei, die
+    # jemand später einmal öffentlich stellt.
+    werte = {"notes": text, "demoAccountRequired": False}
+    fon = os.environ.get("ASC_KONTAKT_TELEFON", "").strip()
+    if fon and post:
+        werte.update({"contactFirstName": vorname, "contactLastName": nachname,
+                      "contactEmail": post, "contactPhone": fon})
+    else:
+        gehoert_ihm.append(
+            "Telefonnummer für die Prüfung — als Geheimnis "
+            "ASC_KONTAKT_TELEFON hinterlegen; Apple nimmt Name und E-Mail "
+            "nicht ohne sie an")
 
     stand, pruefung = erste(apple,
                             f"v1/appStoreVersions/{fassung_id}/appStoreReviewDetail")
+    was = f"Hinweise für die Prüfung ({len(text)} Zeichen)"
+    if "contactPhone" in werte:
+        was += f" und Kontakt {vorname} {nachname}"
+
     if pruefung is None:
         stand, antwort = apple.anlegen("v1/appStoreReviewDetails", {"data": {
             "type": "appStoreReviewDetails",
@@ -470,16 +502,13 @@ def pruefung_fuellen(apple: Apple, fassung_id: str) -> None:
                 "data": {"type": "appStoreVersions", "id": fassung_id}}},
         }})
         if stand in (200, 201):
-            getan.append(f"Angaben zur Prüfung angelegt ({len(text)} Zeichen "
-                         f"Hinweise, Kontakt {vorname} {nachname})")
+            getan.append(f"{was} angelegt")
         else:
-            offen.append(f"Angaben zur Prüfung: ging nicht ({stand}) "
-                         f"— {kurz(antwort)}")
+            offen.append(f"{was}: ging nicht ({stand}) — {kurz(antwort)}")
         return
 
     setzen(apple, "v1/appStoreReviewDetails", "appStoreReviewDetails",
-           pruefung["id"], werte,
-           f"Hinweise ({len(text)} Zeichen) und Kontakt {vorname} {nachname}")
+           pruefung["id"], werte, was)
 
 
 def app_finden(apple: Apple):
@@ -601,21 +630,21 @@ def fassung_pruefen(apple: Apple, app_id: str) -> None:
            f"Hinweise für die Prüfung ({len(hinweise)} Zeichen)"
            if hinweise else "Hinweise für die Prüfung fehlen")
 
-    # **Ein Punkt je Feld.** Solange „Kontakt" einer war, verdeckte die fehlende
-    # Telefonnummer, dass Name und E-Mail längst dastanden — und wer die Zeile
-    # las, hielt drei Angaben für offen statt einer.
+    # **Ein Punkt, weil Apple den Block nur ganz nimmt.** Ein Versuch mit Name
+    # und E-Mail allein kam mit 409 zurück: „You must provide a value for the
+    # attribute 'contactPhone'". Die drei Felder getrennt zu melden hieße,
+    # Fortschritt zu behaupten, den es bei Apple nicht gibt — dort steht bis
+    # zur Nummer gar nichts.
     wer = " ".join(x for x in (feld(pruefung, "contactFirstName"),
                                feld(pruefung, "contactLastName")) if x)
     post = feld(pruefung, "contactEmail") or ""
-    pruefe(bool(wer and post),
-           f"Kontakt für die Prüfung: {wer}, {post}" if wer and post
-           else "Kontakt für die Prüfung: Name oder E-Mail fehlt")
-
     fon = feld(pruefung, "contactPhone") or ""
-    pruefe(bool(fon.strip()),
-           f"Telefonnummer für die Prüfung: {fon}" if fon
-           else "Telefonnummer für die Prüfung — steht nicht im Impressum "
-                "und wird nicht erfunden",
+    pruefe(bool(wer and post and fon.strip()),
+           f"Kontakt für die Prüfung: {wer}, {post}, {fon}"
+           if wer and post and fon.strip() else
+           "Kontakt für die Prüfung — Name und E-Mail stehen im Impressum, "
+           "die Telefonnummer nicht. Apple nimmt den Block nur vollständig; "
+           "als Geheimnis ASC_KONTAKT_TELEFON hinterlegen",
            gehoert_ihm)
 
 

@@ -638,6 +638,16 @@ allem, statt nach dem einen.
 Das gilt besonders für die Grenze zwischen „hole ich selbst" und „braucht einen
 Menschen": Sie verläuft fast nie an einer Gruppe, sondern mitten hindurch.
 
+**Und die Gegenprobe, eine Stunde später kassiert:** Die Aufteilung ist nur
+richtig, wenn die Gegenseite die Felder auch einzeln annimmt. Apple nahm Name
+und E-Mail ohne Telefonnummer **gar nicht** — „You must provide a value for the
+attribute 'contactPhone'". Drei getrennte Zeilen hätten zwei davon als erledigt
+gemeldet, während bei Apple nichts stand.
+
+> Die Aufteilung folgt der **Annahme drüben**, nicht der Zählung hier. Wo ein
+> Formular nur ganz annimmt, ist ein Punkt richtig — und er nennt, welches
+> einzelne Feld ihn aufhält.
+
 ### Ein unbekannter Name ist nicht immer ein Fehler — manchmal nur ein Rückfall
 
 `var(--bg)` stand im Stil eines Knopfes, und die Datei kannte nur `--ground`,

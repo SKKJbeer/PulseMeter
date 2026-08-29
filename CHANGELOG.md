@@ -9,6 +9,38 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.98.4 — 2026-08-29
+
+**Apple nimmt den Kontakt nur vollständig.** Der Versuch aus 0.98.3, Name und
+E-Mail allein einzutragen, kam mit 409 zurück:
+
+```
+You must provide a value for the attribute 'contactPhone' with this request
+```
+
+Damit steht bei Apple bis zur Telefonnummer **gar kein** Kontakt — auch nicht
+die beiden Angaben, die längst bekannt sind.
+
+### Geändert
+- Die Nummer kommt aus dem Geheimnis `ASC_KONTAKT_TELEFON` und nicht aus dem
+  Repository. Eine private Telefonnummer gehört in keine Datei, die später
+  einmal öffentlich stehen könnte — der Ablauf reicht sie durch wie den
+  Apple-Schlüssel.
+- Ohne die Nummer schreibt der Lauf den Kontakt **erst gar nicht** und meldet
+  eine Zeile, statt in einen 409 zu laufen und danach das Falsche zu behaupten.
+- **Ein Punkt statt drei.** Die Aufteilung aus 0.98.3 war gut gemeint und hier
+  falsch: Drei getrennte Zeilen hätten Fortschritt gemeldet, den es bei Apple
+  nicht gibt. Wo die Gegenseite nur ganz annimmt, ist ein Punkt richtig.
+- `setzen()` erkennt jetzt auch den dritten Einwand. Die ersten beiden nennen
+  ein Feld, das **mitgeschickt** wurde — falscher Typ, nicht änderbar; dieser
+  nennt eines, das **fehlt**, und dann hilft weder Umdrehen noch Weglassen. Er
+  wird als das gemeldet, was er ist: eine fehlende Angabe, mit Namen.
+
+`docs/09-appstore.md` nennt den Handgriff: ein Geheimnis anlegen, den Lauf mit
+Häkchen starten.
+
+---
+
 ## 0.98.3 — 2026-08-29
 
 **Der Kontakt für die Prüfung kommt aus dem Impressum.** Vom Gründer als Quelle

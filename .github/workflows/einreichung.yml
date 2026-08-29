@@ -54,6 +54,10 @@ jobs:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+          # Steht nicht im Impressum und deshalb auch nicht im Repository.
+          # Fehlt sie, trägt der Lauf den Kontakt gar nicht ein — Apple nimmt
+          # ihn nur vollständig — und sagt das in einer Zeile.
+          ASC_KONTAKT_TELEFON: ${{ secrets.ASC_KONTAKT_TELEFON }}
         run: |
           if [ "${{ inputs.fuellen }}" = "true" ]; then
             python3 scripts/asc-einreichung.py --fuellen

@@ -366,12 +366,20 @@ Skript und läuft überall, wo der Schlüssel liegt.
 - [x] **Datenschutzerklärung und Support-Seite stehen im Netz.** Beide URLs
       zeigen auf `pulsemeter.pages.dev`, der Platzhalter in `datenschutz.html`
       ist raus, und beide Felder sind bei Apple eingetragen.
-- [x] **Name und E-Mail für die Prüfung** stehen bei Apple. Der Gründer hat das
-      Impressum als Quelle benannt; von dort werden sie gelesen, nicht
-      abgetippt.
-- [ ] **Telefonnummer für die Prüfung.** Im Impressum steht keine, und § 5 DDG
-      verlangt sie dort auch nicht. Erfunden wird sie nicht (CLAUDE.md, „Keine
-      Annahmen in Texten, die jemand anderes liest").
+- [ ] **Telefonnummer für die Prüfung.** Name und E-Mail stehen im Impressum
+      und werden von dort gelesen; eine Nummer steht dort nicht, und § 5 DDG
+      verlangt sie dort auch nicht. **Apple nimmt den Kontakt nur vollständig** —
+      ein Versuch ohne Nummer kam zurück mit „You must provide a value for the
+      attribute 'contactPhone'". Solange sie fehlt, steht bei Apple gar kein
+      Kontakt.
+
+      Ein Handgriff, einmal:
+      `Settings → Secrets and variables → Actions → New repository secret`,
+      Name `ASC_KONTAKT_TELEFON`, Wert die Nummer im Format `+49 711 1234567`.
+      Danach „Einreichung nachsehen" mit Häkchen starten — der Rest läuft.
+
+      Sie liegt bewusst **nicht** im Repository: eine private Telefonnummer
+      gehört in keine Datei, die später einmal öffentlich stehen könnte.
 - [ ] **Zwei Wochen echte Eigennutzung** — der Punkt, der bisher am meisten
       gefunden hat, und eine Entscheidung, kein Arbeitsschritt.
 - [ ] **800 ms Kaltstart** auf einem Gerät messen. Im Simulator sagt die Zahl
