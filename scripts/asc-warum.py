@@ -125,6 +125,21 @@ def main() -> int:
     zeigen("Datenschutz-Fragebogen als eigene Liste", "v1/appDataUsages",
            **{"filter[app]": app, "limit": 10})
 
+    # **Die Nachschlagewerke dahinter.** Gibt es sie, lässt sich der Fragebogen
+    # über die Schnittstelle ausfüllen — dann braucht es niemanden, der klickt.
+    # Gibt es sie nicht, ist auch das eine klare Antwort.
+    for pfad in ("v1/appDataUsageCategories", "v1/appDataUsagePurposes",
+                 "v1/appDataUsageDataProtections", "v1/appDataUsageGroupings"):
+        zeigen(f"Nachschlagewerk — {pfad}", pfad, **{"limit": 5})
+
+    # Händlerstatus nach dem Digitale-Dienste-Gesetz. Erwartung: gibt es
+    # nicht. Geprüft wird sie trotzdem, weil eine Erwartung kein Befund ist.
+    for pfad in (f"v1/apps/{app}/appTraderDeclaration",
+                 f"v1/apps/{app}/traderDeclaration",
+                 f"v1/apps/{app}/appStoreVersionSubmissions",
+                 "v1/appTraderDeclarations"):
+        zeigen(f"Händlerstatus — {pfad}", pfad, **{"limit": 5})
+
     # Was Apple sonst noch an der App hängen hat. Steht der Grund irgendwo,
     # dann in einer dieser Beziehungen — und wenn nicht, ist auch das eine
     # Antwort: Über die Schnittstelle ist er nicht zu bekommen.
