@@ -67,6 +67,10 @@ class Apple:
                            data=json.dumps(koerper), timeout=60)
         return a.status_code, a
 
+    def loeschen(self, pfad: str) -> int:
+        return requests.delete(f"{BASIS}/{pfad}", headers=self.kopf,
+                               timeout=30).status_code
+
 
 def kurz(antwort) -> str:
     try:
@@ -194,6 +198,13 @@ def einreichen(apple: Apple, app_id: str, fassung) -> int:
     if stand not in (200, 201):
         print(f"::error::Die Fassung ließ sich der Einreichung nicht "
               f"hinzufügen ({stand}) — {kurz(antwort)}")
+        # **Aufräumen, sonst blockiert der Fehlschlag den nächsten Versuch.**
+        # Die angelegte Einreichung steht danach leer in READY_FOR_REVIEW; der
+        # nächste Lauf fände sie, meldete „steht schon bei der Prüfung" und
+        # täte nichts — eine Einreichung, die nie eine war, sähe für immer wie
+        # eine aus. Erster Anlauf am 29. August hat genau das hinterlassen.
+        weg = apple.loeschen(f"v1/reviewSubmissions/{einreichung}")
+        print(f"  · leere Einreichung wieder entfernt (Antwort {weg})")
         return 1
     print("  ✓ Fassung 1.0 der Einreichung hinzugefügt")
 

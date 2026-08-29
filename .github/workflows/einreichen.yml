@@ -24,6 +24,11 @@ on:
         type: boolean
         required: false
         default: false
+      warum:
+        description: "Nur nachfragen, warum eine Einreichung abgelehnt wird"
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -47,7 +52,9 @@ jobs:
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
         run: |
-          if [ "${{ inputs.zurueckziehen }}" = "true" ]; then
+          if [ "${{ inputs.warum }}" = "true" ]; then
+            python3 scripts/asc-warum.py
+          elif [ "${{ inputs.zurueckziehen }}" = "true" ]; then
             python3 scripts/asc-einreichen.py --zurueckziehen
           elif [ "${{ inputs.bestaetigung }}" = "einreichen" ]; then
             python3 scripts/asc-einreichen.py --einreichen
