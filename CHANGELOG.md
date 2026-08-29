@@ -9,6 +9,38 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.98.5 — 2026-08-29
+
+**Apple fragt zweimal nach Kontaktangaben, und nur eine Antwort bleibt
+privat.** Aufgekommen durch die Frage des Gründers, ob die Nummer für die
+Prüfung „nur für Apple intern" sei. Ja — und genau deshalb war zu klären, wo
+die andere herauskommt.
+
+| Feld | Wer sieht es |
+|---|---|
+| App Review Information | nur der Prüfer bei Apple |
+| Händlerangaben nach dem Digitale-Dienste-Gesetz | **öffentlich** auf der Produktseite in der EU |
+
+Beide wollen Name, Telefon und E-Mail. Wer sie verwechselt, gibt eine private
+Nummer in ein Feld, das sie veröffentlicht.
+
+### Nachgetragen
+- `docs/09-appstore.md` führt den Händlerstatus als eigenen Punkt: was Apple
+  verlangt, was davon öffentlich wird, wo es eingestellt wird und dass Apple
+  Apps in EU-Ländern aus dem Verkauf nimmt, wenn nichts angegeben ist.
+- **Und dass kein Skript ihn nachsehen kann.** Die Schnittstelle von Apple
+  bietet dafür nichts an; „Einreichung nachsehen" wird ihn nie melden, weder
+  grün noch rot. Ein Punkt, den die Prüfung nicht sehen kann, gehört
+  ausdrücklich in die Liste für Menschen — sonst hält ihn ein grüner Lauf für
+  erledigt.
+- Ob der Gründer Händler ist, entscheidet er. Das Dokument nennt Apples
+  Merkmale und trifft die Einordnung nicht (CLAUDE.md, „Keine Annahmen in
+  Texten, die jemand anderes liest" — dieselbe Regel wie beim Impressum).
+
+Nur Dokumente. Diese Version endet in `main`.
+
+---
+
 ## 0.98.4 — 2026-08-29
 
 **Apple nimmt den Kontakt nur vollständig.** Der Versuch aus 0.98.3, Name und

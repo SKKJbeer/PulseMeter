@@ -648,6 +648,29 @@ gemeldet, während bei Apple nichts stand.
 > Formular nur ganz annimmt, ist ein Punkt richtig — und er nennt, welches
 > einzelne Feld ihn aufhält.
 
+### Zwei Felder mit fast demselben Namen, und eines davon ist öffentlich
+
+Apple fragt zweimal nach Kontaktangaben, und die Antworten gehen an
+entgegengesetzte Orte:
+
+| Feld | Wer sieht es |
+|---|---|
+| App Review Information (`appStoreReviewDetail`) | nur der Prüfer bei Apple |
+| Händlerangaben nach dem Digitale-Dienste-Gesetz | **öffentlich** auf der Produktseite in der EU |
+
+Beide wollen Name, Telefon und E-Mail. Wer sie für dasselbe hält, gibt eine
+private Nummer in ein Feld, das sie veröffentlicht — und merkt es erst, wenn
+sie im Laden steht.
+
+> Bei jeder Angabe über eine Person **vor** dem Eintragen fragen, wo sie
+> herauskommt. Bei einer Plattform ist „an wen geht das" eine andere Frage als
+> „wo trage ich das ein", und die Antwort steht selten neben dem Feld.
+
+Der zweite Punkt hat noch eine Eigenschaft, die ihn gefährlich macht: **Die
+Schnittstelle kennt ihn nicht.** Der Prüflauf, der sonst alles nachsieht, wird
+ihn nie melden — weder grün noch rot. Was kein Skript sehen kann, gehört
+ausdrücklich in die Liste für Menschen, mit dem Satz dazu, warum es dort steht.
+
 ### Ein unbekannter Name ist nicht immer ein Fehler — manchmal nur ein Rückfall
 
 `var(--bg)` stand im Stil eines Knopfes, und die Datei kannte nur `--ground`,

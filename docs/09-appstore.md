@@ -380,6 +380,29 @@ Skript und läuft überall, wo der Schlüssel liegt.
 
       Sie liegt bewusst **nicht** im Repository: eine private Telefonnummer
       gehört in keine Datei, die später einmal öffentlich stehen könnte.
+- [ ] **Händlerstatus nach dem Digitale-Dienste-Gesetz der EU.** Der Punkt, der
+      leicht mit dem Kontakt oben verwechselt wird und in die andere Richtung
+      geht: Die Angaben zur Prüfung sieht **nur Apple**, die Angaben zum
+      Händlerstatus stehen **öffentlich** auf der Produktseite in der EU.
+
+      Apple verlangt bei einer Einzelperson Anschrift oder Postfach,
+      Telefonnummer und E-Mail und schreibt dazu: „Apple will publish this
+      information on your App Store product page when your app is distributed
+      in any of the 27 territories of the EU." Anschrift und E-Mail stehen
+      ohnehin schon im Impressum; **die Telefonnummer wäre neu öffentlich.**
+
+      Ob der Gründer Händler ist, entscheidet er, nicht dieses Dokument. Apple
+      nennt als Merkmal, ob mit der App Einnahmen erzielt werden — Käufe in der
+      App zählen ausdrücklich dazu. Wer nichts angibt, wird beim Einreichen
+      danach gefragt; ohne Angabe nimmt Apple Apps in EU-Ländern aus dem
+      Verkauf.
+
+      Einzustellen unter `Business → Agreements → Compliance → Digital Services
+      Act`, je App zusätzlich unter `App Information → Digital Services Act`.
+
+      **Kein Skript kann das nachsehen.** Die Schnittstelle von Apple bietet
+      dafür nichts an; „Einreichung nachsehen" wird diesen Punkt also nie
+      melden, weder grün noch rot. Deshalb steht er hier und nicht dort.
 - [ ] **Zwei Wochen echte Eigennutzung** — der Punkt, der bisher am meisten
       gefunden hat, und eine Entscheidung, kein Arbeitsschritt.
 - [ ] **800 ms Kaltstart** auf einem Gerät messen. Im Simulator sagt die Zahl
