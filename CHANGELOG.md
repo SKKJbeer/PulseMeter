@@ -9,6 +9,19 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.100.1 — 2026-08-29
+
+**Der Lauf legte sechs Käufe an und meldete fünf.** Gezählt hatte er richtig —
+`de.karjoth.pulsemeter.reminders` steht zu 0,99 €, in 175 Ländern, mit
+angenommenem Prüfbild und Zustand `READY_TO_SUBMIT`. Nur der Schlusssatz war
+abgetippt: „Alle fünf Käufe stehen."
+
+Dieselbe Fehlerklasse wie die Prüfung des Entwurfs eine Version zuvor, und
+diesmal an einer Stelle, die niemand rot macht: Ein falscher Satz über ein
+richtiges Ergebnis. Die Zahl kommt jetzt aus der Tabelle.
+
+---
+
 ## 0.100.0 — 2026-08-29
 
 **Erinnerungen kosten 0,99 €.** Vom Gründer angeordnet, damit das Bündel

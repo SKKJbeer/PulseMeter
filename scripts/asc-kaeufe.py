@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Legt die fünf Käufe in App Store Connect an — über die Schnittstelle.
+"""Legt die Käufe in App Store Connect an — über die Schnittstelle.
 
 Vom Gründer verlangt: „kannst du das nicht für mich alles über eine API oder
 ähnliches anlegen?" Kann ich versuchen, und der Versuch ist mehr wert als eine
@@ -19,7 +19,7 @@ Liste, die jemand abtippt, sondern aus derselben Quelle wie in der App —
 `ProductID.storeIdentifier` ist `de.karjoth.pulsemeter.` plus dem Namen in
 Kleinbuchstaben.
 
-**Es bricht nie ab.** Fünf Käufe, jeder in vier Schritten; scheitert einer,
+**Es bricht nie ab.** Jeder Kauf in vier Schritten; scheitert einer,
 laufen die anderen weiter und der Fehlschlag wird benannt. Ein halb angelegter
 Kauf ist kein Schaden — beim nächsten Lauf wird er gefunden und
 weitergeschrieben.
@@ -708,11 +708,14 @@ def melden() -> None:
         for zeile in dict.fromkeys(offen):
             print(f"  · {zeile}")
         print("\n  https://appstoreconnect.apple.com/apps")
-        print("\n::warning::Nicht alle fünf Käufe stehen. Ohne sie zeigt die "
-              "Kaufseite ihre Leistungen ohne Knopf — so gebaut.")
+        # **Die Zahl kommt aus der Tabelle, nicht aus diesem Satz.** Sie stand
+        # hier als „fünf" und meldete beim sechsten Kauf weiter fünf — richtig
+        # gezählt hatte der Lauf, nur nachgesagt hat er es falsch.
+        print(f"\n::warning::Nicht alle {len(KAEUFE)} Käufe stehen. Ohne sie "
+              "zeigt die Kaufseite ihre Leistungen ohne Knopf — so gebaut.")
     else:
-        print("\n::notice::Alle fünf Käufe stehen. In einem TestFlight-Bau "
-              "lassen sie sich jetzt kostenlos ausprobieren.")
+        print(f"\n::notice::Alle {len(KAEUFE)} Käufe stehen. In einem "
+              "TestFlight-Bau lassen sie sich jetzt kostenlos ausprobieren.")
 
     # Immer 0: Dieses Skript ist eine Erleichterung, kein Torwächter.
     sys.exit(0)
