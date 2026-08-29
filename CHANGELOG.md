@@ -9,6 +9,38 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.103.0 — 2026-08-29
+
+**Die alte Adresse stand noch da — als zweite, vollständige Website.**
+
+Gefunden hat es der Gründer mit einer Frage, nicht eine Prüfung: „ist die alte
+wieder heruntergenommen?" Ich hatte es angenommen. Nachgemessen:
+
+```
+zaehlora.pages.dev     200  Zählora — Zählerstände erfassen, Kosten verstehen
+pulsemeter.pages.dev   200  Zählora — Zählerstände erfassen, Kosten verstehen
+```
+
+Und der alte Stand trug ein `canonical` auf **sich selbst**. Damit sieht eine
+Suchmaschine zwei Seiten mit gleichem Inhalt, von denen jede sich zum Original
+erklärt — sie entscheidet dann selbst, welche sie behält. Genau die Falle, über
+die seit 0.95.7 ein Absatz im Leitfaden steht; ich bin an der anderen Seite
+derselben Sache wieder hineingelaufen.
+
+### Umgeleitet statt abgeschaltet
+`pulsemeter.pages.dev` bekommt ein `_redirects` mit `301` auf die neue Adresse.
+Abschalten wäre die schlechtere Lösung: Jeder Verweis, der irgendwo auf die
+alte Adresse zeigt, liefe ins Leere. Mit der Umleitung landet er auf der
+passenden neuen Seite — `:splat` überträgt den ganzen Pfad, `/datenschutz`
+kommt also auf `/datenschutz` an und nicht auf der Startseite.
+
+### Und geprüft, nicht angenommen
+Der Ablauf ruft die alte Adresse nach dem Hochladen selbst auf und bricht ab,
+wenn dort keine Weiterleitung steht. Eine Umleitung, die man nur eingerichtet
+hat, ist keine.
+
+---
+
 ## 0.102.1 bis 0.102.3 — 2026-08-29
 
 **Der erste Einreichungsversuch scheiterte, und die Meldung zeigte auf die

@@ -120,6 +120,30 @@ jobs:
           # das ist hier der frisch gebaute Ordner selbst.
           command: pages deploy build/website --project-name=zaehlora --branch=main --commit-dirty=true
 
+      # **Die alte Adresse blieb nach dem Umzug stehen** und lieferte eine
+      # vollständige Kopie mit einem `canonical` auf sich selbst — zwei Seiten
+      # mit gleichem Inhalt, jede das Original. Statt sie abzuschalten leitet
+      # sie weiter: Alte Verweise bleiben gültig und geben ihr Gewicht ab.
+      - name: Umleitung der alten Adresse bauen
+        if: steps.zugang.outputs.bereit == 'ja'
+        run: scripts/alte-adresse.sh
+
+      - name: Alte Adresse umleiten
+        if: steps.zugang.outputs.bereit == 'ja'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy build/umleitung --project-name=pulsemeter --branch=main --commit-dirty=true
+
+      # Gemessen, nicht angenommen. Genau diese Annahme hat die alte Adresse
+      # einen halben Tag als zweite Website stehen lassen.
+      - name: Leitet die alte Adresse wirklich?
+        if: steps.zugang.outputs.bereit == 'ja'
+        run: |
+          sleep 10
+          scripts/alte-adresse.sh --pruefen
+
       - name: Was jetzt dasteht
         if: steps.zugang.outputs.bereit == 'ja'
         run: echo "::notice::Die Website steht auf https://zaehlora.pages.dev/"
