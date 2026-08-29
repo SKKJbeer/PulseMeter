@@ -177,16 +177,30 @@ def laufende(apple: Apple, app_id: str):
 
 
 def vorbereitete(apple: Apple, app_id: str):
-    """Eine angelegte, aber noch nicht abgeschickte Einreichung — oder None.
+    """Die vorbereitete Einreichung mit den **meisten** Einträgen — oder None.
 
     `READY_FOR_REVIEW` heißt **nicht** „bei der Prüfung", sondern „bereit zum
     Abschicken". Eine solche wiederzuverwenden ist der richtige Weg: Die
     Fassung darf nur in einer Einreichung hängen.
+
+    **Und es zählt, welche.** Der erste Anlauf nahm die erstbeste — das war
+    eine leere aus einem eigenen Fehlschlag, während daneben eine mit fünf
+    Einträgen stand, die alles enthielt. Zwei Läufe sind daran gescheitert.
+    Genommen wird deshalb die mit den meisten Einträgen: Eine leere ist ein
+    Überbleibsel, eine gefüllte ist die Arbeit.
     """
+    kandidaten = []
     for eintrag in alle(apple, app_id):
-        if feld(eintrag, "state") == "READY_FOR_REVIEW":
-            return eintrag
-    return None
+        if feld(eintrag, "state") != "READY_FOR_REVIEW":
+            continue
+        stand, teile = apple.holen(f"v1/reviewSubmissions/{eintrag['id']}/items",
+                                   **{"limit": 20})
+        anzahl = len(teile.json().get("data", [])) if stand == 200 else 0
+        kandidaten.append((anzahl, eintrag))
+    if not kandidaten:
+        return None
+    kandidaten.sort(key=lambda x: x[0], reverse=True)
+    return kandidaten[0][1]
 
 
 def einreichen(apple: Apple, app_id: str, fassung) -> int:
@@ -318,8 +332,17 @@ def aufraeumen(apple: Apple, app_id: str) -> int:
             print(f"  · {eintrag['id'][:8]}: {anzahl} Eintrag/Einträge — bleibt")
             continue
         code = apple.loeschen(f"v1/reviewSubmissions/{eintrag['id']}")
-        print(f"  ✓ {eintrag['id'][:8]}: leer, entfernt (Antwort {code})")
-        weg += 1
+        # **Der Rückgabewert stand da und wurde nicht angesehen.** Der erste
+        # Lauf meldete „leer, entfernt (Antwort 403)" und zählte mit — 403
+        # heißt, dass nichts entfernt wurde. Ein Erfolgssatz mit dem
+        # Fehlercode darin ist schlimmer als eine Fehlermeldung: Er liest sich
+        # wie Erfolg und trägt den Widerspruch im eigenen Klammerzusatz.
+        if code in (200, 204):
+            print(f"  ✓ {eintrag['id'][:8]}: leer, entfernt")
+            weg += 1
+        else:
+            print(f"  ✗ {eintrag['id'][:8]}: leer, ließ sich nicht entfernen "
+                  f"(Antwort {code}) — bleibt stehen")
 
     print(f"::notice::{weg} leere Einreichung(en) entfernt.")
     return 0
