@@ -298,10 +298,10 @@ Aussage."
 
 | Nicht so | Sondern |
 |---|---|
-| „PulseMeter ermöglicht dir eine intelligente Analyse deiner Verbrauchsdaten" | „PulseMeter zeigt dir, wie sich dein Verbrauch und deine Kosten entwickeln" |
-| „Keine stillen Annahmen." | „Wenn PulseMeter einen Wert schätzt, siehst du das." |
+| „Zählora ermöglicht dir eine intelligente Analyse deiner Verbrauchsdaten" | „Zählora zeigt dir, wie sich dein Verbrauch und deine Kosten entwickeln" |
+| „Keine stillen Annahmen." | „Wenn Zählora einen Wert schätzt, siehst du das." |
 | „Deine Daten gehören dir." | „Deine Zählerstände bleiben bei dir." |
-| „Eine Zahl eintragen. Den Überblick behalten." | „Du trägst deinen Zählerstand ein, PulseMeter macht den Rest." |
+| „Eine Zahl eintragen. Den Überblick behalten." | „Du trägst deinen Zählerstand ein, Zählora macht den Rest." |
 
 Außerdem draußen: „smart", „intelligent", „nahtlos", „mühelos", „erlebe",
 „entdecke", „revolutionieren", „maximieren" — und Dreierketten wie „Verbrauch.

@@ -9,6 +9,36 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.99.1 — 2026-08-29
+
+**Fünf Stellen, an denen der alte Name noch sichtbar war.** Gefunden nicht
+durch Erinnern, sondern durch einen Durchlauf über alle versionierten Dateien
+mit anschließendem Sortieren nach Kennung, Kommentar und Anzeige.
+
+- `Aufs-iPhone.command` begrüßte den Gründer mit „PulseMeter aufs iPhone". Das
+  ist der einzige der fünf Funde, den wirklich jemand zu sehen bekam.
+- Zwei Entwurfsseiten in `docs/entwuerfe/` trugen ihn im Titel und in der
+  Kopfmarke.
+- Die Tonfall-Beispiele in `CLAUDE.md` führten ihn in der **Vorbild**-Spalte:
+  „PulseMeter zeigt dir, wie sich dein Verbrauch entwickelt." Ein Mustersatz,
+  der den falschen Namen vormacht, ist schlimmer als gar keiner.
+- Zwei Skill-Beschreibungen.
+
+**Nicht angefasst,** und das ist die eigentliche Arbeit an so einem Durchgang:
+Bundle-ID und Kauf-Kennungen, das Xcode-Ziel `PulseMeter` samt Schema und
+Zertifikatsname, die Module, das Repository, der Name des Cloudflare-Tokens —
+und drei Kommentare, die eine **frühere** Beschriftung wörtlich zitieren.
+Historie umzuschreiben, damit ein Suchlauf sauber aussieht, macht die Datei
+hübscher und die Erklärung falsch.
+
+### Gemessen, nicht geglaubt
+Alle sechs Seiten unter der neuen Adresse abgerufen: `/`, `/datenschutz`,
+`/hilfe`, `/impressum`, `/sitemap.xml`, `/robots.txt` — jede antwortet mit 200,
+jede nennt `canonical` auf `zaehlora.pages.dev`, keine trägt den alten Namen im
+sichtbaren Text.
+
+---
+
 ## 0.99.0 — 2026-08-29
 
 **Die Website steht auf `zaehlora.pages.dev`.** Vom Gründer angeordnet, und er

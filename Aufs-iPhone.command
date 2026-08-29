@@ -10,7 +10,7 @@
 # sieht es der App an.
 cd "$(dirname "$0")" || exit 1
 
-printf "\033[1mPulseMeter aufs iPhone\033[0m\n\n"
+printf "\033[1mZählora aufs iPhone\033[0m\n\n"
 
 if [ -t 0 ] && git rev-parse --git-dir >/dev/null 2>&1; then
   git fetch origin main --quiet 2>/dev/null || true

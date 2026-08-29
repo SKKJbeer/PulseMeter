@@ -1,6 +1,6 @@
 ---
 name: selbstsprechend
-description: Regeln für jeden Text, den ein Nutzer in PulseMeter sieht — Überschriften, Beschriftungen, Zahlen, Erklärzeilen, Legenden, Knöpfe, Hinweise, Fehlermeldungen. Diese Skill greift, sobald ein sichtbarer Text geschrieben, umformuliert oder gekürzt wird, und ebenso, wenn eine Zahl, ein Balken oder ein Symbol beschriftet wird. Auch verwenden, wenn ein Erklärsatz nötig scheint, wenn eine Karte eine Überschrift bekommt, wenn ein Wert mehrdeutig wirkt, oder wenn der Nutzer sagt, etwas sei „zu viel Text", „nicht eindeutig" oder klinge „nach KI".
+description: Regeln für jeden Text, den ein Nutzer in Zählora sieht — Überschriften, Beschriftungen, Zahlen, Erklärzeilen, Legenden, Knöpfe, Hinweise, Fehlermeldungen. Diese Skill greift, sobald ein sichtbarer Text geschrieben, umformuliert oder gekürzt wird, und ebenso, wenn eine Zahl, ein Balken oder ein Symbol beschriftet wird. Auch verwenden, wenn ein Erklärsatz nötig scheint, wenn eine Karte eine Überschrift bekommt, wenn ein Wert mehrdeutig wirkt, oder wenn der Nutzer sagt, etwas sei „zu viel Text", „nicht eindeutig" oder klinge „nach KI".
 ---
 
 # Selbstsprechend

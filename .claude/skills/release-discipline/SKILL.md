@@ -1,6 +1,6 @@
 ---
 name: release-discipline
-description: Pflichtablauf für jede Änderung an PulseMeter — Version vergeben, Release Notes in CHANGELOG.md schreiben, Tests ausführen und erweitern. Diese Skill greift bei JEDER Änderung am Code, am Prototyp oder an den Dokumenten dieses Projekts, auch bei kleinen: also immer wenn etwas implementiert, korrigiert, umgebaut, entfernt oder committet wird. Auch dann verwenden, wenn der Nutzer nur „mach das", „bau das ein" oder „fix das" sagt, ohne Version oder Tests zu erwähnen — beides gehört zum Liefergegenstand und wird nicht separat angefordert.
+description: Pflichtablauf für jede Änderung an Zählora — Version vergeben, Release Notes in CHANGELOG.md schreiben, Tests ausführen und erweitern. Diese Skill greift bei JEDER Änderung am Code, am Prototyp oder an den Dokumenten dieses Projekts, auch bei kleinen: also immer wenn etwas implementiert, korrigiert, umgebaut, entfernt oder committet wird. Auch dann verwenden, wenn der Nutzer nur „mach das", „bau das ein" oder „fix das" sagt, ohne Version oder Tests zu erwähnen — beides gehört zum Liefergegenstand und wird nicht separat angefordert.
 ---
 
 # Release-Disziplin
