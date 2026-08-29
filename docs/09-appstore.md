@@ -406,6 +406,10 @@ Skript und läuft überall, wo der Schlüssel liegt.
       Einzustellen unter `Business → Agreements → Compliance → Digital Services
       Act`, je App zusätzlich unter `App Information → Digital Services Act`.
 
+      **Auch hier kommt kein Schlüssel daran**, am 29. August geprüft:
+      `appTraderDeclaration`, `traderDeclaration` und `appTraderDeclarations`
+      antworten alle mit „does not exist".
+
       **Kein Skript kann das nachsehen.** Die Schnittstelle von Apple bietet
       dafür nichts an; „Einreichung nachsehen" wird diesen Punkt also nie
       melden, weder grün noch rot. Deshalb steht er hier und nicht dort.
@@ -415,9 +419,19 @@ Skript und läuft überall, wo der Schlüssel liegt.
       Antwort durchgehend **„Keine Daten erfasst"** — kein Konto, keine
       Werbung, kein Tracking, keine Absturzberichte.
 
-      **Ohne ihn lässt sich nicht einreichen**, und über die Schnittstelle ist
-      er nicht zu erreichen: Die Beziehungen `appDataUsages`, `dataUsages` und
-      `appDataUsagePublishState` antworten alle mit „does not exist".
+      **Ohne ihn lässt sich nicht einreichen, und kein Schlüssel kommt daran.**
+      Am 29. August gemessen, nicht vermutet — acht Pfade, acht Absagen:
+
+      | Gefragt | Apple |
+      |---|---|
+      | `apps/{id}/appDataUsagesPublishState` | does not exist |
+      | `apps/{id}/appDataUsagePublishState` | does not exist |
+      | `apps/{id}/appDataUsages` | does not exist |
+      | `apps/{id}/dataUsages` | does not exist |
+      | `v1/appDataUsages` | does not exist |
+      | `v1/appDataUsageCategories` | does not exist |
+      | `v1/appDataUsagePurposes` | does not exist |
+      | `v1/appDataUsageDataProtections` | does not exist |
 
       `App Store → App-Datenschutz → Bearbeiten`, dann veröffentlichen.
 

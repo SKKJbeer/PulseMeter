@@ -694,6 +694,35 @@ Die Liste „dauerhaft kostenlos" und die Liste der Käufe standen einen Commit
 lang beide richtig da und widersprachen einander. Dagegen hilft nur eine
 Prüfung, die beide Listen gegeneinander hält.
 
+### Zwei Formulare bei Apple, an die kein Schlüssel kommt
+
+Die Schnittstelle deckt fast alles ab — Texte, Bilder, Preise, Käufe,
+Altersfreigabe, Kontakt, Bau, Einreichung. **Zwei Dinge nicht**, und beide sind
+harte Sperren vor der ersten Einreichung:
+
+| Was | Wo | Über die Schnittstelle |
+|---|---|---|
+| Datenschutz-Fragebogen („Welche Daten erfasst die App?") | App Store → App-Datenschutz | acht Pfade probiert, acht „does not exist" |
+| Händlerstatus nach dem Digitale-Dienste-Gesetz | Business → Agreements → Compliance | drei Pfade probiert, drei „does not exist" |
+
+**Der Fragebogen ist nicht die Datenschutz-URL.** Die URL steht am App-Eintrag,
+lässt sich setzen und war bei uns seit Tagen gesetzt — sie hat mit dem
+Fragebogen nichts zu tun außer dem Namen. Wer „Datenschutz: steht" auf seiner
+Liste hat, hat womöglich nur die Hälfte.
+
+> Vor der ersten Einreichung eines neuen Vorhabens: beide Formulare **zuerst**
+> ausfüllen lassen, bevor irgendetwas automatisiert wird. Sie kosten fünf
+> Minuten und blockieren sonst am Ende einen Tag.
+
+Und die Meldung, an der es hängt, nennt keines von beidem:
+
+    appStoreVersions with id '…' is not in valid state.
+    This resource cannot be reviewed, please check associated errors to see why.
+
+Die „associated errors" stehen **nur in der Oberfläche**, als rote Punkte neben
+den Feldern. Über die Schnittstelle sind sie nicht abrufbar. Wer nur die
+Schnittstelle hat, rät — und genau das hat hier drei Versuche gekostet.
+
 ### Nie nach einem Feld sortieren, das bei den Gesuchten leer ist
 
 Ein Einreichungsskript fragte Apple nach vorhandenen Einreichungen — mit
