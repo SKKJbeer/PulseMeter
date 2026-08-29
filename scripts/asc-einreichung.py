@@ -477,8 +477,14 @@ def pruefung_fuellen(apple: Apple, fassung_id: str) -> None:
     # steht nicht im Impressum. Sie kommt deshalb aus einem Geheimnis und nicht
     # aus dem Repository: Eine private Telefonnummer gehört in keine Datei, die
     # jemand später einmal öffentlich stellt.
+    #
+    # **Die E-Mail darf abweichen.** Der Gründer hat für die Prüfung eine
+    # andere genannt als die im Impressum. Das ist zulässig — der rechtliche
+    # Kontakt und der, unter dem ein Prüfer nachfragt, müssen nicht derselbe
+    # sein. Steht das Geheimnis, gilt es; sonst bleibt es beim Impressum.
     werte = {"notes": text, "demoAccountRequired": False}
     fon = os.environ.get("ASC_KONTAKT_TELEFON", "").strip()
+    post = os.environ.get("ASC_KONTAKT_MAIL", "").strip() or post
     if fon and post:
         werte.update({"contactFirstName": vorname, "contactLastName": nachname,
                       "contactEmail": post, "contactPhone": fon})

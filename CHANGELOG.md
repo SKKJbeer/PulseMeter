@@ -9,6 +9,27 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.98.6 — 2026-08-29
+
+**Die Adresse für die Prüfung darf eine andere sein als die im Impressum.** Der
+Gründer hat für die Prüfung `steffenkj@gmx.de` genannt; Website, Hilfe und
+Impressum führen weiter die iCloud-Adresse.
+
+Beides ist zulässig und kein Widerspruch: Der rechtliche Kontakt und der, unter
+dem ein Prüfer nachfragt, müssen nicht derselbe sein. **Am Impressum wurde
+nichts geändert** — das ist ein Rechtstext und eine Entscheidung des Gründers,
+kein Nebeneffekt.
+
+### Geändert
+- Neues Geheimnis `ASC_KONTAKT_MAIL`. Steht es, gilt es; sonst bleibt es bei
+  der Adresse aus dem Impressum. Ein Rückfall, der nichts kaputtmacht, wenn
+  niemand es setzt.
+- Auch diese Adresse liegt nicht im Repository. Sie ist zwar weniger heikel als
+  eine Telefonnummer, aber sie steht nirgends öffentlich — und was nicht
+  öffentlich ist, wird nicht durch eine Datei dazu gemacht.
+
+---
+
 ## 0.98.5 — 2026-08-29
 
 **Apple fragt zweimal nach Kontaktangaben, und nur eine Antwort bleibt

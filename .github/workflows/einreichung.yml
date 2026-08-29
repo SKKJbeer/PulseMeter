@@ -58,6 +58,10 @@ jobs:
           # Fehlt sie, trägt der Lauf den Kontakt gar nicht ein — Apple nimmt
           # ihn nur vollständig — und sagt das in einer Zeile.
           ASC_KONTAKT_TELEFON: ${{ secrets.ASC_KONTAKT_TELEFON }}
+          # Darf von der im Impressum abweichen — der rechtliche Kontakt und
+          # der, unter dem ein Prüfer nachfragt, müssen nicht derselbe sein.
+          # Fehlt sie, gilt die aus dem Impressum.
+          ASC_KONTAKT_MAIL: ${{ secrets.ASC_KONTAKT_MAIL }}
         run: |
           if [ "${{ inputs.fuellen }}" = "true" ]; then
             python3 scripts/asc-einreichung.py --fuellen

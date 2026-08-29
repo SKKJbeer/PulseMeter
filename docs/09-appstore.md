@@ -373,13 +373,19 @@ Skript und läuft überall, wo der Schlüssel liegt.
       attribute 'contactPhone'". Solange sie fehlt, steht bei Apple gar kein
       Kontakt.
 
-      Ein Handgriff, einmal:
-      `Settings → Secrets and variables → Actions → New repository secret`,
-      Name `ASC_KONTAKT_TELEFON`, Wert die Nummer im Format `+49 711 1234567`.
-      Danach „Einreichung nachsehen" mit Häkchen starten — der Rest läuft.
+      Ein Handgriff, einmal, unter
+      `Settings → Secrets and variables → Actions → New repository secret`:
 
-      Sie liegt bewusst **nicht** im Repository: eine private Telefonnummer
-      gehört in keine Datei, die später einmal öffentlich stehen könnte.
+      | Geheimnis | Wert |
+      |---|---|
+      | `ASC_KONTAKT_TELEFON` | die Nummer, etwa `+49 151 12345678` |
+      | `ASC_KONTAKT_MAIL` | nur nötig, wenn die Prüfung eine **andere** Adresse erreichen soll als das Impressum |
+
+      Danach „Einreichung nachsehen" mit Häkchen starten — der Rest läuft. Ohne
+      `ASC_KONTAKT_MAIL` nimmt der Lauf die Adresse aus dem Impressum.
+
+      Beides liegt bewusst **nicht** im Repository: private Kontaktdaten gehören
+      in keine Datei, die später einmal öffentlich stehen könnte.
 - [ ] **Händlerstatus nach dem Digitale-Dienste-Gesetz der EU.** Der Punkt, der
       leicht mit dem Kontakt oben verwechselt wird und in die andere Richtung
       geht: Die Angaben zur Prüfung sieht **nur Apple**, die Angaben zum
