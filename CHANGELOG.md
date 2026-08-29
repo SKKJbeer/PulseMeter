@@ -9,6 +9,50 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.98.0 — 2026-08-28
+
+**Die App heißt jetzt Zählora.** Vom Gründer gewählt: „Zählora – Zähler &
+Verbrauch", 28 von 30 erlaubten Zeichen. Vorher „PulseMeter".
+
+Vorher geprüft, nicht angenommen: In der Suche des deutschen App Store gibt es
+keine App dieses Namens — weder mit Umlaut noch als „Zaehlora" oder „Zahlora".
+
+### Geändert
+- **Umbenannt, wo ein Nutzer hinsieht:** Homescreen, sieben Texte in der App,
+  das Widget, der Verbrauchsbericht samt Wasserzeichen und Dateinamen, die
+  sechs Seiten der Website, der Entwurf und alle Dokumente.
+- **Der Untertitel im Store ist mitgezogen:** aus „Zähler ablesen, Kosten
+  sehen" wurde **„Strom, Gas und Wasser ablesen"**. Beide alten Wörter stehen
+  seit der Umbenennung schon im Namen, und Apple wertet jedes Feld einmal —
+  dasselbe Wort zweimal ist ein verschenktes Suchfeld.
+- **„Mit Pro werden es beliebig viele"** ist raus. Ein „Pro" gibt es seit den
+  Einzelkäufen nicht mehr; der Satz stand seit Wochen falsch da. Im Entwurf
+  trug das Kaufblatt aus demselben Grund noch den festen Titel „Pro", während
+  die App längst den Namen des Kaufs zeigte — eine Abweichung nach Regel 2.
+
+### Was den alten Namen behält, und mit Absicht
+Die Bundle-ID `de.karjoth.pulsemeter`, die fünf Kauf-Kennungen, die Module
+`PulseCore`, `PulseData`, `PulseUI`, das Xcode-Ziel, das Repository und die
+Adresse `pulsemeter.pages.dev`. **Kein Nutzer sieht davon etwas**, und eine
+Kauf-Kennung zu ändern hieße, jedem Käufer seinen Kauf zu nehmen. Wer das
+trotzdem umziehen will, braucht einen neuen App-Eintrag bei Apple — und muss es
+tun, bevor jemand kauft. Steht als Absatz oben in `CLAUDE.md`.
+
+### Hinzugefügt
+- **Eine Prüfung, die den alten Namen fängt.** Nicht auf Dateiebene, sondern in
+  den Zeichenketten: alles zwischen Anführungszeichen in Swift und der sichtbare
+  Text von Website und Entwurf. Kennungen sind ausgenommen und benannt.
+
+  Beim Schreiben hat die bestehende Zeichenkettenprüfung zugeschlagen: ein
+  deutsches öffnendes Anführungszeichen, mit einem geraden geschlossen, mitten
+  in einem f-String. Fünfter Fang derselben Art — diesmal an mir.
+
+**Nichts davon geht in den Store.** Die App steht bei Apple weiter auf „In
+Vorbereitung", und in keinem Skript gibt es einen Aufruf, der einreicht oder
+veröffentlicht.
+
+---
+
 ## 0.97.1 — 2026-08-28
 
 Vom Gründer: „das mit dem Keller stört mich und mag ich nicht."

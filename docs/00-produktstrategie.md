@@ -40,7 +40,7 @@ Das ist eine schmale, aber echte Lücke — und sie ist verteidigbar, weil sie z
 
 ### Positionierung in einem Satz
 
-> **PulseMeter ist das Haushaltsbuch für Verbrauch: du trägst eine Zahl ein, und die App sagt dir, ob alles im Rahmen ist.**
+> **Zählora ist das Haushaltsbuch für Verbrauch: du trägst eine Zahl ein, und die App sagt dir, ob alles im Rahmen ist.**
 
 ---
 
@@ -83,7 +83,7 @@ Du hast ausdrücklich kritisches Denken verlangt. Hier sind die drei wichtigsten
 
 **Problem:** Die Vision „persönliches Dashboard für den Verbrauch aller Ressourcen" liest sich harmlos, zieht aber unweigerlich Richtung Live-Daten: Shelly, Tibber, SMA, Wechselrichter-APIs, Smart-Meter-Gateway. Das ist ein **anderes Produkt** — mit Server-Infrastruktur, laufenden Kosten, Hardware-Support-Hölle und einer Zielgruppe von Technikern.
 
-**Empfehlung:** Wir halten die Vision, aber definieren sie präzise um: PulseMeter ist das Dashboard für **manuell und periodisch erfasste** Verbrauchsdaten aller Art. Live-Integrationen sind ein **explizites Nicht-Ziel** bis mindestens v2.0, und wenn, dann als optionale Datenquelle in dasselbe Modell — nie als eigener Modus.
+**Empfehlung:** Wir halten die Vision, aber definieren sie präzise um: Zählora ist das Dashboard für **manuell und periodisch erfasste** Verbrauchsdaten aller Art. Live-Integrationen sind ein **explizites Nicht-Ziel** bis mindestens v2.0, und wenn, dann als optionale Datenquelle in dasselbe Modell — nie als eigener Modus.
 
 **Begründung:** Unsere Stärke ist, dass wir mit *jedem* Zähler funktionieren, auch dem 30 Jahre alten Ferraris-Zähler an der Wand. Sobald wir Hardware voraussetzen, verlieren wir 90 % der Zielgruppe und den Grund, warum uns jemand weiterempfiehlt.
 

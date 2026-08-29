@@ -905,7 +905,7 @@ for (const scheme of ["light", "dark"]) {
   await page.waitForTimeout(350);
   const bericht = await page.evaluate(() => ({
     offen: document.getElementById("sheet-report").classList.contains("on"),
-    wasserzeichen: document.getElementById("doc").innerHTML.includes("PulseMeter · Vorschau"),
+    wasserzeichen: document.getElementById("doc").innerHTML.includes("Zählora · Vorschau"),
     inhalt: document.getElementById("doc").innerText.length
   }));
   note(bericht.offen, "Der Bericht lässt sich auch ungekauft öffnen");

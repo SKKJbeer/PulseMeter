@@ -1,5 +1,17 @@
 # Arbeitsweise in diesem Projekt
 
+> **Die App heißt „Zählora".** Umbenannt am 28. August, vorher „PulseMeter".
+> Im App Store steht sie als **„Zählora – Zähler & Verbrauch"** (28 von 30
+> Zeichen), auf dem Homescreen als **„Zählora"**.
+>
+> **Was den alten Namen behalten hat, und mit Absicht:** die Bundle-ID
+> `de.karjoth.pulsemeter`, die fünf Kauf-Kennungen, die Swift-Module
+> `PulseCore`, `PulseData`, `PulseUI`, das Xcode-Ziel, das Repository und die
+> Adresse `pulsemeter.pages.dev`. Sie sieht kein Nutzer, und eine Kauf-Kennung
+> zu ändern heißt, jedem Käufer seinen Kauf zu nehmen. Wer das trotzdem
+> umziehen will, braucht einen neuen App-Eintrag bei Apple — und muss es tun,
+> **bevor** jemand kauft.
+
 ## Regel 1 — Jede Änderung kommt sofort in den Klick-Dummy
 
 Sobald sich etwas am Produkt ändert — neue Ansicht, geänderter Ablauf, andere
@@ -26,7 +38,7 @@ eine Anmeldemaske. Ein frisch erzeugtes Artifact geht dagegen sofort auf.
   einmal unter einem deutlich anderen Dateinamen veröffentlichen
   (`entwurf-v0130-zeitraum.html` hat eine frische URL erzeugt) und erst diese
   weitergeben.
-- `title` immer identisch setzen: „PulseMeter – Klickbarer Entwurf".
+- `title` immer identisch setzen: „Zählora – Klickbarer Entwurf".
   `favicon` bleibt ⚡. `label` kurz und beschreibend.
 - Danach dieselbe Datei nach `docs/prototype/index.html` kopieren und
   mitcommitten — der Container wird irgendwann abgeräumt, das Repo nicht.

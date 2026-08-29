@@ -1159,7 +1159,7 @@ struct HistoryView: View {
         let name = (meter?.name ?? "Zaehler")
             .replacingOccurrences(of: " ", with: "-")
             .replacingOccurrences(of: "/", with: "-")
-        return "PulseMeter-\(name)"
+        return "Zählora-\(name)"
     }
 
     /// Die Ablesungen als Tabelle — eine Zeile je eingetippter Zahl.

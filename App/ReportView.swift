@@ -67,7 +67,7 @@ enum ReportPDF {
             .replacingOccurrences(of: " ", with: "-")
             .replacingOccurrences(of: "/", with: "-")
         let day = report.period.lastIncludedDay
-        return String(format: "PulseMeter-Bericht-%@-%04d-%02d-%02d.pdf",
+        return String(format: "Zählora-Bericht-%@-%04d-%02d-%02d.pdf",
                       cleaned, day.year, day.month, day.day)
     }
 }

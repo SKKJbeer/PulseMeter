@@ -118,7 +118,7 @@ struct ReportPageView: View {
     /// „Nicht freigeschaltete Vorschau" vorgelesen zu bekommen, hilft niemandem.
     /// Die Zeile über der Vorschau sagt dasselbe einmal.
     private var watermark: some View {
-        Text("PulseMeter · Vorschau")
+        Text("Zählora · Vorschau")
             .font(.system(size: 46, weight: .semibold))
             .foregroundStyle(ReportPaper.ink.opacity(0.11))
             .rotationEffect(.degrees(-32))
@@ -139,7 +139,7 @@ struct ReportPageView: View {
 
     private var footer: some View {
         HStack {
-            Text("PulseMeter")
+            Text("Zählora")
             Spacer()
             Text("Seite \(pageNumber) von \(pageCount)")
         }

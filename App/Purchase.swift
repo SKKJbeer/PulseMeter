@@ -167,7 +167,7 @@ final class Purchase {
         do {
             apply(try await work())
         } catch UnavailablePurchaseGateway.Unavailable.notYetInTheStore {
-            problem = "Der Kauf steht bereit, sobald PulseMeter im App Store ist."
+            problem = "Der Kauf steht bereit, sobald Zählora im App Store ist."
         } catch {
             // Ein Abbruch durch den Nutzer ist kein Fehler und bekommt keinen
             // roten Kasten; alles andere schon, und zwar mit dem Grund.

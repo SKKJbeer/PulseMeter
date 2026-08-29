@@ -84,6 +84,7 @@ for path in sorted(pathlib.Path(".").rglob("*.swift")):
 # Laeuferzeit kostet — ist jeder `run:`-Block noch gueltige Shell? Genau daran
 # ist der TestFlight-Ablauf zweimal vorbeigelaufen.
 import py_compile
+import re
 import subprocess
 import tempfile
 
@@ -123,6 +124,48 @@ for datei in sorted(pathlib.Path(".github/workflows").glob("*.yml")):
                 name = schritt.get("name", f"Schritt {nummer}")
                 problems.append(f"{datei}: {name} ist keine gueltige Shell\n"
                                 f"    {fertig.stderr.strip().splitlines()[0]}")
+
+# **Der alte Name darf in keinem Text stehen, den jemand liest.**
+#
+# Umbenannt am 28. August: aus „PulseMeter" wurde „Zählora". Die Bundle-ID, die
+# Kauf-Kennungen und die Swift-Module heißen weiter so — das sieht kein Nutzer,
+# und eine Kauf-Kennung zu ändern hieße, jedem Käufer seinen Kauf zu nehmen.
+#
+# Geprüft wird deshalb nicht die Datei, sondern die **Zeichenkette**: alles
+# zwischen Anführungszeichen in Swift, und der sichtbare Text der Website und
+# des Entwurfs. Ohne diese Prüfung steht der alte Name in drei Wochen wieder
+# irgendwo — so ist es mit dem Keller gegangen.
+ALTER_NAME = "PulseMeter"
+for pfad in sorted(pathlib.Path("App").glob("*.swift")) + \
+            sorted(pathlib.Path("Widget").glob("*.swift")) + \
+            sorted(pathlib.Path("Packages/PulseUI/Sources/PulseUI").glob("*.swift")):
+    for nummer, zeile in enumerate(pfad.read_text(encoding="utf-8").splitlines(), 1):
+        nackt = zeile.strip()
+        if nackt.startswith(("//", "///", "*")):
+            continue
+        for stueck in re.findall(r'"([^"]*)"', zeile):
+            # **Kennungen sind kein Text.** `de.karjoth.…` ist die Bundle-ID,
+            # `PulseMeterWidget` die Kennung des Widgets bei WidgetKit. Wer sie
+            # umbenennt, nimmt jedem platzierten Widget den Bezug — und keiner
+            # von beiden steht je auf einem Schirm.
+            if stueck.startswith("de.karjoth") or stueck == "PulseMeterWidget":
+                continue
+            if ALTER_NAME in stueck:
+                problems.append(f"{pfad}:{nummer}: {ALTER_NAME} steht in einer "
+                                f"sichtbaren Zeichenkette — die App heisst Zaehlora\n"
+                                f"    {nackt[:90]}")
+
+for pfad in [pathlib.Path("docs/prototype/index.html"),
+             *sorted(pathlib.Path("docs/website").glob("*.html"))]:
+    if not pfad.exists():
+        continue
+    roh = pfad.read_text(encoding="utf-8")
+    sichtbar = re.sub(r"<!--.*?-->|<script.*?</script>|<style.*?</style>", " ",
+                      roh, flags=re.S)
+    sichtbar = re.sub(r"<[^>]+>", " ", sichtbar)
+    if ALTER_NAME in sichtbar:
+        problems.append(f"{pfad}: {ALTER_NAME} steht im sichtbaren Text — "
+                        "die App heisst Zaehlora")
 
 if problems:
     print("\n".join(problems))
