@@ -364,7 +364,7 @@ Skript und läuft überall, wo der Schlüssel liegt.
 ### Was kein Skript beantworten kann
 
 - [x] **Datenschutzerklärung und Support-Seite stehen im Netz.** Beide URLs
-      zeigen auf `pulsemeter.pages.dev`, der Platzhalter in `datenschutz.html`
+      zeigen auf `zaehlora.pages.dev`, der Platzhalter in `datenschutz.html`
       ist raus, und beide Felder sind bei Apple eingetragen.
 - [ ] **Telefonnummer für die Prüfung.** Name und E-Mail stehen im Impressum
       und werden von dort gelesen; eine Nummer steht dort nicht, und § 5 DDG

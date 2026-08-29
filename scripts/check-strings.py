@@ -210,6 +210,37 @@ if einreichung.exists() and impressum.exists():
         if not re.search(r"mailto:[^\"']+", block.group(1)):
             problems.append(f"{impressum}: keine mailto-Adresse in der Anschrift")
 
+# **Die Adresse der Website steht an drei Orten, und alle drei müssen dieselbe
+# nennen.** `check-website.mjs` prüft nur die Seiten untereinander — es merkt
+# nicht, wenn die Seiten auf `zaehlora.pages.dev` zeigen, der Ablauf aber nach
+# `pulsemeter` hochlädt oder Apple die alte Datenschutz-URL bekommt. Genau das
+# war beim Umzug von PulseMeter auf Zählora die Stelle, an der es still hätte
+# schiefgehen können: Jede Datei für sich wäre in sich stimmig gewesen.
+seite = pathlib.Path("docs/website/index.html")
+ablauf = pathlib.Path(".github/workflows/website.yml")
+if seite.exists() and einreichung.exists() and ablauf.exists():
+    orte = {}
+    treffer = re.search(r'rel="canonical" href="https://([^/"]+)',
+                        seite.read_text(encoding="utf-8"))
+    if treffer:
+        orte["docs/website/index.html (canonical)"] = treffer.group(1)
+    treffer = re.search(r'WEBSITE = "https://([^"]+)"',
+                        einreichung.read_text(encoding="utf-8"))
+    if treffer:
+        orte["scripts/asc-einreichung.py (WEBSITE)"] = treffer.group(1)
+    treffer = re.search(r"--project-name=([A-Za-z0-9-]+)",
+                        ablauf.read_text(encoding="utf-8"))
+    if treffer:
+        orte[".github/workflows/website.yml (project-name)"] = \
+            treffer.group(1) + ".pages.dev"
+
+    if len(orte) < 3:
+        problems.append("Die Adresse der Website liess sich nicht an allen drei "
+                        f"Orten lesen — gefunden: {', '.join(orte) or 'keiner'}")
+    elif len(set(orte.values())) != 1:
+        problems.append("Die Website-Adresse laeuft auseinander:\n    "
+                        + "\n    ".join(f"{wo}: {was}" for wo, was in orte.items()))
+
 if problems:
     print("\n".join(problems))
     print(f"\n{len(problems)} Fund(e).")

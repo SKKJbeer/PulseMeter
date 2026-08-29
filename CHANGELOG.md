@@ -9,6 +9,43 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.99.0 — 2026-08-29
+
+**Die Website steht auf `zaehlora.pages.dev`.** Vom Gründer angeordnet, und er
+hat recht: Die Adresse war das einzige am alten Namen, das ein Nutzer je zu
+sehen bekam. Ein Datenschutzlink auf `pulsemeter.pages.dev` unter einer App
+namens Zählora sieht aus wie ein Versehen — oder wie eine fremde Seite.
+
+### Umgezogen
+- `canonical`, `og:url`, `og:image` und die JSON-LD-Angabe auf allen sechs
+  Seiten, dazu `sitemap.xml` und `robots.txt`.
+- Das Pages-Projekt heißt jetzt `zaehlora`; der Ablauf legt es beim nächsten
+  Lauf selbst an, wie schon beim ersten Mal.
+- Datenschutz- und Support-URL bei Apple ziehen mit, weil sie aus derselben
+  Konstante kommen.
+
+### Nachgezogen, weil sonst niemand hinsieht
+- Über der Anleitung stand „PulseMeter · Anleitung". Im selben Zug ist der
+  Cloudflare-Schritt darin richtiggestellt: Er beschrieb noch das Verbinden
+  über „Connect to Git", das zweimal gescheitert ist — den Rest erledigt der
+  Ablauf mit zwei Geheimnissen.
+- Der Absender der Zweig-Commits und die Kopfzeile von `stil.css`.
+
+### Neue Prüfung
+**Die Adresse steht an drei Orten**, und jeder für sich wäre stimmig gewesen:
+`canonical` in den Seiten, `WEBSITE` in `asc-einreichung.py`,
+`--project-name` in `website.yml`. `check-website.mjs` vergleicht nur die
+Seiten untereinander — dass der Ablauf woanders hochlädt oder Apple die alte
+Adresse bekommt, hätte es nicht gemerkt. `check-strings.py` hält jetzt alle
+drei zusammen und nennt bei Abweichung alle drei Werte.
+
+### Was den alten Namen behält
+Bundle-ID, die fünf Kauf-Kennungen, die Module `PulseCore`, `PulseData`,
+`PulseUI`, das Xcode-Ziel und das Repository. Vom Gründer bestätigt: „ids
+müssen wir nicht anpassen, die sind ja schon und ist unnötig aufwand."
+
+---
+
 ## 0.98.6 — 2026-08-29
 
 **Die Adresse für die Prüfung darf eine andere sein als die im Impressum.** Der

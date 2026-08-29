@@ -4,4 +4,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://pulsemeter.pages.dev/sitemap.xml
+Sitemap: https://zaehlora.pages.dev/sitemap.xml

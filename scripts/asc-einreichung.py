@@ -145,7 +145,7 @@ def store_text(ueberschrift: str) -> str:
 KATEGORIE_HAUPT = "UTILITIES"
 KATEGORIE_ZWEIT = "FINANCE"
 
-WEBSITE = "https://pulsemeter.pages.dev"
+WEBSITE = "https://zaehlora.pages.dev"
 DATENSCHUTZ = f"{WEBSITE}/datenschutz"
 SUPPORT = f"{WEBSITE}/hilfe"
 

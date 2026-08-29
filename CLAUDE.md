@@ -4,13 +4,23 @@
 > Im App Store steht sie als **„Zählora – Zähler & Verbrauch"** (28 von 30
 > Zeichen), auf dem Homescreen als **„Zählora"**.
 >
+> **Die Website steht auf `zaehlora.pages.dev`.** Umgezogen am 29. August auf
+> Ansage des Gründers. Sie ist das einzige am alten Namen, das ein Nutzer je zu
+> sehen bekam — deshalb ist sie mitgegangen, und alles andere nicht.
+>
 > **Was den alten Namen behalten hat, und mit Absicht:** die Bundle-ID
 > `de.karjoth.pulsemeter`, die fünf Kauf-Kennungen, die Swift-Module
-> `PulseCore`, `PulseData`, `PulseUI`, das Xcode-Ziel, das Repository und die
-> Adresse `pulsemeter.pages.dev`. Sie sieht kein Nutzer, und eine Kauf-Kennung
-> zu ändern heißt, jedem Käufer seinen Kauf zu nehmen. Wer das trotzdem
-> umziehen will, braucht einen neuen App-Eintrag bei Apple — und muss es tun,
-> **bevor** jemand kauft.
+> `PulseCore`, `PulseData`, `PulseUI`, das Xcode-Ziel und das Repository. Das
+> sieht kein Nutzer, und eine Kauf-Kennung zu ändern heißt, jedem Käufer seinen
+> Kauf zu nehmen. Wer das trotzdem umziehen will, braucht einen neuen
+> App-Eintrag bei Apple — und muss es tun, **bevor** jemand kauft. Vom Gründer
+> am 29. August bestätigt: „ids müssen wir nicht anpassen, die sind ja schon
+> und ist unnötig aufwand."
+>
+> **Die Adresse steht an drei Orten** — in `canonical` der Seiten, als
+> `WEBSITE` in `asc-einreichung.py` und als `--project-name` in `website.yml`.
+> `check-strings.py` hält sie zusammen; jede für sich wäre sonst stimmig und
+> das Ganze falsch.
 
 ## Regel 1 — Jede Änderung kommt sofort in den Klick-Dummy
 

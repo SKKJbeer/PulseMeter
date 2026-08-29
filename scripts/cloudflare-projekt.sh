@@ -14,7 +14,7 @@
 # Aus der Umgebung: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID
 set -euo pipefail
 
-PROJEKT="${1:-pulsemeter}"
+PROJEKT="${1:-zaehlora}"
 ZWEIG="${2:-main}"
 # Dieselbe Fassung, die `wrangler-action` benutzt. Stünde hier eine andere,
 # wäre das die vierte Stelle mit einer Version, die auseinanderlaufen kann.
@@ -24,7 +24,7 @@ WRANGLER="wrangler@3.90.0"
 : "${CLOUDFLARE_ACCOUNT_ID:?CLOUDFLARE_ACCOUNT_ID fehlt}"
 
 # `project list` schreibt eine Tabelle; gesucht wird der Name als ganzes Wort,
-# damit `pulsemeter-alt` nicht als Treffer durchgeht.
+# damit `zaehlora-alt` nicht als Treffer durchgeht.
 if npx --yes "$WRANGLER" pages project list 2>/dev/null \
      | grep -qE "(^|[^a-z0-9-])${PROJEKT}([^a-z0-9-]|$)"; then
   echo "Pages-Projekt „$PROJEKT\" steht."

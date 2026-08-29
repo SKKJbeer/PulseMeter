@@ -17,7 +17,7 @@ name: Website veröffentlichen
 # **Einmalig einzurichten** (alles kostenlos, siehe docs/website/CLOUDFLARE.md):
 #
 #   1. Cloudflare-Konto anlegen, Bereich „Workers & Pages".
-#   2. Dort ein Pages-Projekt namens `pulsemeter` anlegen — „Direct Upload".
+#   2. Dort ein Pages-Projekt namens `zaehlora` anlegen — „Direct Upload".
 #   3. Ein API-Token erzeugen mit der Berechtigung „Cloudflare Pages: Edit".
 #   4. Im Repository unter Settings › Secrets and variables › Actions zwei
 #      Geheimnisse anlegen:
@@ -106,7 +106,7 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: scripts/cloudflare-projekt.sh pulsemeter main
+        run: scripts/cloudflare-projekt.sh zaehlora main
 
       - name: Zu Cloudflare Pages hochladen
         if: steps.zugang.outputs.bereit == 'ja'
@@ -118,8 +118,8 @@ jobs:
           # Vorschau. `--commit-dirty` schweigt die Warnung, dass der
           # Arbeitsordner Dateien enthält, die nicht im Repository stehen —
           # das ist hier der frisch gebaute Ordner selbst.
-          command: pages deploy build/website --project-name=pulsemeter --branch=main --commit-dirty=true
+          command: pages deploy build/website --project-name=zaehlora --branch=main --commit-dirty=true
 
       - name: Was jetzt dasteht
         if: steps.zugang.outputs.bereit == 'ja'
-        run: echo "::notice::Die Website steht auf https://pulsemeter.pages.dev/"
+        run: echo "::notice::Die Website steht auf https://zaehlora.pages.dev/"

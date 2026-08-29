@@ -14,8 +14,8 @@ durchlässt.
 
 ## Was du am Ende hast
 
-`https://pulsemeter.pages.dev` — die Adresse, die schon in allen Seiten als
-`canonical` eingetragen ist. Eine eigene Domain (`pulsemeter.de`) lässt sich
+`https://zaehlora.pages.dev` — die Adresse, die schon in allen Seiten als
+`canonical` eingetragen ist. Eine eigene Domain (`zaehlora.de`) lässt sich
 später davorhängen; dafür gibt es `scripts/domain-setzen.sh`, und der Umzug ist
 ein Eintrag im Dashboard.
 
@@ -34,7 +34,7 @@ abfängt.
 
 **Das Pages-Projekt legt der Ablauf selbst an.** Von Hand ist es zweimal
 schiefgegangen: einmal über „Connect to Git" mit `Could not detect a directory
-to deploy`, einmal weil danach kein Projekt namens `pulsemeter` existierte.
+to deploy`, einmal weil danach kein Projekt namens `zaehlora` existierte.
 `scripts/cloudflare-projekt.sh` sieht nach und legt es an, wenn es fehlt — das
 Token darf das.
 
@@ -111,11 +111,11 @@ einem das Hinsehen ab.
 
 ## Später: eigene Domain
 
-`pulsemeter.de` kaufen (Cloudflare Registrar verkauft zum Einkaufspreis),
+`zaehlora.de` kaufen (Cloudflare Registrar verkauft zum Einkaufspreis),
 im Pages-Projekt unter **Custom domains** eintragen, und dann **einmal**:
 
 ```bash
-scripts/domain-setzen.sh pulsemeter.de
+scripts/domain-setzen.sh zaehlora.de
 ```
 
 Das setzt die `canonical`-Zeilen aller Seiten, die Sitemap und `robots.txt` in

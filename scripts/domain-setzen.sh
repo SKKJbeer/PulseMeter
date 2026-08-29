@@ -9,10 +9,10 @@
 # fremde Adresse zeigen.
 #
 # Ein Befehl, alle Stellen, danach die Prüfung. Der Wechsel von
-# `pulsemeter.pages.dev` auf eine eigene Domain kostet damit eine Minute.
+# `zaehlora.pages.dev` auf eine eigene Domain kostet damit eine Minute.
 #
 # Aufruf:
-#   scripts/domain-setzen.sh pulsemeter.de
+#   scripts/domain-setzen.sh zaehlora.de
 #   scripts/domain-setzen.sh              zeigt nur, was gerade eingetragen ist
 set -euo pipefail
 cd "$(dirname "$0")/.."

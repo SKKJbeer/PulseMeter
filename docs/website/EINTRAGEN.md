@@ -55,10 +55,10 @@ grep -rn "PLATZHALTER" docs/website/
 
   ```bash
   scripts/domain-setzen.sh                    # zeigt, was eingetragen ist
-  scripts/domain-setzen.sh pulsemeter.de      # stellt um
+  scripts/domain-setzen.sh zaehlora.de      # stellt um
   ```
 
-  Eingetragen ist gerade **`pulsemeter.pages.dev`** — die kostenlose Adresse
+  Eingetragen ist gerade **`zaehlora.pages.dev`** — die kostenlose Adresse
   von Cloudflare Pages. Eine halb umgestellte Website ist schlimmer als eine
   mit der falschen Adresse: Google hält `canonical` für die Wahrheit und wirft
   die Seiten weg, die auf eine fremde Adresse zeigen. Deshalb das Skript.

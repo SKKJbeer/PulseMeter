@@ -48,7 +48,7 @@ scripts/website-fertig.sh "$WORK"
 cd "$WORK"
 git init -q -b "$BRANCH"
 git add -A
-git -c user.name="PulseMeter" -c user.email="noreply@pulsemeter.app" \
+git -c user.name="Zaehlora" -c user.email="noreply@zaehlora.app" \
     commit -q -m "Website aus $STAND ($WOHER)"
 git push -q --force "$ZIEL" "$BRANCH:$BRANCH"
 
