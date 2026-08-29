@@ -416,10 +416,11 @@ Skript und läuft überall, wo der Schlüssel liegt.
 
 ### Was am Mac einmal nachzusehen ist
 
-- [ ] **`PrivacyInfo.xcprivacy` im gebauten Bündel.** Sie liegt seit 0.55.0 in
-      `App/` und `Widget/`; dass XcodeGen sie als Ressource mitnimmt, ist
-      angenommen und nicht geprüft:
-      `find build/DerivedData -name PrivacyInfo.xcprivacy`
+- [x] **`PrivacyInfo.xcprivacy` im gebauten Bündel.** Seit 0.101.3 sieht die
+      CI nach jedem App-Bau nach und bricht ab, wenn keine im Paket liegt. Der
+      Punkt stand hier über sechs Wochen als „angenommen und nicht geprüft" —
+      vor dem Verkaufsstart ist das die falsche Sorte Zuversicht, und der Build
+      steht ohnehin schon da.
 
 **Gefunden werden** ist ein eigenes Thema und steht in
 [`10-sichtbarkeit.md`](10-sichtbarkeit.md): welche Felder der App Store

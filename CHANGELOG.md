@@ -9,6 +9,20 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.101.3 — 2026-08-29
+
+**Die Datenschutz-Datei im gebauten Paket war eine Annahme.** In
+`09-appstore.md` stand sie sechs Wochen lang als „angenommen und nicht
+geprüft": Die Datei liegt seit 0.55.0 in `App/` und `Widget/`, ob XcodeGen sie
+als Ressource mitnimmt, hat nie jemand nachgesehen.
+
+Vor dem Verkaufsstart ist eine Annahme über eine Datei, die Apple verlangt, die
+falsche Sorte Zuversicht — und der Build steht in der CI ohnehin schon da. Sie
+wird jetzt nach jedem App-Bau gesucht, mit Pfad im Protokoll; fehlt sie, bricht
+der Lauf ab.
+
+---
+
 ## 0.101.2 — 2026-08-29
 
 **Bau 24 lag schon in TestFlight, als der Schritt danach abbrach.**

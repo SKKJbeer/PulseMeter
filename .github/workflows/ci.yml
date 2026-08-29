@@ -164,6 +164,21 @@ jobs:
       - name: App bauen und Oberflächentests
         run: scripts/test.sh app
 
+      # **Bis 0.101.3 war das eine Annahme.** Die Datei liegt seit 0.55.0 in
+      # `App/` und `Widget/`; dass XcodeGen sie als Ressource mitnimmt, stand
+      # in `09-appstore.md` ausdrücklich als „angenommen und nicht geprüft".
+      # Vor dem Verkaufsstart ist eine Annahme über eine Datei, die Apple
+      # verlangt, die falsche Sorte Zuversicht — und der Build steht ohnehin da.
+      - name: Datenschutz-Datei im gebauten Paket
+        run: |
+          gefunden=$(find build/DerivedData -name PrivacyInfo.xcprivacy 2>/dev/null | wc -l | tr -d " ")
+          echo "::notice::$gefunden PrivacyInfo.xcprivacy im Bau gefunden."
+          find build/DerivedData -name PrivacyInfo.xcprivacy 2>/dev/null | sed "s|^|  · |"
+          if [ "$gefunden" -lt 1 ]; then
+            echo "::error::Keine PrivacyInfo.xcprivacy im gebauten Paket — Apple verlangt sie."
+            exit 1
+          fi
+
       # Verwendet den Build aus dem Testschritt weiter — ein zweiter
       # vollständiger Build kostet auf einem macOS-Läufer mehrere Minuten.
       #
