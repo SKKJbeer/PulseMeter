@@ -9,6 +9,72 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.103.1 — 2026-08-29
+
+**Die Hilfeseite verkaufte etwas als kostenlos, das 0,99 € kostet.**
+
+Gefunden hat es ein Audit der Website gegen den Quelltext, nicht eine Prüfung.
+Auf `zaehlora.pages.dev/hilfe` stand seit 0.100.0:
+
+```
+Kostenlos bleiben: … der Vorjahresvergleich, Erinnerungen und der Export.
+… Jedes Stück 1,99 €, alle vier zusammen 4,99 €.
+```
+
+Erinnerungen kosten seit 0.100.0 0,99 €, und es sind fünf Freischaltungen. Die
+Preisseite derselben Website stand richtig. Zwei öffentlich erreichbare Seiten
+widersprachen sich also beim Preis, und die falsche war die großzügigere.
+
+### Warum es niemandem auffiel
+
+`check-strings.py` hält die Adresse an drei Orten zusammen, `check-website.mjs`
+prüft Aufbau und Ton. Den Betrag prüfte nichts. Eine Zahl, die an zwei Orten
+steht und nur an einem gepflegt wird, wandert auseinander; das ist keine
+Nachlässigkeit, sondern die Bauart.
+
+### Behoben
+
+- Die Antwort auf „Was kostet was?" nennt Erinnerungen zu 0,99 €, vier Stücke
+  zu je 1,99 € und alle fünf zusammen zu 4,99 €.
+- Das FAQ-Markup lag auf der Startseite, der sichtbare Text auf der
+  Hilfeseite — zwei Fassungen derselben Antwort, und genau die zum Preis lief
+  auseinander. Es steht jetzt auf der Seite, die es beschreibt, und trägt alle
+  elf Fragen statt fünf.
+
+### Hinzugefügt
+
+- `scripts/check-versprechen.py`, in `pruefen.sh` und damit in der CI. Es liest
+  `Entitlement.swift` und hält dagegen: jeden Betrag auf der Website, die
+  Summe der Einzelkäufe, die Anzahl der Freischaltungen als Wort („alle fünf")
+  und die kostenlose Zählergrenze. Dazu die FAQ Wort für Wort gegen den
+  sichtbaren Text. Gegengeprüft: Mit dem alten Stand schlägt es an, mit
+  einem eingeschleusten falschen Preis ebenfalls.
+
+### Geändert
+
+Vier Aussagen auf der Startseite, die mehr behaupteten, als die App tut:
+
+- **Heizperiode.** „Bei Gas und Fernwärme wird Oktober bis April gegen Oktober
+  bis April verglichen" — das gibt es nicht. `PeriodEngine.Granularity` kennt
+  Monat, Quartal und Jahr, sonst nichts, und keine Verzweigung auf die
+  Zählerart. Was es gibt, ist der frei setzbare Abrechnungsstichtag; davon
+  redet die Karte jetzt.
+- **Zeitraum des Berichts.** „Frei wählbar" — es sind sechs Vorgaben. Sie
+  stehen jetzt einzeln da.
+- **Erinnerungen.** „Zum selbst gewählten Termin" — es sind vier feste
+  Rhythmen und achtzehn Uhr. Steht jetzt so da.
+- **Löschen und Server.** „Du entfernst die App, und die Daten sind weg" gilt
+  nicht für die iCloud-Kopie, und „die App fragt nirgendwo an" ist wörtlich
+  falsch: StoreKit, CloudKit und die stille Mitteilung reden mit Apple. Die
+  Datenschutzerklärung sagte beides längst richtig; die Startseite widersprach
+  ihr.
+
+_228 Tests in PulseCore, alle grün. Website und Klick-Dummy in Hell und Dunkel
+geprüft. App-Build und Oberflächenprüfungen nicht ausgeführt — sie brauchen
+Xcode, und diese Version fasst keinen App-Code an._
+
+---
+
 ## 0.103.0 — 2026-08-29
 
 **Die alte Adresse stand noch da — als zweite, vollständige Website.**

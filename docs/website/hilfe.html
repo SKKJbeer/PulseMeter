@@ -18,6 +18,111 @@
 <meta property="og:image" content="https://zaehlora.pages.dev/bilder/light.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="stil.css">
+<!-- **Das FAQ-Markup steht auf der Seite, die es beschreibt.**
+     Bis 0.103.1 lag es auf der Startseite, während die Fragen hier sichtbar
+     standen. Zwei Fassungen derselben Antwort, und die zur Preisfrage lief
+     auseinander: Hier stand „Erinnerungen kostenlos", dort der richtige
+     Betrag. Beides war online.
+     Der Text unten ist Wort für Wort der sichtbare Text darunter;
+     `scripts/check-versprechen.py` bricht ab, sobald sich einer von beiden
+     ohne den anderen bewegt. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "de",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Meine Abrechnung nennt einen anderen Verbrauch als die App. Warum?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Meistens reden beide von verschiedenen Zeiträumen. Das Abrechnungsjahr deines Versorgers fängt selten am 1. Januar an. Stell in der App denselben Zeitraum ein wie auf der Rechnung, dann sollten die Zahlen zusammenpassen. Bei Gas kommt etwas dazu: Der Zähler zählt Kubikmeter, abgerechnet werden Kilowattstunden. Trag Zustandszahl und Brennwert ein, beide stehen auf deiner Rechnung. Ausführlich mit Beispiel: Kubikmeter in Kilowattstunden umrechnen."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Ich habe eine Ablesung vergessen. Ist die Lücke ein Problem?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Kein Problem. Die App rechnet den Zeitraum zwischen zwei Ständen und schreibt dazu, was davon geschätzt ist. Sie tut nie so, als hätte sie gemessen, was sie hochgerechnet hat."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Ich habe mich vertippt.",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Tipp die Ablesung an und ändere sie, oder wirf sie weg. Meistens kommst du gar nicht so weit: Bei einer Zahl weit über dem Üblichen oder unter dem letzten Stand fragt die App schon beim Eintippen nach."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Mein Zähler wurde ausgetauscht.",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Trag den Endstand des alten Geräts ein und den Anfangsstand des neuen. Der Verbrauch bis zum Wechseltag bleibt stehen, und dein Verlauf geht weiter, als wäre nichts gewesen."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Kann ich meine Daten auf einem zweiten Gerät sehen?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Ja, über iCloud. Der Abgleich läuft durch deinen eigenen iCloud-Bereich, wir bekommen davon nichts zu sehen. Abschalten kannst du ihn jederzeit in den iOS-Einstellungen; die App läuft dann einfach auf einem Gerät weiter."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Wie komme ich an meine Daten heran?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Über den Export als Tabelle. Der kostet nichts und wird nie etwas kosten, auch wenn du sonst nie einen Cent ausgibst. Deine Zahlen sind deine Zahlen. Als Pfand taugen sie nicht."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Brauche ich ein Konto?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Nein. Keine Anmeldung, keine Registrierung, kein Passwort. App installieren, erste Zahl eintragen, fertig."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Mein Abschlag kommt mir zu hoch vor.",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Das lässt sich in zwei Minuten nachrechnen: Jahresverbrauch mal Arbeitspreis, plus Grundpreis, geteilt durch zwölf. Die Rechnung mit Beispiel steht auf einer eigenen Seite: Abschlag zu hoch? So rechnest du es nach."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Was kostet was?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Kostenlos bleiben: zwei Zähler, alle Ablesungen, der ganze Verlauf, der Vorjahresvergleich und der Export. Wenn dir etwas fehlt, schaltest du genau das frei: Erinnerungen für 0,99 €, weitere Zähler, Zähler mit zwei Zahlen, Kosten und Preise oder den Bericht ohne Schriftzug für je 1,99 €. Alle fünf zusammen kosten 4,99 €. Ein Abo gibt es nicht."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Ich habe ein neues Telefon. Sind meine Käufe weg?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Nein. Auf der Kaufseite steht „Wiederherstellen\". Ein Tipp darauf, und alles, was du je mit dieser Apple-ID gekauft hast, ist zurück."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Der Bericht hat einen Schriftzug quer darüber.",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "So ist es gedacht. Ansehen und ausdrucken kannst du ihn auch ohne Kauf; weggeben willst du ihn wahrscheinlich ohne den Schriftzug. Genau dafür ist die Freischaltung da."
+      }
+    }
+  ]
+}
+</script>
 </head>
 <body>
 
@@ -136,12 +241,20 @@
 
     <div class="frage">
       <h3>Was kostet was?</h3>
+      <!-- **Diese Antwort war zwei Wochen lang falsch.** Erinnerungen kosten
+           seit 0.100.0 0,99 €, und aus vier Freischaltungen wurden fünf. Die
+           Preisseite stand richtig, diese hier nicht, und beide waren online.
+           Gefunden hat es ein Audit, keine Prüfung. Seitdem hält
+           `scripts/check-versprechen.py` die Beträge gegen
+           `Entitlement.swift` — eine Preisangabe steht an zwei Orten und darf
+           nie wieder allein wandern. -->
       <p>
         Kostenlos bleiben: zwei Zähler, alle Ablesungen, der ganze Verlauf,
-        der Vorjahresvergleich, Erinnerungen und der Export. Wenn dir etwas
-        fehlt, schaltest du genau das frei: weitere Zähler, Zähler mit zwei
-        Zahlen, Kosten und Preise, den Bericht ohne Schriftzug. Jedes Stück
-        <strong>1,99 €</strong>, alle vier zusammen <strong>4,99 €</strong>.
+        der Vorjahresvergleich und der Export. Wenn dir etwas fehlt,
+        schaltest du genau das frei: Erinnerungen für <strong>0,99 €</strong>,
+        weitere Zähler, Zähler mit zwei Zahlen, Kosten und Preise oder den
+        Bericht ohne Schriftzug für je <strong>1,99 €</strong>. Alle fünf
+        zusammen kosten <strong>4,99 €</strong>.
         <strong>Ein Abo gibt es nicht.</strong>
       </p>
     </div>

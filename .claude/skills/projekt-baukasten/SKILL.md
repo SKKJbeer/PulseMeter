@@ -871,6 +871,7 @@ Drei Fälle an einem Nachmittag, alle mit derselben Form:
 | Welche Dateien ausgeliefert werden | Ein Weg entfernte die privaten Anleitungen, der andere hätte sie **ins Netz gestellt** |
 | Die Version des Prüfbrowsers | Drei Orte, zwei Versionen, und einer installierte nur den Browser ohne das Paket — Lauf rot mit einer Meldung, die nach einem Fehler in der Prüfung aussah |
 | Ein Schalter „Blatt offen" plus die Merkstelle, **was** darauf steht | Das Blatt ging mit dem Inhalt von vorher auf |
+| Der Preis eines Kaufs: im Quelltext und auf zwei Seiten der Website | Ein Kauf wurde von 1,99 € auf 0,99 € gesenkt. Die Preisseite zog mit, die Hilfeseite nicht — und bot ihn **zwei Wochen lang öffentlich als kostenlos an** |
 
 > Wo etwas zweimal steht, steht es früher oder später verschieden. Der Ausweg
 > ist immer derselbe: **ein Ort**, an dem es steht, und alle rufen ihn auf.
@@ -878,6 +879,57 @@ Drei Fälle an einem Nachmittag, alle mit derselben Form:
 Erkennungsmerkmal beim Schreiben: Wenn zwei Stellen denselben Satz enthalten —
 eine Versionsnummer, eine Dateiliste, einen Pfad —, ist das keine Wiederholung,
 sondern eine Verabredung ohne Vertrag.
+
+**Und wenn sich der zweite Ort nicht abschaffen lässt?** Ein Preis muss auf
+einer Verkaufsseite stehen; man kann dort nicht auf den Quelltext verweisen.
+Dann tritt eine Prüfung an die Stelle des einen Ortes: Sie liest die Quelle und
+hält den Text dagegen. Das ist kein Ersatz, sondern die zweitbeste Bauart — und
+sie ist billig. Zwanzig Zeilen, die die Beträge aus einer Datei ziehen und im
+sichtbaren Text der Seiten suchen, hätten diesen Fall am Tag seiner Entstehung
+gemeldet.
+
+### Die Verkaufsseite ist eine Behauptung über den Code, und niemand prüft sie
+
+Vor dem Launch wurde die Website Satz für Satz gegen den Quelltext gehalten.
+Von rund dreißig Zusagen waren **drei falsch und vier zu absolut** — bei einem
+Projekt, dessen Prüfsuite an dem Tag 228 Unit-Tests, 407 Website-Prüfungen und
+neun Sicherheitsprüfungen grün meldete.
+
+| Auf der Seite | Im Quelltext |
+|---|---|
+| „Ein Feld auf dem Sperrbildschirm" | `supportedFamilies([.systemSmall, .systemMedium])` — nur Homescreen |
+| „Oktober bis April gegen Oktober bis April" | Es gibt Monat, Quartal, Jahr. Sonst nichts |
+| „Zeitraum frei wählbar" | Sechs Vorgaben in einer Liste |
+| „Die App fragt nirgendwo an" | StoreKit, CloudKit und die stille Mitteilung reden mit Apple |
+| „Du entfernst die App, und die Daten sind weg" | Die Kopie in der privaten Cloud bleibt |
+
+Keine dieser Zusagen war gelogen; jede war einmal geplant, teilweise gebaut
+oder großzügig formuliert. Genau deshalb fällt so etwas nicht auf: Es gibt
+keinen Ort, an dem eine Werbeaussage und ihre Umsetzung nebeneinanderstehen.
+Der Code kennt die Website nicht, und die Website kennt den Code nicht.
+
+> **Was die Prüfsuite prüft, ist die Innenseite.** Sie sagt, dass die App tut,
+> was der Code sagt. Ob der Code tut, was die Verkaufsseite verspricht, sagt
+> sie nicht — und das ist die Seite, an der ein Nutzer enttäuscht wird und ein
+> App-Store-Prüfer ablehnt.
+
+Der Handgriff, der es findet, ist billig und einmalig: **jede Zusage der
+Verkaufsseite einzeln aufschreiben und den Beleg im Quelltext danebenlegen —
+Datei und Zeile, nicht „ist implementiert".** Wo kein Beleg steht, ist die
+Zusage entweder zu streichen oder zu bauen. Eine Stunde vor dem Launch, und
+danach vor jeder Änderung am Umfang.
+
+Zwei Regeln, die dabei den Unterschied machen:
+
+- **Ein Modell zu finden genügt nicht.** Eine `ForecastEngine` im Repo beweist
+  nicht, dass irgendeine Ansicht sie aufruft, und ein Aufruf beweist nicht,
+  dass das Ergebnis auf einem Schirm landet. Der Beleg reicht von der Zusage
+  bis zur sichtbaren Zeile.
+- **Die kostenlose Fassung ist auch ein Versprechen.** In diesem Projekt gab
+  ein ungeschützter Knopf „Beispieldaten anlegen" drei von fünf Käufen
+  dauerhaft frei, weil die Sperre danach fragte, *ob Tarife vorhanden sind*,
+  statt *ob gekauft wurde*. Wer eine Grenze prüft, prüft sie am Kauf und nie
+  an einem Nebenprodukt davon.
 
 ### Ein zweiter Versuch, der über den ersten hinweggeht, meldet das Falsche
 

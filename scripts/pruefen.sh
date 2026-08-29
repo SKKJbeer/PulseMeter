@@ -125,6 +125,11 @@ if [ "$SCOPE" != "bilder" ]; then
   # Kostet nichts und hält die Fläche klein, auf der überhaupt etwas
   # schiefgehen kann — siehe docs/11-sicherheit.md, Abschnitt 6.
   run "Angriffsfläche" scripts/check-sicherheit.sh || true
+  # Ein Preis steht auf der Website und in `Entitlement.swift`. Zwei Wochen
+  # lang stand auf der Hilfeseite „Erinnerungen kostenlos" und „alle vier
+  # zusammen", während sie 0,99 € kosteten und es fünf waren. Beide Seiten
+  # waren online, keine Prüfung sah hin (0.103.1).
+  run "Versprechen der Website" python3 scripts/check-versprechen.py || true
   # Reines Parsen, ohne SDK und ohne Typprüfung — und deshalb auch unter Linux.
   #
   # Es findet nicht alles, aber eine ganze Fehlerklasse: einen Block, der in der

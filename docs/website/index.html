@@ -38,57 +38,12 @@
   }
 }
 </script>
-<!-- Die Fragen stehen wörtlich so auf der Hilfeseite. Kein zweiter Text, der
-     auseinanderlaufen kann: Was hier steht, ist dort nachzulesen. -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "inLanguage": "de",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "Meine Abrechnung nennt einen anderen Verbrauch als die App. Warum?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Meist wegen des Zeitraums: Der Versorger rechnet vom Ablesetag bis zum Ablesetag, die App von Monatsanfang bis Monatsende. Bei Gas kommen Zustandszahl und Brennwert dazu. Beide stehen auf der Rechnung und gehören in die App, sonst werden aus Kubikmetern die falschen Kilowattstunden."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Ich habe eine Ablesung vergessen. Ist die Lücke ein Problem?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Nein. Die App rechnet über die Lücke hinweg und kennzeichnet, was dabei geschätzt ist. Trag den nächsten Stand einfach ein, wenn du wieder am Zähler stehst."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Brauche ich ein Konto?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Nein. Es gibt keine Anmeldung, keine E-Mail-Adresse und kein Passwort. Die App fragt bei keinem Server an, und deine Zählerstände verlassen dein Gerät nur, wenn du sie selbst weitergibst oder den Abgleich über deine eigene iCloud einschaltest."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Was kostet was?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Kostenlos bleiben zwei Zähler, alle Ablesungen, der ganze Verlauf, der Vorjahresvergleich und der Export. Einzelne Freischaltungen kosten 1,99 €, Erinnerungen 0,99 €, alle fünf zusammen 4,99 €. Einmal bezahlt, kein Abo."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Wie komme ich an meine Daten heran?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Über den Export als Tabelle. Der bleibt dauerhaft kostenlos, auch wenn du nie etwas kaufst. Die Datei öffnet jedes Tabellenprogramm."
-      }
-    }
-  ]
-}
-</script>
+<!-- **Die Fragen stehen auf der Hilfeseite, und ihr Markup jetzt auch.**
+     Hier standen sie bis 0.103.1 als zweite, freier formulierte Fassung — und
+     eine davon war seit dem Preiswechsel schlicht falsch, während die andere
+     stimmte. Ein Markup gehört auf die Seite, deren sichtbaren Text es
+     beschreibt; alles andere ist eine Kopie, die niemand nachliest.
+     `scripts/check-versprechen.py` hält beides jetzt zusammen. -->
 </head>
 <body>
 
@@ -184,7 +139,7 @@
           bedeutet. Ohne Scrollen, ohne Menü.
         </p>
         <ul class="liste">
-          <li><strong>Vergleich auf gleicher Grundlage.</strong> Januar bis Mai gegen Januar bis Mai. Bei der Heizung gegen dieselbe Heizperiode, nicht gegen ein Kalenderjahr.</li>
+          <li><strong>Vergleich auf gleicher Grundlage.</strong> Januar bis Mai gegen Januar bis Mai. Läuft der Monat noch, wird auch das Vorjahr am selben Tag abgeschnitten.</li>
           <li><strong>Wenn Zählora einen Wert schätzt, siehst du das.</strong> Hochgerechnete Werte stehen nie unkommentiert zwischen gemessenen.</li>
           <li><strong>Jede Zahl lässt sich antippen</strong> und zeigt, aus welchen Ablesungen sie entstanden ist.</li>
         </ul>
@@ -234,7 +189,7 @@
           vor dem Diagramm nicht mehr.
         </p>
         <ul class="liste">
-          <li><strong>Erinnerungen</strong> monatlich, vierteljährlich oder zum selbst gewählten Termin. Freischaltung 0,99 €.</li>
+          <li><strong>Erinnerungen</strong> je Zähler: wöchentlich, monatlich, vierteljährlich oder jährlich. Abends um sechs, wenn jemand zu Hause ist. Freischaltung 0,99 €.</li>
           <li><strong>Ein Feld auf dem Sperrbildschirm</strong> zeigt, ob eine Ablesung fällig ist und wie viel bisher zusammengekommen ist, ohne dass du die App öffnest.</li>
           <li><strong>Kein Konto, keine Anmeldung.</strong> Der erste Zähler steht in unter einer Minute.</li>
           <li><strong>Lücken sind erlaubt.</strong> Wer drei Monate vergisst, verliert nichts. Die App rechnet damit und sagt, was geschätzt ist.</li>
@@ -261,7 +216,7 @@
           Vermieter, zum Danebenlegen.
         </p>
         <ul class="liste">
-          <li><strong>Zeitraum frei wählbar</strong>, auch der krumme, den dein Versorger abrechnet, nicht nur das Kalenderjahr.</li>
+          <li><strong>Zeitraum zur Wahl:</strong> dein Abrechnungsjahr, das laufende Jahr, die letzten zwölf Monate oder ein vergangenes Kalenderjahr.</li>
           <li><strong>Ansehen und ausdrucken kostet nichts.</strong> Ungekauft steht ein Schriftzug quer darüber; weg ist er, wenn du ihn weitergeben willst.</li>
           <li><strong>Jede Zahl im Bericht</strong> stammt aus einer Ablesung, die du eingetragen hast. Geschätzte Werte sind als solche gekennzeichnet.</li>
         </ul>
@@ -323,8 +278,8 @@
           <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M4 19V9m5 10V5m5 14v-7m5 7V8"/>
           </svg>
-          <h3>Heizperiode statt Kalenderjahr</h3>
-          <p>Bei Gas und Fernwärme wird Oktober bis April gegen Oktober bis April verglichen. Ein Kalenderjahr zerschneidet den Winter mitten durch.</p>
+          <h3>Dein Abrechnungsjahr</h3>
+          <p>Bei Gas fängt es oft im Oktober an, bei Strom im April. Trag den Stichtag ein, dann rechnen Vorschau und Bericht danach. Ein Kalenderjahr zerschneidet den Winter mitten durch.</p>
         </div>
       </div>
     </div>
@@ -354,7 +309,7 @@
             <path d="M3 3l18 18"/><path d="M12 3a9 9 0 0 1 9 9 9 9 0 0 1-1.6 5.1M6.6 6.6A9 9 0 0 0 12 21"/>
           </svg>
           <h3>Keine Server</h3>
-          <p>Die App fragt nirgendwo an. Es gibt keinen Dienst, der deine Zahlen empfangen könnte. Auch keinen von uns.</p>
+          <p>Es gibt keinen Dienst, der deine Zahlen empfangen könnte. Auch keinen von uns. Die App redet nur mit dem App Store und mit deiner eigenen iCloud.</p>
         </div>
         <div class="karte">
           <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -382,7 +337,7 @@
             <path d="M4 7h11M4 12h16M4 17h8"/><path d="M18 5v6"/>
           </svg>
           <h3>Löschen heißt gelöscht</h3>
-          <p>Du entfernst die App, und die Daten sind weg. Es gibt keine Kopie, die wir behalten könnten.</p>
+          <p>Du entfernst die App, und die Daten auf dem Gerät sind weg. Nutzt du iCloud, löschst du die Kopie dort in den Einstellungen mit. Bei uns gibt es keine.</p>
         </div>
       </div>
 
