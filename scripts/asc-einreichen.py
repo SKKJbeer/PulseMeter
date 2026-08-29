@@ -238,10 +238,49 @@ def zurueckziehen(apple: Apple, app_id: str) -> int:
     return 1
 
 
+def aufraeumen(apple: Apple, app_id: str) -> int:
+    """Löscht Einreichungen, die nie eine wurden.
+
+    **Der Fehlschlag hinterlässt eine Leiche.** Eine angelegte Einreichung, der
+    das Hinzufügen der Fassung misslungen ist, steht als `READY_FOR_REVIEW` da
+    und hat nichts darin. Der nächste Lauf hält sie für eine laufende
+    Einreichung und tut nichts — die Sperre gegen ein Versehen wird dann selbst
+    zur Sperre.
+
+    Erkannt wird sie daran, dass sie **keine Einträge** hat. Eine echte
+    Einreichung hat immer mindestens einen.
+    """
+    stand, antwort = apple.holen("v1/reviewSubmissions", **{
+        "filter[app]": app_id, "limit": 50})
+    if stand != 200:
+        print(f"::error::Die Einreichungen sind nicht lesbar ({stand}).")
+        return 1
+
+    weg = 0
+    for eintrag in antwort.json().get("data", []):
+        if feld(eintrag, "state") not in ("READY_FOR_REVIEW",):
+            continue
+        stand, teile = apple.holen(
+            f"v1/reviewSubmissions/{eintrag['id']}/items", **{"limit": 5})
+        anzahl = len(teile.json().get("data", [])) if stand == 200 else -1
+        if anzahl != 0:
+            print(f"  · {eintrag['id'][:8]}: {anzahl} Eintrag/Einträge — bleibt")
+            continue
+        code = apple.loeschen(f"v1/reviewSubmissions/{eintrag['id']}")
+        print(f"  ✓ {eintrag['id'][:8]}: leer, entfernt (Antwort {code})")
+        weg += 1
+
+    print(f"::notice::{weg} leere Einreichung(en) entfernt.")
+    return 0
+
+
 def main() -> int:
     apple = Apple()
     app_id = app_finden(apple)
     fassung = fassung_finden(apple, app_id)
+
+    if "--aufraeumen" in sys.argv:
+        return aufraeumen(apple, app_id)
 
     if "--zurueckziehen" in sys.argv:
         return zurueckziehen(apple, app_id)

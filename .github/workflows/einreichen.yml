@@ -29,6 +29,11 @@ on:
         type: boolean
         required: false
         default: false
+      aufraeumen:
+        description: "Leere Einreichungen entfernen, die ein Fehlschlag hinterlassen hat"
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -52,7 +57,9 @@ jobs:
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
         run: |
-          if [ "${{ inputs.warum }}" = "true" ]; then
+          if [ "${{ inputs.aufraeumen }}" = "true" ]; then
+            python3 scripts/asc-einreichen.py --aufraeumen
+          elif [ "${{ inputs.warum }}" = "true" ]; then
             python3 scripts/asc-warum.py
           elif [ "${{ inputs.zurueckziehen }}" = "true" ]; then
             python3 scripts/asc-einreichen.py --zurueckziehen

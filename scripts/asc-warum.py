@@ -113,12 +113,23 @@ def main() -> int:
     # („Welche Daten erfasst die App?") ist eine eigene Ressource und muss
     # veröffentlicht sein, bevor eingereicht werden darf. Er stand auf keiner
     # unserer Listen.
-    zeigen("Datenschutz-Fragebogen: veröffentlicht?",
-           f"v1/apps/{app}/appDataUsagePublishState")
-    zeigen("Datenschutz-Fragebogen: die Angaben",
-           f"v1/apps/{app}/dataUsages", **{"limit": 10})
-    zeigen("Datenschutz-Fragebogen (andere Schreibweise)",
-           f"v1/apps/{app}/appDataUsages", **{"limit": 10})
+    # **Der Name war beim ersten Anlauf dreimal falsch geraten.** Apple
+    # antwortet darauf hilfreich — „The relationship 'x' does not exist" —,
+    # und das ist eine Auskunft über meine Anfrage, nicht über die App.
+    # Deshalb stehen hier mehrere Schreibweisen: Eine davon trifft, und welche
+    # es ist, sagt Apple selbst.
+    for pfad in ("appDataUsagesPublishState", "appDataUsagePublishState",
+                 "appDataUsages", "dataUsages"):
+        zeigen(f"Datenschutz-Fragebogen — {pfad}", f"v1/apps/{app}/{pfad}",
+               **{"limit": 10})
+    zeigen("Datenschutz-Fragebogen als eigene Liste", "v1/appDataUsages",
+           **{"filter[app]": app, "limit": 10})
+
+    # Was Apple sonst noch an der App hängen hat. Steht der Grund irgendwo,
+    # dann in einer dieser Beziehungen — und wenn nicht, ist auch das eine
+    # Antwort: Über die Schnittstelle ist er nicht zu bekommen.
+    zeigen("Beziehungen der App", f"v1/apps/{app}",
+           **{"fields[apps]": "name,bundleId,contentRightsDeclaration"})
 
     zeigen("Preisplan", f"v1/apps/{app}/appPriceSchedule")
     zeigen("Laufende Einreichungen", "v1/reviewSubmissions",
