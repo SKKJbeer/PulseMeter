@@ -9,6 +9,28 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.101.0 — 2026-08-29
+
+**Zwei Punkte vor dem Start, die bisher nur auf Vorhandensein geprüft wurden.**
+Der Gründer will morgen live gehen; damit werden zwei Zeilen wichtig, die
+bislang grün waren, ohne etwas auszusagen.
+
+### Verkäuflich in wie vielen Ländern
+Bisher stand dort „Verfügbarkeit in Ländern (Antwort 200)" — also nur, ob Apple
+auf die Frage antwortet. **Genau dieser Eintrag war bei 0.87.0 schon einmal
+vorhanden und leer:** Die App war in keinem einzigen Land verkäuflich, und
+nichts wurde rot. Gezählt wird jetzt, und Deutschland muss darunter sein — es
+ist der Laden, für den die Texte geschrieben sind.
+
+### Was nach der Freigabe passiert
+Neu und keine Prüfung, sondern eine Auskunft: `AFTER_APPROVAL` heißt, die App
+geht sofort nach der Prüfung in den Laden; `MANUAL` heißt, sie wartet auf einen
+Knopfdruck. Der Unterschied ist ein Tag, und wer morgen live sein will, sollte
+wissen, welches von beidem eingestellt ist. Die Zeile steht deshalb unter „kann
+nur der Gründer" — sie ist eine Entscheidung, kein Mangel.
+
+---
+
 ## 0.100.1 — 2026-08-29
 
 **Der Lauf legte sechs Käufe an und meldete fünf.** Gezählt hatte er richtig —

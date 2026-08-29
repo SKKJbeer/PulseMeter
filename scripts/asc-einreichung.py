@@ -670,8 +670,46 @@ def kaeufe_pruefen(apple: Apple, app_id: str) -> None:
 def verfuegbarkeit_pruefen(apple: Apple, app_id: str) -> None:
     stand, plan = erste(apple, f"v1/apps/{app_id}/appPriceSchedule")
     pruefe(plan is not None, f"Preisplan der App (Antwort {stand})")
+
+    # **„Vorhanden" ist auch hier nicht „richtig".** Bis 0.101.0 stand hier nur,
+    # ob Apple auf die Frage antwortet. Genau dieser Eintrag war bei 0.87.0
+    # schon einmal vorhanden **und leer** — die App war in keinem einzigen Land
+    # verkäuflich, und nichts wurde rot. Gezählt wird deshalb, und Deutschland
+    # muss darunter sein: Es ist der Laden, für den die Texte geschrieben sind.
     stand, wo = erste(apple, f"v1/apps/{app_id}/appAvailabilityV2")
-    pruefe(wo is not None, f"Verfügbarkeit in Ländern (Antwort {stand})")
+    if wo is None:
+        offen.append(f"Verfügbarkeit nicht lesbar (Antwort {stand})")
+    else:
+        stand, antwort = apple.holen(
+            f"v2/appAvailabilities/{wo['id']}/territoryAvailabilities",
+            **{"limit": 200, "filter[available]": "true"})
+        laender = ([e.get("relationships", {}).get("territory", {})
+                     .get("data", {}).get("id")
+                    for e in antwort.json().get("data", [])]
+                   if stand == 200 else [])
+        pruefe(len(laender) > 0 and "DEU" in laender,
+               f"Verkäuflich in {len(laender)} Ländern, Deutschland dabei"
+               if "DEU" in laender else
+               f"Verkäuflich in {len(laender)} Ländern — **ohne Deutschland** "
+               f"(Antwort {stand})")
+
+
+def freigabe_pruefen(apple: Apple, app_id: str) -> None:
+    """Was nach der Freigabe durch Apple passiert.
+
+    **Kein Mangel, sondern eine Entscheidung — deshalb steht sie beim Gründer.**
+    `AFTER_APPROVAL` heißt: Sobald die Prüfung durch ist, steht die App im
+    Laden, ohne dass jemand etwas tut. `MANUAL` heißt: Sie wartet auf einen
+    Knopfdruck. Wer morgen live sein will, sollte wissen, welches von beidem
+    eingestellt ist — der Unterschied ist ein Tag.
+    """
+    stand, fassung = erste(apple, f"v1/apps/{app_id}/appStoreVersions",
+                           **{"limit": 5, "filter[platform]": "IOS"})
+    art = feld(fassung, "releaseType") or "—"
+    wie = {"AFTER_APPROVAL": "geht sofort nach der Freigabe in den Laden",
+           "MANUAL": "wartet nach der Freigabe auf einen Knopfdruck",
+           "SCHEDULED": "geht zum eingestellten Termin in den Laden"}
+    pruefe(art in wie, f"Nach der Freigabe: {wie.get(art, art)}", gehoert_ihm)
 
 
 def main() -> None:
@@ -696,6 +734,7 @@ def main() -> None:
     fassung_pruefen(apple, app_id)
     kaeufe_pruefen(apple, app_id)
     verfuegbarkeit_pruefen(apple, app_id)
+    freigabe_pruefen(apple, app_id)
 
     print("\n=== Steht ===")
     for zeile in erledigt:
