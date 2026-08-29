@@ -101,6 +101,20 @@ shoot dark  screenshot-grenze-dark  -pulse-zaehler -pulse-frei
 shoot light screenshot-pro-light -pulse-kaufen -pulse-frei
 shoot dark  screenshot-pro-dark  -pulse-kaufen -pulse-frei
 
+# **Die Übersicht ohne Kauf — das Bild, das bis 0.104.1 fehlte.**
+#
+# Von den vier Bildern vor dem Kauf zeigten drei den Zähler-Schirm und die
+# Kaufseite. Die Übersicht war nur als Pro zu sehen, und genau dort saß der
+# teuerste Fehler dieses Projekts: Bis 0.104.0 standen einem Nutzer ohne Kauf
+# zwölf Euro-Beträge auf der Karte, weil die Anzeige fragte, *ob Tarife
+# vorliegen*, statt ob jemand sie gekauft hat.
+#
+# Ein Bild davon hätte das an dem Tag gezeigt, an dem es entstand. Der Entwurf
+# prüft es jetzt automatisch; dieses Bild ist die Gegenprobe an der echten App,
+# und es kostet zwei Sekunden.
+shoot light screenshot-uebersicht-frei-light -pulse-frei
+shoot dark  screenshot-uebersicht-frei-dark  -pulse-frei
+
 # Größte Schriftgröße, die iOS anbietet.
 #
 # In `00-produktstrategie.md` steht „Dynamic Type bis zur größten Stufe" als

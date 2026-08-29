@@ -10,7 +10,19 @@ name: Live schalten
 #
 # Es gibt also ein Zeitfenster von Stunden, in dem jemand einen Befehl tippen
 # müsste. Am Starttag ist die Liste lang, und dieser Punkt steht ganz unten.
-# Also fragt dieser Ablauf stündlich nach und legt den Knopf selbst um.
+# Also fragt dieser Ablauf nach und legt den Knopf selbst um.
+#
+# **Der Stundenplan ist kein Versprechen, und das ist gemessen.** Hier stand
+# „fragt stündlich nach". Am 29. August lag der Ablauf ab 12:12 UTC auf `main`
+# und feuerte in sechs Stunden **einmal** — um 16:47 statt um :23, danach
+# wieder nicht. GitHub reiht geplante Läufe bei Last ein und lässt sie aus; in
+# einem Depot, in dem wenig los ist, kann das Stunden bedeuten.
+#
+# Für diesen Ablauf ist das erträglich, weil er nur einmal im Leben etwas tut
+# und ein paar Stunden „Bald im App Store" niemanden schaden. Verlassen darf
+# man sich darauf trotzdem nicht: **Am Starttag wird er von Hand ausgelöst**
+# (`workflow_dispatch`) und die Seite danach angesehen. So steht es auch in
+# `docs/12-auslieferung.md`.
 #
 # **Er schaltet nur in eine Richtung.** Zurück geht es von Hand
 # (`scripts/appstore-knopf.sh aus`) — ein Ablauf, der von selbst wieder

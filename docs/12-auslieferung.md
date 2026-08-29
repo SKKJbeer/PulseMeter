@@ -1,6 +1,6 @@
 # 12 – Auslieferung: vom Code in den App Store, ohne Mac
 
-Stand: 2026-08-29, Version 0.104.0
+Stand: 2026-08-29, Version 0.104.1
 
 Am 17. August ist Zählora zum ersten Mal in TestFlight gelandet — **ohne
 Kabel, ohne Xcode auf dem Rechner des Gründers, ohne einen Klick im
@@ -261,7 +261,7 @@ Store Connect deshalb nie gesehen.
 | 22 | 0.92.1 | 28.08. 11:48 | ✓ | Kaufübersicht über eine eigene Zeile im Zähler-Schirm, Stichpunkte statt Fließtext, der Bericht an genau einer Stelle |
 | 23 | 0.93.2 | 28.08. 14:51 | ✓ | Einkaufswagen an der Zeile, Preise im Verlauf für einen kostenlosen Nutzer — und dahinter das Blatt zum angetippten Kauf statt zum vorletzten |
 | 24 | 0.100.1 | 29.08. 11:35 | ✓ | **Der erste Bau, der Zählora heißt.** Dazu die Erinnerungen als sechster Kauf zu 0,99 €. Die Testhinweise fielen zunächst aus — ein fehlendes `import re` — und wurden über „Testhinweise nachtragen" gesetzt, ohne einen zweiten Bau zu kosten |
-| 25 | 0.104.0 | 29.08. 17:45 | … läuft | Kosten hängen am Kauf statt an „gibt es Tarife" — der Knopf „Beispieldaten anlegen" verschenkte bis dahin drei von fünf Käufen. Dazu das Widget auf dem Sperrbildschirm (`accessoryRectangular`, `accessoryInline`) |
+| 25 | 0.104.0 | 29.08. 17:45 | ✓ | Kosten hängen am Kauf statt an „gibt es Tarife" — der Knopf „Beispieldaten anlegen" verschenkte bis dahin drei von fünf Käufen. Dazu das Widget auf dem Sperrbildschirm (`accessoryRectangular`, `accessoryInline`) |
 
 Zeitangaben in UTC. Ein ✗ heißt: hochgeladen wurde nichts, die Nummer ist
 trotzdem verbraucht.
@@ -300,6 +300,37 @@ Verarbeitung sofort bereit.
 sie lässt sich eine Rückmeldung vom Gerät nicht zuordnen: „bei mir sieht das
 anders aus" ist ohne „welcher Build?" nicht zu beantworten, und die Antwort
 steht sonst nirgends.
+
+---
+
+## 4a. Der Starttag: was von Hand passiert
+
+Zwei Handgriffe bleiben, und beide dauern eine Minute. Sie stehen hier, weil sie
+am Starttag ganz unten auf einer langen Liste stehen würden.
+
+**1. Den App-Store-Knopf auf der Website umlegen.** `live-schalten.yml` tut das
+von selbst, sobald Apple die Fassung auf `READY_FOR_SALE` stellt — aber der
+Stundenplan von GitHub ist keine Zusage. Gemessen am 29. August: Der Ablauf lag
+ab 12:12 UTC auf `main` und feuerte in sechs Stunden **einmal**, um 16:47 statt
+um :23. Geplante Läufe werden bei Last eingereiht und ausgelassen, und in einem
+ruhigen Depot heißt das Stunden.
+
+Also am Starttag selbst auslösen und **nachsehen**, nicht warten:
+
+```
+Actions → „Live schalten" → Run workflow → main
+```
+
+Danach `https://zaehlora.pages.dev` aufrufen: Steht dort statt „Bald im App
+Store" das Abzeichen mit dem echten Verweis, ist es erledigt. Steht es nicht da,
+sagt das Protokoll des Laufs, was Apple geantwortet hat — ein fehlgeschlagener
+Aufruf schaltet **nicht** um, sondern lässt den Knopf stehen (das ist Absicht:
+Eine unerreichbare Schnittstelle ist keine Aussage über den Laden).
+
+**2. Den Bau für die Öffentlichkeit freigeben**, falls die Fassung auf
+`PENDING_DEVELOPER_RELEASE` steht statt sich selbst zu veröffentlichen. Das
+hängt daran, was in App Store Connect unter „Version Release" gewählt ist; bei
+uns steht `AFTER_APPROVAL`, also erledigt Apple es selbst.
 
 ---
 

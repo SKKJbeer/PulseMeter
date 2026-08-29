@@ -583,6 +583,30 @@ lang wurde überall gesucht, nur nicht an der Stelle, die die Antwort hatte.
 > fragen" und „die Gegenseite sagt nein": Ein Fehler auf der eigenen Seite darf
 > nie wie eine Antwort der Gegenseite aussehen.
 
+### Ein Zeitplan bei GitHub ist keine Zusage
+
+Ein Ablauf mit `schedule: cron: "23 * * * *"` lag ab 12:12 UTC auf dem
+Hauptzweig. Bis 18:26 hätte er sechsmal feuern müssen. Gefeuert hat er
+**einmal**, um 16:47 — nicht zur Minute, nicht zur Stunde, und danach wieder
+nicht. GitHub reiht geplante Läufe bei Last ein und lässt sie aus; in einem
+Depot, in dem wenig los ist, sind Verzögerungen von Stunden normal und
+ausgelassene Fenster ebenfalls.
+
+Der Fehler daraus war nicht der Ablauf, sondern **meine Aussage darüber**. Um
+16:13 standen null Läufe da, und ich habe dem Gründer gemeldet, der Ablauf
+feuere nicht. Eine halbe Stunde später hatte er gefeuert. Aus „bisher nicht"
+war „tut es nicht" geworden — dieselbe Verwechslung wie überall sonst in dieser
+Liste, nur mit der Uhr statt mit einer Schnittstelle.
+
+> **Ein ausgebliebener Lauf ist kein Befund, sondern ein fehlender.** Für eine
+> Aussage über einen Zeitplan braucht es mehrere Fenster, und selbst dann heißt
+> das Ergebnis „unzuverlässig", nicht „kaputt".
+
+Die Folge fürs Bauen: Ein Zeitplan taugt für Dinge, die auch drei Stunden
+später noch richtig sind. Alles, was zu einem **Zeitpunkt** geschehen muss,
+bekommt zusätzlich `workflow_dispatch` und einen Satz in der Anleitung, dass am
+Tag X von Hand ausgelöst und **nachgesehen** wird.
+
 ### „Vorhanden" ist auch nicht „richtig"
 
 Die Stufe nach „vorhanden ist nicht wirkt", und sie kostet mehr, weil nichts

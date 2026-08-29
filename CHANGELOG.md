@@ -9,6 +9,51 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.104.1 — 2026-08-29
+
+**Bau 25 steht in TestFlight, und der Starttag ist aufgeschrieben.**
+
+Belegt aus dem Protokoll, nicht vermutet: `Bau 25: VALID` und
+`Bau 25 steht bereit, die Testhinweise sind eingetragen`. Der Hinweistext kam
+diesmal aus dem Änderungsprotokoll seit Bau 24 — der Schritt, der zehn Bauten
+lang stillschweigend nichts geschrieben hatte.
+
+### Geändert
+
+- **Meine Aussage über `live-schalten.yml` war falsch, und die Korrektur steht
+  jetzt dort, wo sie hingehört.** Ich hatte gemeldet, der Ablauf feuere nicht:
+  Um 16:13 UTC standen null Läufe da, obwohl er seit 12:12 mit `23 * * * *` auf
+  `main` liegt. Eine halbe Stunde später hatte er gefeuert — um 16:47, nicht
+  um :23, und danach wieder nicht. Aus „bisher nicht" war „tut es nicht"
+  geworden.
+
+  Der Kommentar im Ablauf sagte „fragt stündlich nach". Er sagt jetzt, was
+  gemessen ist: einmal in sechs Stunden. GitHub reiht geplante Läufe bei Last
+  ein und lässt sie aus.
+
+### Hinzugefügt
+
+- **`docs/12-auslieferung.md` bekommt einen Abschnitt „Der Starttag".** Zwei
+  Handgriffe, je eine Minute, samt dem Weg über `Run workflow` und der Prüfung
+  danach an der Seite selbst. Ein Ablauf, auf den man sich nicht verlassen
+  kann, gehört in eine Anleitung, nicht in eine Hoffnung.
+- **Zwei Bildschirmfotos: die Übersicht ohne Kauf**, hell und dunkel
+  (`-pulse-frei`). Von den bisherigen Bildern vor dem Kauf zeigten alle den
+  Zähler-Schirm oder die Kaufseite; die Übersicht gab es nur als Pro. Genau
+  dort saß der Fehler aus 0.104.0, und ein Bild davon hätte ihn an dem Tag
+  gezeigt, an dem er entstand.
+- Der Baukasten bekommt „Ein Zeitplan bei GitHub ist keine Zusage" —
+  einschließlich des Teils, der wehtut: Ein ausgebliebener Lauf ist kein
+  Befund, sondern ein fehlender, und für eine Aussage über einen Zeitplan
+  braucht es mehrere Fenster.
+
+_231 Tests in PulseCore, alle grün. Klick-Dummy und Website geprüft, hell und
+dunkel. Kein App-Code berührt — diese Version endet in `main` und braucht
+keinen eigenen Bau. Die zwei neuen Bildschirmfotos entstehen erst im nächsten
+Lauf auf einem Mac; unter Linux ist das nicht zu prüfen._
+
+---
+
 ## 0.104.0 — 2026-08-29
 
 **Der Knopf „Beispieldaten anlegen" verschenkte drei von fünf Käufen.**
