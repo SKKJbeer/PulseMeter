@@ -704,8 +704,11 @@ Fehlschlag kam mit einer Meldung über die **Fassung**:
 
     appStoreVersions with id '…' is not in valid state.
 
-Der Grund stand eine Ebene daneben: Die Fassung hing schon in der ersten
-Einreichung, und in zweien darf sie nicht hängen.
+**Der Grund war ein anderer, und das gehört dazu:** Ich hielt die doppelte
+Einreichung für die Ursache, räumte auf, und derselbe Fehler kam an einer
+nachweislich leeren wieder. Die Sortierung war trotzdem ein echter Fehler — nur
+eben nicht *der* Fehler. Eine gefundene Ursache, die den Befund erklärt, ist
+noch nicht die Ursache; erst der Gegentest zeigt es.
 
 > Ein `sort` ist ein stiller Filter. Vor jedem Sortierfeld die Frage: Ist es
 > bei dem Datensatz gefüllt, den ich finden **will** — oder gerade bei dem

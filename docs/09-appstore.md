@@ -409,6 +409,18 @@ Skript und läuft überall, wo der Schlüssel liegt.
       **Kein Skript kann das nachsehen.** Die Schnittstelle von Apple bietet
       dafür nichts an; „Einreichung nachsehen" wird diesen Punkt also nie
       melden, weder grün noch rot. Deshalb steht er hier und nicht dort.
+- [ ] **Der Datenschutz-Fragebogen in App Store Connect.** Etwas anderes als
+      die Datenschutz-URL, die längst gesetzt ist: Apple fragt in einem
+      eigenen Formular ab, welche Daten die App erfasst. Für Zählora ist die
+      Antwort durchgehend **„Keine Daten erfasst"** — kein Konto, keine
+      Werbung, kein Tracking, keine Absturzberichte.
+
+      **Ohne ihn lässt sich nicht einreichen**, und über die Schnittstelle ist
+      er nicht zu erreichen: Die Beziehungen `appDataUsages`, `dataUsages` und
+      `appDataUsagePublishState` antworten alle mit „does not exist".
+
+      `App Store → App-Datenschutz → Bearbeiten`, dann veröffentlichen.
+
 - [ ] **Zwei Wochen echte Eigennutzung** — der Punkt, der bisher am meisten
       gefunden hat, und eine Entscheidung, kein Arbeitsschritt.
 - [ ] **800 ms Kaltstart** auf einem Gerät messen. Im Simulator sagt die Zahl

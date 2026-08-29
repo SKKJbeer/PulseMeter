@@ -19,18 +19,26 @@ appStoreVersions with id '…' is not in valid state.
 This resource cannot be reviewed, please check associated errors to see why.
 ```
 
-Apple sprach von der Fassung. Der Grund stand eine Ebene daneben: Es gab bereits
-eine vorbereitete Einreichung, die Fassung hing schon darin, und in zweien darf
-sie nicht hängen.
+**Meine erste Erklärung war falsch, und sie hat zwei Läufe gekostet.** Ich
+hielt eine zweite, vorbereitete Einreichung für die Ursache — die Fassung hänge
+schon darin. Nach dem Aufräumen kam derselbe Fehler an einer nachweislich
+leeren Einreichung wieder. Die Fassung ist also wirklich nicht prüfbar, und der
+Grund steht nur in der Oberfläche von App Store Connect.
 
-**Warum mein Skript sie nicht sah — der eigentliche Fehler.** Es fragte mit
-`sort=-submittedDate`. Eine Einreichung, die noch nicht abgeschickt ist, **hat
-kein Absendedatum**; genau die also, nach denen gesucht wurde. Ein `sort` ist
-ein stiller Filter.
+Übrig bleiben zwei Kandidaten, und beide sind Dinge, die kein Schlüssel
+erledigen kann: der **Datenschutz-Fragebogen** („Welche Daten erfasst die
+App?") und der **Händlerstatus** nach dem Digitale-Dienste-Gesetz. Beide sind
+harte Sperren vor der Einreichung, und beide standen auf keiner unserer Listen
+— der Fragebogen ist etwas anderes als die Datenschutz-URL, die längst gesetzt
+ist.
 
-### Behoben
-- Ohne Sortierung gefragt, und eine **vorbereitete Einreichung wird
-  wiederverwendet** statt eine zweite anzulegen.
+**Was auf dem Weg dorthin trotzdem echte Fehler waren** und behoben ist:
+
+- **`sort=-submittedDate` war ein stiller Filter.** Eine Einreichung, die noch
+  nicht abgeschickt ist, hat kein Absendedatum — genau die also, nach denen
+  gesucht wurde. Sie blieb unsichtbar, und das Skript legte eine zweite an.
+  Gefragt wird jetzt ohne Sortierung, und eine vorbereitete Einreichung wird
+  wiederverwendet.
 - `READY_FOR_REVIEW` ist aus der Liste „ist schon unterwegs" heraus. Es heißt
   „angelegt und bereit zum Abschicken", nicht „bei der Prüfung" — es hätte
   jede zweite Einreichung verhindert.
