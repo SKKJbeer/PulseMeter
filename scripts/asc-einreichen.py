@@ -241,11 +241,24 @@ def einreichen(apple: Apple, app_id: str, fassung) -> int:
         neu_angelegt = True
         print(f"  ✓ Einreichung angelegt ({einreichung[:8]})")
 
+    # **„Hat Einträge" heißt nicht „hat die Fassung".** Genau das hat der
+    # vorige Lauf geschlossen und ist damit abgestürzt: Die gefundene
+    # Einreichung führte fünf Einträge — die fünf Käufe — und keine Fassung.
+    # Apple sagte es dann deutlich:
+    #
+    #     must have an approved appStoreVersions for platform IOS, or an
+    #     appStoreVersions must be included in this review submission
+    #
+    # Gezählt wird also nicht, sondern nachgesehen, **was** darin liegt.
     stand, teile = apple.holen(f"v1/reviewSubmissions/{einreichung}/items",
-                               **{"limit": 10})
-    schon_drin = len(teile.json().get("data", [])) if stand == 200 else 0
-    if schon_drin:
-        print(f"  ✓ Die Einreichung führt bereits {schon_drin} Eintrag/Einträge")
+                               **{"limit": 50})
+    eintraege = teile.json().get("data", []) if stand == 200 else []
+    mit_fassung = [e for e in eintraege
+                   if (e.get("relationships", {}).get("appStoreVersion", {})
+                        .get("data"))]
+    print(f"  · Die Einreichung führt {len(eintraege)} Eintrag/Einträge, "
+          f"davon {len(mit_fassung)} mit Fassung")
+    if mit_fassung:
         return absenden(apple, einreichung)
 
     stand, antwort = apple.anlegen("v1/reviewSubmissionItems", {"data": {
