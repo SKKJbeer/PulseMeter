@@ -1,0 +1,77 @@
+name: Live schalten
+
+# **Der letzte Handgriff, der sonst liegenbleibt.**
+#
+# Auf der Website steht „Bald im App Store". Sobald Apple freigibt, ist das
+# falsch — und zwar in die unangenehme Richtung: Die App ist da, und die eigene
+# Seite sagt, sie sei es nicht. Umgekehrt wäre es schlimmer, den Verweis vorher
+# zu setzen; er führte auf eine Fehlseite, und genau das verbietet sich dieses
+# Projekt (`docs/09-appstore.md`).
+#
+# Es gibt also ein Zeitfenster von Stunden, in dem jemand einen Befehl tippen
+# müsste. Am Starttag ist die Liste lang, und dieser Punkt steht ganz unten.
+# Also fragt dieser Ablauf stündlich nach und legt den Knopf selbst um.
+#
+# **Er schaltet nur in eine Richtung.** Zurück geht es von Hand
+# (`scripts/appstore-knopf.sh aus`) — ein Ablauf, der von selbst wieder
+# abschaltet, wäre bei einem kurzen Aussetzer der Schnittstelle eine Website,
+# die den Laden verleugnet.
+
+on:
+  schedule:
+    - cron: "23 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  nachsehen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Abhängigkeiten
+        run: pip3 install --quiet "pyjwt[crypto]" requests
+
+      - name: Steht die App im Laden?
+        id: laden
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: python3 scripts/asc-laden.py
+
+      - name: Knopf umlegen und veröffentlichen
+        if: steps.laden.outputs.live == 'ja'
+        run: |
+          if [ "$(scripts/appstore-knopf.sh | head -1)" = "App-Store-Abzeichen: an" ]; then
+            echo "::notice::Der Knopf steht schon auf an. Nichts zu tun."
+            exit 0
+          fi
+          scripts/appstore-knopf.sh an
+          git config user.name  "Zaehlora"
+          git config user.email "noreply@zaehlora.app"
+          git add docs/website/index.html
+          git commit -m "The App Store badge now points at the store" \
+                     -m "Flipped automatically the hour the store state turned READY_FOR_SALE. The badge is no longer a promise but a link."
+          git push
+          echo "::notice::Knopf umgelegt und gepusht. Der Website-Lauf folgt."
+
+      # Der Push allein ändert die Seite im Netz nicht — die Website wird
+      # veröffentlicht, nicht aus dem Zweig gelesen.
+      - name: Website veröffentlichen
+        if: steps.laden.outputs.live == 'ja'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'website.yml',
+              ref: 'main',
+            });
+            core.notice('Website-Lauf angestoßen.');

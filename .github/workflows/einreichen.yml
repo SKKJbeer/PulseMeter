@@ -1,0 +1,57 @@
+name: Einreichen
+
+# **Der einzige Ablauf dieses Projekts, der nach außen wirkt.**
+#
+# Alles andere lässt sich wiederholen, verwerfen oder überschreiben. Eine
+# Einreichung sieht ein Mensch bei Apple. Sie ist zwar umkehrbar — solange die
+# Prüfung nicht durch ist —, aber sie ist nichts, was aus Versehen passieren
+# darf.
+#
+# Deshalb zwei Schlösser: Der Ablauf läuft nur auf Zuruf, und er verlangt, dass
+# das Wort `einreichen` eingetippt wird. Ein falsch getroffener Knopf reicht
+# nicht.
+
+on:
+  workflow_dispatch:
+    inputs:
+      bestaetigung:
+        description: "Zum Einreichen das Wort einreichen eintippen"
+        type: string
+        required: false
+        default: ""
+      zurueckziehen:
+        description: "Stattdessen eine laufende Einreichung zurückziehen"
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  einreichen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Abhängigkeiten
+        run: pip3 install --quiet "pyjwt[crypto]" requests pyflakes
+
+      - name: Unbekannte Namen
+        run: python3 scripts/check-namen.py
+
+      - name: Einreichen oder nachsehen
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          if [ "${{ inputs.zurueckziehen }}" = "true" ]; then
+            python3 scripts/asc-einreichen.py --zurueckziehen
+          elif [ "${{ inputs.bestaetigung }}" = "einreichen" ]; then
+            python3 scripts/asc-einreichen.py --einreichen
+          else
+            echo "::notice::Ohne das Wort „einreichen\" wird nur nachgesehen."
+            python3 scripts/asc-einreichen.py
+          fi

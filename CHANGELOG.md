@@ -9,6 +9,53 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.102.0 — 2026-08-29
+
+**Einreichen und Livegehen laufen jetzt über Abläufe, nicht über Klicks.** Vom
+Gründer angeordnet: „reiche alles ein und mache alles bereit."
+
+### Einreichen
+`scripts/asc-einreichen.py` hängt drei Dinge hintereinander, die in der
+Oberfläche unsichtbar sind: den Bau an die Fassung, einen Eintrag an die
+Einreichung, und erst ein zweiter Aufruf schickt sie los. Wer das klickt, sieht
+einen Knopf und merkt nicht, wenn der erste Schritt fehlt — **der Bau an der
+Fassung ist genau der, den man vergisst**, und die Meldung erwähnt ihn dann
+nicht.
+
+- **Zwei Schlösser.** Der Ablauf läuft nur auf Zuruf und verlangt, dass das
+  Wort `einreichen` eingetippt wird. Es ist der einzige Schritt in diesem
+  Projekt, den ein Fehlgriff nach außen trägt.
+- **Umkehrbar, solange die Prüfung nicht durch ist.** `--zurueckziehen` nimmt
+  sie zurück, danach lässt sich alles ändern.
+- Läuft schon eine Einreichung, meldet das Skript das und tut nichts. Zweimal
+  einreichen zu wollen ist der häufigste Fall, wenn jemand unsicher ist.
+
+### Livegehen
+Auf der Website steht „Bald im App Store". Sobald Apple freigibt, ist das
+falsch — und zwar in die unangenehme Richtung: Die App ist da, und die eigene
+Seite verleugnet sie. Den Verweis vorher zu setzen wäre schlimmer; er führte auf
+eine Fehlseite.
+
+Dazwischen liegen Stunden, in denen jemand einen Befehl tippen müsste. Am
+Starttag steht dieser Punkt ganz unten auf der Liste. `live-schalten.yml` fragt
+deshalb stündlich nach, legt den Knopf um, committet und stößt die
+Veröffentlichung an.
+
+- **Nur in eine Richtung.** Zurück geht es von Hand. Ein Ablauf, der von selbst
+  wieder abschaltet, wäre bei einem kurzen Aussetzer der Schnittstelle eine
+  Website, die den Laden verleugnet.
+- **Ein Fehlschlag ist kein „nein".** Antwortet Apple nicht, bleibt der Knopf
+  wie er ist — statt aus einer nicht erreichbaren Schnittstelle die Aussage „ist
+  nicht im Laden" zu machen. Dieselbe Verwechslung hat heute schon einmal
+  „verkäuflich in 0 Ländern" gemeldet.
+- **`PENDING_DEVELOPER_RELEASE` zählt nicht als im Laden.** Apple hat dann
+  freigegeben und wartet auf einen Knopfdruck; die App ist noch nicht drin.
+- Gefragt wird nach **irgendeiner** Fassung im Verkaufszustand, nicht nach der
+  neuesten. Sonst schlüge der Knopf bei der zweiten Fassung um, während die noch
+  geprüft wird.
+
+---
+
 ## 0.101.3 — 2026-08-29
 
 **Die Datenschutz-Datei im gebauten Paket war eine Annahme.** In
