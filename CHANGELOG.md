@@ -9,6 +9,32 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.98.3 — 2026-08-29
+
+**Der Kontakt für die Prüfung kommt aus dem Impressum.** Vom Gründer als Quelle
+benannt: „kontakt kennst du von meinem impressum der homepage". Damit sind Name
+und E-Mail bestätigte Angaben und keine Annahme mehr.
+
+### Geändert
+- `--fuellen` trägt **Steffen Karjoth** und die Adresse aus dem Impressum bei
+  Apple ein. Gelesen wird der `<address>`-Block, nicht abgetippt: Zweimal
+  hingeschrieben laufen beide auseinander, und im Impressum steht die Fassung,
+  die rechtlich gilt.
+- **Eine Zeile je Feld statt einer für alles.** Solange „Kontakt — Name,
+  Telefon, E-Mail" ein einziger Punkt war, verdeckte die fehlende
+  Telefonnummer, dass zwei der drei Angaben längst dastanden. Wer die Zeile
+  las, hielt drei Dinge für offen statt eines.
+- `check-strings.py` prüft den `<address>`-Block mit. Der Leser gibt bei jeder
+  Abweichung leere Felder zurück — dieselbe stille Falle wie bei den
+  Store-Texten einen Commit zuvor, und diesmal vorher zugehalten.
+
+### Bleibt offen
+Die **Telefonnummer** steht nicht im Impressum, und § 5 DDG verlangt sie dort
+auch nicht. Sie wird nicht erfunden. Apple will sie beim Einreichen; sie ist
+damit der einzige verbliebene Punkt am Store-Eintrag.
+
+---
+
 ## 0.98.2 — 2026-08-29
 
 **Die Hinweise an die Prüfung standen nur im Dokument.** Der Lauf trug sie

@@ -189,6 +189,27 @@ if einreichung.exists() and appstore.exists():
             problems.append(f"{appstore}: unter {ueberschrift!r} steht kein "
                             f"Codeblock — es gibt nichts einzutragen")
 
+# Derselbe Fallstrick eine Ebene weiter: `kontakt_aus_impressum()` liest Name
+# und E-Mail aus `impressum.html` und gibt bei jeder Abweichung leere Felder
+# zurueck. Wer die Anschrift umbaut, merkt davon nichts — Apple bekaeme dann
+# stillschweigend keinen Kontakt mehr.
+impressum = pathlib.Path("docs/website/impressum.html")
+if einreichung.exists() and impressum.exists():
+    roh = impressum.read_text(encoding="utf-8")
+    block = re.search(r'<address class="anschrift">(.*?)</address>', roh, re.S)
+    if block is None:
+        problems.append(f"{impressum}: kein <address class=\"anschrift\">-Block — "
+                        f"asc-einreichung.py traegt dann keinen Kontakt ein")
+    else:
+        zeilen = [re.sub(r"<[^>]+>", "", z).strip()
+                  for z in block.group(1).split("<br>")]
+        name = next((z for z in zeilen if z), "")
+        if " " not in name:
+            problems.append(f"{impressum}: erste Zeile der Anschrift ist kein "
+                            f"Vor- und Nachname ({name!r})")
+        if not re.search(r"mailto:[^\"']+", block.group(1)):
+            problems.append(f"{impressum}: keine mailto-Adresse in der Anschrift")
+
 if problems:
     print("\n".join(problems))
     print(f"\n{len(problems)} Fund(e).")

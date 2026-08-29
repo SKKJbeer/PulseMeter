@@ -623,6 +623,21 @@ dann keinen Fehler zurück, sondern **einen leeren Text**. Ein Sucher, der bei
 Misserfolg etwas Harmloses liefert statt zu lärmen, verschiebt den Fehler
 dorthin, wo ihn niemand mehr mit ihm in Verbindung bringt.
 
+### Ein Punkt auf der Liste, der drei Dinge zusammenfasst, lügt über zwei davon
+
+„Kontakt für die Prüfung — Name, Telefon, E-Mail" stand als **ein** offener
+Punkt. Zwei der drei Angaben waren längst bekannt und standen im Impressum; nur
+die Telefonnummer fehlte. Die Zeile war formal richtig und in der Wirkung
+falsch: Wer sie las, hielt den ganzen Block für ungeklärt und fragte nach
+allem, statt nach dem einen.
+
+> Ein Punkt, der mehrere Felder bündelt, ist erst dann erledigt, wenn das
+> letzte davon steht — und meldet bis dahin die anderen als offen mit. Ein Feld,
+> ein Punkt.
+
+Das gilt besonders für die Grenze zwischen „hole ich selbst" und „braucht einen
+Menschen": Sie verläuft fast nie an einer Gruppe, sondern mitten hindurch.
+
 ### Ein unbekannter Name ist nicht immer ein Fehler — manchmal nur ein Rückfall
 
 `var(--bg)` stand im Stil eines Knopfes, und die Datei kannte nur `--ground`,

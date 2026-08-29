@@ -419,34 +419,67 @@ def fassung_fuellen(apple: Apple, app_id: str) -> None:
 # leere App startet und nicht weiß, wo Daten herkommen, bewertet eine leere
 # App; genau davor warnt der Absatz unter dem Text seit Wochen.
 #
-# Nicht eingetragen werden Name, Telefon und E-Mail. Das sind Angaben über den
-# Gründer, und die werden nicht erfunden (CLAUDE.md).
+# Name und E-Mail kommen aus dem Impressum — vom Gründer selbst als Quelle
+# benannt: „kontakt kennst du von meinem impressum der homepage". Sie werden
+# von dort gelesen und nicht abgetippt: Ein zweites Mal hingeschrieben, laufen
+# beide auseinander, und im Impressum steht die Fassung, die rechtlich gilt.
+# **Die Telefonnummer steht dort nicht.** Sie wird deshalb auch nicht gesetzt.
+def kontakt_aus_impressum() -> tuple[str, str, str]:
+    pfad = os.path.join(os.path.dirname(__file__), "..", "docs", "website",
+                        "impressum.html")
+    try:
+        with open(pfad, encoding="utf-8") as datei:
+            inhalt = datei.read()
+    except OSError:
+        return "", "", ""
+
+    block = re.search(r'<address class="anschrift">(.*?)</address>', inhalt, re.S)
+    if block is None:
+        return "", "", ""
+
+    zeilen = [re.sub(r"<[^>]+>", "", z).strip()
+              for z in block.group(1).split("<br>")]
+    name = next((z for z in zeilen if z), "")
+    post = re.search(r"mailto:([^\"']+)", block.group(1))
+    if " " not in name or post is None:
+        return "", "", ""
+    vorname, _, nachname = name.rpartition(" ")
+    return vorname, nachname, post.group(1)
+
+
 def pruefung_fuellen(apple: Apple, fassung_id: str) -> None:
     text = store_text("Hinweise für die Prüfung")
     if not text:
         offen.append("Hinweise für die Prüfung: kein Text in docs/09-appstore.md")
         return
 
+    vorname, nachname, post = kontakt_aus_impressum()
+    if not post:
+        offen.append("Kontakt: aus dem Impressum ließ sich nichts lesen")
+    werte = {"notes": text, "demoAccountRequired": False,
+             "contactFirstName": vorname, "contactLastName": nachname,
+             "contactEmail": post}
+
     stand, pruefung = erste(apple,
                             f"v1/appStoreVersions/{fassung_id}/appStoreReviewDetail")
     if pruefung is None:
         stand, antwort = apple.anlegen("v1/appStoreReviewDetails", {"data": {
             "type": "appStoreReviewDetails",
-            "attributes": {"notes": text, "demoAccountRequired": False},
+            "attributes": {k: v for k, v in werte.items() if v != ""},
             "relationships": {"appStoreVersion": {
                 "data": {"type": "appStoreVersions", "id": fassung_id}}},
         }})
         if stand in (200, 201):
-            getan.append(f"Hinweise für die Prüfung angelegt ({len(text)} Zeichen)")
+            getan.append(f"Angaben zur Prüfung angelegt ({len(text)} Zeichen "
+                         f"Hinweise, Kontakt {vorname} {nachname})")
         else:
-            offen.append(f"Hinweise für die Prüfung: ging nicht ({stand}) "
+            offen.append(f"Angaben zur Prüfung: ging nicht ({stand}) "
                          f"— {kurz(antwort)}")
         return
 
     setzen(apple, "v1/appStoreReviewDetails", "appStoreReviewDetails",
-           pruefung["id"],
-           {"notes": text, "demoAccountRequired": False},
-           f"Hinweise für die Prüfung ({len(text)} Zeichen)")
+           pruefung["id"], werte,
+           f"Hinweise ({len(text)} Zeichen) und Kontakt {vorname} {nachname}")
 
 
 def app_finden(apple: Apple):
@@ -568,9 +601,21 @@ def fassung_pruefen(apple: Apple, app_id: str) -> None:
            f"Hinweise für die Prüfung ({len(hinweise)} Zeichen)"
            if hinweise else "Hinweise für die Prüfung fehlen")
 
-    hat_kontakt = bool(feld(pruefung, "contactEmail"))
-    pruefe(hat_kontakt,
-           "Kontakt für die Prüfung — Name, Telefon, E-Mail des Gründers",
+    # **Ein Punkt je Feld.** Solange „Kontakt" einer war, verdeckte die fehlende
+    # Telefonnummer, dass Name und E-Mail längst dastanden — und wer die Zeile
+    # las, hielt drei Angaben für offen statt einer.
+    wer = " ".join(x for x in (feld(pruefung, "contactFirstName"),
+                               feld(pruefung, "contactLastName")) if x)
+    post = feld(pruefung, "contactEmail") or ""
+    pruefe(bool(wer and post),
+           f"Kontakt für die Prüfung: {wer}, {post}" if wer and post
+           else "Kontakt für die Prüfung: Name oder E-Mail fehlt")
+
+    fon = feld(pruefung, "contactPhone") or ""
+    pruefe(bool(fon.strip()),
+           f"Telefonnummer für die Prüfung: {fon}" if fon
+           else "Telefonnummer für die Prüfung — steht nicht im Impressum "
+                "und wird nicht erfunden",
            gehoert_ihm)
 
 

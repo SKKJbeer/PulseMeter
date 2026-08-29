@@ -366,9 +366,12 @@ Skript und läuft überall, wo der Schlüssel liegt.
 - [x] **Datenschutzerklärung und Support-Seite stehen im Netz.** Beide URLs
       zeigen auf `pulsemeter.pages.dev`, der Platzhalter in `datenschutz.html`
       ist raus, und beide Felder sind bei Apple eingetragen.
-- [ ] **Kontakt für die Prüfung** — Name, Telefon, E-Mail. Das sind Angaben
-      über den Gründer und werden nicht erfunden (CLAUDE.md, „Keine Annahmen in
-      Texten, die jemand anderes liest").
+- [x] **Name und E-Mail für die Prüfung** stehen bei Apple. Der Gründer hat das
+      Impressum als Quelle benannt; von dort werden sie gelesen, nicht
+      abgetippt.
+- [ ] **Telefonnummer für die Prüfung.** Im Impressum steht keine, und § 5 DDG
+      verlangt sie dort auch nicht. Erfunden wird sie nicht (CLAUDE.md, „Keine
+      Annahmen in Texten, die jemand anderes liest").
 - [ ] **Zwei Wochen echte Eigennutzung** — der Punkt, der bisher am meisten
       gefunden hat, und eine Entscheidung, kein Arbeitsschritt.
 - [ ] **800 ms Kaltstart** auf einem Gerät messen. Im Simulator sagt die Zahl
