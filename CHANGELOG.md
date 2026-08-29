@@ -9,6 +9,49 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.102.1 bis 0.102.3 — 2026-08-29
+
+**Der erste Einreichungsversuch scheiterte, und die Meldung zeigte auf die
+falsche Sache.**
+
+```
+appStoreVersions with id '…' is not in valid state.
+This resource cannot be reviewed, please check associated errors to see why.
+```
+
+Apple sprach von der Fassung. Der Grund stand eine Ebene daneben: Es gab bereits
+eine vorbereitete Einreichung, die Fassung hing schon darin, und in zweien darf
+sie nicht hängen.
+
+**Warum mein Skript sie nicht sah — der eigentliche Fehler.** Es fragte mit
+`sort=-submittedDate`. Eine Einreichung, die noch nicht abgeschickt ist, **hat
+kein Absendedatum**; genau die also, nach denen gesucht wurde. Ein `sort` ist
+ein stiller Filter.
+
+### Behoben
+- Ohne Sortierung gefragt, und eine **vorbereitete Einreichung wird
+  wiederverwendet** statt eine zweite anzulegen.
+- `READY_FOR_REVIEW` ist aus der Liste „ist schon unterwegs" heraus. Es heißt
+  „angelegt und bereit zum Abschicken", nicht „bei der Prüfung" — es hätte
+  jede zweite Einreichung verhindert.
+- **Ein Fehlschlag räumt seine Leiche weg.** Die angelegte Einreichung blieb
+  leer stehen und sah für jeden späteren Lauf aus wie eine laufende. Zwei
+  standen schon da; `--aufraeumen` entfernt Einreichungen ohne Einträge.
+
+### Neu: `scripts/asc-warum.py`
+Apple sagt „sieh dir die zugehörigen Fehler an" und nennt keinen. Über die
+Schnittstelle gibt es keine Liste davon. Das Skript fragt deshalb ab, was sich
+abfragen lässt, und gibt es roh aus — App, Eintrag, Fassung, Bau, Prüfangaben,
+Datenschutz-Fragebogen, laufende Einreichungen. Genau dieser Ausdruck hat die
+zweite Einreichung sichtbar gemacht.
+
+**Ein 404 ist dort die Auskunft, kein Fehler.** Der Name des
+Datenschutz-Fragebogens war dreimal geraten und dreimal falsch; Apple antwortet
+darauf mit „The relationship does not exist", und das ist eine Aussage über die
+Anfrage, nicht über die App.
+
+---
+
 ## 0.102.0 — 2026-08-29
 
 **Einreichen und Livegehen laufen jetzt über Abläufe, nicht über Klicks.** Vom

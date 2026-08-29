@@ -694,6 +694,34 @@ Die Liste „dauerhaft kostenlos" und die Liste der Käufe standen einen Commit
 lang beide richtig da und widersprachen einander. Dagegen hilft nur eine
 Prüfung, die beide Listen gegeneinander hält.
 
+### Nie nach einem Feld sortieren, das bei den Gesuchten leer ist
+
+Ein Einreichungsskript fragte Apple nach vorhandenen Einreichungen — mit
+`sort=-submittedDate`. Eine Einreichung, die noch **nicht abgeschickt** ist, hat
+kein Absendedatum; genau die also, nach denen gesucht wurde. Apple lieferte sie
+nicht aus, das Skript hielt die Bahn für frei, legte eine zweite an, und der
+Fehlschlag kam mit einer Meldung über die **Fassung**:
+
+    appStoreVersions with id '…' is not in valid state.
+
+Der Grund stand eine Ebene daneben: Die Fassung hing schon in der ersten
+Einreichung, und in zweien darf sie nicht hängen.
+
+> Ein `sort` ist ein stiller Filter. Vor jedem Sortierfeld die Frage: Ist es
+> bei dem Datensatz gefüllt, den ich finden **will** — oder gerade bei dem
+> nicht?
+
+Dieselbe Runde brachte noch zwei Verwandte davon zutage:
+
+- **Ein Zustandsname, der etwas anderes heißt, als er klingt.**
+  `READY_FOR_REVIEW` bedeutet „angelegt und bereit zum Abschicken", nicht „bei
+  der Prüfung". Er stand in der Liste der Zustände, bei denen das Skript nichts
+  tut — und hätte damit jede zweite Einreichung verhindert.
+- **Ein Fehlschlag, der eine Leiche hinterlässt.** Die angelegte Einreichung
+  blieb leer stehen und sah für jeden späteren Lauf aus wie eine laufende. Wer
+  in einem fremden System etwas anlegt und danach scheitert, räumt es weg —
+  sonst wird die Sperre gegen ein Versehen selbst zur Sperre.
+
 ### Ein unbekannter Name ist nicht immer ein Fehler — manchmal nur ein Rückfall
 
 `var(--bg)` stand im Stil eines Knopfes, und die Datei kannte nur `--ground`,

@@ -30,8 +30,11 @@ BUNDLE = "de.karjoth.pulsemeter"
 # Die Zustände, in denen eine Einreichung schon unterwegs ist. Eine zweite
 # anzulegen, während eine läuft, lehnt Apple ab — und zwar mit einer Meldung,
 # die nach einem Fehler klingt statt nach „steht schon".
-UNTERWEGS = {"READY_FOR_REVIEW", "WAITING_FOR_REVIEW", "IN_REVIEW",
-             "UNRESOLVED_ISSUES"}
+# **`READY_FOR_REVIEW` gehört nicht dazu**, und das war die zweite Hälfte des
+# Fehlers. Es heißt „angelegt und bereit zum Abschicken", nicht „bei der
+# Prüfung". Wer es hier einträgt, meldet bei jedem zweiten Lauf „steht schon
+# bei der Prüfung" — und schickt nie etwas ab.
+UNTERWEGS = {"WAITING_FOR_REVIEW", "IN_REVIEW", "UNRESOLVED_ISSUES"}
 
 
 def token() -> str:
@@ -146,14 +149,42 @@ def bau_anhaengen(apple: Apple, app_id: str, fassung_id: str) -> bool:
     return False
 
 
-def laufende(apple: Apple, app_id: str):
-    """Die Einreichung, die gerade unterwegs ist — oder None."""
+def alle(apple: Apple, app_id: str) -> list:
+    """Alle Einreichungen der App.
+
+    **Ohne `sort`, und das ist der Kern eines teuren Fehlers.** Hier stand
+    `sort=-submittedDate`. Eine Einreichung, die noch nicht abgeschickt wurde,
+    **hat kein Absendedatum** — genau die also, nach denen hier gesucht wird.
+    Apple lieferte sie damit nicht aus, das Skript hielt die Bahn für frei,
+    legte eine zweite an, und Apple lehnte den Eintrag ab, weil die Fassung
+    schon in der ersten hing. Die Meldung sprach dann von der Fassung und nicht
+    von der Einreichung — der Grund stand eine Ebene daneben.
+
+    > Nie nach einem Feld sortieren, das bei den gesuchten Datensätzen leer
+    > ist. Der Filter versteckt dann genau das, wonach gesucht wird.
+    """
     stand, antwort = apple.holen("v1/reviewSubmissions", **{
-        "filter[app]": app_id, "limit": 20, "sort": "-submittedDate"})
-    if stand != 200:
-        return None
-    for eintrag in antwort.json().get("data", []):
+        "filter[app]": app_id, "limit": 50})
+    return antwort.json().get("data", []) if stand == 200 else []
+
+
+def laufende(apple: Apple, app_id: str):
+    """Eine Einreichung, die schon abgeschickt ist — oder None."""
+    for eintrag in alle(apple, app_id):
         if feld(eintrag, "state") in UNTERWEGS:
+            return eintrag
+    return None
+
+
+def vorbereitete(apple: Apple, app_id: str):
+    """Eine angelegte, aber noch nicht abgeschickte Einreichung — oder None.
+
+    `READY_FOR_REVIEW` heißt **nicht** „bei der Prüfung", sondern „bereit zum
+    Abschicken". Eine solche wiederzuverwenden ist der richtige Weg: Die
+    Fassung darf nur in einer Einreichung hängen.
+    """
+    for eintrag in alle(apple, app_id):
+        if feld(eintrag, "state") == "READY_FOR_REVIEW":
             return eintrag
     return None
 
@@ -174,17 +205,34 @@ def einreichen(apple: Apple, app_id: str, fassung) -> int:
         print("::error::Ohne Bau an der Fassung wird nicht eingereicht.")
         return 1
 
-    stand, antwort = apple.anlegen("v1/reviewSubmissions", {"data": {
-        "type": "reviewSubmissions",
-        "attributes": {"platform": "IOS"},
-        "relationships": {"app": {"data": {"type": "apps", "id": app_id}}},
-    }})
-    if stand not in (200, 201):
-        print(f"::error::Die Einreichung ließ sich nicht anlegen ({stand}) "
-              f"— {kurz(antwort)}")
-        return 1
-    einreichung = antwort.json()["data"]["id"]
-    print(f"  ✓ Einreichung angelegt ({einreichung})")
+    # **Eine vorbereitete wiederverwenden statt eine zweite anzulegen.** Die
+    # Fassung darf nur in einer Einreichung hängen; eine zweite anzulegen
+    # führte genau zu dem 409, der nach einem Problem mit der Fassung aussah.
+    vorbereitet = vorbereitete(apple, app_id)
+    if vorbereitet is not None:
+        einreichung = vorbereitet["id"]
+        neu_angelegt = False
+        print(f"  ✓ Vorbereitete Einreichung gefunden ({einreichung[:8]})")
+    else:
+        stand, antwort = apple.anlegen("v1/reviewSubmissions", {"data": {
+            "type": "reviewSubmissions",
+            "attributes": {"platform": "IOS"},
+            "relationships": {"app": {"data": {"type": "apps", "id": app_id}}},
+        }})
+        if stand not in (200, 201):
+            print(f"::error::Die Einreichung ließ sich nicht anlegen ({stand}) "
+                  f"— {kurz(antwort)}")
+            return 1
+        einreichung = antwort.json()["data"]["id"]
+        neu_angelegt = True
+        print(f"  ✓ Einreichung angelegt ({einreichung[:8]})")
+
+    stand, teile = apple.holen(f"v1/reviewSubmissions/{einreichung}/items",
+                               **{"limit": 10})
+    schon_drin = len(teile.json().get("data", [])) if stand == 200 else 0
+    if schon_drin:
+        print(f"  ✓ Die Einreichung führt bereits {schon_drin} Eintrag/Einträge")
+        return absenden(apple, einreichung)
 
     stand, antwort = apple.anlegen("v1/reviewSubmissionItems", {"data": {
         "type": "reviewSubmissionItems",
@@ -203,13 +251,16 @@ def einreichen(apple: Apple, app_id: str, fassung) -> int:
         # nächste Lauf fände sie, meldete „steht schon bei der Prüfung" und
         # täte nichts — eine Einreichung, die nie eine war, sähe für immer wie
         # eine aus. Erster Anlauf am 29. August hat genau das hinterlassen.
-        weg = apple.loeschen(f"v1/reviewSubmissions/{einreichung}")
-        print(f"  · leere Einreichung wieder entfernt (Antwort {weg})")
+        if neu_angelegt:
+            weg = apple.loeschen(f"v1/reviewSubmissions/{einreichung}")
+            print(f"  · leere Einreichung wieder entfernt (Antwort {weg})")
         return 1
     print("  ✓ Fassung 1.0 der Einreichung hinzugefügt")
+    return absenden(apple, einreichung)
 
-    # **Erst dieser Aufruf schickt sie los.** Bis hierher liegt alles nur
-    # bereit — ein Abbruch davor kostet nichts.
+
+def absenden(apple: Apple, einreichung: str) -> int:
+    """Erst dieser Aufruf schickt los. Bis hierher liegt alles nur bereit."""
     stand, antwort = apple.aendern(f"v1/reviewSubmissions/{einreichung}", {
         "data": {"type": "reviewSubmissions", "id": einreichung,
                  "attributes": {"submitted": True}}})
