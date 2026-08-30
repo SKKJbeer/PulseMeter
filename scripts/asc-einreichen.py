@@ -110,23 +110,43 @@ def fassung_finden(apple: Apple, app_id: str):
     return daten[0]
 
 
+def baunummer(bau) -> int:
+    """Die Buildnummer als Zahl, oder -1.
+
+    **Nicht Apples `sort=-version` benutzen, und das ist keine Vorsicht,
+    sondern Rechnen.** `version` ist eine Zeichenkette. Sortiert eine
+    Gegenstelle sie als solche, steht „9" über „25" — und der Ablauf hängt
+    beim fünfundzwanzigsten Bau den neunten an die Fassung. Ob Apple hier
+    numerisch sortiert, ist nicht zugesichert; nachgerechnet wird es hier, wo
+    es sich prüfen lässt.
+
+    Dieselbe Regel wie beim Sortierfehler in ``alle()`` weiter unten: Eine
+    Sortierung, die man nicht selbst nachvollzogen hat, ist eine Annahme.
+    """
+    roh = (feld(bau, "version") or "").strip()
+    return int(roh) if roh.isdigit() else -1
+
+
 def bau_anhaengen(apple: Apple, app_id: str, fassung_id: str) -> bool:
-    """Der Bau muss an der Fassung hängen, sonst gibt es nichts zu prüfen.
+    """Der **neueste taugliche** Bau muss an der Fassung hängen.
 
     **Das ist der Schritt, den man in der Oberfläche vergisst.** Dort steht der
     Bau in einer Liste daneben, und ohne Auswahl bleibt die Fassung leer — die
     Einreichung scheitert dann an einer Meldung, die den Bau nicht erwähnt.
-    """
-    stand, antwort = apple.holen(f"v1/appStoreVersions/{fassung_id}/build")
-    if stand == 200 and (antwort.json().get("data") or None):
-        vorhanden = antwort.json()["data"]
-        stand, b = apple.holen(f"v1/builds/{vorhanden['id']}")
-        nummer = feld(b.json().get("data") if stand == 200 else None, "version")
-        print(f"  ✓ Bau {nummer or vorhanden['id']} hängt schon an der Fassung")
-        return True
 
+    **Und hier stand bis 0.105.1 „hängt schon an der Fassung" und fertig.**
+    Das ist die Fehlerklasse „vorhanden ist nicht richtig" in ihrer teuersten
+    Ausprägung: Am 30. August hing Bau 24 an der Fassung, während Bau 25 längst
+    in TestFlight stand. Bau 24 verschenkte drei von fünf Käufen über den
+    Beispieldaten-Knopf und hatte kein Sperrbildschirm-Widget — das die
+    Store-Beschreibung inzwischen bewirbt. Wäre Apple in dieser Stunde
+    durchgegangen, hätte der Laden den falschen Bau bekommen, und niemand hätte
+    es an einer roten Zeile gesehen.
+
+    Ein angehängter Bau wird deshalb **verglichen**, nicht bestätigt.
+    """
     stand, antwort = apple.holen("v1/builds", **{
-        "filter[app]": app_id, "limit": 20, "sort": "-version"})
+        "filter[app]": app_id, "limit": 50})
     if stand != 200:
         print(f"  ✗ Die Bauten sind nicht lesbar ({stand}) — {kurz(antwort)}")
         return False
@@ -136,8 +156,19 @@ def bau_anhaengen(apple: Apple, app_id: str, fassung_id: str) -> bool:
     if not tauglich:
         print("  ✗ Kein Bau im Zustand VALID — die Verarbeitung läuft noch.")
         return False
+    bau = max(tauglich, key=baunummer)
 
-    bau = tauglich[0]
+    stand, antwort = apple.holen(f"v1/appStoreVersions/{fassung_id}/build")
+    vorhanden = antwort.json().get("data") if stand == 200 else None
+    if vorhanden:
+        if vorhanden["id"] == bau["id"]:
+            print(f"  ✓ Bau {feld(bau, 'version')} hängt schon an der Fassung")
+            return True
+        stand, b = apple.holen(f"v1/builds/{vorhanden['id']}")
+        alt = feld(b.json().get("data") if stand == 200 else None, "version")
+        print(f"  · An der Fassung hängt Bau {alt or vorhanden['id']}, "
+              f"neuer ist Bau {feld(bau, 'version')} — wird getauscht")
+
     stand, antwort = apple.aendern(
         f"v1/appStoreVersions/{fassung_id}/relationships/build",
         {"data": {"type": "builds", "id": bau["id"]}})

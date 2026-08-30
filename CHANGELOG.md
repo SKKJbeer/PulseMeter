@@ -9,6 +9,48 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.105.1 — 2026-08-30
+
+**An der Fassung 1.0 hing der falsche Bau, und niemand hätte es gesehen.**
+
+Aufgefallen an einer Zeile im Protokoll des Einreichungsversuchs, die wie eine
+Erfolgsmeldung aussieht:
+
+```
+✓ Bau 24 hängt schon an der Fassung
+```
+
+Bau 24 ist der Stand **vor** den Korrekturen von gestern. Er verschenkt über
+den Knopf „Beispieldaten anlegen" drei von fünf Käufen und hat kein
+Sperrbildschirm-Widget — das die Store-Beschreibung inzwischen bewirbt. Bau 25
+steht seit gestern Abend als VALID in TestFlight.
+
+Wäre die Prüfung bei Apple in dieser Zeit durchgegangen, hätte der Laden Bau 24
+bekommen: mit dem Loch in der Monetarisierung und mit einer Beschreibung, die
+etwas verspricht, das dieser Bau nicht kann.
+
+### Behoben
+
+- `bau_anhaengen()` bestätigte einen vorhandenen Bau, statt ihn zu
+  **vergleichen**. Jetzt wird immer der neueste taugliche ermittelt und
+  getauscht, wenn ein älterer hängt. Das ist „vorhanden ist nicht richtig" in
+  der teuersten Ausprägung: Nichts wird rot, die Zeile liest sich als Erfolg.
+- **Die Buildnummer wird gerechnet, nicht sortiert.** Die Abfrage lief mit
+  Apples `sort=-version`, und `version` ist eine Zeichenkette. Nachgerechnet:
+  absteigend sortiert ergibt `['9', '7', '25', '24']` — beim fünfundzwanzigsten
+  Bau hätte der neunte gewonnen. Die Auswahl geschieht jetzt lokal über den
+  Zahlenwert. Dieselbe Regel wie beim Sortierfehler in `alle()`: Eine
+  Sortierung, die man nicht selbst nachvollzogen hat, ist eine Annahme.
+
+_Gegengeprüft mit einer Liste aus 9, 24, 25 und 7: Die Zeichenkettensortierung
+wählt 9, die neue Auswahl 25. `check-namen.py` grün._
+
+_Am Zustand bei Apple ändert das nichts: Die Einreichung scheitert weiter an
+`appStoreVersions ... is not in valid state`, seit dem 29. August unverändert.
+Der nächste Versuch hängt aber Bau 25 an, statt Bau 24 zu bestätigen._
+
+---
+
 ## 0.105.0 — 2026-08-29
 
 **Der Baukasten beschrieb das Gerüst und keine einzige Prüfung.**
