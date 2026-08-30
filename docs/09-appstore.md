@@ -1,6 +1,6 @@
 # 09 – Material für den App Store
 
-Stand: 2026-08-29, Version 0.104.2
+Stand: 2026-08-30, Version 0.105.2
 
 Alles, was App Store Connect zur Einreichung verlangt, fertig zum Einfügen.
 Was hier steht, ist geprüft gegen das, was die App **heute** kann — nicht
@@ -422,6 +422,25 @@ Skript und läuft überall, wo der Schlüssel liegt.
       **Kein Skript kann das nachsehen.** Die Schnittstelle von Apple bietet
       dafür nichts an; „Einreichung nachsehen" wird diesen Punkt also nie
       melden, weder grün noch rot. Deshalb steht er hier und nicht dort.
+
+      **Eintragen ist nicht gelten — und das hat den Starttermin gekostet.**
+      Der Gründer hat die Angaben am 27. August gemacht. Am 30. August stand
+      unter `Agreements → Compliance` bei „Gesetz über digitale Dienste"
+      immer noch **In Prüfung**, während in derselben Tabelle Verträge,
+      Bankkonto, beide Steuerformulare und die DAC7-Richtlinie auf „Aktiv"
+      standen. Apple prüft den Händlerstatus, und wie lange, bestimmt Apple.
+
+      Solange dort „In Prüfung" steht, scheitert jede Einreichung an
+
+          appStoreVersions with id '…' is not in valid state.
+
+      — einer Meldung, die den Händlerstatus mit keinem Wort erwähnt. Die
+      Compliance-Zeile ist die **einzige** Stelle, an der die Sperre sichtbar
+      wird.
+
+      > Beim nächsten Vorhaben gehört dieser Punkt an den Anfang, Wochen vor
+      > dem geplanten Start. Er ist der einzige der ganzen Auslieferung, den
+      > man nicht durch Arbeit beschleunigen kann.
 - [ ] **Der Datenschutz-Fragebogen in App Store Connect.** Etwas anderes als
       die Datenschutz-URL, die längst gesetzt ist: Apple fragt in einem
       eigenen Formular ab, welche Daten die App erfasst. Für Zählora ist die

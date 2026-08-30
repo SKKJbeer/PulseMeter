@@ -791,9 +791,32 @@ lässt sich setzen und war bei uns seit Tagen gesetzt — sie hat mit dem
 Fragebogen nichts zu tun außer dem Namen. Wer „Datenschutz: steht" auf seiner
 Liste hat, hat womöglich nur die Hälfte.
 
-> Vor der ersten Einreichung eines neuen Vorhabens: beide Formulare **zuerst**
-> ausfüllen lassen, bevor irgendetwas automatisiert wird. Sie kosten fünf
-> Minuten und blockieren sonst am Ende einen Tag.
+**Und die beiden sind nicht gleich teuer.** Diese Zeile stand hier als „sie
+kosten fünf Minuten und blockieren sonst am Ende einen Tag". Das gilt für den
+Fragebogen. Für den Händlerstatus ist es falsch, und zwar gemessen:
+
+| | Ausfüllen | Bis es gilt |
+|---|---|---|
+| Datenschutz-Fragebogen | fünf Minuten | sofort |
+| Händlerstatus (DSA) | fünf Minuten | **Apple prüft. Bei uns über drei Tage** |
+
+Am 27. August eingetragen, am 30. August immer noch „In Prüfung" — während
+Bau, Store-Texte, Bilder, Käufe und Länder seit zwei Tagen vollständig
+dastanden. Der Starttermin des Gründers ist daran verstrichen, und es gab
+nichts zu beheben: Die Verzögerung liegt vollständig bei Apple.
+
+> **Der Händlerstatus wird als Erstes eingetragen, nicht als Letztes — und
+> zwar Wochen vor dem geplanten Start.** Er ist der einzige Punkt der ganzen
+> Auslieferung, den man nicht durch Arbeit beschleunigen kann. Alles andere
+> lässt sich an dem Tag noch bauen, an dem es auffällt; dieser eine nicht.
+
+Der Fragebogen bleibt der Fünf-Minuten-Fall — aber auch er **zuerst**, bevor
+irgendetwas automatisiert wird.
+
+Woran man in der Oberfläche erkennt, ob er es ist: Unter *Agreements →
+Compliance* steht je Verordnung eine Zeile mit Status. Steht dort bei „Gesetz
+über digitale Dienste" **In Prüfung** statt **Aktiviert**, ist das die Sperre —
+und es ist die einzige Stelle, an der sie sichtbar wird.
 
 Und die Meldung, an der es hängt, nennt keines von beidem:
 

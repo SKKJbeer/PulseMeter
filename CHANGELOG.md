@@ -9,6 +9,45 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.105.2 — 2026-08-30
+
+**Die Sperre hat einen Namen, und ein Bildschirmfoto hat ihn geliefert.**
+
+Der Gründer hat die Seite `Agreements → Compliance` geschickt. Genau ein
+Eintrag steht dort nicht auf aktiv:
+
+| | Stand |
+|---|---|
+| Verträge für kostenlose und gebührenpflichtige Apps | Aktiv |
+| Bankkonto | Aktiv |
+| Beide Steuerformulare | Aktiv |
+| DAC7-Richtlinie | Aktiviert am 29.08. |
+| **Gesetz über digitale Dienste, 27 Länder** | **In Prüfung seit 27.08.** |
+
+Damit ist die Vermutung aus 0.102.4 belegt genug, um danach zu handeln — der
+Gegenbeweis wäre erst die Einreichung nach der Freigabe.
+
+### Geändert
+
+- **`sie kosten fünf Minuten` war für einen der beiden Punkte falsch.** Der
+  Baukasten führte Datenschutz-Fragebogen und Händlerstatus als ein Paar mit
+  demselben Aufwand. Ausfüllen kostet bei beiden fünf Minuten; **gelten** tut
+  der Fragebogen sofort und der Händlerstatus erst, wenn Apple geprüft hat. Bei
+  uns über drei Tage, und der Starttermin ist daran verstrichen. Die Zeile ist
+  geändert, nicht ergänzt.
+- `docs/09-appstore.md` bekommt denselben Befund am Punkt selbst: was in der
+  Compliance-Tabelle zu sehen ist, welche Meldung dabei herauskommt, und dass
+  diese Meldung den Händlerstatus mit keinem Wort erwähnt.
+
+Die Lehre für das nächste Vorhaben steht jetzt an beiden Orten: Der
+Händlerstatus wird als **Erstes** eingetragen, Wochen vor dem geplanten Start.
+Er ist der einzige Punkt der ganzen Auslieferung, den man nicht durch Arbeit
+beschleunigen kann.
+
+_Nur Dokumente. Kein App-Code, kein Bau._
+
+---
+
 ## 0.105.1 — 2026-08-30
 
 **An der Fassung 1.0 hing der falsche Bau, und niemand hätte es gesehen.**
