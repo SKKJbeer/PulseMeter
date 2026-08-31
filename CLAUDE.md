@@ -350,6 +350,19 @@ sich etwas plausibel ergänzen lässt.
 
 ## Wo was liegt
 
+> **Sitzung startet kalt? Zuerst `docs/06-uebergabe.md`.**
+>
+> Dort steht der **laufende** Zustand: wo die Arbeit steht, was blockiert, was
+> als Nächstes dran ist, und welche Dateien man mitnimmt, wenn ein zweites
+> Vorhaben anfängt. Diese Datei hier sagt, *wie* gearbeitet wird; die andere
+> sagt, *wo es gerade steht*. Sie wird bei jeder Übergabe überschrieben.
+>
+> Bis 0.105.3 stand dieser Verweis nirgends. Die Übergabedatei existierte seit
+> Wochen und war zuletzt am 10. August gepflegt worden — zwanzig Tage und
+> siebzig Versionen alt, mit Sätzen wie „Paywall und StoreKit fehlen noch". Ein
+> Dokument, auf das nichts zeigt, wird nicht gelesen und deshalb auch nicht
+> gepflegt.
+
 ```
 docs/00-produktstrategie.md   Problem, Markt, Zielgruppen, Prinzipien, Risiken
 docs/01-architektur.md        Technische Entscheidungen als ADR
@@ -357,7 +370,11 @@ docs/02-datenmodell.md        Domänenmodell, Rechenkern, Randfälle
 docs/03-ux-konzept.md         Navigation, Kernscreens, Design-System
 docs/04-monetarisierung.md    Free / Pro / Vermieter
 docs/05-roadmap.md            v1-Umfang, Ausschlüsse, Reihenfolge
+docs/06-uebergabe.md          Der laufende Zustand — für eine kalte Sitzung
+docs/09-appstore.md           Alle Store-Texte, fertig zum Einfügen
+docs/12-auslieferung.md       Vom Code in den App Store, ohne Mac
 docs/prototype/index.html     Klick-Dummy, in sich geschlossen
+.claude/skills/               Das übertragbare Wissen — Baukasten zuerst
 Packages/PulseCore/           Domäne und Rechenkern, nur Foundation
 Packages/PulseData/           SwiftData und CloudKit, braucht Xcode
 Packages/PulseUI/             Design-System, nur iOS

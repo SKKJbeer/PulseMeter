@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-08-10, Version 0.34.1
+Stand: 2026-08-30, Version 0.105.3
 
 ---
 
@@ -9,128 +9,189 @@ Stand: 2026-08-10, Version 0.34.1
 Eine neue Sitzung startet kalt. Sie kennt keinen Chatverlauf — weder den auf
 dem Mac noch den in der Cloud. Was sie kennt, ist das Repository.
 
-Der **dauerhafte** Teil steht deshalb längst dort und ist ausführlich:
+**Wer hier ankommt, liest diese Datei zuerst und danach `CLAUDE.md`.** Danach
+weiß sie, wo die Arbeit steht und wie hier gearbeitet wird. Alles andere ergibt
+sich aus der Tabelle unten.
+
+Der **dauerhafte** Teil steht längst im Repository und ist ausführlich:
 
 | Was | Wo |
 |---|---|
+| **Arbeitsweise, Sprachregeln, Prüfschritte, die vier Regeln** | `CLAUDE.md` |
+| **Jede Änderung mit Begründung, neueste oben** | `CHANGELOG.md` |
 | Warum es dieses Produkt gibt, für wen, wogegen es sich entscheidet | `docs/00-produktstrategie.md` |
 | Jede technische Entscheidung mit Begründung | `docs/01-architektur.md` |
 | Domänenmodell, Rechenkern, Randfälle | `docs/02-datenmodell.md` |
-| **Jede Änderung mit Begründung, neueste oben** | `CHANGELOG.md` |
-| Arbeitsweise, Sprachregeln, Prüfschritte, die vier Regeln | `CLAUDE.md` |
+| Navigation, Kernscreens, Design-System | `docs/03-ux-konzept.md` |
+| Free / Pro / Bündel und warum welcher Preis | `docs/04-monetarisierung.md` |
 | Was für 1.0 fehlt und was gestrichen ist | `docs/07-v1-plan.md` |
-| Das Aufbauschema zum Übertragen | `docs/08-baukasten.md` |
+| Alle Store-Texte, fertig zum Einfügen | `docs/09-appstore.md` |
+| Vom Code in den App Store, ohne Mac | `docs/12-auslieferung.md` |
 
 Dazu die Kommentare im Code: Sie begründen durchgehend das **Warum**, nicht das
 Was.
 
 Was **nicht** im Repository steht, ist der laufende Zustand. Genau dafür ist
-diese Datei. Sie wird bei jeder Übergabe überschrieben, nicht fortgeschrieben.
+diese Datei. Sie wird bei jeder Übergabe **überschrieben**, nicht
+fortgeschrieben — eine Übergabedatei, die wächst, ist nach dem dritten Mal ein
+Archiv und keine Auskunft mehr.
+
+---
+
+## Das Wissen zum Mitnehmen
+
+**Wer ein zweites Vorhaben anfängt, braucht von hier nur eine Datei:**
+
+```
+.claude/skills/projekt-baukasten/SKILL.md
+```
+
+1211 Zeilen, in sich geschlossen, ohne Bezug zu diesem Produkt. Darin: wie ein
+Projekt aufgebaut und dokumentiert wird, wie Konzepte entstehen, wie ohne Mac
+bis in TestFlight ausgeliefert wird, was bei Apple, App Store Connect,
+Profilen, Berechtigungen und Käufen schiefgeht — und die Fehlerklassen, die in
+diesem Projekt jede mindestens dreimal zugeschlagen haben.
+
+Die drei anderen Skills sind kleiner und ebenfalls übertragbar:
+
+| Datei | Wofür | Übertragbar? |
+|---|---|---|
+| `.claude/skills/projekt-baukasten/SKILL.md` | das gesammelte Vorgehen | **unverändert** |
+| `.claude/skills/release-discipline/SKILL.md` | Version, Release Notes und Tests als Pflicht je Änderung | **unverändert** |
+| `.claude/skills/selbstsprechend/SKILL.md` | Regeln für jeden Text, den ein Nutzer sieht | unverändert, wenn die App Deutsch spricht |
+| `.claude/skills/xcode-workflow/SKILL.md` | Bauen und Prüfen auf einem Mac | nur bei iOS, Pfade anpassen |
+
+**Automatisch übertragen** wird das alles mit
+
+```
+scripts/neues-projekt.sh <ordner> <Name>
+```
+
+Das legt den Ordner **neben** diesem Projekt an (nie hinein), kopiert die vier
+Skills, den Melder, den Push-Haken und **vier Prüfungen, die sofort tragen** —
+`check-strings.py`, `check-namen.py`, `check-sicherheit.sh`,
+`check-trefferflaechen.py` —, schreibt ein `pruefen.sh`, eine CI-Beschreibung
+und eine `CLAUDE.md` und macht `git init`. Was danach von Hand kommt, sagt es
+zum Schluss selbst.
+
+Welche Prüfung was fängt und was es gekostet hat, bevor es sie gab, steht als
+Tabelle im Baukasten unter „Die Prüfungen".
 
 ---
 
 ## Wo die Arbeit steht
 
-**`main` ist der aktuelle Stand.** Am 10. August sind 21 Commits von 0.31.0 bis
-0.33.5 zusammengeführt worden; die Arbeitszweige sind erledigt. Der letzte
-vollständige macOS-Lauf war **grün**: 154 Prüfungen in `PulseCore`, 21
-Oberflächenprüfungen, 44 im Klick-Dummy, 18 Screenshots.
+**`main` ist der aktuelle Stand**, Version 0.105.3. Es gibt keinen offenen
+Arbeitszweig; alles ist zusammengeführt.
 
-Alles aus dem v1-Umfang steht bis auf Paywall und StoreKit — die brauchen das
-Apple Developer Program.
+| | Stand am 30. August |
+|---|---|
+| `PulseCore` | 231 Tests, grün |
+| Klick-Dummy | 242 Prüfungen, hell und dunkel, grün |
+| Website | 407 Prüfungen, grün, live auf `zaehlora.pages.dev` |
+| App-Build und Oberflächentests | grün auf dem letzten macOS-Lauf |
+| TestFlight | **Bau 25, VALID**, mit Testhinweisen |
+| App Store Connect | 18 Angaben stehen, 0 offen |
+| Käufe | 6 von 6 `READY_TO_SUBMIT` |
+| Länder | 175, Deutschland dabei |
+| Freigabe | `AFTER_APPROVAL` — geht sofort nach der Prüfung in den Laden |
 
-### Die nächsten Schritte
+**Der Umfang von 1.0 ist vollständig.** Es fehlt nichts mehr am Produkt.
 
-Sie stehen begründet und sortiert in **`docs/07-v1-plan.md`**. Kurz:
+### Die eine Sperre
 
-1. **Apple Developer Program kaufen** (99 €). Blockiert Paywall, TestFlight und
-   App Store und lässt sich nicht vorarbeiten. Liegt beim Gründer.
-2. **Die App zwei Wochen mit echten Zählerständen benutzen.** Der Punkt, der
-   bisher am meisten gefunden hat.
-3. Danach Paywall und StoreKit, Barrierefreiheit zu Ende, 800 ms auf einem
-   Gerät messen, App-Store-Material.
+Die Einreichung scheitert seit dem 29. August unverändert an:
 
-**Gestrichen für 1.0:** Foto-Belege und Siri-Kurzbefehl, beide nach 1.1. Sie
-dürfen deshalb auch nicht in der Pro-Beschreibung im Store auftauchen.
-
-### Kleinigkeit, die offen blieb
-
-Die Arbeitszweige `claude/pulsemeter-kickoff-dns3am` und
-`claude/setup-pruefung-4qyr2u` sind zusammengeführt, ließen sich aber aus der
-Cloud-Sitzung **nicht löschen** — der git-Vermittler dort blockiert das Löschen
-von Referenzen. Auf einem Mac genügt:
-
-```bash
-git push origin --delete claude/pulsemeter-kickoff-dns3am
-git push origin --delete claude/setup-pruefung-4qyr2u
 ```
+appStoreVersions with id '…' is not in valid state.
+This resource cannot be reviewed, please check associated errors to see why.
+```
+
+**Der Grund steht nicht in dieser Meldung.** Er steht in App Store Connect
+unter `Agreements → Compliance`: Der Händlerstatus nach dem
+Digitale-Dienste-Gesetz ist seit dem 27. August **„In Prüfung"**. Alles andere
+in derselben Tabelle — Verträge, Bankkonto, beide Steuerformulare, die
+DAC7-Richtlinie — steht auf aktiv.
+
+Das liegt bei Apple, und es lässt sich durch Arbeit nicht beschleunigen. Bis es
+„Aktiviert" heißt, ist jeder weitere Einreichungsversuch derselbe Fehlschlag.
+
+**Sobald es durch ist:**
+
+1. `einreichen.yml` mit `bestaetigung=einreichen` — hängt von selbst den
+   neuesten tauglichen Bau an die Fassung.
+2. Nach `READY_FOR_SALE`: `live-schalten.yml` **von Hand** über
+   `workflow_dispatch` auslösen. Auf den Stundenplan ist kein Verlass, gemessen
+   einmal in sechs Stunden.
+3. `https://zaehlora.pages.dev` abrufen und prüfen, dass dort das Abzeichen mit
+   dem echten Verweis steht statt „Bald im App Store".
 
 ---
 
-## Was der 9./10. August gekostet und gebracht hat
+## Was zuletzt gefunden wurde, und warum es zählt
 
-Ein Tag an einer einzigen roten Oberflächenprüfung und einem leeren Bericht.
-Beide Male ging es schnell, sobald gemessen statt vermutet wurde — und langsam,
-solange vermutet wurde. Die Zahlen:
+Am 29. August hat ein Audit die Website Satz für Satz gegen den Quelltext
+gehalten. Von rund dreißig Zusagen waren **drei falsch und vier zu absolut** —
+bei einer Prüfsuite, die an dem Tag alles grün meldete.
 
-| | Vermutungen | Messungen |
-|---|---|---|
-| Doppeltarif-Schalter | 3, alle falsch | 1, klärte alles |
-| Leerer PDF-Bericht | 4, alle falsch | 1, klärte alles |
+| Befund | Behoben in |
+|---|---|
+| Der Knopf „Beispieldaten anlegen" verschenkte drei von fünf Käufen | 0.104.0 |
+| „Ein Feld auf dem Sperrbildschirm" war beworben und gab es nicht | 0.104.0, gebaut |
+| Die Hilfeseite bot Erinnerungen kostenlos an, die 0,99 € kosten | 0.103.1 |
+| Die Store-Beschreibung trug dieselben drei falschen Zusagen und war 152 Zeichen zu lang | 0.104.2 |
+| An der Fassung 1.0 hing Bau 24 statt Bau 25 | 0.105.1 |
 
-**Die Regel daraus** steht in `docs/08-baukasten.md` und gilt für jedes
-Projekt: Nach dem **zweiten** Fehlversuch nicht weiterraten, sondern die
-Prüfung oder die Ansicht ihren eigenen Zustand berichten lassen. Eine Vermutung
-kostet hier eine Viertelstunde Läuferzeit und bringt im Zweifel nichts.
-
-### Was dabei am Produkt gefunden wurde
-
-- **Der PDF-Bericht war seit 0.32.0 unsichtbar.** Nicht falsch gerechnet — die
-  Vorschau schnitt ihren eigenen Inhalt weg (`scaleEffect` ändert die
-  Layoutgröße nicht, der Rahmen darunter zentrierte die unveränderte Box). Alle
-  Prüfungen dazu waren grün, weil sie `exists` fragten statt `isHittable`.
-  Gefunden hat es ein **Bildschirmfoto**, nachdem 0.32.8 dafür gesorgt hatte,
-  dass auch ein roter Lauf Bilder liefert.
-- **Der Knopf „Stand eintragen" hieß in jeder Karte gleich.** Sichtbar
-  eindeutig, für VoiceOver nicht: vier Zähler, vier identische Knöpfe. Er trägt
-  jetzt den Zählernamen in der Beschriftung.
+**Die Lehre, die bleibt:** Die Prüfsuite prüft die Innenseite — ob die App tut,
+was der Code sagt. Ob der Code tut, was die Verkaufsseite verspricht, prüfte
+nichts. Seit 0.103.1 tut es `scripts/check-versprechen.py`.
 
 ---
 
 ## Worauf besonders zu achten ist
 
-**Die wiederkehrende Fehlerklasse.** Jeder bisher gefundene Rechenfehler
-entstand daraus, dass ein Zeitraum, den die Daten abdecken, gegen einen
-verglichen wurde, den sie nicht abdecken. Elf Fälle. Steht in `CLAUDE.md` und
-ist keine Floskel.
+**Die wiederkehrende Fehlerklasse.** Bisher entstand *jeder* gefundene
+Rechenfehler dadurch, dass ein Zeitraum, den die Daten abdecken, gegen einen
+verglichen wurde, den sie nicht abdecken. Bei jedem neuen Vergleich, jeder
+Hochrechnung und jeder Summe gilt deshalb: Beide Seiten müssen denselben
+Zeitausschnitt beschreiben — bei saisonalen Zählern denselben Ausschnitt des
+Jahres.
 
-**`exists` ist keine Aussage über Sichtbarkeit.** Die teuerste Lehre dieses
-Tages. Wo eine Prüfung belegen soll, dass ein Nutzer etwas *sieht*, gehört
-`isHittable` dazu.
+**Zählen ist nicht wissen.** Dreimal in einer Woche stand eine Anzahl für eine
+Tatsache: „fünf Einträge" hieß nicht „die Fassung ist dabei", „ein Preisplan
+existiert" hieß nicht „der Preis stimmt", „Bau hängt dran" hieß nicht „der
+richtige Bau hängt dran". Jedes Nachlesen stellt zwei Fragen: Ist es da, und
+ist es richtig?
 
-**Screenshots finden, was Tests nicht finden.** Inzwischen acht
-Darstellungsfehler, darunter der unsichtbare Bericht.
+**Ein Fehlschlag auf der eigenen Seite ist keine Auskunft über die Gegenseite.**
+Eine gescheiterte Anfrage darf nie als Aussage über die Welt herauskommen —
+„in 0 Ländern verkäuflich" war einmal eine 400er-Antwort auf einen Filter, den
+es nicht gibt.
 
-**Der Klick-Dummy ist der produktivste Fehlerfinder.** Er rechnet echt. Weicht
-er von `PulseCore` ab, ist das ein Fehler, kein Zustand.
+**Zwei Orte, die einander nicht sehen.** Der Mac des Gründers und die
+Cloud-Sitzung. Eine Cloud-Sitzung erfährt nur über den Zweig `pruefungen` oder
+durch eine Nachricht, was am Mac passiert ist — und darf nie behaupten, sie
+könne dort etwas ausführen.
 
-**Beim Nutzer liegen:** Apple Developer Program und die Messung auf einem
-echten Gerät.
+```bash
+git fetch origin pruefungen && git show origin/pruefungen:README.md | tail -5
+```
 
 ---
 
 ## Wie die beiden Orte zusammenarbeiten
 
-Eine Sitzung am Mac und eine in der Cloud sehen einander **nicht**. Verbunden
-sind sie über das Repository und zwei Zweige:
+| | Am Mac | In der Cloud |
+|---|---|---|
+| Xcode, Simulator, Screenshots | ✓ | ✗ |
+| `PulseCore`, Klick-Dummy, Website | ✓ | ✓ |
+| `PulseData` (SwiftData) | ✓ | ✗ |
+| Abläufe anstoßen und nachsehen | ✓ | ✓ |
 
-- **`pruefungen`** — eine Zeile je lokalem Lauf. **Noch leer:** Auf dem Mac ist
-  bisher kein Lauf gemeldet worden.
-- **`screenshots`** — die Bilder des letzten Laufs, aus der CI **oder** von
-  einem Mac (`scripts/pruefen.sh --melden`, und damit jedes
-  `scripts/mac-start.sh`). Die Kopfzeile nennt Herkunft und warnt, wenn der
-  Lauf gefallen war.
+Auf einem frisch übernommenen Mac: `scripts/mac-start.sh`. Es holt zuerst den
+aktuellen Stand und ruft dann Einrichtung und Prüfung auf — der Schritt
+existiert, weil ein Arbeitsverzeichnis auf einem veralteten Zweig vollständig
+aussieht.
 
-Sinnvolle Aufteilung: Die Cloud-Sitzung nimmt `PulseCore`, den Entwurf und das
-Werkzeug; die Sitzung am Mac baut, prüft und fotografiert die App. Beide halten
-sich an `CLAUDE.md`, besonders an Regel 4.
+Unter Linux macht `scripts/pruefen.sh` alles, was ohne Xcode geht, und
+**benennt**, was es überspringt.

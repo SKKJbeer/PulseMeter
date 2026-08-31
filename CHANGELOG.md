@@ -9,6 +9,43 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.105.3 — 2026-08-30
+
+**Die Übergabedatei war zwanzig Tage und siebzig Versionen alt, und nichts
+zeigte auf sie.**
+
+`docs/06-uebergabe.md` ist die Datei, aus der eine kalt startende Sitzung den
+laufenden Zustand erfährt. Sie stand auf „Stand: 2026-08-10, Version 0.34.1"
+und behauptete unter anderem, Paywall und StoreKit fehlten noch — die sind seit
+0.90.1 im Store. Eine Sitzung, die sie gelesen hätte, wäre falsch informiert
+gewesen.
+
+**Der Grund, warum sie liegenblieb, steht in ihr selbst nicht drin:** In
+`CLAUDE.md` kam sie mit keinem Wort vor. Eine kalte Sitzung bekommt `CLAUDE.md`
+zugestellt und erfuhr daraus nicht, dass es einen Startpunkt gibt. Ein
+Dokument, auf das nichts zeigt, wird nicht gelesen und deshalb auch nicht
+gepflegt.
+
+### Geändert
+
+- `docs/06-uebergabe.md` vollständig neu geschrieben, auf den Stand vom
+  30. August: wo die Arbeit steht, die eine Sperre und was zu tun ist, sobald
+  sie fällt, die fünf Befunde des Audits, die Fehlerklassen, und wie Mac und
+  Cloud zusammenarbeiten. Dazu ein eigener Abschnitt **„Das Wissen zum
+  Mitnehmen"** mit den vier Skills, ihrer Übertragbarkeit und dem einen Befehl,
+  der sie kopiert.
+- `CLAUDE.md` zeigt jetzt an erster Stelle des Abschnitts „Wo was liegt" darauf
+  — mit dem Unterschied in einem Satz: Diese Datei sagt, *wie* gearbeitet wird,
+  die andere, *wo es gerade steht*.
+- Die Dateiliste dort nennt außerdem `docs/09-appstore.md`,
+  `docs/12-auslieferung.md` und `.claude/skills/`. Alle drei fehlten, und alle
+  drei sind das, was eine neue Sitzung als Erstes sucht.
+
+_Nur Dokumente. Kein App-Code, kein Bau. Alle Pfade nachgeprüft, dass sie
+existieren._
+
+---
+
 ## 0.105.2 — 2026-08-30
 
 **Die Sperre hat einen Namen, und ein Bildschirmfoto hat ihn geliefert.**
