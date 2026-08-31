@@ -9,6 +9,41 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.105.4 — 2026-08-31
+
+**„Das Repo ist privat" stand seit Wochen in `CLAUDE.md` und war falsch.**
+
+Der Gründer hat widersprochen, und statt zu beharren wurde nachgemessen:
+
+```
+"private": false,  "visibility": "public"
+```
+
+Die Zeile stand in Regel 1a als Begründung dafür, dass GitHub Pages ausscheide.
+Sie ist einmal aus einer Annahme entstanden und hat seither niemand geprüft —
+dieselbe Art Satz, die dieses Projekt schon dreimal Zeit gekostet hat.
+
+### Geändert
+
+- Die Zeile in `CLAUDE.md` ist ersetzt, nicht ergänzt. An ihrer Stelle steht,
+  was gemessen wurde, und die Folge daraus: **Der ganze Umweg aus Regel 1 ist
+  verhandelbar.** Über GitHub Pages gäbe es eine feste Adresse für den
+  Klick-Dummy statt eines neuen Artifacts je Veröffentlichung — ohne
+  Anmeldemaske, mit Historie über die Commits, ohne dass je ein Link
+  weiterzugeben wäre. Umgestellt ist nichts: Das ist eine Entscheidung des
+  Gründers, keine Nebenwirkung einer Korrektur.
+- Dazu, was ein öffentliches Repository sonst heißt: Strategie, Preisfindung,
+  Umsatzannahmen und die vollständige Fehlerhistorie sind öffentlich lesbar.
+  Für dieses Projekt vertretbar — und der Grund, warum private Kontaktdaten
+  ausdrücklich nur in GitHub-Geheimnissen liegen. Diese Trennung war schon
+  vorher richtig; jetzt ist sie notwendig.
+- `docs/06-uebergabe.md` nennt die Sichtbarkeit und den Einstiegsverweis oben,
+  damit eine fremde Sitzung ihn ohne Umweg weitergeben kann.
+
+_Nur Dokumente. Kein App-Code, kein Bau._
+
+---
+
 ## 0.105.3 — 2026-08-30
 
 **Die Übergabedatei war zwanzig Tage und siebzig Versionen alt, und nichts

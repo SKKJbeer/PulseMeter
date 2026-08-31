@@ -71,8 +71,32 @@ Die zuletzt gültige URL steht in der README.
 
 Die Datei zusätzlich per SendUserFile mitzuliefern ist nicht nötig, aber auf
 Nachfrage sinnvoll: Sie ist in sich geschlossen und läuft ohne Login und ohne
-Netz. GitHub Pages scheidet vorerst aus — das Repo ist privat, und Pages setzt
-dafür GitHub Pro voraus.
+Netz.
+
+> **Hier stand „GitHub Pages scheidet aus — das Repo ist privat". Das war
+> falsch.** Am 31. August nachgemessen: `"private": false`, `"visibility":
+> "public"`. Wann es öffentlich wurde, ist nicht rekonstruierbar; die Zeile
+> stand seit Wochen ungeprüft da und ist einmal aus einer Annahme entstanden.
+>
+> **Damit ist der ganze Umweg oben verhandelbar.** Regel 1 verlangt bei jeder
+> Veröffentlichung ein neues Artifact unter neuem Dateinamen, weil ein erneutes
+> Veröffentlichen auf denselben Pfad beim Gründer eine Anmeldemaske auslöst.
+> Über GitHub Pages ginge stattdessen eine **feste** Adresse
+> (`skkjbeer.github.io/PulseMeter/prototype/`) — ohne Anmeldung, mit
+> Versionshistorie über die Commits, und ohne dass bei jeder Runde ein Link
+> weiterzugeben wäre.
+>
+> Umgestellt ist es nicht: Das ist eine Entscheidung des Gründers, keine
+> Nebenwirkung einer Korrektur. Bis er sie trifft, gilt Regel 1 unverändert.
+
+**Was ein öffentliches Repository sonst noch heißt:** Strategie, Preisfindung,
+Umsatzannahmen, die vollständige Fehlerhistorie und jede Begründung im Code
+sind öffentlich lesbar. Für dieses Projekt ist das vertretbar und teilweise
+sogar der Zweck — der Baukasten ist zum Weitergeben gedacht. Es ist aber der
+Grund, warum private Kontaktdaten (Telefonnummer, private Adresse für die
+Prüfung) ausdrücklich **nicht** im Repository liegen, sondern nur in
+GitHub-Geheimnissen. Diese Trennung war schon vorher richtig; jetzt ist sie
+notwendig.
 
 ## Regel 1b — Version und Release Notes
 

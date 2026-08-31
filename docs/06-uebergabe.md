@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-08-30, Version 0.105.3
+Stand: 2026-08-31, Version 0.105.4
 
 ---
 
@@ -12,6 +12,11 @@ dem Mac noch den in der Cloud. Was sie kennt, ist das Repository.
 **Wer hier ankommt, liest diese Datei zuerst und danach `CLAUDE.md`.** Danach
 weiß sie, wo die Arbeit steht und wie hier gearbeitet wird. Alles andere ergibt
 sich aus der Tabelle unten.
+
+**Das Repository ist öffentlich** (am 31. August nachgemessen: `"private":
+false`). Jede Datei hier ist ohne Konto lesbar, und der Einstieg lässt sich als
+Verweis weitergeben:
+`https://github.com/SKKJbeer/PulseMeter/blob/main/docs/06-uebergabe.md`
 
 Der **dauerhafte** Teil steht längst im Repository und ist ausführlich:
 
@@ -81,10 +86,10 @@ Tabelle im Baukasten unter „Die Prüfungen".
 
 ## Wo die Arbeit steht
 
-**`main` ist der aktuelle Stand**, Version 0.105.3. Es gibt keinen offenen
+**`main` ist der aktuelle Stand**, Version 0.105.4. Es gibt keinen offenen
 Arbeitszweig; alles ist zusammengeführt.
 
-| | Stand am 30. August |
+| | Stand am 31. August |
 |---|---|
 | `PulseCore` | 231 Tests, grün |
 | Klick-Dummy | 242 Prüfungen, hell und dunkel, grün |
