@@ -138,6 +138,17 @@ def main() -> int:
         zeigen("Texte des App-Eintrags",
                f"v1/appInfos/{eintrag['id']}/appInfoLocalizations",
                **{"limit": 10})
+        # **Die Kategorie ist keine Angabe, sondern eine Beziehung.** Deshalb
+        # taucht sie in keiner Attributliste auf und ist bei jeder Durchsicht
+        # durchgerutscht — ohne primäre Kategorie lässt sich keine Fassung
+        # einreichen. Der eigene Pfad antwortet eindeutig: 404 heißt „nicht
+        # gesetzt".
+        for name in ("primaryCategory", "primarySubcategoryOne",
+                     "secondaryCategory"):
+            s, a = holen(f"v1/appInfos/{eintrag['id']}/{name}")
+            wert = a.json().get("data") if s == 200 else None
+            print(f"   ⇢ {name}: {s} "
+                  f"{(wert or {}).get('id', '— nicht gesetzt')}")
 
     # **Bilder sind der häufigste Grund, warum eine Fassung nicht prüfbar ist.**
     # Fehlt für eine Sprache der Satz für das größte iPhone, meldet Apple das in
