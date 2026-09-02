@@ -9,6 +9,59 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.105.7 — 2026-09-02
+
+**Eingereicht. `WAITING_FOR_REVIEW`. Es war die Preisstufe.**
+
+```
+✓ Fassung 1.0 der Einreichung hinzugefügt
+Eingereicht. Zustand: WAITING_FOR_REVIEW
+```
+
+Vier Tage „appStoreVersions … is not in valid state", und die Oberfläche von
+App Store Connect sagt es in einem Satz: „Wähle unter ‚Preis' eine Preisstufe
+aus." Es war nie eine gewählt.
+
+**Im eigenen Protokoll stand es vom ersten Tag an:**
+
+```
+── Preisplan
+   v1/apps/6802262743/appPriceSchedule  →  200
+   {}
+```
+
+Gelesen als „vorhanden, hat eben keine Attribute". Gemeint war: leer. Ein
+Preisplan ist ein Objekt ohne eigene Attribute — seine ganze Aussage steckt in
+dem, was an ihm hängt. Damit ist es dieselbe Fehlerklasse wie zweimal vorher an
+diesem Tag, nur an einer dritten Stelle: eine leere Antwort, die sich wie ein
+Befund liest.
+
+Der Einreichlauf zählt jetzt die Preise **im** Plan statt den Plan, setzt die
+kostenlose Stufe, wenn keine gewählt ist, und liest das Ergebnis nach, statt
+dem 201 zu glauben.
+
+**Ein Nebenfehler, der es fast noch einmal verdeckt hätte.** Der erste Filter
+lautete `(preis or "")` — und `0.0 or ""` ist `""`. Ausgerechnet die kostenlose
+Stufe, die einzige gesuchte, fiel dadurch heraus. Jetzt als Zahl verglichen und
+gegen `0`, `0.0`, `"0"`, `"0.00"`, `"0,00"`, `None` und Unsinn gegengeprüft.
+
+Zwei Lehren in den Baukasten:
+
+> Ein Behälter, den es gibt, ist nicht ein Behälter mit Inhalt. Bei Plan, Satz,
+> Einreichung, Liste wird gezählt, **was darin liegt**.
+
+> `or` verschluckt die Null. Ein Vorgabewert per `or` ist überall falsch, wo
+> `0`, `""` oder `False` zulässige Werte sind.
+
+Und die teuerste, die keine Zeile Code betrifft: **Meldet die Schnittstelle
+einen Zustand, den sie nicht begründet, wird nach dem zweiten Fehlschlag die
+Oberfläche angesehen** — nicht nach dem zehnten. Vier Tage Ermittlung gegen
+einen Blick von einer halben Minute.
+
+Nur Skripte und Dokumente. Kein App-Code, kein Bau.
+
+---
+
 ## 0.105.6 — 2026-09-02
 
 **Die drei leeren Felder sind gefüllt, und keines war die Ursache.**

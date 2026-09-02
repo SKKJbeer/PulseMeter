@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-09-02, Version 0.105.6
+Stand: 2026-09-02, Version 0.105.7
 
 ---
 
@@ -86,7 +86,7 @@ Tabelle im Baukasten unter „Die Prüfungen".
 
 ## Wo die Arbeit steht
 
-**`main` ist der aktuelle Stand**, Version 0.105.6. Es gibt keinen offenen
+**`main` ist der aktuelle Stand**, Version 0.105.7. Es gibt keinen offenen
 Arbeitszweig; alles ist zusammengeführt.
 
 | | Stand am 2. September |
@@ -96,6 +96,7 @@ Arbeitszweig; alles ist zusammengeführt.
 | Website | 407 Prüfungen, grün, live auf `zaehlora.pages.dev` |
 | App-Build und Oberflächentests | grün auf dem letzten macOS-Lauf |
 | TestFlight | **Bau 25, VALID**, mit Testhinweisen |
+| App Store | **eingereicht am 2. September, `WAITING_FOR_REVIEW`** |
 | App Store Connect | 18 Angaben stehen, 0 offen |
 | Käufe | 6 von 6 `READY_TO_SUBMIT` |
 | Länder | 175, Deutschland dabei |
@@ -103,9 +104,50 @@ Arbeitszweig; alles ist zusammengeführt.
 
 **Der Umfang von 1.0 ist vollständig.** Es fehlt nichts mehr am Produkt.
 
-### Die eine Sperre
+### Die Sperre ist weg — eingereicht am 2. September, 19:05
 
-Die Einreichung scheitert seit dem 29. August unverändert an:
+```
+✓ Fassung 1.0 der Einreichung hinzugefügt
+Eingereicht. Zustand: WAITING_FOR_REVIEW
+```
+
+**Es war die Preisstufe.** Sie war nie gewählt worden. Die Oberfläche sagt es in
+einem Satz — „Wähle unter ‚Preis' eine Preisstufe aus" —, die Schnittstelle
+fasst es zu „appStoreVersions … is not in valid state" zusammen und nennt es
+nicht.
+
+Und im eigenen Protokoll stand es seit dem ersten Tag:
+
+```
+── Preisplan
+   v1/apps/6802262743/appPriceSchedule  →  200
+   {}
+```
+
+Gelesen als „vorhanden, hat eben keine Attribute". Gemeint war: **leer**. Ein
+Preisplan ohne Preise ist ein Objekt, das existiert und nichts sagt.
+
+Der Einreichlauf setzt die Stufe jetzt selbst (kostenlos, Zählora verdient über
+Einmalkäufe) und liest das Ergebnis nach, statt dem 201 zu glauben. Ein
+Nebenfehler dabei, der es fast noch einmal verdeckt hätte: `(preis or "")` —
+`0.0 or ""` ist `""`, also fiel ausgerechnet die kostenlose Stufe durch den
+eigenen Filter.
+
+**Was jetzt noch kommt:**
+
+1. Apples Prüfung abwarten. Freigabe steht auf `AFTER_APPROVAL`, die App geht
+   also von selbst in den Laden.
+2. Nach `READY_FOR_SALE`: `live-schalten.yml` **von Hand** über
+   `workflow_dispatch` auslösen. Auf den Stundenplan ist kein Verlass, gemessen
+   einmal in sechs Stunden.
+3. `https://zaehlora.pages.dev` abrufen und prüfen, dass dort das Abzeichen mit
+   dem echten Verweis steht statt „Bald im App Store".
+
+---
+
+### Was die Sperre vier Tage lang war — und was daran zu lernen ist
+
+Die Einreichung scheiterte seit dem 29. August unverändert an:
 
 ```
 appStoreVersions with id '…' is not in valid state.
@@ -152,26 +194,15 @@ Der letzte Punkt ist der Maßstab für die anderen: Ein 403 auf einen Pfad, an
 dem sicher etwas hängt, ist eine Auskunft über den Schlüssel, nicht über die
 Fassung.
 
-**Damit bleibt genau ein Ort, der es weiß: die Oberfläche von App Store
-Connect.** Dort stehen die „associated errors" als rote Punkte neben den
-Feldern. Zwei Kandidaten, die über die Schnittstelle nachweislich unsichtbar
-sind:
+**Der Ort, der es wusste, war die Oberfläche von App Store Connect.** Dort
+stehen die „associated errors" als rote Punkte neben den Feldern — und dort
+stand der eine Satz, der vier Tage gekostet hat: „Wähle unter ‚Preis' eine
+Preisstufe aus."
 
-1. **App Privacy** — der Fragebogen „Welche Daten erfasst die App?" muss
-   *veröffentlicht* sein. Er ist etwas anderes als die Datenschutz-Adresse, die
-   seit Wochen steht. Für Zählora lautet die Antwort: keine Daten erfasst.
-2. **Agreements → Compliance**, Händlerstatus nach dem
-   Digitale-Dienste-Gesetz.
-
-**Sobald das erledigt ist:**
-
-1. `einreichen.yml` mit `bestaetigung=einreichen` — hängt von selbst den
-   neuesten tauglichen Bau an die Fassung und füllt die Pflichtangaben.
-2. Nach `READY_FOR_SALE`: `live-schalten.yml` **von Hand** über
-   `workflow_dispatch` auslösen. Auf den Stundenplan ist kein Verlass, gemessen
-   einmal in sechs Stunden.
-3. `https://zaehlora.pages.dev` abrufen und prüfen, dass dort das Abzeichen mit
-   dem echten Verweis steht statt „Bald im App Store".
+> **Die Lehre für das nächste Mal: Wenn die Schnittstelle einen Zustand meldet,
+> den sie nicht begründet, wird die Oberfläche einmal angesehen — nach dem
+> zweiten Fehlschlag, nicht nach dem zehnten.** Vier Tage Ermittlung gegen einen
+> Blick, den nur der Gründer tun kann und der eine halbe Minute dauert.
 
 **Nebenbefund, damit ihn niemand noch einmal sucht:** Die leere Einreichung
 `68046b63` lässt sich weder löschen (`DELETE` → 403) noch zurückziehen

@@ -1105,6 +1105,30 @@ Wert. Es fehlte in der Ausgabe und sah dadurch aus, als gäbe es das Feld nicht.
 > und das leere ausdrücklich markiert. Eine gekürzte Ansicht ist zum Lesen da,
 > nicht zum Ermitteln.
 
+**Ein Behälter, den es gibt, ist nicht ein Behälter mit Inhalt.** Vier Tage
+Suche endeten an dieser Zeile im eigenen Protokoll:
+
+```
+── Preisplan
+   v1/apps/…/appPriceSchedule  →  200
+   {}
+```
+
+Gelesen als „vorhanden, hat eben keine Attribute". Gemeint war: **kein Preis
+gewählt** — und ohne gewählte Preisstufe lässt Apple keine Prüfung zu. Der
+Preisplan ist ein Objekt ohne eigene Attribute; seine Aussage steckt
+ausschließlich in dem, was an ihm hängt.
+
+> Bei jedem Behälter — Plan, Satz, Einreichung, Liste — wird **das Enthaltene**
+> gezählt, nie das Vorhandensein. „Es gibt einen Preisplan" und „ein Preis ist
+> gewählt" sind zwei Sätze, und nur der zweite ist die Frage.
+
+**`or` verschluckt die Null.** Der erste Versuch, die kostenlose Preisstufe zu
+finden, filterte mit `(wert or "")` — und `0.0 or ""` ergibt `""`. Ausgerechnet
+der eine gesuchte Wert fiel durch. Zahlen werden als Zahlen verglichen, und ein
+Vorgabewert per `or` ist überall dort falsch, wo `0`, `""` oder `False`
+zulässige Werte sind.
+
 **Ein 403 auf einen Pfad ist eine Auskunft über den Schlüssel, nicht über die
 Sache.** Drei Beziehungen einer Einreichung antworteten mit 403 — darunter
 `app`, und die App gibt es zweifelsfrei. Genau das ist der Maßstab: **Eine
