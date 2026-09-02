@@ -281,10 +281,22 @@ def preis_setzen(apple: Apple, app_id: str) -> bool:
     if not punkte:
         print(f"::error::Keine Preispunkte lesbar ({stand}) — {kurz(antwort)}")
         return False
-    kostenlos = [p for p in punkte
-                 if (feld(p, "customerPrice") or "").strip() in ("0", "0.00", "0,00")]
+    # **Als Zahl vergleichen, nicht als Zeichenkette.** Der erste Anlauf
+    # schrieb `(feld(p, "customerPrice") or "")` — und `0.0 or ""` ergibt `""`.
+    # Ausgerechnet die kostenlose Stufe, also die einzige gesuchte, fiel damit
+    # durch den Filter. Eine Null ist der eine Wert, den ein `or` verschluckt.
+    def als_zahl(punkt):
+        try:
+            return float(str(feld(punkt, "customerPrice")).replace(",", "."))
+        except (TypeError, ValueError):
+            return None
+
+    bewertet = [(als_zahl(p), p) for p in punkte]
+    kostenlos = [p for wert, p in bewertet if wert == 0]
     if not kostenlos:
-        print(f"::error::Unter {len(punkte)} Preispunkten ist keiner mit 0,00 €.")
+        gesehen = sorted(w for w, _ in bewertet if w is not None)[:5]
+        print(f"::error::Unter {len(punkte)} Preispunkten ist keiner mit 0,00 €. "
+              f"Die kleinsten waren: {gesehen}")
         return False
     punkt = kostenlos[0]["id"]
     print(f"  · Kostenlose Stufe gefunden ({punkt[:24]})")
