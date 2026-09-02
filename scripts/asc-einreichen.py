@@ -237,6 +237,93 @@ def vorbereitete(apple: Apple, app_id: str):
     return kandidaten[0][1]
 
 
+def preis_setzen(apple: Apple, app_id: str) -> bool:
+    """Ohne gewählte Preisstufe lässt Apple keine Fassung zur Prüfung zu.
+
+    **Das war die Ursache, drei Tage lang, und sie stand die ganze Zeit im
+    Protokoll:**
+
+        ── Preisplan
+           v1/apps/6802262743/appPriceSchedule  →  200
+           {}
+
+    Gelesen wurde „vorhanden, hat eben keine Attribute". Gemeint war: **leer**.
+    Ein Preisplan *ohne Preise* ist ein Objekt, das existiert und nichts sagt —
+    und die Anzeige, die Attribute ausgibt, kann beides nicht unterscheiden.
+    Die Oberfläche sagt es in einem Satz: „Wähle unter ‚Preis' eine Preisstufe
+    aus."
+
+    Deshalb wird hier nicht das Objekt gezählt, sondern **was darin liegt**:
+    die manuellen Preise. Sind es null, ist kein Preis gewählt.
+
+    Zählora ist kostenlos und verdient über Einmalkäufe
+    (`docs/04-monetarisierung.md`) — die Stufe ist also 0,00 €.
+    """
+    stand, antwort = apple.holen(f"v1/apps/{app_id}/appPriceSchedule")
+    plan = antwort.json().get("data") if stand == 200 else None
+    if not plan:
+        print(f"  · Kein Preisplan lesbar ({stand}) — wird angelegt")
+    else:
+        s, a = apple.holen(f"v1/appPriceSchedules/{plan['id']}/manualPrices",
+                           **{"limit": 5, "include": "appPricePoint"})
+        preise = a.json().get("data", []) if s == 200 else []
+        if preise:
+            print(f"  ✓ Preisstufe steht ({len(preise)} Eintrag/Einträge)")
+            return True
+        print(f"  · Preisplan vorhanden, aber ohne Preisstufe ({s}, "
+              f"{len(preise)} Preise) — wird gesetzt")
+
+    # Die kostenlose Stufe heraussuchen, statt eine Kennung zu raten. Apple
+    # gibt die Preispunkte je Land aus; gesucht ist der mit 0,00 €.
+    stand, antwort = apple.holen(f"v1/apps/{app_id}/appPricePoints",
+                                 **{"filter[territory]": "DEU", "limit": 200})
+    punkte = antwort.json().get("data", []) if stand == 200 else []
+    if not punkte:
+        print(f"::error::Keine Preispunkte lesbar ({stand}) — {kurz(antwort)}")
+        return False
+    kostenlos = [p for p in punkte
+                 if (feld(p, "customerPrice") or "").strip() in ("0", "0.00", "0,00")]
+    if not kostenlos:
+        print(f"::error::Unter {len(punkte)} Preispunkten ist keiner mit 0,00 €.")
+        return False
+    punkt = kostenlos[0]["id"]
+    print(f"  · Kostenlose Stufe gefunden ({punkt[:24]})")
+
+    stand, antwort = apple.anlegen("v1/appPriceSchedules", {
+        "data": {
+            "type": "appPriceSchedules",
+            "relationships": {
+                "app": {"data": {"type": "apps", "id": app_id}},
+                "baseTerritory": {"data": {"type": "territories", "id": "DEU"}},
+                "manualPrices": {"data": [{"type": "appPrices",
+                                           "id": "${neuer-preis}"}]},
+            },
+        },
+        "included": [{
+            "type": "appPrices",
+            "id": "${neuer-preis}",
+            "attributes": {"startDate": None, "endDate": None},
+            "relationships": {"appPricePoint": {
+                "data": {"type": "appPricePoints", "id": punkt}}},
+        }],
+    })
+    if stand not in (200, 201):
+        print(f"::error::Preisstufe ließ sich nicht setzen ({stand}) "
+              f"— {kurz(antwort)}")
+        return False
+    # **Nicht das Anlegen melden, sondern das Ergebnis nachlesen.** Ein 201 auf
+    # einen Plan sagt nichts darüber, ob ein Preis darin liegt — genau die
+    # Verwechslung, die das hier verursacht hat.
+    stand, antwort = apple.holen(f"v1/apps/{app_id}/appPriceSchedule")
+    plan = antwort.json().get("data") if stand == 200 else None
+    s, a = apple.holen(f"v1/appPriceSchedules/{plan['id']}/manualPrices",
+                       **{"limit": 5}) if plan else (0, None)
+    anzahl = len(a.json().get("data", [])) if s == 200 else 0
+    print(f"  {'✓' if anzahl else '✗'} Preisstufe kostenlos gesetzt — "
+          f"nachgelesen: {anzahl} Preis(e)")
+    return anzahl > 0
+
+
 def pflichtfelder(apple: Apple, app_id: str, fassung_id: str) -> list:
     """Füllt die Pflichtangaben, die leer sind — und nennt die, die es nicht darf.
 
@@ -317,6 +404,10 @@ def einreichen(apple: Apple, app_id: str, fassung) -> int:
 
     for name in pflichtfelder(apple, app_id, fassung["id"]):
         print(f"::warning::Pflichtangabe steht weiter leer: {name}")
+
+    if not preis_setzen(apple, app_id):
+        print("::error::Ohne Preisstufe lässt Apple keine Prüfung zu.")
+        return 1
 
     # **Eine vorbereitete wiederverwenden statt eine zweite anzulegen.** Die
     # Fassung darf nur in einer Einreichung hängen; eine zweite anzulegen

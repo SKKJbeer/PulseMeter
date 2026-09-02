@@ -216,7 +216,25 @@ def main() -> int:
     zeigen("Beziehungen der App", f"v1/apps/{app}",
            **{"fields[apps]": "name,bundleId,contentRightsDeclaration"})
 
+    # **Ein Preisplan ohne Preise sah aus wie ein Preisplan.** `zeigen` gibt die
+    # Attribute aus, und ein Preisplan hat keine — die Zeile lautete drei Tage
+    # lang „{}" und wurde als „vorhanden" gelesen. Gemeint war „leer", und das
+    # war die Ursache: Ohne gewählte Preisstufe lässt Apple keine Prüfung zu.
+    # Gezählt wird deshalb, was darin liegt.
     zeigen("Preisplan", f"v1/apps/{app}/appPriceSchedule")
+    stand, antwort = holen(f"v1/apps/{app}/appPriceSchedule")
+    plan = antwort.json().get("data") if stand == 200 else None
+    if plan:
+        s, a = holen(f"v1/appPriceSchedules/{plan['id']}/manualPrices",
+                     **{"limit": 5, "include": "appPricePoint"})
+        preise = a.json().get("data", []) if s == 200 else []
+        marke = "  ← KEINE PREISSTUFE GEWÄHLT" if not preise else ""
+        print(f"   Preisstufen darin: {len(preise)} ({s}){marke}")
+        for e in (a.json().get("included", []) if s == 200 else []):
+            print(f"   · {e.get('type')} "
+                  f"{(e.get('attributes') or {}).get('customerPrice', '?')}")
+    else:
+        print("   ← ES GIBT KEINEN PREISPLAN")
     zeigen("Laufende Einreichungen", "v1/reviewSubmissions",
            **{"filter[app]": app, "limit": 10})
 
