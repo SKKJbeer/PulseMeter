@@ -108,6 +108,65 @@ def main() -> int:
         zeigen("Die Angaben zur Prüfung",
                f"v1/appStoreVersions/{fassung}/appStoreReviewDetail")
 
+    # **Was leer ist, blendet `zeigen` aus — und genau das wird gesucht.**
+    #
+    # Die Anzeige oben wirft Werte weg, die `None` sind, damit die Zeile lesbar
+    # bleibt. Ein Pflichtfeld, das niemand ausgefüllt hat, ist aber genau ein
+    # solcher Wert: Es fehlt in der Ausgabe und sieht dadurch aus, als gäbe es
+    # das Feld nicht. `contentRightsDeclaration` stand deshalb schon einmal in
+    # einer Abfrage, ohne dass jemand gemerkt hat, dass es leer zurückkam.
+    print("\n── Alle Felder der App, auch die leeren")
+    stand, antwort = holen(f"v1/apps/{app}")
+    for name, wert in sorted((antwort.json().get("data", {}).get("attributes")
+                              or {}).items() if stand == 200 else []):
+        marke = "  ← LEER" if wert in (None, "", [], {}) else ""
+        print(f"   {name}: {json.dumps(wert, ensure_ascii=False)[:80]}{marke}")
+
+    if fassung:
+        print("\n── Alle Felder der Fassung, auch die leeren")
+        stand, antwort = holen(f"v1/appStoreVersions/{fassung}")
+        for name, wert in sorted((antwort.json().get("data", {}).get("attributes")
+                                  or {}).items() if stand == 200 else []):
+            marke = "  ← LEER" if wert in (None, "", [], {}) else ""
+            print(f"   {name}: {json.dumps(wert, ensure_ascii=False)[:80]}{marke}")
+
+    # **Die Altersfreigabe hängt am App-Eintrag, nicht an der Fassung.**
+    stand, antwort = holen(f"v1/apps/{app}/appInfos", **{"limit": 5})
+    for eintrag in (antwort.json().get("data", []) if stand == 200 else []):
+        zeigen("Altersfreigabe",
+               f"v1/appInfos/{eintrag['id']}/ageRatingDeclaration")
+        zeigen("Texte des App-Eintrags",
+               f"v1/appInfos/{eintrag['id']}/appInfoLocalizations",
+               **{"limit": 10})
+
+    # **Bilder sind der häufigste Grund, warum eine Fassung nicht prüfbar ist.**
+    # Fehlt für eine Sprache der Satz für das größte iPhone, meldet Apple das in
+    # der Oberfläche als roten Punkt — über die Schnittstelle kommt nur „is not
+    # in valid state". Also wird gezählt, was tatsächlich hochgeladen ist.
+    if fassung:
+        stand, antwort = holen(
+            f"v1/appStoreVersions/{fassung}/appStoreVersionLocalizations",
+            **{"limit": 20})
+        for ort in (antwort.json().get("data", []) if stand == 200 else []):
+            sprache = (ort.get("attributes") or {}).get("locale", "?")
+            leer = [n for n in ("description", "keywords", "whatsNew",
+                                "supportUrl", "promotionalText")
+                    if not (ort.get("attributes") or {}).get(n)]
+            s2, a2 = holen(f"v1/appStoreVersionLocalizations/{ort['id']}"
+                           "/appScreenshotSets", **{"limit": 20})
+            saetze = a2.json().get("data", []) if s2 == 200 else []
+            print(f"\n── Sprache {sprache}: {len(saetze)} Bildsatz/Bildsätze"
+                  f"{', leer: ' + ', '.join(leer) if leer else ''}")
+            for satz in saetze:
+                art = (satz.get("attributes") or {}).get("screenshotDisplayType", "?")
+                s3, a3 = holen(f"v1/appScreenshotSets/{satz['id']}/appScreenshots",
+                               **{"limit": 20})
+                bilder = a3.json().get("data", []) if s3 == 200 else []
+                fertig = sum(1 for b in bilder
+                             if ((b.get("attributes") or {}).get("assetDeliveryState")
+                                 or {}).get("state") == "COMPLETE")
+                print(f"   · {art}: {len(bilder)} Bild(er), {fertig} fertig")
+
     # **Der Datenschutz-Fragebogen ist etwas anderes als die Datenschutz-URL.**
     # Die URL steht am App-Eintrag und ist längst gesetzt; der Fragebogen
     # („Welche Daten erfasst die App?") ist eine eigene Ressource und muss
