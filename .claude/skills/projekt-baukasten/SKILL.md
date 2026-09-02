@@ -1095,6 +1095,24 @@ Erklärung zu bauen und danach zu handeln, hat mehr gekostet als das Lesen.
 Sekunden. Bei dieser Länge lohnt es, zu probieren statt zu grübeln — und genau
 deshalb gehört die Zugangsprüfung nach vorn.
 
+**Eine Anzeige, die Leeres wegfiltert, versteckt genau das, was fehlt.** Eine
+Diagnose warf `None`, `""`, `[]` und `{}` weg, damit die Zeilen lesbar bleiben.
+Drei Tage lang stand in jedem Protokoll, was gesetzt war, und nie, was fehlte —
+und gesucht wurde ein **nicht ausgefülltes Pflichtfeld**, also genau ein leerer
+Wert. Es fehlte in der Ausgabe und sah dadurch aus, als gäbe es das Feld nicht.
+
+> Wer nach etwas Fehlendem sucht, gibt **roh** aus: jedes Feld, auch das leere,
+> und das leere ausdrücklich markiert. Eine gekürzte Ansicht ist zum Lesen da,
+> nicht zum Ermitteln.
+
+**Ein 403 auf einen Pfad ist eine Auskunft über den Schlüssel, nicht über die
+Sache.** Drei Beziehungen einer Einreichung antworteten mit 403 — darunter
+`app`, und die App gibt es zweifelsfrei. Genau das ist der Maßstab: **Eine
+Abfrage, von der man weiß, dass sie etwas finden muss**, gehört neben jede, deren
+Ergebnis man deutet. Antwortet die Kontrollabfrage genauso, deutet man nichts,
+sondern hat nur keinen Zugang. (404 ist etwas anderes: „gibt es nicht" ist eine
+Aussage über die Gegenseite — solange der Pfad richtig geschrieben ist.)
+
 **Beim zweiten Danebengreifen wird instrumentiert, nicht weitergeraten.** Nach
 zwei falschen Vermutungen zu `MISSING_METADATA` habe ich eine Diagnose
 geschrieben, die **alles** ausgibt, was Apple über einen Kauf führt: jedes

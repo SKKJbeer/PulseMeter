@@ -9,6 +9,41 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.105.6 — 2026-09-02
+
+**Die drei leeren Felder sind gefüllt, und keines war die Ursache.**
+
+`contentRightsDeclaration`, `usesIdfa` und — nach Rückfrage beim Gründer —
+`copyright` stehen jetzt. Der Einreichversuch danach scheitert an derselben
+Meldung wie am 29. August. Ein gefundener Fehler ist eben noch nicht der Fehler;
+das steht seit dem 29. August im Baukasten und gilt hier gegen mich selbst.
+
+Danach zwei Wege bis zu Ende gegangen und beide zu Ende beantwortet:
+
+- Eine Einreichung hält die Fassung nicht nur über ihre Einträge, sondern auch
+  über `appStoreVersionForReview` am Objekt. Dieser Pfad antwortet mit **403** —
+  ebenso wie `app`, und die App gibt es zweifelsfrei. Damit ist es keine
+  Auskunft über die Fassung, sondern über den Schlüssel.
+- Die leere Einreichung `68046b63` lässt sich weder löschen (403) noch
+  zurückziehen (409, „Resource is not in cancellable state"). Sie enthält
+  nichts und stört nicht.
+
+**Was bleibt, ist über die Schnittstelle nicht erreichbar** und steht in der
+Oberfläche von App Store Connect: der App-Privacy-Fragebogen und der
+Händlerstatus. `docs/06-uebergabe.md` trägt die Messwerte statt der bisherigen
+Vermutung, die dort als Befund gelesen wurde.
+
+Zwei Lehren in den Baukasten, beide teuer bezahlt:
+
+> Eine Anzeige, die Leeres wegfiltert, versteckt genau das, was fehlt.
+
+> Neben jede Abfrage, deren Ergebnis man deutet, gehört eine, von der man weiß,
+> dass sie etwas finden muss. Antwortet die genauso, deutet man nichts.
+
+Nur Skripte und Dokumente. Kein App-Code, kein Bau.
+
+---
+
 ## 0.105.5 — 2026-09-02
 
 **Drei Pflichtangaben standen leer, und die Diagnose hat sie weggefiltert.**

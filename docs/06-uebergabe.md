@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-08-31, Version 0.105.5
+Stand: 2026-09-02, Version 0.105.6
 
 ---
 
@@ -86,10 +86,10 @@ Tabelle im Baukasten unter „Die Prüfungen".
 
 ## Wo die Arbeit steht
 
-**`main` ist der aktuelle Stand**, Version 0.105.5. Es gibt keinen offenen
+**`main` ist der aktuelle Stand**, Version 0.105.6. Es gibt keinen offenen
 Arbeitszweig; alles ist zusammengeführt.
 
-| | Stand am 31. August |
+| | Stand am 2. September |
 |---|---|
 | `PulseCore` | 231 Tests, grün |
 | Klick-Dummy | 242 Prüfungen, hell und dunkel, grün |
@@ -112,24 +112,68 @@ appStoreVersions with id '…' is not in valid state.
 This resource cannot be reviewed, please check associated errors to see why.
 ```
 
-**Der Grund steht nicht in dieser Meldung.** Er steht in App Store Connect
-unter `Agreements → Compliance`: Der Händlerstatus nach dem
-Digitale-Dienste-Gesetz ist seit dem 27. August **„In Prüfung"**. Alles andere
-in derselben Tabelle — Verträge, Bankkonto, beide Steuerformulare, die
-DAC7-Richtlinie — steht auf aktiv.
+**Der Grund steht nicht in dieser Meldung, und er stand auch nicht dort, wo
+diese Datei ihn bis zum 2. September vermutet hat.** Hier stand, es liege am
+Händlerstatus nach dem Digitale-Dienste-Gesetz. Das war eine Vermutung, die
+sich wie ein Befund las.
 
-Das liegt bei Apple, und es lässt sich durch Arbeit nicht beschleunigen. Bis es
-„Aktiviert" heißt, ist jeder weitere Einreichungsversuch derselbe Fehlschlag.
+Am 2. September wurde stattdessen gemessen, was messbar ist:
 
-**Sobald es durch ist:**
+| Geprüft | Ergebnis |
+|---|---|
+| Bau an der Fassung | Bau 25, `VALID` |
+| Bilder | ein Satz `APP_IPHONE_67`, 5 Bilder, alle fertig |
+| Altersfreigabe | vollständig beantwortet |
+| Texte, Datenschutz-Adresse | gesetzt |
+| `contentRightsDeclaration` | war **leer** → gesetzt |
+| `usesIdfa` | war **leer** → auf „nein" gesetzt |
+| `copyright` | war **leer** → „2026 Steffen Karjoth", vom Gründer |
+| Danach eingereicht | **derselbe 409** |
+
+Drei Pflichtangaben standen also wirklich leer — und keine davon war die
+Ursache. Warum sie niemand gesehen hat, ist die eigentliche Lehre: Die Diagnose
+blendete leere Werte aus, damit die Zeilen lesbar bleiben. Ein Pflichtfeld, das
+niemand ausgefüllt hat, **ist** ein leerer Wert.
+
+**Was die Schnittstelle nicht hergibt:**
+
+| Weg | Antwort |
+|---|---|
+| Datenschutz-Fragebogen, 5 Schreibweisen | 404 — die Ressource gibt es in dieser Fassung der Schnittstelle nicht |
+| Händlerstatus, 4 Wege | 404 |
+| `reviewSubmissions/…/appStoreVersionForReview` | **403** |
+| `reviewSubmissions/…/app` | **403** — und die App gibt es zweifelsfrei |
+
+Der letzte Punkt ist der Maßstab für die anderen: Ein 403 auf einen Pfad, an
+dem sicher etwas hängt, ist eine Auskunft über den Schlüssel, nicht über die
+Fassung.
+
+**Damit bleibt genau ein Ort, der es weiß: die Oberfläche von App Store
+Connect.** Dort stehen die „associated errors" als rote Punkte neben den
+Feldern. Zwei Kandidaten, die über die Schnittstelle nachweislich unsichtbar
+sind:
+
+1. **App Privacy** — der Fragebogen „Welche Daten erfasst die App?" muss
+   *veröffentlicht* sein. Er ist etwas anderes als die Datenschutz-Adresse, die
+   seit Wochen steht. Für Zählora lautet die Antwort: keine Daten erfasst.
+2. **Agreements → Compliance**, Händlerstatus nach dem
+   Digitale-Dienste-Gesetz.
+
+**Sobald das erledigt ist:**
 
 1. `einreichen.yml` mit `bestaetigung=einreichen` — hängt von selbst den
-   neuesten tauglichen Bau an die Fassung.
+   neuesten tauglichen Bau an die Fassung und füllt die Pflichtangaben.
 2. Nach `READY_FOR_SALE`: `live-schalten.yml` **von Hand** über
    `workflow_dispatch` auslösen. Auf den Stundenplan ist kein Verlass, gemessen
    einmal in sechs Stunden.
 3. `https://zaehlora.pages.dev` abrufen und prüfen, dass dort das Abzeichen mit
    dem echten Verweis steht statt „Bald im App Store".
+
+**Nebenbefund, damit ihn niemand noch einmal sucht:** Die leere Einreichung
+`68046b63` lässt sich weder löschen (`DELETE` → 403) noch zurückziehen
+(`canceled: true` → 409, „Resource is not in cancellable state"). Sie enthält
+nichts und stört nachweislich nicht — der Einreichlauf nimmt die gefüllte
+`5e3efe16`.
 
 ---
 
