@@ -281,15 +281,39 @@ def einreichen(apple: Apple, app_id: str, fassung) -> int:
     #     appStoreVersions must be included in this review submission
     #
     # Gezählt wird also nicht, sondern nachgesehen, **was** darin liegt.
+    #
+    # **Und dafür braucht es `include`.** Hier stand die Prüfung auf
+    # `relationships.appStoreVersion.data` ohne diesen Zusatz — und die Liste
+    # der Einträge liefert Beziehungen dann nur als Verweis, ohne `data`. Die
+    # Bedingung war damit **immer** falsch, und die Zeile „davon 0 mit Fassung"
+    # war keine Auskunft, sondern eine leere Antwort in Worten.
+    #
+    # Die Folge, drei Tage lang: Das Skript hielt die Fassung für nicht
+    # enthalten, versuchte sie hinzuzufügen, und Apple lehnte mit
+    # „appStoreVersions … is not in valid state" ab — einer Meldung über die
+    # Fassung, während die Ursache die Einreichung war, in der sie längst lag.
+    # Ich habe in dieser Zeit den Händlerstatus verdächtigt und dem Gründer
+    # gesagt, es liege an Apple.
+    #
+    # Gefunden, weil derselbe Ausdruck in der Aufstellung fünfmal „unbekannt"
+    # ausgab. Eine Bedingung, die nie zutrifft, sieht im Erfolgsfall genauso
+    # aus wie eine, die zu Recht nicht zutrifft.
     stand, teile = apple.holen(f"v1/reviewSubmissions/{einreichung}/items",
-                               **{"limit": 50})
-    eintraege = teile.json().get("data", []) if stand == 200 else []
+                               **{"limit": 50, "include": "appStoreVersion"})
+    koerper = teile.json() if stand == 200 else {}
+    eintraege = koerper.get("data", [])
+    # Zwei Wege, und der zweite trägt, wenn der erste leer bleibt: `included`
+    # führt die tatsächlich aufgelösten Fassungen.
     mit_fassung = [e for e in eintraege
                    if (e.get("relationships", {}).get("appStoreVersion", {})
                         .get("data"))]
+    aufgeloest = [e for e in koerper.get("included", [])
+                  if e.get("type") == "appStoreVersions"]
     print(f"  · Die Einreichung führt {len(eintraege)} Eintrag/Einträge, "
-          f"davon {len(mit_fassung)} mit Fassung")
-    if mit_fassung:
+          f"davon {len(mit_fassung)} mit Fassung "
+          f"({len(aufgeloest)} aufgelöst)")
+    if mit_fassung or aufgeloest:
+        print("  · Die Fassung liegt bereits darin — es wird nur abgeschickt.")
         return absenden(apple, einreichung)
 
     stand, antwort = apple.anlegen("v1/reviewSubmissionItems", {"data": {

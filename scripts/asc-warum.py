@@ -168,14 +168,22 @@ def main() -> int:
         kennung = eintrag["id"]
         zustand = (eintrag.get("attributes") or {}).get("state", "?")
         print(f"\n── Einträge der Einreichung {kennung[:8]} ({zustand})")
-        s, a = holen(f"v1/reviewSubmissions/{kennung}/items", **{"limit": 50})
+        # **Ohne `include` liefert die Liste die Beziehungen nicht mit.** Der
+        # erste Anlauf gab hier fünfmal „unbekannt" aus — und genau derselbe
+        # Ausdruck entschied in `asc-einreichen.py` darüber, ob die Fassung
+        # schon in der Einreichung liegt. Er war dort immer falsch.
+        s, a = holen(f"v1/reviewSubmissions/{kennung}/items",
+                     **{"limit": 50,
+                        "include": "appStoreVersion,inAppPurchaseV2"})
         if s != 200:
             print(f"   nicht lesbar ({s})")
             continue
-        posten = a.json().get("data", [])
+        koerper = a.json()
+        posten = koerper.get("data", [])
         if not posten:
             print("   leer — ein Überbleibsel eines gescheiterten Laufs")
             continue
+        beigefuegt = {e["id"]: e for e in koerper.get("included", [])}
         for p in posten:
             bez = p.get("relationships", {})
             art = next((name for name in ("appStoreVersion", "appCustomProductPageVersion",
@@ -184,6 +192,11 @@ def main() -> int:
             ziel = ((bez.get(art, {}) or {}).get("data") or {}).get("id", "")
             marke = "  ← DIE FASSUNG" if art == "appStoreVersion" else ""
             print(f"   · {art} {ziel[:8]}{marke}")
+        # Und unabhängig davon, was oben stand: was Apple beigefügt hat.
+        for kennung2, e in beigefuegt.items():
+            merkmale = {k: v for k, v in (e.get("attributes") or {}).items()
+                        if k in ("versionString", "name", "productId", "state")}
+            print(f"   ⇒ beigefügt: {e.get('type')} {kennung2[:8]} {merkmale}")
 
     print("\nGelesen, nicht geraten. Was oben mit 404 antwortet, gibt es nicht.")
     return 0
