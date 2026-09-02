@@ -27,6 +27,9 @@ import requests
 BASIS = "https://api.appstoreconnect.apple.com"
 BUNDLE = "de.karjoth.pulsemeter"
 
+# Wörtlich vom Gründer, 2. September. Steht so auf der Produktseite im Store.
+RECHTEVERMERK = "2026 Steffen Karjoth"
+
 # Die Zustände, in denen eine Einreichung schon unterwegs ist. Eine zweite
 # anzulegen, während eine läuft, lehnt Apple ab — und zwar mit einer Meldung,
 # die nach einem Fehler klingt statt nach „steht schon".
@@ -282,11 +285,17 @@ def pflichtfelder(apple: Apple, app_id: str, fassung_id: str) -> list:
         if s != 200:
             offen.append("usesIdfa")
     if not merkmale.get("copyright"):
-        # **Nicht ausfüllen.** Wem die Rechte gehören und wie er genannt werden
-        # will, sagt der Gründer. Ein plausibel geratener Rechtevermerk ist
-        # dieselbe Sorte Satz wie das erfundene „Kleinunternehmer" im Impressum.
-        print("  · Urheberrecht steht leer — das trägt der Gründer selbst ein")
-        offen.append("copyright")
+        # **Wörtlich vom Gründer, am 2. September gefragt und beantwortet.**
+        # Ein Rechtevermerk steht auf der Produktseite und sagt, wem die App
+        # gehört — geraten wäre er dieselbe Sorte Satz wie das erfundene
+        # „Kleinunternehmer" im Impressum. Also gefragt, bevor er hier steht.
+        s, a = apple.aendern(f"v1/appStoreVersions/{fassung_id}", {"data": {
+            "type": "appStoreVersions", "id": fassung_id,
+            "attributes": {"copyright": RECHTEVERMERK}}})
+        print(f"  {'✓' if s == 200 else '✗'} Urheberrecht gesetzt "
+              f"({s}){'' if s == 200 else ' — ' + kurz(a)}")
+        if s != 200:
+            offen.append("copyright")
     return offen
 
 
