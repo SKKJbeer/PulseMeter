@@ -172,13 +172,34 @@ def main() -> int:
         # erste Anlauf gab hier fünfmal „unbekannt" aus — und genau derselbe
         # Ausdruck entschied in `asc-einreichen.py` darüber, ob die Fassung
         # schon in der Einreichung liegt. Er war dort immer falsch.
-        s, a = holen(f"v1/reviewSubmissions/{kennung}/items",
-                     **{"limit": 50,
-                        "include": "appStoreVersion,inAppPurchaseV2"})
-        if s != 200:
-            print(f"   nicht lesbar ({s})")
+        #
+        # **Der zweite Anlauf mit `include` kam mit 400 zurück.** Welche Namen
+        # Apple hier zulässt, steht in keiner Anleitung, die ich habe — also
+        # wird nicht die nächste Schreibweise geraten, sondern jede Variante
+        # einmal versucht und **Apples Einwand ausgedruckt**. Der nennt in
+        # aller Regel das Feld, an dem es liegt.
+        koerper = None
+        for versuch in ({"limit": 50, "include": "appStoreVersion"},
+                        {"limit": 50,
+                         "fields[reviewSubmissionItems]": "appStoreVersion,state"},
+                        {"limit": 50}):
+            s, a = holen(f"v1/reviewSubmissions/{kennung}/items", **versuch)
+            beschriftung = versuch.get("include") or \
+                versuch.get("fields[reviewSubmissionItems]") or "ohne Zusatz"
+            if s == 200:
+                print(f"   gelesen mit: {beschriftung}")
+                koerper = a.json()
+                break
+            einwand = ""
+            try:
+                einwand = "; ".join(f"{f.get('title','')}: {f.get('detail','')}"
+                                    for f in a.json().get("errors", [])[:2])
+            except ValueError:
+                einwand = a.text[:160]
+            print(f"   {beschriftung} → {s} — {einwand[:200]}")
+        if koerper is None:
+            print("   auf keinem Weg lesbar")
             continue
-        koerper = a.json()
         posten = koerper.get("data", [])
         if not posten:
             print("   leer — ein Überbleibsel eines gescheiterten Laufs")
