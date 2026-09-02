@@ -205,14 +205,14 @@ def main() -> int:
             print("   leer — ein Überbleibsel eines gescheiterten Laufs")
             continue
         beigefuegt = {e["id"]: e for e in koerper.get("included", [])}
+        # **Roh ausgeben, nicht nach bekannten Namen suchen.**
+        #
+        # Der Anlauf davor prüfte eine Liste von Beziehungsnamen und schrieb
+        # fünfmal „unbekannt" — dieselbe Sackgasse wie im Einreichskript: Eine
+        # Bedingung, die nie zutrifft, sieht aus wie eine, die zu Recht nicht
+        # zutrifft. Was der Eintrag *tatsächlich* enthält, sagt nur er selbst.
         for p in posten:
-            bez = p.get("relationships", {})
-            art = next((name for name in ("appStoreVersion", "appCustomProductPageVersion",
-                                          "appEvent", "inAppPurchaseV2", "subscription")
-                        if (bez.get(name, {}) or {}).get("data")), "unbekannt")
-            ziel = ((bez.get(art, {}) or {}).get("data") or {}).get("id", "")
-            marke = "  ← DIE FASSUNG" if art == "appStoreVersion" else ""
-            print(f"   · {art} {ziel[:8]}{marke}")
+            print(f"   · {json.dumps(p, ensure_ascii=False)[:400]}")
         # Und unabhängig davon, was oben stand: was Apple beigefügt hat.
         for kennung2, e in beigefuegt.items():
             merkmale = {k: v for k, v in (e.get("attributes") or {}).items()
