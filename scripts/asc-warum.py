@@ -234,14 +234,27 @@ def main() -> int:
         # dann ist sie vergeben, und jeder Versuch, sie anderswo einzuhängen,
         # scheitert mit einer Meldung über die Fassung statt über die Stelle,
         # an der sie hängt.
-        s, a = holen(f"v1/reviewSubmissions/{kennung}")
-        if s == 200:
-            bez = a.json().get("data", {}).get("relationships", {}) or {}
-            for name, wert in sorted(bez.items()):
-                ziel = (wert or {}).get("data")
-                if ziel:
-                    print(f"   ⇢ {name}: {ziel.get('type')} "
-                          f"{str(ziel.get('id'))[:36]}")
+        #
+        # **Nicht am Objekt nachsehen — den Beziehungspfad abrufen.** Der erste
+        # Anlauf las `relationships` am Objekt und bekam nichts; dieselbe Falle
+        # wie bei den Einträgen. Kein `include`, keine Daten — und „keine
+        # Daten" sah aus wie „keine Beziehung". Der eigene Pfad antwortet
+        # dagegen eindeutig: 404, wenn nichts dranhängt, sonst die Ressource.
+        for name in ("appStoreVersionForReview", "app", "submittedByActor"):
+            s, a = holen(f"v1/reviewSubmissions/{kennung}/{name}")
+            if s == 200:
+                daten = a.json().get("data")
+                if isinstance(daten, dict):
+                    merkmale = {k: v for k, v in
+                                (daten.get("attributes") or {}).items()
+                                if k in ("versionString", "appStoreState",
+                                         "platform", "name")}
+                    print(f"   ⇢ {name}: {daten.get('type')} "
+                          f"{daten.get('id')} {merkmale}")
+                else:
+                    print(f"   ⇢ {name}: leer")
+            else:
+                print(f"   ⇢ {name}: {s}")
         # **Ohne `include` liefert die Liste die Beziehungen nicht mit.** Der
         # erste Anlauf gab hier fünfmal „unbekannt" aus — und genau derselbe
         # Ausdruck entschied in `asc-einreichen.py` darüber, ob die Fassung
