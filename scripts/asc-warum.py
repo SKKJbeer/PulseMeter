@@ -150,6 +150,41 @@ def main() -> int:
     zeigen("Laufende Einreichungen", "v1/reviewSubmissions",
            **{"filter[app]": app, "limit": 10})
 
+    # **Und was in jeder einzelnen davon liegt.**
+    #
+    # Bis heute endete diese Aufstellung bei „zwei Einreichungen stehen offen".
+    # Das ist eine Anzahl, keine Auskunft — dieselbe Falle, die dieses Projekt
+    # schon dreimal hatte. Entscheidend ist, **welche** von beiden die Fassung
+    # hält: Eine Fassung darf nur in einer Einreichung liegen, und der Versuch,
+    # sie einer zweiten hinzuzufügen, scheitert mit einer Meldung, die von der
+    # Fassung spricht und nicht von der Einreichung.
+    #
+    # `asc-einreichen.py` nimmt die Einreichung mit den meisten Einträgen und
+    # sieht in die andere nie hinein. Ob das die richtige Wahl ist, entscheidet
+    # sich hier.
+    stand, antwort = holen("v1/reviewSubmissions",
+                           **{"filter[app]": app, "limit": 10})
+    for eintrag in (antwort.json().get("data", []) if stand == 200 else []):
+        kennung = eintrag["id"]
+        zustand = (eintrag.get("attributes") or {}).get("state", "?")
+        print(f"\n── Einträge der Einreichung {kennung[:8]} ({zustand})")
+        s, a = holen(f"v1/reviewSubmissions/{kennung}/items", **{"limit": 50})
+        if s != 200:
+            print(f"   nicht lesbar ({s})")
+            continue
+        posten = a.json().get("data", [])
+        if not posten:
+            print("   leer — ein Überbleibsel eines gescheiterten Laufs")
+            continue
+        for p in posten:
+            bez = p.get("relationships", {})
+            art = next((name for name in ("appStoreVersion", "appCustomProductPageVersion",
+                                          "appEvent", "inAppPurchaseV2", "subscription")
+                        if (bez.get(name, {}) or {}).get("data")), "unbekannt")
+            ziel = ((bez.get(art, {}) or {}).get("data") or {}).get("id", "")
+            marke = "  ← DIE FASSUNG" if art == "appStoreVersion" else ""
+            print(f"   · {art} {ziel[:8]}{marke}")
+
     print("\nGelesen, nicht geraten. Was oben mit 404 antwortet, gibt es nicht.")
     return 0
 
