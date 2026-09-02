@@ -474,9 +474,20 @@ def aufraeumen(apple: Apple, app_id: str) -> int:
         if code in (200, 204):
             print(f"  ✓ {eintrag['id'][:8]}: leer, entfernt")
             weg += 1
+            continue
+        # **Löschen ist nicht der einzige Weg.** Auf DELETE antwortet Apple hier
+        # seit dem 29. August mit 403; eine Einreichung wird nicht gelöscht,
+        # sondern zurückgezogen. Also derselbe Aufruf wie beim Zurückziehen.
+        s2, a2 = apple.aendern(f"v1/reviewSubmissions/{eintrag['id']}", {
+            "data": {"type": "reviewSubmissions", "id": eintrag["id"],
+                     "attributes": {"canceled": True}}})
+        if s2 in (200, 204):
+            print(f"  ✓ {eintrag['id'][:8]}: leer, zurückgezogen "
+                  f"(DELETE gab {code})")
+            weg += 1
         else:
-            print(f"  ✗ {eintrag['id'][:8]}: leer, ließ sich nicht entfernen "
-                  f"(Antwort {code}) — bleibt stehen")
+            print(f"  ✗ {eintrag['id'][:8]}: leer, bleibt stehen "
+                  f"(DELETE {code}, Zurückziehen {s2} — {kurz(a2)})")
 
     print(f"::notice::{weg} leere Einreichung(en) entfernt.")
     return 0

@@ -227,6 +227,21 @@ def main() -> int:
         kennung = eintrag["id"]
         zustand = (eintrag.get("attributes") or {}).get("state", "?")
         print(f"\n── Einträge der Einreichung {kennung[:8]} ({zustand})")
+        # **Eine Einreichung hält die Fassung auf zwei Wegen.** Die Einträge
+        # sind der eine; `appStoreVersionForReview` am Objekt selbst ist der
+        # andere, und den hat hier nie jemand gelesen. Liegt die Fassung dort —
+        # womöglich in der leeren Einreichung, die sich nicht löschen ließ —,
+        # dann ist sie vergeben, und jeder Versuch, sie anderswo einzuhängen,
+        # scheitert mit einer Meldung über die Fassung statt über die Stelle,
+        # an der sie hängt.
+        s, a = holen(f"v1/reviewSubmissions/{kennung}")
+        if s == 200:
+            bez = a.json().get("data", {}).get("relationships", {}) or {}
+            for name, wert in sorted(bez.items()):
+                ziel = (wert or {}).get("data")
+                if ziel:
+                    print(f"   ⇢ {name}: {ziel.get('type')} "
+                          f"{str(ziel.get('id'))[:36]}")
         # **Ohne `include` liefert die Liste die Beziehungen nicht mit.** Der
         # erste Anlauf gab hier fünfmal „unbekannt" aus — und genau derselbe
         # Ausdruck entschied in `asc-einreichen.py` darüber, ob die Fassung
