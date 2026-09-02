@@ -284,6 +284,12 @@ def eintrag_fuellen(apple: Apple, app_id: str) -> None:
 # das 6,9-Zoll-Format; die Simulator-Bilder kommen von einem iPhone 17 Pro Max
 # und haben genau diese Auflösung. Hochskalieren wäre sichtbar — deshalb kommen
 # sie seit 0.96.3 zusätzlich in voller Größe in den Zweig `screenshots`.
+#
+# **Die Kennung heißt trotzdem `67`, und das sieht wie ein Fehler aus.** Sie ist
+# keiner: Am 2. September nachgesehen, was tatsächlich bei Apple liegt — ein
+# Satz `APP_IPHONE_67` mit fünf Bildern, alle auf `COMPLETE`. Unter dieser
+# Kennung nimmt Apple die 6,9-Zoll-Bilder an. Wer die Zeile für einen
+# Tippfehler hält und sie ändert, verliert den Satz.
 BILDSCHIRM = "APP_IPHONE_67"
 
 # Die Reihenfolge ist die Reihenfolge auf der Store-Seite. Erst das, was die

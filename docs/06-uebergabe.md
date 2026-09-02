@@ -128,6 +128,10 @@ Am 2. September wurde stattdessen gemessen, was messbar ist:
 | `contentRightsDeclaration` | war **leer** → gesetzt |
 | `usesIdfa` | war **leer** → auf „nein" gesetzt |
 | `copyright` | war **leer** → „2026 Steffen Karjoth", vom Gründer |
+| Kategorien | `UTILITIES` und `FINANCE` — gesetzt |
+| Zielgeräte | nur iPhone (`TARGETED_DEVICE_FAMILY: "1"`), also keine iPad-Bilder nötig |
+| Händlerstatus | am 2. September vom Gründer belegt: **Aktiv** |
+| App Privacy | vom Gründer als veröffentlicht gemeldet |
 | Danach eingereicht | **derselbe 409** |
 
 Drei Pflichtangaben standen also wirklich leer — und keine davon war die
