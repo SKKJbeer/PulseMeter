@@ -9,6 +9,57 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.105.5 — 2026-09-02
+
+**Drei Pflichtangaben standen leer, und die Diagnose hat sie weggefiltert.**
+
+Der Gründer fragte, ob ich etwas falsch mache. Ja — und der Fehler war eine
+Zeile Darstellungslogik. Die Diagnose blendet leere Werte aus, damit die Zeilen
+lesbar bleiben:
+
+```python
+merkmale = {k: v for k, v in attribute.items() if v not in (None, "", [], {})}
+```
+
+Ein Pflichtfeld, das niemand ausgefüllt hat, **ist** ein leerer Wert. Es fehlte
+in der Ausgabe und sah dadurch aus, als gäbe es das Feld nicht. Drei Tage lang
+stand in jedem Protokoll, was gesetzt war, und nie, was fehlte.
+
+Roh ausgegeben, sind es drei:
+
+```
+contentRightsDeclaration : null   (an der App)
+usesIdfa                 : null   (an der Fassung)
+copyright                : null   (an der Fassung)
+```
+
+Genau das sind die roten Punkte, die App Store Connect in der Oberfläche neben
+den Feldern zeigt — und die die Schnittstelle zu „appStoreVersions … is not in
+valid state" zusammenfasst, ohne eines davon zu nennen.
+
+Zwei davon setzt der Einreichlauf jetzt selbst, weil sie nachprüfbare Tatsachen
+über die App sind: keine fremden Inhalte, kein Werbe-Identifikator. Den
+Rechtevermerk setzt er **nicht** — wem die Rechte gehören und wie er genannt
+werden will, sagt der Gründer. Ein plausibel geratener Rechtevermerk wäre
+dieselbe Sorte Satz wie das erfundene „Kleinunternehmer" im Impressum.
+
+**Und eine eigene Korrektur, im selben Zug.** Eine Stunde vorher hatte ich hier
+das Gegenteil behauptet: Die Fassung liege längst in der Einreichung, mein
+Skript könne es wegen eines fehlenden `include` nur nicht sehen. Mit `include`
+gefragt, antwortet Apple ausdrücklich `"appStoreVersion": {"data": null}` —
+fünfmal. Die Fassung liegt wirklich nicht darin, die fünf Einträge sind die
+fünf Käufe. Der `include`-Fehler war echt, aber nicht die Ursache; ich habe
+eine gefundene Ursache für die Ursache gehalten, ohne Gegenprobe. Dieselbe
+Lehre wie am 29. August, diesmal von der anderen Seite.
+
+Ebenfalls gemessen, damit es nicht wieder geraten wird: ein Bildsatz
+(`APP_IPHONE_67`, fünf Bilder, alle fertig), Altersfreigabe vollständig
+beantwortet, Texte gesetzt, Bau 25 an der Fassung.
+
+Nur Skripte und Dokumente. Kein App-Code, kein Bau.
+
+---
+
 ## 0.105.4 — 2026-08-31
 
 **„Das Repo ist privat" stand seit Wochen in `CLAUDE.md` und war falsch.**

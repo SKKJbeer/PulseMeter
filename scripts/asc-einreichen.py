@@ -234,6 +234,62 @@ def vorbereitete(apple: Apple, app_id: str):
     return kandidaten[0][1]
 
 
+def pflichtfelder(apple: Apple, app_id: str, fassung_id: str) -> list:
+    """Füllt die Pflichtangaben, die leer sind — und nennt die, die es nicht darf.
+
+    **Warum das hier steht.** „appStoreVersions … is not in valid state" nennt
+    keinen Grund; die Gründe stehen in der Oberfläche als rote Punkte neben den
+    Feldern. Drei davon standen drei Tage lang leer, ohne dass es irgendwo
+    aufgefallen wäre:
+
+        contentRightsDeclaration   an der App
+        usesIdfa, copyright        an der Fassung
+
+    **Warum es niemand gesehen hat.** Die Diagnose blendete leere Werte aus,
+    damit die Zeilen lesbar bleiben — und ein Pflichtfeld, das niemand
+    ausgefüllt hat, *ist* ein leerer Wert. Es fehlte in der Ausgabe und sah
+    dadurch aus, als gäbe es das Feld nicht.
+
+    **Zwei werden gesetzt, eines nicht.** Die beiden ersten sind
+    nachprüfbare Tatsachen über die App: Sie enthält keine fremden Inhalte und
+    keinen Werbe-Identifikator. Das Urheberrecht ist eine Aussage über den
+    Gründer — die schreibt hier niemand hin, sie wird gemeldet.
+    """
+    offen = []
+
+    stand, antwort = apple.holen(f"v1/apps/{app_id}")
+    if stand == 200:
+        merkmale = antwort.json().get("data", {}).get("attributes") or {}
+        if not merkmale.get("contentRightsDeclaration"):
+            s, a = apple.aendern(f"v1/apps/{app_id}", {"data": {
+                "type": "apps", "id": app_id,
+                "attributes": {
+                    "contentRightsDeclaration": "DOES_NOT_USE_THIRD_PARTY_CONTENT"}}})
+            print(f"  {'✓' if s == 200 else '✗'} Inhaltsrechte gesetzt "
+                  f"({s}){'' if s == 200 else ' — ' + kurz(a)}")
+            if s != 200:
+                offen.append("contentRightsDeclaration")
+
+    stand, antwort = apple.holen(f"v1/appStoreVersions/{fassung_id}")
+    merkmale = (antwort.json().get("data", {}).get("attributes") or {}) \
+        if stand == 200 else {}
+    if merkmale.get("usesIdfa") is None:
+        s, a = apple.aendern(f"v1/appStoreVersions/{fassung_id}", {"data": {
+            "type": "appStoreVersions", "id": fassung_id,
+            "attributes": {"usesIdfa": False}}})
+        print(f"  {'✓' if s == 200 else '✗'} Werbe-Identifikator auf nein "
+              f"({s}){'' if s == 200 else ' — ' + kurz(a)}")
+        if s != 200:
+            offen.append("usesIdfa")
+    if not merkmale.get("copyright"):
+        # **Nicht ausfüllen.** Wem die Rechte gehören und wie er genannt werden
+        # will, sagt der Gründer. Ein plausibel geratener Rechtevermerk ist
+        # dieselbe Sorte Satz wie das erfundene „Kleinunternehmer" im Impressum.
+        print("  · Urheberrecht steht leer — das trägt der Gründer selbst ein")
+        offen.append("copyright")
+    return offen
+
+
 def einreichen(apple: Apple, app_id: str, fassung) -> int:
     zustand = feld(fassung, "appStoreState") or feld(fassung, "appVersionState")
     print(f"::notice::Fassung {feld(fassung, 'versionString')} — {zustand}")
@@ -249,6 +305,9 @@ def einreichen(apple: Apple, app_id: str, fassung) -> int:
     if not bau_anhaengen(apple, app_id, fassung["id"]):
         print("::error::Ohne Bau an der Fassung wird nicht eingereicht.")
         return 1
+
+    for name in pflichtfelder(apple, app_id, fassung["id"]):
+        print(f"::warning::Pflichtangabe steht weiter leer: {name}")
 
     # **Eine vorbereitete wiederverwenden statt eine zweite anzulegen.** Die
     # Fassung darf nur in einer Einreichung hängen; eine zweite anzulegen
@@ -272,9 +331,9 @@ def einreichen(apple: Apple, app_id: str, fassung) -> int:
         neu_angelegt = True
         print(f"  ✓ Einreichung angelegt ({einreichung[:8]})")
 
-    # **„Hat Einträge" heißt nicht „hat die Fassung".** Genau das hat der
-    # vorige Lauf geschlossen und ist damit abgestürzt: Die gefundene
-    # Einreichung führte fünf Einträge — die fünf Käufe — und keine Fassung.
+    # **„Hat Einträge" heißt nicht „hat die Fassung".** Genau das hat ein
+    # früherer Lauf geschlossen und ist damit abgestürzt: Die gefundene
+    # Einreichung führt fünf Einträge — die fünf Käufe — und keine Fassung.
     # Apple sagte es dann deutlich:
     #
     #     must have an approved appStoreVersions for platform IOS, or an
@@ -282,22 +341,20 @@ def einreichen(apple: Apple, app_id: str, fassung) -> int:
     #
     # Gezählt wird also nicht, sondern nachgesehen, **was** darin liegt.
     #
-    # **Und dafür braucht es `include`.** Hier stand die Prüfung auf
-    # `relationships.appStoreVersion.data` ohne diesen Zusatz — und die Liste
-    # der Einträge liefert Beziehungen dann nur als Verweis, ohne `data`. Die
-    # Bedingung war damit **immer** falsch, und die Zeile „davon 0 mit Fassung"
-    # war keine Auskunft, sondern eine leere Antwort in Worten.
+    # **Mit `include` gefragt, weil die Liste sonst nur Verweise liefert.** Ohne
+    # den Zusatz fehlt `data` in jeder Beziehung; die Prüfung stand dann auf
+    # einem Wert, den die Antwort gar nicht enthielt.
     #
-    # Die Folge, drei Tage lang: Das Skript hielt die Fassung für nicht
-    # enthalten, versuchte sie hinzuzufügen, und Apple lehnte mit
-    # „appStoreVersions … is not in valid state" ab — einer Meldung über die
-    # Fassung, während die Ursache die Einreichung war, in der sie längst lag.
-    # Ich habe in dieser Zeit den Händlerstatus verdächtigt und dem Gründer
-    # gesagt, es liege an Apple.
+    # **Am Ergebnis ändert das hier nichts, und das ist der eigentliche
+    # Befund.** Mit `include` antwortet Apple ausdrücklich
+    # `"appStoreVersion": {"data": null}` — fünfmal. Die Fassung liegt wirklich
+    # nicht in der Einreichung. Ich hatte daraus vorschnell das Gegenteil
+    # geschlossen und den Fehlschlag der Einreichung zugeschrieben; das war
+    # falsch, der Fehlschlag gehört zur Fassung.
     #
-    # Gefunden, weil derselbe Ausdruck in der Aufstellung fünfmal „unbekannt"
-    # ausgab. Eine Bedingung, die nie zutrifft, sieht im Erfolgsfall genauso
-    # aus wie eine, die zu Recht nicht zutrifft.
+    # Was bleibt: Eine Bedingung, die nie zutrifft, sieht genauso aus wie eine,
+    # die zu Recht nicht zutrifft — und deshalb wird hier ausdrücklich
+    # zwischen „nicht enthalten" und „nicht gefragt" unterschieden.
     stand, teile = apple.holen(f"v1/reviewSubmissions/{einreichung}/items",
                                **{"limit": 50, "include": "appStoreVersion"})
     koerper = teile.json() if stand == 200 else {}
