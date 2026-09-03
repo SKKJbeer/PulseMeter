@@ -1023,6 +1023,41 @@ for (const scheme of ["light", "dark"]) {
   const erklaerung = await page.evaluate(() =>
     document.getElementById("ex-body").innerText);
   note(/Hochrechnung aufs Jahr/.test(erklaerung), "Die Erklärung nennt die Hochrechnung");
+
+  // **Die sichtbaren Zeilen müssen die Summe ergeben.**
+  //
+  // Vom Gründer am 3. September auf einem Bildschirmfoto gefunden: 947,68 €
+  // Arbeitspreis plus 154,80 € Grundpreis, darunter „Erwartete Kosten
+  // 911,88 €". Die 190,60 € Differenz waren die Einspeisevergütung, die
+  // `projectedCost` abzieht und die auf dem Schirm nirgends stand.
+  //
+  // Ein Schirm, der „Wie diese Zahl entsteht" heißt und einen Schritt
+  // verschweigt, ist Produktprinzip 7 in sein Gegenteil verkehrt. Diese
+  // Prüfung rechnet deshalb nach, was dasteht — und nur, was dasteht.
+  const rechnung = await page.evaluate(() => {
+    const zahl = t => {
+      const m = t.replace(/\s/g, "").match(/(−|-)?([\d.]+,\d\d)/);
+      if (!m) return null;
+      return (m[1] ? -1 : 1) * Number(m[2].replace(/\./g, "").replace(",", "."));
+    };
+    const zeilen = [...document.querySelectorAll("#ex-body .calc-row")].map(r => ({
+      text: r.querySelector(".k").textContent.trim(),
+      wert: zahl(r.querySelector(".v").textContent),
+      summe: r.classList.contains("total"),
+    }));
+    return zeilen;
+  });
+  const bisSumme = [];
+  let summenzeile = null;
+  for (const z of rechnung) {
+    if (z.summe) { summenzeile = z; break; }
+    if (z.wert !== null) bisSumme.push(z);
+  }
+  const addiert = bisSumme.reduce((a, z) => a + z.wert, 0);
+  note(summenzeile !== null && Math.abs(addiert - summenzeile.wert) < 0.02,
+       `Die Posten ergeben die Summe (${addiert.toFixed(2)} = ${summenzeile ? summenzeile.wert.toFixed(2) : "?"})`);
+  note(/Einspeiseverg/.test(erklaerung),
+       "Die abgezogene Einspeisevergütung steht als eigene Zeile da");
   note(/nach dem Verlauf|typischen Jahresverlauf|Tagesschnitt/.test(erklaerung),
        "Und sie sagt, worauf die Zahl beruht");
   await page.locator("#sheet-explain [data-close]").first().click();

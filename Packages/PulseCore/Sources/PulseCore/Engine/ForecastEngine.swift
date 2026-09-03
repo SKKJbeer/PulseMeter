@@ -346,6 +346,44 @@ public enum ForecastEngine {
         /// Grundlage: Sie bestimmt, wie sehr man dem Ganzen trauen darf.
         public let method: Method
 
+        /// Die Posten, aus denen ``projectedCost`` entsteht.
+        ///
+        /// **Warum das mitkommen muss.** Der Entwurf hatte ein Blatt „Wie diese
+        /// Zahl entsteht" — und es verschwieg einen Schritt: Bei einem
+        /// Photovoltaik-Zähler standen dort 947,68 € Arbeitspreis und 154,80 €
+        /// Grundpreis über einer Summe von 911,88 €. Die fehlenden 190,60 €
+        /// waren die Einspeisevergütung, die abgezogen, aber nirgends genannt
+        /// wurde. Vom Gründer auf einem Bildschirmfoto gefunden, nicht von
+        /// einer Prüfung.
+        ///
+        /// Deshalb ist die Aufschlüsselung hier eine Zusicherung und keine
+        /// Anzeigehilfe: ``sum`` muss ``projectedCost`` ergeben. Ein Schirm,
+        /// der „wie diese Zahl entsteht" heißt und einen Posten auslässt, ist
+        /// Produktprinzip 7 in sein Gegenteil verkehrt.
+        public let breakdown: Breakdown
+
+        public struct Breakdown: Hashable, Sendable {
+            /// Gemessen im bisher verstrichenen Teil des Zeitraums.
+            public let consumptionToDate: Quantity
+            /// Auf den ganzen Zeitraum hochgerechnet.
+            public let projectedConsumption: Quantity
+            /// Arbeitspreis über den hochgerechneten Bezug.
+            public let workingCost: Money
+            /// Grundpreis über den ganzen Zeitraum — er läuft weiter, auch wenn
+            /// niemand abliest.
+            public let standingCost: Money
+            /// Vergütung für die Einspeisung, **positiv**. Sie wird abgezogen;
+            /// auf dem Schirm steht sie deshalb mit einem Minuszeichen.
+            /// `nil` bei einem Zähler ohne Einspeisung.
+            public let feedInCredit: Money?
+
+            /// Was die genannten Posten zusammen ergeben.
+            public var sum: Money {
+                Money(workingCost.amount + standingCost.amount
+                      - (feedInCredit?.amount ?? 0), workingCost.currency)
+            }
+        }
+
         public var expectsRefund: Bool { balance.amount > 0 }
     }
 
@@ -384,6 +422,14 @@ public enum ForecastEngine {
         var projectedEnergy = Decimal(0)
         var sawRegister = false
         var weakest: Method = .ownHistory
+        // Getrennt mitgezählt, damit die Aufschlüsselung nicht nachträglich aus
+        // der Summe zurückgerechnet werden muss. Zurückrechnen ist genau die
+        // Stelle, an der ein Posten verschwindet.
+        var projectedDraw = Decimal(0)
+        var projectedFeedIn = Decimal(0)
+        var measuredDraw = Decimal(0)
+        var projectedDrawQuantity = Decimal(0)
+        var drawUnit: MeasurementUnit?
 
         for register in meteringPoint.registers {
             guard let partial = try? CostEngine.cost(register: register, readings: readings,
@@ -391,6 +437,7 @@ public enum ForecastEngine {
             else { continue }
             sawRegister = true
             let energy = partial.energyAmount.amount
+            let istEinspeisung = register.direction == .feedIn
             guard let forecast = forecast(register: register, readings: readings,
                                           period: period.range, today: today,
                                           kind: meteringPoint.kind) else {
@@ -399,6 +446,7 @@ public enum ForecastEngine {
                 // das, was schon feststeht. Und weil dann gar nicht
                 // fortgeschrieben wurde, ist die Grundlage die schwächste.
                 projectedEnergy += energy
+                if istEinspeisung { projectedFeedIn += energy } else { projectedDraw += energy }
                 weakest = .linear
                 continue
             }
@@ -406,6 +454,14 @@ public enum ForecastEngine {
             let measured = forecast.actual.quantity.value
             let scale: Decimal = measured > 0 ? forecast.projected.value / measured : 1
             projectedEnergy += energy * scale
+            if istEinspeisung {
+                projectedFeedIn += energy * scale
+            } else {
+                projectedDraw += energy * scale
+                measuredDraw += forecast.actual.quantity.value
+                projectedDrawQuantity += forecast.projected.value
+                drawUnit = drawUnit ?? forecast.projected.unit
+            }
         }
         guard sawRegister else { return nil }
 
@@ -420,11 +476,27 @@ public enum ForecastEngine {
         let projectedTotal = projectedEnergy + fullBase
         let projectedCost = Money(projectedTotal, costSoFar.total.currency)
 
+        // **Die Posten, und zwar so, dass sie sich zur Summe addieren.**
+        //
+        // `projectedFeedIn` ist negativ — der Rechenkern gibt die Einspeisung
+        // als negativen Betrag zurück. Auf dem Schirm steht sie als positive
+        // Zahl mit Minuszeichen davor, wie auf einer Rechnung; deshalb wird
+        // hier das Vorzeichen gedreht und nicht dort.
+        let einheit = drawUnit ?? .kilowattHour
+        let aufschluesselung = PrepaymentOutlook.Breakdown(
+            consumptionToDate: Quantity(measuredDraw, einheit),
+            projectedConsumption: Quantity(projectedDrawQuantity, einheit),
+            workingCost: Money(projectedDraw, projectedCost.currency).roundedToCents,
+            standingCost: Money(fullBase, projectedCost.currency).roundedToCents,
+            feedInCredit: projectedFeedIn == 0
+                ? nil : Money(-projectedFeedIn, projectedCost.currency).roundedToCents)
+
         return PrepaymentOutlook(
             projectedCost: projectedCost.roundedToCents,
             totalPrepayment: prepayment.roundedToCents,
             balance: try prepayment.subtracting(projectedCost).roundedToCents,
-            method: weakest
+            method: weakest,
+            breakdown: aufschluesselung
         )
     }
 

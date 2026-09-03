@@ -815,7 +815,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>Zählora</h1>
-  <p>Klickbarer Entwurf · v0.106.0</p>
+  <p>Klickbarer Entwurf · v0.106.1</p>
 </div>
 
 <div class="device">
@@ -4012,6 +4012,23 @@ function openExplain(id) {
   const paid = m.prepay * 12;
   const bal = balance(m, fc);
 
+  // **Die Einspeisevergütung stand nirgends, wurde aber abgezogen.**
+  //
+  // Vom Gründer am 3. September auf einem Bildschirmfoto gefunden: Über der
+  // Summe standen 947,68 € und 154,80 €, darunter „Erwartete Kosten 911,88 €".
+  // 190,60 € verschwanden zwischen zwei Zeilen — die Vergütung, die
+  // `projectedCost` abzieht.
+  //
+  // Ein Schirm mit der Überschrift „Wie diese Zahl entsteht", der einen
+  // Rechenschritt verschweigt, ist Produktprinzip 7 in sein Gegenteil verkehrt.
+  // Die Zeile steht jetzt da, negativ, wie auf einer Rechnung.
+  const second = m.registers[1];
+  let credit = 0;
+  if (second && m.feedInPrice) {
+    const f = forecast(second, m);
+    if (f) credit = f.value * m.feedInPrice;
+  }
+
   document.getElementById("ex-title").textContent = "Wie diese Zahl entsteht";
   document.getElementById("ex-body").innerHTML = `
     <div class="calc">
@@ -4020,6 +4037,7 @@ function openExplain(id) {
       ${m.zZahl ? `<div class="calc-row"><span class="k">Umrechnung in kWh<br><small style="color:var(--ink-3)">× ${nf(m.zZahl, 4)} Zustandszahl × ${nf(m.brennwert, 3)} kWh/m³</small></span><span class="v">${nf(units, 0)} kWh</span></div>` : ""}
       <div class="calc-row"><span class="k">Arbeitspreis<br><small style="color:var(--ink-3)">${nf(m.price, m.zZahl ? 3 : 2)} € je ${m.zZahl ? "kWh" : m.unit}</small></span><span class="v">${money(work)}</span></div>
       <div class="calc-row"><span class="k">Grundpreis<br><small style="color:var(--ink-3)">${money(m.base)} × 12 Monate</small></span><span class="v">${money(base)}</span></div>
+      ${credit ? `<div class="calc-row"><span class="k">Einspeisevergütung<br><small style="color:var(--ink-3)">${nf(forecast(second, m).value, 0)} kWh × ${nf(m.feedInPrice, 2)} €</small></span><span class="v" style="color:var(--good-ink)">− ${money(credit)}</span></div>` : ""}
       <div class="calc-row total"><span class="k">Erwartete Kosten</span><span class="v">${money(cost)}</span></div>
       <div class="calc-row"><span class="k">Abschläge ${money(m.prepay)} × 12</span><span class="v">${money(paid)}</span></div>
       <div class="calc-row total"><span class="k">${bal >= 0 ? "Voraussichtliches Guthaben" : "Voraussichtliche Nachzahlung"}</span>

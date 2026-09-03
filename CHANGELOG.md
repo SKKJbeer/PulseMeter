@@ -9,6 +9,50 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.106.1 — 2026-09-03
+
+**Die App hatte eine Sackgasse, die der Entwurf nicht hat — und der Entwurf
+einen Rechenfehler, den niemand sah.**
+
+Der Gründer hat im Klick-Dummy auf „≈ 288,12 € Guthaben" getippt, das Blatt
+„Wie diese Zahl entsteht" bekommen und gemerkt: In der App kommt man dort nicht
+weiter. Das ist die folgenreichste Zahl der App — wer ihr glaubt, ändert seinen
+Abschlag — und ohne Weg dahinter eine Sackgasse (Produktprinzip 4). Der Betrag
+auf der Karte ist jetzt ein Knopf, und `App/ExplainView.swift` zeigt die
+Herleitung.
+
+**Beim Nachbauen fiel auf, dass das Blatt selbst falsch rechnete.** Auf seinem
+Bildschirmfoto standen 947,68 € Arbeitspreis und 154,80 € Grundpreis über einer
+Summe von 911,88 €:
+
+```
+947,68 + 154,80 = 1.102,48
+Erwartete Kosten:   911,88
+Unterschied:        190,60
+```
+
+Die 190,60 € sind die Einspeisevergütung. `projectedCost` zieht sie ab, das
+Blatt nannte sie nirgends. Ein Schirm mit der Überschrift „Wie diese Zahl
+entsteht", der einen Schritt verschweigt, ist schlimmer als gar keiner: Er
+sieht aus wie eine Herleitung.
+
+Die Zeile steht jetzt da, negativ wie auf einer Rechnung — in beiden Fassungen.
+
+**Und die Aufschlüsselung ist jetzt eine Zusicherung des Rechenkerns, keine
+Sache der Oberfläche.** `PrepaymentOutlook.Breakdown` trägt die Posten, und
+`sum` muss `projectedCost` ergeben. Zwei Tests halten das fest, einer mit und
+einer ohne Anlage. Gegenprobe: Lässt man die Vergütung weg, meldet der Test
+`689.47 ≠ 496.90` — dieselbe Form wie auf dem Bildschirmfoto. Im Entwurf prüft
+`check-prototype.mjs` dasselbe, indem es die sichtbaren Zeilen addiert; ohne
+die Vergütungszeile steht dort `1102.48 = 911.88`.
+
+262 Prüfungen im Entwurf, 238 Tests im Rechenkern.
+
+Der Nachbau in SwiftUI ist hier nicht übersetzbar — `swiftc -parse` ist sauber,
+der macOS-Lauf ist der Beleg.
+
+---
+
 ## 0.106.0 — 2026-09-03
 
 **Die Übersicht zeigt Kosten für Monat, Quartal und Jahr.**

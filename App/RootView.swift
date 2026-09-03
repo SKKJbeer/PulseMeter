@@ -144,6 +144,8 @@ struct OverviewView: View {
     @State private var capturing: MeteringPoint?
     @State private var addingMeter = false
     @State private var problem: String?
+    /// Welche Zahl gerade erklärt wird — `nil`, solange kein Blatt offen ist.
+    @State private var erklaerung: ErklaerungsAnlass?
 
     private var today: CalendarDay { CalendarDay.containing(Date(), in: .current) }
 
@@ -186,6 +188,10 @@ struct OverviewView: View {
             .sheet(isPresented: $addingMeter) {
                 MeterEditor(draft: MeterDraft(), readingCount: 0,
                             onDone: { datenstand.geaendert() })
+            }
+            .sheet(item: $erklaerung) { anlass in
+                ExplainView(name: anlass.name, outlook: anlass.outlook,
+                            unit: anlass.unit)
             }
         }
     }
@@ -296,11 +302,32 @@ struct OverviewView: View {
                     // einer Hochrechnung des restlichen Zeitraums, nicht auf
                     // gemessenem Verbrauch (Produktprinzip 7).
                     CardFooterRow("Abschlag \(money(outlook.totalPrepayment)) im Jahr") {
-                        Text(outlook.expectsRefund
-                             ? "≈ \(money(outlook.balance)) Guthaben"
-                             : "≈ \(money(Money(-outlook.balance.amount, outlook.balance.currency))) Nachzahlung")
+                        // **Antippbar, weil es die folgenreichste Zahl der App
+                        // ist.** Wer ihr glaubt, ändert seinen Abschlag. Ohne
+                        // Weg dahinter ist sie eine Sackgasse
+                        // (Produktprinzip 4). Der Entwurf konnte das seit
+                        // Langem, die App nicht — der Gründer hat es am
+                        // 3. September genau so gefunden: im Klick-Dummy
+                        // getippt, in der App nicht weitergekommen.
+                        Button {
+                            erklaerung = ErklaerungsAnlass(name: row.name,
+                                                           outlook: outlook,
+                                                           unit: row.unit)
+                        } label: {
+                            HStack(spacing: 3) {
+                                Text(outlook.expectsRefund
+                                     ? "≈ \(money(outlook.balance)) Guthaben"
+                                     : "≈ \(money(Money(-outlook.balance.amount, outlook.balance.currency))) Nachzahlung")
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .accessibilityHidden(true)
+                            }
                             .font(.system(.subheadline, weight: .semibold))
                             .foregroundStyle(outlook.expectsRefund ? PulseColor.favourable : PulseColor.adverse)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Wie diese Zahl entsteht")
+                        .accessibilityIdentifier("erklaeren-\(row.name)")
                     }
                     // **Worauf die Zahl beruht — und zwar direkt darunter.**
                     //
@@ -912,4 +939,17 @@ struct OverviewView: View {
         .modelContainer(try! PulseStore.container(inMemory: true, cloudKit: false))
         .environment(Purchase())
         .environment(Datenstand())
+}
+
+/// Der Anlass, ein Erklärblatt zu öffnen.
+///
+/// Trägt seine eigenen Daten statt einer Kennung, damit das Blatt nicht ein
+/// zweites Mal rechnet. Zwei Rechenwege für dieselbe Zahl sind zwei
+/// Gelegenheiten, dass einer davon etwas anderes herausbekommt — dieselbe
+/// Regel wie beim Widget.
+struct ErklaerungsAnlass: Identifiable {
+    let name: String
+    let outlook: ForecastEngine.PrepaymentOutlook
+    let unit: String
+    var id: String { name }
 }

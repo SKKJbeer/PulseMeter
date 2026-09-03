@@ -408,4 +408,83 @@ final class ForecastEngineTests: XCTestCase {
                      "Der Juli ist vorbei")
     }
 
+
+    // MARK: - Die Posten müssen die Summe ergeben
+
+    /// **Der Test, der den Fehler des Entwurfs gefangen hätte.**
+    ///
+    /// Am 3. September fand der Gründer auf dem Erklärblatt „Wie diese Zahl
+    /// entsteht" 947,68 € Arbeitspreis und 154,80 € Grundpreis über einer
+    /// Summe von 911,88 €. Die fehlenden 190,60 € waren die
+    /// Einspeisevergütung: abgezogen, aber nirgends genannt.
+    ///
+    /// Ein Schirm, der erklärt, wie eine Zahl entsteht, und dabei einen Posten
+    /// auslässt, ist schlimmer als gar keiner — er sieht aus wie eine
+    /// Herleitung. Deshalb ist die Aufschlüsselung eine Zusicherung des
+    /// Rechenkerns und keine Sache der Oberfläche.
+    func testAufschluesselungErgibtDieSumme() throws {
+        let draw = Fixture.electricityRegister()
+        let feedIn = Register(label: "Einspeisung", unit: .kilowattHour,
+                              direction: .feedIn, integerDigits: 6, fractionDigits: 1)
+        let point = Fixture.meteringPoint(registers: [draw, feedIn])
+        let readings = [
+            Fixture.reading(draw, day(2026, 1, 1), 0),
+            Fixture.reading(draw, day(2026, 7, 1), 900),
+            Fixture.reading(feedIn, day(2026, 1, 1), 0),
+            Fixture.reading(feedIn, day(2026, 4, 1), 300),
+        ]
+        let tariff = Tariff(meteringPointID: point.id, validFrom: day(2026, 1, 1),
+                            pricePerUnit: dec("0.30"),
+                            monthlyBasePrice: dec("12.90"),
+                            billingUnit: .kilowattHour,
+                            feedInPricePerUnit: dec("0.10"))
+        let period = BillingPeriod(meteringPointID: point.id, range: year2026,
+                                   monthlyPrepayment: 50)
+
+        let outlook = try XCTUnwrap(try ForecastEngine.prepaymentOutlook(
+            meteringPoint: point, readings: readings, tariffs: [tariff],
+            period: period, today: day(2026, 7, 1)))
+        let posten = outlook.breakdown
+
+        XCTAssertNotNil(posten.feedInCredit,
+                        "Bei einer Anlage gehört die Vergütung in die Aufschlüsselung")
+        XCTAssertGreaterThan(posten.feedInCredit?.amount ?? 0, 0,
+                             "Sie steht positiv da und wird abgezogen — nicht umgekehrt")
+        assertClose(posten.sum.amount,
+                    (outlook.projectedCost.amount as NSDecimalNumber).doubleValue,
+                    accuracy: 0.02)
+        XCTAssertGreaterThan(posten.standingCost.amount, 0,
+                             "Der Grundpreis läuft über den Zeitraum, nicht über die Ablesungen")
+    }
+
+    /// Ohne Einspeisung fehlt die Zeile — und die Summe stimmt trotzdem.
+    ///
+    /// Eine Vergütung von 0,00 € stünde da als Aussage über Geld, die niemand
+    /// gemacht hat (Produktprinzip 7).
+    func testAufschluesselungOhneEinspeisung() throws {
+        let register = Fixture.electricityRegister()
+        let point = Fixture.meteringPoint(registers: [register])
+        let readings = [
+            Fixture.reading(register, day(2026, 1, 1), 0),
+            Fixture.reading(register, day(2026, 4, 1), 900),
+        ]
+        let tariff = Tariff(meteringPointID: point.id, validFrom: day(2026, 1, 1),
+                            pricePerUnit: dec("0.30"),
+                            monthlyBasePrice: dec("12.90"),
+                            billingUnit: .kilowattHour)
+        let period = BillingPeriod(meteringPointID: point.id, range: year2026,
+                                   monthlyPrepayment: 100)
+
+        let outlook = try XCTUnwrap(try ForecastEngine.prepaymentOutlook(
+            meteringPoint: point, readings: readings, tariffs: [tariff],
+            period: period, today: day(2026, 4, 1)))
+
+        XCTAssertNil(outlook.breakdown.feedInCredit)
+        assertClose(outlook.breakdown.sum.amount,
+                    (outlook.projectedCost.amount as NSDecimalNumber).doubleValue,
+                    accuracy: 0.02)
+        XCTAssertGreaterThan(outlook.breakdown.projectedConsumption.value,
+                             outlook.breakdown.consumptionToDate.value,
+                             "Hochgerechnet ist mehr als bisher gemessen")
+    }
 }
