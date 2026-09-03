@@ -124,9 +124,22 @@ Absagen:
 | `appStoreVersions/…/appStoreReviewAttachments` | 404 |
 
 Apples Begründung liegt im **Lösungscenter** in App Store Connect und kommt per
-E-Mail. Nur der Gründer kommt daran; eine Cloud-Sitzung sieht sie nie. Also:
-Nachricht weiterreichen, dann beheben, dann `einreichen.yml` mit
-`bestaetigung=einreichen` erneut.
+E-Mail. Nur der Gründer kommt daran; eine Cloud-Sitzung sieht sie nie. Er hat
+sie am 3. September weitergereicht:
+
+> **Guideline 2.1 – Information Needed – New App Submission.** „This app has
+> been submitted by a developer account that has a limited App Review history."
+
+**Kein Mangel an der App.** Ein Konto ohne Prüfhistorie, sieben Fragen. Sechs
+davon sind Text und stehen seit 0.105.9 im Feld „Notes" (3252 Zeichen,
+englisch, vom Lauf `einreichung.yml --fuellen` eingetragen). Der Wortlaut steht
+in `docs/09-appstore.md` unter „Hinweise für die Prüfung".
+
+**Offen ist nur Punkt 1: eine Bildschirmaufnahme auf einem echten Gerät.** Die
+kann kein Skript erzeugen. Die fünf Schritte dafür stehen in
+`docs/09-appstore.md` direkt unter dem Text. Danach: Antwort im Lösungscenter
+(derselbe Text plus Aufnahme), dann `einreichen.yml` mit
+`bestaetigung=einreichen`.
 
 **Was die Ablehnung nicht bedeutet:** Bau 25 bleibt in TestFlight nutzbar, die
 Käufe bleiben `READY_TO_SUBMIT`, und die Preisstufe bleibt gesetzt. Es ist ein
