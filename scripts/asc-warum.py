@@ -108,6 +108,19 @@ def main() -> int:
         zeigen("Die Angaben zur Prüfung",
                f"v1/appStoreVersions/{fassung}/appStoreReviewDetail")
 
+        # **Steht die Fassung auf REJECTED, ist die Begründung die einzige
+        # Frage.** Apple schreibt sie ins Lösungscenter und schickt eine
+        # E-Mail; ob sie auch über die Schnittstelle zu bekommen ist, wird hier
+        # abgefragt statt angenommen. Ein 404 ist die Antwort „gibt es nicht",
+        # und dann muss der Gründer die Nachricht weiterreichen.
+        for pfad in (f"v1/appStoreVersions/{fassung}/appStoreVersionSubmission",
+                     f"v1/appStoreVersions/{fassung}/resolutionCenterThreads",
+                     f"v1/apps/{app}/resolutionCenterThreads",
+                     "v1/resolutionCenterThreads",
+                     "v1/resolutionCenterMessages",
+                     f"v1/appStoreVersions/{fassung}/appStoreReviewAttachments"):
+            zeigen(f"Ablehnungsgrund — {pfad}", pfad, **{"limit": 10})
+
     # **Was leer ist, blendet `zeigen` aus — und genau das wird gesucht.**
     #
     # Die Anzeige oben wirft Werte weg, die `None` sind, damit die Zeile lesbar
