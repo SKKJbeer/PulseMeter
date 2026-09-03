@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-09-03, Version 0.105.10
+Stand: 2026-09-03, Version 0.105.11
 
 ---
 
@@ -86,7 +86,7 @@ Tabelle im Baukasten unter „Die Prüfungen".
 
 ## Wo die Arbeit steht
 
-**`main` ist der aktuelle Stand**, Version 0.105.10. Es gibt keinen offenen
+**`main` ist der aktuelle Stand**, Version 0.105.11. Es gibt keinen offenen
 Arbeitszweig; alles ist zusammengeführt.
 
 | | Stand am 3. September |
@@ -96,7 +96,7 @@ Arbeitszweig; alles ist zusammengeführt.
 | Website | 407 Prüfungen, grün, live auf `zaehlora.pages.dev` |
 | App-Build und Oberflächentests | grün auf dem letzten macOS-Lauf |
 | TestFlight | **Bau 25, VALID**, mit Testhinweisen |
-| App Store | **abgelehnt in der Nacht zum 3. September, `REJECTED`** — Grund nur im Lösungscenter |
+| App Store | Rückfrage beantwortet, `READY_FOR_REVIEW` — wieder bei Apple |
 | App Store Connect | 18 Angaben stehen, 0 offen |
 | Käufe | 6 von 6 `READY_TO_SUBMIT` |
 | Länder | 175, Deutschland dabei |
@@ -135,11 +135,27 @@ davon sind Text und stehen seit 0.105.9 im Feld „Notes" (3252 Zeichen,
 englisch, vom Lauf `einreichung.yml --fuellen` eingetragen). Der Wortlaut steht
 in `docs/09-appstore.md` unter „Hinweise für die Prüfung".
 
-**Offen ist nur Punkt 1: eine Bildschirmaufnahme auf einem echten Gerät.** Die
-kann kein Skript erzeugen. Die fünf Schritte dafür stehen in
-`docs/09-appstore.md` direkt unter dem Text. Danach: Antwort im Lösungscenter
-(derselbe Text plus Aufnahme), dann `einreichen.yml` mit
-`bestaetigung=einreichen`.
+**Punkt 1 war eine Bildschirmaufnahme auf einem echten Gerät** — die kann kein
+Skript erzeugen. Der Gründer hat sie am 3. September um 14:51 zusammen mit dem
+Text im Lösungscenter beantwortet
+(`ScreenRecording_09-03-2026 14-44-52_1.mp4`).
+
+**Und das hat gereicht, um die Ablehnung aufzuheben.** Unmittelbar danach
+gemessen:
+
+```
+Fassung 1.0: READY_FOR_REVIEW     (vorher REJECTED)
+Bei der Prüfung: UNRESOLVED_ISSUES
+```
+
+Eine Antwort im Lösungscenter stößt die Prüfung also selbst wieder an; es
+braucht **kein** erneutes `--einreichen`. Der Zustand der Einreichung bleibt
+dabei auf `UNRESOLVED_ISSUES` stehen — der gehört zum alten Vorgang und ist
+kein Hindernis. Wer nur darauf sieht, hält die Sache fälschlich für blockiert;
+maßgeblich ist der Zustand der **Fassung**.
+
+Zu tun ist nur noch: warten, bis `READY_FOR_SALE` steht, dann
+`live-schalten.yml` von Hand auslösen.
 
 **Was die Ablehnung nicht bedeutet:** Bau 25 bleibt in TestFlight nutzbar, die
 Käufe bleiben `READY_TO_SUBMIT`, und die Preisstufe bleibt gesetzt. Es ist ein

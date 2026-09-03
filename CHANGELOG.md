@@ -9,6 +9,32 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.105.11 — 2026-09-03
+
+**Die Antwort im Loesungscenter hat die Ablehnung selbst aufgehoben.**
+
+Der Gruender hat die Bildschirmaufnahme und den Text um 14:51 abgeschickt.
+Unmittelbar danach gemessen:
+
+```
+Fassung 1.0: READY_FOR_REVIEW     (vorher REJECTED)
+Bei der Pruefung: UNRESOLVED_ISSUES
+```
+
+Es braucht also **kein** erneutes `--einreichen`; eine Antwort im
+Loesungscenter stoesst die Pruefung wieder an. Das war vorher offen und ist
+jetzt gemessen statt vermutet.
+
+**Die zweite Zeile ist die Falle.** Der Zustand der Einreichung bleibt auf
+`UNRESOLVED_ISSUES` stehen — er gehoert zum abgeschlossenen Vorgang. Wer nur
+darauf sieht, haelt die Sache fuer blockiert. Massgeblich ist der Zustand der
+**Fassung**. Dieselbe Klasse wie schon dreimal in dieser Woche: zwei Angaben,
+jede fuer sich stimmig, und die falsche davon beantwortet die Frage nicht.
+
+Nur Dokumente. Kein App-Code, kein Bau.
+
+---
+
 ## 0.105.10 — 2026-09-03
 
 **Apple nimmt nicht jedes Zeichen, und sagt das erst beim Schreiben.**
