@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-09-02, Version 0.105.7
+Stand: 2026-09-03, Version 0.105.8
 
 ---
 
@@ -86,17 +86,17 @@ Tabelle im Baukasten unter „Die Prüfungen".
 
 ## Wo die Arbeit steht
 
-**`main` ist der aktuelle Stand**, Version 0.105.7. Es gibt keinen offenen
+**`main` ist der aktuelle Stand**, Version 0.105.8. Es gibt keinen offenen
 Arbeitszweig; alles ist zusammengeführt.
 
-| | Stand am 2. September |
+| | Stand am 3. September |
 |---|---|
 | `PulseCore` | 231 Tests, grün |
 | Klick-Dummy | 242 Prüfungen, hell und dunkel, grün |
 | Website | 407 Prüfungen, grün, live auf `zaehlora.pages.dev` |
 | App-Build und Oberflächentests | grün auf dem letzten macOS-Lauf |
 | TestFlight | **Bau 25, VALID**, mit Testhinweisen |
-| App Store | **eingereicht am 2. September, `WAITING_FOR_REVIEW`** |
+| App Store | **abgelehnt in der Nacht zum 3. September, `REJECTED`** — Grund nur im Lösungscenter |
 | App Store Connect | 18 Angaben stehen, 0 offen |
 | Käufe | 6 von 6 `READY_TO_SUBMIT` |
 | Länder | 175, Deutschland dabei |
@@ -104,7 +104,37 @@ Arbeitszweig; alles ist zusammengeführt.
 
 **Der Umfang von 1.0 ist vollständig.** Es fehlt nichts mehr am Produkt.
 
-### Die Sperre ist weg — eingereicht am 2. September, 19:05
+### Abgelehnt in der Nacht zum 3. September
+
+```
+Fassung 1.0: REJECTED
+Bei der Prüfung: UNRESOLVED_ISSUES
+```
+
+**Der Grund steht nicht in der Schnittstelle.** Sechs Wege abgefragt, sechs
+Absagen:
+
+| Weg | Antwort |
+|---|---|
+| `appStoreVersions/…/appStoreVersionSubmission` | 404 — „no resource of type `appStoreVersionSubmissions`" |
+| `appStoreVersions/…/resolutionCenterThreads` | 404 |
+| `apps/…/resolutionCenterThreads` | 404 |
+| `v1/resolutionCenterThreads` | 404 |
+| `v1/resolutionCenterMessages` | 404 |
+| `appStoreVersions/…/appStoreReviewAttachments` | 404 |
+
+Apples Begründung liegt im **Lösungscenter** in App Store Connect und kommt per
+E-Mail. Nur der Gründer kommt daran; eine Cloud-Sitzung sieht sie nie. Also:
+Nachricht weiterreichen, dann beheben, dann `einreichen.yml` mit
+`bestaetigung=einreichen` erneut.
+
+**Was die Ablehnung nicht bedeutet:** Bau 25 bleibt in TestFlight nutzbar, die
+Käufe bleiben `READY_TO_SUBMIT`, und die Preisstufe bleibt gesetzt. Es ist ein
+Rücklauf, kein Rückschritt.
+
+---
+
+### Die Sperre davor ist weg — eingereicht am 2. September, 19:05
 
 ```
 ✓ Fassung 1.0 der Einreichung hinzugefügt

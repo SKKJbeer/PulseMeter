@@ -9,6 +9,38 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.105.8 — 2026-09-03
+
+**Apple hat 1.0 abgelehnt, und die Schnittstelle sagt nicht warum.**
+
+```
+Fassung 1.0: REJECTED
+Bei der Prüfung: UNRESOLVED_ISSUES
+```
+
+Sechs Wege abgefragt, sechs Absagen — `appStoreVersionSubmission`,
+`resolutionCenterThreads` an drei Stellen, `resolutionCenterMessages`,
+`appStoreReviewAttachments`. Damit ist gemessen und nicht vermutet: **Der
+Ablehnungsgrund ist über die Schnittstelle nicht zu bekommen.** Er steht im
+Lösungscenter in App Store Connect und kommt per E-Mail, und dorthin kommt nur
+der Gründer.
+
+Zwei Dinge am Werkzeug, beide aus diesem Lauf:
+
+**Der Ablehnungsblock steht jetzt am Ende der Diagnose.** Ein Protokoll wird von
+hinten gelesen — die Werkzeuge liefern das Ende. Stand er oben, kostete jede
+Antwort darauf einen zweiten Lauf.
+
+**`limit` gehört nicht an eine Einzelressource.** Fünf der sechs Wege
+antworteten „gibt es nicht", einer mit 400: „The parameter 'limit' can not be
+used with this request". Das war ein Einwand gegen meine Anfrage, nicht gegen
+den Pfad — ohne den Parameter gefragt, kam die eigentliche Auskunft.
+
+Nur Skripte und Dokumente. Kein App-Code, kein Bau. Bau 25 bleibt in TestFlight
+nutzbar, die Käufe bleiben `READY_TO_SUBMIT`, die Preisstufe bleibt gesetzt.
+
+---
+
 ## 0.105.7 — 2026-09-02
 
 **Eingereicht. `WAITING_FOR_REVIEW`. Es war die Preisstufe.**
