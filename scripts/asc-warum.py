@@ -346,14 +346,22 @@ def main() -> int:
     # über die Schnittstelle zu bekommen ist, wird abgefragt statt angenommen.
     # Ein 404 ist die Antwort „gibt es nicht", und dann muss der Gründer die
     # Nachricht weiterreichen.
+    #
+    # **`limit` gehört nicht an eine Einzelressource.** Von sechs Wegen
+    # antworteten fünf mit „gibt es nicht" und einer mit 400: „The parameter
+    # 'limit' can not be used with this request". Das ist ein Einwand gegen
+    # meine Anfrage, nicht gegen den Pfad — den gibt es also. Deshalb steht bei
+    # jedem Weg jetzt daneben, ob er eine Liste ist.
     if fassung:
-        for pfad in (f"v1/appStoreVersions/{fassung}/appStoreVersionSubmission",
-                     f"v1/appStoreVersions/{fassung}/resolutionCenterThreads",
-                     f"v1/apps/{app}/resolutionCenterThreads",
-                     "v1/resolutionCenterThreads",
-                     "v1/resolutionCenterMessages",
-                     f"v1/appStoreVersions/{fassung}/appStoreReviewAttachments"):
-            zeigen(f"Ablehnungsgrund — {pfad}", pfad, **{"limit": 10})
+        for pfad, liste in (
+                (f"v1/appStoreVersions/{fassung}/appStoreVersionSubmission", False),
+                (f"v1/appStoreVersions/{fassung}/resolutionCenterThreads", True),
+                (f"v1/apps/{app}/resolutionCenterThreads", True),
+                ("v1/resolutionCenterThreads", True),
+                ("v1/resolutionCenterMessages", True),
+                (f"v1/appStoreVersions/{fassung}/appStoreReviewAttachments", True)):
+            zeigen(f"Ablehnungsgrund — {pfad}", pfad,
+                   **({"limit": 10} if liste else {}))
 
     print("\nGelesen, nicht geraten. Was oben mit 404 antwortet, gibt es nicht.")
     return 0
