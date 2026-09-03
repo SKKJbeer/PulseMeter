@@ -210,8 +210,48 @@ def aus_changelog() -> str:
     text = re.sub(r"^- ", "· ", text, flags=re.M)
     text = text.replace("**", "").replace("`", "")
     text = re.sub(r"\n{3,}", "\n\n", text).strip()
+    text = nur_erlaubte_zeichen(text)
     # App Store Connect nimmt höchstens 4000 Zeichen.
     return text[:3990].rstrip() + " …" if len(text) > 4000 else text
+
+
+# **Apple nimmt nicht jedes Zeichen, und sagt das erst beim Schreiben.**
+#
+#     Text for whatsNew contains invalid characters:'[─, ✓]'
+#
+# Gefunden am 3. September: Zwei Einträge im Änderungsprotokoll zitierten
+# Protokollzeilen — `── Preisplan` und `✓ Fassung 1.0 hinzugefügt` —, und die
+# Aufbereitung entfernte zwar Auszeichnung, aber keine verbotenen Zeichen. Der
+# Lauf brach ab, und zwar erst bei Apple.
+#
+# **Das ist keine Kosmetik, sondern eine Sperre:** Der Bau wäre ohne
+# Testhinweise stehen geblieben — genau der Zustand, der hier zehn Bauten lang
+# unbemerkt war.
+ERSATZ = {"─": "-", "━": "-", "│": "|", "⇢": "->", "⇒": "->", "→": "->",
+          "←": "<-", "✓": "+", "✗": "!", "✔": "+", "✘": "!"}
+
+# Was neben Buchstaben, Ziffern und Leerraum stehen bleiben darf. Der
+# Mittelpunkt ist Absicht: Er ist seit zehn Bauten der Aufzählungspunkt, und
+# Apple hat ihn jedes Mal angenommen.
+ERLAUBT = set(".,;:!?()[]{}<>/\\|@#%&*+=_\"'`^~$€§°-–—·…„“”‚‘’")
+
+
+def nur_erlaubte_zeichen(text: str) -> str:
+    """Ersetzt, was Apple ablehnt — und **sagt**, was es entfernt hat.
+
+    Stillschweigend zu löschen wäre schlimmer als der Abbruch: Der Text käme
+    durch und niemand wüsste, dass etwas fehlt.
+    """
+    for zeichen, dafuer in ERSATZ.items():
+        text = text.replace(zeichen, dafuer)
+    entfernt = sorted({z for z in text
+                       if not (z.isalnum() or z.isspace() or z in ERLAUBT)})
+    if entfernt:
+        print(f"::warning::Zeichen entfernt, die Apple nicht nimmt: "
+              f"{' '.join(entfernt)}")
+        text = "".join(z for z in text
+                       if z.isalnum() or z.isspace() or z in ERLAUBT)
+    return text
 
 
 def text_setzen(apple: Apple, bau_id: str, text: str) -> None:

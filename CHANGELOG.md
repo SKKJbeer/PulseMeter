@@ -9,6 +9,37 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.105.10 — 2026-09-03
+
+**Apple nimmt nicht jedes Zeichen, und sagt das erst beim Schreiben.**
+
+```
+Text for whatsNew contains invalid characters:'[U+2500, U+2713]'
+```
+
+Der Lauf, der die Testhinweise nachträgt, brach ab. Nicht am neuen Text — die
+beiden Eintraege davor zitieren Protokollzeilen, und darin stehen ein
+Rahmenstrich und ein Haken. Die Aufbereitung entfernte Auszeichnung und
+Backticks, aber keine Zeichen, die Apple verbietet.
+
+**Das ist keine Kosmetik, sondern eine Sperre.** Der Bau waere ohne
+Testhinweise stehen geblieben — genau der Zustand, der hier zehn Bauten lang
+unbemerkt war, nur diesmal mit Fehlermeldung.
+
+`nur_erlaubte_zeichen()` bildet die bekannten Faelle auf ASCII ab
+(Rahmenstriche, Pfeile, Haken) und wirft alles Uebrige weg, **was es
+ausdruecklich meldet**. Stillschweigend zu loeschen waere schlimmer als der
+Abbruch: Der Text kaeme durch und niemand wuesste, dass etwas fehlt.
+
+Gegengeprueft an drei Proben: Protokollzeilen werden lesbar, deutscher Text mit
+Umlauten, Euro, Anfuehrungszeichen, Prozent und Gedankenstrich bleibt
+unangetastet, ein Emoji faellt mit Meldung heraus. Der Mittelpunkt bleibt
+zugelassen — er ist seit zehn Bauten der Aufzaehlungspunkt.
+
+Nur Skripte und Dokumente. Kein App-Code, kein Bau.
+
+---
+
 ## 0.105.9 — 2026-09-03
 
 **Apples Rückfrage beantwortet — und dabei einen falschen Satz gefunden, der
