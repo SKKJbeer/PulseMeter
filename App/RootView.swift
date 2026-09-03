@@ -96,6 +96,16 @@ struct MeterRow: Identifiable {
     /// reicht — bei Gas ohne Zustandszahl und Brennwert etwa. Ein leeres Feld
     /// erklärt sich nicht; ein Satz schon.
     let costProblem: String?
+    /// Kosten je laufendem Abschnitt — Monat, Quartal, Jahr.
+    ///
+    /// **Vom Gründer am 3. September verlangt:** „wenn man die preise
+    /// freigeschaltet hat, will ich in der Übersicht immer die Preise sehen auf
+    /// Monats-, Quartals-, Jahres-Preise." Bis dahin stand dort nur das Jahr.
+    ///
+    /// Leer, solange `costsAndTariffs` nicht gekauft ist — dann gibt es keine
+    /// Tarife und damit nichts zu rechnen. Leer auch ohne hinterlegten Tarif;
+    /// dann greift wie bisher ``cost`` beziehungsweise ``costProblem``.
+    let costSpans: [CostSpanRow.Span]
     /// Vorschau auf das Ende des Abrechnungszeitraums, wenn ein Abschlag
     /// hinterlegt ist.
     let outlook: ForecastEngine.PrepaymentOutlook?
@@ -262,7 +272,14 @@ struct OverviewView: View {
                         }
                     }
                 }
-                if let cost = row.cost {
+                // **Drei Abschnitte statt einem, sobald Preise gekauft sind.**
+                // Die Jahreszahl steckt als dritte Spalte darin — deshalb tritt
+                // diese Zeile an die Stelle der einzelnen Kostenzeile und nicht
+                // daneben. Zweimal derselbe Jahresbetrag auf einer Karte wäre
+                // nicht doppelt so deutlich, sondern nur doppelt.
+                if !row.costSpans.isEmpty {
+                    CostSpanRow(spans: row.costSpans)
+                } else if let cost = row.cost {
                     CardFooterRow(costCaption(for: row)) {
                         // Dasselbe Zeichen wie über der großen Zahl und wie an
                         // der Einspeisung: Ein „≈" heißt in dieser App überall
@@ -534,7 +551,8 @@ struct OverviewView: View {
                                     changeVersusLastYear: nil, monthlySeries: [],
                                     daysSinceReading: nil, isDue: false,
                                     cost: nil, costIsApproximate: false,
-                                    costProblem: nil, outlook: nil, feedIn: nil)
+                                    costProblem: nil, costSpans: [],
+                                    outlook: nil, feedIn: nil)
                 }
                 // **Zwei Listen, und die Namen sagen welche.**
                 //
@@ -603,6 +621,9 @@ struct OverviewView: View {
                     cost: costs.value,
                     costIsApproximate: costs.isApproximate,
                     costProblem: costs.problem,
+                    costSpans: costSpans(point: point, readings: everything,
+                                         tariffs: tariffs, yearResult: result,
+                                         today: today),
                     outlook: outlook(point: point, readings: everything,
                                      tariffs: tariffs, periods: periods),
                     feedIn: feedIn(point: point, readings: everything,
@@ -674,6 +695,90 @@ struct OverviewView: View {
         } catch {
             return (nil, false, "Die Kosten ließen sich nicht berechnen.")
         }
+    }
+
+    /// Kosten für Monat, Quartal und Jahr — jeder Abschnitt bis heute.
+    ///
+    /// **Jeder Betrag wird für seinen eigenen Zeitraum gerechnet, keiner wird
+    /// aus einem anderen abgeleitet.** Der Monatsbetrag aus dem Jahresbetrag zu
+    /// schätzen wäre die wiederkehrende Fehlerklasse dieses Projekts in ihrer
+    /// reinsten Form: ein Zeitraum, den die Daten abdecken, geteilt durch einen,
+    /// den sie nicht abdecken. Bei einem Gaszähler läge das im Februar um mehr
+    /// als das Doppelte daneben.
+    ///
+    /// Widerspruchsfrei sind die drei trotzdem, weil ``CostEngine`` den
+    /// Grundpreis je Tag umlegt (`monthlyBasePrice * 12 / daysInYear`) und nicht
+    /// je Aufruf. Sonst stünde er dreimal darin.
+    ///
+    /// Leer ohne Tarif — dann bleibt es bei der bisherigen einzelnen Zeile
+    /// beziehungsweise bei ``costProblem``.
+    private func costSpans(point: MeteringPoint, readings: [Reading],
+                           tariffs: [Tariff], yearResult: ConsumptionResult?,
+                           today: CalendarDay) -> [CostSpanRow.Span] {
+        guard !tariffs.isEmpty else { return [] }
+
+        let abschnitte: [(String, PeriodEngine.Granularity)] = [
+            ("monat", .month), ("quartal", .quarter), ("jahr", .year),
+        ]
+        let spans: [CostSpanRow.Span] = abschnitte.compactMap { kennung, granularitaet in
+            guard let range = PeriodEngine.runningRange(containing: today,
+                                                        granularity: granularitaet)
+            else { return nil }
+            let ergebnis = cost(point: point, readings: readings,
+                                tariffs: tariffs, in: range)
+            return CostSpanRow.Span(
+                id: kennung,
+                label: spanLabel(granularitaet, today: today, yearResult: yearResult),
+                amount: ergebnis.value.map { money($0) },
+                isApproximate: ergebnis.isApproximate)
+        }
+        // Steht in keinem der drei ein Betrag, ist die Zeile eine Reihe
+        // Striche — die sagt weniger als die bisherige Zeile mit ihrer
+        // Begründung. Dann wird sie gar nicht erst gezeigt.
+        return spans.contains(where: { $0.amount != nil }) ? spans : []
+    }
+
+    /// Der Abschnitt beim Namen, nicht bei seiner Art.
+    ///
+    /// „Monat" wäre zweideutig — dieser Monat oder je Monat? „September" nicht.
+    /// Beim Jahr erbt die Beschriftung die Genauigkeit von ``costCaption``:
+    /// Decken die Ablesungen das Jahr nicht von Anfang an ab, steht dort der
+    /// Tag, ab dem gerechnet wurde, und nicht die Jahreszahl.
+    private func spanLabel(_ granularity: PeriodEngine.Granularity,
+                           today: CalendarDay,
+                           yearResult: ConsumptionResult?) -> String {
+        switch granularity {
+        case .month:
+            return monthName(today.month)
+        case .quarter:
+            return "\(PeriodEngine.slot(of: today, granularity: .quarter)). Quartal"
+        case .year:
+            // Erst auspacken, dann verzweigen: Ein `switch` über einen
+            // optionalen Aufzählungswert liest sich, als ginge er — und geht
+            // nicht.
+            guard let coverage = yearResult?.coverage else { return String(today.year) }
+            switch coverage {
+            case .startsLate(let firstDay):
+                return "seit \(shortDate(firstDay))"
+            case .endsEarly(let lastDay):
+                return "bis \(shortDate(lastDay))"
+            case .partial(let firstDay, _):
+                return "seit \(shortDate(firstDay))"
+            case .none, .full:
+                return String(today.year)
+            }
+        }
+    }
+
+    private func monthName(_ month: Int) -> String {
+        var components = DateComponents()
+        components.year = 2000
+        components.month = month
+        components.day = 1
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = .current
+        guard let date = calendar.date(from: components) else { return "\(month)." }
+        return date.formatted(.dateTime.month(.wide).locale(Locale(identifier: "de_DE")))
     }
 
     /// Was ins Netz zurückgegangen ist — und was es eingebracht hat.

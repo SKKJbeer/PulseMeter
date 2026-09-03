@@ -341,3 +341,80 @@ public struct CardFooterRow<Trailing: View>: View {
         }
     }
 }
+
+/// Drei Beträge nebeneinander — Monat, Quartal, Jahr.
+///
+/// **Warum nicht drei ``CardFooterRow`` untereinander.** Die Karte trägt schon
+/// Stand, Einspeisung und Abschlag; drei weitere Zeilen hätten sie über die
+/// Bildschirmhöhe geschoben, und Produktprinzip 3 verlangt „Ist alles im
+/// Rahmen?" in fünf Sekunden **ohne Scrollen**. Nebeneinander ist es eine
+/// Zeile, und die drei Zahlen lassen sich zudem vergleichen, ohne den Blick
+/// zurückspringen zu lassen.
+///
+/// Die Beschriftung nennt den Abschnitt beim Namen — „September", „3. Quartal",
+/// „2026" —, nicht seine Art. „Monat" wäre zweideutig: dieser Monat oder je
+/// Monat? Ein Name kann das nicht sein.
+public struct CostSpanRow: View {
+
+    public struct Span: Identifiable {
+        public let id: String
+        /// „September", „3. Quartal", „2026" — oder „seit 15. März", wenn die
+        /// Ablesungen den Abschnitt nicht von Anfang an abdecken.
+        public let label: String
+        /// Der fertig formatierte Betrag, oder `nil`, wenn für den Abschnitt
+        /// nichts vorliegt. Eine Null wäre dort eine Behauptung über Geld.
+        public let amount: String?
+        /// Ob eine Schätzung darin steckt. Das Zeichen ist dasselbe wie über
+        /// der großen Zahl: ein „≈" heißt in dieser App überall dasselbe.
+        public let isApproximate: Bool
+
+        public init(id: String, label: String, amount: String?, isApproximate: Bool) {
+            self.id = id
+            self.label = label
+            self.amount = amount
+            self.isApproximate = isApproximate
+        }
+    }
+
+    private let spans: [Span]
+
+    public init(spans: [Span]) { self.spans = spans }
+
+    public var body: some View {
+        VStack(spacing: 0) {
+            Divider().overlay(PulseColor.hairline)
+            HStack(alignment: .top, spacing: 10) {
+                ForEach(spans) { span in
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(span.label)
+                            .font(PulseText.caption)
+                            .foregroundStyle(PulseColor.inkTertiary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                        Text(betrag(span))
+                            .font(.system(.subheadline, weight: .semibold))
+                            .foregroundStyle(span.amount == nil
+                                             ? PulseColor.inkTertiary : PulseColor.ink)
+                            // Ziffern in gleicher Breite, sonst tanzen drei
+                            // Beträge nebeneinander.
+                            .monospacedDigit()
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    // Beschriftung und Betrag gehören zusammen — getrennt
+                    // vorgelesen stünde „≈ 41,20 €" ohne seinen Zeitraum da.
+                    .accessibilityElement(children: .combine)
+                    .accessibilityIdentifier("kostenabschnitt-\(span.id)")
+                }
+            }
+            .padding(.horizontal, 15)
+            .padding(.vertical, 10)
+        }
+    }
+
+    private func betrag(_ span: Span) -> String {
+        guard let amount = span.amount else { return "–" }
+        return (span.isApproximate ? "≈ " : "") + amount
+    }
+}

@@ -406,4 +406,91 @@ final class VergleichbareAusschnitteTests: XCTestCase {
         XCTAssertNotNil(vergleich.approximateChange,
                         "Hier gehört ein Prozentwert hin")
     }
+
+    // MARK: - Der laufende Abschnitt
+
+    /// Jeder Monat muss im richtigen Quartal landen — alle zwölf, nicht drei.
+    ///
+    /// Eine Quartalsgrenze ist genau die Sorte Arithmetik, die beim Lesen
+    /// stimmt und beim Rechnen um eins danebenliegt. Deshalb keine Stichprobe.
+    func testQuartalsgrenzenFuerAlleZwoelfMonate() {
+        let erwartet = [1: 1, 2: 1, 3: 1,
+                        4: 2, 5: 2, 6: 2,
+                        7: 3, 8: 3, 9: 3,
+                        10: 4, 11: 4, 12: 4]
+        for (monat, quartal) in erwartet.sorted(by: { $0.key < $1.key }) {
+            let tag = CalendarDay(year: 2026, month: monat, day: 15)!
+            XCTAssertEqual(PeriodEngine.slot(of: tag, granularity: .quarter), quartal,
+                           "Monat \(monat) gehört ins \(quartal). Quartal")
+            XCTAssertEqual(PeriodEngine.slot(of: tag, granularity: .month), monat)
+            XCTAssertEqual(PeriodEngine.slot(of: tag, granularity: .year), 1)
+        }
+    }
+
+    /// Der laufende Abschnitt endet **heute**, nicht am Abschnittsende.
+    ///
+    /// Genau daran hängt, ob im September der Grundpreis eines ganzen Monats
+    /// oder der von zwei Tagen in den Kosten steckt.
+    func testLaufenderAbschnittEndetHeute() {
+        let heute = CalendarDay(year: 2026, month: 9, day: 2)!
+
+        let monat = PeriodEngine.runningRange(containing: heute, granularity: .month)
+        XCTAssertEqual(monat?.start, CalendarDay(year: 2026, month: 9, day: 1))
+        XCTAssertEqual(monat?.end, heute, "Der Monat endet heute, nicht am 30.")
+
+        let quartal = PeriodEngine.runningRange(containing: heute, granularity: .quarter)
+        XCTAssertEqual(quartal?.start, CalendarDay(year: 2026, month: 7, day: 1),
+                       "Das dritte Quartal fängt im Juli an")
+        XCTAssertEqual(quartal?.end, heute)
+
+        let jahr = PeriodEngine.runningRange(containing: heute, granularity: .year)
+        XCTAssertEqual(jahr?.start, CalendarDay(year: 2026, month: 1, day: 1))
+        XCTAssertEqual(jahr?.end, heute)
+    }
+
+    /// Am ersten Tag eines Abschnitts fallen Anfang und Ende zusammen.
+    ///
+    /// `DayRange` ist dann entweder leer oder gar nicht bildbar — beides ist in
+    /// Ordnung, solange nichts abstürzt und kein Betrag erfunden wird. Der
+    /// Punkt des Tests: Es darf **nicht** auf den Vormonat zurückfallen.
+    func testErsterTagDesAbschnitts() {
+        let neujahr = CalendarDay(year: 2026, month: 1, day: 1)!
+        for granularitaet in [PeriodEngine.Granularity.month, .quarter, .year] {
+            let bereich = PeriodEngine.runningRange(containing: neujahr,
+                                                    granularity: granularitaet)
+            if let bereich {
+                XCTAssertEqual(bereich.start, neujahr,
+                               "Anfang bleibt der 1. Januar, kein Rückfall ins Vorjahr")
+                XCTAssertEqual(bereich.end, neujahr)
+            }
+        }
+    }
+
+    /// Der letzte Tag des Jahres gehört ins vierte Quartal, nicht ins nächste.
+    func testSilvesterGehoertInsVierteQuartal() {
+        let silvester = CalendarDay(year: 2026, month: 12, day: 31)!
+        XCTAssertEqual(PeriodEngine.slot(of: silvester, granularity: .quarter), 4)
+        let quartal = PeriodEngine.runningRange(containing: silvester, granularity: .quarter)
+        XCTAssertEqual(quartal?.start, CalendarDay(year: 2026, month: 10, day: 1))
+        XCTAssertEqual(quartal?.end, silvester)
+    }
+
+    /// Monat liegt im Quartal, Quartal im Jahr — und zwar als Zeitraum, nicht
+    /// nur dem Namen nach.
+    ///
+    /// Darauf beruht, dass die drei Beträge auf der Übersichtskarte einander
+    /// nicht widersprechen dürfen.
+    func testAbschnitteLiegenIneinander() {
+        for monat in 1...12 {
+            let tag = CalendarDay(year: 2026, month: monat, day: 20)!
+            guard let m = PeriodEngine.runningRange(containing: tag, granularity: .month),
+                  let q = PeriodEngine.runningRange(containing: tag, granularity: .quarter),
+                  let j = PeriodEngine.runningRange(containing: tag, granularity: .year)
+            else { return XCTFail("Alle drei Abschnitte müssen sich bilden lassen") }
+            XCTAssertFalse(m.start < q.start, "Monat fängt frühestens mit dem Quartal an")
+            XCTAssertFalse(q.start < j.start, "Quartal fängt frühestens mit dem Jahr an")
+            XCTAssertEqual(m.end, q.end)
+            XCTAssertEqual(q.end, j.end)
+        }
+    }
 }

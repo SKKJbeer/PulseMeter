@@ -1033,6 +1033,77 @@ for (const scheme of ["light", "dark"]) {
   await page.locator('[data-pro="0"]').first().click();
   await page.waitForTimeout(250);
 
+  // --- Kosten für Monat, Quartal und Jahr auf der Übersichtskarte
+  //
+  // Vom Gründer am 3. September verlangt: Wer die Preise gekauft hat, soll sie
+  // in der Übersicht für alle drei Zeiträume sehen.
+  //
+  // **Die letzte Prüfung ist die eigentliche.** Drei Beträge nebeneinander
+  // sehen auch dann richtig aus, wenn die Quartalsgrenze um einen Monat
+  // danebenliegt — man müsste sie nachrechnen, um es zu merken. Dass Monat im
+  // Quartal und Quartal im Jahr enthalten ist, merkt die Prüfung dagegen
+  // sofort.
+  await page.locator('[data-pane="meters"]').first().click();
+  await page.waitForTimeout(200);
+  await page.locator('[data-pro="1"]').first().click();
+  await page.waitForTimeout(250);
+  await page.locator('[data-pane="home"]').first().click();
+  await page.waitForTimeout(250);
+
+  const abschnitte = await page.evaluate(() => {
+    const karte = document.querySelector(".card-spans");
+    if (!karte) return null;
+    const zahl = t => Number(t.replace(/[^\d,]/g, "").replace(",", "."));
+    return [...karte.querySelectorAll(":scope > div")].map(d => ({
+      label: d.querySelector(".sp-l").textContent.trim(),
+      text: d.querySelector(".sp-v").textContent.trim(),
+      wert: zahl(d.querySelector(".sp-v").textContent),
+    }));
+  });
+
+  note(abschnitte !== null && abschnitte.length === 3,
+       `Die Karte zeigt drei Zeiträume (${abschnitte ? abschnitte.length : 0})`);
+  if (abschnitte && abschnitte.length === 3) {
+    const [monat, quartal, jahr] = abschnitte;
+    note(monat.label === "August",
+         `Der Monat heißt beim Namen: „${monat.label}"`);
+    note(quartal.label === "3. Quartal",
+         `Der 4. August liegt im dritten Quartal (steht: „${quartal.label}")`);
+    note(/^(2026|seit |bis )/.test(jahr.label),
+         `Das Jahr nennt seinen Ausschnitt: „${jahr.label}"`);
+    note(abschnitte.every(a => /€/.test(a.text)),
+         "Jeder der drei Beträge trägt sein Währungszeichen");
+    // **Echt größer, nicht „höchstens".**
+    //
+    // Hier stand `<=`, und die Gegenprobe hat die Prüfung widerlegt statt den
+    // Code: Mit einer um einen Monat verschobenen Quartalsgrenze fing das
+    // Quartal im August an, war damit gleich dem Monat — und `2.83 <= 2.83`
+    // ging durch. Eine Prüfung, die man nicht hat fallen sehen, ist keine.
+    //
+    // Streng gilt hier, weil der 4. August der **zweite** Monat des dritten
+    // Quartals ist: Der Juli liegt vollständig darin und ist nicht leer.
+    note(monat.wert < quartal.wert,
+         `Das Quartal enthält mehr als seinen laufenden Monat (${monat.wert} < ${quartal.wert})`);
+    note(quartal.wert < jahr.wert,
+         `Das Jahr enthält mehr als sein laufendes Quartal (${quartal.wert} < ${jahr.wert})`);
+  }
+
+  // **Und ohne den Kauf steht dort kein einziger Betrag.** Dieselbe Lehre wie
+  // 0.104.0: Damals hing die Kostenanzeige daran, ob Tarife vorliegen, nicht
+  // daran, ob jemand sie gekauft hat — und der Knopf „Beispieldaten anlegen"
+  // legt Tarife an. Eine neue Kostenzeile ist genau die Stelle, an der dieser
+  // Fehler ein zweites Mal entsteht.
+  await page.locator('[data-pane="meters"]').first().click();
+  await page.waitForTimeout(200);
+  await page.locator('[data-pro="0"]').first().click();
+  await page.waitForTimeout(250);
+  await page.locator('[data-pane="home"]').first().click();
+  await page.waitForTimeout(250);
+  const spannenOhneKauf = await page.evaluate(() =>
+    document.querySelectorAll(".card-spans").length);
+  note(spannenOhneKauf === 0,
+       `Ohne den Kauf keine Kostenzeiträume auf der Übersicht (${spannenOhneKauf})`);
+
   // --- Keine Taste, die nichts tut
   //
   // Auf dem Ziffernblock stand ein Kamerasymbol als Platzhalter für

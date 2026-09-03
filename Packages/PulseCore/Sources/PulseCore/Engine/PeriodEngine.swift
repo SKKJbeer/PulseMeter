@@ -69,6 +69,43 @@ public enum PeriodEngine {
         return DayRange(start: start, end: end)
     }
 
+    /// In welchem Abschnitt ein Tag liegt: Monat 1…12, Quartal 1…4, Jahr 1.
+    public static func slot(of day: CalendarDay, granularity: Granularity) -> Int {
+        switch granularity {
+        case .month:   return day.month
+        case .quarter: return (day.month - 1) / 3 + 1
+        case .year:    return 1
+        }
+    }
+
+    /// Der **laufende** Abschnitt: von seinem ersten Tag bis `day`.
+    ///
+    /// **Nicht dasselbe wie ``range(year:slot:granularity:)``.** Der liefert den
+    /// vollen Abschnitt, also auch Tage, die noch nicht stattgefunden haben.
+    /// Wer damit Kosten rechnet, bekommt für den September am 2. September die
+    /// Kosten eines ganzen Monats — der Grundpreis läuft nämlich über den
+    /// Zeitraum, nicht über die vorhandenen Ablesungen.
+    ///
+    /// Genau das ist die wiederkehrende Fehlerklasse dieses Projekts, nur an
+    /// einer neuen Stelle: ein Zeitraum, den die Daten abdecken, gegen einen
+    /// gehalten, den sie nicht abdecken.
+    ///
+    /// Die drei Abschnitte sind ineinander enthalten — der Monat liegt im
+    /// Quartal, das Quartal im Jahr —, und weil der Grundpreis je Tag
+    /// umgelegt wird, widersprechen sich ihre Beträge nicht.
+    public static func runningRange(containing day: CalendarDay,
+                                    granularity: Granularity) -> DayRange? {
+        let startMonth: Int
+        switch granularity {
+        case .month:   startMonth = day.month
+        case .quarter: startMonth = (day.month - 1) / 3 * 3 + 1
+        case .year:    startMonth = 1
+        }
+        guard let start = CalendarDay(year: day.year, month: startMonth, day: 1)
+        else { return nil }
+        return DayRange(start: start, end: day)
+    }
+
     /// Alle Abschnitte eines Jahres.
     ///
     /// Auch Abschnitte ohne Daten kommen zurück — eine Lücke ist eine Aussage,

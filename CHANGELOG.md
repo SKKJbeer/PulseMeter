@@ -9,6 +9,53 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.106.0 — 2026-09-03
+
+**Die Übersicht zeigt Kosten für Monat, Quartal und Jahr.**
+
+Vom Gründer verlangt: „wenn man die preise freigeschaltet hat, ich will dann
+auch in der übersicht immer die preise sehen auf monats, quartals, jahres
+preise." Bis hierher stand auf der Karte eine einzige Zeile — das laufende
+Jahr.
+
+Jetzt stehen drei Beträge nebeneinander, und zwar **nebeneinander und nicht
+untereinander**: Die Karte trägt schon Stand, Einspeisung und Abschlag; drei
+weitere Zeilen hätten sie über die Bildschirmhöhe geschoben, und Produktprinzip
+3 verlangt den Überblick ohne Scrollen. Nebeneinander sind sie zudem
+vergleichbar, ohne dass der Blick zurückspringt.
+
+**Jeder Betrag wird für seinen eigenen Zeitraum gerechnet.** Den Monat aus dem
+Jahr zu teilen wäre die wiederkehrende Fehlerklasse dieses Projekts in
+Reinform — ein Zeitraum, den die Daten abdecken, geteilt durch einen, den sie
+nicht abdecken. Bei einem Gaszähler läge das im Februar um mehr als das
+Doppelte daneben. Widerspruchsfrei sind die drei trotzdem, weil `CostEngine`
+den Grundpreis tagesgenau umlegt und nicht je Aufruf.
+
+**Die Beschriftung nennt den Abschnitt beim Namen:** „August", „3. Quartal",
+„2026" — nicht seine Art. „Monat" wäre zweideutig: dieser Monat oder je Monat?
+Deckt das Jahr nicht von Anfang an, steht dort „seit 3. August" statt der
+Jahreszahl; dieselbe Genauigkeit, die die einzelne Zeile schon hatte.
+
+Ohne den Kauf `costsAndTariffs` steht dort **nichts** — geprüft an derselben
+Stelle, durch die jeder Betrag muss. Das ist die Lehre aus 0.104.0, wo die
+Anzeige daran hing, *ob* Tarife vorliegen, statt daran, ob jemand sie gekauft
+hat.
+
+Neu im Rechenkern: `PeriodEngine.runningRange(containing:granularity:)` und
+`slot(of:granularity:)` — der **laufende** Abschnitt bis heute, nicht der
+volle. Mit dem vollen bekäme der September am 2. September den Grundpreis eines
+ganzen Monats.
+
+**Die Gegenprobe hat die Prüfung widerlegt, nicht den Code.** Die erste Fassung
+prüfte `Monat ≤ Quartal ≤ Jahr`. Mit einer um einen Monat verschobenen
+Quartalsgrenze fing das Quartal im August an, war damit gleich dem Monat, und
+`2,83 ≤ 2,83` ging durch. Jetzt steht dort `<`, und die Sabotage fällt.
+
+236 Tests in `PulseCore` (5 neue: alle zwölf Monate gegen ihr Quartal, Silvester,
+Neujahr, Verschachtelung), 258 Prüfungen im Entwurf (16 neue).
+
+---
+
 ## 0.105.12 — 2026-09-03
 
 **Die Zeile von heute Mittag war falsch, und zwar aus derselben Bequemlichkeit

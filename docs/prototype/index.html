@@ -292,6 +292,24 @@ ul.includes.done li::before { content: "✓"; color: var(--tint); font-size: 12p
 .card-extra > span:first-child { min-width: 0; }
 .card-extra > :last-child { white-space: nowrap; flex: none; }
 .card-extra strong { color: var(--ink); font-weight: 600; }
+/* Drei Beträge nebeneinander — Monat, Quartal, Jahr. Untereinander hätten sie
+   die Karte über die Bildschirmhöhe geschoben, und Produktprinzip 3 verlangt
+   den Überblick ohne Scrollen. */
+.card-spans {
+  border-top: 1px solid var(--hairline);
+  padding: 10px 15px;
+  display: flex; gap: 10px;
+}
+.card-spans > div { flex: 1 1 0; min-width: 0; }
+.card-spans .sp-l {
+  display: block; font-size: var(--fs-cap); color: var(--ink-3);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.card-spans .sp-v {
+  display: block; font-size: var(--fs-sub); font-weight: 600; color: var(--ink);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.card-spans .sp-v.leer { color: var(--ink-3); font-weight: 500; }
 /* Textknopf innerhalb eines Hinweises — sieht aus wie ein Satzteil, ist aber
    der Ausweg aus der Sackgasse. */
 .reg-name { display: block; font-weight: 600; font-size: 14px; }
@@ -797,7 +815,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>Zählora</h1>
-  <p>Klickbarer Entwurf · v0.105.12</p>
+  <p>Klickbarer Entwurf · v0.106.0</p>
 </div>
 
 <div class="device">
@@ -1919,10 +1937,22 @@ function renderCards() {
         ${verguetet}</div>`;
     }
 
-    const ytdCost = costYearToDate(m);
-    if (ytdCost !== null) {
-      extra += `<div class="card-extra"><span>${costCaption(ytd)}</span>
-        <strong>${money(ytdCost)}</strong></div>`;
+    // **Drei Abschnitte statt einem, sobald Preise gekauft sind.** Die
+    // Jahreszahl steckt als dritte Spalte darin — deshalb tritt diese Zeile an
+    // die Stelle der einzelnen Kostenzeile und nicht daneben. Zweimal derselbe
+    // Jahresbetrag auf einer Karte wäre nicht doppelt so deutlich.
+    const spans = costSpans(m);
+    if (spans.length) {
+      extra += `<div class="card-spans">` + spans.map(s =>
+        `<div><span class="sp-l">${s.label}</span>
+         <span class="sp-v${s.amount === null ? " leer" : ""}">${s.amount === null ? "–" : money(s.amount)}</span></div>`
+      ).join("") + `</div>`;
+    } else {
+      const ytdCost = costYearToDate(m);
+      if (ytdCost !== null) {
+        extra += `<div class="card-extra"><span>${costCaption(ytd)}</span>
+          <strong>${money(ytdCost)}</strong></div>`;
+      }
     }
     const bal = m.prepay && fc ? balance(m, fc) : null;
     if (bal !== null) {
@@ -2599,6 +2629,59 @@ function costYearToDate(m) {
   const ytd = meterYearToDate(m);
   if (!ytd) return null;
   return costFor(m, { from: ytd.cfrom, to: ytd.cto });
+}
+
+/* Die drei laufenden Abschnitte — Monat, Quartal, Jahr, jeder bis heute.
+
+   Vom Gründer am 3. September verlangt: Wer die Preise gekauft hat, soll sie
+   in der Übersicht für alle drei Zeiträume sehen und nicht nur fürs Jahr.
+
+   **Jeder Betrag wird für seinen eigenen Zeitraum gerechnet.** Den Monat aus
+   dem Jahr zu teilen wäre die wiederkehrende Fehlerklasse dieses Projekts in
+   Reinform: ein Zeitraum, den die Daten abdecken, geteilt durch einen, den sie
+   nicht abdecken. Bei Gas läge das im Februar um mehr als das Doppelte daneben.
+
+   Widerspruchsfrei bleiben die drei trotzdem, weil `costFor` den Grundpreis
+   tagesgenau umlegt und nicht je Aufruf — sonst stünde er dreimal darin.
+   Spiegelt `costSpans(point:…)` in App/RootView.swift. */
+function spanStart(granularity) {
+  if (granularity === "monat")   return { y: TODAY.y, m: TODAY.m, d: 1 };
+  if (granularity === "quartal") return { y: TODAY.y, m: ((TODAY.m - 1) / 3 | 0) * 3 + 1, d: 1 };
+  return { y: TODAY.y, m: 1, d: 1 };
+}
+
+/* Der Abschnitt beim Namen, nicht bei seiner Art. „Monat" wäre zweideutig —
+   dieser Monat oder je Monat? „August" nicht. */
+function spanLabel(granularity, ytd) {
+  if (granularity === "monat")   return MONTHS_LONG[TODAY.m - 1];
+  if (granularity === "quartal") return `${((TODAY.m - 1) / 3 | 0) + 1}. Quartal`;
+  const c = ytd ? coverage(ytd) : null;
+  if (c && (c.kind === "startsLate" || c.kind === "partial")) return `seit ${dateMedium(c.from)}`;
+  if (c && c.kind === "endsEarly") return `bis ${dateMedium(c.to)}`;
+  return String(TODAY.y);
+}
+
+function costSpans(m) {
+  if (!darfKosten()) return [];
+  const ytd = meterYearToDate(m);
+  if (!ytd) return [];
+  // **Auf den abgedeckten Ausschnitt zuschneiden, wie `costYearToDate`.**
+  // `costFor` gibt `null` zurück, sobald der Zeitraum nicht lückenlos von
+  // Ablesungen gedeckt ist. Ungeschnitten stünde deshalb überall ein Strich —
+  // der erste Anlauf zeigte genau das, und die Prüfung hat es gefangen.
+  // Der Ausschnitt ist derselbe, aus dem die Menge über der Karte kommt.
+  const spans = ["monat", "quartal", "jahr"].map(g => {
+    const start = spanStart(g);
+    const from = between(start, ytd.cfrom) > 0 ? ytd.cfrom : start;
+    const to = between(ytd.cto, TODAY) > 0 ? ytd.cto : TODAY;
+    return {
+      id: g,
+      label: spanLabel(g, ytd),
+      amount: between(from, to) > 0 ? costFor(m, { from, to }) : null,
+    };
+  });
+  // Drei Striche sagen weniger als die bisherige Zeile mit ihrer Begründung.
+  return spans.some(s => s.amount !== null) ? spans : [];
 }
 
 function cellValue(target, p) {
