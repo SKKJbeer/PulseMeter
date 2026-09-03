@@ -108,18 +108,6 @@ def main() -> int:
         zeigen("Die Angaben zur Prüfung",
                f"v1/appStoreVersions/{fassung}/appStoreReviewDetail")
 
-        # **Steht die Fassung auf REJECTED, ist die Begründung die einzige
-        # Frage.** Apple schreibt sie ins Lösungscenter und schickt eine
-        # E-Mail; ob sie auch über die Schnittstelle zu bekommen ist, wird hier
-        # abgefragt statt angenommen. Ein 404 ist die Antwort „gibt es nicht",
-        # und dann muss der Gründer die Nachricht weiterreichen.
-        for pfad in (f"v1/appStoreVersions/{fassung}/appStoreVersionSubmission",
-                     f"v1/appStoreVersions/{fassung}/resolutionCenterThreads",
-                     f"v1/apps/{app}/resolutionCenterThreads",
-                     "v1/resolutionCenterThreads",
-                     "v1/resolutionCenterMessages",
-                     f"v1/appStoreVersions/{fassung}/appStoreReviewAttachments"):
-            zeigen(f"Ablehnungsgrund — {pfad}", pfad, **{"limit": 10})
 
     # **Was leer ist, blendet `zeigen` aus — und genau das wird gesucht.**
     #
@@ -347,6 +335,25 @@ def main() -> int:
             merkmale = {k: v for k, v in (e.get("attributes") or {}).items()
                         if k in ("versionString", "name", "productId", "state")}
             print(f"   ⇒ beigefügt: {e.get('type')} {kennung2[:8]} {merkmale}")
+
+    # **Das Wichtigste steht zum Schluss, und das ist kein Geschmack.**
+    # Ein Protokoll eines Laufs wird von hinten gelesen — die Werkzeuge liefern
+    # das Ende. Stand dieser Block oben, kostete jede Antwort darauf einen
+    # zweiten Lauf.
+    #
+    # Steht die Fassung auf `REJECTED`, ist die Begründung die einzige Frage.
+    # Apple schreibt sie ins Lösungscenter und schickt eine E-Mail; ob sie auch
+    # über die Schnittstelle zu bekommen ist, wird abgefragt statt angenommen.
+    # Ein 404 ist die Antwort „gibt es nicht", und dann muss der Gründer die
+    # Nachricht weiterreichen.
+    if fassung:
+        for pfad in (f"v1/appStoreVersions/{fassung}/appStoreVersionSubmission",
+                     f"v1/appStoreVersions/{fassung}/resolutionCenterThreads",
+                     f"v1/apps/{app}/resolutionCenterThreads",
+                     "v1/resolutionCenterThreads",
+                     "v1/resolutionCenterMessages",
+                     f"v1/appStoreVersions/{fassung}/appStoreReviewAttachments"):
+            zeigen(f"Ablehnungsgrund — {pfad}", pfad, **{"limit": 10})
 
     print("\nGelesen, nicht geraten. Was oben mit 404 antwortet, gibt es nicht.")
     return 0
