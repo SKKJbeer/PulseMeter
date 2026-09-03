@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-09-03, Version 0.105.11
+Stand: 2026-09-03, Version 0.105.12
 
 ---
 
@@ -86,7 +86,7 @@ Tabelle im Baukasten unter „Die Prüfungen".
 
 ## Wo die Arbeit steht
 
-**`main` ist der aktuelle Stand**, Version 0.105.11. Es gibt keinen offenen
+**`main` ist der aktuelle Stand**, Version 0.105.12. Es gibt keinen offenen
 Arbeitszweig; alles ist zusammengeführt.
 
 | | Stand am 3. September |
@@ -148,14 +148,34 @@ Fassung 1.0: READY_FOR_REVIEW     (vorher REJECTED)
 Bei der Prüfung: UNRESOLVED_ISSUES
 ```
 
-Eine Antwort im Lösungscenter stößt die Prüfung also selbst wieder an; es
-braucht **kein** erneutes `--einreichen`. Der Zustand der Einreichung bleibt
-dabei auf `UNRESOLVED_ISSUES` stehen — der gehört zum alten Vorgang und ist
-kein Hindernis. Wer nur darauf sieht, hält die Sache fälschlich für blockiert;
-maßgeblich ist der Zustand der **Fassung**.
+**Hier stand, `UNRESOLVED_ISSUES` gehöre „zum alten Vorgang". Das war falsch,
+und zwar aus derselben Bequemlichkeit wie dreimal vorher: eine Zustandsänderung
+gesehen, den Rest dazuerzählt.** Vier Stunden später nachgemessen, was die
+Einreichung tatsächlich enthält:
 
-Zu tun ist nur noch: warten, bis `READY_FOR_SALE` steht, dann
-`live-schalten.yml` von Hand auslösen.
+```
+6 Einträge, alle READY_FOR_REVIEW
+· … "appStoreVersion": {"data": {"id": "be468160-…"}}
+⇒ beigefügt: appStoreVersions be468160 {'versionString': '1.0'}
+```
+
+Es ist **kein** alter Vorgang. Es ist derselbe, in dem Fassung 1.0 seit dem
+2. September liegt, und ihre fünf Käufe daneben. `UNRESOLVED_ISSUES` heißt
+„Apple hat gefragt und wartet auf Antwort" — die Antwort ist seit dem
+3. September, 14:51, dort.
+
+**Was daraus folgt, und was nicht.** Belegt ist: Die Fassung ist nicht mehr
+abgelehnt und liegt in einer Einreichung. Nicht belegt ist, ob Apple von selbst
+weiterprüft oder ob es einen Anstoß braucht — vier Stunden ohne Bewegung sind
+dafür kein Beweis, das ist bei Apple eine gewöhnliche Wartezeit.
+
+Also: nachsehen, nicht raten. Bewegt sich der Zustand der Einreichung binnen
+eines Tages nicht nach `IN_REVIEW`, wird `--einreichen` erneut angestoßen —
+dann ist `UNRESOLVED_ISSUES` aus `UNTERWEGS` zu nehmen, sonst meldet das Skript
+„steht schon bei der Prüfung" und tut nichts.
+
+Danach: warten, bis `READY_FOR_SALE` steht, dann `live-schalten.yml` von Hand
+auslösen.
 
 **Was die Ablehnung nicht bedeutet:** Bau 25 bleibt in TestFlight nutzbar, die
 Käufe bleiben `READY_TO_SUBMIT`, und die Preisstufe bleibt gesetzt. Es ist ein

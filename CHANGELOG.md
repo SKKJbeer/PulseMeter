@@ -9,6 +9,35 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.105.12 — 2026-09-03
+
+**Die Zeile von heute Mittag war falsch, und zwar aus derselben Bequemlichkeit
+wie dreimal vorher.**
+
+In 0.105.11 stand, `UNRESOLVED_ISSUES` gehoere „zum alten Vorgang". Grundlage
+war eine einzige Zustandsaenderung — REJECTED wurde READY_FOR_REVIEW — und der
+Rest war dazuerzaehlt. Vier Stunden spaeter nachgemessen, was die Einreichung
+tatsaechlich enthaelt:
+
+```
+6 Eintraege, alle READY_FOR_REVIEW
+· "appStoreVersion": {"data": {"id": "be468160-..."}}
+```
+
+Es ist kein alter Vorgang, sondern derselbe, in dem Fassung 1.0 seit dem
+2. September liegt. `UNRESOLVED_ISSUES` heisst „Apple hat gefragt und wartet
+auf Antwort" — die Antwort liegt seit 14:51 dort.
+
+**Was belegt ist:** Die Fassung ist nicht mehr abgelehnt und liegt in einer
+Einreichung. **Was nicht belegt ist:** ob Apple von selbst weiterprueft. Vier
+Stunden ohne Bewegung sind kein Beweis dafuer; das ist bei Apple eine
+gewoehnliche Wartezeit. Die Uebergabedatei sagt jetzt beides getrennt und nennt
+den naechsten Schritt, falls sich bis morgen nichts bewegt.
+
+Nur Dokumente. Kein App-Code, kein Bau.
+
+---
+
 ## 0.105.11 — 2026-09-03
 
 **Die Antwort im Loesungscenter hat die Ablehnung selbst aufgehoben.**
