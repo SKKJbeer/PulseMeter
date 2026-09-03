@@ -326,25 +326,113 @@ kein Video, und gute Bilder tragen diese App.
 
 ## 5. Hinweise für die Prüfung
 
-Ins Feld „Notes" bei der Einreichung:
+Ins Feld „Notes" bei der Einreichung.
+
+**Auf Englisch, und das ist eine Entscheidung.** Bis 0.105.8 stand hier ein
+deutscher Text. Am 3. September kam die Ablehnung nach Richtlinie 2.1 —
+„Information Needed" —, und darin fragt Apple sieben Punkte auf Englisch ab.
+Wer eine Rückfrage in der Sprache beantwortet, in der sie gestellt wurde, wird
+sicher verstanden. Die Oberfläche der App bleibt deutsch; **die Wörter, die ein
+Prüfer auf dem Bildschirm sucht, stehen deshalb mit Umlaut darin** und nicht in
+Umschrift. Genau daran wäre der Text sonst wertlos geworden.
+
+**Der Text beantwortet alle sieben Punkte der Rückfrage.** Er gehört nicht nur
+in dieses Feld, sondern zusätzlich als Antwort ins Lösungscenter — Apple
+verlangt beides ausdrücklich.
 
 ```
-Die App braucht kein Konto und keine Anmeldedaten.
+NO ACCOUNT, NO LOGIN, NO CREDENTIALS. The app has no sign-in and no user
+accounts, and therefore no account deletion flow. It has no user-generated
+content, no messaging and no social features.
 
-Beim ersten Start ist sie leer. Um alle Funktionen zu sehen, genügt auf dem
-Startbildschirm der Knopf „Stattdessen Beispieldaten anlegen": Er legt vier
-Zähler mit gut zwei Jahren Verlauf an, darunter einen mit Photovoltaik und
-einen mit Tag- und Nachtstrom.
+SEEING EVERYTHING TAKES TEN SECONDS. The app starts empty. On the start screen,
+tap "Stattdessen Beispieldaten anlegen" ("Create sample data instead"). That
+creates four meters with more than two years of history, one of them with
+photovoltaic feed-in and one with day/night electricity registers.
 
-Die In-App-Käufe sind fünf Einmalkäufe ohne Abo — vier einzelne Funktionen und
-ein Bündel darüber. Ohne jeden Kauf bleiben zwei Zähler, alle Ablesungen, der
-gesamte Verlauf und der Export dauerhaft nutzbar. Der Verbrauchsbericht lässt
-sich auch ungekauft öffnen, blättern und drucken; er trägt dann ein
-Wasserzeichen.
+1. PURPOSE AND AUDIENCE
+Zählora is a German-language app for private households who read their own
+electricity, gas and water meters. People write readings on paper or not at
+all, and only learn at the annual bill whether their consumption and their
+monthly instalment were realistic. Zählora records a reading in seconds on a
+large keypad, shows consumption per day, month and year, compares only periods
+that cover the same span of time, and projects the year end. Every estimated,
+interpolated or projected number is labelled as an estimate.
+
+2. MAIN FEATURES AND WHERE THEY ARE
+Three tabs at the bottom.
+- "Übersicht" (Overview): current status, projection for the year, and the
+  printable consumption report.
+- "Verlauf" (History): all readings, consumption per period, charts.
+- "Zähler" (Meters): the list of meters. Tap a meter to enter a reading on a
+  large numeric keypad. This tab also holds settings, CSV export, reminders and
+  the purchase screen.
+
+3. EXTERNAL SERVICES, TOOLS AND PLATFORMS
+None. The app contains no networking code at all - there is not a single
+URLSession call in the source. The one external system is Apple's own CloudKit
+private database, used solely to sync the user's own data between the user's
+own devices. No servers of ours, no analytics, no advertising, no tracking, no
+AI service, no data provider, no authentication service, and no payment
+processor other than Apple's In-App Purchase.
+
+4. REGIONAL DIFFERENCES
+None. Features and content are identical in every region. The interface is
+German only, and monetary amounts are always formatted as Euro in German
+notation, everywhere.
+
+5. REGULATED INDUSTRY OR PROTECTED MATERIAL
+Neither. The app provides no regulated service. It bundles no licensed media:
+the interface uses Apple's SF Symbols and contains no image assets of its own.
+
+6. IN-APP PURCHASES AND HOW TO REACH THEM
+Six non-consumable one-time purchases, no subscriptions:
+- Unbegrenzt viele Zähler (unlimited meters), EUR 1.99
+- Tag- und Nachtstrom, Einspeisung (several registers per meter), EUR 1.99
+- Kosten und Preise (enter tariffs, see costs), EUR 1.99
+- Bericht ohne Wasserzeichen (report without watermark), EUR 1.99
+- Erinnerung, wenn ein Zähler dran ist (reminders), EUR 0.99
+- Alles freischalten (bundle of all five), EUR 4.99
+To reach them: tab "Zähler", then the card with the shopping-cart icon
+("Alles freischalten"). A single purchase also opens from the place where the
+feature is used, for example when adding a third meter or entering a price.
+Without any purchase the app stays fully usable: two meters, unlimited
+readings, the complete history and CSV export are free forever. The consumption
+report can be opened, browsed and printed without buying; it then carries a
+watermark.
 ```
 
 Der Hinweis auf die Beispieldaten ist kein Beiwerk: Ein Prüfer, der eine leere
 App startet und nicht weiß, wo etwas herkommt, bewertet eine leere App.
+
+**Jede Zahl darin ist aus dem Quelltext geholt, nicht erinnert.** Der alte Text
+sprach von „fünf Einmalkäufe — vier einzelne Funktionen und ein Bündel". Es
+sind **sechs**: fünf einzelne und ein Bündel darüber. `Entitlement.swift` führt
+`additionalMeters`, `multipleRegisters`, `costsAndTariffs`, `pdfReport`,
+`reminders` und `everything`, und die Summe der Einzelnen ergibt 8,95 € — was
+mit 4 × 1,99 € nicht aufgeht. In App Store Connect standen die ganze Zeit sechs
+Käufe auf `READY_TO_SUBMIT`; die Zahl im Text hat ihnen nur nie jemand
+gegenübergestellt.
+
+**Was der Text nicht behauptet:** dass der Bau auf einem echten Gerät geprüft
+wurde. Das kann nur der Gründer sagen, und ungefragt steht es hier nicht
+(Regel: keine Annahmen in Texten, die jemand anderes liest).
+
+### Was nur der Gründer liefern kann
+
+Punkt 1 der Rückfrage ist eine **Bildschirmaufnahme auf einem echten Gerät**,
+und kein Skript erzeugt sie. Sie muss mit dem Start der App beginnen und den
+üblichen Weg zeigen; für Zählora reicht eine Minute:
+
+1. App starten (leerer Zustand), „Stattdessen Beispieldaten anlegen" antippen.
+2. Einen Zähler öffnen, einen Stand über den Ziffernblock eintragen, sichern.
+3. Auf „Verlauf" wechseln, durch den Verlauf und ein Diagramm blättern.
+4. Auf „Zähler" die Karte mit dem Einkaufswagen antippen — die sechs Käufe
+   erscheinen. Einen Kauf antippen, bis Apples Kaufblatt kommt.
+5. Zurück auf „Übersicht", den Verbrauchsbericht öffnen und blättern.
+
+Schritt 4 ist der wichtige: Apple fragt ausdrücklich nach dem Weg zu den
+Käufen.
 
 **Und genau deshalb steht der Text nicht mehr nur hier.** Bis 0.98.2 hat ihn
 niemand eingetragen: Der Lauf schrieb ihn nicht und fragte auch nicht danach,

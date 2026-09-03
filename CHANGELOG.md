@@ -9,6 +9,44 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.105.9 — 2026-09-03
+
+**Apples Rückfrage beantwortet — und dabei einen falschen Satz gefunden, der
+seit Wochen bei Apple stand.**
+
+Die Ablehnung ist Richtlinie 2.1 „Information Needed": ein Entwicklerkonto ohne
+Prüfhistorie, sieben Fragen, kein Mangel an der App. Sechs davon sind Text und
+stehen jetzt in `docs/09-appstore.md`, von wo der Lauf sie ins Feld „Notes"
+überträgt; die siebte ist eine Bildschirmaufnahme auf einem echten Gerät, die
+nur der Gründer machen kann. Die Schritte dafür stehen daneben.
+
+**Der Text ist jetzt englisch.** Apple fragt auf Englisch; wer in der Sprache
+der Frage antwortet, wird sicher verstanden. Die Oberfläche bleibt deutsch —
+und die Wörter, die ein Prüfer auf dem Bildschirm sucht, stehen deshalb mit
+Umlaut im Text und nicht in Umschrift. Der erste Entwurf hatte „Zaehlora" und
+„Uebersicht"; damit wäre der Text an der einen Stelle wertlos gewesen, an der
+er zum Bildschirm passen muss.
+
+**Und der alte Text war falsch.** Er sprach von „fünf Einmalkäufe — vier
+einzelne Funktionen und ein Bündel". Es sind sechs: fünf einzelne und ein
+Bündel. `Entitlement.swift` führt sie namentlich, und die Summe der Einzelnen
+ergibt 8,95 €, was mit vier Käufen zu 1,99 € nicht aufgeht. In App Store
+Connect standen die ganze Zeit sechs Käufe auf `READY_TO_SUBMIT` — die Zahl im
+Text hat ihnen nur nie jemand gegenübergestellt. Dieselbe Klasse wie der
+Preisplan gestern: Zwei Angaben, jede für sich stimmig, nie nebeneinander
+gehalten.
+
+Jede Aussage im Text ist am Quelltext geprüft: kein einziger `URLSession`-Aufruf
+in `App/`, `Packages/`, `Widget/` und `Shared/`, also keine fremden Dienste;
+Beträge fest auf Euro in deutscher Schreibweise, also keine regionalen
+Unterschiede; keine eigenen Bilddateien, nur Apples SF Symbols. Was **nicht**
+darin steht: dass der Bau auf einem echten Gerät geprüft wurde. Das kann nur
+der Gründer sagen.
+
+Nur Dokumente. Kein App-Code, kein Bau.
+
+---
+
 ## 0.105.8 — 2026-09-03
 
 **Apple hat 1.0 abgelehnt, und die Schnittstelle sagt nicht warum.**
