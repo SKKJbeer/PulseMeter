@@ -1098,6 +1098,19 @@ for (const scheme of ["light", "dark"]) {
 
   note(abschnitte !== null && abschnitte.length === 3,
        `Die Karte zeigt drei Zeiträume (${abschnitte ? abschnitte.length : 0})`);
+  // **Der Block braucht eine Überschrift.** „August · 2,83 €" allein sagt
+  // nicht, dass das Geld ist — das verriet nur das Währungszeichen, und wer
+  // die App hört, bekam „August, 2,83 €" ohne Zusammenhang. Der
+  // Oberflächentest der App hat es gefangen, weil er eine Beschriftung
+  // erwartete, die mit „Kosten" anfängt.
+  const ueberschrift = await page.evaluate(() => {
+    const k = document.querySelector(".card-spans");
+    return k ? (k.previousElementSibling?.classList.contains("spans-cap")
+                ? k.previousElementSibling.textContent.trim()
+                : k.querySelector(".spans-cap")?.textContent.trim() || null) : null;
+  });
+  note(ueberschrift === "Kosten",
+       `Über den drei Zeiträumen steht „Kosten" (steht: „${ueberschrift}")`);
   if (abschnitte && abschnitte.length === 3) {
     const [monat, quartal, jahr] = abschnitte;
     note(monat.label === "August",

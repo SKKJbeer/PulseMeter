@@ -326,7 +326,16 @@ struct OverviewView: View {
                             .foregroundStyle(outlook.expectsRefund ? PulseColor.favourable : PulseColor.adverse)
                         }
                         .buttonStyle(.plain)
-                        .accessibilityLabel("Wie diese Zahl entsteht")
+                        // **Hinweis, nicht Beschriftung.** Der erste Anlauf
+                        // setzte hier `accessibilityLabel("Wie diese Zahl
+                        // entsteht")` — und überschrieb damit den Betrag. Wer
+                        // die App hört statt sie zu sehen, hätte an dieser
+                        // Stelle die Zahl verloren, um die es geht, und
+                        // stattdessen den Namen des Knopfs bekommen. Der
+                        // Oberflächentest hat es gefangen, weil er nach
+                        // „Guthaben" sucht; ohne ihn wäre es niemandem
+                        // aufgefallen, der sehen kann.
+                        .accessibilityHint("Zeigt, wie diese Zahl entsteht")
                         .accessibilityIdentifier("erklaeren-\(row.name)")
                     }
                     // **Worauf die Zahl beruht — und zwar direkt darunter.**

@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-09-03, Version 0.106.2
+Stand: 2026-09-03, Version 0.106.3
 
 ---
 
@@ -86,7 +86,7 @@ Tabelle im Baukasten unter „Die Prüfungen".
 
 ## Wo die Arbeit steht
 
-**`main` ist der aktuelle Stand**, Version 0.106.2. Es gibt keinen offenen
+**`main` ist der aktuelle Stand**, Version 0.106.3. Es gibt keinen offenen
 Arbeitszweig; alles ist zusammengeführt.
 
 | | Stand am 3. September |

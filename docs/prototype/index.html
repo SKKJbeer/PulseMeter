@@ -297,8 +297,11 @@ ul.includes.done li::before { content: "✓"; color: var(--tint); font-size: 12p
    den Überblick ohne Scrollen. */
 .card-spans {
   border-top: 1px solid var(--hairline);
-  padding: 10px 15px;
-  display: flex; gap: 10px;
+  padding: 9px 15px 10px;
+  display: flex; flex-wrap: wrap; gap: 4px 10px;
+}
+.card-spans .spans-cap {
+  flex: 0 0 100%; font-size: var(--fs-sub); color: var(--ink-2);
 }
 .card-spans > div { flex: 1 1 0; min-width: 0; }
 .card-spans .sp-l {
@@ -815,7 +818,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>Zählora</h1>
-  <p>Klickbarer Entwurf · v0.106.2</p>
+  <p>Klickbarer Entwurf · v0.106.3</p>
 </div>
 
 <div class="device">
@@ -1943,7 +1946,9 @@ function renderCards() {
     // Jahresbetrag auf einer Karte wäre nicht doppelt so deutlich.
     const spans = costSpans(m);
     if (spans.length) {
-      extra += `<div class="card-spans">` + spans.map(s =>
+      // Überschrift, weil „August · 2,83 €" allein nicht sagt, dass es Geld
+      // ist. Siehe den Kommentar an `CostSpanRow` in PulseUI.
+      extra += `<div class="card-spans"><span class="spans-cap">Kosten</span>` + spans.map(s =>
         `<div><span class="sp-l">${s.label}</span>
          <span class="sp-v${s.amount === null ? " leer" : ""}">${s.amount === null ? "–" : money(s.amount)}</span></div>`
       ).join("") + `</div>`;

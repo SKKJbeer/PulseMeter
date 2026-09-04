@@ -9,6 +9,41 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.106.3 — 2026-09-04
+
+**Der macOS-Lauf war rot, und er hatte in beiden Punkten recht.**
+
+Hier zeigt sich, wofür die Oberflaechentests da sind: Unter Linux laesst sich
+SwiftUI nicht uebersetzen, `swiftc -parse` war sauber, und beide Fehler waeren
+sonst erst auf dem Telefon aufgefallen.
+
+**Erstens: Ich hatte die Vorlesebeschriftung ueberschrieben.** Der neue Knopf
+auf der Uebersichtskarte trug
+
+```swift
+.accessibilityLabel("Wie diese Zahl entsteht")
+```
+
+und damit war der Betrag weg. Wer die App hoert statt sie zu sehen, bekam an
+der folgenreichsten Stelle den Namen des Knopfs statt „≈ 288,12 € Guthaben".
+Der Test sucht nach „Guthaben" und schlug an. Jetzt steht es als
+`accessibilityHint` daneben, und die Zahl bleibt die Beschriftung.
+
+**Zweitens: Die neue Kostenzeile war nicht selbstsprechend.** Es stand nur
+„August · 2,83 €" da. Dass es Geld ist, verriet allein das Waehrungszeichen —
+gehoert wurde „August, 2,83 €" ohne jeden Zusammenhang. Der Test erwartete eine
+Beschriftung, die mit „Kosten" anfaengt, und lag damit richtig: Ueber den drei
+Zeitraeumen steht das Wort jetzt wieder, in beiden Fassungen.
+
+**Und einmal die Pruefung selbst nachgezogen, nicht abgeschwaecht.** Der Test
+verlangte woertlich „Kosten bis 1. Mai". Das Enddatum steht jetzt in der
+Jahresspalte („bis 1. Mai") statt in einer eigenen Zeile. Geprueft wird deshalb
+weiter die Eigenschaft — irgendwo auf der Karte nennt der Betrag sein
+Enddatum —, nur nicht mehr am alten Wortlaut. Genau so stand es schon in der
+Begruendung dieses Tests: sonst haelt er den Wortlaut fest statt der Aussage.
+
+---
+
 ## 0.106.2 — 2026-09-04
 
 **Eine Antwort im Loesungscenter reicht nicht — und mein Skript hat das

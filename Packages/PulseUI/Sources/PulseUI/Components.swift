@@ -377,12 +377,28 @@ public struct CostSpanRow: View {
     }
 
     private let spans: [Span]
+    private let caption: String
 
-    public init(spans: [Span]) { self.spans = spans }
+    public init(spans: [Span], caption: String = "Kosten") {
+        self.spans = spans
+        self.caption = caption
+    }
 
     public var body: some View {
-        VStack(spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
             Divider().overlay(PulseColor.hairline)
+            // **Ohne diese Zeile ist der Block nicht selbstsprechend.**
+            //
+            // Es stand nur „August · 2,83 €" da. Dass das Geld ist und nicht
+            // eine Menge, verriet allein das Währungszeichen — und wer die App
+            // hört, bekam „August, 2,83 €" ohne jeden Zusammenhang. Der
+            // Oberflächentest hat es gefangen, weil er eine Beschriftung
+            // erwartete, die mit „Kosten" anfängt; die Prüfung hatte recht.
+            Text(caption)
+                .font(PulseText.detail)
+                .foregroundStyle(PulseColor.inkSecondary)
+                .padding(.horizontal, 15)
+                .padding(.top, 9)
             HStack(alignment: .top, spacing: 10) {
                 ForEach(spans) { span in
                     VStack(alignment: .leading, spacing: 2) {
@@ -409,7 +425,8 @@ public struct CostSpanRow: View {
                 }
             }
             .padding(.horizontal, 15)
-            .padding(.vertical, 10)
+            .padding(.top, 4)
+            .padding(.bottom, 10)
         }
     }
 

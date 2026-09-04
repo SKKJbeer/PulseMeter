@@ -367,11 +367,19 @@ final class LaunchTests: XCTestCase {
         // vorhandene Aussage geprüft und nicht als fehlende: Am Ersten eines
         // Monats ist der Stromzähler taggenau vollständig, und dort wäre
         // „seit Jahresbeginn" dann richtig. Eine Verneinung hinge am Kalender.
+        //
+        // **Seit 0.106.0 steht das Enddatum in der Jahresspalte, nicht mehr in
+        // einer eigenen Zeile.** Die Kosten stehen jetzt für Monat, Quartal und
+        // Jahr nebeneinander; die Spalte heißt dann „bis 1. Mai" statt „2026".
+        // Geprüft wird deshalb weiter die **Eigenschaft** — irgendwo auf der
+        // Karte nennt der Betrag sein Enddatum —, nur nicht mehr am alten
+        // Wortlaut. Genau so stand es schon in der Begründung dieses Tests:
+        // sonst hält er den Wortlaut fest statt der Aussage.
         let bounded = app.staticTexts.containing(
-            NSPredicate(format: "label BEGINSWITH 'Kosten bis '")
+            NSPredicate(format: "label BEGINSWITH 'bis ' OR label CONTAINS ' bis '")
         )
         XCTAssertGreaterThan(bounded.count, 0,
-                             "Beim überfälligen Zähler muss die Kostenzeile ihr Enddatum nennen")
+                             "Beim überfälligen Zähler muss der Betrag sein Enddatum nennen")
     }
 
     /// Mit Abschlag steht die Vorschau auf dem Jahresende auf der Karte.
