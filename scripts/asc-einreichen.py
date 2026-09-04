@@ -33,11 +33,20 @@ RECHTEVERMERK = "2026 Steffen Karjoth"
 # Die Zustände, in denen eine Einreichung schon unterwegs ist. Eine zweite
 # anzulegen, während eine läuft, lehnt Apple ab — und zwar mit einer Meldung,
 # die nach einem Fehler klingt statt nach „steht schon".
+#
 # **`READY_FOR_REVIEW` gehört nicht dazu**, und das war die zweite Hälfte des
 # Fehlers. Es heißt „angelegt und bereit zum Abschicken", nicht „bei der
 # Prüfung". Wer es hier einträgt, meldet bei jedem zweiten Lauf „steht schon
 # bei der Prüfung" — und schickt nie etwas ab.
-UNTERWEGS = {"WAITING_FOR_REVIEW", "IN_REVIEW", "UNRESOLVED_ISSUES"}
+#
+# **`UNRESOLVED_ISSUES` gehört auch nicht dazu, und das stand hier falsch.**
+# Es heißt nicht „bei der Prüfung", sondern das Gegenteil: **Apple wartet auf
+# uns.** Am 3. September um 14:51 hat der Gründer die Rückfrage im
+# Lösungscenter beantwortet; vierzehn Stunden später stand alles unverändert.
+# Solange dieser Zustand hier als „unterwegs" galt, meldete jeder Lauf „steht
+# schon bei der Prüfung. Nichts zu tun" — und genau das war falsch. Der Zustand
+# ist die Aufforderung zu handeln, nicht der Beleg, dass gehandelt wurde.
+UNTERWEGS = {"WAITING_FOR_REVIEW", "IN_REVIEW"}
 
 
 def token() -> str:
@@ -222,10 +231,17 @@ def vorbereitete(apple: Apple, app_id: str):
     Einträgen stand, die alles enthielt. Zwei Läufe sind daran gescheitert.
     Genommen wird deshalb die mit den meisten Einträgen: Eine leere ist ein
     Überbleibsel, eine gefüllte ist die Arbeit.
+
+    **`UNRESOLVED_ISSUES` zählt mit.** Das ist die Einreichung, zu der Apple
+    eine Rückfrage gestellt hat und auf eine Antwort wartet. Sie enthält die
+    Fassung und die Käufe bereits; eine neue anzulegen hieße, die Fassung ein
+    zweites Mal zu vergeben, und genau daran ist am 29. August ein Lauf mit
+    einer Meldung über die Fassung gescheitert, deren Ursache die Einreichung
+    war. Ist die Rückfrage beantwortet, wird **diese** wieder abgeschickt.
     """
     kandidaten = []
     for eintrag in alle(apple, app_id):
-        if feld(eintrag, "state") != "READY_FOR_REVIEW":
+        if feld(eintrag, "state") not in ("READY_FOR_REVIEW", "UNRESOLVED_ISSUES"):
             continue
         stand, teile = apple.holen(f"v1/reviewSubmissions/{eintrag['id']}/items",
                                    **{"limit": 20})

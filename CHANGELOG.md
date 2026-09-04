@@ -9,6 +9,40 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.106.2 — 2026-09-04
+
+**Eine Antwort im Loesungscenter reicht nicht — und mein Skript hat das
+verdeckt.**
+
+Gestern hiess es hier, die Antwort habe die Ablehnung aufgehoben und es brauche
+kein erneutes Einreichen. Vierzehn Stunden spaeter, gemessen:
+
+```
+Fassung 1.0: READY_FOR_REVIEW     (unveraendert)
+Bei der Pruefung: UNRESOLVED_ISSUES (unveraendert)
+```
+
+Nichts hat sich bewegt. `UNRESOLVED_ISSUES` stand in `UNTERWEGS` — der Menge
+der Zustaende, in denen eine Einreichung schon laeuft. Damit meldete jeder Lauf
+„steht schon bei der Pruefung. Nichts zu tun", und genau das war falsch: Der
+Zustand heisst **Apple wartet auf uns**. Er ist die Aufforderung zu handeln,
+nicht der Beleg, dass gehandelt wurde.
+
+Zwei Aenderungen, beide klein:
+
+`UNTERWEGS` sind jetzt nur `WAITING_FOR_REVIEW` und `IN_REVIEW`. Und
+`vorbereitete()` nimmt eine Einreichung in `UNRESOLVED_ISSUES` mit — sie
+enthaelt die Fassung und die fuenf Kaeufe bereits. Eine neue anzulegen hiesse,
+die Fassung ein zweites Mal zu vergeben; daran ist am 29. August ein Lauf mit
+einer Meldung ueber die Fassung gescheitert, deren Ursache die Einreichung war.
+
+Damit findet der Einreichlauf die bestehende Einreichung, sieht die Fassung
+darin und schickt nur ab — statt etwas Neues anzulegen.
+
+Nur Skripte und Dokumente. Kein App-Code, kein Bau.
+
+---
+
 ## 0.106.1 — 2026-09-03
 
 **Die App hatte eine Sackgasse, die der Entwurf nicht hat — und der Entwurf
