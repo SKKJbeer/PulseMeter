@@ -336,6 +336,27 @@ def main() -> int:
                         if k in ("versionString", "name", "productId", "state")}
             print(f"   ⇒ beigefügt: {e.get('type')} {kennung2[:8]} {merkmale}")
 
+    # **Welche Bauten es gibt und wie weit sie sind.**
+    #
+    # Regel 4 verlangt als Beleg „Bau N: VALID" und ausdrücklich keine
+    # Vermutung. Bis zum 4. September konnte das kein Werkzeug beantworten:
+    # Der Einreichlauf nennt nur den Bau **an der Fassung**, und das ist bei
+    # einer Fassung in Prüfung der alte. Ob der frisch hochgeladene durch die
+    # Verarbeitung ist, stand nirgends — und wurde deshalb geschätzt.
+    print("\n── Die Bauten bei Apple")
+    stand, antwort = holen("v1/builds", **{"filter[app]": app, "limit": 10})
+    bauten = antwort.json().get("data", []) if stand == 200 else []
+    def nummer(bau):
+        roh = ((bau.get("attributes") or {}).get("version") or "").strip()
+        return int(roh) if roh.isdigit() else -1
+    for bau in sorted(bauten, key=nummer, reverse=True)[:5]:
+        m = bau.get("attributes") or {}
+        print(f"   · Bau {m.get('version')}: {m.get('processingState')} "
+              f"— hochgeladen {(m.get('uploadedDate') or '')[:16]}"
+              f"{' , abgelaufen' if m.get('expired') else ''}")
+    if not bauten:
+        print(f"   keine Bauten lesbar ({stand})")
+
     # **Das Wichtigste steht zum Schluss, und das ist kein Geschmack.**
     # Ein Protokoll eines Laufs wird von hinten gelesen — die Werkzeuge liefern
     # das Ende. Stand dieser Block oben, kostete jede Antwort darauf einen
