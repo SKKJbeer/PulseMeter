@@ -9,67 +9,95 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.106.4 — 2026-09-04
+
+**Bau 26 liegt in TestFlight, und zum ersten Mal ist das belegt statt vermutet.**
+
+```
+Bau 26: VALID — hochgeladen 2026-09-04T10:32
+Bau 25: VALID
+```
+
+Regel 4 verlangt als Beleg „Bau N: VALID" und ausdrücklich keine Vermutung —
+und bis heute konnte das kein Werkzeug beantworten. Der Einreichlauf nennt nur
+den Bau **an der Fassung**, und der ist bei einer Fassung in Prüfung der alte.
+Ob der frisch hochgeladene durch die Verarbeitung ist, stand nirgends. Die
+Diagnose listet jetzt die letzten fünf Bauten mit ihrem Zustand.
+
+Auf Bau 26: die drei Kostenspalten auf der Übersicht und das Erklärblatt
+hinter der Abschlagszahl. Zeile in `docs/12-auslieferung.md` nachgetragen, und
+die Übergabe zeigt wieder den Stand von heute statt den von vorgestern.
+
+**Nebenbei: sechs Einträge hier hatten keine Umlaute mehr.** Von 0.105.10 an
+stand „Pruefung" und „Loesungscenter" in dieser Datei — kein Beschluss, sondern
+ein Nebeneffekt davon, dass diese Einträge über die Shell geschrieben wurden.
+Zurückgesetzt; der Rest der Datei war nie betroffen.
+
+Nur Skripte und Dokumente. Kein App-Code, kein Bau.
+
+---
+
 ## 0.106.3 — 2026-09-04
 
 **Der macOS-Lauf war rot, und er hatte in beiden Punkten recht.**
 
-Hier zeigt sich, wofür die Oberflaechentests da sind: Unter Linux laesst sich
-SwiftUI nicht uebersetzen, `swiftc -parse` war sauber, und beide Fehler waeren
+Hier zeigt sich, wofür die Oberflächentests da sind: Unter Linux lässt sich
+SwiftUI nicht übersetzen, `swiftc -parse` war sauber, und beide Fehler wären
 sonst erst auf dem Telefon aufgefallen.
 
-**Erstens: Ich hatte die Vorlesebeschriftung ueberschrieben.** Der neue Knopf
-auf der Uebersichtskarte trug
+**Erstens: Ich hatte die Vorlesebeschriftung überschrieben.** Der neue Knopf
+auf der Übersichtskarte trug
 
 ```swift
 .accessibilityLabel("Wie diese Zahl entsteht")
 ```
 
-und damit war der Betrag weg. Wer die App hoert statt sie zu sehen, bekam an
+und damit war der Betrag weg. Wer die App hört statt sie zu sehen, bekam an
 der folgenreichsten Stelle den Namen des Knopfs statt „≈ 288,12 € Guthaben".
 Der Test sucht nach „Guthaben" und schlug an. Jetzt steht es als
 `accessibilityHint` daneben, und die Zahl bleibt die Beschriftung.
 
 **Zweitens: Die neue Kostenzeile war nicht selbstsprechend.** Es stand nur
-„August · 2,83 €" da. Dass es Geld ist, verriet allein das Waehrungszeichen —
-gehoert wurde „August, 2,83 €" ohne jeden Zusammenhang. Der Test erwartete eine
-Beschriftung, die mit „Kosten" anfaengt, und lag damit richtig: Ueber den drei
-Zeitraeumen steht das Wort jetzt wieder, in beiden Fassungen.
+„August · 2,83 €" da. Dass es Geld ist, verriet allein das Währungszeichen —
+gehört wurde „August, 2,83 €" ohne jeden Zusammenhang. Der Test erwartete eine
+Beschriftung, die mit „Kosten" anfängt, und lag damit richtig: Ueber den drei
+Zeiträumen steht das Wort jetzt wieder, in beiden Fassungen.
 
-**Und einmal die Pruefung selbst nachgezogen, nicht abgeschwaecht.** Der Test
-verlangte woertlich „Kosten bis 1. Mai". Das Enddatum steht jetzt in der
-Jahresspalte („bis 1. Mai") statt in einer eigenen Zeile. Geprueft wird deshalb
+**Und einmal die Prüfung selbst nachgezogen, nicht abgeschwächt.** Der Test
+verlangte wörtlich „Kosten bis 1. Mai". Das Enddatum steht jetzt in der
+Jahresspalte („bis 1. Mai") statt in einer eigenen Zeile. Geprüft wird deshalb
 weiter die Eigenschaft — irgendwo auf der Karte nennt der Betrag sein
 Enddatum —, nur nicht mehr am alten Wortlaut. Genau so stand es schon in der
-Begruendung dieses Tests: sonst haelt er den Wortlaut fest statt der Aussage.
+Begründung dieses Tests: sonst hält er den Wortlaut fest statt der Aussage.
 
 ---
 
 ## 0.106.2 — 2026-09-04
 
-**Eine Antwort im Loesungscenter reicht nicht — und mein Skript hat das
+**Eine Antwort im Lösungscenter reicht nicht — und mein Skript hat das
 verdeckt.**
 
-Gestern hiess es hier, die Antwort habe die Ablehnung aufgehoben und es brauche
-kein erneutes Einreichen. Vierzehn Stunden spaeter, gemessen:
+Gestern hieß es hier, die Antwort habe die Ablehnung aufgehoben und es brauche
+kein erneutes Einreichen. Vierzehn Stunden später, gemessen:
 
 ```
-Fassung 1.0: READY_FOR_REVIEW     (unveraendert)
-Bei der Pruefung: UNRESOLVED_ISSUES (unveraendert)
+Fassung 1.0: READY_FOR_REVIEW     (unverändert)
+Bei der Prüfung: UNRESOLVED_ISSUES (unverändert)
 ```
 
 Nichts hat sich bewegt. `UNRESOLVED_ISSUES` stand in `UNTERWEGS` — der Menge
-der Zustaende, in denen eine Einreichung schon laeuft. Damit meldete jeder Lauf
-„steht schon bei der Pruefung. Nichts zu tun", und genau das war falsch: Der
-Zustand heisst **Apple wartet auf uns**. Er ist die Aufforderung zu handeln,
+der Zustände, in denen eine Einreichung schon läuft. Damit meldete jeder Lauf
+„steht schon bei der Prüfung. Nichts zu tun", und genau das war falsch: Der
+Zustand heißt **Apple wartet auf uns**. Er ist die Aufforderung zu handeln,
 nicht der Beleg, dass gehandelt wurde.
 
-Zwei Aenderungen, beide klein:
+Zwei Änderungen, beide klein:
 
 `UNTERWEGS` sind jetzt nur `WAITING_FOR_REVIEW` und `IN_REVIEW`. Und
 `vorbereitete()` nimmt eine Einreichung in `UNRESOLVED_ISSUES` mit — sie
-enthaelt die Fassung und die fuenf Kaeufe bereits. Eine neue anzulegen hiesse,
+enthält die Fassung und die fünf Käufe bereits. Eine neue anzulegen hieße,
 die Fassung ein zweites Mal zu vergeben; daran ist am 29. August ein Lauf mit
-einer Meldung ueber die Fassung gescheitert, deren Ursache die Einreichung war.
+einer Meldung über die Fassung gescheitert, deren Ursache die Einreichung war.
 
 Damit findet der Einreichlauf die bestehende Einreichung, sieht die Fassung
 darin und schickt nur ab — statt etwas Neues anzulegen.
@@ -174,25 +202,25 @@ Neujahr, Verschachtelung), 258 Prüfungen im Entwurf (16 neue).
 **Die Zeile von heute Mittag war falsch, und zwar aus derselben Bequemlichkeit
 wie dreimal vorher.**
 
-In 0.105.11 stand, `UNRESOLVED_ISSUES` gehoere „zum alten Vorgang". Grundlage
-war eine einzige Zustandsaenderung — REJECTED wurde READY_FOR_REVIEW — und der
-Rest war dazuerzaehlt. Vier Stunden spaeter nachgemessen, was die Einreichung
-tatsaechlich enthaelt:
+In 0.105.11 stand, `UNRESOLVED_ISSUES` gehöre „zum alten Vorgang". Grundlage
+war eine einzige Zustandsänderung — REJECTED wurde READY_FOR_REVIEW — und der
+Rest war dazuerzählt. Vier Stunden später nachgemessen, was die Einreichung
+tatsächlich enthält:
 
 ```
-6 Eintraege, alle READY_FOR_REVIEW
+6 Einträge, alle READY_FOR_REVIEW
 · "appStoreVersion": {"data": {"id": "be468160-..."}}
 ```
 
 Es ist kein alter Vorgang, sondern derselbe, in dem Fassung 1.0 seit dem
-2. September liegt. `UNRESOLVED_ISSUES` heisst „Apple hat gefragt und wartet
+2. September liegt. `UNRESOLVED_ISSUES` heißt „Apple hat gefragt und wartet
 auf Antwort" — die Antwort liegt seit 14:51 dort.
 
 **Was belegt ist:** Die Fassung ist nicht mehr abgelehnt und liegt in einer
-Einreichung. **Was nicht belegt ist:** ob Apple von selbst weiterprueft. Vier
-Stunden ohne Bewegung sind kein Beweis dafuer; das ist bei Apple eine
-gewoehnliche Wartezeit. Die Uebergabedatei sagt jetzt beides getrennt und nennt
-den naechsten Schritt, falls sich bis morgen nichts bewegt.
+Einreichung. **Was nicht belegt ist:** ob Apple von selbst weiterprüft. Vier
+Stunden ohne Bewegung sind kein Beweis dafür; das ist bei Apple eine
+gewöhnliche Wartezeit. Die Uebergabedatei sagt jetzt beides getrennt und nennt
+den nächsten Schritt, falls sich bis morgen nichts bewegt.
 
 Nur Dokumente. Kein App-Code, kein Bau.
 
@@ -200,25 +228,25 @@ Nur Dokumente. Kein App-Code, kein Bau.
 
 ## 0.105.11 — 2026-09-03
 
-**Die Antwort im Loesungscenter hat die Ablehnung selbst aufgehoben.**
+**Die Antwort im Lösungscenter hat die Ablehnung selbst aufgehoben.**
 
-Der Gruender hat die Bildschirmaufnahme und den Text um 14:51 abgeschickt.
+Der Gründer hat die Bildschirmaufnahme und den Text um 14:51 abgeschickt.
 Unmittelbar danach gemessen:
 
 ```
 Fassung 1.0: READY_FOR_REVIEW     (vorher REJECTED)
-Bei der Pruefung: UNRESOLVED_ISSUES
+Bei der Prüfung: UNRESOLVED_ISSUES
 ```
 
 Es braucht also **kein** erneutes `--einreichen`; eine Antwort im
-Loesungscenter stoesst die Pruefung wieder an. Das war vorher offen und ist
+Lösungscenter stößt die Prüfung wieder an. Das war vorher offen und ist
 jetzt gemessen statt vermutet.
 
 **Die zweite Zeile ist die Falle.** Der Zustand der Einreichung bleibt auf
-`UNRESOLVED_ISSUES` stehen — er gehoert zum abgeschlossenen Vorgang. Wer nur
-darauf sieht, haelt die Sache fuer blockiert. Massgeblich ist der Zustand der
+`UNRESOLVED_ISSUES` stehen — er gehört zum abgeschlossenen Vorgang. Wer nur
+darauf sieht, hält die Sache für blockiert. Maßgeblich ist der Zustand der
 **Fassung**. Dieselbe Klasse wie schon dreimal in dieser Woche: zwei Angaben,
-jede fuer sich stimmig, und die falsche davon beantwortet die Frage nicht.
+jede für sich stimmig, und die falsche davon beantwortet die Frage nicht.
 
 Nur Dokumente. Kein App-Code, kein Bau.
 
@@ -233,23 +261,23 @@ Text for whatsNew contains invalid characters:'[U+2500, U+2713]'
 ```
 
 Der Lauf, der die Testhinweise nachträgt, brach ab. Nicht am neuen Text — die
-beiden Eintraege davor zitieren Protokollzeilen, und darin stehen ein
+beiden Einträge davor zitieren Protokollzeilen, und darin stehen ein
 Rahmenstrich und ein Haken. Die Aufbereitung entfernte Auszeichnung und
 Backticks, aber keine Zeichen, die Apple verbietet.
 
-**Das ist keine Kosmetik, sondern eine Sperre.** Der Bau waere ohne
+**Das ist keine Kosmetik, sondern eine Sperre.** Der Bau wäre ohne
 Testhinweise stehen geblieben — genau der Zustand, der hier zehn Bauten lang
 unbemerkt war, nur diesmal mit Fehlermeldung.
 
-`nur_erlaubte_zeichen()` bildet die bekannten Faelle auf ASCII ab
+`nur_erlaubte_zeichen()` bildet die bekannten Fälle auf ASCII ab
 (Rahmenstriche, Pfeile, Haken) und wirft alles Uebrige weg, **was es
-ausdruecklich meldet**. Stillschweigend zu loeschen waere schlimmer als der
-Abbruch: Der Text kaeme durch und niemand wuesste, dass etwas fehlt.
+ausdrücklich meldet**. Stillschweigend zu löschen wäre schlimmer als der
+Abbruch: Der Text käme durch und niemand wüsste, dass etwas fehlt.
 
-Gegengeprueft an drei Proben: Protokollzeilen werden lesbar, deutscher Text mit
-Umlauten, Euro, Anfuehrungszeichen, Prozent und Gedankenstrich bleibt
-unangetastet, ein Emoji faellt mit Meldung heraus. Der Mittelpunkt bleibt
-zugelassen — er ist seit zehn Bauten der Aufzaehlungspunkt.
+Gegengeprüft an drei Proben: Protokollzeilen werden lesbar, deutscher Text mit
+Umlauten, Euro, Anführungszeichen, Prozent und Gedankenstrich bleibt
+unangetastet, ein Emoji fällt mit Meldung heraus. Der Mittelpunkt bleibt
+zugelassen — er ist seit zehn Bauten der Aufzählungspunkt.
 
 Nur Skripte und Dokumente. Kein App-Code, kein Bau.
 

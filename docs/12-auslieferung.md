@@ -262,6 +262,7 @@ Store Connect deshalb nie gesehen.
 | 23 | 0.93.2 | 28.08. 14:51 | ✓ | Einkaufswagen an der Zeile, Preise im Verlauf für einen kostenlosen Nutzer — und dahinter das Blatt zum angetippten Kauf statt zum vorletzten |
 | 24 | 0.100.1 | 29.08. 11:35 | ✓ | **Der erste Bau, der Zählora heißt.** Dazu die Erinnerungen als sechster Kauf zu 0,99 €. Die Testhinweise fielen zunächst aus — ein fehlendes `import re` — und wurden über „Testhinweise nachtragen" gesetzt, ohne einen zweiten Bau zu kosten |
 | 25 | 0.104.0 | 29.08. 17:45 | ✓ | Kosten hängen am Kauf statt an „gibt es Tarife" — der Knopf „Beispieldaten anlegen" verschenkte bis dahin drei von fünf Käufen. Dazu das Widget auf dem Sperrbildschirm (`accessoryRectangular`, `accessoryInline`) |
+| 26 | 0.106.3 | 04.09. 19:32 | ✓ | Kosten für Monat, Quartal und Jahr auf der Übersichtskarte, und das Erklärblatt „Wie diese Zahl entsteht“ hinter der Abschlagszahl — samt der Einspeisevergütung, die der Entwurf bis dahin abzog, ohne sie zu nennen |
 
 Zeitangaben in UTC. Ein ✗ heißt: hochgeladen wurde nichts, die Nummer ist
 trotzdem verbraucht.

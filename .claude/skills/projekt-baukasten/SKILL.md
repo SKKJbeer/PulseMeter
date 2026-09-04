@@ -1187,6 +1187,20 @@ Wegwerfordner:
   Zeile weit unterhalb der Ursache. Im erzeugten Text also keine Backticks —
   und was erzeugt wurde, danach selbst durch `bash -n` schicken.
 
+**Deutsche Prosa gehört nicht durch die Shell.** Zwei Ausprägungen desselben
+Fehlers, beide in einer Sitzung:
+
+- Ein deutsches Anführungszeichenpaar „…" endet auf einem **geraden** `"`. In
+  einer Python-Zeichenkette in einem Here-Dokument beendet genau das die
+  Zeichenkette, und der Fehler zeigt auf eine Zeile weiter unten.
+- Wer solchen Ärger umgeht, indem er „Prüfung" als „Pruefung" schreibt, hat
+  ihn nicht umgangen, sondern in den Text verlegt. Sechs Changelog-Einträge
+  liefen so ohne Umlaute — niemandem fiel es auf, weil jeder für sich lesbar
+  war.
+
+Prosa wird also mit dem Datei-Werkzeug geschrieben, nicht über ein
+Here-Dokument. Die Shell ist für Befehle da.
+
 **Ein Arbeitsverzeichnis auf einem veralteten Zweig sieht vollständig aus.**
 Eine Sitzung hat zwei Versionen alten Code vollständig geprüft, grün gemeldet
 und für den aktuellen Stand gehalten. Deshalb: **zuerst holen**, dann Zweig und

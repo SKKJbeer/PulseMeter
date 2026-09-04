@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-09-03, Version 0.106.3
+Stand: 2026-09-04, Version 0.106.4
 
 ---
 
@@ -86,17 +86,17 @@ Tabelle im Baukasten unter „Die Prüfungen".
 
 ## Wo die Arbeit steht
 
-**`main` ist der aktuelle Stand**, Version 0.106.3. Es gibt keinen offenen
+**`main` ist der aktuelle Stand**, Version 0.106.4. Es gibt keinen offenen
 Arbeitszweig; alles ist zusammengeführt.
 
-| | Stand am 3. September |
+| | Stand am 4. September |
 |---|---|
-| `PulseCore` | 231 Tests, grün |
-| Klick-Dummy | 242 Prüfungen, hell und dunkel, grün |
+| `PulseCore` | 238 Tests, grün |
+| Klick-Dummy | 264 Prüfungen, hell und dunkel, grün |
 | Website | 407 Prüfungen, grün, live auf `zaehlora.pages.dev` |
 | App-Build und Oberflächentests | grün auf dem letzten macOS-Lauf |
-| TestFlight | **Bau 25, VALID**, mit Testhinweisen |
-| App Store | Rückfrage beantwortet, `READY_FOR_REVIEW` — wieder bei Apple |
+| TestFlight | **Bau 26, VALID**, mit Testhinweisen |
+| App Store | `WAITING_FOR_REVIEW` — Fassung und Einreichung, beides gemessen |
 | App Store Connect | 18 Angaben stehen, 0 offen |
 | Käufe | 6 von 6 `READY_TO_SUBMIT` |
 | Länder | 175, Deutschland dabei |
@@ -164,18 +164,24 @@ Es ist **kein** alter Vorgang. Es ist derselbe, in dem Fassung 1.0 seit dem
 „Apple hat gefragt und wartet auf Antwort" — die Antwort ist seit dem
 3. September, 14:51, dort.
 
-**Was daraus folgt, und was nicht.** Belegt ist: Die Fassung ist nicht mehr
-abgelehnt und liegt in einer Einreichung. Nicht belegt ist, ob Apple von selbst
-weiterprüft oder ob es einen Anstoß braucht — vier Stunden ohne Bewegung sind
-dafür kein Beweis, das ist bei Apple eine gewöhnliche Wartezeit.
+**Es brauchte einen Anstoß.** Vierzehn Stunden lang bewegte sich nichts, und
+das war die Antwort auf die offene Frage: `UNRESOLVED_ISSUES` heißt nicht „läuft
+weiter", sondern „Apple wartet auf uns". Die Antwort im Lösungscenter allein
+schiebt die Einreichung nicht an.
 
-Also: nachsehen, nicht raten. Bewegt sich der Zustand der Einreichung binnen
-eines Tages nicht nach `IN_REVIEW`, wird `--einreichen` erneut angestoßen —
-dann ist `UNRESOLVED_ISSUES` aus `UNTERWEGS` zu nehmen, sonst meldet das Skript
-„steht schon bei der Prüfung" und tut nichts.
+Behoben in 0.106.2: `UNRESOLVED_ISSUES` ist aus `UNTERWEGS` heraus — sonst
+meldet das Skript „steht schon bei der Prüfung" und tut nichts — und
+`vorbereitete()` nimmt seitdem auch diesen Zustand an. Danach `--einreichen`
+erneut angestoßen, und seitdem steht:
 
-Danach: warten, bis `READY_FOR_SALE` steht, dann `live-schalten.yml` von Hand
-auslösen.
+```
+Fassung 1.0: WAITING_FOR_REVIEW
+Bei der Prüfung: WAITING_FOR_REVIEW
+```
+
+Jetzt: warten, bis `READY_FOR_SALE` steht, dann `live-schalten.yml` von Hand
+auslösen und nachsehen, ob `zaehlora.pages.dev` das echte Store-Abzeichen zeigt
+statt „Bald im App Store".
 
 **Was die Ablehnung nicht bedeutet:** Bau 25 bleibt in TestFlight nutzbar, die
 Käufe bleiben `READY_TO_SUBMIT`, und die Preisstufe bleibt gesetzt. Es ist ein
