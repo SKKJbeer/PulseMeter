@@ -1220,7 +1220,12 @@ Nach jedem Push und jedem angestoßenen Lauf:
    nie mit `sleep` blockieren.
 2. **Grün** → zusammenführen, Auslieferung anstoßen, Zeile im
    Auslieferungsprotokoll nachtragen, zusammengeführte Arbeitszweige löschen,
-   Ergebnis melden.
+   Ergebnis melden. Aus einer Cloud-Sitzung heraus geht das Löschen **nicht**:
+   `git push origin --delete` antwortet mit `HTTP 403` und darunter mit
+   „Everything up-to-date", was wie Erfolg aussieht und keiner ist. Der Zwischen-
+   knoten lässt nur Schreiben zu, kein Entfernen. Also einmal versuchen, das
+   Ergebnis am `ls-remote` nachsehen und den Zweig sonst stehen lassen — er ist
+   zusammengeführt und schadet nicht.
 3. **Rot** → Begründung aus dem Protokoll holen, einordnen (Prüf- oder
    Produktfehler), **beheben** und von vorn. Melden, was los war, statt auf
    eine Freigabe zu warten.

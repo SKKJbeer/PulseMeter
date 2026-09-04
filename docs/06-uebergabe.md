@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-09-04, Version 0.106.4
+Stand: 2026-09-04, Version 0.106.5
 
 ---
 
@@ -51,7 +51,7 @@ Archiv und keine Auskunft mehr.
 .claude/skills/projekt-baukasten/SKILL.md
 ```
 
-1211 Zeilen, in sich geschlossen, ohne Bezug zu diesem Produkt. Darin: wie ein
+1272 Zeilen, in sich geschlossen, ohne Bezug zu diesem Produkt. Darin: wie ein
 Projekt aufgebaut und dokumentiert wird, wie Konzepte entstehen, wie ohne Mac
 bis in TestFlight ausgeliefert wird, was bei Apple, App Store Connect,
 Profilen, Berechtigungen und Käufen schiefgeht — und die Fehlerklassen, die in
@@ -86,8 +86,10 @@ Tabelle im Baukasten unter „Die Prüfungen".
 
 ## Wo die Arbeit steht
 
-**`main` ist der aktuelle Stand**, Version 0.106.4. Es gibt keinen offenen
-Arbeitszweig; alles ist zusammengeführt.
+**`main` ist der aktuelle Stand**, Version 0.106.5. Es gibt keinen offenen
+Arbeitszweig; alles ist zusammengeführt. `claude/setup-pruefung-4qyr2u` steht
+noch bei GitHub, vollständig in `main` — aus der Cloud lässt er sich nicht
+löschen (`HTTP 403`), von der Weboberfläche aus mit einem Klick.
 
 | | Stand am 4. September |
 |---|---|

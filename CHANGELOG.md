@@ -9,6 +9,34 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.106.5 — 2026-09-04
+
+**Ein Zweig, der sich aus der Cloud nicht löschen lässt — und die Meldung sagt
+das Gegenteil.**
+
+Regel 4 verlangt, zusammengeführte Arbeitszweige zu löschen. Für
+`claude/setup-pruefung-4qyr2u` ging das dreimal nicht, und der Grund stand
+verdeckt im Protokoll:
+
+```
+error: RPC failed; HTTP 403
+send-pack: unexpected disconnect while reading sideband packet
+Everything up-to-date
+```
+
+Die letzte Zeile liest sich wie Erfolg und ist der Rückfall auf einen zweiten
+Versuch. Der Zwischenknoten dieser Umgebung lässt Schreiben zu, aber kein
+Entfernen von Zweigen. Am `git ls-remote` nachgesehen: Der Zweig steht
+unverändert da.
+
+**Also stehen lassen.** Er ist vollständig in `main` und schadet nicht. Im
+Baukasten steht jetzt, dass ein Löschversuch aus der Cloud einmal unternommen
+und am `ls-remote` nachgeprüft wird — nicht an der Meldung.
+
+Nur Dokumente. Kein App-Code, kein Bau.
+
+---
+
 ## 0.106.4 — 2026-09-04
 
 **Bau 26 liegt in TestFlight, und zum ersten Mal ist das belegt statt vermutet.**
