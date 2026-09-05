@@ -732,6 +732,36 @@ eine.** Nur die erste darf gegen ein Ergebnis zählen. Und wo die Gegenseite
 keine Auskunft gibt, ist die Probe die Handlung selbst — hier das Signieren,
 das ohne die Kennungen an einem unpassenden Profil scheitert.
 
+### Eine Kennung anzulegen ist nicht, sie zuzuordnen
+
+Der nächste Bau kam bis zum Signieren und blieb dort stehen:
+
+```
+error: Provisioning profile "… App Store" doesn't match the entitlements
+file's values for the com.apple.developer.icloud-container-identifiers and
+com.apple.security.application-groups entitlements.
+```
+
+Die App-Gruppe und der iCloud-Behälter waren angelegt. Sie hingen nur nicht an
+der App-ID — und ein Verteilprofil trägt ausschließlich, was die App-ID trägt.
+Im Portal sind das zwei getrennte Handgriffe an zwei verschiedenen Stellen, und
+der zweite sieht aus wie eine Wiederholung des ersten.
+
+> **Bei Apple hat fast alles zwei Schritte: den Gegenstand erzeugen und ihn
+> dort eintragen, wo er wirken soll.** Wer nur den ersten tut, bekommt keine
+> Fehlermeldung — sondern eine Meldung an ganz anderer Stelle, zwanzig Minuten
+> später.
+
+Dasselbe Muster ist in diesem Projekt schon dreimal aufgetreten: Der Kauf
+existiert und hängt nicht an der Fassung; der Bau ist hochgeladen und hängt
+nicht an der Fassung; die Preisstufe existiert und ist nicht gewählt.
+
+Und der Ablauf sagt das jetzt dazu: Er schreibt das Bauprotokoll mit und hängt
+bei genau dieser Meldung die Handgriffe an. Dabei die Falle, die fast einen
+grünen Lauf ohne Bau erzeugt hätte: **`befehl | tee` gibt den Rückgabewert von
+`tee` zurück, nicht den des Befehls.** Ohne `${PIPESTATUS[0]}` gilt ein
+gescheiterter Bau als gelungen.
+
 Die zweite Hälfte der Lehre: **Was ein Ablauf nicht setzen kann, gehört in die
 Übergabe, nicht nur ins Protokoll.** Apple bietet für App-Gruppe und
 iCloud-Container keine Schnittstelle (404) — das ist kein Fehler, sondern eine

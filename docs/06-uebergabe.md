@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-09-05, Version 0.108.1
+Stand: 2026-09-05, Version 0.108.2
 
 ---
 
@@ -86,7 +86,7 @@ Tabelle im Baukasten unter „Die Prüfungen".
 
 ## Wo die Arbeit steht
 
-**`main` ist der aktuelle Stand**, Version 0.108.1. Es gibt keinen offenen
+**`main` ist der aktuelle Stand**, Version 0.108.2. Es gibt keinen offenen
 Arbeitszweig; alles ist zusammengeführt. `claude/setup-pruefung-4qyr2u` steht
 noch bei GitHub, vollständig in `main` — aus der Cloud lässt er sich nicht
 löschen (`HTTP 403`), von der Weboberfläche aus mit einem Klick.
@@ -139,11 +139,25 @@ ohne Abgleich, und die App läuft — still.
 | Kaufseite in der App | „Abgleich zwischen deinen Geräten über iCloud" (unter „kostet nie etwas") |
 | Website | „Ein Feld auf dem Sperrbildschirm zeigt, ob eine Ablesung fällig ist" |
 
-**Was zu tun ist, und nur der Gründer kann es:**
-<https://developer.apple.com/account/resources/identifiers/list> → *App Groups*
-mit `group.de.karjoth.pulsemeter`, *iCloud Containers* mit
-`iCloud.de.karjoth.pulsemeter`. Danach ein neuer Bau — der Lauf liest selbst
-nach und zieht die Dateien dann an — und eine Fassung 1.0.1 in den Store.
+**Was zu tun ist, und nur der Gründer kann es** —
+<https://developer.apple.com/account/resources/identifiers/list>, und es sind
+**zwei** Handgriffe, nicht einer:
+
+1. **Anlegen** (am 5. September erledigt): *App Groups* →
+   `group.de.karjoth.pulsemeter`, *iCloud Containers* →
+   `iCloud.de.karjoth.pulsemeter`.
+2. **Zuordnen** (offen): Unter *App IDs* die Kennung `de.karjoth.pulsemeter`
+   öffnen, bei „App Groups" und bei „iCloud" je auf *Configure* / *Edit* und
+   die eben angelegte Kennung ankreuzen. Dasselbe bei
+   `de.karjoth.pulsemeter.widget` für die Gruppe.
+
+Der zweite Schritt sieht aus wie eine Wiederholung des ersten und ist keine:
+Ein Verteilprofil trägt nur, was die **App-ID** trägt. Ohne ihn scheitert das
+Signieren mit „Provisioning profile … doesn't match the entitlements file's
+values" — so geschehen bei Bau 28.
+
+Danach den Lauf neu starten; das Profil wird bei jedem Lauf neu erzeugt. Und
+dann eine Fassung 1.0.1 in den Store.
 
 Damit das nicht ein drittes Mal unbemerkt durchgeht, **hält `testflight.yml`
 seit 0.107.2 an**, wenn die Berechtigungen nicht mitgehen. Es gibt einen Haken

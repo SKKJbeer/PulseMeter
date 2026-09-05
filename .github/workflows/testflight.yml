@@ -307,6 +307,10 @@ jobs:
           # from which to generate a provisioning profile". Für einen
           # Store-Bau braucht es ein Verteilprofil, und das gibt es nur zur
           # Release-Konfiguration.
+          # Muss vor `tee` stehen: Den Ordner legt sonst erst `xcodebuild` an,
+          # und die Umleitung greift schon davor.
+          mkdir -p build
+
           xcodebuild archive \
             -project PulseMeter.xcodeproj \
             -scheme PulseMeter \
@@ -327,7 +331,22 @@ jobs:
             PULSE_PROFILE_WIDGET="$PULSE_PROFILE_WIDGET" \
             PULSE_ENTITLEMENTS_APP="$ENT_APP" \
             PULSE_ENTITLEMENTS_WIDGET="$ENT_WIDGET" \
-            CURRENT_PROJECT_VERSION=${{ github.run_number }}
+            CURRENT_PROJECT_VERSION=${{ github.run_number }} \
+            2>&1 | tee build/archive.log
+          # `tee` schluckt den Rückgabewert von `xcodebuild` — ohne diese Zeile
+          # gilt der Schritt als gelungen, auch wenn nichts entstanden ist.
+          ergebnis=${PIPESTATUS[0]}
+
+          # **Die eine Meldung, die eine Anleitung verdient.** Sie kam bei
+          # Bau 28 und sagt zwar genau, was los ist, aber nicht, was zu tun
+          # ist — und die Antwort ist nicht offensichtlich: Eine Kennung
+          # anzulegen ist nicht dasselbe, wie sie der App-ID zuzuordnen. Über
+          # die Schnittstelle geht das Zuordnen nicht (dieselben 404 wie beim
+          # Anlegen), also bleibt der Weg über das Portal.
+          if grep -q "doesn't match the entitlements file" build/archive.log; then
+            echo "::error::Die App-Gruppe und der iCloud-Behälter sind zwar angelegt, aber der App-ID nicht **zugeordnet** — deshalb trägt das Verteilprofil sie nicht. Im Portal unter Identifiers die App-ID de.karjoth.pulsemeter öffnen, bei „App Groups\" und bei „iCloud\" je auf Configure/Edit gehen und group.de.karjoth.pulsemeter bzw. iCloud.de.karjoth.pulsemeter ankreuzen; dasselbe bei de.karjoth.pulsemeter.widget für die Gruppe. Danach diesen Lauf neu starten — das Profil wird bei jedem Lauf neu erzeugt."
+          fi
+          exit $ergebnis
 
 
       - name: Ausfuhrvorgaben schreiben

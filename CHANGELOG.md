@@ -9,6 +9,41 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.108.2 — 2026-09-05
+
+**Anlegen ist nicht zuordnen.** Bau 28 kam zum ersten Mal bis zum Signieren —
+und scheiterte dort mit einer Meldung, die genau sagt, was los ist:
+
+```
+Berechtigungen gehen mit: App/PulseMeter.entitlements, Widget/PulseWidget.entitlements
+
+error: Provisioning profile "PulseMeter de.karjoth.pulsemeter App Store"
+doesn't match the entitlements file's values for the
+com.apple.developer.icloud-container-identifiers and
+com.apple.security.application-groups entitlements.
+```
+
+Die beiden Kennungen **gibt es** — das war der Schritt davor. Sie hängen nur
+nicht an der App-ID, und ein Verteilprofil trägt nur, was die App-ID trägt. Im
+Portal sind das zwei getrennte Handgriffe, und der zweite sieht aus wie eine
+Wiederholung des ersten.
+
+Zuordnen über die Schnittstelle geht nicht — dieselben 404 wie beim Anlegen,
+und dieselbe Ursache: Diese Ressource gibt es dort nicht.
+
+**Damit ist die Kette dort, wo sie hingehört.** Der Bau ist die Probe, die die
+Schnittstelle nicht liefern kann, und er hat sie erbracht. Was fehlte, war nur
+die Anleitung daneben: Der Lauf schreibt das Bauprotokoll jetzt mit und hängt
+bei genau dieser Meldung die Handgriffe an, statt den Xcode-Satz allein stehen
+zu lassen.
+
+Nebenbei behoben, und es hätte teuer werden können: `xcodebuild | tee`
+verschluckt den Rückgabewert. Ohne `PIPESTATUS` hätte der Schritt ab jetzt als
+gelungen gegolten, auch wenn nichts entstanden wäre — ein grüner Lauf ohne Bau
+ist schlimmer als ein roter.
+
+---
+
 ## 0.108.1 — 2026-09-05
 
 **Mein Torwächter von gestern hing an einer Bedingung, die nie eintreten
