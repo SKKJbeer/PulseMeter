@@ -26,6 +26,15 @@ nichts zu sehen, und das ist kein Grund, das Skript für kaputt zu halten —
 deshalb sagt es in dem Fall ausdrücklich, dass **noch keine** Daten da sind, und
 nicht „0 Ladungen". Eine Null ist eine Aussage; „noch nichts" ist eine andere.
 
+**Der Schlüssel braucht eine höhere Rolle als der zum Einreichen.** Am
+5. September gemessen: Derselbe Schlüssel, der die App anlegt, Käufe pflegt und
+einreicht, bekommt auf jede Analytics-Anfrage
+
+    403 FORBIDDEN_ERROR — The API key in use does not allow this request
+
+Die Berichte hängen also an der Rolle des Schlüssels, nicht an der App. Zu
+ändern in App Store Connect unter Benutzer und Zugriff › Integrationen.
+
 Aufrufe:
 
     python3 scripts/asc-zahlen.py --anfordern    # einmalig, startet die Sammlung
@@ -81,24 +90,31 @@ class Apple:
 
     def __init__(self) -> None:
         self.kopf = {"Authorization": f"Bearer {token()}"}
+        # **Jeder Fehlschlag wird gemerkt, nicht nur gedruckt.** Beim ersten
+        # Lauf antwortete Apple auf jede Analytics-Anfrage mit 403 — und das
+        # Skript meldete „noch keine Zahlen, kein Grund etwas zu reparieren"
+        # und ging grün aus. Genau die Verwechslung, die in diesem Projekt
+        # schon dreimal Tage gekostet hat: Ein misslungener Aufruf wurde zu
+        # einer Aussage über die Welt.
+        self.fehler: list[tuple[int, str]] = []
+
+    def _pruefen(self, antwort, pfad: str, erlaubt: tuple[int, ...]):
+        print(f"   {pfad}  →  {antwort.status_code}")
+        if antwort.status_code in erlaubt:
+            return antwort.json()
+        print(f"   ✗ {antwort.text[:300]}")
+        self.fehler.append((antwort.status_code, pfad))
+        return None
 
     def holen(self, pfad: str, **params):
-        antwort = requests.get(f"{BASIS}/{pfad}", headers=self.kopf,
-                               params=params or None, timeout=60)
-        print(f"   {pfad}  →  {antwort.status_code}")
-        if antwort.status_code != 200:
-            print(f"   ✗ {antwort.text[:300]}")
-            return None
-        return antwort.json()
+        return self._pruefen(
+            requests.get(f"{BASIS}/{pfad}", headers=self.kopf,
+                         params=params or None, timeout=60), pfad, (200,))
 
     def anlegen(self, pfad: str, koerper: dict):
-        antwort = requests.post(f"{BASIS}/{pfad}", headers=self.kopf,
-                                json=koerper, timeout=60)
-        print(f"   POST {pfad}  →  {antwort.status_code}")
-        if antwort.status_code not in (200, 201):
-            print(f"   ✗ {antwort.text[:300]}")
-            return None
-        return antwort.json()
+        return self._pruefen(
+            requests.post(f"{BASIS}/{pfad}", headers=self.kopf, json=koerper,
+                          timeout=60), f"POST {pfad}", (200, 201))
 
 
 def app_finden(apple: Apple) -> str | None:
@@ -279,10 +295,32 @@ def main() -> int:
         if berichte_zeigen(apple, anfrage["id"]):
             etwas = True
 
-    if not etwas:
-        print("\nNoch keine Zahlen. Das ist erwartbar, solange der Bericht "
-              "jünger als ein Tag ist — Apple stellt Tagesdaten frühestens am "
-              "Folgetag bereit. Kein Grund, hier etwas zu reparieren.")
+    if etwas:
+        return 0
+
+    # **„Keine Zahlen" hat zwei völlig verschiedene Gründe, und sie dürfen
+    # nicht dieselbe Meldung bekommen.** Ein 403 heißt „der Schlüssel darf
+    # nicht", ein leerer Bericht heißt „Apple hat noch nichts". Das erste ist
+    # zu beheben, das zweite abzuwarten.
+    verboten = [p for code, p in apple.fehler if code == 403]
+    if verboten:
+        print(f"\n::error::Der Schlüssel darf diese Berichte nicht lesen — "
+              f"{len(verboten)} Anfragen mit 403 „The API key in use does not "
+              f"allow this request\". Das ist kein „noch keine Daten\", "
+              f"sondern eine fehlende Berechtigung: In App Store Connect unter "
+              f"Benutzer und Zugriff › Integrationen die Rolle des Schlüssels "
+              f"anheben oder einen zweiten mit höherer Rolle anlegen.")
+        return 1
+    if apple.fehler:
+        codes = ", ".join(sorted({str(c) for c, _ in apple.fehler}))
+        print(f"\n::error::Apple hat auf {len(apple.fehler)} Anfragen mit "
+              f"{codes} geantwortet. Solange das so ist, sagt dieser Lauf "
+              f"nichts über die Zahlen aus.")
+        return 1
+
+    print("\nNoch keine Zahlen — und diesmal wirklich keine: Apple hat auf "
+          "jede Anfrage geantwortet, die Berichte sind nur noch leer. Das ist "
+          "erwartbar, solange die Anforderung jünger als ein Tag ist.")
     return 0
 
 

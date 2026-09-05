@@ -9,6 +9,39 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.107.1 — 2026-09-05
+
+**Mein eigenes Skript hat den Fehler gemacht, den diese Datei seit Wochen
+katalogisiert.** Erster Lauf von `zahlen.yml`, jede Analytics-Anfrage:
+
+```
+403 FORBIDDEN_ERROR — The API key in use does not allow this request
+```
+
+Und was stand am Ende? „Noch keine Zahlen. Das ist erwartbar … Kein Grund, hier
+etwas zu reparieren." Grüner Lauf, falsche Aussage. Ein misslungener Aufruf war
+wieder zu einer Aussage über die Welt geworden — geschrieben in derselben
+Stunde, in der ich die Regel dazu in den Baukasten getippt habe.
+
+Behoben: Der Aufrufmantel zählt jeden Fehlschlag mit, und „nichts gefunden" hat
+jetzt zwei Ausgänge.
+
+| Lage | Was dasteht | Rückgabe |
+|---|---|---|
+| Apple hat geantwortet, Bericht ist leer | „noch keine Zahlen — und diesmal wirklich keine" | 0 |
+| 403 auf die Berichte | „Der Schlüssel darf diese Berichte nicht lesen", samt Weg zur Behebung | **1** |
+| Andere Fehlercodes | wie viele, welche, und dass der Lauf nichts über die Zahlen aussagt | **1** |
+
+**Der Befund selbst gehört dem Gründer.** Derselbe Schlüssel legt die App an,
+pflegt die Käufe und reicht ein — die Analytics-Berichte hängen an seiner
+**Rolle**, nicht an der App. Anzuheben in App Store Connect unter Benutzer und
+Zugriff › Integrationen; ein Skript kommt da nicht heran. Solange das nicht
+passiert ist, sammelt Apple nichts, und jeder Tag zählt.
+
+Nur Skripte und Dokumente. Kein App-Code, kein Bau.
+
+---
+
 ## 0.107.0 — 2026-09-05
 
 **Aufrufe und Ladungen, ohne sich irgendwo anzumelden.**

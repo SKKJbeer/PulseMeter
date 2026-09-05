@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-09-05, Version 0.107.0
+Stand: 2026-09-05, Version 0.107.1
 
 ---
 
@@ -86,7 +86,7 @@ Tabelle im Baukasten unter „Die Prüfungen".
 
 ## Wo die Arbeit steht
 
-**`main` ist der aktuelle Stand**, Version 0.107.0. Es gibt keinen offenen
+**`main` ist der aktuelle Stand**, Version 0.107.1. Es gibt keinen offenen
 Arbeitszweig; alles ist zusammengeführt. `claude/setup-pruefung-4qyr2u` steht
 noch bei GitHub, vollständig in `main` — aus der Cloud lässt er sich nicht
 löschen (`HTTP 403`), von der Weboberfläche aus mit einem Klick.
@@ -118,6 +118,20 @@ Lauf hält sie am Leben.
 
 Rückwirkend geht es über `ONE_TIME_SNAPSHOT` (bis 365 Tage), der Knopf dafür
 heißt „rueckwirkend" am Ablauf.
+
+> **Es steht noch nicht. Der Schlüssel darf nicht.** Erster Lauf am
+> 5. September, jede Analytics-Anfrage:
+>
+> ```
+> 403 FORBIDDEN_ERROR — The API key in use does not allow this request
+> ```
+>
+> Derselbe Schlüssel legt die App an, pflegt Käufe und reicht ein — die
+> Berichte hängen an seiner **Rolle**, nicht an der App. Zu ändern in App Store
+> Connect unter Benutzer und Zugriff › Integrationen: Rolle des vorhandenen
+> Schlüssels anheben, oder einen zweiten anlegen und als eigene drei
+> Geheimnisse hinterlegen. **Das kann nur der Gründer.** Bis dahin sammelt
+> Apple nichts, und jeder Tag Wartezeit ist ein Tag ohne Zahlen.
 
 ### Im Laden seit dem 4. September, 23:00 UTC
 

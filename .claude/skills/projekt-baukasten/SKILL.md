@@ -691,6 +691,33 @@ Stand dort „wenn die App im Laden ist", stößt der Stundenplan von der Freiga
 an jede Stunde eine Veröffentlichung an, die nichts ändert. Richtig ist „wenn
 dieser Lauf gerade etwas umgelegt hat".
 
+### Ein Schlüssel hat eine Rolle, und nicht jede Auskunft hängt an derselben
+
+Derselbe Schlüssel, der bei Apple die App anlegt, Käufe pflegt, Bilder hochlädt
+und einreicht, bekommt auf jede Anfrage nach den Analytics-Berichten
+
+```
+403 FORBIDDEN_ERROR — The API key in use does not allow this request
+```
+
+Es liegt also nicht an der App, nicht an der Fassung und nicht am Pfad, sondern
+an der **Rolle** des Schlüssels. Wer eine neue Ecke der Schnittstelle anfasst,
+rechnet damit als Erstes — und zwar bevor er anfängt, den Aufruf zu debuggen.
+
+> **Ein 403 auf einen Pfad, an dem sicher etwas hängt, ist eine Auskunft über
+> den Schlüssel, nicht über die Sache.** Steht schon weiter oben in dieser
+> Datei; hier ist die Stelle, an der es zum zweiten Mal zugeschlagen hat.
+
+**Und der eigentliche Fehler war meiner.** Das Skript sammelte die 403er ein,
+druckte sie brav ins Protokoll — und schloss mit „Noch keine Zahlen … Kein
+Grund, hier etwas zu reparieren." Grüner Lauf, falsche Aussage, in derselben
+Stunde geschrieben, in der ich die Regel dazu aufgeschrieben hatte.
+
+Daraus die Bauregel: **„nichts gefunden" braucht zwei Ausgänge.** Einen für
+„die Gegenseite hat geantwortet und hatte nichts", einen für „die Gegenseite
+hat nicht geantwortet". Der zweite ist ein Fehler, kein Ergebnis, und ein
+Aufrufmantel, der jeden Fehlschlag mitzählt, kostet fünf Zeilen.
+
 ### „Vorhanden" ist auch nicht „richtig"
 
 Die Stufe nach „vorhanden ist nicht wirkt", und sie kostet mehr, weil nichts
