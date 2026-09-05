@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-09-04, Version 0.106.6
+Stand: 2026-09-05, Version 0.107.0
 
 ---
 
@@ -86,7 +86,7 @@ Tabelle im Baukasten unter „Die Prüfungen".
 
 ## Wo die Arbeit steht
 
-**`main` ist der aktuelle Stand**, Version 0.106.6. Es gibt keinen offenen
+**`main` ist der aktuelle Stand**, Version 0.107.0. Es gibt keinen offenen
 Arbeitszweig; alles ist zusammengeführt. `claude/setup-pruefung-4qyr2u` steht
 noch bei GitHub, vollständig in `main` — aus der Cloud lässt er sich nicht
 löschen (`HTTP 403`), von der Weboberfläche aus mit einem Klick.
@@ -103,6 +103,21 @@ löschen (`HTTP 403`), von der Weboberfläche aus mit einem Klick.
 | Länder | 175, Deutschland dabei |
 
 **Der Umfang von 1.0 ist vollständig.** Es fehlt nichts mehr am Produkt.
+
+### Aufrufe und Ladungen — `zahlen.yml`
+
+Seit 0.107.0 holt `scripts/asc-zahlen.py` die Zahlen aus App Store Connect:
+Impressions, Aufrufe der Produktseite, Ladungen insgesamt und Erstinstallationen.
+Ein Ablauf, täglich um 09:00 UTC, dazu ein Knopf.
+
+**Der Grund, warum das nicht warten durfte:** Apple sammelt diese Zahlen erst,
+wenn man sie anfordert. Ein Bericht mit `accessType: ONGOING` fängt am Tag der
+Anforderung an; was davor liegt, kennt er nicht. Und Apple **stoppt** eine
+Anforderung wieder, wenn monatelang niemand die Berichte abruft — der tägliche
+Lauf hält sie am Leben.
+
+Rückwirkend geht es über `ONE_TIME_SNAPSHOT` (bis 365 Tage), der Knopf dafür
+heißt „rueckwirkend" am Ablauf.
 
 ### Im Laden seit dem 4. September, 23:00 UTC
 

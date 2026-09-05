@@ -1,0 +1,53 @@
+name: Zahlen
+
+# **Aufrufe und Ladungen, ohne sich irgendwo anzumelden.**
+#
+# Die Zahlen stehen auch in App Store Connect unter „Analytics". Dieser Ablauf
+# gibt es hier trotzdem, aus zwei Gründen:
+#
+#   1. **Apple sammelt erst, wenn man anfordert.** Ein Bericht mit
+#      `accessType: ONGOING` fängt am Tag der Anforderung an; was davor liegt,
+#      kennt er nicht. Der tägliche Lauf sorgt dafür, dass die Anforderung
+#      wirklich steht — und legt sie an, falls sie fehlt.
+#   2. Apple **stoppt** eine Anforderung wieder, wenn monatelang niemand die
+#      Berichte abruft. Ein Abruf am Tag hält sie am Leben. Genau die Art
+#      Nebenbedingung, an die am Tag der Not niemand denkt.
+#
+# Der Zeitplan liegt spät genug, dass der Tagesbericht des Vortags fertig ist;
+# auf die Minute ist bei GitHub ohnehin kein Verlass (siehe live-schalten.yml).
+
+on:
+  schedule:
+    - cron: "0 9 * * *"
+  workflow_dispatch:
+    inputs:
+      rueckwirkend:
+        description: "Zusätzlich die Vergangenheit anfordern (einmalig, bis 365 Tage)"
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  zahlen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Abhängigkeiten
+        run: pip3 install --quiet "pyjwt[crypto]" requests
+
+      - name: Nachsehen
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          if [ "${{ inputs.rueckwirkend }}" = "true" ]; then
+            python3 scripts/asc-zahlen.py --rueckwirkend
+          else
+            python3 scripts/asc-zahlen.py
+          fi

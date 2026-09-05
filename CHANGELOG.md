@@ -9,6 +9,46 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.107.0 — 2026-09-05
+
+**Aufrufe und Ladungen, ohne sich irgendwo anzumelden.**
+`scripts/asc-zahlen.py` und der Ablauf `zahlen.yml` holen die Zahlen aus App
+Store Connect: wie oft die App im Store auftauchte, wie oft jemand die
+Produktseite geöffnet hat, wie oft sie geladen wurde und wie viele davon
+Erstinstallationen waren.
+
+**Warum das nicht bis nächste Woche warten durfte.** Apple sammelt diese Zahlen
+erst, wenn man sie anfordert. Ein Bericht mit `accessType: ONGOING` fängt am Tag
+der Anforderung an — was davor liegt, kennt er nicht. Wer eine Woche wartet, hat
+eine Woche verloren. Die App steht seit gestern Abend im Laden; die Anforderung
+gehört also heute gestellt und nicht dann, wenn jemand die erste Zahl sehen
+will.
+
+Zweite Nebenbedingung, an die am Tag der Not niemand denkt: Apple **stoppt** die
+Anforderung wieder, wenn monatelang keiner die Berichte abruft
+(`stoppedDueToInactivity`). Deshalb läuft der Ablauf täglich und nicht nur auf
+Zuruf — ein Abruf am Tag hält sie am Leben. Das Skript legt eine fehlende
+Anforderung außerdem von sich aus wieder an.
+
+Rückwirkend geht es über `ONE_TIME_SNAPSHOT`, bis 365 Tage zurück; der Knopf
+dafür sitzt am Ablauf.
+
+Zwei Dinge, die dabei bewusst so gebaut sind:
+
+- **„Noch keine Daten" ist nicht „0 Ladungen".** Apple stellt einen Tagesbericht
+  frühestens am Folgetag bereit. Solange nichts da ist, sagt das Skript genau
+  das und schreibt keine Null hin — eine Null wäre eine Aussage, „noch nichts"
+  ist eine andere.
+- Die Berichte werden **nicht** namentlich festgenagelt. Apple wechselt zwischen
+  „App Downloads" und „App Downloads Standard" und zwischen „Impressions" und
+  „Impressions Unique Device"; verglichen wird deshalb auf Teilzeichenketten,
+  und was nicht erkannt wird, wird mitsamt seinen Spalten aufgezählt statt
+  stillschweigend übergangen.
+
+Nur Skripte und Abläufe. Kein App-Code, kein Bau.
+
+---
+
 ## 0.106.6 — 2026-09-05
 
 **Zählora ist im App Store.** Seit dem 4. September, 23:00 UTC, kostenlos, in
