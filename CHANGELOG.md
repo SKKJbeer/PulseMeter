@@ -9,6 +9,43 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.108.0 — 2026-09-05
+
+**Der erste Bau, der den iCloud-Abgleich und das Widget wirklich mitbringt.**
+
+Der Gründer hat die beiden fehlenden Kennungen im Entwicklerportal angelegt —
+`group.de.karjoth.pulsemeter` und `iCloud.de.karjoth.pulsemeter`. Das war der
+einzige Grund, warum seit Bau 5 jeder Bau ohne Berechtigungsdatei fuhr: Apple
+bietet für diese beiden keine Schnittstelle an, sie mussten von Hand angelegt
+werden.
+
+Am Code hat sich dafür **nichts** geändert, und das ist der Punkt. Der Abgleich
+war die ganze Zeit gebaut — `PulseStore.container(cloudKit: true)` als erste
+Stufe, `.automatic` gegen die private Datenbank, das Schema von Anfang an
+CloudKit-tauglich (alles optional, `Int64` statt `Double`). Er ist nie
+angesprungen, weil Stufe eins ohne Berechtigung scheitert und Stufe zwei
+derselbe Speicher ohne Abgleich ist. Eine App, die still das Richtige tut,
+sieht genauso aus wie eine, die still nichts tut.
+
+Was dieser Bau also zum ersten Mal kann:
+
+- **Abgleich zwischen zwei Geräten mit derselben Apple-ID.** Zähler,
+  Zählwerke, Ablesungen, Tarife, Abrechnungszeiträume. Ohne Konto, ohne
+  Schalter, ohne dass jemand etwas einrichtet.
+- **Das Feld auf dem Sperrbildschirm.** Ohne App-Gruppe las das Widget im
+  app-eigenen Ordner statt im gemeinsamen und blieb dauerhaft leer.
+
+Beides steht seit dem 4. September in der Store-Beschreibung und auf der
+Kaufseite. Bis zu diesem Bau war beides ein Versprechen ohne Deckung — jetzt
+nicht mehr. Der nächste Schritt ist eine Fassung 1.0.1 in den Store, denn dort
+steht noch Bau 25.
+
+Geprüft wird das nicht mehr auf Zuruf: `testflight.yml` hält seit 0.107.2 an,
+wenn die Berechtigungen nicht mitgehen. Dieser Lauf ist der erste, der an
+diesem Torwächter vorbeikommt, statt ihn auszulösen.
+
+---
+
 ## 0.107.3 — 2026-09-05
 
 **Die Website hat einen halben Tag lang behauptet, es gebe die App nicht zu
