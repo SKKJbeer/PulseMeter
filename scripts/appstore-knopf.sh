@@ -12,6 +12,18 @@
 #   scripts/appstore-knopf.sh an           # macht den Verweis daraus
 #   scripts/appstore-knopf.sh aus          # zurück in den Wartezustand
 #
+# **Dieses Skript legt genau einen Block um — und das reicht nicht.** Um das
+# Abzeichen herum standen drei Sätze, die nur vor der Freigabe stimmten: „Die
+# App ist noch nicht im App Store", „Kaufen kann man noch nichts", „die
+# geplanten Preise". Am 5. September führte das Abzeichen in den Laden und der
+# Absatz darunter sagte, dort sei nichts.
+#
+# Sie hier mitzuschalten wäre der falsche Weg: Ein Skript, das Fließtext
+# umschreibt, erzeugt Sätze, die niemand gelesen hat. Stattdessen prüft
+# `check-website.mjs` die **Übereinstimmung** — führt das Abzeichen in den
+# Laden, darf kein Satz das Gegenteil behaupten. Wer den Zustand umlegt,
+# bekommt die Widersprüche dann als Fehlschlag genannt und schreibt sie selbst.
+#
 # Die App-Kennung steht fest, seit der Eintrag in App Store Connect existiert.
 set -euo pipefail
 

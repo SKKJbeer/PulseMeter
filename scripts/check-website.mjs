@@ -181,6 +181,59 @@ for (const datei of seiten) {
          : `${datei}: ${gefunden.join(", ")} — sagt über diese App nichts`);
 }
 
+// **Die Seite darf sich nicht selbst widersprechen, was den Laden angeht.**
+//
+// `appstore-knopf.sh` legt genau **einen** Block um: das Abzeichen. Die drei
+// Sätze drumherum — „Die App ist noch nicht im App Store", „Kaufen kann man
+// noch nichts", „die geplanten Preise" — hat es nie angefasst, und daran hat
+// auch nie jemand gedacht. Ergebnis am 5. September: Ein Abzeichen, das in den
+// Laden führt, direkt über einem Absatz, der sagt, dort sei nichts. Aufgefallen
+// ist es dem Gründer, nicht der Prüfsuite.
+//
+// Geprüft wird deshalb die **Übereinstimmung**, nicht der einzelne Satz: Führt
+// das Abzeichen in den Laden, darf kein Satz das Gegenteil behaupten. Steht es
+// auf „Bald", darf umgekehrt kein Preis als gültig angekündigt sein.
+{
+  const roh = readFileSync(`${dir}/index.html`, "utf8");
+  const sichtbar = roh.replace(/<!--[\s\S]*?-->/g, " ");
+  const imLaden = /class="apfel"\s+href="https:\/\/apps\.apple\.com/.test(sichtbar);
+  const wartet = sichtbar.includes("apfel-wartet");
+
+  note(imLaden !== wartet,
+       imLaden !== wartet
+         ? `Das Abzeichen ist eindeutig: ${imLaden ? "führt in den Laden" : "wartet"}`
+         : "Das Abzeichen ist weder Verweis noch Wartezustand — appstore-knopf.sh hat halb gewirkt");
+
+  // Sätze, die nur stimmen, solange die App **nicht** zu haben ist.
+  const NUR_VOR_DEM_LADEN = [
+    "noch nicht im App Store", "nicht im App Store", "nicht im Store",
+    "Kaufen kann man noch nichts", "geplanten Preise", "Bald im App Store",
+  ];
+  const widerspruch = imLaden
+    ? NUR_VOR_DEM_LADEN.filter(satz => sichtbar.includes(satz))
+    : [];
+  note(widerspruch.length === 0,
+       widerspruch.length === 0
+         ? "Kein Satz widerspricht dem Abzeichen"
+         : `Das Abzeichen führt in den Laden, im Text steht aber: „${widerspruch.join("\", \"")}"`);
+}
+
+// **Kein Verweis auf ein Arbeitsmittel.**
+//
+// Auf der Startseite führte „Jetzt ausprobieren" auf den Klick-Dummy bei
+// `claude.ai`. Das war richtig, solange es nichts zu laden gab. Seit die App im
+// Laden steht, sind es zwei Aufforderungen nebeneinander, und die auffälligere
+// führt in einen Entwurf. Der Klick-Dummy ist Arbeitsmittel im Repository,
+// kein Angebot an Käufer.
+for (const datei of seiten) {
+  const roh = readFileSync(`${dir}/${datei}`, "utf8").replace(/<!--[\s\S]*?-->/g, " ");
+  const treffer = [...roh.matchAll(/href="(https?:\/\/[^"]*claude\.ai[^"]*)"/g)].map(m => m[1]);
+  note(treffer.length === 0,
+       treffer.length === 0
+         ? `${datei}: kein Verweis auf ein Arbeitsmittel`
+         : `${datei}: verweist auf ${treffer.join(", ")} — das ist der Entwurf, nicht das Produkt`);
+}
+
 // **Jede benutzte CSS-Variable muss es geben.**
 //
 // `var(--bg)` stand im Stil des App-Store-Abzeichens, und die Datei kennt nur

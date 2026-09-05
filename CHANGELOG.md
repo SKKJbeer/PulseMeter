@@ -9,6 +9,46 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.107.3 — 2026-09-05
+
+**Die Website hat einen halben Tag lang behauptet, es gebe die App nicht zu
+kaufen — direkt unter einem Abzeichen, das in den Laden führt.** Gefunden hat
+das der Gründer, nicht die Prüfsuite.
+
+`appstore-knopf.sh` legt genau **einen** Block um: das Abzeichen. Drei Sätze
+drumherum stimmten nur vor der Freigabe, und die hat nie jemand angefasst:
+
+| Wo | Was dort stand |
+|---|---|
+| Unter den Knöpfen | „Die App ist noch nicht im App Store. Der Entwurf im Browser rechnet aber schon…" |
+| Über den Preisen | „Kaufen kann man noch nichts: Die App ist nicht im Store. Die Beträge unten sind die geplanten Preise, keine gültigen." |
+| Der auffälligste Knopf | „Jetzt ausprobieren" → auf den Klick-Dummy bei `claude.ai` |
+
+Der Knopf ist **weg**, nicht umgehängt. Das Abzeichen daneben ist die
+Aufforderung; ein zweiter, größerer Knopf in einen Entwurf, der nicht das
+Produkt ist, nimmt ihr die Wirkung. Der Klick-Dummy bleibt, wofür er da ist:
+Arbeitsmittel im Repository.
+
+Die beiden Absätze sind ersetzt, nicht nachgeschärft — sie erklärten, warum es
+nichts zu laden gibt, und diese Frage stellt sich nicht mehr. Was jetzt über
+den Preisen steht, ist am 5. September auf der Produktseite im Laden
+gegengelesen: Alles freischalten 4,99 €, die vier einzelnen je 1,99 €,
+Erinnerungen 0,99 €. Also gültige Beträge, keine geplanten.
+
+**Und zwei neue Prüfungen, damit es nicht wieder auseinanderläuft:**
+
+- **Widerspruch.** Führt das Abzeichen in den Laden, darf kein Satz auf der
+  Seite das Gegenteil behaupten. Geprüft wird die Übereinstimmung, nicht der
+  einzelne Satz.
+- **Kein Verweis auf ein Arbeitsmittel.** Keine Seite verlinkt `claude.ai`.
+
+Gegenprobe gemacht: Mit dem alten Stand schlagen beide an und nennen die
+Fundstellen. Die Sätze automatisch mitschalten wäre der falsche Weg gewesen —
+ein Skript, das Fließtext umschreibt, erzeugt Sätze, die niemand gelesen hat.
+Jetzt nennt die Prüfung die Widersprüche, und geschrieben werden sie von Hand.
+
+---
+
 ## 0.107.2 — 2026-09-05
 
 **Die App im Laden kann keinen iCloud-Abgleich und kein Widget. Beides ist
