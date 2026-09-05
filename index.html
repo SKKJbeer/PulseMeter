@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zählora — Zählerstände erfassen, Kosten verstehen</title>
+<meta name="description" content="Zählerstände für Strom, Gas, Wasser und Photovoltaik eintragen und sehen, ob alles im Rahmen ist. Ohne Konto, ohne Werbung, ohne Server. Ab 0,99 €, kein Abo.">
+<meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F0E0C" media="(prefers-color-scheme: dark)">
+<link rel="canonical" href="https://zaehlora.pages.dev/">
+<!-- Das Zeichen liegt als Datenadresse in der Seite und nicht als Datei:
+     eine Anfrage weniger, und es kann nicht verlorengehen. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2317150F'/%3E%3Cpath d='M6 21a10 10 0 0 1 20 0' fill='none' stroke='%23E0A040' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M9 21h4l2-5 3 8 2-3h3' fill='none' stroke='%23E0A040' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Zählora">
+<meta property="og:locale" content="de_DE">
+<meta property="og:title" content="Zählora — Zählerstände erfassen, Kosten verstehen">
+<meta property="og:description" content="Zählerstände eintragen und sehen, ob alles im Rahmen ist. Ohne Konto, ohne Werbung, ohne Server. Ab 0,99 €, kein Abo.">
+<meta property="og:url" content="https://zaehlora.pages.dev/">
+<meta property="og:image" content="https://zaehlora.pages.dev/bilder/light.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="stil.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Zählora",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "iOS 18",
+  "inLanguage": "de",
+  "description": "Zählerstände für Strom, Gas, Wasser, Photovoltaik und Nachtstrom erfassen, Verbrauch und Kosten sehen, mit dem Vorjahr vergleichen und als Tabelle exportieren.",
+  "url": "https://zaehlora.pages.dev/",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "EUR",
+    "description": "Kostenlos mit zwei Zählern. Einzelne Freischaltungen ab 0,99 €, alle zusammen 4,99 €. Kein Abo."
+  }
+}
+</script>
+<!-- **Die Fragen stehen auf der Hilfeseite, und ihr Markup jetzt auch.**
+     Hier standen sie bis 0.103.1 als zweite, freier formulierte Fassung — und
+     eine davon war seit dem Preiswechsel schlicht falsch, während die andere
+     stimmte. Ein Markup gehört auf die Seite, deren sichtbaren Text es
+     beschreibt; alles andere ist eine Kopie, die niemand nachliest.
+     `scripts/check-versprechen.py` hält beides jetzt zusammen. -->
+</head>
+<body>
+
+<a class="sprung" href="#inhalt">Zum Inhalt springen</a>
+
+<header class="kopf">
+  <div class="bahn kopf-innen">
+    <a class="marke" href="/">
+      <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <path d="M4 23a12 12 0 0 1 24 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".28"/>
+        <path d="M7 23h4.5l2.5-6.5L18 27l2.5-4H25" fill="none" stroke="#C77A0E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Zählora
+    </a>
+    <nav aria-label="Bereiche">
+      <a href="#funktionen">Funktionen</a>
+      <a href="#preise">Preise</a>
+      <a href="/hilfe">Hilfe</a>
+    </nav>
+  </div>
+</header>
+
+<main id="inhalt">
+
+  <div class="anfang">
+    <div class="bahn anfang-gitter">
+      <div>
+        <h1>Einmal im Monat ablesen. Den Rest des Jahres Bescheid wissen.</h1>
+        <p class="vorspann">
+          Du trägst deinen Zählerstand ein, Zählora macht den Rest.
+          Strom, Gas, Wasser, Photovoltaik und Wärme. Auf dem ersten
+          Bildschirm siehst du, wie viel seit Januar zusammengekommen ist,
+          wie viel es im Vorjahr war und was das kostet.
+        </p>
+        <div class="knoepfe">
+          <!-- APPSTORE-KNOPF — von scripts/appstore-knopf.sh gesetzt, nicht von Hand.
+               Solange die App nicht im Store ist, steht hier kein Verweis: Ein
+               Abzeichen „Laden im App Store", das auf eine Fehlseite führt, ist
+               genau das Versprechen, das dieses Projekt sich verbietet. -->
+          <a class="apfel" href="https://apps.apple.com/de/app/id6802262743">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+            </svg>
+            <span class="apfel-text">
+              <small>Laden im</small>
+              <b>App Store</b>
+            </span>
+          </a>
+          <!-- /APPSTORE-KNOPF -->
+          <!-- Hier stand bis zum 5. September ein zweiter, auffälligerer Knopf
+               auf den Klick-Dummy. Richtig, solange es die App nicht zu laden
+               gab; seit der Freigabe nimmt er dem Abzeichen die Wirkung und
+               führt in einen Entwurf, der nicht das Produkt ist. Der
+               Klick-Dummy bleibt Arbeitsmittel im Repository. Begründung
+               ausführlich in CHANGELOG.md, 0.107.3. -->
+          <a class="knopf knopf-rand" href="#funktionen">Was drinsteckt</a>
+        </div>
+        <ul class="zusagen">
+          <li>Ohne Konto</li>
+          <li>Keine Werbung, keine Auswertung</li>
+          <li>Deine Zahlen bleiben bei dir</li>
+        </ul>
+        <!-- Bis zum 5. September erklärte dieser Absatz, warum es nichts zu
+             laden gibt. Diese Frage stellt sich seit der Freigabe nicht mehr,
+             also ersetzt statt nachgeschärft. `check-website.mjs` sorgt dafür,
+             dass hier nichts stehen bleibt, was dem Abzeichen widerspricht. -->
+        <p class="notiz">
+          Laden kostet nichts. Zwei Zähler mit ihrer ganzen Historie sind
+          dauerhaft frei; was darüber hinausgeht, steht unten mit Preis.
+        </p>
+      </div>
+
+      <div class="geraet-reihe">
+        <picture class="geraet">
+          <source srcset="bilder/dark.jpg" media="(prefers-color-scheme: dark)">
+          <img src="bilder/light.jpg" width="460" height="1000"
+               alt="Die Übersicht von Zählora: vier Zähler mit Verbrauch seit Jahresbeginn, Vorjahresvergleich und Kosten.">
+        </picture>
+        <picture class="geraet">
+          <source srcset="bilder/capture-dark.jpg" media="(prefers-color-scheme: dark)">
+          <img src="bilder/capture-light.jpg" width="460" height="1000"
+               alt="Eine Ablesung eintragen: großes Zahlenfeld mit Ziffernblock, das Datum steht auf heute.">
+        </picture>
+        <picture class="geraet">
+          <source srcset="bilder/verlauf-dark.jpg" media="(prefers-color-scheme: dark)">
+          <img src="bilder/verlauf-light.jpg" width="460" height="1000"
+               alt="Der Verlauf: Verbrauch je Monat als Diagramm, daneben derselbe Zeitraum des Vorjahres.">
+        </picture>
+      </div>
+    </div>
+  </div>
+
+  <section id="funktionen">
+    <div class="bahn paar">
+      <div>
+        <span class="marke-klein">Überblick</span>
+        <h2>Du siehst sofort, ob mehr zusammenkommt als letztes Jahr</h2>
+        <p class="blass">
+          Jeder Zähler zeigt, was seit Jahresbeginn zusammengekommen ist, was
+          im selben Zeitraum des Vorjahres zusammenkam und was das in Euro
+          bedeutet. Ohne Scrollen, ohne Menü.
+        </p>
+        <ul class="liste">
+          <li><strong>Vergleich auf gleicher Grundlage.</strong> Januar bis Mai gegen Januar bis Mai. Läuft der Monat noch, wird auch das Vorjahr am selben Tag abgeschnitten.</li>
+          <li><strong>Wenn Zählora einen Wert schätzt, siehst du das.</strong> Hochgerechnete Werte stehen nie unkommentiert zwischen gemessenen.</li>
+          <li><strong>Jede Zahl lässt sich antippen</strong> und zeigt, aus welchen Ablesungen sie entstanden ist.</li>
+        </ul>
+      </div>
+      <picture class="geraet">
+        <source srcset="bilder/dark.jpg" media="(prefers-color-scheme: dark)">
+        <img src="bilder/light.jpg" width="460" height="1000"
+             alt="Die Übersicht mit vier Zählern, Vorjahresvergleich und Kosten.">
+      </picture>
+    </div>
+  </section>
+
+  <section class="abschnitt-hell">
+    <div class="bahn paar paar-gedreht">
+      <div>
+        <span class="marke-klein">Kosten</span>
+        <h2>Die Nachzahlung siehst du im Oktober, nicht im März</h2>
+        <p class="blass">
+          Zwei Zahlen von deiner Rechnung genügen: Arbeitspreis und
+          Grundpreis. Ab da rechnet Zählora mit. Was kostet dieser Monat,
+          was wird das Jahr kosten, und deckt dein Abschlag das ab?
+        </p>
+        <ul class="liste">
+          <li><strong>Hochrechnung aufs Jahresende</strong>, die den Winter kennt. Ein Gasjahr wird nicht aus einem Julischnitt fortgeschrieben.</li>
+          <li><strong>Abschlagsvergleich.</strong> Zu hoch, passend oder zu niedrig, mit dem Betrag, um den es geht.</li>
+          <li><strong>Preiswechsel mitten im Jahr</strong> werden getrennt gerechnet, nicht über den Zeitraum gemittelt.</li>
+        </ul>
+      </div>
+      <picture class="geraet">
+        <source srcset="bilder/verlauf-dark.jpg" media="(prefers-color-scheme: dark)">
+        <img src="bilder/verlauf-light.jpg" width="460" height="1000"
+             alt="Der Verlauf mit Monatswerten und Vorjahresvergleich.">
+      </picture>
+    </div>
+  </section>
+
+  <section>
+    <div class="bahn paar">
+      <div>
+        <span class="marke-klein">Erfassen</span>
+        <h2>Zehn Sekunden am Zähler, und der Tippfehler bleibt draußen</h2>
+        <p class="blass">
+          App öffnen, Zahl eintippen, sichern. Das Datum steht schon auf heute.
+          Bevor der Wert gespeichert wird, sieht die App ihn sich an: Liegt er
+          unter dem letzten Stand oder weit über dem, was bei dir üblich ist,
+          fragt sie nach. Am Zähler kannst du noch einmal hinsehen. Im Februar
+          vor dem Diagramm nicht mehr.
+        </p>
+        <ul class="liste">
+          <li><strong>Erinnerungen</strong> je Zähler: wöchentlich, monatlich, vierteljährlich oder jährlich. Abends um sechs, wenn jemand zu Hause ist. Freischaltung 0,99 €.</li>
+          <li><strong>Ein Feld auf dem Sperrbildschirm</strong> zeigt, ob eine Ablesung fällig ist und wie viel bisher zusammengekommen ist, ohne dass du die App öffnest.</li>
+          <li><strong>Kein Konto, keine Anmeldung.</strong> Der erste Zähler steht in unter einer Minute.</li>
+          <li><strong>Lücken sind erlaubt.</strong> Wer drei Monate vergisst, verliert nichts. Die App rechnet damit und sagt, was geschätzt ist.</li>
+        </ul>
+      </div>
+      <picture class="geraet">
+        <source srcset="bilder/capture-dark.jpg" media="(prefers-color-scheme: dark)">
+        <img src="bilder/capture-light.jpg" width="460" height="1000"
+             alt="Die Eingabe einer Ablesung mit großem Ziffernblock.">
+      </picture>
+    </div>
+  </section>
+
+  <section>
+    <div class="bahn paar paar-gedreht">
+      <div>
+        <span class="marke-klein">Bericht</span>
+        <h2>Die Rechnung prüfen, ohne sie zu glauben</h2>
+        <p class="blass">
+          Einmal im Jahr kommt ein Brief mit einer Zahl darin, und niemand
+          weiß, ob sie stimmt. Zählora baut daraus ein Dokument: Zeitraum,
+          Anfangs- und Endstand, Verbrauch je Monat, Vorjahr daneben, Kosten
+          und Abschlagssaldo. Zum Ausdrucken, zum Weitergeben an den
+          Vermieter, zum Danebenlegen.
+        </p>
+        <ul class="liste">
+          <li><strong>Zeitraum zur Wahl:</strong> dein Abrechnungsjahr, das laufende Jahr, die letzten zwölf Monate oder ein vergangenes Kalenderjahr.</li>
+          <li><strong>Ansehen und ausdrucken kostet nichts.</strong> Ungekauft steht ein Schriftzug quer darüber; weg ist er, wenn du ihn weitergeben willst.</li>
+          <li><strong>Jede Zahl im Bericht</strong> stammt aus einer Ablesung, die du eingetragen hast. Geschätzte Werte sind als solche gekennzeichnet.</li>
+        </ul>
+      </div>
+      <picture class="geraet">
+        <source srcset="bilder/bericht-dark.jpg" media="(prefers-color-scheme: dark)">
+        <img src="bilder/bericht-light.jpg" width="460" height="1000"
+             alt="Der Verbrauchsbericht: Zeitraum, Zählerstände, Monatswerte und Kosten als Dokument.">
+      </picture>
+    </div>
+  </section>
+
+  <section class="abschnitt-hell">
+    <div class="bahn">
+      <span class="marke-klein">Besondere Fälle</span>
+      <h2>Da, wo es sonst ungenau wird</h2>
+      <p class="blass">
+        Die meisten Haushalte haben mehr als einen einfachen Stromzähler. Genau
+        an diesen Stellen rechnen Tabellen und einfache Apps falsch.
+      </p>
+
+      <div class="karten">
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v18M5 8h14M5 16h14"/>
+          </svg>
+          <h3>Gas, richtig gerechnet</h3>
+          <p>Mit Zustandszahl und Brennwert von deiner Rechnung. Wer Kubikmeter einfach mal zehn nimmt, liegt daneben. <a href="/gas-in-kwh">Warum, steht hier</a>.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 4v3M5 12H2m20 0h-3M6.3 6.3 4.2 4.2m15.6 2.1 2.1-2.1"/><circle cx="12" cy="14" r="5"/>
+          </svg>
+          <h3>Photovoltaik</h3>
+          <p>Ein Zähler, zwei Richtungen: Bezug und Einspeisung, mit Vergütung. Die Vorschau weiß, dass im Juni mehr kommt als im Dezember.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v5l3 2"/>
+          </svg>
+          <h3>Tag- und Nachtstrom</h3>
+          <p>Zwei Preise an einem Gerät. Für Nachtspeicher, Wärmepumpe oder die Wallbox in der Garage.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 7h16M4 12h16M4 17h10"/>
+          </svg>
+          <h3>Zählerwechsel</h3>
+          <p>Neues Gerät, neue Zahlen, und der Verlauf reißt trotzdem nicht ab. Alter Endstand rein, neuer Anfangsstand rein, fertig.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 12a9 9 0 1 1 3 6.7"/><path d="M3 14v-4h4"/>
+          </svg>
+          <h3>Zählerüberlauf</h3>
+          <p>Ein sechsstelliger Zähler fängt irgendwann wieder bei null an. Die App erkennt das und zieht nicht plötzlich einen Jahresverbrauch ab.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 19V9m5 10V5m5 14v-7m5 7V8"/>
+          </svg>
+          <h3>Dein Abrechnungsjahr</h3>
+          <p>Bei Gas fängt es oft im Oktober an, bei Strom im April. Trag den Stichtag ein, dann rechnen Vorschau und Bericht danach. Ein Kalenderjahr zerschneidet den Winter mitten durch.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="bahn">
+      <span class="marke-klein">Deine Daten</span>
+      <h2>Wir sehen deine Zählerstände nicht</h2>
+      <p class="blass">
+        Auch nicht anonymisiert und auch nicht „zur Verbesserung des
+        Angebots". Deine Ablesungen verlassen dein Gerät nur, wenn du sie
+        selbst weitergibst. Der einzige andere Ort, an den sie gehen können,
+        ist deine eigene iCloud.
+      </p>
+
+      <div class="karten">
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12.5 10 17l9-10"/>
+          </svg>
+          <h3>Kein Konto</h3>
+          <p>Keine Anmeldung, keine E-Mail-Adresse, kein Passwort. Du lädst die App und trägst die erste Zahl ein.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 3l18 18"/><path d="M12 3a9 9 0 0 1 9 9 9 9 0 0 1-1.6 5.1M6.6 6.6A9 9 0 0 0 12 21"/>
+          </svg>
+          <h3>Keine Server</h3>
+          <p>Es gibt keinen Dienst, der deine Zahlen empfangen könnte. Auch keinen von uns. Die App redet nur mit dem App Store und mit deiner eigenen iCloud.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 21s-7-4.4-7-10V6l7-3 7 3v5c0 5.6-7 10-7 10z"/>
+          </svg>
+          <h3>Nichts zählt mit</h3>
+          <p>Keine Werbung, keine Auswertung, keine Absturzberichte. Niemand erfährt, wie oft du die App öffnest.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M7 17h10a4 4 0 0 0 .6-8A6 6 0 0 0 6 8.5 4.2 4.2 0 0 0 7 17z"/>
+          </svg>
+          <h3>Deine eigene iCloud</h3>
+          <p>Wenn du den Abgleich einschaltest, liegen die Daten in deinem privaten iCloud-Bereich. Wir haben darauf keinen Zugriff.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v11m0 0-4-4m4 4 4-4"/><path d="M4 17v3h16v-3"/>
+          </svg>
+          <h3>Export, dauerhaft kostenlos</h3>
+          <p>Alle Ablesungen als Tabelle, in jedem Tabellenprogramm zu öffnen. Auch wenn du nie einen Cent ausgibst.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 7h11M4 12h16M4 17h8"/><path d="M18 5v6"/>
+          </svg>
+          <h3>Löschen heißt gelöscht</h3>
+          <p>Du entfernst die App, und die Daten auf dem Gerät sind weg. Nutzt du iCloud, löschst du die Kopie dort in den Einstellungen mit. Bei uns gibt es keine.</p>
+        </div>
+      </div>
+
+      <p class="blass">
+        Der freie Export ist der Kern davon. Er ist die Antwort auf die Frage,
+        die jeder zu Recht stellt: <em>Was, wenn es die App irgendwann nicht
+        mehr gibt?</em> Dann nimmst du deine Tabelle und gehst. Genau diese
+        Sorge hält viele Leute bei Excel, und Apps, die die eigenen Daten als
+        Pfand nehmen, geben ihnen recht.
+      </p>
+      <p class="notiz">
+        Dass das stimmt, prüft bei jeder Änderung ein Skript im Quelltext mit:
+        kein Netzverkehr, kein Analyse-Baustein, kein fremdes Paket, keine
+        Protokollausgabe mit Zählerständen, iCloud ausschließlich privat.
+        Schlägt eine dieser Prüfungen an, geht die Änderung nicht durch.
+        Nachzulesen in der <a href="/datenschutz">Datenschutzerklärung</a>.
+      </p>
+      <p class="notiz">
+        Diese Seite hält sich an dieselbe Regel: keine Cookies, keine
+        Zählpixel, keine fremden Schriftarten. Deshalb hat dich hier auch kein
+        Zustimmungsfenster begrüßt.
+      </p>
+    </div>
+  </section>
+
+  <section id="preise" class="abschnitt-hell">
+    <div class="bahn">
+      <span class="marke-klein">Preise</span>
+      <h2>Du kaufst einmal, was dir fehlt</h2>
+      <p class="blass">
+        Fang kostenlos an. Wenn dir später etwas fehlt, schaltest du genau das
+        frei und nicht ein Paket, in dem drei Dinge stecken, die du nie
+        brauchst. Einmal bezahlt, auf allen deinen Geräten, und es bleibt so.
+        Ein Abo gibt es nicht.
+      </p>
+      <!-- Die Beträge unten sind am 5. September auf der Produktseite im Laden
+           gegengelesen: Alles freischalten 4,99 €, Unbegrenzt viele Zähler /
+           Kosten und Preise / Nachtstrom und Einspeisung / Bericht ohne
+           Wasserzeichen je 1,99 €, Erinnerungen 0,99 €. Bis dahin stand hier
+           der Vorbehalt, dass es geplante seien. -->
+      <p class="notiz">
+        Die Beträge gelten in Deutschland. In anderen Ländern rechnet Apple um,
+        und in der App steht immer der Preis deines Ladens.
+      </p>
+
+      <div class="preis-tafel">
+        <div class="preis preis-frei">
+          <b>Dauerhaft kostenlos</b>
+          <span class="betrag">0 €</span>
+          <p>Zwei Zähler, so viele Ablesungen du willst, der ganze Verlauf, der Vorjahresvergleich und der Export.</p>
+        </div>
+        <div class="preis">
+          <b>Erinnerungen</b>
+          <span class="betrag">0,99 €</span>
+          <p>Die App meldet sich abends, wenn ein Zähler dran ist. Im Rhythmus, den du je Zähler einstellst.</p>
+        </div>
+        <div class="preis">
+          <b>Weitere Zähler</b>
+          <span class="betrag">1,99 €</span>
+          <p>Ab dem dritten. Wer Strom, Gas und Wasser führt, ist schon dabei.</p>
+        </div>
+        <div class="preis">
+          <b>Tag- und Nachtstrom</b>
+          <span class="betrag">1,99 €</span>
+          <p>Ein Gerät mit zwei Zahlen. Auch Photovoltaik mit Bezug und Einspeisung.</p>
+        </div>
+        <div class="preis">
+          <b>Kosten und Preise</b>
+          <span class="betrag">1,99 €</span>
+          <p>Euro statt Kilowattstunden, Abschlagsvergleich, Vorschau aufs Jahresende.</p>
+        </div>
+        <div class="preis">
+          <b>Bericht ohne Schriftzug</b>
+          <span class="betrag">1,99 €</span>
+          <p>Das Dokument zum Weitergeben. Ansehen und ausdrucken kannst du ihn auch ohne.</p>
+        </div>
+        <div class="preis preis-bundle">
+          <b>Alles zusammen</b>
+          <span class="betrag">4,99 €</span>
+          <p>Alle fünf Freischaltungen. Einzeln wären es 8,95 €, du sparst also fast vier Euro.</p>
+        </div>
+      </div>
+
+      <p class="notiz">
+        Den Verbrauchsbericht kannst du immer ansehen und ausdrucken. Ohne
+        Kauf steht ein Schriftzug quer darüber. Ob dein Abschlag überhaupt
+        passt, rechnet die App aus, bevor die Rechnung kommt:
+        <a href="/abschlag-zu-hoch">so prüfst du ihn</a>.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="fuss">
+  <div class="bahn fuss-innen">
+    <span>Zählora — gebaut in Deutschland, von einem Menschen.</span>
+    <nav aria-label="Rechtliches">
+      <a href="/gas-in-kwh">Gas in kWh</a>
+      <a href="/abschlag-zu-hoch">Abschlag prüfen</a>
+      <a href="/hilfe">Hilfe &amp; Kontakt</a>
+      <a href="/datenschutz">Datenschutz</a>
+      <a href="/impressum">Impressum</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>

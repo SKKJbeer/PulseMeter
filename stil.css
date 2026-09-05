@@ -1,0 +1,499 @@
+/* Zählora — Website
+ *
+ * Eine Datei, kein Aufbauschritt, keine externe Ressource. Keine Schrift von
+ * einem fremden Server, kein Analysewerkzeug, kein eingebettetes Video.
+ *
+ * **Das ist die Pointe und keine Sparsamkeit.** Ohne fremde Anfragen entstehen
+ * keine Cookies und keine Übertragung an Dritte — und damit braucht diese
+ * Seite kein Zustimmungsfenster. Die App verspricht „Keine Daten erfasst";
+ * eine Website, die als Erstes ein Cookie-Fenster aufklappt, widerlegt dieses
+ * Versprechen auf dem ersten Bildschirm.
+ *
+ * Die Farben sind dieselben wie in der App: Bernstein auf warmem Grund. Die
+ * Kategorie ist blau und grau; ein warmer Ton fällt darin auf.
+ */
+
+:root {
+  --ground:   #FBFAF8;
+  --raised:   #F3F0EA;
+  --surface:  #FFFFFF;
+  --ink:      #17150F;
+  --ink-2:    #57524A;
+  --ink-3:    #8B8578;
+  --line:     #E7E3DA;
+  --line-2:   #D8D3C7;
+  --tint:     #B06E08;
+  --tint-ink: #8A5A08;
+  --on-tint:  #FFFFFF;
+  --good:     #2F7F52;
+
+  --w-page:  1080px;
+  --w-text:  62ch;
+  --r-s:     10px;
+  --r-m:     16px;
+  --r-l:     26px;
+
+  --shadow: 0 1px 2px rgba(23, 21, 15, .04), 0 10px 30px -12px rgba(23, 21, 15, .14);
+  --shadow-lift: 0 2px 4px rgba(23, 21, 15, .05), 0 30px 60px -24px rgba(23, 21, 15, .30);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground:   #0F0E0C;
+    --raised:   #171512;
+    --surface:  #1B1917;
+    --ink:      #F5F2EC;
+    --ink-2:    #B3ADA1;
+    --ink-3:    #837D71;
+    --line:     #2B2822;
+    --line-2:   #3A362E;
+    --tint:     #E0A040;
+    --tint-ink: #E8C070;
+    --on-tint:  #1B1408;
+    --good:     #5CBF85;
+
+    --shadow: 0 1px 2px rgba(0, 0, 0, .5);
+    --shadow-lift: 0 30px 60px -24px rgba(0, 0, 0, .85);
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  /* Deutsch besteht aus langen zusammengesetzten Wörtern. Ohne diese zwei
+     Zeilen steht „Datenschutz-Grundverordnung" auf einem schmalen Telefon
+     über den Rand hinaus — sichtbar erst dort, wo es niemand ausprobiert. */
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+img { max-width: 100%; height: auto; display: block; }
+
+a { color: var(--tint-ink); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { text-decoration-thickness: 2px; }
+
+:focus-visible {
+  outline: 2px solid var(--tint);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Für Tastatur und Vorlesehilfen: der erste Halt auf jeder Seite.
+ *
+ * **Nach oben aus dem Bild, nicht nach links.** Das übliche `left: -9999px`
+ * macht das Dokument um 9999 px breit; der Browser klammert das zwar weg,
+ * aber jede Messung des horizontalen Überlaufs schlägt danach an — und genau
+ * das ist beim ersten Lauf dieser Prüfung passiert. Oben liegt er ebenso
+ * unsichtbar und kostet keine Breite. */
+.sprung {
+  position: absolute;
+  left: 12px;
+  top: -70px;
+  background: var(--surface);
+  color: var(--ink);
+  padding: 12px 18px;
+  border-radius: var(--r-s);
+  box-shadow: var(--shadow);
+  z-index: 10;
+}
+.sprung:focus { top: 12px; }
+
+.bahn {
+  width: 100%;
+  max-width: var(--w-page);
+  margin-inline: auto;
+  padding-inline: 22px;
+}
+
+/* ---------------------------------------------------------------- Kopf */
+
+.kopf {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: color-mix(in srgb, var(--ground) 88%, transparent);
+  backdrop-filter: saturate(1.6) blur(14px);
+  -webkit-backdrop-filter: saturate(1.6) blur(14px);
+  border-bottom: 1px solid transparent;
+}
+.kopf-innen {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 58px;
+}
+.marke {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 16px;
+}
+.marke svg { width: 22px; height: 22px; display: block; }
+.kopf nav { display: flex; gap: 20px; font-size: 15px; }
+.kopf nav a { color: var(--ink-2); text-decoration: none; }
+.kopf nav a:hover { color: var(--ink); }
+
+/* Auf einem schmalen Telefon rutscht die Navigation in die zweite Zeile,
+   statt aus dem Bild zu laufen. Sie zu verstecken wäre der bequemere Weg —
+   aber auf den Rechtsseiten ist sie der einzige Weg zurück. */
+@media (max-width: 560px) {
+  .kopf-innen {
+    flex-wrap: wrap;
+    height: auto;
+    padding-block: 10px 11px;
+    gap: 6px 16px;
+  }
+  .kopf nav { gap: 18px; font-size: 14.5px; width: 100%; }
+}
+
+/* -------------------------------------------------------------- Anfang */
+
+.anfang {
+  padding: clamp(48px, 9vw, 104px) 0 clamp(36px, 6vw, 72px);
+  position: relative;
+  /* Der Schein unten ist breiter als die Seite. `clip` schneidet ihn ab,
+     ohne einen Bildlaufbereich zu erzeugen — sonst wächst das Dokument nach
+     rechts, und zwar unsichtbar: Kein einziges Element steht über, nur das
+     erzeugte Pseudo-Element. Genau daran hat die Suche zuerst vorbeigemessen. */
+  overflow: clip;
+}
+/* Ein warmer Schein hinter dem Kopf statt eines Farbblocks: Er gibt der
+   Seite Tiefe, ohne dass irgendwo eine Kante entsteht, die man später bei
+   jedem Abschnitt wiederholen müsste. */
+.anfang::before {
+  content: "";
+  position: absolute;
+  inset: -20% 0 auto 50%;
+  translate: -50% 0;
+  width: min(900px, 120%);
+  aspect-ratio: 1;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--tint) 13%, transparent), transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.anfang-gitter {
+  display: grid;
+  gap: clamp(36px, 5vw, 56px);
+  align-items: center;
+}
+@media (min-width: 860px) {
+  .anfang-gitter { grid-template-columns: 1.05fr 0.95fr; }
+}
+
+h1 {
+  margin: 0 0 18px;
+  font-size: clamp(38px, 6.2vw, 62px);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  font-weight: 640;
+  text-wrap: balance;
+}
+.vorspann {
+  margin: 0 0 30px;
+  font-size: clamp(18px, 2.2vw, 21px);
+  line-height: 1.5;
+  color: var(--ink-2);
+  max-width: 34ch;
+  text-wrap: pretty;
+}
+
+.knoepfe { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+
+.knopf {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 24px;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 560;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: transform .15s ease, background-color .15s ease;
+}
+.knopf:hover { transform: translateY(-1px); }
+@media (prefers-reduced-motion: reduce) { .knopf:hover { transform: none; } }
+
+.knopf-voll { background: var(--tint); color: var(--on-tint); }
+.knopf-voll:hover { background: color-mix(in srgb, var(--tint) 88%, var(--ink)); }
+.knopf-rand { border-color: var(--line-2); color: var(--ink); background: var(--surface); }
+.knopf-rand:hover { border-color: var(--ink-3); }
+
+/* --------------------------------------------------- Abzeichen App Store
+   Die Form, die jeder kennt: schwarz, abgerundet, Apfel links, zwei Zeilen
+   rechts. Sie ist hier nachgebaut und nicht von Apple geladen — die Seite
+   holt grundsätzlich nichts von fremden Servern, und das gilt auch für ein
+   Bild, das bequem wäre. Vor der Veröffentlichung im Store gehört an diese
+   Stelle das offizielle Abzeichen aus Apples Marketing-Werkzeugen. */
+.apfel {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 17px 9px 14px;
+  border-radius: 11px;
+  background: #000;
+  color: #fff;
+  border: 1px solid #000;
+  text-decoration: none;
+  line-height: 1.05;
+  transition: transform .12s ease, opacity .12s ease;
+}
+.apfel svg { width: 25px; height: 25px; fill: currentColor; flex: none; }
+.apfel-text { display: flex; flex-direction: column; }
+.apfel small { font-size: 11px; letter-spacing: .01em; opacity: .92; }
+.apfel b { font-size: 19px; font-weight: 550; letter-spacing: -0.01em; }
+a.apfel:hover { transform: translateY(-1px); }
+
+/* Wartezustand: dieselbe Form, aber ruhiger — eine Karte, kein schwarzes
+   Abzeichen. Sie soll lesbar sein und nicht nach kaputt aussehen.
+
+   **Hier stand `var(--bg)`, und die Variable gibt es nicht.** Die Datei kennt
+   `--ground`, `--raised` und `--surface`. Ein `var()` auf einen unbekannten
+   Namen ist keine Fehlermeldung, sondern ein Rückfall auf den geerbten Wert —
+   im Dunkeln war das fast dasselbe Weiß wie der Grund. Ergebnis auf dem
+   Telefon des Gründers: ein leerer grauer Kasten, kein Text, kein Apfel.
+
+   Deshalb jetzt nur Variablen, die es gibt, und keine Deckkraft: Die dämpft
+   auch die Schrift. */
+.apfel-wartet {
+  background: var(--surface);
+  color: var(--ink-2);
+  border-color: var(--line-2);
+  cursor: default;
+}
+
+@media (prefers-color-scheme: dark) {
+  .apfel { background: #fff; color: #000; border-color: #fff; }
+}
+
+.notiz {
+  margin: 18px 0 0;
+  font-size: 14px;
+  color: var(--ink-3);
+}
+
+/* Die drei Zusagen direkt unter den Knöpfen. Sie stehen dort, weil sie für
+   viele der eigentliche Grund sind, diese App und nicht eine andere zu
+   nehmen — weiter unten liest sie nur, wer ohnehin schon überzeugt ist. */
+.zusagen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14.5px;
+  font-weight: 520;
+  color: var(--ink-2);
+}
+.zusagen li { display: flex; align-items: center; gap: 7px; }
+.zusagen li::before {
+  content: "";
+  width: 15px;
+  height: 15px;
+  flex: none;
+  background: var(--tint);
+  /* Häkchen als Maske statt als Zeichen: Ein „✓" aus der Schrift sitzt je
+     nach Gerät anders auf der Grundlinie. */
+  -webkit-mask: no-repeat center/15px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12.5 9.5 18 20 6'/%3E%3C/svg%3E");
+          mask: no-repeat center/15px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12.5 9.5 18 20 6'/%3E%3C/svg%3E");
+}
+
+/* -------------------------------------------------------------- Geräte */
+
+.geraet {
+  border-radius: 34px;
+  box-shadow: var(--shadow-lift);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  background: var(--surface);
+}
+.geraet-reihe {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(14px, 2.4vw, 26px);
+  align-items: start;
+}
+.geraet-reihe .geraet:nth-child(2) { transform: translateY(-14px); }
+@media (max-width: 700px) {
+  .geraet-reihe { grid-template-columns: 1fr 1fr; }
+  .geraet-reihe > *:nth-child(3) { display: none; }
+  .geraet-reihe .geraet:nth-child(2) { transform: none; }
+}
+
+/* ------------------------------------------------------------ Abschnitt */
+
+section { padding: clamp(48px, 7vw, 92px) 0; }
+.abschnitt-hell { background: var(--raised); }
+
+h2 {
+  margin: 0 0 14px;
+  font-size: clamp(27px, 3.6vw, 38px);
+  line-height: 1.14;
+  letter-spacing: -0.025em;
+  font-weight: 620;
+  text-wrap: balance;
+}
+h3 {
+  margin: 0 0 8px;
+  font-size: 19px;
+  letter-spacing: -0.012em;
+  font-weight: 600;
+}
+p { margin: 0 0 16px; max-width: var(--w-text); text-wrap: pretty; }
+.blass { color: var(--ink-2); }
+
+.marke-klein {
+  display: block;
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--tint-ink);
+}
+
+.karten {
+  display: grid;
+  gap: 18px;
+  margin-top: 34px;
+  grid-template-columns: repeat(auto-fit, minmax(248px, 1fr));
+}
+.karte {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+.karte p { margin: 0; color: var(--ink-2); font-size: 15.5px; }
+.karte-zeichen {
+  width: 34px; height: 34px;
+  margin-bottom: 14px;
+  color: var(--tint);
+}
+
+.paar {
+  display: grid;
+  gap: clamp(30px, 5vw, 60px);
+  align-items: center;
+}
+@media (min-width: 820px) {
+  .paar { grid-template-columns: 1fr 1fr; }
+  .paar-gedreht > *:first-child { order: 2; }
+}
+
+.liste { margin: 0; padding: 0; list-style: none; }
+.liste li {
+  position: relative;
+  padding-left: 26px;
+  margin-bottom: 11px;
+  color: var(--ink-2);
+  max-width: var(--w-text);
+}
+.liste li::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: .62em;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--tint);
+}
+
+/* --------------------------------------------------------------- Preis */
+
+.preis-tafel {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+  margin-top: 30px;
+}
+.preis {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+  padding: 22px;
+}
+.preis-frei { border-color: var(--tint); }
+/* Das Bündel ist der Kauf, der sich lohnt — sechs gleich aussehende Karten
+   überlassen dem Leser die Rechnerei. Ein Rand statt einer Farbfläche: Es
+   soll auffallen, nicht schreien. */
+.preis-bundle { border-color: var(--tint); border-width: 2px; padding: 21px; }
+.preis b { display: block; font-size: 15px; margin-bottom: 3px; }
+.preis .betrag {
+  font-size: 25px;
+  font-weight: 640;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 12px;
+  display: block;
+}
+.preis p { font-size: 14.5px; color: var(--ink-2); margin: 0; }
+
+/* --------------------------------------------------------------- Fragen */
+
+.frage {
+  border-top: 1px solid var(--line);
+  padding: 24px 0;
+  max-width: var(--w-text);
+}
+.frage:last-of-type { border-bottom: 1px solid var(--line); }
+.frage h3 { margin-bottom: 6px; }
+.frage p { margin: 0; color: var(--ink-2); }
+
+/* -------------------------------------------------------------- Rechtes */
+
+.rechtstext { padding: clamp(40px, 6vw, 72px) 0 clamp(56px, 8vw, 96px); }
+.rechtstext h1 { font-size: clamp(31px, 4.4vw, 42px); margin-bottom: 26px; }
+.rechtstext h2 { font-size: 21px; margin: 40px 0 10px; letter-spacing: -0.012em; }
+.rechtstext p, .rechtstext li { color: var(--ink-2); }
+.rechtstext ul { padding-left: 20px; max-width: var(--w-text); }
+.rechtstext li { margin-bottom: 8px; }
+.rechtstext .stand { color: var(--ink-3); font-size: 14px; }
+
+.anschrift {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+  padding: 22px 24px;
+  max-width: var(--w-text);
+  font-style: normal;
+  line-height: 1.75;
+}
+
+/* ----------------------------------------------------------------- Fuß */
+
+.fuss {
+  border-top: 1px solid var(--line);
+  padding: 40px 0 56px;
+  color: var(--ink-3);
+  font-size: 14.5px;
+}
+.fuss-innen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 26px;
+  align-items: center;
+  justify-content: space-between;
+}
+.fuss nav { display: flex; flex-wrap: wrap; gap: 20px; }
+.fuss a { color: var(--ink-2); text-decoration: none; }
+.fuss a:hover { color: var(--ink); text-decoration: underline; }
