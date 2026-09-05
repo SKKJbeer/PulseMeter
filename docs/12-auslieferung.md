@@ -304,7 +304,39 @@ steht sonst nirgends.
 
 ---
 
-## 4a. Der Starttag: was von Hand passiert
+## 4a. Der Starttag — er war am 4. September 2026
+
+**Zählora 1.0 ist seit dem 4. September, 23:00 UTC im deutschen App Store.**
+Belegt an der Stelle, die auch ein Käufer sieht, nicht am eigenen Skript:
+
+```
+https://itunes.apple.com/lookup?id=6802262743&country=de
+Zählora – Zähler & Verbrauch | 1.0 | 2026-09-04T23:00:15Z | Gratis
+https://apps.apple.com/de/app/id6802262743
+```
+
+Der Weg dahin: eingereicht am 2. September, abgelehnt in der Nacht zum
+3. September nach Guideline 2.1 (kein Mangel an der App — ein Konto ohne
+Prüfhistorie), beantwortet am 3. September mit Text und Bildschirmaufnahme,
+erneut eingereicht am 4. September um 05:14, freigegeben nach knapp achtzehn
+Stunden. `AFTER_APPROVAL` hat gehalten: Niemand musste einen Knopf drücken.
+
+**Und der eine Handgriff, der automatisch laufen sollte, lief halb.**
+`live-schalten.yml` legte das Abzeichen um 00:10 UTC richtig um und pushte —
+und wurde danach rot:
+
+```
+POST …/actions/workflows/website.yml/dispatches
+403 Resource not accessible by integration
+```
+
+Ein Push mit dem `GITHUB_TOKEN` löst keinen `on: push` aus, deshalb stößt der
+Ablauf die Veröffentlichung ausdrücklich an — und dafür fehlte
+`permissions: actions: write`. Fünf Stunden lang stand die App im Laden und die
+eigene Seite sagte „Bald im App Store". Behoben in 0.106.6, samt einer Prüfung
+am Ende des Ablaufs, die die **Seite abruft** statt den Push zu zählen.
+
+### Was am Starttag von Hand passiert
 
 Zwei Handgriffe bleiben, und beide dauern eine Minute. Sie stehen hier, weil sie
 am Starttag ganz unten auf einer langen Liste stehen würden.

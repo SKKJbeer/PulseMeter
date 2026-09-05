@@ -34,8 +34,15 @@ on:
     - cron: "23 * * * *"
   workflow_dispatch:
 
+# `actions: write` ist nicht Zierde, sondern der Unterschied zwischen „gepusht"
+# und „steht im Netz". Ein Push mit dem `GITHUB_TOKEN` löst **keinen** weiteren
+# Ablauf aus — deshalb stößt der letzte Schritt `website.yml` von Hand an, und
+# genau das beantwortete GitHub am 5. September mit „Resource not accessible by
+# integration". Der Knopf war umgelegt, der Lauf rot, die Seite unverändert: Die
+# App stand im Laden und die eigene Website sagte „Bald im App Store".
 permissions:
   contents: write
+  actions: write
 
 jobs:
   nachsehen:
@@ -58,12 +65,15 @@ jobs:
         run: python3 scripts/asc-laden.py
 
       - name: Knopf umlegen und veröffentlichen
+        id: knopf
         if: steps.laden.outputs.live == 'ja'
         run: |
           if [ "$(scripts/appstore-knopf.sh | head -1)" = "App-Store-Abzeichen: an" ]; then
+            echo "umgelegt=nein" >> "$GITHUB_OUTPUT"
             echo "::notice::Der Knopf steht schon auf an. Nichts zu tun."
             exit 0
           fi
+          echo "umgelegt=ja" >> "$GITHUB_OUTPUT"
           scripts/appstore-knopf.sh an
           git config user.name  "Zaehlora"
           git config user.email "noreply@zaehlora.app"
@@ -75,8 +85,12 @@ jobs:
 
       # Der Push allein ändert die Seite im Netz nicht — die Website wird
       # veröffentlicht, nicht aus dem Zweig gelesen.
+      #
+      # Bedingung ist der **umgelegte Knopf**, nicht die Freigabe im Laden. Sonst
+      # stieße dieser Ablauf von der Freigabe an stündlich eine Veröffentlichung
+      # an, die nichts ändert.
       - name: Website veröffentlichen
-        if: steps.laden.outputs.live == 'ja'
+        if: steps.knopf.outputs.umgelegt == 'ja'
         uses: actions/github-script@v7
         with:
           script: |
@@ -87,3 +101,32 @@ jobs:
               ref: 'main',
             });
             core.notice('Website-Lauf angestoßen.');
+
+      # **Geprüft wird das Außen, nicht der Push.** Am 5. September war der
+      # Commit da, der Lauf danach rot und niemand sah hin: Die App stand im
+      # Laden, die Seite sagte weiter „Bald im App Store". Ein Ablauf, der etwas
+      # nach außen bringt, ruft am Ende die Adresse ab.
+      #
+      # Die Bedingung ist die Freigabe, nicht der umgelegte Knopf — so läuft
+      # diese Prüfung stündlich weiter und merkt es auch dann, wenn die
+      # Veröffentlichung ein andermal danebengeht. Die Adresse kommt aus dem
+      # `canonical` der Seite; sie hier ein viertes Mal hinzuschreiben wäre
+      # genau die Art Doppelung, die still auseinanderläuft.
+      - name: Steht das Abzeichen wirklich im Netz?
+        if: steps.laden.outputs.live == 'ja'
+        run: |
+          adresse=$(grep -o 'rel="canonical" href="https://[^"/]*' docs/website/index.html | head -1 | sed 's|.*https://||')
+          echo "Sehe nach auf https://$adresse"
+          # Zehn Versuche über fünf Minuten. Der Veröffentlichungslauf braucht
+          # knapp zwei Minuten, und angestoßen wurde er eben erst — beim ersten
+          # Blick kann die alte Seite noch dastehen.
+          for versuch in $(seq 1 10); do
+            if curl -sS "https://$adresse" | grep -q 'apps.apple.com'; then
+              echo "::notice::Das Abzeichen verweist auf den Laden."
+              exit 0
+            fi
+            echo "Versuch $versuch: noch nicht da."
+            sleep 30
+          done
+          echo "::error::Die App ist freigegeben, aber https://$adresse verweist nach fünf Minuten nicht auf den Laden. Der Veröffentlichungslauf ist nicht durchgekommen."
+          exit 1

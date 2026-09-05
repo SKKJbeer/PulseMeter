@@ -9,6 +9,52 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.106.6 — 2026-09-05
+
+**Zählora ist im App Store.** Seit dem 4. September, 23:00 UTC, kostenlos, in
+Deutschland. Gelesen bei Apple selbst, nicht im eigenen Skript:
+
+```
+https://itunes.apple.com/lookup?id=6802262743&country=de
+Zählora – Zähler & Verbrauch | 1.0 | 2026-09-04T23:00:15Z | Gratis
+```
+
+**Und fünf Stunden lang sagte die eigene Website, es sei noch nicht so weit.**
+`live-schalten.yml` hat um 00:10 UTC richtig gemerkt, dass die Fassung auf
+`READY_FOR_SALE` steht, das Abzeichen umgelegt und gepusht — und ist danach rot
+geworden:
+
+```
+POST …/actions/workflows/website.yml/dispatches
+403 Resource not accessible by integration
+```
+
+Ein Push mit dem `GITHUB_TOKEN` löst absichtlich keinen weiteren Ablauf aus.
+Deshalb stößt der letzte Schritt die Veröffentlichung selbst an — und genau
+dafür fehlte `permissions: actions: write`. Der Commit war da, also sah es
+erledigt aus; dass der Lauf danach fehlschlug, hat niemand angesehen. Ergebnis:
+Die App stand im Laden, die Seite versprach sie für „bald" — der eine Zustand,
+gegen den es diesen Ablauf überhaupt gibt.
+
+Drei Änderungen daraus:
+
+- Die Berechtigung ist ergänzt.
+- Die Veröffentlichung hängt jetzt am **umgelegten Knopf**, nicht an der
+  Freigabe. Sonst hätte der Stundenplan von der Freigabe an jede Stunde eine
+  Veröffentlichung angestoßen, die nichts ändert.
+- **Am Ende wird die Seite abgerufen, nicht der Push gezählt.** Zehn Versuche
+  über fünf Minuten; findet sich der Verweis auf den Laden nicht, wird der Lauf
+  rot und sagt warum. Diese Prüfung läuft weiter stündlich mit — sie hätte den
+  Fehler binnen einer Stunde gemeldet.
+
+Die Adresse kommt dabei aus dem `canonical` der Seite. Sie ein viertes Mal
+hinzuschreiben wäre genau die Doppelung, die `check-strings.py` sonst
+zusammenhält.
+
+Nur Abläufe und Dokumente. Kein App-Code, kein Bau.
+
+---
+
 ## 0.106.5 — 2026-09-04
 
 **Ein Zweig, der sich aus der Cloud nicht löschen lässt — und die Meldung sagt

@@ -664,6 +664,33 @@ später noch richtig sind. Alles, was zu einem **Zeitpunkt** geschehen muss,
 bekommt zusätzlich `workflow_dispatch` und einen Satz in der Anleitung, dass am
 Tag X von Hand ausgelöst und **nachgesehen** wird.
 
+### Ein Push aus einem Ablauf löst keinen zweiten Ablauf aus
+
+Absicht von GitHub, damit sich Abläufe nicht gegenseitig im Kreis anstoßen: Was
+mit dem `GITHUB_TOKEN` gepusht wird, feuert keinen `on: push`. Wer die Folge
+trotzdem braucht, stößt den zweiten Ablauf ausdrücklich an — und **das** braucht
+`permissions: actions: write`. Ohne die Zeile antwortet GitHub mit
+
+```
+403 Resource not accessible by integration
+```
+
+Bei uns hat das die Freigabe im App Store einen halben Tag lang verdeckt: Der
+Ablauf legte das Abzeichen auf der Website richtig um und pushte, der
+Veröffentlichungslauf wurde nie angestoßen. Die App stand im Laden, die eigene
+Seite sagte „Bald im App Store" — genau der Zustand, gegen den es diesen Ablauf
+gibt.
+
+> **Ein Lauf, dessen sichtbares Ergebnis stimmt, wird für erfolgreich gehalten.**
+> Der Commit war da, also war die Sache erledigt — dass der Lauf danach rot
+> wurde, hat niemand angesehen. Ein Ablauf, der etwas nach außen bringt, prüft
+> deshalb am Ende das **Außen**: die Seite abrufen, nicht den Push zählen.
+
+Und die Bedingung des letzten Schritts hängt an der **Tat**, nicht am Anlass.
+Stand dort „wenn die App im Laden ist", stößt der Stundenplan von der Freigabe
+an jede Stunde eine Veröffentlichung an, die nichts ändert. Richtig ist „wenn
+dieser Lauf gerade etwas umgelegt hat".
+
 ### „Vorhanden" ist auch nicht „richtig"
 
 Die Stufe nach „vorhanden ist nicht wirkt", und sie kostet mehr, weil nichts

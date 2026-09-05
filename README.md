@@ -2,15 +2,22 @@
 
 Die App zur Erfassung, Analyse und Dokumentation von Zählerständen.
 
+**Im App Store:** [Zählora – Zähler & Verbrauch](https://apps.apple.com/de/app/id6802262743)
+— seit dem 4. September 2026, kostenlos.
+
 > **Positionierung:** Zählora ist das Haushaltsbuch für Verbrauch — du trägst eine Zahl ein,
 > und die App sagt dir, ob alles im Rahmen ist.
 
 ## Am Mac loslegen
 
 ```bash
-git clone https://github.com/SKKJbeer/Zählora.git
-cd Zählora && scripts/mac-start.sh
+git clone https://github.com/SKKJbeer/PulseMeter.git
+cd PulseMeter && scripts/mac-start.sh
 ```
+
+Der Ordner heißt weiter `PulseMeter`: Das Repository ist beim alten Namen
+geblieben, als die App im August zu Zählora wurde. Wer den Grund wissen will —
+`CLAUDE.md`, ganz oben.
 
 Das ist alles: Stand holen, Xcode-Projekt erzeugen, Push-Haken einrichten, alles
 prüfen, Screenshots ablegen. Ohne Terminal geht es auch — im Finder
@@ -92,7 +99,7 @@ iCloud-Abgleich wie Käufe lassen sich noch nicht ausprobieren.
 
 ## Status
 
-Version **0.106.5**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
+Version **0.106.6**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
 rechnet echt. Alle vier Bildschirme — Übersicht, Erfassung, Verlauf und Zähler —
 laufen als SwiftUI-App im Simulator und werden auf jedem Lauf fotografiert,
 hell und dunkel. Siehe [CHANGELOG.md](CHANGELOG.md).
@@ -112,7 +119,7 @@ ohne Verbindung zu deiner Maschine.
 
 ```bash
 curl -fsSL https://claude.ai/install.sh | bash   # einmalig, ohne Node
-cd Zählora
+cd PulseMeter
 claude                                           # und los
 ```
 

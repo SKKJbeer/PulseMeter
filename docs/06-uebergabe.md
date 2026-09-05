@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-09-04, Version 0.106.5
+Stand: 2026-09-04, Version 0.106.6
 
 ---
 
@@ -86,25 +86,56 @@ Tabelle im Baukasten unter „Die Prüfungen".
 
 ## Wo die Arbeit steht
 
-**`main` ist der aktuelle Stand**, Version 0.106.5. Es gibt keinen offenen
+**`main` ist der aktuelle Stand**, Version 0.106.6. Es gibt keinen offenen
 Arbeitszweig; alles ist zusammengeführt. `claude/setup-pruefung-4qyr2u` steht
 noch bei GitHub, vollständig in `main` — aus der Cloud lässt er sich nicht
 löschen (`HTTP 403`), von der Weboberfläche aus mit einem Klick.
 
-| | Stand am 4. September |
+| | Stand am 5. September |
 |---|---|
+| **App Store** | **Zählora 1.0 ist im Laden.** Freigegeben am 4. September, 23:00 UTC |
 | `PulseCore` | 238 Tests, grün |
 | Klick-Dummy | 264 Prüfungen, hell und dunkel, grün |
 | Website | 407 Prüfungen, grün, live auf `zaehlora.pages.dev` |
 | App-Build und Oberflächentests | grün auf dem letzten macOS-Lauf |
 | TestFlight | **Bau 26, VALID**, mit Testhinweisen |
-| App Store | `WAITING_FOR_REVIEW` — Fassung und Einreichung, beides gemessen |
-| App Store Connect | 18 Angaben stehen, 0 offen |
-| Käufe | 6 von 6 `READY_TO_SUBMIT` |
+| Käufe | 6 von 6, mit der Fassung eingereicht |
 | Länder | 175, Deutschland dabei |
-| Freigabe | `AFTER_APPROVAL` — geht sofort nach der Prüfung in den Laden |
 
 **Der Umfang von 1.0 ist vollständig.** Es fehlt nichts mehr am Produkt.
+
+### Im Laden seit dem 4. September, 23:00 UTC
+
+Nicht aus dem eigenen Skript gelesen, sondern von Apples öffentlichem
+Verzeichnis — der Stelle, die auch ein Käufer sieht:
+
+```
+https://itunes.apple.com/lookup?id=6802262743&country=de
+Zählora – Zähler & Verbrauch | 1.0 | 2026-09-04T23:00:15Z | Gratis
+```
+
+Die Adresse im Laden:
+`https://apps.apple.com/de/app/id6802262743`
+
+**Die Website hinkte einen halben Tag hinterher, und das war ein Fehler im
+Ablauf.** `live-schalten.yml` hat den Knopf um 00:10 UTC richtig umgelegt und
+gepusht — und ist danach rot geworden:
+
+```
+POST …/actions/workflows/website.yml/dispatches
+403 Resource not accessible by integration
+```
+
+Ein Push mit dem `GITHUB_TOKEN` löst keinen weiteren Ablauf aus; deshalb stößt
+der letzte Schritt die Veröffentlichung von Hand an — und genau dafür fehlte
+`actions: write`. Ergebnis: Der Knopf stand im Repository auf „an", im Netz
+weiter auf „Bald im App Store". Also der eine Zustand, den dieser Ablauf
+verhindern soll.
+
+Behoben in 0.106.6: die Berechtigung ergänzt, und die Veröffentlichung hängt
+jetzt am **umgelegten Knopf** statt an der Freigabe — sonst stieße der
+Stundenplan von der Freigabe an jede Stunde eine Veröffentlichung an, die nichts
+ändert.
 
 ### Abgelehnt in der Nacht zum 3. September
 
@@ -181,13 +212,8 @@ Fassung 1.0: WAITING_FOR_REVIEW
 Bei der Prüfung: WAITING_FOR_REVIEW
 ```
 
-Jetzt: warten, bis `READY_FOR_SALE` steht, dann `live-schalten.yml` von Hand
-auslösen und nachsehen, ob `zaehlora.pages.dev` das echte Store-Abzeichen zeigt
-statt „Bald im App Store".
-
-**Was die Ablehnung nicht bedeutet:** Bau 25 bleibt in TestFlight nutzbar, die
-Käufe bleiben `READY_TO_SUBMIT`, und die Preisstufe bleibt gesetzt. Es ist ein
-Rücklauf, kein Rückschritt.
+Danach ging es: Apple hat am 4. September freigegeben, keine weitere Rückfrage.
+Von der Ablehnung bis in den Laden waren es knapp zwei Tage.
 
 ---
 
@@ -220,15 +246,10 @@ Nebenfehler dabei, der es fast noch einmal verdeckt hätte: `(preis or "")` —
 `0.0 or ""` ist `""`, also fiel ausgerechnet die kostenlose Stufe durch den
 eigenen Filter.
 
-**Was jetzt noch kommt:**
-
-1. Apples Prüfung abwarten. Freigabe steht auf `AFTER_APPROVAL`, die App geht
-   also von selbst in den Laden.
-2. Nach `READY_FOR_SALE`: `live-schalten.yml` **von Hand** über
-   `workflow_dispatch` auslösen. Auf den Stundenplan ist kein Verlass, gemessen
-   einmal in sechs Stunden.
-3. `https://zaehlora.pages.dev` abrufen und prüfen, dass dort das Abzeichen mit
-   dem echten Verweis steht statt „Bald im App Store".
+Alle drei Schritte, die hier als „was jetzt noch kommt" standen, sind erledigt:
+Apple hat freigegeben, der Knopf ist umgelegt, die Seite verweist auf den Laden.
+`AFTER_APPROVAL` hat gehalten, was es verspricht — die App ging von selbst
+hinein, ohne dass jemand einen Knopf drücken musste.
 
 ---
 
