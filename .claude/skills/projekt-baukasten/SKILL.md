@@ -691,6 +691,36 @@ Stand dort „wenn die App im Laden ist", stößt der Stundenplan von der Freiga
 an jede Stunde eine Veröffentlichung an, die nichts ändert. Richtig ist „wenn
 dieser Lauf gerade etwas umgelegt hat".
 
+### Eine Warnung, die bei jedem Lauf dasteht, ist keine Warnung mehr
+
+Ein Bau meldete seit dem ersten Mal:
+
+```
+::warning::Die Berechtigungen stehen noch nicht vollständig. Der Bau fährt
+ohne sie — die App läuft, nur Widget und Abgleich bleiben aus.
+```
+
+Das war eine bewusste Entscheidung und zum Zeitpunkt der Entscheidung richtig:
+Die Eigennutzung war wichtiger als der Abgleich. Der Lauf endete grün, die
+Zeile stand unter zwölfhundert anderen, und sie stand dort **jedes Mal**.
+
+Zwei Bauten später ging die App in den Laden — mit einer Beschreibung, die das
+Widget bewirbt, und einer Kaufseite, die den Abgleich als kostenlos nennt.
+Beides konnte der ausgelieferte Bau nicht. Aufgefallen ist es nicht durch eine
+Prüfung, sondern durch eine beiläufige Frage vier Wochen später.
+
+> Der Anlass einer Warnung wechselt irgendwann die Bedeutung, die Warnung
+> nicht. **Wer einen bewussten Kompromiss als Warnung schreibt, notiert dazu,
+> wann er aufhört, einer zu sein** — und macht sie an dem Tag zum Fehler. Bei
+> uns: Vor dem Store fährt der Bau ohne Berechtigungen, seit dem Store hält er
+> an, und ein Haken beim Start lässt es trotzdem zu.
+
+Die zweite Hälfte der Lehre: **Was ein Ablauf nicht setzen kann, gehört in die
+Übergabe, nicht nur ins Protokoll.** Apple bietet für App-Gruppe und
+iCloud-Container keine Schnittstelle (404) — das ist kein Fehler, sondern eine
+Handarbeit, die jemand einmal tun muss. Sie stand in keiner Liste, die jemand
+liest, und wartete deshalb vier Wochen.
+
 ### Ein Schlüssel hat eine Rolle, und nicht jede Auskunft hängt an derselben
 
 Derselbe Schlüssel, der bei Apple die App anlegt, Käufe pflegt, Bilder hochlädt

@@ -43,6 +43,23 @@ on:
         description: "Was ist neu? Leer = aus CHANGELOG.md, seit dem letzten Bau."
         required: false
         default: ""
+      # **Seit 1.0 im Laden steht, ist ein Bau ohne Berechtigungen kein
+      # Kompromiss mehr, sondern ein gebrochenes Versprechen.**
+      #
+      # Bis Bau 26 fuhr der Lauf mit einer Warnung weiter, wenn App-Gruppe und
+      # iCloud-Container fehlten: „die App läuft, nur Widget und Abgleich
+      # bleiben aus". Das war richtig, solange nur der Gründer die App hatte.
+      # Bau 25 ging so in den Store — und dort steht in der Beschreibung „ein
+      # Feld auf dem Sperrbildschirm" und auf der Kaufseite „Abgleich zwischen
+      # deinen Geräten über iCloud". Beides konnte der ausgelieferte Bau nicht.
+      #
+      # Deshalb hält der Lauf jetzt an, und wer trotzdem einen Bau will, sagt
+      # es ausdrücklich.
+      ohne_berechtigungen:
+        description: "Auch bauen, wenn Widget und iCloud-Abgleich nicht mitgehen"
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -224,6 +241,19 @@ jobs:
         run: |
           pip3 install --quiet --break-system-packages "pyjwt[crypto]" requests pyflakes
           python3 scripts/asc-berechtigungen.py
+
+      # **Der Torwächter, den es bis Bau 26 nicht gab.**
+      #
+      # Das Skript darüber ist absichtlich keiner — es endet immer auf 0, weil
+      # es eine Verbesserung ist und nicht der Grund, warum ein Bau scheitert.
+      # Die Entscheidung, ob ein Bau ohne Widget und ohne Abgleich in Ordnung
+      # ist, gehört aber nicht ins Skript, sondern hierher: Vor dem Store war
+      # sie ja, seit dem Store ist sie nein.
+      - name: Gehen Widget und Abgleich mit?
+        if: steps.berechtigungen.outputs.bereit != 'ja' && inputs.ohne_berechtigungen != true
+        run: |
+          echo "::error::Dieser Bau brächte weder das Feld auf dem Sperrbildschirm noch den iCloud-Abgleich — beides steht im App Store in der Beschreibung und in der App auf der Kaufseite. Was fehlt, sagt der Schritt darüber; anzulegen ist es unter https://developer.apple.com/account/resources/identifiers/list. Wer trotzdem bauen will, setzt beim Start den Haken „Auch bauen, wenn Widget und iCloud-Abgleich nicht mitgehen\"."
+          exit 1
 
       - name: Verteilprofile anlegen
         env:

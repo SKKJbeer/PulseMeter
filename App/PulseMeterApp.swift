@@ -47,8 +47,18 @@ struct PulseMeterApp: App {
             // iCloud.
             container = lokal
         } else if let memory = try? PulseStore.container(inMemory: true, cloudKit: false) {
-            // Lieber flüchtig arbeiten als gar nicht starten. Der Nutzer sieht
-            // in der Übersicht, dass nichts gesichert wird.
+            // Lieber flüchtig arbeiten als gar nicht starten.
+            //
+            // **Hier stand „Der Nutzer sieht in der Übersicht, dass nichts
+            // gesichert wird". Das war nie gebaut.** Es gibt keine solche
+            // Zeile, in keiner Ansicht — der Satz beschrieb eine Absicht und
+            // las sich wie ein Zustand. Wer diese Stufe erreicht, verliert
+            // seine Eingaben beim Beenden und erfährt es nicht.
+            //
+            // Stehen bleibt sie trotzdem: Eine App, die gar nicht startet,
+            // ist schlechter. Der Hinweis gehört nachgebaut, bevor jemand
+            // diesen Fall erreicht — bisher hat ihn niemand erreicht, weil
+            // Stufe zwei auf jedem Gerät und in jedem Simulator greift.
             container = memory
         } else {
             fatalError("Der Datenspeicher ließ sich nicht anlegen.")

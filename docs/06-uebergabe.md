@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-09-05, Version 0.107.1
+Stand: 2026-09-05, Version 0.107.2
 
 ---
 
@@ -86,7 +86,7 @@ Tabelle im Baukasten unter „Die Prüfungen".
 
 ## Wo die Arbeit steht
 
-**`main` ist der aktuelle Stand**, Version 0.107.1. Es gibt keinen offenen
+**`main` ist der aktuelle Stand**, Version 0.107.2. Es gibt keinen offenen
 Arbeitszweig; alles ist zusammengeführt. `claude/setup-pruefung-4qyr2u` steht
 noch bei GitHub, vollständig in `main` — aus der Cloud lässt er sich nicht
 löschen (`HTTP 403`), von der Weboberfläche aus mit einem Klick.
@@ -102,7 +102,52 @@ löschen (`HTTP 403`), von der Weboberfläche aus mit einem Klick.
 | Käufe | 6 von 6, mit der Fassung eingereicht |
 | Länder | 175, Deutschland dabei |
 
-**Der Umfang von 1.0 ist vollständig.** Es fehlt nichts mehr am Produkt.
+**Der Umfang von 1.0 ist vollständig** — aber zwei gebaute Sachen kommen beim
+Nutzer nicht an. Siehe gleich darunter.
+
+### Was im Laden steht, kann kein iCloud und kein Widget
+
+**Der wichtigste offene Punkt.** Am 5. September in den Protokollen der Bauten
+25 und 26 nachgelesen, nicht vermutet:
+
+```
+Offen — das muss jemand im Portal anklicken:
+  · group.de.karjoth.pulsemeter:    keine Schnittstelle (404) — im Portal anlegen
+  · iCloud.de.karjoth.pulsemeter:   keine Schnittstelle (404) — im Portal anlegen
+
+::warning::Die Berechtigungen stehen noch nicht vollständig. Der Bau fährt
+ohne sie — die App läuft, nur Widget und iCloud-Abgleich bleiben aus.
+Berechtigungen bleiben leer.
+```
+
+Die **Fähigkeiten** an der App-ID stehen alle (`APP_GROUPS`, `ICLOUD`,
+`PUSH_NOTIFICATIONS` — „stand schon"). Was fehlt, sind die beiden **Kennungen
+selbst**, und für die bietet Apple keine Schnittstelle an. Also fährt jeder Bau
+ohne Berechtigungsdatei, und damit ohne App-Gruppe und ohne CloudKit.
+
+**Der Code ist vollständig.** `PulseStore.container(cloudKit: true)` ist die
+erste Stufe in `PulseMeterApp.init`, `.automatic` gegen die private Datenbank,
+Schema CloudKit-tauglich (alles optional, `Int64` statt `Double`). Es greift nur
+nie: Ohne Berechtigung scheitert Stufe eins, Stufe zwei ist derselbe Speicher
+ohne Abgleich, und die App läuft — still.
+
+**Und das bricht zwei Versprechen, die schon draußen sind:**
+
+| Wo | Was dort steht |
+|---|---|
+| App-Store-Beschreibung | „ein Feld auf dem Sperrbildschirm zeigt es auch ohne Mitteilung" |
+| Kaufseite in der App | „Abgleich zwischen deinen Geräten über iCloud" (unter „kostet nie etwas") |
+| Website | „Ein Feld auf dem Sperrbildschirm zeigt, ob eine Ablesung fällig ist" |
+
+**Was zu tun ist, und nur der Gründer kann es:**
+<https://developer.apple.com/account/resources/identifiers/list> → *App Groups*
+mit `group.de.karjoth.pulsemeter`, *iCloud Containers* mit
+`iCloud.de.karjoth.pulsemeter`. Danach ein neuer Bau — der Lauf liest selbst
+nach und zieht die Dateien dann an — und eine Fassung 1.0.1 in den Store.
+
+Damit das nicht ein drittes Mal unbemerkt durchgeht, **hält `testflight.yml`
+seit 0.107.2 an**, wenn die Berechtigungen nicht mitgehen. Es gibt einen Haken
+zum Übergehen; bis Bau 26 gab es nur eine Warnung, und die hat niemand gelesen.
 
 ### Aufrufe und Ladungen — `zahlen.yml`
 

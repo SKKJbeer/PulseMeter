@@ -9,6 +9,60 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.107.2 — 2026-09-05
+
+**Die App im Laden kann keinen iCloud-Abgleich und kein Widget. Beides ist
+gebaut, beides steht in der Store-Beschreibung, und beides ist im
+ausgelieferten Bau nicht drin.**
+
+Aufgefallen an einer harmlosen Frage — „wie funktioniert das mit dem
+iCloud-Abgleich eigentlich, ich hab's noch nie gesehen". Die Antwort stand in
+den Protokollen der Bauten 25 und 26, seit dem 29. August:
+
+```
+Offen — das muss jemand im Portal anklicken:
+  · group.de.karjoth.pulsemeter:   keine Schnittstelle (404) — im Portal anlegen
+  · iCloud.de.karjoth.pulsemeter:  keine Schnittstelle (404) — im Portal anlegen
+
+::warning::Die Berechtigungen stehen noch nicht vollständig.
+Berechtigungen bleiben leer.
+```
+
+Die **Fähigkeiten** an der App-ID stehen alle. Was fehlt, sind die beiden
+**Kennungen** — App-Gruppe und iCloud-Container —, und dafür bietet Apple keine
+Schnittstelle. Also fährt jeder Bau ohne Berechtigungsdatei: Stufe eins des
+Speichers scheitert, Stufe zwei greift, die App läuft und gleicht nichts ab.
+Das Widget liest ohne App-Gruppe im falschen Ordner und bleibt leer.
+
+**Warum es niemandem auffiel.** Der Lauf hat es jedes Mal gesagt — als
+`::warning::` unter zwölfhundert Zeilen Bauprotokoll, in einem Lauf, der grün
+endete. Und zum Zeitpunkt der Entscheidung war sie richtig: „die zwei Wochen
+Eigennutzung sind wichtiger als der Abgleich" (`docs/07-v1-plan.md`). Nur hat
+sich die Lage geändert, als 1.0 in den Store ging, und die Warnung ist die
+geblieben, die sie war.
+
+> **Eine Warnung, die bei jedem Lauf dasteht, ist keine Warnung mehr.** Sie
+> gehört an dem Tag zum Fehler gemacht, an dem ihr Anlass die Bedeutung
+> wechselt — sonst wird sie zur Landschaft.
+
+Also: **`testflight.yml` hält jetzt an**, wenn Widget und Abgleich nicht
+mitgehen. Wer trotzdem bauen will, setzt beim Start den Haken „Auch bauen, wenn
+Widget und iCloud-Abgleich nicht mitgehen" — die Entscheidung bleibt möglich,
+sie ist nur nicht mehr die stille Vorgabe.
+
+**Und ein Kommentar, der eine Absicht als Zustand ausgab.** In
+`PulseMeterApp.init` stand bei der dritten Speicherstufe: „Der Nutzer sieht in
+der Übersicht, dass nichts gesichert wird." Es gibt keine solche Zeile, in
+keiner Ansicht. Wer diese Stufe erreicht, verliert seine Eingaben beim Beenden
+und erfährt es nicht. Der Kommentar sagt das jetzt; die Stufe bleibt, weil eine
+App, die gar nicht startet, schlechter ist, und erreicht hat sie bisher niemand.
+
+Zu tun bleibt, was nur der Gründer kann: die zwei Kennungen unter
+<https://developer.apple.com/account/resources/identifiers/list> anlegen.
+Danach zieht der nächste Bau die Berechtigungen von selbst an.
+
+---
+
 ## 0.107.1 — 2026-09-05
 
 **Mein eigenes Skript hat den Fehler gemacht, den diese Datei seit Wochen
