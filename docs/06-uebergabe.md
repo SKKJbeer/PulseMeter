@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-09-05, Version 0.108.2
+Stand: 2026-09-05, Version 0.108.3
 
 ---
 
@@ -86,7 +86,7 @@ Tabelle im Baukasten unter „Die Prüfungen".
 
 ## Wo die Arbeit steht
 
-**`main` ist der aktuelle Stand**, Version 0.108.2. Es gibt keinen offenen
+**`main` ist der aktuelle Stand**, Version 0.108.3. Es gibt keinen offenen
 Arbeitszweig; alles ist zusammengeführt. `claude/setup-pruefung-4qyr2u` steht
 noch bei GitHub, vollständig in `main` — aus der Cloud lässt er sich nicht
 löschen (`HTTP 403`), von der Weboberfläche aus mit einem Klick.
@@ -154,7 +154,14 @@ ohne Abgleich, und die App läuft — still.
 Der zweite Schritt sieht aus wie eine Wiederholung des ersten und ist keine:
 Ein Verteilprofil trägt nur, was die **App-ID** trägt. Ohne ihn scheitert das
 Signieren mit „Provisioning profile … doesn't match the entitlements file's
-values" — so geschehen bei Bau 28.
+values" — so geschehen bei Bau 28 und, wortgleich, bei Bau 29.
+
+> **Und warum Schritt 2 aussieht, als wäre er schon getan:** Das Häkchen bei
+> „App Groups" und bei „iCloud" **ist** gesetzt — `asc-berechtigungen.py` setzt
+> es bei jedem Lauf über die Schnittstelle („ICLOUD stand schon"). Wer die
+> App-ID öffnet, sieht also zwei angehakte Zeilen und hält die Sache für
+> erledigt. Leer ist die Liste **hinter** dem Knopf *Configure* daneben: welche
+> Gruppe, welcher Behälter. Genau die kann das Skript nicht füllen.
 
 Danach den Lauf neu starten; das Profil wird bei jedem Lauf neu erzeugt. Und
 dann eine Fassung 1.0.1 in den Store.

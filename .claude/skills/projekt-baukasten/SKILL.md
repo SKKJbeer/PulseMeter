@@ -752,6 +752,17 @@ der zweite sieht aus wie eine Wiederholung des ersten.
 > Fehlermeldung — sondern eine Meldung an ganz anderer Stelle, zwanzig Minuten
 > später.
 
+**Verschärfend kommt hinzu, dass die Oberfläche den zweiten Schritt als getan
+ausweist.** Das Häkchen an der Fähigkeit setzt das Einrichtungsskript selbst,
+über die Schnittstelle. Wer danach die Kennung im Portal öffnet, sieht eine
+angehakte Zeile — und die Liste dahinter, die sagt **welche** Gruppe und
+**welcher** Behälter, ist leer und hinter einem zweiten Knopf versteckt. Der
+Gründer hat den Schritt zweimal für erledigt gehalten, völlig zu Recht.
+
+> Wo ein Skript die halbe Einrichtung übernimmt, beschreibt die Anleitung nicht
+> nur den Rest, sondern auch **woran man den Rest erkennt** — sonst sieht
+> „halb" wie „ganz" aus.
+
 Dasselbe Muster ist in diesem Projekt schon dreimal aufgetreten: Der Kauf
 existiert und hängt nicht an der Fassung; der Bau ist hochgeladen und hängt
 nicht an der Fassung; die Preisstufe existiert und ist nicht gewählt.

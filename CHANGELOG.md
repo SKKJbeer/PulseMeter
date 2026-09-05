@@ -9,6 +9,35 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.108.3 — 2026-09-05
+
+**Warum der offene Handgriff aussieht, als wäre er getan.**
+
+Der Gründer hat die beiden Kennungen angelegt und danach zweimal gefragt, ob
+das nicht schon erledigt sei. Es war eine berechtigte Frage, und die Antwort
+liegt an uns: Bau 29, wortgleich mit Bau 28:
+
+```
+error: Provisioning profile "… App Store" doesn't match the entitlements
+file's values for the com.apple.developer.icloud-container-identifiers and
+com.apple.security.application-groups entitlements.
+```
+
+**Das Häkchen bei „App Groups" und „iCloud" ist gesetzt — von uns.**
+`asc-berechtigungen.py` setzt es bei jedem Lauf über die Schnittstelle und
+meldet „stand schon". Wer die App-ID im Portal öffnet, sieht deshalb zwei
+angehakte Zeilen und hält die Sache für abgeschlossen. Leer ist die Liste
+**hinter** dem Knopf *Configure* daneben: welche Gruppe, welcher Behälter. Und
+genau die kann das Skript nicht füllen, weil Apple dafür keinen Pfad anbietet.
+
+> Wo ein Skript die halbe Einrichtung übernimmt, beschreibt die Anleitung nicht
+> nur den Rest, sondern auch **woran man den Rest erkennt** — sonst sieht
+> „halb" wie „ganz" aus.
+
+Nachgetragen in der Übergabe und im Baukasten. Nur Dokumente.
+
+---
+
 ## 0.108.2 — 2026-09-05
 
 **Anlegen ist nicht zuordnen.** Bau 28 kam zum ersten Mal bis zum Signieren —
