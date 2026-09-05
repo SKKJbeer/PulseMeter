@@ -12,6 +12,14 @@ Berechtigungen weiter — so wie bisher. Erst wenn am Ende wirklich alles steht,
 meldet das Skript `bereit=ja`, und nur dann zieht der Bau die
 Berechtigungsdateien an.
 
+**Was dieses Skript prüfen kann und was nicht.** Die *Fähigkeiten* an einer
+App-ID — `APP_GROUPS`, `ICLOUD`, `PUSH_NOTIFICATIONS` — stehen in der
+Schnittstelle und werden gesetzt und nachgelesen. Die *Kennungen* dahinter, die
+App-Gruppe `group.…` und der iCloud-Behälter `iCloud.…`, gibt es dort **nicht**:
+Jeder Pfad darauf antwortet 404, unabhängig davon, ob sie angelegt sind. Sie
+zählen deshalb nicht gegen `bereit`, sondern werden als „nicht prüfbar"
+ausgewiesen. Die Probe darauf ist das Signieren.
+
 **Warum das Ergebnis nachgelesen und nicht geglaubt wird.** Eine Antwort mit
 201 sagt, dass Apple die Anfrage angenommen hat. Ob die App-ID danach das
 kann, was die Berechtigungsdatei verlangt, steht in der App-ID — also wird sie
@@ -50,6 +58,23 @@ GEBRAUCHT = {
 
 offen: list[str] = []
 getan: list[str] = []
+
+# **„Weiß ich nicht" ist nicht „fehlt", und die Unterscheidung hat einen Bau
+# gekostet.** App-Gruppe und iCloud-Behälter gibt es in Apples Schnittstelle
+# nicht — jede Abfrage darauf antwortet mit 404, **egal ob sie angelegt sind
+# oder nicht**. Der 404 kommt vom Pfad, nicht vom Gegenstand.
+#
+# Bis 0.108.1 landeten beide trotzdem in `offen`, und damit konnte `bereit`
+# niemals „ja" werden. Solange das nur eine Warnung war, fiel es nicht auf;
+# als daraus in 0.107.2 ein Torwächter wurde, sperrte er jeden Bau aus — auch
+# nachdem der Gründer beide Kennungen angelegt hatte. Eine Bedingung, die nie
+# eintreten kann, sieht aus wie eine, die zu Recht nicht eintritt.
+#
+# Was hier nicht prüfbar ist, wird deshalb benannt und **nicht gewertet**. Die
+# echte Probe ist der Bau selbst: Fehlt eine der beiden Kennungen wirklich,
+# passt das Verteilprofil nicht zur Berechtigungsdatei, und `xcodebuild
+# archive` bricht ab. Das ist die Aussage, die zählt.
+unbekannt: list[str] = []
 
 
 def anmeldung() -> str:
@@ -194,8 +219,12 @@ def sammlung(apple: Apple, pfad: str, bezeichner: str, name: str):
                 getan.append(f"{bezeichner} ist angelegt")
                 return eintrag["id"]
     elif stand in (404, 401, 403):
-        offen.append(f"{bezeichner}: Apple bietet dafür keine Schnittstelle "
-                     f"({stand}) — im Portal anlegen")
+        # Nicht in `offen`: Der Fehlercode gilt dem Pfad, nicht der Kennung —
+        # siehe die Begründung bei `unbekannt` oben. Ob sie existiert, sagt
+        # erst der Bau.
+        unbekannt.append(f"{bezeichner}: über die Schnittstelle nicht prüfbar "
+                         f"({stand}) — im Portal anzulegen, falls es sie noch "
+                         f"nicht gibt")
         return None
 
     stand, antwort = apple.anlegen(pfad, {"data": {
@@ -291,10 +320,17 @@ def melden(bereit: bool) -> None:
         for zeile in dict.fromkeys(offen):
             print(f"  · {zeile}")
         print("\n  https://developer.apple.com/account/resources/identifiers/list")
+    if unbekannt:
+        print("\nNicht prüfbar — Apple hat dafür keine Schnittstelle:")
+        for zeile in dict.fromkeys(unbekannt):
+            print(f"  · {zeile}")
+        print("  Ob es sie gibt, sagt der Bau: Ohne sie passt das Verteilprofil "
+              "nicht zur Berechtigungsdatei.")
 
     if bereit:
-        print("\n::notice::Alle Berechtigungen stehen. Der Bau nimmt die "
-              "Berechtigungsdateien mit.")
+        print("\n::notice::Die Berechtigungen an den App-IDs stehen. Der Bau "
+              "nimmt die Berechtigungsdateien mit; ob App-Gruppe und "
+              "iCloud-Behälter wirklich angelegt sind, zeigt das Signieren.")
     else:
         print("\n::warning::Die Berechtigungen stehen noch nicht vollständig. "
               "Der Bau fährt ohne sie — die App läuft, nur Widget und "

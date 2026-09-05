@@ -9,6 +9,46 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.108.1 — 2026-09-05
+
+**Mein Torwächter von gestern hing an einer Bedingung, die nie eintreten
+kann.** Bau 27 ist daran gescheitert — nachdem der Gründer die beiden
+Kennungen im Portal angelegt hatte:
+
+```
+Offen — das muss jemand im Portal anklicken:
+  · group.de.karjoth.pulsemeter:  keine Schnittstelle (404)
+  · iCloud.de.karjoth.pulsemeter: keine Schnittstelle (404)
+```
+
+**Der 404 gilt dem Pfad, nicht der Kennung.** App-Gruppe und iCloud-Behälter
+gibt es in Apples Schnittstelle nicht; jede Abfrage darauf antwortet 404,
+**egal ob sie angelegt sind oder nicht**. Beide landeten trotzdem in der Liste
+„offen", und damit konnte `bereit=ja` niemals herauskommen.
+
+Solange das nur eine Warnung war, ist es zwanzig Bauten lang nicht aufgefallen.
+In 0.107.2 habe ich daraus einen Torwächter gemacht — und der sperrte damit
+jeden Bau aus, für immer, unabhängig davon, was im Portal steht.
+
+> **Eine Bedingung, die nie eintreten kann, sieht aus wie eine, die zu Recht
+> nicht eintritt.** Steht genau so seit Wochen im Baukasten. Wer eine Warnung
+> zum Fehler befördert, prüft zuerst, ob ihr Signal überhaupt umschlagen kann.
+
+Behoben, und die Unterscheidung ist die eigentliche Änderung:
+
+| | Bedeutet | Zählt gegen `bereit`? |
+|---|---|---|
+| **Offen** | nachgelesen und fehlt wirklich | ja |
+| **Nicht prüfbar** | Apple hat dafür keinen Pfad | **nein** |
+
+Was nicht prüfbar ist, wird weiterhin genannt — nur eben als das, was es ist.
+**Die Probe darauf ist das Signieren:** Fehlt eine der beiden Kennungen
+wirklich, passt das Verteilprofil nicht zur Berechtigungsdatei und
+`xcodebuild archive` bricht ab. Das ist eine Aussage über die Welt; ein 404 auf
+einen Pfad, den es nicht gibt, ist keine.
+
+---
+
 ## 0.108.0 — 2026-09-05
 
 **Der erste Bau, der den iCloud-Abgleich und das Widget wirklich mitbringt.**

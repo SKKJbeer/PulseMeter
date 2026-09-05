@@ -715,6 +715,23 @@ Prüfung, sondern durch eine beiläufige Frage vier Wochen später.
 > uns: Vor dem Store fährt der Bau ohne Berechtigungen, seit dem Store hält er
 > an, und ein Haken beim Start lässt es trotzdem zu.
 
+**Und dann ist die Beförderung selbst danebengegangen.** Der neue Torwächter
+hing an einem `bereit=ja`, das nie herauskommen konnte: Zwei der geprüften
+Dinge — eine App-Gruppe und ein iCloud-Behälter — gibt es in Apples
+Schnittstelle überhaupt nicht, jeder Pfad darauf antwortet 404. Der Code
+zählte das als „fehlt". Solange es eine Warnung war, fiel es zwanzig Bauten
+lang nicht auf; als Torwächter sperrte es sofort jeden Bau aus, auch nachdem
+beide Kennungen wirklich angelegt waren.
+
+> **Wer eine Warnung zum Fehler befördert, prüft zuerst, ob ihr Signal
+> überhaupt umschlagen kann.** Ein Zustand, der nie eintritt, ist von einem,
+> der zu Recht nicht eintritt, im Protokoll nicht zu unterscheiden.
+
+Die Bauregel daraus: **„fehlt" und „nicht prüfbar" sind zwei Listen, nicht
+eine.** Nur die erste darf gegen ein Ergebnis zählen. Und wo die Gegenseite
+keine Auskunft gibt, ist die Probe die Handlung selbst — hier das Signieren,
+das ohne die Kennungen an einem unpassenden Profil scheitert.
+
 Die zweite Hälfte der Lehre: **Was ein Ablauf nicht setzen kann, gehört in die
 Übergabe, nicht nur ins Protokoll.** Apple bietet für App-Gruppe und
 iCloud-Container keine Schnittstelle (404) — das ist kein Fehler, sondern eine

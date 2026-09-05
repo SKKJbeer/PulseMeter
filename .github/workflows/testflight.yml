@@ -249,10 +249,18 @@ jobs:
       # Die Entscheidung, ob ein Bau ohne Widget und ohne Abgleich in Ordnung
       # ist, gehört aber nicht ins Skript, sondern hierher: Vor dem Store war
       # sie ja, seit dem Store ist sie nein.
+      #
+      # **Der Torwächter darf nur auf Prüfbares hören.** In 0.107.2 tat er das
+      # nicht: `bereit` war auch dann „nein", wenn nur die App-Gruppe und der
+      # iCloud-Behälter nicht **abfragbar** waren — und die sind es nie, Apple
+      # hat dafür keinen Pfad. Die Bedingung konnte also nie eintreten, und
+      # Bau 27 lief genau deshalb gegen die Wand, nachdem der Gründer beide
+      # Kennungen angelegt hatte. Seit 0.108.1 zählt nur noch, was wirklich
+      # nachlesbar ist; die beiden Kennungen prüft das Signieren.
       - name: Gehen Widget und Abgleich mit?
         if: steps.berechtigungen.outputs.bereit != 'ja' && inputs.ohne_berechtigungen != true
         run: |
-          echo "::error::Dieser Bau brächte weder das Feld auf dem Sperrbildschirm noch den iCloud-Abgleich — beides steht im App Store in der Beschreibung und in der App auf der Kaufseite. Was fehlt, sagt der Schritt darüber; anzulegen ist es unter https://developer.apple.com/account/resources/identifiers/list. Wer trotzdem bauen will, setzt beim Start den Haken „Auch bauen, wenn Widget und iCloud-Abgleich nicht mitgehen\"."
+          echo "::error::An den App-IDs fehlt eine Fähigkeit, die die Berechtigungsdateien verlangen — welche, sagt der Schritt darüber unter „Offen\". Ohne sie brächte dieser Bau weder das Feld auf dem Sperrbildschirm noch den iCloud-Abgleich, und beides steht im App Store in der Beschreibung und in der App auf der Kaufseite. Anzulegen unter https://developer.apple.com/account/resources/identifiers/list. Wer trotzdem bauen will, setzt beim Start den Haken „Auch bauen, wenn Widget und iCloud-Abgleich nicht mitgehen\"."
           exit 1
 
       - name: Verteilprofile anlegen
