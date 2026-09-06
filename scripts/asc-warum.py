@@ -366,10 +366,21 @@ def main() -> int:
     #
     # Der Grund ist, dass „Fähigkeit eingeschaltet" und „Kennung zugeordnet"
     # zwei verschiedene Dinge sind — und der Einrichtungslauf nur das erste
-    # prüft. Deshalb hier die **rohen** Einträge samt `settings`: Ob dort die
-    # Gruppe und der Behälter auftauchen, ist die einzige Auskunft, die von
-    # außen erhältlich ist, ohne einen Bau von zwanzig Minuten zu verbrennen.
+    # prüft.
+    #
+    # **Hier stand, der `settings`-Block zeige die Zuordnung. Er tut es nicht.**
+    # Am 6. September gemessen, nachdem Bau 32 mit Berechtigungen durchgegangen
+    # war — die Zuordnung stand also nachweislich: `APP_GROUPS` kam weiter ohne
+    # `settings` zurück, und bei `ICLOUD` stand nur `ICLOUD_VERSION`, kein
+    # Behälter. Der Block trägt die **Einstellungen** einer Fähigkeit, nicht die
+    # Kennungen dahinter; die gibt Apples Schnittstelle nirgends her.
+    #
+    # Die Ausgabe bleibt trotzdem: Sie zeigt, welche Fähigkeiten überhaupt
+    # gesetzt sind, und das ist die Hälfte, die prüfbar ist. Für die andere
+    # Hälfte gibt es genau eine Probe, und das ist das Signieren.
     print("\n── Die Fähigkeiten der App-IDs, roh")
+    print("   (Ob die Kennungen zugeordnet sind, steht hier NICHT — das sagt "
+          "nur ein Bau.)")
     for bezeichner in (BUNDLE, f"{BUNDLE}.widget"):
         stand, antwort = holen("v1/bundleIds",
                                **{"filter[identifier]": bezeichner, "limit": 10})
@@ -399,7 +410,7 @@ def main() -> int:
             if einstellungen:
                 print(f"       {art}: {json.dumps(einstellungen, ensure_ascii=False)}")
             else:
-                print(f"       {art}: ohne Zuordnung ← hier stünde die Kennung")
+                print(f"       {art}: eingeschaltet, ohne Einstellungen")
 
     # **Das Wichtigste steht zum Schluss, und das ist kein Geschmack.**
     # Ein Protokoll eines Laufs wird von hinten gelesen — die Werkzeuge liefern

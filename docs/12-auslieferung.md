@@ -181,9 +181,12 @@ Und nach jedem Zuordnen das **Save oben rechts**, samt Rückfrage „Modify App
 Capabilities". Ohne das äußere Speichern sieht die Auswahl getroffen aus und ist
 es nicht — daran ist es zweimal gescheitert.
 
-Woran man sieht, dass es steht: `einreichen.yml` mit `warum` gibt seit 0.108.4
-die Fähigkeiten roh aus. Ohne Zuordnung steht dort
-`APP_GROUPS: ohne Zuordnung ← hier stünde die Kennung`.
+**Woran man sieht, dass es steht: an nichts außer einem Bau.** `warum` zeigt
+seit 0.108.4 die Fähigkeiten roh — welche eingeschaltet sind, sieht man dort,
+welche Kennung ihnen zugeordnet ist, nicht. Am 6. September gegengeprüft,
+nachdem Bau 32 durchgegangen war: Die Ausgabe sah aus wie vorher. Apples
+Schnittstelle gibt die Zuordnung nirgends her; nur das Signieren beantwortet
+die Frage.
 
 Derselbe Lauf hat einen Fehler im Skript aufgedeckt, der teurer hätte werden
 können als die 404er: Das Nachlesen gab bei einer Fehlantwort eine **leere

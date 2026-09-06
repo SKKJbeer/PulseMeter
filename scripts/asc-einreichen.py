@@ -541,7 +541,14 @@ def einreichen(apple: Apple, app_id: str, fassung) -> int:
             weg = apple.loeschen(f"v1/reviewSubmissions/{einreichung}")
             print(f"  · leere Einreichung wieder entfernt (Antwort {weg})")
         return 1
-    print("  ✓ Fassung 1.0 der Einreichung hinzugefügt")
+    # **Der Satz nennt, was hinzugefügt wurde, nicht was einmal fest dastand.**
+    # Hier war „Fassung 1.0" hineingeschrieben, weil es damals nur eine gab.
+    # Beim Einreichen von 1.0.1 meldete der Lauf deshalb „Fassung 1.0 der
+    # Einreichung hinzugefügt" — hinzugefügt wurde 1.0.1, und nur der Satz war
+    # falsch. Eine Meldung, die eine andere Sache nennt als die, die geschah,
+    # ist schlimmer als keine: Sie wird geglaubt.
+    print(f"  ✓ Fassung {feld(fassung, 'versionString')} der Einreichung "
+          f"hinzugefügt")
     return absenden(apple, einreichung)
 
 

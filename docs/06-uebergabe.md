@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-09-06, Version 0.110.0
+Stand: 2026-09-06, Version 0.110.1
 
 ---
 
@@ -86,7 +86,7 @@ Tabelle im Baukasten unter „Die Prüfungen".
 
 ## Wo die Arbeit steht
 
-**`main` ist der aktuelle Stand**, Version 0.110.0. Es gibt keinen offenen
+**`main` ist der aktuelle Stand**, Version 0.110.1. Es gibt keinen offenen
 Arbeitszweig; alles ist zusammengeführt. `claude/setup-pruefung-4qyr2u` steht
 noch bei GitHub, vollständig in `main` — aus der Cloud lässt er sich nicht
 löschen (`HTTP 403`), von der Weboberfläche aus mit einem Klick.
@@ -126,16 +126,29 @@ Jedes Mal gefolgt vom **Save oben rechts**; an dessen Ausbleiben ist es zweimal
 gescheitert. Die Bauten 27 bis 31 sind dabei verbraucht worden. Ausführlich in
 `docs/12-auslieferung.md`, Abschnitt 3.4.
 
-Nachprüfbar seit 0.108.4: `einreichen.yml` mit `warum` gibt die Fähigkeiten der
-App-IDs roh aus. Fehlt die Zuordnung, steht dort
-`APP_GROUPS: ohne Zuordnung ← hier stünde die Kennung`.
+**Nachprüfbar ist es nicht, und das ist der Rest des Befunds.** `warum` gibt
+die Fähigkeiten der App-IDs jetzt roh aus — dort steht, welche eingeschaltet
+sind, aber **nicht**, welche Kennung ihnen zugeordnet ist. Am 6. September
+gegengeprüft, nachdem Bau 32 mit Berechtigungen durchgegangen war: `APP_GROUPS`
+kam weiter ohne Einstellungen zurück. Der Block trägt die Einstellungen einer
+Fähigkeit, nicht die Kennungen dahinter. Die Probe auf die Zuordnung ist und
+bleibt das Signieren.
 
-**Was jetzt noch offen ist: der Laden.** Dort steht weiterhin **Bau 25** — ohne
-Abgleich, ohne Widget, und ohne die Kostenspalten und das Erklärblatt aus
-Bau 26. Nächster Schritt ist eine Fassung **1.0.1** mit Bau 32.
-`asc-einreichung.py` hat `versionString` heute noch fest auf `"1.0"` stehen
-(Zeile 391 und 619); das gehört zu einem Aufrufwert gemacht, bevor die Fassung
-angelegt werden kann.
+### Fassung 1.0.1 ist bei Apple — eingereicht am 6. September, 05:53 UTC
+
+```
+Fassung 1.0.1: WAITING_FOR_REVIEW, releaseType AFTER_APPROVAL
+reviewSubmissions 68046b63 — submittedDate 2026-09-06T05:53:26, WAITING_FOR_REVIEW
+   ⇒ beigefügt: appStoreVersions d0e7e473 {'versionString': '1.0.1'}
+```
+
+Darin Bau 32, also der erste mit iCloud-Abgleich und Widget, dazu die
+Kostenspalten und das Erklärblatt aus Bau 26. Die Versionshinweise stehen in
+`docs/09-appstore.md` unter „Für 1.0.1"; sie sagen bei iCloud und
+Sperrbildschirm „läuft jetzt wirklich" und nicht „neu".
+
+Bis Apple freigibt, steht im Laden weiter Bau 25. `AFTER_APPROVAL` heißt: Es
+geht danach von selbst hinein, niemand muss einen Knopf drücken.
 
 ### Aufrufe und Ladungen — `zahlen.yml`
 

@@ -9,6 +9,51 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.110.1 — 2026-09-06
+
+**Fassung 1.0.1 ist bei Apple.** Eingereicht um 05:53 UTC, mit Bau 32:
+
+```
+Fassung 1.0.1: WAITING_FOR_REVIEW, releaseType AFTER_APPROVAL
+reviewSubmissions 68046b63 — submittedDate 2026-09-06T05:53:26
+   ⇒ beigefügt: appStoreVersions d0e7e473 {'versionString': '1.0.1'}
+```
+
+Zwei Fehler dabei gefunden, beide in dem, was **ich** über die Sache gesagt
+habe, nicht in dem, was geschah.
+
+**Der Lauf meldete „Fassung 1.0 der Einreichung hinzugefügt".** Hinzugefügt
+wurde 1.0.1 — der Satz war fest hineingeschrieben, aus der Zeit, als es nur
+eine Fassung gab. Wer das Protokoll liest, glaubt ihm; deshalb ist der
+Nachweis nicht aus diesem Satz gekommen, sondern aus der Diagnose, die den
+beigefügten Datensatz zeigt. Der Satz nennt jetzt, was tatsächlich hinzugefügt
+wurde.
+
+**Und die Fähigkeitsausgabe von gestern zeigt nicht, was ich behauptet habe.**
+In 0.109.0 stand, sie mache die fehlende Zuordnung sichtbar
+(`APP_GROUPS: ohne Zuordnung ← hier stünde die Kennung`). Am 6. September
+gegengeprüft, nachdem Bau 32 mit Berechtigungen durchgegangen war, die
+Zuordnung also nachweislich stand:
+
+```
+· de.karjoth.pulsemeter: 4 Fähigkeiten
+    ICLOUD: [{"key": "ICLOUD_VERSION", "options": [{"key": "XCODE_6"}]}]
+    APP_GROUPS: ohne Zuordnung ← hier stünde die Kennung
+```
+
+Dieselbe Ausgabe wie im nicht zugeordneten Zustand. Der `settings`-Block trägt
+die **Einstellungen** einer Fähigkeit, nicht die Kennungen dahinter — die gibt
+Apples Schnittstelle nirgends her. Eine Prüfung, die im richtigen und im
+falschen Zustand dasselbe sagt, prüft nichts.
+
+Die Ausgabe bleibt, weil die eingeschalteten Fähigkeiten wirklich dort stehen —
+aber sie behauptet nichts mehr über die Zuordnung, und darüber steht jetzt eine
+Zeile, die das ausdrücklich sagt. Die Probe darauf ist und bleibt das
+Signieren. Berichtigt in `06-uebergabe.md` und `12-auslieferung.md`, wo dieselbe
+Behauptung stand.
+
+---
+
 ## 0.110.0 — 2026-09-06
 
 **Die Fassung wird jetzt gesagt, nicht geraten.** Voraussetzung für 1.0.1, und
