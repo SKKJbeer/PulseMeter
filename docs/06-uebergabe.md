@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-09-05, Version 0.108.4
+Stand: 2026-09-06, Version 0.109.0
 
 ---
 
@@ -86,98 +86,56 @@ Tabelle im Baukasten unter „Die Prüfungen".
 
 ## Wo die Arbeit steht
 
-**`main` ist der aktuelle Stand**, Version 0.108.4. Es gibt keinen offenen
+**`main` ist der aktuelle Stand**, Version 0.109.0. Es gibt keinen offenen
 Arbeitszweig; alles ist zusammengeführt. `claude/setup-pruefung-4qyr2u` steht
 noch bei GitHub, vollständig in `main` — aus der Cloud lässt er sich nicht
 löschen (`HTTP 403`), von der Weboberfläche aus mit einem Klick.
 
-| | Stand am 5. September |
+| | Stand am 6. September |
 |---|---|
 | **App Store** | **Zählora 1.0 ist im Laden.** Freigegeben am 4. September, 23:00 UTC |
 | `PulseCore` | 238 Tests, grün |
 | Klick-Dummy | 264 Prüfungen, hell und dunkel, grün |
 | Website | 407 Prüfungen, grün, live auf `zaehlora.pages.dev` |
 | App-Build und Oberflächentests | grün auf dem letzten macOS-Lauf |
-| TestFlight | **Bau 26, VALID**, mit Testhinweisen |
+| TestFlight | **Bau 32, VALID** — der erste mit iCloud-Abgleich und Widget |
 | Käufe | 6 von 6, mit der Fassung eingereicht |
 | Länder | 175, Deutschland dabei |
 
 **Der Umfang von 1.0 ist vollständig** — aber zwei gebaute Sachen kommen beim
 Nutzer nicht an. Siehe gleich darunter.
 
-### Was im Laden steht, kann kein iCloud und kein Widget
+### Gelöst: Bau 32 bringt iCloud-Abgleich und Widget
 
-**Der wichtigste offene Punkt.** Am 5. September in den Protokollen der Bauten
-25 und 26 nachgelesen, nicht vermutet:
+**Seit dem 6. September, 05:31 UTC, belegt statt vermutet:**
 
 ```
-Offen — das muss jemand im Portal anklicken:
-  · group.de.karjoth.pulsemeter:    keine Schnittstelle (404) — im Portal anlegen
-  · iCloud.de.karjoth.pulsemeter:   keine Schnittstelle (404) — im Portal anlegen
-
-::warning::Die Berechtigungen stehen noch nicht vollständig. Der Bau fährt
-ohne sie — die App läuft, nur Widget und iCloud-Abgleich bleiben aus.
-Berechtigungen bleiben leer.
+Berechtigungen gehen mit: App/PulseMeter.entitlements, Widget/PulseWidget.entitlements
+Bau 32 steht bereit, die Testhinweise sind eingetragen.
+· Bau 32: VALID — hochgeladen 2026-09-05T22:32
 ```
 
-Die **Fähigkeiten** an der App-ID stehen alle (`APP_GROUPS`, `ICLOUD`,
-`PUSH_NOTIFICATIONS` — „stand schon"). Was fehlt, sind die beiden **Kennungen
-selbst**, und für die bietet Apple keine Schnittstelle an. Also fährt jeder Bau
-ohne Berechtigungsdatei, und damit ohne App-Gruppe und ohne CloudKit.
+Am Code lag es nie. `PulseStore.container(cloudKit: true)` war seit Monaten die
+erste Stufe in `PulseMeterApp.init`; sie ist nur nie angesprungen, weil ohne
+Berechtigung Stufe zwei greift — derselbe Speicher ohne Abgleich, still.
 
-**Der Code ist vollständig.** `PulseStore.container(cloudKit: true)` ist die
-erste Stufe in `PulseMeterApp.init`, `.automatic` gegen die private Datenbank,
-Schema CloudKit-tauglich (alles optional, `Int64` statt `Double`). Es greift nur
-nie: Ohne Berechtigung scheitert Stufe eins, Stufe zwei ist derselbe Speicher
-ohne Abgleich, und die App läuft — still.
+Gefehlt haben **fünf Handgriffe im Entwicklerportal**, nicht zwei: die App-Gruppe
+und den iCloud-Behälter anlegen, und beide dann an drei Stellen **zuordnen** —
+an der App-ID für Gruppe und Behälter, an der Widget-Kennung für die Gruppe.
+Jedes Mal gefolgt vom **Save oben rechts**; an dessen Ausbleiben ist es zweimal
+gescheitert. Die Bauten 27 bis 31 sind dabei verbraucht worden. Ausführlich in
+`docs/12-auslieferung.md`, Abschnitt 3.4.
 
-**Und das bricht zwei Versprechen, die schon draußen sind:**
+Nachprüfbar seit 0.108.4: `einreichen.yml` mit `warum` gibt die Fähigkeiten der
+App-IDs roh aus. Fehlt die Zuordnung, steht dort
+`APP_GROUPS: ohne Zuordnung ← hier stünde die Kennung`.
 
-| Wo | Was dort steht |
-|---|---|
-| App-Store-Beschreibung | „ein Feld auf dem Sperrbildschirm zeigt es auch ohne Mitteilung" |
-| Kaufseite in der App | „Abgleich zwischen deinen Geräten über iCloud" (unter „kostet nie etwas") |
-| Website | „Ein Feld auf dem Sperrbildschirm zeigt, ob eine Ablesung fällig ist" |
-
-**Was zu tun ist, und nur der Gründer kann es** —
-<https://developer.apple.com/account/resources/identifiers/list>, und es sind
-**zwei** Handgriffe, nicht einer:
-
-1. **Anlegen** (am 5. September erledigt): *App Groups* →
-   `group.de.karjoth.pulsemeter`, *iCloud Containers* →
-   `iCloud.de.karjoth.pulsemeter`.
-2. **Zuordnen**: Unter *App IDs* die Kennung öffnen, bei „App Groups" und bei
-   „iCloud" je auf *Configure* / *Edit*, die Kennung ankreuzen — und danach
-   **Save oben rechts**, samt Rückfrage „Modify App Capabilities". Am Ausbleiben
-   dieses äußeren Speicherns ist es zweimal gescheitert.
-
-   | App-ID | Was sie braucht | Stand nach Bau 31 |
-   |---|---|---|
-   | `de.karjoth.pulsemeter` | Gruppe **und** Behälter | **steht** |
-   | `de.karjoth.pulsemeter.widget` | nur die Gruppe | **offen** |
-
-   Gemessen, nicht vermutet: Bau 31 meldet nur noch das Widget. iCloud braucht
-   die Erweiterung nicht — sie liest, was die App im gemeinsamen Ordner
-   hinterlegt hat.
-
-Der zweite Schritt sieht aus wie eine Wiederholung des ersten und ist keine:
-Ein Verteilprofil trägt nur, was die **App-ID** trägt. Ohne ihn scheitert das
-Signieren mit „Provisioning profile … doesn't match the entitlements file's
-values" — so geschehen bei Bau 28 und, wortgleich, bei Bau 29.
-
-> **Und warum Schritt 2 aussieht, als wäre er schon getan:** Das Häkchen bei
-> „App Groups" und bei „iCloud" **ist** gesetzt — `asc-berechtigungen.py` setzt
-> es bei jedem Lauf über die Schnittstelle („ICLOUD stand schon"). Wer die
-> App-ID öffnet, sieht also zwei angehakte Zeilen und hält die Sache für
-> erledigt. Leer ist die Liste **hinter** dem Knopf *Configure* daneben: welche
-> Gruppe, welcher Behälter. Genau die kann das Skript nicht füllen.
-
-Danach den Lauf neu starten; das Profil wird bei jedem Lauf neu erzeugt. Und
-dann eine Fassung 1.0.1 in den Store.
-
-Damit das nicht ein drittes Mal unbemerkt durchgeht, **hält `testflight.yml`
-seit 0.107.2 an**, wenn die Berechtigungen nicht mitgehen. Es gibt einen Haken
-zum Übergehen; bis Bau 26 gab es nur eine Warnung, und die hat niemand gelesen.
+**Was jetzt noch offen ist: der Laden.** Dort steht weiterhin **Bau 25** — ohne
+Abgleich, ohne Widget, und ohne die Kostenspalten und das Erklärblatt aus
+Bau 26. Nächster Schritt ist eine Fassung **1.0.1** mit Bau 32.
+`asc-einreichung.py` hat `versionString` heute noch fest auf `"1.0"` stehen
+(Zeile 391 und 619); das gehört zu einem Aufrufwert gemacht, bevor die Fassung
+angelegt werden kann.
 
 ### Aufrufe und Ladungen — `zahlen.yml`
 

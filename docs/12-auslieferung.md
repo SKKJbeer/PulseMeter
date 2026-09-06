@@ -1,6 +1,6 @@
 # 12 – Auslieferung: vom Code in den App Store, ohne Mac
 
-Stand: 2026-08-29, Version 0.104.2
+Stand: 2026-09-06, Version 0.109.0
 
 Am 17. August ist Zählora zum ersten Mal in TestFlight gelandet — **ohne
 Kabel, ohne Xcode auf dem Rechner des Gründers, ohne einen Klick im
@@ -159,10 +159,31 @@ kommen später.
 | `POST /v1/appGroups` | **404** — gibt es nicht |
 | `POST /v1/cloudContainers` | **404** — gibt es nicht |
 
-Es bleiben also genau zwei Klicks im Portal: die App-Gruppe
-`group.de.karjoth.pulsemeter` und der Behälter `iCloud.de.karjoth.pulsemeter`.
-Angelegt werden sie dort; **zugeordnet** werden sie an der App-ID, und die
-Häkchen dafür stehen schon.
+**Hier stand „es bleiben also genau zwei Klicks im Portal". Es waren fünf, und
+das hat vom 29. August bis zum 6. September gedauert — fünf verbrauchte
+Baunummern und einen Bau im Store, der zwei beworbene Sachen nicht konnte.**
+
+Der Satz stimmte nur zur Hälfte. Die Kennungen **anlegen** sind zwei Klicks,
+richtig. Sie **zuordnen** sind drei weitere, an einer anderen Stelle des
+Portals, und der Satz „die Häkchen dafür stehen schon" hat genau darüber
+hinweggetäuscht: Das Häkchen an der Fähigkeit setzt das Skript, die Liste
+dahinter füllt es nicht.
+
+| Schritt | Wo | Was |
+|---|---|---|
+| Anlegen | *Identifiers* → App Groups | `group.de.karjoth.pulsemeter` |
+| Anlegen | *Identifiers* → iCloud Containers | `iCloud.de.karjoth.pulsemeter` |
+| Zuordnen | *App IDs* → `de.karjoth.pulsemeter` → App Groups → **Configure** | Gruppe ankreuzen |
+| Zuordnen | dieselbe App-ID → iCloud → **Configure** | Behälter ankreuzen |
+| Zuordnen | *App IDs* → `…pulsemeter.widget` → App Groups → **Configure** | Gruppe ankreuzen |
+
+Und nach jedem Zuordnen das **Save oben rechts**, samt Rückfrage „Modify App
+Capabilities". Ohne das äußere Speichern sieht die Auswahl getroffen aus und ist
+es nicht — daran ist es zweimal gescheitert.
+
+Woran man sieht, dass es steht: `einreichen.yml` mit `warum` gibt seit 0.108.4
+die Fähigkeiten roh aus. Ohne Zuordnung steht dort
+`APP_GROUPS: ohne Zuordnung ← hier stünde die Kennung`.
 
 Derselbe Lauf hat einen Fehler im Skript aufgedeckt, der teurer hätte werden
 können als die 404er: Das Nachlesen gab bei einer Fehlantwort eine **leere
@@ -263,6 +284,7 @@ Store Connect deshalb nie gesehen.
 | 24 | 0.100.1 | 29.08. 11:35 | ✓ | **Der erste Bau, der Zählora heißt.** Dazu die Erinnerungen als sechster Kauf zu 0,99 €. Die Testhinweise fielen zunächst aus — ein fehlendes `import re` — und wurden über „Testhinweise nachtragen" gesetzt, ohne einen zweiten Bau zu kosten |
 | 25 | 0.104.0 | 29.08. 17:45 | ✓ | Kosten hängen am Kauf statt an „gibt es Tarife" — der Knopf „Beispieldaten anlegen" verschenkte bis dahin drei von fünf Käufen. Dazu das Widget auf dem Sperrbildschirm (`accessoryRectangular`, `accessoryInline`) |
 | 26 | 0.106.3 | 04.09. 19:32 | ✓ | Kosten für Monat, Quartal und Jahr auf der Übersichtskarte, und das Erklärblatt „Wie diese Zahl entsteht“ hinter der Abschlagszahl — samt der Einspeisevergütung, die der Entwurf bis dahin abzog, ohne sie zu nennen |
+| 32 | 0.108.4 | 06.09. 05:31 | ✓ | **Der erste Bau, der den iCloud-Abgleich und das Feld auf dem Sperrbildschirm wirklich mitbringt.** Am Code lag es nie — es fehlten zwei Kennungen im Entwicklerportal und, zweimal übersehen, das äußere *Save* danach. Die Bauten 27 bis 31 sind auf diesem Weg verbraucht worden |
 
 Zeitangaben in UTC. Ein ✗ heißt: hochgeladen wurde nichts, die Nummer ist
 trotzdem verbraucht.

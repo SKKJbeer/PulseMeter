@@ -9,6 +9,57 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.109.0 — 2026-09-06
+
+**Bau 32 bringt zum ersten Mal den iCloud-Abgleich und das Feld auf dem
+Sperrbildschirm mit.** Belegt, nicht vermutet:
+
+```
+Berechtigungen gehen mit: App/PulseMeter.entitlements, Widget/PulseWidget.entitlements
+Bau 32 steht bereit, die Testhinweise sind eingetragen.
+· Bau 32: VALID — hochgeladen 2026-09-05T22:32
+```
+
+Am Code lag es nie. Der Abgleich stand seit Monaten als erste Stufe im
+Speicheraufbau und ist nie angesprungen, weil ohne Berechtigung Stufe zwei
+greift — derselbe Speicher, nur ohne Abgleich, und ohne ein Wort darüber.
+
+**Gefehlt haben fünf Handgriffe im Portal, und die Anleitung sprach von zwei.**
+Das ist der eigentliche Befund dieser Runde. `docs/12-auslieferung.md` sagte
+seit dem 29. August „es bleiben also genau zwei Klicks im Portal" und
+beruhigend dazu „die Häkchen dafür stehen schon". Beides stimmte — und
+zusammen ergaben sie eine falsche Auskunft:
+
+| | |
+|---|---|
+| Anlegen | zwei Klicks, wie beschrieben |
+| **Zuordnen** | drei weitere, an anderer Stelle, **nicht** beschrieben |
+| Und danach | das **Save oben rechts**, sonst ist nichts gespeichert |
+
+Das Häkchen an der Fähigkeit setzt das Skript selbst. Wer die App-ID öffnet,
+sieht deshalb eine angehakte Zeile — und die Liste dahinter, die sagt *welche*
+Gruppe, ist leer und hinter einem zweiten Knopf versteckt. Der Gründer hat den
+Schritt zweimal für erledigt gehalten, völlig zu Recht.
+
+Gekostet hat das die Bauten 27 bis 31, acht Tage, und einen Bau im Store, der
+zwei beworbene Sachen nicht kann. Nachgetragen ist es jetzt an drei Orten: als
+Tabelle mit allen fünf Schritten in `12-auslieferung.md`, als Befund im
+Baukasten, und als Prüfmittel in `asc-warum.py`, das die Fähigkeiten roh
+ausgibt — zwanzig Sekunden auf Ubuntu statt zwanzig Minuten auf einem
+gemieteten Mac.
+
+Dabei noch ein 400 behoben: `bundleIds/{id}/bundleIdCapabilities` gibt es so
+nicht, die Fähigkeiten hängen über `include` an der Kennung. Dieselbe Klasse
+wie „`limit` gehört nicht an eine Einzelressource" — ein Einwand gegen die
+Anfrage, nicht gegen die Sache.
+
+**Offen bleibt der Laden.** Dort steht weiter Bau 25. Der nächste Schritt ist
+eine Fassung 1.0.1 mit Bau 32; dafür muss `versionString` in
+`asc-einreichung.py` erst von der fest verdrahteten `"1.0"` zu einem
+Aufrufwert werden.
+
+---
+
 ## 0.108.4 — 2026-09-06
 
 **Die Diagnose zeigt jetzt, was an den App-IDs wirklich hängt.**

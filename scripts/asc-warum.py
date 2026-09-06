@@ -379,12 +379,18 @@ def main() -> int:
             print(f"   · {bezeichner}: nicht lesbar ({stand})")
             continue
         kennung = treffer[0]["id"]
-        stand, antwort = holen(f"v1/bundleIds/{kennung}/bundleIdCapabilities",
-                               limit=50)
+        # **Über `include`, nicht über den Beziehungspfad.** Der direkte Weg
+        # `bundleIds/{id}/bundleIdCapabilities` antwortete mit 400 — dieselbe
+        # Klasse wie „`limit` gehört nicht an eine Einzelressource" weiter
+        # unten: ein Einwand gegen die Anfrage, nicht gegen die Sache. Die
+        # Fähigkeiten hängen als `included` an der Kennung selbst.
+        stand, antwort = holen(f"v1/bundleIds/{kennung}",
+                               **{"include": "bundleIdCapabilities"})
         if stand != 200:
             print(f"   · {bezeichner}: Fähigkeiten nicht lesbar ({stand})")
             continue
-        eintraege = antwort.json().get("data", [])
+        eintraege = [e for e in antwort.json().get("included", [])
+                     if e.get("type") == "bundleIdCapabilities"]
         print(f"   · {bezeichner}: {len(eintraege)} Fähigkeiten")
         for eintrag in eintraege:
             merkmale = eintrag.get("attributes") or {}
