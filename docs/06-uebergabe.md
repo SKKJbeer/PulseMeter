@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-09-05, Version 0.108.3
+Stand: 2026-09-05, Version 0.108.4
 
 ---
 
@@ -86,7 +86,7 @@ Tabelle im Baukasten unter „Die Prüfungen".
 
 ## Wo die Arbeit steht
 
-**`main` ist der aktuelle Stand**, Version 0.108.3. Es gibt keinen offenen
+**`main` ist der aktuelle Stand**, Version 0.108.4. Es gibt keinen offenen
 Arbeitszweig; alles ist zusammengeführt. `claude/setup-pruefung-4qyr2u` steht
 noch bei GitHub, vollständig in `main` — aus der Cloud lässt er sich nicht
 löschen (`HTTP 403`), von der Weboberfläche aus mit einem Klick.
@@ -146,10 +146,19 @@ ohne Abgleich, und die App läuft — still.
 1. **Anlegen** (am 5. September erledigt): *App Groups* →
    `group.de.karjoth.pulsemeter`, *iCloud Containers* →
    `iCloud.de.karjoth.pulsemeter`.
-2. **Zuordnen** (offen): Unter *App IDs* die Kennung `de.karjoth.pulsemeter`
-   öffnen, bei „App Groups" und bei „iCloud" je auf *Configure* / *Edit* und
-   die eben angelegte Kennung ankreuzen. Dasselbe bei
-   `de.karjoth.pulsemeter.widget` für die Gruppe.
+2. **Zuordnen**: Unter *App IDs* die Kennung öffnen, bei „App Groups" und bei
+   „iCloud" je auf *Configure* / *Edit*, die Kennung ankreuzen — und danach
+   **Save oben rechts**, samt Rückfrage „Modify App Capabilities". Am Ausbleiben
+   dieses äußeren Speicherns ist es zweimal gescheitert.
+
+   | App-ID | Was sie braucht | Stand nach Bau 31 |
+   |---|---|---|
+   | `de.karjoth.pulsemeter` | Gruppe **und** Behälter | **steht** |
+   | `de.karjoth.pulsemeter.widget` | nur die Gruppe | **offen** |
+
+   Gemessen, nicht vermutet: Bau 31 meldet nur noch das Widget. iCloud braucht
+   die Erweiterung nicht — sie liest, was die App im gemeinsamen Ordner
+   hinterlegt hat.
 
 Der zweite Schritt sieht aus wie eine Wiederholung des ersten und ist keine:
 Ein Verteilprofil trägt nur, was die **App-ID** trägt. Ohne ihn scheitert das

@@ -9,6 +9,35 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.108.4 — 2026-09-06
+
+**Die Diagnose zeigt jetzt, was an den App-IDs wirklich hängt.**
+
+Vier Bauten hintereinander scheiterten am selben Satz, und die Einrichtung
+meldete dabei durchgehend „ICLOUD stand schon". Beides stimmte: Die *Fähigkeit*
+war eingeschaltet, die *Kennung* dahinter nicht zugeordnet — und kein Werkzeug
+hat den Unterschied sichtbar gemacht. Wer es wissen wollte, musste einen Bau
+von zwanzig Minuten verbrennen.
+
+`asc-warum.py` gibt deshalb die Fähigkeiten beider App-IDs jetzt **roh** aus,
+mitsamt ihrem `settings`-Block. Steht dort nichts, druckt es
+
+```
+APP_GROUPS: ohne Zuordnung ← hier stünde die Kennung
+```
+
+Das ist die einzige Auskunft dazu, die sich von außen holen lässt, und sie
+kostet zwanzig Sekunden auf einem Ubuntu-Läufer statt zwanzig Minuten auf
+einem gemieteten Mac.
+
+**Zwischenstand dazu:** Nach Bau 31 trägt `de.karjoth.pulsemeter` beides,
+Gruppe und Behälter. Offen ist nur noch die Gruppe an
+`de.karjoth.pulsemeter.widget`. Gescheitert war es zweimal daran, dass nach
+*Configure → Continue* das **Save oben rechts** ausblieb — die Auswahl sieht
+danach getroffen aus und ist nicht gespeichert.
+
+---
+
 ## 0.108.3 — 2026-09-05
 
 **Warum der offene Handgriff aussieht, als wäre er getan.**

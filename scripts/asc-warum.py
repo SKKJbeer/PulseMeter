@@ -357,6 +357,44 @@ def main() -> int:
     if not bauten:
         print(f"   keine Bauten lesbar ({stand})")
 
+    # **Was an den App-IDs wirklich steht — mit allem, was dranhängt.**
+    #
+    # Vier Bauten hintereinander scheiterten am selben Satz: „Provisioning
+    # profile … doesn't match the entitlements file's values". Die Fähigkeiten
+    # standen laut Einrichtungslauf alle („ICLOUD stand schon"), und trotzdem
+    # trug das Profil weder App-Gruppe noch iCloud-Behälter.
+    #
+    # Der Grund ist, dass „Fähigkeit eingeschaltet" und „Kennung zugeordnet"
+    # zwei verschiedene Dinge sind — und der Einrichtungslauf nur das erste
+    # prüft. Deshalb hier die **rohen** Einträge samt `settings`: Ob dort die
+    # Gruppe und der Behälter auftauchen, ist die einzige Auskunft, die von
+    # außen erhältlich ist, ohne einen Bau von zwanzig Minuten zu verbrennen.
+    print("\n── Die Fähigkeiten der App-IDs, roh")
+    for bezeichner in (BUNDLE, f"{BUNDLE}.widget"):
+        stand, antwort = holen("v1/bundleIds",
+                               **{"filter[identifier]": bezeichner, "limit": 10})
+        treffer = [e for e in (antwort.json().get("data", []) if stand == 200 else [])
+                   if (e.get("attributes") or {}).get("identifier") == bezeichner]
+        if not treffer:
+            print(f"   · {bezeichner}: nicht lesbar ({stand})")
+            continue
+        kennung = treffer[0]["id"]
+        stand, antwort = holen(f"v1/bundleIds/{kennung}/bundleIdCapabilities",
+                               limit=50)
+        if stand != 200:
+            print(f"   · {bezeichner}: Fähigkeiten nicht lesbar ({stand})")
+            continue
+        eintraege = antwort.json().get("data", [])
+        print(f"   · {bezeichner}: {len(eintraege)} Fähigkeiten")
+        for eintrag in eintraege:
+            merkmale = eintrag.get("attributes") or {}
+            art = merkmale.get("capabilityType")
+            einstellungen = merkmale.get("settings")
+            if einstellungen:
+                print(f"       {art}: {json.dumps(einstellungen, ensure_ascii=False)}")
+            else:
+                print(f"       {art}: ohne Zuordnung ← hier stünde die Kennung")
+
     # **Das Wichtigste steht zum Schluss, und das ist kein Geschmack.**
     # Ein Protokoll eines Laufs wird von hinten gelesen — die Werkzeuge liefern
     # das Ende. Stand dieser Block oben, kostete jede Antwort darauf einen
