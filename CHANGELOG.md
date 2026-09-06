@@ -9,6 +9,44 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.110.0 — 2026-09-06
+
+**Die Fassung wird jetzt gesagt, nicht geraten.** Voraussetzung für 1.0.1, und
+unterwegs eine Falle entschärft, die genau einmal zugeschlagen hätte.
+
+`asc-einreichung.py` hatte `versionString` fest auf `"1.0"`, und beide Skripte
+nahmen ansonsten `daten[0]` aus der Liste der Fassungen. Mit einer einzigen
+Fassung war das dasselbe. Mit 1.0 im Laden und 1.0.1 daneben ist es eine Wette
+auf Apples Sortierung — bei dem einen Ablauf dieses Projekts, der nach außen
+wirkt.
+
+Beide suchen die Fassung jetzt **nach Namen**, aus `PULSE_FASSUNG`, und beide
+Abläufe fragen beim Start danach. Gibt es sie nicht, nennt der Einreichlauf
+alle vorhandenen Fassungen mitsamt Zustand, statt stillschweigend eine andere
+anzufassen.
+
+**Und der Text hätte gestimmt und trotzdem der falsche sein können.**
+`store_text` nahm den ersten Block unter einer Überschrift. Unter „Neue
+Funktionen" stehen sie je Fassung untereinander — 1.0.1 hätte also die
+Versionshinweise von 1.0 bekommen, und aufgefallen wäre es niemandem, weil ein
+Text ja dasteht. Mit `fuer=` wird der Block hinter „Für <Fassung>:" genommen.
+Gegenprobe:
+
+```
+1.0     240 Zeichen   Die erste Fassung. Zählerstände eintragen …
+1.0.1   525 Zeichen   Der Abgleich über iCloud läuft jetzt wirklich …
+9.9       0 Zeichen   (leer)
+```
+
+Fehlt der Block, meldet der Lauf das als offenen Punkt — eine Fassung ohne
+Versionshinweise geht nicht still durch.
+
+Die Hinweise für 1.0.1 stehen in `docs/09-appstore.md`. Sie sagen bei iCloud
+und Sperrbildschirm „läuft jetzt wirklich" und nicht „neu": Beides war in 1.0
+eingebaut und beworben und kam nur nicht beim Nutzer an.
+
+---
+
 ## 0.109.0 — 2026-09-06
 
 **Bau 32 bringt zum ersten Mal den iCloud-Abgleich und das Feld auf dem

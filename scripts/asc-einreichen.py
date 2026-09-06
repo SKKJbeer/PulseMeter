@@ -113,13 +113,32 @@ def app_finden(apple: Apple) -> str:
 
 
 def fassung_finden(apple: Apple, app_id: str):
+    """Die Fassung aus `PULSE_FASSUNG` — nach Namen, nicht nach Position.
+
+    **Hier stand `daten[0]`.** Solange es eine einzige Fassung gab, war das
+    dasselbe. Sobald 1.0 im Laden steht und 1.0.1 daneben entsteht, ist es eine
+    Wette auf Apples Sortierung — bei dem einen Ablauf dieses Projekts, der
+    nach außen wirkt. Wer die falsche Fassung einreicht, merkt es an dem Tag,
+    an dem ein Prüfer sie öffnet.
+    """
+    gewuenscht = os.environ.get("PULSE_FASSUNG", "1.0").strip() or "1.0"
     stand, antwort = apple.holen(f"v1/apps/{app_id}/appStoreVersions",
-                                 **{"limit": 5, "filter[platform]": "IOS"})
+                                 **{"limit": 50, "filter[platform]": "IOS"})
     daten = antwort.json().get("data", []) if stand == 200 else []
     if not daten:
         print(f"::error::Keine Fassung lesbar ({stand}).")
         sys.exit(1)
-    return daten[0]
+
+    treffer = [f for f in daten if feld(f, "versionString") == gewuenscht]
+    if not treffer:
+        vorhanden = ", ".join(
+            f"{feld(f, 'versionString')} "
+            f"({feld(f, 'appStoreState') or feld(f, 'appVersionState')})"
+            for f in daten)
+        print(f"::error::Fassung {gewuenscht} gibt es nicht. Vorhanden: "
+              f"{vorhanden}. Anzulegen über einreichung.yml mit --fuellen.")
+        sys.exit(1)
+    return treffer[0]
 
 
 def baunummer(bau) -> int:

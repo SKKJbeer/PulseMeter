@@ -214,6 +214,27 @@ Wenn etwas fehlt oder stört, schreib mir. Hinter dem Support-Link sitzt kein
 Ticketsystem, sondern der Entwickler.
 ```
 
+Für 1.0.1:
+
+```
+Der Abgleich über iCloud läuft jetzt wirklich. Trägst du auf dem iPhone eine
+Ablesung ein, steht sie kurz darauf auch auf deinem zweiten Gerät. Ohne Konto,
+ohne Schalter, ohne dass du etwas einrichtest.
+
+Das Feld auf dem Sperrbildschirm zeigt jetzt an, was es zeigen soll: ob eine
+Ablesung fällig ist und wie viel seit Jahresbeginn zusammengekommen ist.
+
+Neu auf der Übersicht: was ein Zähler diesen Monat, dieses Quartal und dieses
+Jahr gekostet hat. Tippst du auf den Betrag, rechnet Zählora dir vor, wie er
+zustande kommt.
+```
+
+**Warum die ersten beiden Absätze so vorsichtig klingen.** Beides war in 1.0
+schon eingebaut und beworben, kam aber nicht beim Nutzer an: Zwei Kennungen im
+Entwicklerportal waren nicht zugeordnet, und ohne sie signiert der Bau ohne
+Berechtigungen (`12-auslieferung.md`, 3.4). Deshalb „läuft jetzt wirklich" und
+nicht „neu" — neu ist es für niemanden, es hat nur nie funktioniert.
+
 Ab 1.1 gilt: Der Text kommt aus `CHANGELOG.md`, in der Sprache des Nutzers und
 ohne Versionsnummern von Bibliotheken. „Fehlerbehebungen und Verbesserungen"
 ist keine Versionsinformation, sondern deren Verweigerung.

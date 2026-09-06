@@ -14,6 +14,15 @@ name: Einreichen
 on:
   workflow_dispatch:
     inputs:
+      # **Welche Fassung.** Solange es eine gab, war die Frage müßig; seit
+      # 1.0 im Laden steht und 1.0.1 daneben entsteht, ist sie die wichtigste.
+      # Leer bleibt 1.0 — die Skripte nehmen denselben Rückfall, damit ein
+      # alter Aufruf nichts anderes tut als bisher.
+      fassung:
+        description: "Welche Fassung, z. B. 1.0.1 (leer = 1.0)"
+        type: string
+        required: false
+        default: ""
       bestaetigung:
         description: "Zum Einreichen das Wort einreichen eintippen"
         type: string
@@ -56,6 +65,7 @@ jobs:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+          PULSE_FASSUNG: ${{ inputs.fassung }}
         run: |
           if [ "${{ inputs.aufraeumen }}" = "true" ]; then
             python3 scripts/asc-einreichen.py --aufraeumen

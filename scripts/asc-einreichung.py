@@ -121,7 +121,14 @@ def pruefe(bedingung: bool, satz: str, wem: list[str] | None = None) -> None:
 # noch einmal hinzuschreiben hieße, zwei Fassungen zu führen — und die laufen
 # auseinander, das ist heute dreimal passiert. Gelesen wird der Block hinter
 # der jeweiligen Überschrift.
-def store_text(ueberschrift: str) -> str:
+def store_text(ueberschrift: str, fuer: str | None = None) -> str:
+    """Holt einen Textblock aus `docs/09-appstore.md`.
+
+    Mit `fuer` wird nicht der erste Block unter der Überschrift genommen,
+    sondern der hinter der Zeile „Für <Fassung>:". Die Versionshinweise stehen
+    dort je Fassung untereinander; wer den ersten nimmt, trägt bei 1.0.1 den
+    Text von 1.0 ein, und niemandem fällt es auf, weil ein Text ja dasteht.
+    """
     pfad = os.path.join(os.path.dirname(__file__), "..", "docs", "09-appstore.md")
     try:
         with open(pfad, encoding="utf-8") as datei:
@@ -137,9 +144,27 @@ def store_text(ueberschrift: str) -> str:
     treffer = kopf.search(inhalt)
     if treffer is None:
         return ""
-    block = re.search(r"```\n(.*?)```", inhalt[treffer.end():], re.S)
+    rest = inhalt[treffer.end():]
+    if fuer is not None:
+        marke = re.search(r"^Für " + re.escape(fuer) + r":\s*$", rest, re.M)
+        if marke is None:
+            return ""
+        rest = rest[marke.end():]
+    block = re.search(r"```\n(.*?)```", rest, re.S)
     return block.group(1).strip() if block else ""
 
+
+# **Welche Fassung gemeint ist, wird gesagt und nicht geraten.**
+#
+# Bis 0.109.0 stand hier `"1.0"` fest verdrahtet, und beide Skripte nahmen
+# ansonsten `daten[0]` aus der Liste der Fassungen. Solange es genau eine gab,
+# ging das gut. Sobald 1.0 im Laden steht und 1.0.1 daneben entsteht, ist die
+# Reihenfolge dieser Liste eine Wette — und die falsche Fassung anzufassen ist
+# bei einem Ablauf, der nach außen wirkt, kein Schönheitsfehler.
+#
+# Ohne Angabe bleibt es bei 1.0, damit ein alter Aufruf dasselbe tut wie
+# bisher. Die Abläufe fragen ausdrücklich danach.
+FASSUNG = os.environ.get("PULSE_FASSUNG", "1.0").strip() or "1.0"
 
 # Aus derselben Datei, Abschnitt 2 „Einordnung".
 KATEGORIE_HAUPT = "UTILITIES"
@@ -382,23 +407,37 @@ def bilder_fuellen(apple: Apple, ort_id: str) -> None:
 
 
 def fassung_fuellen(apple: Apple, app_id: str) -> None:
-    """Die Fassung 1.0 und ihre Texte."""
-    stand, fassung = erste(apple, f"v1/apps/{app_id}/appStoreVersions",
-                           **{"limit": 5, "filter[platform]": "IOS"})
+    """Die Fassung aus `FASSUNG` und ihre Texte.
+
+    **Gesucht wird nach Namen, nicht nach Position.** Hier stand `erste(...)`,
+    also der oberste Eintrag der Liste. Mit einer einzigen Fassung war das
+    dasselbe; mit 1.0 im Laden und 1.0.1 daneben ist es eine Wette darauf, wie
+    Apple sortiert.
+    """
+    stand, antwort = apple.holen(f"v1/apps/{app_id}/appStoreVersions",
+                                 **{"limit": 50, "filter[platform]": "IOS"})
+    vorhandene = antwort.json().get("data", []) if stand == 200 else []
+    fassung = next((f for f in vorhandene
+                    if feld(f, "versionString") == FASSUNG), None)
+
     if fassung is None:
         stand, antwort = apple.anlegen("v1/appStoreVersions", {"data": {
             "type": "appStoreVersions",
-            "attributes": {"platform": "IOS", "versionString": "1.0"},
+            "attributes": {"platform": "IOS", "versionString": FASSUNG},
             "relationships": {"app": {"data": {"type": "apps", "id": app_id}}},
         }})
         if stand not in (200, 201):
-            offen.append(f"Fassung 1.0 ließ sich nicht anlegen ({stand}) "
-                         f"— {kurz(antwort)}")
+            andere = ", ".join(f"{feld(f, 'versionString')} "
+                               f"({feld(f, 'appStoreState') or feld(f, 'appVersionState')})"
+                               for f in vorhandene) or "keine"
+            offen.append(f"Fassung {FASSUNG} ließ sich nicht anlegen ({stand}) "
+                         f"— {kurz(antwort)}. Vorhanden: {andere}")
             return
         fassung = antwort.json()["data"]
-        getan.append("Fassung 1.0 angelegt")
+        getan.append(f"Fassung {FASSUNG} angelegt")
     else:
-        getan.append(f"Fassung {feld(fassung, 'versionString')} stand schon")
+        getan.append(f"Fassung {FASSUNG} stand schon "
+                     f"({feld(fassung, 'appStoreState') or feld(fassung, 'appVersionState')})")
 
     stand, ort = erste(apple,
                        f"v1/appStoreVersions/{fassung['id']}/appStoreVersionLocalizations",
@@ -421,7 +460,8 @@ def fassung_fuellen(apple: Apple, app_id: str) -> None:
            {"description": store_text("Beschreibung (max. 4000 Zeichen)"),
             "keywords": store_text("Schlagworte (max. 100 Zeichen, komma-getrennt, ohne Leerzeichen)"),
             "promotionalText": store_text("Werbetext (max. 170 Zeichen, jederzeit ohne neue Version änderbar)"),
-            "whatsNew": store_text("Neue Funktionen (Versionshinweise)"),
+            "whatsNew": store_text("Neue Funktionen (Versionshinweise)",
+                                   fuer=FASSUNG),
             "supportUrl": SUPPORT,
             "marketingUrl": WEBSITE},
            "Beschreibung, Schlagworte, Werbetext, Support-URL")
@@ -618,6 +658,9 @@ def fassung_pruefen(apple: Apple, app_id: str) -> None:
     # darf, macht die Liste unbrauchbar.
     if feld(fassung, "versionString") != "1.0":
         felder.insert(3, ("whatsNew", "Neue Funktionen"))
+        if not store_text("Neue Funktionen (Versionshinweise)", fuer=FASSUNG):
+            offen.append(f"Neue Funktionen: kein Block „Für {FASSUNG}:" +
+                         "\" in docs/09-appstore.md")
 
     for name, was in felder:
         wem = None

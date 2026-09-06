@@ -13,6 +13,15 @@ name: Einreichung nachsehen
 on:
   workflow_dispatch:
     inputs:
+      # **Welche Fassung.** Solange es eine gab, war die Frage müßig; seit
+      # 1.0 im Laden steht und 1.0.1 daneben entsteht, ist sie die wichtigste.
+      # Leer bleibt 1.0 — die Skripte nehmen denselben Rückfall, damit ein
+      # alter Aufruf nichts anderes tut als bisher.
+      fassung:
+        description: "Welche Fassung, z. B. 1.0.1 (leer = 1.0)"
+        type: string
+        required: false
+        default: ""
       fuellen:
         description: "Auch eintragen, was aus dem Repository kommt?"
         type: boolean
@@ -54,6 +63,7 @@ jobs:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+          PULSE_FASSUNG: ${{ inputs.fassung }}
           # Steht nicht im Impressum und deshalb auch nicht im Repository.
           # Fehlt sie, trägt der Lauf den Kontakt gar nicht ein — Apple nimmt
           # ihn nur vollständig — und sagt das in einer Zeile.
