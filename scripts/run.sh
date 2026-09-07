@@ -16,7 +16,11 @@ DERIVED="${PULSE_DERIVED_DATA:-build/DerivedData}"
 if [ ! -d PulseMeter.xcodeproj ] || [ project.yml -nt PulseMeter.xcodeproj ]; then
   xcodegen generate
 fi
-DEVICE=$(scripts/sim.sh)
+# **Welche Gerätefamilie fotografiert wird.** Ohne Angabe das iPhone, wie
+# bisher. `PULSE_FAMILIE=ipad` liefert dieselben Schirme auf dem iPad — und das
+# ist seit 0.112.0 nicht mehr dasselbe Bild in groß: Auf breiten Fenstern steht
+# links eine Seitenleiste, und die Übersicht setzt ihre Karten ins Raster.
+DEVICE=$(scripts/sim.sh "${PULSE_FAMILIE:-iphone}")
 mkdir -p "$OUTDIR"
 
 APP=$(find "$DERIVED/Build/Products" -name "PulseMeter.app" -maxdepth 3 2>/dev/null | head -1 || true)

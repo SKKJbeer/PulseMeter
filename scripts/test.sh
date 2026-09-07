@@ -21,7 +21,7 @@ fi
 if [ "$SCOPE" = "all" ] || [ "$SCOPE" = "app" ]; then
   say "App im Simulator"
   [ -d PulseMeter.xcodeproj ] || xcodegen generate
-  DEVICE=$(scripts/sim.sh)
+  DEVICE=$(scripts/sim.sh "${PULSE_FAMILIE:-iphone}")
   # Dasselbe Ableseverzeichnis wie run.sh, damit die Screenshots den bereits
   # gebauten Stand verwenden und nicht ein zweites Mal übersetzen.
   # Ohne `-quiet`, vollständig in eine Datei **und** gefiltert auf die

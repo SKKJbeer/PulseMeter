@@ -26,22 +26,91 @@ struct RootView: View {
     /// wieder zu diesem Zähler — auch Wochen später.
     @State private var verlaufFuer: MeteringPoint.ID?
 
+    /// Breit oder schmal — **nicht** iPhone oder iPad.
+    ///
+    /// Ein iPad im Splitview ist schmal, ein iPhone im Querformat teilweise
+    /// breit, und ein Fenster ändert seine Klasse, während die App läuft. Wer
+    /// auf das Gerät prüft (`UIDevice.current.userInterfaceIdiom`), bekommt bei
+    /// jeder dieser Lagen die falsche Oberfläche.
+    @Environment(\.horizontalSizeClass) private var breite
+
+    /// Die drei Ziele an einer Stelle. Vorher standen Name, Symbol und Nummer
+    /// dreimal im `TabView`; mit einer zweiten Navigation wären es sechs
+    /// Stellen gewesen, und die laufen auseinander.
+    private static let ziele: [(nummer: Int, name: String, symbol: String)] = [
+        (0, "Übersicht", "house"),
+        (1, "Verlauf", "chart.bar"),
+        (2, "Zähler", "gauge.medium"),
+    ]
+
     var body: some View {
-        TabView(selection: $tab) {
-            OverviewView(oeffneVerlauf: { id in
-                verlaufFuer = id
-                tab = 1
-            })
-                .tabItem { Label("Übersicht", systemImage: "house") }
-                .tag(0)
-            HistoryView(zeige: $verlaufFuer)
-                .tabItem { Label("Verlauf", systemImage: "chart.bar") }
-                .tag(1)
-            MetersView()
-                .tabItem { Label("Zähler", systemImage: "gauge.medium") }
-                .tag(2)
+        Group {
+            if breite == .regular {
+                seitenleiste
+            } else {
+                tableiste
+            }
         }
         .tint(PulseColor.tint)
+    }
+
+    /// Schmal: die Tableiste, unverändert seit 0.1.
+    private var tableiste: some View {
+        TabView(selection: $tab) {
+            ForEach(Self.ziele, id: \.nummer) { ziel in
+                ansicht(ziel.nummer)
+                    .tabItem { Label(ziel.name, systemImage: ziel.symbol) }
+                    .tag(ziel.nummer)
+            }
+        }
+    }
+
+    /// Breit: Seitenleiste links, Inhalt rechts.
+    ///
+    /// **Warum überhaupt eine andere Navigation.** Eine Tableiste am unteren
+    /// Rand eines 13-Zoll-Bildschirms liegt dort, wo keine Hand ist, und lässt
+    /// die drei Ziele wie einen Rest aussehen. Die Seitenleiste ist auf dem
+    /// iPad das, was die Tableiste auf dem Telefon ist: der Ort, an dem man
+    /// nachsieht, was es gibt.
+    ///
+    /// `.navigationSplitViewStyle(.balanced)` statt der Vorgabe: Die Vorgabe
+    /// schiebt die Leiste im Hochformat über den Inhalt, und der Inhalt springt
+    /// beim Drehen in der Breite. Ausgewogen heißt, beide Spalten teilen sich
+    /// den Platz und die Übersicht bleibt stehen, wo sie war.
+    private var seitenleiste: some View {
+        NavigationSplitView {
+            List(Self.ziele, id: \.nummer, selection: auswahl) { ziel in
+                Label(ziel.name, systemImage: ziel.symbol)
+                    .tag(ziel.nummer)
+            }
+            .navigationTitle("Zählora")
+            .listStyle(.sidebar)
+        } detail: {
+            ansicht(tab)
+        }
+        .navigationSplitViewStyle(.balanced)
+    }
+
+    /// Die Auswahl der Seitenleiste als optionaler Wert.
+    ///
+    /// `List(selection:)` verlangt ein `Binding<Int?>`, der Rest der Ansicht
+    /// arbeitet mit `Int`. Eine leere Auswahl gibt es hier nicht: Wer nichts
+    /// wählt, sieht weiter, was er zuletzt gewählt hat — eine leere rechte
+    /// Spalte wäre eine Sackgasse (Produktprinzip 4).
+    private var auswahl: Binding<Int?> {
+        Binding(get: { tab }, set: { if let neu = $0 { tab = neu } })
+    }
+
+    @ViewBuilder
+    private func ansicht(_ nummer: Int) -> some View {
+        switch nummer {
+        case 1:  HistoryView(zeige: $verlaufFuer)
+        case 2:  MetersView()
+        default: OverviewView(oeffneVerlauf: { id in
+                     verlaufFuer = id
+                     tab = 1
+                 })
+        }
     }
 }
 
@@ -139,6 +208,8 @@ struct OverviewView: View {
     // laeuft nach jeder Ablesung mit und darf einen fehlenden Kauf nicht
     // uebergehen.
     @Environment(Purchase.self) private var purchase
+    /// Siehe `RootView.breite`: gemessen wird das Fenster, nicht das Gerät.
+    @Environment(\.horizontalSizeClass) private var breite
     @State private var rows: [MeterRow] = []
     @State private var points: [MeteringPoint] = []
     @State private var capturing: MeteringPoint?
@@ -166,6 +237,22 @@ struct OverviewView: View {
 
                     if rows.isEmpty && problem == nil {
                         emptyState
+                    } else if breite == .regular {
+                        // **Auf dem iPad nebeneinander, nicht untereinander.**
+                        // Eine Karte über 1000 Punkte Breite hat drei Zahlen
+                        // und viel Nichts dazwischen; das Auge braucht dann
+                        // länger für „ist alles im Rahmen" als auf dem Telefon
+                        // (Produktprinzip 3, fünf Sekunden).
+                        //
+                        // `adaptive` statt einer festen Spaltenzahl: Dasselbe
+                        // Raster trägt das halbe und das ganze Fenster, und im
+                        // Splitview zu einem Drittel wird von selbst wieder
+                        // eine Spalte daraus.
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 320),
+                                                     spacing: 12)],
+                                  spacing: 12) {
+                            ForEach(rows) { row in card(for: row) }
+                        }
                     } else {
                         ForEach(rows) { row in card(for: row) }
                     }

@@ -170,6 +170,27 @@ jobs:
       - name: App bauen und Oberflächentests
         run: scripts/test.sh app
 
+      # **Dieselben Prüfungen auf dem iPad**, seit 0.112.0 — die App trägt jetzt
+      # `TARGETED_DEVICE_FAMILY: "1,2"`, und Apple sieht sie sich dort an.
+      #
+      # Es ist nicht dasselbe Bild in groß: Auf breiten Fenstern schaltet
+      # `RootView` von der Tableiste auf eine Seitenleiste um. Damit ändert sich
+      # der Zugänglichkeitsbaum, und genau daran scheitern Oberflächenprüfungen,
+      # ohne dass am Produkt etwas falsch wäre — oder eben doch, und dann will
+      # man es hier wissen und nicht aus einer Bewertung.
+      #
+      # **Nur in der CI, nicht im lokalen Lauf.** Ein zweiter Durchgang kostet
+      # rund fünfzehn Minuten auf einem gemieteten Mac. Die schnelle Schleife
+      # bleibt das iPhone; die Gegenprobe ist hier.
+      - name: Oberflächentests auf dem iPad
+        env:
+          PULSE_FAMILIE: ipad
+          # Ein eigenes Ableseverzeichnis: Sonst überschreibt der iPad-Bau das
+          # iPhone-Ergebnis, und der Schritt darunter zählt die
+          # Datenschutz-Datei in einem Paket, das er nicht meint.
+          PULSE_DERIVED_DATA: build/DerivedData-iPad
+        run: scripts/test.sh app
+
       # **Bis 0.101.3 war das eine Annahme.** Die Datei liegt seit 0.55.0 in
       # `App/` und `Widget/`; dass XcodeGen sie als Ressource mitnimmt, stand
       # in `09-appstore.md` ausdrücklich als „angenommen und nicht geprüft".
@@ -201,6 +222,17 @@ jobs:
         if: always()
         continue-on-error: true
         run: scripts/run.sh build
+
+      # Die iPad-Bilder liegen daneben, nicht darüber. Sie sind das, was Apple
+      # zur Einreichung verlangt, sobald die App auf dem iPad läuft — und das,
+      # woran man sieht, ob die Seitenleiste wirklich sitzt.
+      - name: Screenshots auf dem iPad
+        if: always()
+        continue-on-error: true
+        env:
+          PULSE_FAMILIE: ipad
+          PULSE_DERIVED_DATA: build/DerivedData-iPad
+        run: scripts/run.sh build/ipad
 
       # Die Bilder zusätzlich in einen Zweig, nicht nur ins Artefakt: An ein
       # Artefakt komme ich aus der Entwicklungsumgebung heraus nicht heran —

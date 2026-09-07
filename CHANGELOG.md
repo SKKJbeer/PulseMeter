@@ -9,6 +9,55 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.112.0 — 2026-09-07
+
+**Die App läuft jetzt auf dem iPad — als eigene Oberfläche, nicht als
+vergrößertes Telefon.**
+
+`TARGETED_DEVICE_FAMILY` stand seit 0.37.0 auf `"1"`, und das war richtig: Wer
+den Schalter allein umlegt, bekommt eine auf 13 Zoll gezogene
+Telefonoberfläche, dazu eine Prüfung durch Apple **auf** einem iPad und eine
+Bewertung, die länger steht als der Fehler. Geändert hat sich deshalb zuerst
+die Oberfläche.
+
+| Fenster | Navigation | Übersicht |
+|---|---|---|
+| schmal | Tableiste, wie seit 0.1 | Karten untereinander |
+| breit | Seitenleiste mit den drei Zielen | Karten im Raster |
+
+**Entschieden wird nach der Fensterbreite, nicht nach dem Gerät.** Ein iPad im
+Splitview ist schmal und bekommt die Telefonoberfläche; ein Fenster ändert
+seine Klasse, während die App läuft. Wer `userInterfaceIdiom` fragt, bekommt in
+jeder dieser Lagen die falsche Antwort.
+
+Das Raster steht auf `.adaptive(minimum: 320)`: Dieselbe Angabe trägt das ganze
+Fenster, die Hälfte und das Drittel, ohne dass irgendwo eine Spaltenzahl
+festgeschrieben wäre. Der Grund ist Produktprinzip 3 — eine Karte über tausend
+Punkte Breite hat drei Zahlen und viel Nichts dazwischen, und „ist alles im
+Rahmen" dauert dann länger als auf dem Telefon.
+
+**Geprüft werden beide Familien, nicht eine.** `scripts/sim.sh` wählt jetzt
+wahlweise das neueste iPhone oder das neueste iPad, `test.sh` und `run.sh`
+reichen die Wahl durch, und die CI läuft die Oberflächentests zweimal — mit
+getrennten Ableseverzeichnissen, sonst zählt der Schritt danach die
+Datenschutz-Datei in einem Paket, das er nicht meint. Die iPad-Bilder landen in
+`build/ipad`.
+
+Der zweite Durchgang kostet rund fünfzehn Minuten auf einem gemieteten Mac. Er
+läuft deshalb in der CI und nicht in der schnellen Schleife: Die Seitenleiste
+ändert den Zugänglichkeitsbaum, und ob die Prüfungen dort noch greifen, will
+man vor der Auslieferung wissen und nicht aus einer Bewertung.
+
+Das Widget trägt die Familie ab jetzt ausdrücklich statt über die Vorgabe. Eine
+Erweiterung, die weniger Geräte trägt als die App, lehnt Apple beim Hochladen
+ab, und die Meldung nennt das Widget nicht.
+
+**Was noch fehlt, bevor das iPad im Store steht:** die Bildschirmfotos für den
+iPad-Satz in App Store Connect. Der Einreichlauf kennt bisher nur
+`APP_IPHONE_67`.
+
+---
+
 ## 0.111.0 — 2026-09-07
 
 **Die Texte, die eine Funktion beschreiben, werden jetzt geprüft und nicht nur
