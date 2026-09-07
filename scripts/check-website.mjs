@@ -148,11 +148,16 @@ note(adressen.size === 1,
 //
 // Die Schwelle liegt bei einem Strich je 250 Wörter. Das ist keine Null: Als
 // Trenner in einem Titel ist er richtig, und ein echter Einschub darf sein.
-const VERBOTEN = [
-  "smart", "intelligent", "nahtlos", "mühelos", "erlebe ", "entdecke ",
-  "revolutio", "maximier", "innovativ", "modernste", "einzigartig",
-  "leistungsstark", "benutzerfreundlich", "state of the art"
-];
+//
+// **Die Liste steht in `scripts/floskeln.txt`, nicht hier.** Seit 0.111.0 liest
+// sie auch `check-store-texte.py` — dieselben Wörter dürfen im App Store so
+// wenig stehen wie auf der Website, und eine zweite Kopie wäre die vierte
+// Stelle in diesem Projekt, an der zwei Fassungen auseinanderlaufen.
+const VERBOTEN = readFileSync(
+  new URL("floskeln.txt", import.meta.url), "utf8")
+  .split("\n")
+  .map(z => z.trim())
+  .filter(z => z && !z.startsWith("#"));
 
 for (const datei of seiten) {
   const roh = readFileSync(`${dir}/${datei}`, "utf8");

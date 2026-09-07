@@ -1,0 +1,52 @@
+# Wörter, die auf jede App passen und über keine etwas sagen.
+#
+# **Eine Liste, zwei Leser.** `check-website.mjs` prüft damit die Website,
+# `check-store-texte.py` die Texte in `docs/09-appstore.md`. Bis 0.111.0 stand
+# sie nur im ersten Skript, und die Store-Texte wurden gar nicht geprüft — also
+# genau die Texte, die im App Store stehen und die niemand mehr ändern kann,
+# ohne eine neue Fassung einzureichen.
+#
+# Zwei Kopien wären der sichere Weg ins Auseinanderlaufen; das ist in diesem
+# Projekt schon dreimal passiert (Baukasten, „Dieselbe Sache an zwei Orten").
+#
+# Kleinschreibung, ein Eintrag je Zeile. Verglichen wird als Teilzeichenkette,
+# deshalb fängt `revolutio` auch „revolutionär" und „revolutioniert".
+# Zeilen mit `#` sind Kommentar.
+
+smart
+intelligent
+nahtlos
+mühelos
+erlebe
+entdecke
+revolutio
+maximier
+innovativ
+modernste
+einzigartig
+leistungsstark
+benutzerfreundlich
+state of the art
+
+# Nachgetragen am 7. September, auf Ansage des Gründers, die Funktionstexte
+# müssten „professionell wirken und nicht wie von einer KI klingen". Das sind
+# die Wendungen, an denen man den Generator erkennt: Sie behaupten Wirkung,
+# statt sie zu zeigen.
+optimal
+effizient
+umfassend
+vielfältig
+flexibel
+komfortabel
+kinderleicht
+im handumdrehen
+auf einen blick
+alles im griff
+behalte die kontrolle
+volle kontrolle
+noch nie war es so
+das beste aus
+hol dir
+jetzt neu
+wir freuen uns
+viel spaß

@@ -9,6 +9,65 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.111.0 — 2026-09-07
+
+**Die Texte, die eine Funktion beschreiben, werden jetzt geprüft und nicht nur
+gemeint.** Vom Gründer verlangt: Sie müssen professionell wirken und nicht wie
+von einer KI klingen.
+
+Die Website wird seit dem 28. August auf Floskeln und Gedankenstriche geprüft.
+Die Store-Texte nicht — dabei sind sie die härtere Sorte: Ein Satz auf der
+Website ist in zwei Minuten geändert, ein Satz im App Store braucht eine neue
+Fassung und eine Prüfung durch Apple.
+
+`scripts/check-store-texte.py` zählt in jedem Textblock von
+`docs/09-appstore.md`:
+
+| Was | Schwelle |
+|---|---|
+| Floskeln aus `scripts/floskeln.txt` | keine |
+| Gedankenstriche | einer je 250 Wörter, wie bei der Website |
+| Kurze Sätze am Stück | höchstens zwei; drei sind ein Slogan |
+| Ausrufezeichen | keins |
+| Werbliche Wir-Form | keine |
+
+Die Floskelliste steht ab jetzt **einmal** und wird von beiden Prüfungen
+gelesen. Zwei Kopien wären die vierte Stelle in diesem Projekt, an der zwei
+Fassungen auseinanderlaufen.
+
+**Und sie hat sofort angeschlagen — in dem Text, der seit dem 4. September im
+Laden steht:**
+
+```
+Beschreibung: 6 Gedankenstriche auf 636 Wörter (bis 3)
+Beschreibung: 5 kurze Sätze am Stück — das ist eine Dreierkette, kein Gedanke
+```
+
+Die Kette war „Unbegrenzt viele Zähler. Zähler mit zwei Zahlen. Kosten und
+Preise. Den Verbrauchsbericht ohne Schriftzug. Je 1,99 €." Fünf Bruchstücke,
+die aussehen wie eine Anzeige. Daraus ist ein Satz geworden, und drei
+Gedankenstriche sind Komma, Doppelpunkt und Punkt gewichen. Die Beschreibung
+ist damit 3975 Zeichen lang und geht mit der nächsten Fassung hinaus.
+
+**Zwei Fehlalarme desselben Laufs sind ebenfalls behoben**, und das war der
+wichtigere Teil: Eine Preisliste ist keine Dreierkette, und „Auf unseren
+Servern liegen sie nicht — wir haben keine." ist keine Werbung, sondern der
+beste Satz des Textes. Eine Prüfung, die auf dem richtigen Text anschlägt, wird
+nach dem zweiten Mal ignoriert.
+
+Gegenprobe mit einem absichtlich generierten Text („Erlebe die smarte Art …!
+Wir freuen uns, dir eine umfassende und intelligente Auswertung zu
+präsentieren. Verbrauch. Kosten. Kontrolle."): vier Funde, alle vier Wege
+greifen.
+
+Die Regeln dahinter stehen im Skill `selbstsprechend`, neuer Abschnitt
+„Funktionstexte" — samt der einen, die nur Versionshinweise betrifft: **Nichts
+als „neu" verkaufen, was schon beworben war und nur nicht ging.** Deshalb hieß
+es bei 1.0.1 „Der Abgleich über iCloud läuft jetzt wirklich" und nicht „Neu:
+iCloud-Abgleich".
+
+---
+
 ## 0.110.2 — 2026-09-07
 
 **Fassung 1.0.1 ist freigegeben.** Eingereicht am 6. September um 05:53 UTC,

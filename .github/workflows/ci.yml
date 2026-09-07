@@ -138,6 +138,12 @@ jobs:
       - name: Angriffsfläche
         run: scripts/check-sicherheit.sh
 
+      # Was im App Store steht, lässt sich nicht eben ändern — dafür braucht es
+      # eine neue Fassung und eine Prüfung durch Apple. Geprüft wurde bis
+      # 0.111.0 nur die Website.
+      - name: Klang der Store-Texte
+        run: python3 scripts/check-store-texte.py
+
 
       # Reines Parsen der iOS-Quellen, ohne SDK. Kostet Sekunden und fängt
       # einen Block ab, der in der falschen Struktur gelandet ist — 0.32.0 ging

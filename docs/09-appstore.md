@@ -95,7 +95,7 @@ Ziffernblock ist groß genug, dass man ihn einhändig trifft. Auch im
 Halbdunkel und mit klammen Fingern.
 
 Und bevor der Wert in deinen Daten landet, sieht die App ihn sich an. Eine Zahl
-unter dem letzten Stand, eine Zahl weit über dem, was bei dir üblich ist — dann
+unter dem letzten Stand, eine Zahl weit über dem, was bei dir üblich ist: dann
 fragt sie nach. Am Zähler kannst du noch einmal hinsehen, im Februar vor dem
 Diagramm nicht mehr.
 
@@ -134,12 +134,12 @@ liegt daneben.
 
 AUCH DIE FÄLLE, DIE ANDERE APPS NICHT KENNEN
 
-• Photovoltaik: ein Zähler, zwei Richtungen — Bezug und Einspeisung, mit
+• Photovoltaik: ein Zähler, zwei Richtungen, Bezug und Einspeisung, mit
   Vergütung
 • Tag- und Nachtstrom: zwei Preise an einem Gerät, für Nachtspeicher,
   Wärmepumpe oder die Wallbox in der Garage
-• Zählerwechsel: alter Endstand rein, neuer Anfangsstand rein — der Verlauf
-  reißt nicht ab
+• Zählerwechsel: alter Endstand rein, neuer Anfangsstand rein, und der
+  Verlauf reißt nicht ab
 • Gas, Wasser, Warmwasser, Fernwärme, Heizöl, Regenwasser, Betriebsstunden
 
 
@@ -170,10 +170,10 @@ EIN PAAR EURO, EINMAL. KEIN ABO.
 Kostenlos bleiben: zwei Zähler, so viele Ablesungen du willst, der ganze
 Verlauf, der Vorjahresvergleich und der Export.
 
-Wenn dir später etwas fehlt, kaufst du genau das frei — und nicht ein Paket, in
-dem drei Dinge stecken, die du nie brauchst. Unbegrenzt viele Zähler. Zähler
-mit zwei Zahlen. Kosten und Preise. Den Verbrauchsbericht ohne Schriftzug. Je
-1,99 €. Die Erinnerung, wenn ein Zähler dran ist, kostet 0,99 €. Alle fünf
+Wenn dir später etwas fehlt, kaufst du genau das frei und nicht ein Paket, in
+dem drei Dinge stecken, die du nie brauchst. Je 1,99 € kosten unbegrenzt viele
+Zähler, Zähler mit zwei Zahlen, Kosten und Preise sowie der Verbrauchsbericht
+ohne Schriftzug. Die Erinnerung, wenn ein Zähler dran ist, kostet 0,99 €. Alle fünf
 zusammen 4,99 €. Einmal bezahlt, auf allen deinen Geräten, und es bleibt.
 
 Den Bericht kannst du dir immer ansehen und ausdrucken. Freischalten musst du

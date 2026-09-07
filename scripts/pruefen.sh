@@ -130,6 +130,10 @@ if [ "$SCOPE" != "bilder" ]; then
   # zusammen", während sie 0,99 € kosteten und es fünf waren. Beide Seiten
   # waren online, keine Prüfung sah hin (0.103.1).
   run "Versprechen der Website" python3 scripts/check-versprechen.py || true
+  # **Die Store-Texte sind die härtere Sorte.** Was auf der Website steht, ist
+  # in zwei Minuten geändert; was im App Store steht, braucht eine neue Fassung
+  # und eine Prüfung durch Apple. Geprüft wurde bis 0.111.0 nur die Website.
+  run "Klang der Store-Texte" python3 scripts/check-store-texte.py || true
   # Reines Parsen, ohne SDK und ohne Typprüfung — und deshalb auch unter Linux.
   #
   # Es findet nicht alles, aber eine ganze Fehlerklasse: einen Block, der in der
