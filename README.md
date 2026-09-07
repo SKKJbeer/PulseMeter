@@ -3,7 +3,7 @@
 Die App zur Erfassung, Analyse und Dokumentation von Zählerständen.
 
 **Im App Store:** [Zählora – Zähler & Verbrauch](https://apps.apple.com/de/app/id6802262743)
-— seit dem 4. September 2026, kostenlos.
+— seit dem 4. September 2026, kostenlos. Aktuelle Fassung 1.0.1.
 
 > **Positionierung:** Zählora ist das Haushaltsbuch für Verbrauch — du trägst eine Zahl ein,
 > und die App sagt dir, ob alles im Rahmen ist.
@@ -99,7 +99,7 @@ iCloud-Abgleich wie Käufe lassen sich noch nicht ausprobieren.
 
 ## Status
 
-Version **0.110.1**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
+Version **0.110.2**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
 rechnet echt. Alle vier Bildschirme — Übersicht, Erfassung, Verlauf und Zähler —
 laufen als SwiftUI-App im Simulator und werden auf jedem Lauf fotografiert,
 hell und dunkel. Siehe [CHANGELOG.md](CHANGELOG.md).

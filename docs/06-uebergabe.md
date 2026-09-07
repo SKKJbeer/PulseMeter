@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-09-06, Version 0.110.1
+Stand: 2026-09-07, Version 0.110.2
 
 ---
 
@@ -86,14 +86,14 @@ Tabelle im Baukasten unter „Die Prüfungen".
 
 ## Wo die Arbeit steht
 
-**`main` ist der aktuelle Stand**, Version 0.110.1. Es gibt keinen offenen
+**`main` ist der aktuelle Stand**, Version 0.110.2. Es gibt keinen offenen
 Arbeitszweig; alles ist zusammengeführt. `claude/setup-pruefung-4qyr2u` steht
 noch bei GitHub, vollständig in `main` — aus der Cloud lässt er sich nicht
 löschen (`HTTP 403`), von der Weboberfläche aus mit einem Klick.
 
-| | Stand am 6. September |
+| | Stand am 7. September |
 |---|---|
-| **App Store** | **Zählora 1.0 ist im Laden.** Freigegeben am 4. September, 23:00 UTC |
+| **App Store** | **Zählora 1.0.1 ist freigegeben** — 7. September. 1.0 stand dort seit dem 4. September |
 | `PulseCore` | 238 Tests, grün |
 | Klick-Dummy | 264 Prüfungen, hell und dunkel, grün |
 | Website | 407 Prüfungen, grün, live auf `zaehlora.pages.dev` |
@@ -102,8 +102,9 @@ löschen (`HTTP 403`), von der Weboberfläche aus mit einem Klick.
 | Käufe | 6 von 6, mit der Fassung eingereicht |
 | Länder | 175, Deutschland dabei |
 
-**Der Umfang von 1.0 ist vollständig** — aber zwei gebaute Sachen kommen beim
-Nutzer nicht an. Siehe gleich darunter.
+**Der Umfang von 1.0 ist vollständig, und seit 1.0.1 kommt er auch an.** Der
+iCloud-Abgleich und das Feld auf dem Sperrbildschirm waren in 1.0 eingebaut und
+beworben und erreichten niemanden; warum, steht gleich darunter.
 
 ### Gelöst: Bau 32 bringt iCloud-Abgleich und Widget
 
@@ -134,21 +135,26 @@ kam weiter ohne Einstellungen zurück. Der Block trägt die Einstellungen einer
 Fähigkeit, nicht die Kennungen dahinter. Die Probe auf die Zuordnung ist und
 bleibt das Signieren.
 
-### Fassung 1.0.1 ist bei Apple — eingereicht am 6. September, 05:53 UTC
+### Fassung 1.0.1 ist freigegeben — 7. September
 
 ```
-Fassung 1.0.1: WAITING_FOR_REVIEW, releaseType AFTER_APPROVAL
-reviewSubmissions 68046b63 — submittedDate 2026-09-06T05:53:26, WAITING_FOR_REVIEW
-   ⇒ beigefügt: appStoreVersions d0e7e473 {'versionString': '1.0.1'}
+Fassung 1.0.1: READY_FOR_SALE, appVersionState READY_FOR_DISTRIBUTION
+reviewSubmissions 68046b63 — submittedDate 2026-09-06T05:53:26, state COMPLETE
 ```
 
-Darin Bau 32, also der erste mit iCloud-Abgleich und Widget, dazu die
-Kostenspalten und das Erklärblatt aus Bau 26. Die Versionshinweise stehen in
-`docs/09-appstore.md` unter „Für 1.0.1"; sie sagen bei iCloud und
-Sperrbildschirm „läuft jetzt wirklich" und nicht „neu".
+Eingereicht am 6. September um 05:53 UTC, freigegeben gut sechsundzwanzig
+Stunden später. Keine Rückfrage, kein Lösungscenter. `AFTER_APPROVAL` hat
+gehalten: Niemand musste einen Knopf drücken.
 
-Bis Apple freigibt, steht im Laden weiter Bau 25. `AFTER_APPROVAL` heißt: Es
-geht danach von selbst hinein, niemand muss einen Knopf drücken.
+Damit ist zum ersten Mal beim Käufer, was seit dem 4. September in der
+Beschreibung steht — der iCloud-Abgleich und das Feld auf dem Sperrbildschirm —
+und dazu die Kostenspalten für Monat, Quartal und Jahr samt Erklärblatt.
+
+**Apples öffentliches Verzeichnis hinkt hinterher, und das ist normal.** Zum
+Zeitpunkt der Freigabe meldete `itunes.apple.com/lookup` noch 1.0. Der Zustand
+in App Store Connect ist die Auskunft, die zählt; das Verzeichnis zieht binnen
+Stunden nach. Wer vom Verzeichnis auf „noch nicht freigegeben" schließt, liest
+einen Zwischenstand als Befund.
 
 ### Aufrufe und Ladungen — `zahlen.yml`
 

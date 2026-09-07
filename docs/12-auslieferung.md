@@ -1,6 +1,6 @@
 # 12 – Auslieferung: vom Code in den App Store, ohne Mac
 
-Stand: 2026-09-06, Version 0.109.0
+Stand: 2026-09-07, Version 0.110.2
 
 Am 17. August ist Zählora zum ersten Mal in TestFlight gelandet — **ohne
 Kabel, ohne Xcode auf dem Rechner des Gründers, ohne einen Klick im
@@ -360,6 +360,33 @@ Ablauf die Veröffentlichung ausdrücklich an — und dafür fehlte
 `permissions: actions: write`. Fünf Stunden lang stand die App im Laden und die
 eigene Seite sagte „Bald im App Store". Behoben in 0.106.6, samt einer Prüfung
 am Ende des Ablaufs, die die **Seite abruft** statt den Push zu zählen.
+
+### Und die zweite Fassung, 1.0.1 — freigegeben am 7. September
+
+```
+Fassung 1.0.1: READY_FOR_SALE, appVersionState READY_FOR_DISTRIBUTION
+reviewSubmissions 68046b63 — submittedDate 2026-09-06T05:53:26, state COMPLETE
+```
+
+Eingereicht am 6. September um 05:53 UTC, freigegeben gut sechsundzwanzig
+Stunden später, ohne Rückfrage. Darin Bau 32 — der erste, der den
+iCloud-Abgleich und das Feld auf dem Sperrbildschirm wirklich mitbringt.
+
+**Eine zweite Fassung ist nicht dasselbe wie die erste**, und zwei Stellen
+haben das bis dahin nicht gewusst:
+
+- `versionString` stand fest auf `"1.0"`, und beide Skripte nahmen sonst den
+  ersten Eintrag der Fassungsliste. Mit zwei Fassungen ist das eine Wette auf
+  Apples Sortierung. Seit 0.110.0 kommt die Fassung aus `PULSE_FASSUNG`, und
+  beide Abläufe fragen beim Start danach.
+- Die Versionshinweise stehen in `09-appstore.md` je Fassung untereinander, und
+  gelesen wurde der **erste** Block. 1.0.1 hätte den Text von 1.0 bekommen —
+  ohne dass es auffällt, weil ein Text ja dasteht.
+
+**Und das öffentliche Verzeichnis hinkt der Freigabe hinterher.** Als App Store
+Connect `READY_FOR_SALE` meldete, gab `itunes.apple.com/lookup` noch 1.0
+zurück. Kein Fehler, nur Verzögerung — aber wer das Verzeichnis für die
+Auskunft hält, meldet „noch nicht durch", während es durch ist.
 
 ### Was am Starttag von Hand passiert
 

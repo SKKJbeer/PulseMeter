@@ -9,6 +9,44 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.110.2 — 2026-09-07
+
+**Fassung 1.0.1 ist freigegeben.** Eingereicht am 6. September um 05:53 UTC,
+durch nach gut sechsundzwanzig Stunden, ohne Rückfrage:
+
+```
+Fassung 1.0.1: READY_FOR_SALE, appVersionState READY_FOR_DISTRIBUTION
+reviewSubmissions 68046b63 — submittedDate 2026-09-06T05:53:26, state COMPLETE
+```
+
+Damit ist beim Käufer, was seit dem 4. September in der Beschreibung stand und
+niemanden erreichte: der iCloud-Abgleich und das Feld auf dem Sperrbildschirm.
+Dazu die Kostenspalten für Monat, Quartal und Jahr samt Erklärblatt aus Bau 26.
+`AFTER_APPROVAL` hat gehalten — niemand musste einen Knopf drücken.
+
+**Und ein letzter Stolperstein, der beinahe eine Falschmeldung geworden wäre.**
+Zum Zeitpunkt der Freigabe gab Apples öffentliches Verzeichnis noch die alte
+Fassung zurück:
+
+```
+App Store Connect:                READY_FOR_SALE, Einreichung COMPLETE
+itunes.apple.com/lookup:          1.0 | 2026-09-04T23:00:15Z
+```
+
+Beides zur selben Minute abgefragt. Das Verzeichnis zieht erst binnen Stunden
+nach — es ist der Zwischenstand, nicht die Auskunft. Vier Nachschauen lang war
+der Lookup der billige Vorabtest, und er hätte diese eine als „noch nicht
+durch" gemeldet.
+
+> **Wer zwei Quellen hat, muss sagen, welche gilt.** Die schnellere ist selten
+> die richtige, und ein Zwischenstand, den man für einen Befund hält, ist
+> genau die Fehlerklasse, an der dieses Projekt schon eine Woche verloren hat.
+
+Nachgetragen in `12-auslieferung.md` (samt der zwei Stellen, die eine zweite
+Fassung nicht kannten) und in der Übergabe.
+
+---
+
 ## 0.110.1 — 2026-09-06
 
 **Fassung 1.0.1 ist bei Apple.** Eingereicht um 05:53 UTC, mit Bau 32:
