@@ -273,8 +273,18 @@ final class LaunchTests: XCTestCase {
             // Seitenleistenzeile meldet, ist nichts, worauf sich eine Prüfung
             // stützen darf. `kartenstand-Gas` und `forecast-strip` gehen in
             // dieser Datei seit Langem denselben Weg, und der hält.
+            // **`.matching(identifier:).firstMatch`, nicht der Zugriff über den
+            // Index.** Beide finden die Zeile — aber der Index verlangt, dass
+            // es **genau eine** gibt, und eine Kennung an einer Zeile vererbt
+            // sich an alles, was darin steckt. Der Lauf 397 hat es genau so
+            // gemeldet: „Failed to tap ziel-Verlauf: Multiple matching
+            // elements found", darunter ein Baum von neun geschachtelten
+            // Elementen. `kartenstand-Gas` und `forecast-strip` gehen in
+            // dieser Datei seit jeher diesen Weg; ich bin davon abgewichen,
+            // und es hat einen Lauf gekostet.
             for kandidat in [app.tabBars.buttons[name],
-                             app.descendants(matching: .any)["ziel-\(name)"]] {
+                             app.descendants(matching: .any)
+                                .matching(identifier: "ziel-\(name)").firstMatch] {
                 if kandidat.exists { return kandidat }
             }
             // Zugeklappt steht das Ziel nicht im Baum. Höchstens zweimal
@@ -1270,7 +1280,8 @@ final class LaunchTests: XCTestCase {
         // unten die Einspeisezeile der Karte dahinter — „Einspeisung 2.555 kWh,
         // ≈ 209,48 € vergütet" statt „Einspeisung, Zählwerk 2 von 2". Auf dem
         // Telefon verdeckt das Blatt alles, und der Griff ging jahrelang gut.
-        let schritt = app.descendants(matching: .any)["erfassung-schritt"]
+        let schritt = app.descendants(matching: .any)
+            .matching(identifier: "erfassung-schritt").firstMatch
         XCTAssertTrue(schritt.waitForExistence(timeout: 15),
                       "Der Erfassungsschirm nennt das erste Zählwerk nicht")
         XCTAssertTrue(schritt.label.hasPrefix("Bezug"),

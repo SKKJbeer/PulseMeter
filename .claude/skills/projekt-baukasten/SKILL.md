@@ -1352,6 +1352,26 @@ Zwei Dinge entscheiden, ob so eine Prüfung überlebt:
   klonen — oder sagen, dass nicht geprüft werden konnte. Grün, ohne
   hingesehen zu haben, ist die schlechtere Auskunft.
 
+### Eine Kennung vererbt sich, und der Zugriff per Index verlangt Eindeutigkeit
+
+Die Kennung war gesetzt, das Element wurde gefunden — und der Lauf fiel
+trotzdem: „Failed to tap: **Multiple matching elements found**", darunter ein
+Baum aus neun geschachtelten Elementen mit derselben Kennung. Eine Kennung an
+einer Zeile gilt auch für alles, was in dieser Zeile steckt.
+
+> Der Zugriff über den Index (`query["kennung"]`) fordert **genau ein**
+> Element und bricht sonst beim Tippen ab — nicht beim Suchen, sondern eine
+> Handlung später, was die Meldung erst spät und dann anderswo entstehen lässt.
+> `matching(identifier:).firstMatch` fordert das nicht.
+
+Bemerkenswert daran: Im selben Projekt gingen mehrere ältere Prüfungen längst
+den zweiten Weg und hielten. Ich habe für dieselbe Sache einen anderen Griff
+gewählt, ohne zu prüfen, warum die vorhandenen so aussehen, wie sie aussehen.
+
+> **Wenn im Bestand ein Muster mehrfach vorkommt, ist die Abweichung davon
+> begründungspflichtig — nicht das Muster.** Es steht meistens dort, weil
+> jemand den kürzeren Weg schon bezahlt hat.
+
 Und noch eine Falle desselben Tages, dieselbe Familie: **Auf einem großen
 Bildschirm bleibt hinter einem Blatt alles ansprechbar.** Eine Prüfung suchte
 „den ersten Text, der mit *Einspeisung* anfängt" und fand die Zeile der Karte

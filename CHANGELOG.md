@@ -9,6 +9,26 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.113.1 — 2026-09-08
+
+**Die Kennung war richtig, der Griff danach nicht.** Auf dem iPad meldete der
+Lauf: „Failed to tap ziel-Verlauf: Multiple matching elements found", darunter
+ein Baum aus neun geschachtelten Elementen.
+
+### Behoben
+
+- Die Seitenleistenzeile wird über `.matching(identifier:).firstMatch` gesucht
+  statt über den Zugriff per Index. Beide finden sie — aber der Index verlangt,
+  dass es **genau eine** gibt, und eine Kennung an einer Zeile vererbt sich an
+  alles, was darin steckt. `kartenstand-Gas` und `forecast-strip` gehen in
+  dieser Datei seit jeher den ersten Weg; die Abweichung hat einen Lauf
+  gekostet. Dasselbe für `erfassung-schritt`.
+
+Von neunzehn gefallenen Prüfungen auf dem iPad sind damit siebzehn übrig
+gewesen: Der Starttest und der Erfassungsschirm mit seinen zwei Zählwerken sind
+in 0.113.0 grün geworden. Die verbleibenden siebzehn hängen alle an demselben
+Griff.
+
 ## 0.113.0 — 2026-09-08
 
 **Der Klick-Dummy kann jetzt Tablet.** Unter dem Gerät steht ein Knopf „Auf dem
