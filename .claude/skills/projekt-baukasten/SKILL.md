@@ -1399,7 +1399,17 @@ zufällig daran vorbeigekommen.
 > gestellt.
 
 Und noch eine Falle desselben Tages, dieselbe Familie: **Auf einem großen
-Bildschirm bleibt hinter einem Blatt alles ansprechbar.** Eine Prüfung suchte
+Bildschirm bleibt hinter einem Blatt alles ansprechbar** — und das ist so oft
+zugeschlagen, dass es eine eigene Hilfe verdient hat:
+
+> **Wer eine Handlung ausführt, nimmt den ersten Treffer, der sie auch
+> entgegennehmen kann** — nicht den ersten. Vier Zeilen, die über die Treffer
+> laufen und den ersten bedienbaren zurückgeben, fangen beide Ursachen ab: die
+> vererbte Kennung (dann trifft man das Symbol) und den Schirm hinter dem Blatt
+> (dann trifft man das Falsche daneben). Beide melden „not hittable" und nennen
+> eine Stelle, die mit der Ursache nichts zu tun hat.
+
+Die längere Fassung des zweiten Falls: Eine Prüfung suchte
 „den ersten Text, der mit *Einspeisung* anfängt" und fand die Zeile der Karte
 hinter dem Blatt statt der im Blatt. Auf dem kleinen Gerät verdeckt ein Blatt
 den ganzen Schirm, und der Griff ging jahrelang gut. Wer auf einem größeren

@@ -9,6 +9,31 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.113.4 — 2026-09-08
+
+**Auf dem iPad war von siebzehn gefallenen Prüfungen noch eine übrig — und es
+war dieselbe Falle wie zwei Fassungen zuvor, nur an einer anderen Stelle.**
+
+```
+Failed to not hittable: Button, {{474.0, 134.5}, …}, label: 'Wärmepumpe'
+```
+
+Der Name steht zweimal auf dem Schirm: als Auswahl im Berichtsblatt und in der
+Zählerauswahl des Verlaufs dahinter. Auf dem Telefon verdeckt ein Blatt alles,
+und `firstMatch` traf die gemeinte Zeile. Auf dem iPad schwebt es als
+Formularblatt in der Mitte — der gefundene Knopf lag bei x = 474, also **neben**
+dem Blatt, im Schirm dahinter.
+
+### Behoben
+
+- Wo eine Prüfung etwas antippt, nimmt sie jetzt den ersten Treffer, der sich
+  auch **bedienen** lässt. Dafür gibt es eine gemeinsame Hilfe, denn die Falle
+  hat zwei ganz verschiedene Ursachen und ist deshalb zweimal zugeschlagen:
+  Eine Kennung vererbt sich an alles in einem Element (dann trifft man das
+  Symbol), und hinter einem Blatt bleibt auf großen Schirmen alles ansprechbar
+  (dann trifft man den Schirm dahinter). Beide Male lautet die Meldung „not
+  hittable" und nennt eine Stelle, die mit der Ursache nichts zu tun hat.
+
 ## 0.113.3 — 2026-09-08
 
 **Die iPad-Prüfung steht jetzt fast am Ende des Laufs.** Das ändert nichts

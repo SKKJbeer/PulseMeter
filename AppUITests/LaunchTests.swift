@@ -284,19 +284,9 @@ final class LaunchTests: XCTestCase {
             // und es hat einen Lauf gekostet.
             let tab = app.tabBars.buttons[name]
             if tab.exists { return tab }
-            // **Der erste Treffer, der sich auch antippen lässt.**
-            //
-            // `firstMatch` allein genügt nicht: Eine Kennung an einer Zeile
-            // gilt für alles darin, und der erste Treffer war in Lauf 398 das
-            // Symbol — „Failed to tap … label: 'gauge.medium'". Ein Symbol
-            // allein nimmt keinen Tipp entgegen. Seit derselben Fassung ist
-            // die Zeile ein einziges Element; diese Schleife bleibt trotzdem,
-            // weil sie die Klasse abfängt und nicht den einen Fall.
-            let treffer = app.descendants(matching: .any)
-                .matching(identifier: "ziel-\(name)")
-            for index in 0..<treffer.count {
-                let kandidat = treffer.element(boundBy: index)
-                if kandidat.exists && kandidat.isHittable { return kandidat }
+            if let zeile = treffbar(app.descendants(matching: .any)
+                                       .matching(identifier: "ziel-\(name)")) {
+                return zeile
             }
             // Zugeklappt steht das Ziel nicht im Baum. Höchstens zweimal
             // umgeschaltet: Der Knopf ist ein Umschalter, und wer ihn in
@@ -313,6 +303,30 @@ final class LaunchTests: XCTestCase {
             }
             Thread.sleep(forTimeInterval: 0.25)
         } while Date() < ende
+        return nil
+    }
+
+    /// Der erste Treffer einer Suche, der sich auch **bedienen** lässt.
+    ///
+    /// **Diese vier Zeilen fassen zwei verlorene Läufe zusammen.** Auf einem
+    /// großen Bildschirm ist `firstMatch` regelmäßig der falsche Griff, und
+    /// zwar aus zwei Gründen, die nichts miteinander zu tun haben:
+    ///
+    /// - Eine **Kennung vererbt sich** an alles, was in einem Element steckt.
+    ///   Der erste Treffer war das Symbol der Seitenleistenzeile — und ein
+    ///   Symbol nimmt keinen Tipp entgegen.
+    /// - Hinter einem Blatt bleibt auf dem iPad **alles ansprechbar**. Ein
+    ///   Blatt schwebt dort in der Mitte statt den Schirm zu füllen; der erste
+    ///   Treffer stand deshalb im Schirm **dahinter**, neben dem Blatt.
+    ///
+    /// Beide Male lautete die Meldung „not hittable" und nannte eine Stelle,
+    /// die nichts mit der Ursache zu tun hatte. Wer eine Handlung ausführt,
+    /// nimmt deshalb den ersten Treffer, der sie auch entgegennehmen kann.
+    private func treffbar(_ query: XCUIElementQuery) -> XCUIElement? {
+        for index in 0..<query.count {
+            let kandidat = query.element(boundBy: index)
+            if kandidat.exists && kandidat.isHittable { return kandidat }
+        }
         return nil
     }
 
@@ -1654,12 +1668,23 @@ final class LaunchTests: XCTestCase {
         XCTAssertTrue(scroll(to: entry, in: app))
         entry.tap()
 
-        // `firstMatch`, weil der Name zweimal dasteht: einmal als Auswahl im
-        // Bericht und einmal in der Zählerauswahl des Verlaufs darunter. Beide
-        // sind gültig; gemeint ist die obere.
-        let waermepumpe = app.buttons["Wärmepumpe"].firstMatch
-        XCTAssertTrue(waermepumpe.waitForExistence(timeout: erscheint),
+        // **Der erste Knopf, der sich auch treffen lässt — nicht der erste.**
+        //
+        // Der Name steht zweimal da: als Auswahl im Bericht und in der
+        // Zählerauswahl des Verlaufs dahinter. Auf dem Telefon verdeckt das
+        // Blatt alles, und `firstMatch` traf die gemeinte Zeile. Auf dem iPad
+        // schwebt es als Formularblatt in der Mitte, der Verlauf bleibt im
+        // Baum, und `firstMatch` griff dahinter: „not hittable, Button bei
+        // x = 474" — also neben dem Blatt.
+        XCTAssertTrue(app.buttons["Wärmepumpe"].firstMatch.waitForExistence(timeout: erscheint),
                       "Der Doppeltarifzähler steht nicht zur Wahl")
+        guard let waermepumpe = treffbar(app.buttons.matching(
+            NSPredicate(format: "label == %@", "Wärmepumpe"))) else {
+            XCTFail("Der Zähler steht da, aber kein Eintrag ist zu treffen — "
+                    + "vermutlich liegt der gefundene hinter dem Blatt. "
+                    + "Zu sehen war: \(beschriftungen(in: app))")
+            return
+        }
         waermepumpe.tap()
         app.buttons["Bericht erstellen"].tap()
 
