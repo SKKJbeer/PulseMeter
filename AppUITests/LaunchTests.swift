@@ -264,10 +264,17 @@ final class LaunchTests: XCTestCase {
         let ende = Date().addingTimeInterval(erscheint)
         var umgeschaltet = 0
         repeat {
-            // Die Seitenleiste ist eine Liste; ihre Zeilen sind Zellen. Auf
-            // manchen Fassungen von iOS meldet SwiftUI sie zusätzlich als
-            // Knöpfe — deshalb beides, und die Zelle zuerst.
-            for kandidat in [app.tabBars.buttons[name], app.cells[name], app.buttons[name]] {
+            // **Erst die Tableiste, dann die Kennung.**
+            //
+            // Die Seitenleistenzeile wird über `ziel-<Name>` gesucht und nicht
+            // über ihre Bauform. Drei Läufe sind an dem Versuch vergangen, sie
+            // zu erraten: als Zelle nicht da, als Knopf nicht da — und das
+            // Bildschirmfoto zeigte sie die ganze Zeit. Wie SwiftUI eine
+            // Seitenleistenzeile meldet, ist nichts, worauf sich eine Prüfung
+            // stützen darf. `kartenstand-Gas` und `forecast-strip` gehen in
+            // dieser Datei seit Langem denselben Weg, und der hält.
+            for kandidat in [app.tabBars.buttons[name],
+                             app.descendants(matching: .any)["ziel-\(name)"]] {
                 if kandidat.exists { return kandidat }
             }
             // Zugeklappt steht das Ziel nicht im Baum. Höchstens zweimal
@@ -1257,11 +1264,17 @@ final class LaunchTests: XCTestCase {
         // Über den Anfang der Beschriftung: Seit 0.29.0 stehen Zählwerkname und
         // Fortschritt für VoiceOver als ein Satz da — „Bezug, Zählwerk 1 von 2".
         // Geprüft wird, dass beides gesagt wird, nicht in wie vielen Elementen.
-        let schritt = app.staticTexts.containing(
-            NSPredicate(format: "label BEGINSWITH 'Bezug'")
-        ).firstMatch
+        // **Über die Kennung, nicht über den Anfang des Textes.** Auf dem iPad
+        // schwebt das Erfassungsblatt über der Übersicht, und die bleibt im
+        // Zugänglichkeitsbaum. `BEGINSWITH 'Einspeisung'` traf deshalb weiter
+        // unten die Einspeisezeile der Karte dahinter — „Einspeisung 2.555 kWh,
+        // ≈ 209,48 € vergütet" statt „Einspeisung, Zählwerk 2 von 2". Auf dem
+        // Telefon verdeckt das Blatt alles, und der Griff ging jahrelang gut.
+        let schritt = app.descendants(matching: .any)["erfassung-schritt"]
         XCTAssertTrue(schritt.waitForExistence(timeout: 15),
                       "Der Erfassungsschirm nennt das erste Zählwerk nicht")
+        XCTAssertTrue(schritt.label.hasPrefix("Bezug"),
+                      "Zuerst ist der Bezug dran — gelesen: \(schritt.label)")
         XCTAssertTrue(schritt.label.contains("Zählwerk 1 von 2"),
                       "Ohne den Fortschritt weiß niemand, dass noch etwas kommt — gelesen: \(schritt.label)")
 
@@ -1273,13 +1286,14 @@ final class LaunchTests: XCTestCase {
         app.buttons["Vom letzten Stand übernehmen"].tap()
         next.tap()
 
-        let zweiter = app.staticTexts.containing(
-            NSPredicate(format: "label BEGINSWITH 'Einspeisung'")
-        ).firstMatch
-        XCTAssertTrue(zweiter.waitForExistence(timeout: erscheint),
+        // Dieselbe Zeile, neu gelesen: Der Schirm bleibt derselbe, nur sein
+        // Inhalt wechselt auf das zweite Zählwerk.
+        XCTAssertTrue(schritt.waitForExistence(timeout: erscheint),
                       "Nach dem Bezug muss die Einspeisung drankommen")
-        XCTAssertTrue(zweiter.label.contains("Zählwerk 2 von 2"),
-                      "gelesen: \(zweiter.label)")
+        XCTAssertTrue(schritt.label.hasPrefix("Einspeisung"),
+                      "Nach dem Bezug kommt die Einspeisung — gelesen: \(schritt.label)")
+        XCTAssertTrue(schritt.label.contains("Zählwerk 2 von 2"),
+                      "gelesen: \(schritt.label)")
 
         let save = app.buttons["Sichern"]
         XCTAssertTrue(save.exists, "Beim letzten Zählwerk muss „Sichern“ dastehen")
@@ -1293,8 +1307,14 @@ final class LaunchTests: XCTestCase {
                       "„Abbrechen“ muss neben „Zurück“ erreichbar bleiben")
         back.tap()
 
-        XCTAssertTrue(schritt.waitForExistence(timeout: erscheint),
-                      "„Zurück“ hat nicht wieder zum ersten Zählwerk geführt")
+        // **Am Inhalt geprüft, nicht am Dasein.** Die Zeile trägt jetzt eine
+        // feste Kennung und ist deshalb immer da — nur was drinsteht, wechselt.
+        // `waitForExistence` allein wäre hier seit dieser Fassung eine Prüfung,
+        // die nichts mehr prüft.
+        let zurueckAngekommen = expectation(
+            for: NSPredicate(format: "label BEGINSWITH 'Bezug'"),
+            evaluatedWith: schritt)
+        wait(for: [zurueckAngekommen], timeout: erscheint)
         XCTAssertTrue(next.exists, "Beim ersten Zählwerk muss wieder „Weiter“ dastehen")
         // Der eingetippte Wert muss wieder dastehen. „Weiter" ist nur
         // freigeschaltet, wenn eine Zahl im Zählwerk steht — bliebe es
@@ -1671,9 +1691,31 @@ final class LaunchTests: XCTestCase {
     }
 
     private func beschriftungen(in app: XCUIApplication, limit: Int = 40) -> String {
-        let texte = app.staticTexts.allElementsBoundByIndex.prefix(limit).map { "T:\($0.label)" }
-        let knoepfe = app.buttons.allElementsBoundByIndex.prefix(limit).map { "K:\($0.label)" }
-        return (texte + knoepfe).joined(separator: " · ")
+        // **Die Kennungen kommen mit, und der Deckel wird genannt.**
+        //
+        // Zwei Läufe lang stand in einer Meldung „Verlauf ist nicht zu finden",
+        // und im Abzug daneben stand Verlauf tatsächlich nicht — nur waren es
+        // genau 40 Texte, also so viele, wie der Deckel zulässt. Ob der Eintrag
+        // fehlte oder nur abgeschnitten war, ließ sich nicht unterscheiden. Ein
+        // Abzug, dem man nicht ansieht, dass er unvollständig ist, führt in die
+        // Irre statt aus ihr heraus.
+        //
+        // Die Kennungen stehen dabei, weil die Prüfungen dieser Datei danach
+        // greifen. Ein Abzug ohne sie sagt nichts darüber, warum ein Griff
+        // danebengeht.
+        func abzug(_ query: XCUIElementQuery, _ art: String) -> [String] {
+            let alle = query.allElementsBoundByIndex
+            var zeilen = alle.prefix(limit).map { element -> String in
+                let kennung = element.identifier
+                return kennung.isEmpty ? "\(art):\(element.label)"
+                                       : "\(art):\(element.label)[\(kennung)]"
+            }
+            if alle.count > limit { zeilen.append("\(art):… und \(alle.count - limit) weitere") }
+            return zeilen
+        }
+        return (abzug(app.staticTexts, "T")
+                + abzug(app.buttons, "K")
+                + abzug(app.cells, "Z")).joined(separator: " · ")
     }
 
     /// Die Grenze führt zur Kaufseite, nicht in eine Sackgasse.

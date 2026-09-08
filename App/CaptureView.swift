@@ -216,6 +216,13 @@ struct CaptureView: View {
                         .foregroundStyle(PulseColor.inkTertiary)
                 }
                 .accessibilityElement(children: .combine)
+                // **Eine Kennung, weil hinter dem Blatt weitergesucht wird.**
+                // Auf dem iPad schwebt das Erfassungsblatt über der Übersicht,
+                // und die steht weiter im Zugänglichkeitsbaum. Die Prüfung
+                // suchte den ersten Text, der mit „Einspeisung" anfängt, und
+                // fand die Einspeisezeile der Karte dahinter — auf dem Telefon
+                // ist sie verdeckt, auf dem größeren Gerät nicht.
+                .accessibilityIdentifier("erfassung-schritt")
             }
             if let previous, let register {
                 Text("Letzter Stand \(number(previous.value, digits: register.fractionDigits)) \(register.unit.symbol) am \(germanDate(previous.day))")

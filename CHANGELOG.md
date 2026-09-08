@@ -9,6 +9,56 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.112.3 — 2026-09-08
+
+**Die Begründung von 0.112.2 war falsch, und das steht hier, bevor irgendetwas
+anderes steht.** Dort hieß es, die Seitenleiste starte auf dem iPad zugeklappt
+und das sei ein Produktfehler. Sie war offen. Der Beleg, auf den ich mich
+gestützt hatte, war ein Knopf „Seitenleiste ausblenden" im
+Zugänglichkeitsbaum — den habe ich als Zeichen fürs Zuklappen gelesen. Er sagt
+das Gegenteil: Was sich ausblenden lässt, ist eingeblendet.
+
+Herausgekommen ist es durch das Bildschirmfoto desselben Laufs. Es zeigt die
+Leiste offen, mit allen drei Zielen, und die Karten daneben im Raster. Drei
+Läufe auf einem gemieteten Mac sind vergangen, bevor jemand hingesehen hat.
+
+### Behoben
+
+- **Die drei Ziele in der Seitenleiste tragen eine Kennung** (`ziel-Verlauf`
+  und so fort), und die Prüfung greift danach. Vorher wurde geraten, als was
+  SwiftUI eine Seitenleistenzeile meldet: als Zelle nicht da, als Knopf nicht
+  da — und auf dem Bild war sie die ganze Zeit. Wie eine Zeile gemeldet wird,
+  ist nichts, worauf sich eine Prüfung stützen darf.
+- **Der Erfassungsschirm trägt eine Kennung für seine Schrittzeile.** Auf dem
+  iPad schwebt das Blatt über der Übersicht, und die bleibt ansprechbar: Die
+  Prüfung suchte den ersten Text, der mit „Einspeisung" anfängt, und fand die
+  Einspeisezeile der Karte dahinter — „Einspeisung 2.555 kWh, ≈ 209,48 €
+  vergütet" statt „Einspeisung, Zählwerk 2 von 2". Auf dem Telefon verdeckt
+  das Blatt alles, und der Griff ging jahrelang gut.
+
+### Geändert
+
+- **Der Zustandsabzug in Fehlermeldungen sagt jetzt, wenn er abgeschnitten
+  ist**, und führt Kennungen mit. Zwei Läufe lang stand in einer Meldung
+  „Verlauf ist nicht zu finden", und im Abzug daneben fehlte Verlauf
+  tatsächlich — es waren aber genau 40 Einträge, also so viele, wie der Deckel
+  zuließ. Ob der Eintrag fehlte oder nur abgeschnitten war, ließ sich nicht
+  unterscheiden. Ein Abzug, dem man nicht ansieht, dass er unvollständig ist,
+  führt in die Irre statt aus ihr heraus.
+- `columnVisibility: .all` bleibt, aber aus einem anderen Grund als in
+  0.112.2 behauptet: Es sagt, was gelten soll, statt es der Vorgabe zu
+  überlassen.
+- Die Prüfung des Erfassungsschirms schaut nach dem Zurückgehen wieder auf den
+  **Inhalt** der Zeile. Mit fester Kennung ist sie immer da; ein bloßes
+  „existiert" hätte ab jetzt nichts mehr geprüft.
+
+### Offen
+
+- Der Klick-Dummy hat noch kein breites Layout. App und Entwurf weichen seit
+  0.112.0 darin voneinander ab — nach Regel 2 ein Fehler, kein Zustand.
+- Für den App Store fehlt der iPad-Bildschirmfotosatz. `asc-einreichung.py`
+  kennt bisher nur `APP_IPHONE_67`.
+
 ## 0.112.2 — 2026-09-08
 
 **Auf dem iPad stand beim Start nur die Übersicht. Verlauf und Zähler lagen

@@ -1283,6 +1283,51 @@ Nebenbei widerlegt: Der Stil einer geteilten Ansicht bestimmt, wie der Platz
 aufgeteilt wird, **wenn** beide Spalten stehen. Ob sie stehen, ist eine andere
 Angabe. Diese Zeile stand hier als Begründung im Code und war eine Annahme.
 
+### Der Abzug des Zustands ist nur so viel wert, wie er von sich preisgibt
+
+Der Absatz oben endete mit „die Fehlermeldung trägt den sichtbaren Zustand bei
+sich, und darin stand die Ursache". **Darin stand nicht die Ursache.** Die
+daraus abgeleitete Diagnose — die Seitenleiste sei zugeklappt — war falsch, und
+der nächste Lauf ging dafür drauf.
+
+Zwei Dinge haben in die Irre geführt, und beide sind vermeidbar:
+
+- **Ein Knopf „Seitenleiste ausblenden" belegt, dass sie eingeblendet ist.**
+  Ich habe ihn als Zeichen fürs Zuklappen gelesen. Was sich ausblenden lässt,
+  ist da.
+- **Der Abzug war auf 40 Einträge gedeckelt und hat es nicht gesagt.** Es waren
+  genau 40. Ob der gesuchte Eintrag fehlte oder nur abgeschnitten war, ließ
+  sich nicht unterscheiden — und ich habe „fehlt" gelesen.
+
+> Ein Abzug, dem man nicht ansieht, dass er unvollständig ist, führt in die
+> Irre statt aus ihr heraus. Jede gekappte Liste nennt, wie viel sie
+> weggelassen hat. Und sie führt die Kennungen mit, denn danach greifen die
+> Prüfungen — ohne sie sagt der Abzug nichts darüber, warum ein Griff
+> danebengeht.
+
+**Was die Sache in zwei Minuten geklärt hat, war das Bildschirmfoto.** Es lag
+die ganze Zeit im Zweig und zeigte die Seitenleiste offen, mit allen drei
+Zielen. Drei Läufe auf einem gemieteten Rechner sind vergangen, bevor jemand
+hingesehen hat.
+
+> Bei allem, was die Oberfläche betrifft, kommt **das Bild vor der Deutung des
+> Baums**. Ein Zugänglichkeitsbaum sagt, was ein Programm sieht; ein Foto sagt,
+> was ein Mensch sieht. Wenn beide auseinandergehen, hat das Foto recht und die
+> Frage lautet, warum der Baum etwas anderes meldet.
+
+Die Antwort auf diese Frage ist übrigens nie zu erraten: **Wie eine Oberfläche
+ihre Bestandteile meldet — als Zelle, als Knopf, als Text —, ist nichts, worauf
+sich eine Prüfung stützen darf.** Eine Kennung am Element ist es. In diesem
+Projekt gehen mehrere Prüfungen seit Langem diesen Weg und halten; die drei
+verlorenen Läufe hat der eine Griff gekostet, der es anders versuchte.
+
+Und noch eine Falle desselben Tages, dieselbe Familie: **Auf einem großen
+Bildschirm bleibt hinter einem Blatt alles ansprechbar.** Eine Prüfung suchte
+„den ersten Text, der mit *Einspeisung* anfängt" und fand die Zeile der Karte
+hinter dem Blatt statt der im Blatt. Auf dem kleinen Gerät verdeckt ein Blatt
+den ganzen Schirm, und der Griff ging jahrelang gut. Wer auf einem größeren
+Gerät prüft, prüft jeden `firstMatch` nach.
+
 ---
 
 ## 7. Wie ermittelt wird, wenn etwas nicht geht

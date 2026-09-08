@@ -67,17 +67,16 @@ struct RootView: View {
 
     /// Ob die Seitenleiste offen steht.
     ///
-    /// **`.all` und nicht die Vorgabe — gemessen, nicht angenommen.** In
-    /// 0.112.0 stand hier nichts, und der erste Lauf auf einem iPad Pro 13"
-    /// hat gezeigt, was die Vorgabe daraus macht: Die drei Ziele waren im
-    /// Zugänglichkeitsbaum **gar nicht vorhanden**, dafür ein Knopf
-    /// „Seitenleiste ausblenden". Wer die App öffnet, sah die Übersicht und
-    /// sonst nichts — der Weg zu Verlauf und Zählern lag hinter einem Symbol
-    /// in der Ecke. Auf dem Telefon stehen die drei Ziele die ganze Zeit da;
-    /// auf dem größeren Gerät zu verschwinden ist die Sackgasse aus
-    /// Produktprinzip 4.
+    /// **Hier stand, die Leiste sei zugeklappt gestartet und das sei die
+    /// Sackgasse aus Produktprinzip 4. Das war falsch.** Der Beleg dafür war
+    /// ein Knopf „Seitenleiste ausblenden" im Zugänglichkeitsbaum — den habe
+    /// ich als Zeichen fürs Zuklappen gelesen. Er sagt das Gegenteil: Was sich
+    /// ausblenden lässt, ist eingeblendet. Das Bildschirmfoto desselben Laufs
+    /// zeigt die Leiste offen, mit allen drei Zielen.
     ///
-    /// Zuklappen darf man sie weiter. Sie fängt nur nicht zugeklappt an.
+    /// Die Angabe bleibt trotzdem stehen, aber aus einem anderen Grund: Sie
+    /// sagt, was gelten soll, statt es der Vorgabe zu überlassen. Zuklappen
+    /// darf man weiter; die App fängt nur nicht zugeklappt an.
     @State private var spalten: NavigationSplitViewVisibility = .all
 
     /// Breit: Seitenleiste links, Inhalt rechts.
@@ -100,6 +99,14 @@ struct RootView: View {
             List(Self.ziele, id: \.nummer, selection: auswahl) { ziel in
                 Label(ziel.name, systemImage: ziel.symbol)
                     .tag(ziel.nummer)
+                    // **Eine Kennung, weil die Bauform nicht zu erraten war.**
+                    // Drei Läufe auf einem gemieteten Mac sind daran vergangen,
+                    // dass eine Prüfung diese Zeilen suchte: als Zelle nicht da,
+                    // als Knopf nicht da — und das Bildschirmfoto zeigte sie
+                    // trotzdem. Wie SwiftUI eine Seitenleistenzeile meldet, ist
+                    // nichts, worauf sich eine Prüfung stützen darf; eine
+                    // Kennung ist es.
+                    .accessibilityIdentifier("ziel-\(ziel.name)")
             }
             .navigationTitle("Zählora")
             .listStyle(.sidebar)
