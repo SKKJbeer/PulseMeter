@@ -9,6 +9,27 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.113.3 — 2026-09-08
+
+**Die iPad-Prüfung steht jetzt fast am Ende des Laufs.** Das ändert nichts
+daran, was geprüft wird — nur daran, wie schnell man erfährt, warum sie
+gefallen ist.
+
+GitHub gibt das Protokoll eines Auftrags erst heraus, wenn der **ganze**
+Auftrag fertig ist. Stand die Prüfung wie bisher in der Mitte, lagen zwischen
+dem Fehlschlag und seiner Begründung rund dreißig Minuten Bilderlauf. Bei fünf
+Runden hintereinander war das die teuerste Zeile der Datei. Jetzt folgen darauf
+noch zwei Schritte von zusammen zwei Minuten.
+
+Doppelt gebaut wird dadurch nichts: `run.sh` legt für das iPad ohnehin einen
+Bau an, wenn keiner daliegt, und die Prüfung benutzt ihn weiter. Ein eigenes
+Ableseverzeichnis behält sie — sonst zählt der Schritt „Datenschutz-Datei" in
+einem Paket, das er nicht meint.
+
+Nebenwirkung, und eine gute: Der Schritt „Datenschutz-Datei im gebauten Paket"
+wurde bisher übersprungen, sobald die iPad-Prüfung fiel. Er läuft jetzt in
+jedem Fall.
+
 ## 0.113.2 — 2026-09-08
 
 **Die Fehlermeldung des iPad-Laufs hat einen Mangel für die Vorlesefunktion
