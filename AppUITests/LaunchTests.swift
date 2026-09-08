@@ -1322,13 +1322,20 @@ final class LaunchTests: XCTestCase {
         XCTAssertTrue(next.isEnabled, "Nach dem Rücksprung war die Eingabe leer")
         next.tap()
 
-        XCTAssertTrue(zweiter.waitForExistence(timeout: erscheint),
-                      "Nach dem Rücksprung ging es nicht wieder vorwärts")
+        let wiederVorn = expectation(
+            for: NSPredicate(format: "label BEGINSWITH 'Einspeisung'"),
+            evaluatedWith: schritt)
+        wait(for: [wiederVorn], timeout: erscheint)
         app.buttons["Vom letzten Stand übernehmen"].tap()
         save.tap()
 
-        XCTAssertTrue(app.staticTexts["Übersicht"].waitForExistence(timeout: erscheint),
-                      "Nach dem Sichern wurde die Übersicht nicht wieder angezeigt")
+        // **Daran, dass das Blatt weg ist, nicht daran, dass „Übersicht"
+        // irgendwo steht.** Auf dem iPad heißt schon die erste Zeile der
+        // Seitenleiste so, und zwar auch, während das Blatt offen ist — die
+        // Prüfung wäre dort erfüllt, bevor irgendetwas gesichert wurde.
+        let blattZu = expectation(for: NSPredicate(format: "exists == 0"),
+                                  evaluatedWith: schritt)
+        wait(for: [blattZu], timeout: erscheint)
     }
 
     /// Die Einspeisung steht auf der Karte, und zwar über den Kosten.

@@ -1321,6 +1321,37 @@ sich eine Prüfung stützen darf.** Eine Kennung am Element ist es. In diesem
 Projekt gehen mehrere Prüfungen seit Langem diesen Weg und halten; die drei
 verlorenen Läufe hat der eine Griff gekostet, der es anders versuchte.
 
+### Eine Formprüfung löst keine Namen auf
+
+Der Bau danach lief neunzig Sekunden und fiel: Eine Umarbeitung hatte eine
+Variable gelöscht und eine Verwendung vierzig Zeilen weiter unten stehen
+lassen. Keine der Prüfungen, die ohne die Werkzeugkette der Zielplattform
+laufen, hat es gesehen — und das war kein Versehen:
+
+> **`swiftc -parse` (und jede andere reine Formprüfung) liest die Struktur und
+> löst keine Namen auf.** Eine gelöschte Variable ist syntaktisch einwandfrei.
+> Wer daraus „die Quellen sind in Ordnung" liest, liest mehr, als dasteht.
+
+Der Typprüfer, der es fände, braucht das SDK der Zielplattform und läuft
+deshalb nur auf dem gemieteten Rechner — also erst, wenn er schon Geld kostet.
+Die Lücke lässt sich aber billig schließen, und zwar **am Unterschied statt an
+der Datei**: Welche Namen hat die Änderung entfernt, und kommt einer davon noch
+vor, ohne noch erklärt zu sein? Das ist ein kurzes Skript und fängt genau
+diesen Fall.
+
+Zwei Dinge entscheiden, ob so eine Prüfung überlebt:
+
+- **Kommentare und Fließtext gehören heraus.** Der erste Lauf meldete den
+  gesuchten Namen viermal — aus einem Kommentar („zweiter Versuch"). Eine
+  Prüfung, die bei jedem Nebensatz anschlägt, ist in drei Tagen abgeschaltet.
+  Was in einer Zeichenkette in einer Einsetzung steht, bleibt dagegen stehen:
+  Das ist eine echte Verwendung.
+- **Der Vergleichsstand muss wirklich da sein.** In der CI klont der Lauf
+  standardmäßig **einen** Commit. Der Vorgänger fehlt dann, der Schritt
+  vergleicht den Stand mit sich selbst und ist immer grün. Also entweder tiefer
+  klonen — oder sagen, dass nicht geprüft werden konnte. Grün, ohne
+  hingesehen zu haben, ist die schlechtere Auskunft.
+
 Und noch eine Falle desselben Tages, dieselbe Familie: **Auf einem großen
 Bildschirm bleibt hinter einem Blatt alles ansprechbar.** Eine Prüfung suchte
 „den ersten Text, der mit *Einspeisung* anfängt" und fand die Zeile der Karte

@@ -121,7 +121,13 @@ jobs:
       cancel-in-progress: false
 
     steps:
+      # `fetch-depth: 2`, weil die Prüfung auf verwaiste Namen den Vorgänger
+      # braucht. Mit der Voreinstellung 1 gäbe es `HEAD^` nicht, der Schritt
+      # vergliche den Stand mit sich selbst und fände nie etwas — eine
+      # Prüfung, die nie anschlägt, ist keine.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Umgebung
         run: |
@@ -142,6 +148,28 @@ jobs:
         run: |
           pip3 install --quiet --break-system-packages pyflakes
           python3 scripts/check-namen.py
+
+      # Dasselbe für Swift, nur andersherum: Eine Umarbeitung löscht eine
+      # Variable und lässt eine Verwendung stehen. `swiftc -parse` liest die
+      # Form und löst keine Namen auf — in 0.112.3 ist der Bau daran nach
+      # neunzig Sekunden gescheitert, also nachdem der Läufer schon stand.
+      #
+      # `HEAD^`, nicht `HEAD`: Hier ist der Stand bereits committet, und ein
+      # Vergleich mit sich selbst findet nie etwas. Lokal in `pruefen.sh` ist
+      # die Voreinstellung `HEAD` richtig — dort liegt die Änderung noch im
+      # Arbeitsverzeichnis.
+      #
+      # Fehlt der Vorgänger, wird das **gesagt und übersprungen**, nicht
+      # stillschweigend gegen sich selbst geprüft. Ein grüner Schritt, der
+      # nichts angesehen hat, ist die schlimmere Auskunft.
+      - name: Verwaiste Namen
+        run: |
+          if vorgaenger=$(git rev-parse --verify --quiet HEAD^); then
+            python3 scripts/check-verwaiste-namen.py "$vorgaenger"
+          else
+            echo "::notice::Kein Vorgänger-Commit — verwaiste Namen nicht prüfbar."
+          fi
+
       - name: Angriffsfläche
         run: scripts/check-sicherheit.sh
 

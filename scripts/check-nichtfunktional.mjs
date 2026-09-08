@@ -157,9 +157,13 @@ for (const scheme of ["light", "dark"]) {
   await page.waitForTimeout(400);
 
   // --- Bedienbarkeit: Trefferflächen auf jedem Hauptschirm, auch in den Bögen
-  for (const [sel, name] of [['[data-pane="home"]', "Übersicht"],
-                             ['[data-pane="history"]', "Verlauf"],
-                             ['[data-pane="meters"]', "Zähler"]]) {
+  // `:visible`, seit der Entwurf zwei Rahmen kennt: Schmal führt die
+  // Tab-Leiste zum Ziel, breit die Seitenleiste, und beide tragen dieselben
+  // `data-pane`-Kennungen. Ohne den Zusatz greift `.first()` nach der
+  // Reihenfolge im Dokument und damit auf die ausgeblendete Leiste.
+  for (const [sel, name] of [['[data-pane="home"]:visible', "Übersicht"],
+                             ['[data-pane="history"]:visible', "Verlauf"],
+                             ['[data-pane="meters"]:visible', "Zähler"]]) {
     await page.locator(sel).first().click();
     await page.waitForTimeout(250);
     const klein = await page.evaluate(trefferCode);
@@ -175,7 +179,7 @@ for (const scheme of ["light", "dark"]) {
   }
 
   // --- Der Ziffernblock: der Schirm, an dem das Produkt gewinnt oder verliert
-  await page.locator('[data-pane="home"]').first().click();
+  await page.locator('[data-pane="home"]:visible').first().click();
   await page.waitForTimeout(200);
   await page.locator("[data-capture]").first().click();
   await page.waitForTimeout(350);
@@ -292,7 +296,7 @@ console.log("\nProduktprinzipien");
 
   // Prinzip 3: „Ist alles im Rahmen?" ohne Scrollen. Geprüft wird, ob die
   // erste Karte samt ihrer Zahl vollständig im ersten Bild steht.
-  await page.locator('[data-pane="home"]').first().click();
+  await page.locator('[data-pane="home"]:visible').first().click();
   await page.waitForTimeout(300);
   const sichtbar = await page.evaluate(`
     (() => {

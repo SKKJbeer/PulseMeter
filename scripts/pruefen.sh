@@ -114,6 +114,11 @@ if [ "$SCOPE" != "bilder" ]; then
   # Ein fehlender Import ist syntaktisch fehlerfrei und bricht erst beim
   # Ausführen ab — Bau 24 lag schon in TestFlight, als `import re` fehlte.
   run "Unbekannte Namen" python3 scripts/check-namen.py || true
+  # Dasselbe für Swift, nur andersherum: Eine Umarbeitung löscht eine Variable
+  # und lässt eine Verwendung stehen. `swiftc -parse` liest die Form und löst
+  # keine Namen auf, der Fehler kommt also erst im Bau — in 0.112.3 nach
+  # neunzig Sekunden auf einem gemieteten Mac.
+  run "Verwaiste Namen" python3 scripts/check-verwaiste-namen.py || true
   # Ein Knopf, der breiter ist als sein Inhalt, reagiert ohne `contentShape`
   # nur dort, wo er zeichnet. Das sieht man ihm nicht an — es hat einen
   # Fehlerbericht vom Gerät gebraucht (0.72.2).

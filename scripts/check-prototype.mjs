@@ -45,17 +45,22 @@ for (const scheme of ["light", "dark"]) {
   await page.waitForTimeout(400);
 
   // --- Hauptflüsse erreichbar
-  for (const [sel, label] of [['[data-pane="history"]', "Verlauf"],
+  // `:visible`, seit der Entwurf zwei Rahmen kennt: Schmal führt die
+  // Tab-Leiste zum Ziel, breit die Seitenleiste, und beide tragen dieselben
+  // `data-pane`-Kennungen. Ohne den Zusatz griff `.first()` nach der
+  // Reihenfolge im Dokument und damit auf die gerade **ausgeblendete** Leiste
+  // — der Klick lief in eine Zeitüberschreitung von 30 Sekunden.
+  for (const [sel, label] of [['[data-pane="history"]:visible', "Verlauf"],
                               ['[data-mode="table"]', "Tabelle"],
-                              ['[data-pane="meters"]', "Zähler"],
-                              ['[data-pane="home"]', "Übersicht"]]) {
+                              ['[data-pane="meters"]:visible', "Zähler"],
+                              ['[data-pane="home"]:visible', "Übersicht"]]) {
     const l = page.locator(sel).first();
     note(await l.count() > 0, `${label} erreichbar`);
     if (await l.count()) { await l.click(); await page.waitForTimeout(200); }
   }
 
   // --- Der Weg eines neuen Nutzers: Zähler anlegen, ersten Stand eintragen
-  await page.locator('[data-pane="meters"]').first().click();
+  await page.locator('[data-pane="meters"]:visible').first().click();
   await page.waitForTimeout(200);
   await page.locator("#add-meter").click();
   await page.waitForTimeout(200);
@@ -79,7 +84,7 @@ for (const scheme of ["light", "dark"]) {
   // Nutzer hat es beim dritten Tippversuch gemerkt (0.72.2). Der Entwurf hat es
   // richtig gemacht — ein echter Knopf über der ganzen Zeile —, und diese
   // Prüfung hält ihn dabei. Regel 2 gilt in beide Richtungen.
-  await page.locator('[data-pane="meters"]').first().click();
+  await page.locator('[data-pane="meters"]:visible').first().click();
   await page.waitForTimeout(200);
   const zeile = page.locator("[data-meter]").first();
   const kasten = await zeile.boundingBox();
@@ -102,7 +107,7 @@ for (const scheme of ["light", "dark"]) {
   // Vom Nutzer verlangt: „ich benötige noch eine Option dass man historische
   // Zählerstände ändern und löschen kann." Wer sich vertippt, verschiebt beide
   // angrenzenden Zeiträume — und sah den falschen Wert bis 0.75.0 für immer.
-  await page.locator('[data-pane="history"]').first().click();
+  await page.locator('[data-pane="history"]:visible').first().click();
   await page.waitForTimeout(250);
   // Zurück ins Diagramm: Ein früherer Abschnitt hat auf „Alle Zahlen"
   // umgeschaltet, und dort gibt es die Zeile „Alle Ablesungen" nicht.
@@ -183,7 +188,7 @@ for (const scheme of ["light", "dark"]) {
     // Erst den Verlauf auf diesen Zähler stellen — über die Karte, wie ein
     // Nutzer es täte. Danach steht die Kopfzahl für denselben Zähler wie die
     // Karte, und beide müssen sich gemeinsam bewegen.
-    await page.locator('[data-pane="home"]').first().click();
+    await page.locator('[data-pane="home"]:visible').first().click();
     await page.waitForTimeout(200);
     await page.locator(`[data-history="${ziel.id}"]`).click();
     await page.waitForTimeout(350);
@@ -197,7 +202,7 @@ for (const scheme of ["light", "dark"]) {
 
     // Ein neuer Stand, deutlich über dem letzten — auf der Übersicht
     // eingetragen, also nicht im Verlauf.
-    await page.locator('[data-pane="home"]').first().click();
+    await page.locator('[data-pane="home"]:visible').first().click();
     await page.waitForTimeout(200);
     await page.locator(`[data-capture="${ziel.id}"]`).click();
     await page.waitForTimeout(300);
@@ -219,7 +224,7 @@ for (const scheme of ["light", "dark"]) {
     note(nachher.karte !== vorher.karte && nachher.karte !== "",
          `Die Übersichtskarte zeigt ihn sofort (${vorher.karte} → ${nachher.karte})`);
 
-    await page.locator('[data-pane="history"]').first().click();
+    await page.locator('[data-pane="history"]:visible').first().click();
     await page.waitForTimeout(350);
     const kopfNachher = await page.evaluate(() =>
       document.getElementById("chart-total").textContent.trim());
@@ -237,7 +242,7 @@ for (const scheme of ["light", "dark"]) {
     await page.waitForTimeout(300);
     await page.locator("#cap-delete").click();
     await page.waitForTimeout(400);
-    await page.locator('[data-pane="home"]').first().click();
+    await page.locator('[data-pane="home"]:visible').first().click();
     await page.waitForTimeout(300);
     const zurueck = await page.evaluate(id => ({
       anzahl: METERS.find(m => m.id === id).registers[0].readings.length,
@@ -259,7 +264,7 @@ for (const scheme of ["light", "dark"]) {
   // dahin blendete der Entwurf den Block im Jahresmaßstab aus — es gab dort
   // nichts zu prüfen, und deshalb konnte in der App fünf Versionen lang
   // „Jahresvergleich" über einem halben Jahr stehen.
-  await page.locator('[data-pane="history"]').first().click();
+  await page.locator('[data-pane="history"]:visible').first().click();
   await page.waitForTimeout(200);
   await page.locator('[data-mode="chart"]').first().click();
   await page.waitForTimeout(200);
@@ -323,7 +328,7 @@ for (const scheme of ["light", "dark"]) {
   //
   // Vom Gerät gemeldet: Wer einen Balken antippt, will oben sehen, was in dem
   // Monat zusammenkam. Vorher blieb dort die Jahressumme stehen.
-  await page.locator('[data-pane="history"]').first().click();
+  await page.locator('[data-pane="history"]:visible').first().click();
   await page.waitForTimeout(250);
   const kopfOhne = await page.evaluate(() => {
     selMonth = null; renderChart();
@@ -391,7 +396,7 @@ for (const scheme of ["light", "dark"]) {
   // nichts, außer man traf „Stand eintragen". Geprüft wird die Zahl selbst,
   // nicht der Winkel daneben — sie ist das, was jemand ansieht, wenn er mehr
   // wissen will (Produktprinzip 4).
-  await page.locator('[data-pane="home"]').first().click();
+  await page.locator('[data-pane="home"]:visible').first().click();
   await page.waitForTimeout(250);
   const zweiter = await page.evaluate(() => activeMeters()[1]?.id ?? null);
   if (zweiter) {
@@ -407,12 +412,12 @@ for (const scheme of ["light", "dark"]) {
          "Und zwar zum Zähler dieser Karte, nicht zum ersten der Liste");
     note(angekommen.monat === null,
          "Ohne einen Monat, der noch vom vorigen Zähler stammt");
-    await page.locator('[data-pane="home"]').first().click();
+    await page.locator('[data-pane="home"]:visible').first().click();
     await page.waitForTimeout(200);
   }
 
   if (neu) {
-    await page.locator('[data-pane="home"]').first().click();
+    await page.locator('[data-pane="home"]:visible').first().click();
     await page.waitForTimeout(250);
     await page.locator(`[data-capture="${neu.id}"]`).first().click();
     await page.waitForTimeout(250);
@@ -437,7 +442,7 @@ for (const scheme of ["light", "dark"]) {
   }
 
   // --- Zwei Zählwerke in einem Vorgang
-  await page.locator('[data-pane="home"]').first().click();
+  await page.locator('[data-pane="home"]:visible').first().click();
   await page.waitForTimeout(200);
   const zweiId = await page.evaluate(() =>
     (METERS.find(m => m.registers.length > 1) || {}).id || null);
@@ -489,7 +494,7 @@ for (const scheme of ["light", "dark"]) {
   // laufenden Monat verbrauchen wird." Geprüft wird nicht nur, dass eine Zahl
   // dasteht, sondern dass sie **gekennzeichnet** ist und ihre Grundlage nennt —
   // Produktprinzip 7. Eine Hochrechnung ohne ≈ wäre schlimmer als keine.
-  await page.locator('[data-pane="history"]').first().click();
+  await page.locator('[data-pane="history"]:visible').first().click();
   await page.waitForTimeout(300);
   await page.locator('[data-mode="chart"]').first().click();
   await page.waitForTimeout(300);
@@ -620,7 +625,7 @@ for (const scheme of ["light", "dark"]) {
 
   await page.evaluate(`(() => { location.reload(); })()`);
   await page.waitForTimeout(600);
-  await page.locator('[data-pane="history"]').first().click();
+  await page.locator('[data-pane="history"]:visible').first().click();
   await page.waitForTimeout(300);
 
   // **Auch in der Jahresansicht steht die Leiste** — vom Gerät verlangt: „immer
@@ -647,7 +652,7 @@ for (const scheme of ["light", "dark"]) {
   // Der Wunsch dahinter: morgens und abends ablesen und beides behalten. Geprüft
   // wird deshalb nicht der Eingabeknopf, sondern was danach in der Reihe steht —
   // die Reihenfolge entscheidet über jeden gerechneten Verbrauch.
-  await page.locator('[data-pane="home"]').first().click();
+  await page.locator('[data-pane="home"]:visible').first().click();
   await page.waitForTimeout(200);
   const zeitId = await page.evaluate(() =>
     (METERS.find(m => m.registers.length === 1 && m.registers[0].readings.length > 2) || {}).id || null);
@@ -693,7 +698,7 @@ for (const scheme of ["light", "dark"]) {
 
     // Und die Uhrzeit steht auch da, wo jemand sie sucht. Der Verlauf steht an
     // dieser Stelle in der Tabellenansicht; „Alle Ablesungen" hängt am Diagramm.
-    await page.locator('[data-pane="history"]').first().click();
+    await page.locator('[data-pane="history"]:visible').first().click();
     await page.waitForTimeout(250);
     await page.locator(`#picker [data-pick="${zeitId}"]`).first().click();
     await page.waitForTimeout(250);
@@ -732,7 +737,7 @@ for (const scheme of ["light", "dark"]) {
   // Geprüft wird nicht, dass etwas gesperrt ist, sondern dass die Sperre
   // **erklärt** und weiterführt: ein Knopf, der in eine Sackgasse läuft, wäre
   // schlimmer als gar keine Grenze (Produktprinzip 4).
-  await page.locator('[data-pane="meters"]').first().click();
+  await page.locator('[data-pane="meters"]:visible').first().click();
   await page.waitForTimeout(200);
   await page.locator('[data-pro="0"]').first().click();
   await page.waitForTimeout(250);
@@ -783,7 +788,7 @@ for (const scheme of ["light", "dark"]) {
   // im Nichts.
   await page.locator("#sheet-pro [data-close]").first().click();
   await page.waitForTimeout(250);
-  await page.locator('[data-pane="history"]').first().click();
+  await page.locator('[data-pane="history"]:visible').first().click();
   await page.waitForTimeout(250);
   // **Ein kostenloser Nutzer sieht, dass es Kosten gibt — und was sie kosten.**
   //
@@ -794,11 +799,11 @@ for (const scheme of ["light", "dark"]) {
   // Der Schalter für den Kaufzustand steht im Zähler-Schirm; von einem anderen
   // Tab aus ist er da, aber nicht sichtbar — und ein Klick darauf wartet
   // dreißig Sekunden ins Leere.
-  await page.locator('[data-pane="meters"]').first().click();
+  await page.locator('[data-pane="meters"]:visible').first().click();
   await page.waitForTimeout(250);
   await page.locator('[data-pro="0"]').first().click();
   await page.waitForTimeout(250);
-  await page.locator('[data-pane="history"]').first().click();
+  await page.locator('[data-pane="history"]:visible').first().click();
   await page.waitForTimeout(250);
   const sperre = await page.evaluate(() => {
     const box = document.getElementById("cost-lock");
@@ -808,7 +813,7 @@ for (const scheme of ["light", "dark"]) {
   note(sperre.sichtbar, "Ohne Kauf steht im Verlauf, dass es Kosten gibt");
   note(/1,99/.test(sperre.text), `Und was sie kosten: ${sperre.text.slice(0, 60)}`);
 
-  await page.locator('[data-pane="meters"]').first().click();
+  await page.locator('[data-pane="meters"]:visible').first().click();
   await page.waitForTimeout(200);
   await page.locator('[data-pro="1"]').first().click();
   await page.waitForTimeout(250);
@@ -838,7 +843,7 @@ for (const scheme of ["light", "dark"]) {
   //
   // Geprüft wird der sichtbare Text, nicht die Funktion dahinter: Ein Betrag
   // ist ein Betrag, egal welcher Rechenweg ihn erzeugt hat.
-  await page.locator('[data-pane="home"]').first().click();
+  await page.locator('[data-pane="home"]:visible').first().click();
   await page.waitForTimeout(250);
   const ohneKauf = await page.evaluate(() =>
     document.getElementById("pane-home").innerText);
@@ -855,18 +860,18 @@ for (const scheme of ["light", "dark"]) {
   // Die Gegenprobe: Mit Kauf ist alles wieder da. Ohne sie prüfte das obige
   // nur, dass die Übersicht leer ist — und das wäre sie auch, wenn die
   // Kostenrechnung ganz kaputt wäre.
-  await page.locator('[data-pane="meters"]').first().click();
+  await page.locator('[data-pane="meters"]:visible').first().click();
   await page.waitForTimeout(200);
   await page.locator('[data-pro="1"]').first().click();
   await page.waitForTimeout(250);
-  await page.locator('[data-pane="home"]').first().click();
+  await page.locator('[data-pane="home"]:visible').first().click();
   await page.waitForTimeout(250);
   const mitKauf = await page.evaluate(() =>
     document.getElementById("pane-home").innerText);
   note(/€/.test(mitKauf) && /Guthaben|Nachzahlung/.test(mitKauf),
        "Nach dem Kauf stehen Beträge und Abschlagsvorschau wieder da");
 
-  await page.locator('[data-pane="meters"]').first().click();
+  await page.locator('[data-pane="meters"]:visible').first().click();
   await page.waitForTimeout(200);
   await page.locator('[data-pro="0"]').first().click();
   await page.waitForTimeout(250);
@@ -903,7 +908,7 @@ for (const scheme of ["light", "dark"]) {
   //
   // Bis 0.92.0 öffnete sich die Kaufseite ausschließlich vor einer Sperre. Wer
   // wissen wollte, was die App überhaupt kann, fand nirgends eine Antwort.
-  await page.locator('[data-pane="meters"]').first().click();
+  await page.locator('[data-pane="meters"]:visible').first().click();
   await page.waitForTimeout(250);
   await page.locator("#store-row").first().click();
   await page.waitForTimeout(300);
@@ -932,7 +937,7 @@ for (const scheme of ["light", "dark"]) {
   note(/iCloud/.test(laden.text), "Der kostenlose Abgleich wird genannt");
   await page.locator("#sheet-store [data-close]").first().click();
   await page.waitForTimeout(250);
-  await page.locator('[data-pane="history"]').first().click();
+  await page.locator('[data-pane="history"]:visible').first().click();
   await page.waitForTimeout(250);
 
   // **Der Bericht steht an genau einer Stelle.** Bis 0.92.0 lag er im Menü
@@ -964,7 +969,7 @@ for (const scheme of ["light", "dark"]) {
        `Der Inhalt bleibt lesbar (${bericht.inhalt} Zeichen) — sonst wäre es eine Sperre mit Umweg`);
   await page.locator("#sheet-report [data-close]").first().click();
   await page.waitForTimeout(300);
-  await page.locator('[data-pane="meters"]').first().click();
+  await page.locator('[data-pane="meters"]:visible').first().click();
   await page.waitForTimeout(200);
   await page.locator("#add-meter").click();
   await page.waitForTimeout(300);
@@ -1012,11 +1017,11 @@ for (const scheme of ["light", "dark"]) {
   // 0.104.0 Teil von „Kosten und Preise"; ohne den Kauf steht sie nicht da,
   // und der Klick lief dreißig Sekunden ins Leere. Der Zustand wird danach
   // wieder zurückgestellt.
-  await page.locator('[data-pane="meters"]').first().click();
+  await page.locator('[data-pane="meters"]:visible').first().click();
   await page.waitForTimeout(200);
   await page.locator('[data-pro="1"]').first().click();
   await page.waitForTimeout(250);
-  await page.locator('[data-pane="home"]').first().click();
+  await page.locator('[data-pane="home"]:visible').first().click();
   await page.waitForTimeout(200);
   await page.locator('[data-explain]').first().click();
   await page.waitForTimeout(300);
@@ -1063,7 +1068,7 @@ for (const scheme of ["light", "dark"]) {
   await page.locator("#sheet-explain [data-close]").first().click();
   await page.waitForTimeout(200);
   // Zustand zurückstellen, aus demselben Grund wie oben.
-  await page.locator('[data-pane="meters"]').first().click();
+  await page.locator('[data-pane="meters"]:visible').first().click();
   await page.waitForTimeout(200);
   await page.locator('[data-pro="0"]').first().click();
   await page.waitForTimeout(250);
@@ -1078,11 +1083,11 @@ for (const scheme of ["light", "dark"]) {
   // danebenliegt — man müsste sie nachrechnen, um es zu merken. Dass Monat im
   // Quartal und Quartal im Jahr enthalten ist, merkt die Prüfung dagegen
   // sofort.
-  await page.locator('[data-pane="meters"]').first().click();
+  await page.locator('[data-pane="meters"]:visible').first().click();
   await page.waitForTimeout(200);
   await page.locator('[data-pro="1"]').first().click();
   await page.waitForTimeout(250);
-  await page.locator('[data-pane="home"]').first().click();
+  await page.locator('[data-pane="home"]:visible').first().click();
   await page.waitForTimeout(250);
 
   const abschnitte = await page.evaluate(() => {
@@ -1141,11 +1146,11 @@ for (const scheme of ["light", "dark"]) {
   // daran, ob jemand sie gekauft hat — und der Knopf „Beispieldaten anlegen"
   // legt Tarife an. Eine neue Kostenzeile ist genau die Stelle, an der dieser
   // Fehler ein zweites Mal entsteht.
-  await page.locator('[data-pane="meters"]').first().click();
+  await page.locator('[data-pane="meters"]:visible').first().click();
   await page.waitForTimeout(200);
   await page.locator('[data-pro="0"]').first().click();
   await page.waitForTimeout(250);
-  await page.locator('[data-pane="home"]').first().click();
+  await page.locator('[data-pane="home"]:visible').first().click();
   await page.waitForTimeout(250);
   const spannenOhneKauf = await page.evaluate(() =>
     document.querySelectorAll(".card-spans").length);
@@ -1158,7 +1163,7 @@ for (const scheme of ["light", "dark"]) {
   // Belegfotos. Die sind für 1.0 gestrichen; ein angekündigter Knopf ohne
   // Wirkung ist eine Sackgasse, und für jemanden, der die Tasten nur hört,
   // eine besonders ärgerliche.
-  await page.locator('[data-pane="home"]').first().click();
+  await page.locator('[data-pane="home"]:visible').first().click();
   await page.waitForTimeout(200);
   await page.locator("[data-capture]").first().click();
   await page.waitForTimeout(250);
@@ -1209,6 +1214,56 @@ for (const scheme of ["light", "dark"]) {
   const overflow = await page.evaluate(() =>
     document.documentElement.scrollWidth > document.documentElement.clientWidth);
   note(!overflow, "Kein horizontaler Überlauf");
+
+  // --- Der breite Rahmen
+  //
+  // Seit 0.112.0 hat die App zwei Oberflächen: schmal die Tab-Leiste, breit
+  // die Seitenleiste und die Karten im Raster. Nach Regel 2 zieht der Entwurf
+  // das nach — und ein nachgezogenes Layout, das niemand prüft, ist keins.
+  //
+  // Erst hier, nach den Prüfungen oben: Der schmale Rahmen bleibt der
+  // Normalfall und behält seine eigene Überlaufprüfung.
+  await page.setViewportSize({ width: 1280, height: 1000 });
+  await page.locator("#familie").click();
+  await page.waitForTimeout(300);
+
+  const breit = await page.evaluate(() => {
+    const sichtbar = el => !!el && el.getClientRects().length > 0;
+    const karten = [...document.querySelectorAll("#cards > *")];
+    return {
+      seitenleiste: sichtbar(document.getElementById("sidebar")),
+      tableiste: sichtbar(document.getElementById("tabs")),
+      ziele: [...document.querySelectorAll("#sidebar button")].map(b => b.textContent.trim()),
+      // Spalten über die linken Kanten gezählt: Wie viele Karten wirklich
+      // nebeneinanderstehen, sagt keine CSS-Angabe, sondern die Anordnung.
+      spalten: new Set(karten.map(k => Math.round(k.getBoundingClientRect().left))).size,
+      karten: karten.length
+    };
+  });
+  note(breit.seitenleiste, "Breit steht die Seitenleiste");
+  note(!breit.tableiste, "Breit ist die Tab-Leiste fort");
+  note(breit.ziele.join("|") === "Übersicht|Verlauf|Zähler",
+       `Die Seitenleiste führt alle drei Ziele (${breit.ziele.join(", ") || "keins"})`);
+  note(breit.spalten >= 2,
+       `Die Karten stehen nebeneinander (${breit.spalten} Spalten für ${breit.karten} Karten)`);
+
+  // Der Wechsel muss auch über die Seitenleiste gehen, nicht nur über die
+  // Leiste, die gerade nicht da ist.
+  await page.locator('#sidebar [data-pane="history"]').click();
+  await page.waitForTimeout(250);
+  const gewechselt = await page.evaluate(() => ({
+    offen: document.querySelector(".pane.on")?.id,
+    markiert: document.querySelector('#sidebar button[aria-selected="true"]')?.dataset.pane
+  }));
+  note(gewechselt.offen === "pane-history",
+       `Die Seitenleiste wechselt den Schirm (offen: ${gewechselt.offen})`);
+  note(gewechselt.markiert === "history",
+       `Die Seitenleiste markiert, wo man ist (markiert: ${gewechselt.markiert})`);
+
+  const overflowBreit = await page.evaluate(() =>
+    document.documentElement.scrollWidth > document.documentElement.clientWidth);
+  note(!overflowBreit, "Kein horizontaler Überlauf im breiten Rahmen");
+
   note(jsErrors.length === 0, `Keine JS-Fehler${jsErrors.length ? ": " + jsErrors.join("; ") : ""}`);
 
   await page.close();

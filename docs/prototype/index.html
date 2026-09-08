@@ -170,6 +170,15 @@ body {
   isolation: isolate;
 }
 
+/* Der breite Rahmen. Kein iPad-Nachbau, sondern derselbe Rahmen in den
+   Maßen, in denen die App auf die Seitenleiste umschaltet. */
+.device.breit {
+  width: min(1040px, 100%);
+  height: min(760px, calc(100vh - 190px));
+  border-radius: 26px;
+  border-width: 12px;
+}
+
 /* Statusleiste */
 .statusbar {
   height: 46px; flex: none;
@@ -181,6 +190,7 @@ body {
 .statusbar .glyphs { display: flex; gap: 5px; align-items: center; opacity: .9; }
 
 /* Bildschirmfläche */
+.body { flex: 1; display: flex; min-height: 0; }
 .screen { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
 .screen::-webkit-scrollbar { width: 0; }
 .pane { display: none; padding: 0 18px 26px; animation: paneIn .22s ease both; }
@@ -349,6 +359,49 @@ ul.includes.done li::before { content: "✓"; color: var(--tint); font-size: 12p
 .tabbar button svg { width: 25px; height: 25px; }
 .tabbar button[aria-selected="true"] { color: var(--tint-ink); }
 .tabbar button:focus-visible { outline: 2px solid var(--tint); outline-offset: -4px; border-radius: 8px; }
+
+/* ---------- Breites Fenster: Seitenleiste statt Tab-Leiste ----------
+
+   Spiegelt `RootView`: schmal die Tab-Leiste, breit die Seitenleiste, und die
+   Karten der Übersicht im Raster. Entschieden wird in der App nach der
+   Fensterbreite (`horizontalSizeClass`), hier nach dem Rahmen — der Umschalter
+   unter dem Gerät steht für das Gerät, das der Nutzer in der Hand hat.
+
+   Warum das überhaupt im Entwurf steht: Regel 2. Weichen App und Entwurf
+   voneinander ab, ist das ein Fehler und kein Zustand — und der Entwurf hat
+   bisher in jeder Runde einen echten Fehler gefunden, den kein Test fand. */
+.sidebar { display: none; }
+.device.breit .tabbar { display: none; }
+.device.breit .sidebar {
+  display: flex; flex-direction: column; gap: 2px;
+  flex: 0 0 232px; padding: 6px 10px 20px;
+  border-right: 1px solid var(--hairline);
+  background: color-mix(in srgb, var(--app-bg) 92%, var(--ink) 3%);
+  overflow-y: auto;
+}
+.sidebar-title {
+  font-size: 26px; font-weight: 720; letter-spacing: -0.028em;
+  color: var(--ink); padding: 10px 10px 14px;
+}
+.sidebar button {
+  display: flex; align-items: center; gap: 11px;
+  background: none; border: 0; cursor: pointer; font: inherit;
+  font-size: 16px; font-weight: 560; letter-spacing: -0.01em;
+  color: var(--ink); text-align: left;
+  padding: 9px 10px; border-radius: 10px;
+}
+.sidebar button svg { width: 21px; height: 21px; flex: none; color: var(--ink-3); }
+.sidebar button[aria-selected="true"] { background: var(--surface); }
+.sidebar button[aria-selected="true"] svg { color: var(--tint-ink); }
+.sidebar button:focus-visible { outline: 2px solid var(--tint); outline-offset: -2px; }
+
+/* Das Raster wie in `OverviewView`: eine Angabe für ganzes Fenster, Hälfte
+   und Drittel, ohne dass irgendwo eine Spaltenzahl festgeschrieben wäre. */
+.device.breit .cards {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  align-items: start;
+}
+.device.breit .pane { padding: 0 22px 30px; }
 
 /* ---------- Bogen (Sheet) ---------- */
 .scrim {
@@ -818,10 +871,10 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>Zählora</h1>
-  <p>Klickbarer Entwurf · v0.112.3</p>
+  <p>Klickbarer Entwurf · v0.113.0</p>
 </div>
 
-<div class="device">
+<div class="device" id="device">
   <div class="statusbar">
     <span>9:41</span>
     <span class="glyphs">
@@ -829,6 +882,25 @@ select.field { cursor: pointer; }
       <svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x=".7" y=".7" width="19" height="9.6" rx="2.6" stroke="currentColor" stroke-opacity=".4" stroke-width="1"/><rect x="2.2" y="2.2" width="14" height="6.6" rx="1.4" fill="currentColor"/><path d="M21.4 4v3a2 2 0 0 0 0-3z" fill="currentColor" fill-opacity=".45"/></svg>
     </span>
   </div>
+
+  <div class="body">
+
+  <!-- Seitenleiste — nur im breiten Fenster, wie RootView.seitenleiste -->
+  <nav class="sidebar" id="sidebar" aria-label="Ziele">
+    <div class="sidebar-title">Zählora</div>
+    <button type="button" aria-selected="true" data-pane="home">
+      <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15.5 14 6l10 9.5"/><path d="M6.5 13.5V22a1 1 0 0 0 1 1h13a1 1 0 0 0 1-1v-8.5"/></svg>
+      Übersicht
+    </button>
+    <button type="button" aria-selected="false" data-pane="history">
+      <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M5 23h18"/><path d="M8 23v-7"/><path d="M13.5 23V9"/><path d="M19 23v-11"/></svg>
+      Verlauf
+    </button>
+    <button type="button" aria-selected="false" data-pane="meters">
+      <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="14" cy="14" r="9.2"/><path d="M14 14 18 9.8"/><path d="M14 4.8v1.8M23.2 14h-1.8M14 23.2v-1.8M4.8 14h1.8"/></svg>
+      Zähler
+    </button>
+  </nav>
 
   <div class="screen">
     <!-- ÜBERSICHT -->
@@ -1019,6 +1091,8 @@ select.field { cursor: pointer; }
     </section>
   </div>
 
+  </div><!-- /.body -->
+
   <nav class="tabbar" id="tabs">
     <button type="button" aria-selected="true" data-pane="home">
       <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15.5 14 6l10 9.5"/><path d="M6.5 13.5V22a1 1 0 0 0 1 1h13a1 1 0 0 0 1-1v-8.5"/></svg>
@@ -1173,6 +1247,7 @@ select.field { cursor: pointer; }
 <!-- Die Bedienleiste des Entwurfs, nicht der App: siehe `data-entwurf`. -->
 <div class="controls" data-entwurf="1">
   <button type="button" class="ctl" id="theme">Dunkel / Hell</button>
+  <button type="button" class="ctl" id="familie" aria-pressed="false">Auf dem Tablet ansehen</button>
   <button type="button" class="ctl" id="reset">Entwurf zurücksetzen</button>
 </div>
 
@@ -4269,8 +4344,13 @@ document.addEventListener("click", e => {
     return;
   }
   if (t.dataset.pane) {
-    document.querySelectorAll("#tabs button").forEach(b =>
-      b.setAttribute("aria-selected", String(b === t)));
+    // Beide Leisten markieren, nicht nur die sichtbare: Ein Sprung von einer
+    // Karte auf den Verlauf klickt den Tab-Knopf an, auch wenn gerade die
+    // Seitenleiste dasteht. Verglichen wird deshalb das Ziel und nicht das
+    // Element — sonst zeigt die eine Leiste auf einen Schirm, der nicht offen
+    // ist, und zwar genau dann, wenn der Rahmen gewechselt wird.
+    document.querySelectorAll("#tabs button, #sidebar button").forEach(b =>
+      b.setAttribute("aria-selected", String(b.dataset.pane === t.dataset.pane)));
     document.querySelectorAll(".pane").forEach(p =>
       p.classList.toggle("on", p.id === "pane-" + t.dataset.pane));
     document.querySelector(".screen").scrollTop = 0;
@@ -4344,6 +4424,18 @@ document.getElementById("theme").addEventListener("click", () => {
   const dark = now ? now === "dark"
     : window.matchMedia("(prefers-color-scheme: dark)").matches;
   document.documentElement.setAttribute("data-theme", dark ? "light" : "dark");
+  renderHistory();
+});
+// Telefon oder Tablet. In der App entscheidet das die Fensterbreite und
+// niemand tippt darauf; hier ist der Rahmen fest, also braucht es einen
+// Schalter. Der Knopf sagt, wohin er führt, nicht wo man ist — „Auf dem
+// Tablet ansehen" statt „Tablet", damit man ihn nicht für eine Anzeige hält.
+document.getElementById("familie").addEventListener("click", (e) => {
+  const breit = document.getElementById("device").classList.toggle("breit");
+  e.currentTarget.textContent = breit ? "Auf dem Telefon ansehen" : "Auf dem Tablet ansehen";
+  e.currentTarget.setAttribute("aria-pressed", String(breit));
+  // Das Diagramm rechnet seine Breite beim Zeichnen aus; ohne diesen Aufruf
+  // bliebe es in der Breite des vorigen Rahmens stehen.
   renderHistory();
 });
 document.getElementById("reset").addEventListener("click", () => location.reload());

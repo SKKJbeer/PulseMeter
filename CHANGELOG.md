@@ -9,6 +9,45 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.113.0 — 2026-09-08
+
+**Der Klick-Dummy kann jetzt Tablet.** Unter dem Gerät steht ein Knopf „Auf dem
+Tablet ansehen": Der Rahmen wird breit, an die Stelle der Tab-Leiste tritt die
+Seitenleiste mit den drei Zielen, und die Karten der Übersicht stehen im
+Raster. Seit 0.112.0 wichen App und Entwurf darin voneinander ab, und das ist
+nach Regel 2 ein Fehler und kein Zustand.
+
+Geprüft wird das auch: `check-prototype.mjs` schaltet am Ende jedes Durchgangs
+in den breiten Rahmen und sieht nach, ob die Seitenleiste steht, die Tab-Leiste
+fort ist, alle drei Ziele da sind, die Karten wirklich nebeneinanderstehen und
+der Wechsel über die Seitenleiste ankommt — in Hell und in Dunkel. Ein
+nachgezogenes Layout, das niemand prüft, ist keins.
+
+### Behoben
+
+- **Der Bau von 0.112.3 ist gar nicht durchgelaufen.** Eine Umarbeitung hat
+  die Variable `zweiter` gelöscht und eine Verwendung vierzig Zeilen weiter
+  unten stehen lassen. Behoben, und die Prüfung des Erfassungsschirms sieht an
+  dieser Stelle jetzt auf den **Inhalt** der Zeile statt auf ihr Dasein.
+- Dass nach dem Sichern die Übersicht wieder dasteht, wird daran geprüft, dass
+  das Blatt **weg** ist. Auf dem iPad heißt schon die erste Zeile der
+  Seitenleiste „Übersicht", und zwar auch, während das Blatt offen ist — die
+  Prüfung war dort erfüllt, bevor irgendetwas gesichert wurde.
+
+### Hinzugefügt
+
+- `scripts/check-verwaiste-namen.py` fängt genau den Fehler oben ab, bevor ein
+  Mac dafür anspringt. `swiftc -parse` liest die **Form** und löst keine Namen
+  auf; eine gelöschte Variable ist syntaktisch einwandfrei, und der Bau merkt
+  es erst nach neunzig Sekunden auf einem gemieteten Rechner. Die Prüfung
+  arbeitet am Unterschied zum letzten Stand, lässt Kommentare und Fließtext
+  außen vor — sonst schlägt sie bei jedem „zweiter Versuch" an — und behält
+  dabei, was in einer Zeichenkette in `\(…)` steht, denn das ist eine echte
+  Verwendung.
+- Sie hängt in `scripts/pruefen.sh` und in der CI. Dort klont der Lauf jetzt
+  zwei Commits statt einem: Ohne Vorgänger gäbe es nichts zu vergleichen, und
+  der Schritt wäre grün, ohne etwas angesehen zu haben.
+
 ## 0.112.3 — 2026-09-08
 
 **Die Begründung von 0.112.2 war falsch, und das steht hier, bevor irgendetwas
