@@ -206,11 +206,19 @@ final class LaunchTests: XCTestCase {
     /// Zielschirm nach dem Tipp nicht da, wird noch einmal getippt. Kommt er
     /// dann immer noch nicht, ist es ein echter Fehler — und die Meldung sagt,
     /// was stattdessen zu sehen war.
+    ///
+    /// **Seit 0.112.1 nicht mehr nur die Tableiste.** Auf dem iPad gibt es
+    /// keine: Ein breites Fenster trägt seit 0.112.0 eine Seitenleiste, und
+    /// diese Prüfung fiel dort neunzehnmal mit „Die Tab-Leiste kennt den
+    /// Eintrag Verlauf nicht". Das war kein Produktfehler — der Test hielt eine
+    /// **Bauform** fest, wo die Zusage lautet: Von jedem Schirm aus kommt man
+    /// an alle drei Ziele. Welches Bedienelement dorthin führt, ist Sache des
+    /// Fensters.
     @discardableResult
     private func wechsel(zu tab: String, in app: XCUIApplication) -> Bool {
-        let knopf = app.tabBars.buttons[tab]
-        guard knopf.waitForExistence(timeout: erscheint) else {
-            XCTFail("Die Tab-Leiste kennt den Eintrag \(tab) nicht")
+        guard let knopf = ziel(tab, in: app) else {
+            XCTFail("Der Eintrag \(tab) ist weder in der Tableiste noch in der "
+                    + "Seitenleiste zu finden. Zu sehen war: \(beschriftungen(in: app))")
             return false
         }
         for versuch in 1...2 {
@@ -229,6 +237,68 @@ final class LaunchTests: XCTestCase {
         }
         XCTFail("Der Schirm \(tab) kam auch nach zwei Versuchen nicht")
         return false
+    }
+
+    /// Das Bedienelement, das zu einem Ziel führt — egal welche Navigation das
+    /// Fenster gerade trägt.
+    ///
+    /// Schmal ist es ein Knopf in der Tableiste, breit eine Zeile in der
+    /// Seitenleiste. Gesucht wird in dieser Reihenfolge, und **ohne lange
+    /// Wartezeit je Anlauf**: Wer hier ankommt, hat die App schon stehen —
+    /// `launchWithData` und `launchEmpty` warten darauf. Eine Wartezeit von
+    /// zehn Sekunden an einer Tableiste, die es auf dem iPad nie geben wird,
+    /// kostete bei sechzig Wechseln eine Viertelstunde gemieteten Mac.
+    ///
+    /// Trotzdem nicht ohne jede Geduld: Nach dem Schließen eines Blatts steht
+    /// der Zugänglichkeitsbaum einen Moment lang nicht. Deshalb wird bis zu
+    /// ``erscheint`` lang wiederholt nachgesehen, aber in kurzen Schritten.
+    private func ziel(_ name: String, in app: XCUIApplication) -> XCUIElement? {
+        let ende = Date().addingTimeInterval(erscheint)
+        repeat {
+            let knopf = app.tabBars.buttons[name]
+            if knopf.exists { return knopf }
+            // Die Seitenleiste ist eine Liste; ihre Zeilen sind Zellen. Auf
+            // manchen Fassungen von iOS meldet SwiftUI sie zusätzlich als
+            // Knöpfe — deshalb beides, und die Zelle zuerst.
+            let zeile = app.cells[name]
+            if zeile.exists { return zeile }
+            let alsKnopf = app.buttons[name]
+            if alsKnopf.exists { return alsKnopf }
+            Thread.sleep(forTimeInterval: 0.25)
+        } while Date() < ende
+        return nil
+    }
+
+    /// Die Zeilen der **vordersten** Liste.
+    ///
+    /// **Nicht `app.cells`.** Auf dem iPad steht links die Seitenleiste, und
+    /// ihre drei Ziele sind ebenfalls Zellen — `app.cells.element(boundBy: 1)`
+    /// träfe dort „Verlauf" statt einer Ablesung, und der Fehlschlag spräche
+    /// von einer Liste, die gar nicht gemeint war. Dieselbe Überlegung wie in
+    /// ``scroll(to:in:swipes:)``: Gemeint ist immer die oberste Sammlung.
+    private func zeilen(in app: XCUIApplication) -> XCUIElementQuery {
+        for query in [app.collectionViews, app.tables] {
+            let anzahl = query.count
+            if anzahl > 0 { return query.element(boundBy: anzahl - 1).cells }
+        }
+        return app.cells
+    }
+
+    /// Die Rückfrage vor dem Löschen — als Blatt, als Meldung oder als
+    /// Sprechblase.
+    ///
+    /// `confirmationDialog` erscheint auf dem Telefon unten als Blatt, auf dem
+    /// iPad als Sprechblase am auslösenden Knopf. Für XCUITest sind das
+    /// verschiedene Dinge, für den Nutzer dieselbe Frage.
+    private func rueckfrage(in app: XCUIApplication) -> XCUIElement {
+        for query in [app.sheets, app.popovers, app.alerts] {
+            let element = query.firstMatch
+            if element.waitForExistence(timeout: 3) { return element }
+        }
+        // Nichts gefunden: Zurückgegeben wird trotzdem etwas, damit der
+        // Aufrufer seine eigene Erwartung formulieren kann — die sagt dann,
+        // worum es ging.
+        return app.sheets.firstMatch
     }
 
     /// Startet die App ohne jeden Bestand.
@@ -305,14 +375,22 @@ final class LaunchTests: XCTestCase {
                       "Nach der ersten Ablesung muss die Karte den zweiten Schritt nennen")
     }
 
-    func testAppLaunchesAndShowsTabs() {
+    /// Die App kommt hoch, und alle drei Ziele sind erreichbar.
+    ///
+    /// **Bis 0.112.1 hieß diese Prüfung `testAppLaunchesAndShowsTabs` und
+    /// verlangte eine Tab-Leiste.** Auf dem iPad gibt es keine. Die Zusage war
+    /// nie „es gibt eine Tab-Leiste", sondern „die drei Ziele sind da" — und
+    /// genau das steht jetzt hier. Der Name sagt es mit.
+    func testAppLaunchesAndOffersItsThreeDestinations() {
         let app = XCUIApplication()
         app.launch()
 
-        XCTAssertTrue(app.tabBars.buttons["Übersicht"].waitForExistence(timeout: 10),
-                      "Die Tab-Leiste fehlt — die App ist vermutlich beim Start gescheitert")
-        XCTAssertTrue(app.tabBars.buttons["Verlauf"].exists)
-        XCTAssertTrue(app.tabBars.buttons["Zähler"].exists)
+        for name in ["Übersicht", "Verlauf", "Zähler"] {
+            XCTAssertNotNil(ziel(name, in: app),
+                            "\(name) ist von nirgendwo aus erreichbar — die App ist "
+                            + "vermutlich beim Start gescheitert. Zu sehen war: "
+                            + beschriftungen(in: app))
+        }
     }
 
     /// Belegt, dass Speicher und Rechenkern über zwei Jahre Historie
@@ -648,7 +726,7 @@ final class LaunchTests: XCTestCase {
         // Die zweite Zeile, nicht die erste: Die oberste ist die jüngste, und
         // an ihr ließe sich nicht zeigen, dass auch ein alter Stand erreichbar
         // ist — genau darum ging die Bitte.
-        app.cells.element(boundBy: 1).tap()
+        zeilen(in: app).element(boundBy: 1).tap()
         XCTAssertTrue(app.navigationBars["Ablesung ändern"].waitForExistence(timeout: erscheint),
                       "Eine Zeile öffnet die Ablesung nicht. Zu sehen war: "
                       + beschriftungen(in: app))
@@ -664,12 +742,9 @@ final class LaunchTests: XCTestCase {
         // 221 ist genau hier gefallen: „Löschen" heißt auch die Wischgeste an
         // jeder Zeile der Liste dahinter, und `app.buttons["Löschen"]` fand
         // deshalb mehrere. Kein Produktfehler — ein zu weit gefasster Griff.
-        let rueckfrage = app.sheets.firstMatch.waitForExistence(timeout: erscheint)
-            ? app.sheets.firstMatch
-            : app.alerts.firstMatch
-        XCTAssertTrue(rueckfrage.waitForExistence(timeout: erscheint),
-                      "Gelöscht wird ohne Rückfrage")
-        rueckfrage.buttons["Löschen"].tap()
+        let frage = rueckfrage(in: app)
+        XCTAssertTrue(frage.exists, "Gelöscht wird ohne Rückfrage")
+        frage.buttons["Löschen"].tap()
 
         // Danach ist die Liste zu und der Verlauf neu gerechnet. Die Zeile
         // „Alle Ablesungen" sagt, wie viele es noch sind.
@@ -747,17 +822,14 @@ final class LaunchTests: XCTestCase {
 
         // Die oberste Zeile ist die jüngste — und bei einem Zähler mit **einem**
         // Zählwerk ist sie zugleich die, die den Stand auf der Karte bestimmt.
-        app.cells.element(boundBy: 0).tap()
+        zeilen(in: app).element(boundBy: 0).tap()
         XCTAssertTrue(app.navigationBars["Ablesung ändern"].waitForExistence(timeout: erscheint),
                       "Eine Zeile öffnet die Ablesung nicht")
         app.buttons["Diese Ablesung löschen"].tap()
 
-        let rueckfrage = app.sheets.firstMatch.waitForExistence(timeout: erscheint)
-            ? app.sheets.firstMatch
-            : app.alerts.firstMatch
-        XCTAssertTrue(rueckfrage.waitForExistence(timeout: erscheint),
-                      "Gelöscht wird ohne Rückfrage")
-        rueckfrage.buttons["Löschen"].tap()
+        let frage = rueckfrage(in: app)
+        XCTAssertTrue(frage.exists, "Gelöscht wird ohne Rückfrage")
+        frage.buttons["Löschen"].tap()
 
         // **Erst prüfen, dass überhaupt gelöscht wurde.** Sonst spräche der
         // Fehlschlag unten von einer Ansicht, die nicht nachzieht, während in

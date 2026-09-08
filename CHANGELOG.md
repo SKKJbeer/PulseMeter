@@ -9,6 +9,54 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.112.1 — 2026-09-08
+
+**Die iPad-Prüfung aus 0.112.0 lief, und sie hat drei Dinge gefunden — alle
+drei in der Prüfung selbst, keins am Produkt.** Genau dafür war der zweite
+Durchgang gedacht.
+
+### Behoben
+
+- **19 von 41 Oberflächenprüfungen fielen auf dem iPad**, jede mit demselben
+  Satz: „Die Tab-Leiste kennt den Eintrag Verlauf nicht". Auf einem breiten
+  Fenster gibt es seit 0.112.0 keine Tab-Leiste mehr, sondern eine
+  Seitenleiste. Der Test hielt damit eine **Bauform** fest, wo die Zusage
+  lautet: Von jedem Schirm aus kommt man an alle drei Ziele. Er sucht das Ziel
+  jetzt dort, wo das Fenster es hat — in der Tableiste oder in der
+  Seitenleiste. Auf dem iPhone ändert sich dadurch nichts; dort war der Lauf
+  grün und ist es geblieben.
+- **Der Auftrag lief 50 Minuten gegen eine Grenze von 45** und wurde als
+  „cancelled" gemeldet, obwohl alle Schritte durch waren. Zwei Durchgänge
+  brauchen rund 52 Minuten; die Grenze steht jetzt auf 75. Eine Grenze, die
+  immer greift, sagt über den Stand nichts mehr aus.
+- **Die dreizehn iPad-Bilder kamen nirgends an.** Sie landen in `build/ipad`,
+  und sowohl der Zweig `screenshots` als auch das Artefakt kannten nur
+  `build`. Zehn Minuten gemieteter Mac für Dateien, die niemand je zu sehen
+  bekam. `publish-shots.sh` nimmt jetzt mehrere Ordner in **einem** Aufruf
+  entgegen — zwei Aufrufe hätten einander überschrieben, denn der Zweig wird
+  bei jedem Lauf neu geschrieben. Die iPad-Bilder tragen `ipad-` vor dem
+  Namen.
+
+### Geändert
+
+- Die Rückfrage vor dem Löschen wird zusätzlich als Sprechblase gesucht: Auf
+  dem iPad erscheint ein `confirmationDialog` am auslösenden Knopf, nicht als
+  Blatt am unteren Rand.
+- Wo eine Prüfung die zweite Zeile einer Liste antippt, greift sie jetzt in
+  die **vorderste** Liste. `app.cells` umfasste auf dem iPad auch die drei
+  Zeilen der Seitenleiste.
+- `testAppLaunchesAndShowsTabs` heißt jetzt
+  `testAppLaunchesAndOffersItsThreeDestinations` — der alte Name benannte das
+  Bedienelement, der neue die Zusage.
+
+### Offen
+
+- Der Klick-Dummy hat noch kein breites Layout. Seit 0.112.0 weichen App und
+  Entwurf darin voneinander ab, und das ist nach Regel 2 ein Fehler und kein
+  Zustand.
+- Für den App Store fehlt der iPad-Bildschirmfotosatz. `asc-einreichung.py`
+  kennt bisher nur `APP_IPHONE_67`.
+
 ## 0.112.0 — 2026-09-07
 
 **Die App läuft jetzt auf dem iPad — als eigene Oberfläche, nicht als

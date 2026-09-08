@@ -106,9 +106,16 @@ jobs:
   # `cancel-in-progress: false` — anders als bei der schnellen Prüfung. Ein
   # abgebrochener App-Build ist keine Aussage, sondern eine verlorene
   # Viertelstunde. Lieber laufen zwei hintereinander als keiner zu Ende.
+  # **75 Minuten, nicht 45 — nachgemessen in Lauf 393.** Seit 0.112.0 läuft
+  # alles zweimal: Oberflächenprüfungen auf dem iPhone (15 min) und auf dem
+  # iPad (15 min), Bilder auf dem iPhone (7 min) und auf dem iPad (10 min).
+  # Mit Einrichtung, Rechenkern und Paketbau sind das rund 52 Minuten. Der
+  # Lauf war nach 50 Minuten fertig und wurde trotzdem als „cancelled"
+  # gemeldet — eine Grenze, die immer greift, sagt über den Stand nichts mehr
+  # aus. Die 75 sind Puffer für einen langsamen Läufer, keine Erwartung.
   build-and-test:
     runs-on: macos-15
-    timeout-minutes: 45
+    timeout-minutes: 75
     concurrency:
       group: app-${{ github.event.pull_request.head.ref || github.ref_name }}
       cancel-in-progress: false
@@ -245,7 +252,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Der Zweig soll sagen, aus welchem Zustand die Bilder stammen.
           PULSE_LAUF: ${{ job.status == 'success' && 'grün' || 'rot' }}
-        run: scripts/publish-shots.sh build
+        # **Beide Sätze in einem Aufruf.** Der Zweig trägt immer nur einen
+        # Stand und wird mit `--force` geschoben; zwei Aufrufe hintereinander
+        # hätten den ersten weggeworfen. In Lauf 393 sind die dreizehn
+        # iPad-Bilder deshalb nirgends angekommen — zehn Minuten gemieteter
+        # Mac für Dateien, die niemand je zu sehen bekam.
+        run: scripts/publish-shots.sh build build/ipad
 
       - name: Ergebnisse sichern
         if: always()
@@ -254,6 +266,7 @@ jobs:
           name: screenshots-und-protokolle
           path: |
             build/*.png
+            build/ipad/*.png
             build/*.log
           if-no-files-found: ignore
           retention-days: 14

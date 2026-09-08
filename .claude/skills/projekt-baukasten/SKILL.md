@@ -1215,6 +1215,43 @@ Erkennbar war es an der Uhr, bevor es an der Meldung erkennbar war: Der Test
 lief 24 Sekunden, und die Wartezeit auf den Anker beträgt 10. Wer nicht
 hinkommt, wartet nicht.
 
+### Ein Test, der ein Bedienelement festhält, hält die falsche Sache fest
+
+Die App bekam eine zweite Oberfläche: schmal weiter die Tableiste, breit eine
+Seitenleiste. Der erste Lauf auf dem größeren Gerät fiel neunzehnmal von
+einundvierzig, jedes Mal mit demselben Satz — „Die Tab-Leiste kennt den
+Eintrag Verlauf nicht". Am Produkt war nichts falsch. Die Prüfhilfe hieß
+`wechsel(zu:)` und griff auf `app.tabBars.buttons[name]`; auf dem breiten
+Gerät gibt es diese Leiste nicht.
+
+> Ein Oberflächentest hält eine **Zusage** fest, nicht eine Bauform. Die
+> Zusage lautete nie „es gibt eine Tab-Leiste", sondern „von jedem Schirm aus
+> kommt man an alle drei Ziele". Welches Bedienelement dorthin führt, ist
+> Sache des Fensters — und darf sich ändern, ohne dass eine Prüfung fällt.
+
+Am Namen war es vorher zu sehen: `testAppLaunchesAndShowsTabs` benennt ein
+Bedienelement. Wo im Namen einer Prüfung ein Bauteil steht statt einer
+Wirkung, steht es meistens auch im Rumpf.
+
+Zwei Nachwirkungen derselben Erweiterung, beide leicht zu übersehen, weil sie
+nichts rot färben:
+
+- **Die Zeitgrenze des Auftrags war noch die von vorher.** Zwei Durchgänge
+  statt einem brauchen rund 52 Minuten, die Grenze stand auf 45. Der Lauf war
+  vollständig durch und wurde trotzdem als „abgebrochen" gemeldet. Wer eine
+  Prüfung verdoppelt, verdoppelt ihre Uhr — sonst sagt das Ergebnis nichts
+  mehr über den Stand aus, sondern nur noch über die Grenze.
+- **Der zweite Bildersatz kam nirgends an.** Er landet in einem eigenen
+  Ordner, und sowohl der Zweig als auch das Artefakt kannten nur den ersten.
+  Zehn Minuten gemieteter Rechner für Dateien, die niemand je zu sehen bekam.
+  Ein zweiter Aufruf desselben Skripts hätte es nicht behoben, sondern
+  verschlimmert: Der Zweig trägt einen Stand und wird erzwungen geschoben —
+  der zweite Aufruf hätte den ersten weggeworfen. Beide Sätze gehören in
+  **einen** Aufruf.
+
+> Wer einen Durchgang verdoppelt, prüft **drei** Dinge nach: die Zeitgrenze,
+> wohin die Ergebnisse gehen, und ob sie einander dabei überschreiben.
+
 ---
 
 ## 7. Wie ermittelt wird, wenn etwas nicht geht

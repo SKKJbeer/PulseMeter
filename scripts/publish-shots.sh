@@ -22,13 +22,28 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-SRC="${1:-build}"
+# **Mehrere Quellen, seit 0.112.1.** Die App läuft auf iPhone und iPad, und
+# beide Bildersätze gehören in denselben Zweig — er wird ja bei jedem Lauf
+# überschrieben, ein zweiter Aufruf hätte den ersten schlicht weggeworfen. Der
+# erste Ordner behält seine Namen, jeder weitere bekommt seinen Ordnernamen
+# davor: `screenshot-light.jpg` und `ipad-screenshot-light.jpg`.
+QUELLEN=("$@")
+[ ${#QUELLEN[@]} -gt 0 ] || QUELLEN=(build)
 BRANCH="${SHOTS_BRANCH:-screenshots}"
 
 shopt -s nullglob
-shots=("$SRC"/*.png)
+# Je Bild „Präfix|Pfad" — ein Feld, weil bash keine Paare kann und zwei
+# gleichlange Felder früher oder später auseinanderlaufen.
+shots=()
+for quelle in "${QUELLEN[@]}"; do
+  praefix=""
+  [ "$quelle" = "${QUELLEN[0]}" ] || praefix="$(basename "$quelle")-"
+  for png in "$quelle"/*.png; do
+    shots+=("$praefix|$png")
+  done
+done
 if [ ${#shots[@]} -eq 0 ]; then
-  echo "Keine Screenshots in $SRC — nichts zu veröffentlichen."
+  echo "Keine Screenshots in ${QUELLEN[*]} — nichts zu veröffentlichen."
   exit 0
 fi
 
@@ -57,8 +72,9 @@ trap 'rm -rf "$WORK"' EXIT
 # als PNG zusammen über drei Megabyte. In dieser Größe brauche ich sie nicht —
 # ich sehe mir Anordnung, Kontrast und Zahlen an, und dafür reichen 1000 Pixel
 # Höhe bei weitem. Das Ganze schrumpft damit auf ein Zehntel.
-for png in "${shots[@]}"; do
-  name=$(basename "$png" .png)
+for eintrag in "${shots[@]}"; do
+  png="${eintrag#*|}"
+  name="${eintrag%%|*}$(basename "$png" .png)"
   sips -Z 1000 -s format jpeg -s formatOptions 72 "$png" --out "$WORK/$name.jpg" >/dev/null
 done
 
@@ -73,8 +89,9 @@ done
 # Der Zweig wächst dadurch auf etwa das Vierfache. Er wird bei jedem Lauf
 # überschrieben, also bleibt es dabei und wächst nicht weiter.
 mkdir -p "$WORK/store"
-for png in "${shots[@]}"; do
-  name=$(basename "$png" .png)
+for eintrag in "${shots[@]}"; do
+  png="${eintrag#*|}"
+  name="${eintrag%%|*}$(basename "$png" .png)"
   sips -s format jpeg -s formatOptions 88 "$png" --out "$WORK/store/$name.jpg" >/dev/null
 done
 
@@ -106,4 +123,4 @@ git -c user.name="PulseMeter" -c user.email="noreply@pulsemeter.app" \
     commit -q -m "Screenshots aus $STAND ($WOHER)"
 git push -q --force "$ZIEL" "$BRANCH"
 
-echo "Screenshots liegen im Zweig $BRANCH (${#shots[@]} Bilder, $WOHER)."
+echo "Screenshots liegen im Zweig $BRANCH (${#shots[@]} Bilder aus ${QUELLEN[*]}, $WOHER)."
