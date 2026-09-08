@@ -97,16 +97,33 @@ struct RootView: View {
     private var seitenleiste: some View {
         NavigationSplitView(columnVisibility: $spalten) {
             List(Self.ziele, id: \.nummer, selection: auswahl) { ziel in
-                Label(ziel.name, systemImage: ziel.symbol)
-                    .tag(ziel.nummer)
-                    // **Eine Kennung, weil die Bauform nicht zu erraten war.**
-                    // Drei Läufe auf einem gemieteten Mac sind daran vergangen,
-                    // dass eine Prüfung diese Zeilen suchte: als Zelle nicht da,
-                    // als Knopf nicht da — und das Bildschirmfoto zeigte sie
-                    // trotzdem. Wie SwiftUI eine Seitenleistenzeile meldet, ist
-                    // nichts, worauf sich eine Prüfung stützen darf; eine
-                    // Kennung ist es.
-                    .accessibilityIdentifier("ziel-\(ziel.name)")
+                // **Ein Element je Zeile, und das Symbol ist stumm.**
+                //
+                // Ohne `combine` bleiben Symbol und Schrift zwei Elemente, und
+                // die Kennung darunter gilt für beide. Der Lauf 398 hat es so
+                // gemeldet: „Failed to tap … identifier: 'ziel-Zähler', label:
+                // 'gauge.medium'" — gegriffen wurde das Symbol, und ein Symbol
+                // allein ist nicht antippbar.
+                //
+                // Wichtiger als die Prüfung ist aber, was dieselbe Zeile über
+                // die Vorlesefunktion sagt: Dort stand als Beschriftung des
+                // Symbols **`gauge.medium`** — der Name aus dem Symbolsatz von
+                // Apple. Wer die App hört statt sie zu sehen, bekam an dieser
+                // Stelle technisches Vokabular vorgelesen, und das schließt
+                // Produktprinzip 6 aus. Das Symbol ist Schmuck neben einem
+                // Wort, das schon dasteht; es hat nichts zu sagen.
+                Label {
+                    Text(ziel.name)
+                } icon: {
+                    Image(systemName: ziel.symbol).accessibilityHidden(true)
+                }
+                .tag(ziel.nummer)
+                .accessibilityElement(children: .combine)
+                // Die Kennung, weil die Bauform nicht zu erraten war: Drei
+                // Läufe sind daran vergangen, dass eine Prüfung diese Zeile
+                // suchte — als Zelle nicht da, als Knopf nicht da, und auf dem
+                // Bildschirmfoto die ganze Zeit sichtbar.
+                .accessibilityIdentifier("ziel-\(ziel.name)")
             }
             .navigationTitle("Zählora")
             .listStyle(.sidebar)

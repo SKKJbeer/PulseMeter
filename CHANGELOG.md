@@ -9,6 +9,32 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.113.2 — 2026-09-08
+
+**Die Fehlermeldung des iPad-Laufs hat einen Mangel für die Vorlesefunktion
+aufgedeckt, nach dem niemand gesucht hat.** Sie lautete:
+
+```
+Failed to tap … identifier: 'ziel-Zähler', label: 'gauge.medium'
+```
+
+`gauge.medium` ist der Name des Symbols aus dem Zeichensatz von Apple. Er stand
+in der Seitenleiste als **Beschriftung** neben dem Wort „Zähler" — wer die App
+hört statt sie zu sehen, bekam dort technisches Vokabular vorgelesen. Das
+schließt Produktprinzip 6 aus, und aufgefallen ist es nur, weil eine Prüfung
+danebengriff.
+
+### Behoben
+
+- Das Symbol in der Seitenleiste ist für die Vorlesefunktion **stumm**, und die
+  Zeile ist ein einziges Element. Es ist Schmuck neben einem Wort, das schon
+  dasteht.
+- Damit greift auch die Prüfung wieder: Vorher waren Symbol und Schrift zwei
+  Elemente, die Kennung galt für beide, und der erste Treffer war das Symbol —
+  ein Symbol allein nimmt keinen Tipp entgegen. Die Prüfhilfe nimmt zusätzlich
+  den ersten Treffer, der sich **antippen lässt**; sie fängt damit die Klasse
+  ab und nicht den einen Fall.
+
 ## 0.113.1 — 2026-09-08
 
 **Die Kennung war richtig, der Griff danach nicht.** Auf dem iPad meldete der

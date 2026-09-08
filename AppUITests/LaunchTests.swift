@@ -282,10 +282,21 @@ final class LaunchTests: XCTestCase {
             // Elementen. `kartenstand-Gas` und `forecast-strip` gehen in
             // dieser Datei seit jeher diesen Weg; ich bin davon abgewichen,
             // und es hat einen Lauf gekostet.
-            for kandidat in [app.tabBars.buttons[name],
-                             app.descendants(matching: .any)
-                                .matching(identifier: "ziel-\(name)").firstMatch] {
-                if kandidat.exists { return kandidat }
+            let tab = app.tabBars.buttons[name]
+            if tab.exists { return tab }
+            // **Der erste Treffer, der sich auch antippen lässt.**
+            //
+            // `firstMatch` allein genügt nicht: Eine Kennung an einer Zeile
+            // gilt für alles darin, und der erste Treffer war in Lauf 398 das
+            // Symbol — „Failed to tap … label: 'gauge.medium'". Ein Symbol
+            // allein nimmt keinen Tipp entgegen. Seit derselben Fassung ist
+            // die Zeile ein einziges Element; diese Schleife bleibt trotzdem,
+            // weil sie die Klasse abfängt und nicht den einen Fall.
+            let treffer = app.descendants(matching: .any)
+                .matching(identifier: "ziel-\(name)")
+            for index in 0..<treffer.count {
+                let kandidat = treffer.element(boundBy: index)
+                if kandidat.exists && kandidat.isHittable { return kandidat }
             }
             // Zugeklappt steht das Ziel nicht im Baum. Höchstens zweimal
             // umgeschaltet: Der Knopf ist ein Umschalter, und wer ihn in

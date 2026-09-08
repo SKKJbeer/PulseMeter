@@ -1372,6 +1372,32 @@ gewählt, ohne zu prüfen, warum die vorhandenen so aussehen, wie sie aussehen.
 > begründungspflichtig — nicht das Muster.** Es steht meistens dort, weil
 > jemand den kürzeren Weg schon bezahlt hat.
 
+Der nächste Lauf hat dann gezeigt, **warum** die vorhandenen Prüfungen so
+aussehen: Sie sitzen alle auf Elementen, deren Unterbau zu **einem** Element
+zusammengefasst ist. Ohne das bleiben Symbol und Schrift zwei Elemente, die
+Kennung gilt für beide, und der erste Treffer war das Symbol — das allein
+keinen Tipp entgegennimmt.
+
+> Eine Kennung gehört auf ein Element, das auch **eines** ist. Wo ein Ziel aus
+> Symbol und Schrift besteht, wird der Unterbau zusammengefasst, sonst greift
+> jede Suche irgendwohin. Und ein Griff, der eine Handlung ausführt, nimmt den
+> ersten Treffer, der sich **bedienen lässt**, nicht einfach den ersten.
+
+### Eine danebengreifende Prüfung nennt manchmal einen echten Mangel
+
+Dieselbe Meldung lautete vollständig: `identifier: 'ziel-Zähler', label:
+'gauge.medium'`. Das zweite Feld ist die Beschriftung für die Vorlesefunktion —
+und es enthielt den **Namen des Symbols aus dem Zeichensatz des Herstellers**.
+Wer die App hört statt sie zu sehen, bekam an dieser Stelle technisches
+Vokabular vorgelesen. Danach hatte niemand gesucht; die Prüfung ist nur
+zufällig daran vorbeigekommen.
+
+> Die Fehlermeldung einer Oberflächenprüfung führt Beschriftungen mit, und die
+> sind das, was ein blinder Nutzer hört. **Beim Lesen eines Fehlschlags lohnt
+> der Blick auf die Beschriftungen, auch wenn sie mit dem Fehlschlag nichts zu
+> tun haben.** Ein Symbol neben einem Wort, das schon dasteht, gehört stumm
+> gestellt.
+
 Und noch eine Falle desselben Tages, dieselbe Familie: **Auf einem großen
 Bildschirm bleibt hinter einem Blatt alles ansprechbar.** Eine Prüfung suchte
 „den ersten Text, der mit *Einspeisung* anfängt" und fand die Zeile der Karte
