@@ -65,6 +65,21 @@ struct RootView: View {
         }
     }
 
+    /// Ob die Seitenleiste offen steht.
+    ///
+    /// **`.all` und nicht die Vorgabe — gemessen, nicht angenommen.** In
+    /// 0.112.0 stand hier nichts, und der erste Lauf auf einem iPad Pro 13"
+    /// hat gezeigt, was die Vorgabe daraus macht: Die drei Ziele waren im
+    /// Zugänglichkeitsbaum **gar nicht vorhanden**, dafür ein Knopf
+    /// „Seitenleiste ausblenden". Wer die App öffnet, sah die Übersicht und
+    /// sonst nichts — der Weg zu Verlauf und Zählern lag hinter einem Symbol
+    /// in der Ecke. Auf dem Telefon stehen die drei Ziele die ganze Zeit da;
+    /// auf dem größeren Gerät zu verschwinden ist die Sackgasse aus
+    /// Produktprinzip 4.
+    ///
+    /// Zuklappen darf man sie weiter. Sie fängt nur nicht zugeklappt an.
+    @State private var spalten: NavigationSplitViewVisibility = .all
+
     /// Breit: Seitenleiste links, Inhalt rechts.
     ///
     /// **Warum überhaupt eine andere Navigation.** Eine Tableiste am unteren
@@ -73,12 +88,15 @@ struct RootView: View {
     /// iPad das, was die Tableiste auf dem Telefon ist: der Ort, an dem man
     /// nachsieht, was es gibt.
     ///
-    /// `.navigationSplitViewStyle(.balanced)` statt der Vorgabe: Die Vorgabe
-    /// schiebt die Leiste im Hochformat über den Inhalt, und der Inhalt springt
-    /// beim Drehen in der Breite. Ausgewogen heißt, beide Spalten teilen sich
-    /// den Platz und die Übersicht bleibt stehen, wo sie war.
+    /// **Hier stand, `.balanced` sorge dafür, dass sich beide Spalten den
+    /// Platz teilen. Das war falsch.** Der Stil bestimmt, wie der Platz
+    /// aufgeteilt wird, *wenn* beide Spalten stehen — ob sie stehen,
+    /// entscheidet ``spalten``. Ohne die Angabe klappte die Leiste im
+    /// Hochformat zu, und `.balanced` änderte daran nichts. Der Stil bleibt
+    /// trotzdem: Die Vorgabe schiebt die Leiste über den Inhalt, und der
+    /// Inhalt springt beim Drehen in der Breite.
     private var seitenleiste: some View {
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: $spalten) {
             List(Self.ziele, id: \.nummer, selection: auswahl) { ziel in
                 Label(ziel.name, systemImage: ziel.symbol)
                     .tag(ziel.nummer)

@@ -252,18 +252,37 @@ final class LaunchTests: XCTestCase {
     /// Trotzdem nicht ohne jede Geduld: Nach dem Schließen eines Blatts steht
     /// der Zugänglichkeitsbaum einen Moment lang nicht. Deshalb wird bis zu
     /// ``erscheint`` lang wiederholt nachgesehen, aber in kurzen Schritten.
-    private func ziel(_ name: String, in app: XCUIApplication) -> XCUIElement? {
+    /// - Parameter oeffneLeiste: Ob eine zugeklappte Seitenleiste aufgeklappt
+    ///   werden darf. Für einen Wechsel mitten im Ablauf: ja — das Ziel ist
+    ///   dann einen Tipp weit weg und damit erreichbar. Für die Prüfung, die
+    ///   **die Zusage selbst** festhält: nein. Sonst deckt die Hilfe genau den
+    ///   Fehler zu, für den es sie gibt — so wie in 0.112.0, als die drei Ziele
+    ///   auf dem iPad beim Start gar nicht dastanden.
+    private func ziel(_ name: String,
+                      in app: XCUIApplication,
+                      oeffneLeiste: Bool = true) -> XCUIElement? {
         let ende = Date().addingTimeInterval(erscheint)
+        var umgeschaltet = 0
         repeat {
-            let knopf = app.tabBars.buttons[name]
-            if knopf.exists { return knopf }
             // Die Seitenleiste ist eine Liste; ihre Zeilen sind Zellen. Auf
             // manchen Fassungen von iOS meldet SwiftUI sie zusätzlich als
             // Knöpfe — deshalb beides, und die Zelle zuerst.
-            let zeile = app.cells[name]
-            if zeile.exists { return zeile }
-            let alsKnopf = app.buttons[name]
-            if alsKnopf.exists { return alsKnopf }
+            for kandidat in [app.tabBars.buttons[name], app.cells[name], app.buttons[name]] {
+                if kandidat.exists { return kandidat }
+            }
+            // Zugeklappt steht das Ziel nicht im Baum. Höchstens zweimal
+            // umgeschaltet: Der Knopf ist ein Umschalter, und wer ihn in
+            // jeder Runde drückt, klappt die Leiste abwechselnd auf und zu.
+            if oeffneLeiste && umgeschaltet < 2 {
+                let umschalter = app.buttons.matching(
+                    NSPredicate(format: "label BEGINSWITH 'Seitenleiste'")
+                ).firstMatch
+                if umschalter.exists && umschalter.isHittable {
+                    umschalter.tap()
+                    umgeschaltet += 1
+                    continue
+                }
+            }
             Thread.sleep(forTimeInterval: 0.25)
         } while Date() < ende
         return nil
@@ -375,20 +394,27 @@ final class LaunchTests: XCTestCase {
                       "Nach der ersten Ablesung muss die Karte den zweiten Schritt nennen")
     }
 
-    /// Die App kommt hoch, und alle drei Ziele sind erreichbar.
+    /// Die App kommt hoch, und alle drei Ziele stehen sofort da.
     ///
     /// **Bis 0.112.1 hieß diese Prüfung `testAppLaunchesAndShowsTabs` und
     /// verlangte eine Tab-Leiste.** Auf dem iPad gibt es keine. Die Zusage war
-    /// nie „es gibt eine Tab-Leiste", sondern „die drei Ziele sind da" — und
-    /// genau das steht jetzt hier. Der Name sagt es mit.
+    /// nie „es gibt eine Tab-Leiste", sondern „die drei Ziele sind da".
+    ///
+    /// **`oeffneLeiste: false`, und das ist der Kern dieser Prüfung.** Sie
+    /// darf sich nicht selbst helfen. Genau das hat 0.112.0 gekostet: Auf dem
+    /// iPad stand beim Start nur die Übersicht, Verlauf und Zähler lagen
+    /// hinter einem Symbol in der Ecke, und im Zugänglichkeitsbaum kamen sie
+    /// gar nicht vor. Eine Hilfe, die vorher aufklappt, hätte das zugedeckt —
+    /// „erreichbar nach einem Tipp" ist nicht „da" (Produktprinzip 3, fünf
+    /// Sekunden Blickzeit).
     func testAppLaunchesAndOffersItsThreeDestinations() {
         let app = XCUIApplication()
         app.launch()
 
         for name in ["Übersicht", "Verlauf", "Zähler"] {
-            XCTAssertNotNil(ziel(name, in: app),
-                            "\(name) ist von nirgendwo aus erreichbar — die App ist "
-                            + "vermutlich beim Start gescheitert. Zu sehen war: "
+            XCTAssertNotNil(ziel(name, in: app, oeffneLeiste: false),
+                            "\(name) steht beim Start nicht da — es darf nicht hinter "
+                            + "einem Umschalter liegen. Zu sehen war: "
                             + beschriftungen(in: app))
         }
     }

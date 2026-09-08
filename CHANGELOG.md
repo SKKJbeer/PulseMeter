@@ -9,6 +9,42 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.112.2 — 2026-09-08
+
+**Auf dem iPad stand beim Start nur die Übersicht. Verlauf und Zähler lagen
+hinter einem Symbol in der Ecke.** Das war kein Prüffehler mehr, sondern ein
+Fehler in der App — und er wäre ohne den zweiten Durchgang bis in den App Store
+gekommen.
+
+### Behoben
+
+- Die Seitenleiste steht jetzt offen, wenn die App aufgeht
+  (`columnVisibility: .all`). Ohne diese Angabe klappt sie die Vorgabe im
+  Hochformat zu: Der Zugänglichkeitsbaum enthielt „Verlauf" und „Zähler"
+  **überhaupt nicht**, nur einen Knopf „Seitenleiste ausblenden". Auf dem
+  Telefon stehen die drei Ziele die ganze Zeit da; auf dem größeren Gerät zu
+  verschwinden ist die Sackgasse aus Produktprinzip 4. Zuklappen darf man sie
+  weiter — sie fängt nur nicht zugeklappt an.
+
+### Geändert
+
+- Die Begründung an `.navigationSplitViewStyle(.balanced)` behauptete, der
+  Stil sorge dafür, dass sich beide Spalten den Platz teilen. Das stimmt
+  nicht: Der Stil bestimmt die Aufteilung, *wenn* beide Spalten stehen — ob
+  sie stehen, ist eine andere Angabe. Die Zeile ist berichtigt, nicht ergänzt.
+- `testAppLaunchesAndOffersItsThreeDestinations` klappt eine zugeklappte
+  Seitenleiste bewusst **nicht** auf. Eine Prüfung, die sich selbst hilft,
+  deckt genau den Fehler zu, für den es sie gibt — „erreichbar nach einem
+  Tipp" ist nicht „da". Beim Wechseln mitten im Ablauf darf die Hilfe
+  aufklappen; dort geht es um den Weg, nicht um die Zusage.
+
+### Offen
+
+- Der Klick-Dummy hat noch kein breites Layout. App und Entwurf weichen seit
+  0.112.0 darin voneinander ab — nach Regel 2 ein Fehler, kein Zustand.
+- Für den App Store fehlt der iPad-Bildschirmfotosatz. `asc-einreichung.py`
+  kennt bisher nur `APP_IPHONE_67`.
+
 ## 0.112.1 — 2026-09-08
 
 **Die iPad-Prüfung aus 0.112.0 lief, und sie hat drei Dinge gefunden — alle

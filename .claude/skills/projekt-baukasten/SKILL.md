@@ -1252,6 +1252,37 @@ nichts rot färben:
 > Wer einen Durchgang verdoppelt, prüft **drei** Dinge nach: die Zeitgrenze,
 > wohin die Ergebnisse gehen, und ob sie einander dabei überschreiben.
 
+**Und beim zweiten Anlauf lag der Fehler dann doch am Produkt.** Der Test war
+nachgezogen, dieselben neunzehn Prüfungen fielen wieder — nur sagte die
+Fehlermeldung diesmal, was auf dem Schirm zu sehen war. Darin standen die
+beiden gesuchten Ziele **überhaupt nicht**, dafür ein Knopf „Seitenleiste
+ausblenden". Die Leiste war zugeklappt: Wer die App öffnete, sah einen von drei
+Schirmen und den Rest hinter einem Symbol in der Ecke. Auf dem kleinen Gerät
+stehen dieselben drei Ziele die ganze Zeit da.
+
+> Ein zweiter Durchlauf mit derselben Meldung heißt nicht, dass die Korrektur
+> nichts gebracht hat. Hier hat sie das Entscheidende gebracht: **eine
+> Fehlermeldung, die den Zustand mitliefert.** Die erste Runde sagte „nicht
+> gefunden", die zweite sagte, was stattdessen da war — und darin stand die
+> Ursache.
+
+Zwei Lehren daraus, die über diesen Fall hinausgehen:
+
+- **Jede Fehlermeldung einer Oberflächenprüfung trägt den sichtbaren Zustand
+  bei sich.** Ein Abzug aller Texte und Knöpfe kostet drei Zeilen Code und hat
+  hier eine ganze Runde auf einem gemieteten Rechner gespart. Ohne ihn wäre die
+  nächste Vermutung wieder eine Vermutung gewesen.
+- **Eine Prüfhilfe, die sich selbst hilft, deckt den Fehler zu, für den es sie
+  gibt.** Die naheliegende Reparatur war, die Leiste vor dem Suchen aufzuklappen
+  — dann wären alle Prüfungen grün gewesen und der Mangel unentdeckt geblieben.
+  Aufklappen darf die Hilfe dort, wo es um den **Weg** geht; die eine Prüfung,
+  die die **Zusage** festhält, muss ohne Nachhilfe bestehen. „Erreichbar nach
+  einem Tipp" ist nicht „da".
+
+Nebenbei widerlegt: Der Stil einer geteilten Ansicht bestimmt, wie der Platz
+aufgeteilt wird, **wenn** beide Spalten stehen. Ob sie stehen, ist eine andere
+Angabe. Diese Zeile stand hier als Begründung im Code und war eine Annahme.
+
 ---
 
 ## 7. Wie ermittelt wird, wenn etwas nicht geht
