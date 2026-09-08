@@ -9,6 +9,25 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.113.5 — 2026-09-08
+
+**Der Tipp sitzt jetzt, und der Fehlschlag ist eine Zeile weitergewandert** —
+zu einer Prüfung, die es genau für diesen Fall gibt: „Der Hochtarif steht im
+Baum, ist aber nicht zu sehen."
+
+Das Bildschirmfoto desselben Laufs sagt, dass er zu sehen ist. Die Berichtsseite
+steht auf dem iPad vollständig und gut lesbar da. Das Blatt ist dort nur ein
+Formularblatt in der Bildschirmmitte und damit deutlich kürzer als auf dem
+Telefon, wo es den ganzen Schirm füllt — der Tarifteil steht schlicht weiter
+unten.
+
+### Geändert
+
+- Die Prüfung blättert jetzt zum Tarifteil, bevor sie auf Sichtbarkeit besteht.
+  **Ihre Zusage bleibt dieselbe:** erreichbar und dann wirklich zu sehen. Zeigte
+  die Vorschau wieder leere Seiten — der Fehler, für den es diese Zeile gibt —,
+  käme der Text auch durch Blättern nie in Sicht, und sie fiele wie zuvor.
+
 ## 0.113.4 — 2026-09-08
 
 **Auf dem iPad war von siebzehn gefallenen Prüfungen noch eine übrig — und es

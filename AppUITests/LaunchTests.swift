@@ -1693,15 +1693,28 @@ final class LaunchTests: XCTestCase {
         ).firstMatch
         XCTAssertTrue(hoch.waitForExistence(timeout: 10),
                       "Der Hochtarif fehlt im Bericht")
-        // **`isHittable`, nicht nur `exists`** — und das ist der eigentliche
-        // Wert dieser Zeile. Genau diese Prüfung lief grün, während die
-        // Vorschau sechs leere Seiten zeigte: Der Text stand im Baum, wurde
-        // aber vollständig weggeschnitten (siehe `ReportView`, Ausrichtung des
+        // **Sichtbar, nicht nur vorhanden** — und das ist der eigentliche Wert
+        // dieser Zeile. Genau diese Prüfung lief grün, während die Vorschau
+        // sechs leere Seiten zeigte: Der Text stand im Baum, wurde aber
+        // vollständig weggeschnitten (siehe `ReportView`, Ausrichtung des
         // Rahmens unter `scaleEffect`). Ein Bericht, den man nicht sehen kann,
         // ist keiner — und `exists` allein merkt das nie.
-        XCTAssertTrue(hoch.isHittable,
+        //
+        // **Gescrollt wird dazu, seit die App auch auf dem iPad läuft.** Dort
+        // ist das Blatt ein Formularblatt in der Bildschirmmitte und damit
+        // deutlich kürzer als auf dem Telefon, wo es den ganzen Schirm füllt.
+        // Der Tarifteil steht dann schlicht weiter unten — vorhanden, gut
+        // lesbar, nur außerhalb des Sichtfensters. Das Bildschirmfoto desselben
+        // Laufs zeigt die Seite vollständig; ein `isHittable` ohne Scrollen
+        // hätte daraus einen Fehler gemacht, den es nicht gibt.
+        //
+        // Die Zusage bleibt trotzdem dieselbe: **erreichbar und dann wirklich
+        // zu sehen.** Zeigte die Vorschau wieder leere Seiten, käme der Text
+        // auch durch Scrollen nie in Sicht, und die Prüfung fiele wie zuvor.
+        XCTAssertTrue(scroll(to: hoch, in: app),
                       "Der Hochtarif steht im Baum, ist aber nicht zu sehen — "
-                      + "die Vorschau schneidet ihren eigenen Inhalt weg")
+                      + "auch nach dem Blättern nicht. Die Vorschau schneidet "
+                      + "ihren eigenen Inhalt weg")
         let nieder = app.staticTexts.containing(
             NSPredicate(format: "label CONTAINS 'Arbeitspreis Niedertarif'")
         ).firstMatch

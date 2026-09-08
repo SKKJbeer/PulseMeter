@@ -1402,6 +1402,16 @@ Und noch eine Falle desselben Tages, dieselbe Familie: **Auf einem großen
 Bildschirm bleibt hinter einem Blatt alles ansprechbar** — und das ist so oft
 zugeschlagen, dass es eine eigene Hilfe verdient hat:
 
+Und wo eine Prüfung auf **Sichtbarkeit** besteht, gilt dasselbe eine Ebene
+höher: Ein Blatt, das auf dem kleinen Gerät den ganzen Schirm füllt, ist auf dem
+großen ein Formularblatt in der Mitte — also viel kürzer. Inhalt, der dort
+weiter unten steht, ist vorhanden und lesbar, nur außerhalb des Sichtfensters.
+
+> Eine Prüfung auf „ist zu sehen" **blättert erst hin**. Sonst wird aus einer
+> anderen Fenstergröße ein Fehler, den es nicht gibt. Die Zusage bleibt dabei
+> unangetastet: Was gar nicht gezeichnet wird, kommt auch durch Blättern nicht
+> in Sicht.
+
 > **Wer eine Handlung ausführt, nimmt den ersten Treffer, der sie auch
 > entgegennehmen kann** — nicht den ersten. Vier Zeilen, die über die Treffer
 > laufen und den ersten bedienbaren zurückgeben, fangen beide Ursachen ab: die
