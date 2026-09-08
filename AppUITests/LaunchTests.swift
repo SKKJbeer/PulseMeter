@@ -74,16 +74,36 @@ final class LaunchTests: XCTestCase {
         // Formular nicht, das Feld bleibt außerhalb des Bildes, und der Test
         // meldet „Feld fehlt", obwohl es da ist und nur nicht sichtbar.
         // Genau so las sich der Fehlschlag von 0.32.2.
-        let container: XCUIElement = {
-            for query in [app.collectionViews, app.tables, app.scrollViews] {
-                let anzahl = query.count
-                if anzahl > 0 { return query.element(boundBy: anzahl - 1) }
+        //
+        // **Seit 0.113.6 wird nicht mehr ein Behälter gewählt, sondern
+        // durchprobiert.** Die Wahl war eine Rangfolge nach Bauart —
+        // Sammlungen vor Bildlaufansichten —, und auf dem iPad geht die
+        // regelmäßig daneben: Dort ist die **Seitenleiste** eine Sammlung und
+        // liegt damit vor jeder Bildlaufansicht, auch wenn ein Blatt darüber
+        // steht. Gewischt wurde dann hinter dem Blatt, und die Meldung lautete
+        // „auch nach dem Blättern nicht zu sehen" — eine Aussage über das
+        // Produkt, wo nur der falsche Behälter bewegt worden war.
+        //
+        // Bildlaufansichten kommen jetzt zuerst, weil ein Blatt in aller Regel
+        // eine ist; und wenn der erste Griff nichts bewegt, ist der nächste
+        // dran, statt achtmal ins Leere zu wischen. Das kostet im schlechten
+        // Fall ein paar Sekunden mehr und im guten gar nichts.
+        var behaelter: [XCUIElement] = []
+        for query in [app.scrollViews, app.collectionViews, app.tables] {
+            let anzahl = query.count
+            // Von hinten nach vorn: Was zuletzt aufgebaut wurde, liegt oben.
+            for index in stride(from: anzahl - 1, through: 0, by: -1) {
+                behaelter.append(query.element(boundBy: index))
             }
-            return app
-        }()
-        for _ in 0..<swipes {
-            if element.exists && element.isHittable { return true }
-            container.swipeUp()
+        }
+        behaelter.append(app)
+
+        for container in behaelter.prefix(4) {
+            guard container.exists else { continue }
+            for _ in 0..<swipes {
+                if element.exists && element.isHittable { return true }
+                container.swipeUp()
+            }
         }
         return element.exists && element.isHittable
     }

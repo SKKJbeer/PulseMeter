@@ -1412,6 +1412,23 @@ weiter unten steht, ist vorhanden und lesbar, nur außerhalb des Sichtfensters.
 > unangetastet: Was gar nicht gezeichnet wird, kommt auch durch Blättern nicht
 > in Sicht.
 
+Und beim Blättern schlug dieselbe Falle **ein drittes Mal** zu, jetzt in der
+Hilfe selbst. Sie wählte den Behälter, auf dem sie wischt, nach **Bauart** —
+Sammlungen vor Bildlaufansichten. Auf dem großen Gerät ist die Seitenleiste
+eine Sammlung und liegt damit vor jeder Bildlaufansicht, auch wenn ein Blatt
+darüber steht. Gewischt wurde hinter dem Blatt, das Blatt bewegte sich nie, und
+gemeldet wurde „auch nach dem Blättern nicht zu sehen": wieder eine Aussage
+über das Produkt, wo nur am falschen Ort gezogen worden war.
+
+> **Eine Rangfolge nach Bauart ist keine Rangfolge nach „liegt oben".** Wo
+> etwas bewegt werden soll, wird durchprobiert, bis sich etwas bewegt — nicht
+> einmal gewählt und dann achtmal ins Leere gewischt.
+
+Dreimal dieselbe Wurzel, dreimal eine andere Stelle: **Auf einem großen
+Bildschirm ist „vorne" nicht dasselbe wie „zuerst gefunden".** Wer von einem
+kleinen Gerät kommt, hat diese Unterscheidung nie gebraucht, weil dort ein
+Blatt den ganzen Schirm füllt.
+
 > **Wer eine Handlung ausführt, nimmt den ersten Treffer, der sie auch
 > entgegennehmen kann** — nicht den ersten. Vier Zeilen, die über die Treffer
 > laufen und den ersten bedienbaren zurückgeben, fangen beide Ursachen ab: die

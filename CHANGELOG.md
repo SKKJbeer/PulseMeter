@@ -9,6 +9,29 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.113.6 — 2026-09-08
+
+**Dieselbe Falle zum dritten Mal, diesmal in der Blätterhilfe.** Die Meldung
+lautete „auch nach dem Blättern nicht zu sehen" — also eine Aussage über das
+Produkt. Geblättert worden war aber am falschen Ort.
+
+Die Hilfe wählte ihren Behälter nach **Bauart**: Sammlungen vor
+Bildlaufansichten. Auf dem iPad ist die **Seitenleiste** eine Sammlung und liegt
+damit vor jeder Bildlaufansicht — auch wenn ein Blatt darüber steht. Gewischt
+wurde hinter dem Blatt, und die Vorschau bewegte sich nie.
+
+### Behoben
+
+- Die Hilfe wählt nicht mehr, sondern **probiert durch**. Bildlaufansichten
+  zuerst, weil ein Blatt in aller Regel eine ist; bewegt der erste Griff
+  nichts, ist der nächste dran. Im guten Fall kostet das nichts, im schlechten
+  ein paar Sekunden — gegen einen Lauf von einer Stunde gerechnet.
+
+Der Bericht selbst ist in Ordnung: Die Vorschau liegt in einer vertikalen
+Bildlaufansicht und ist vollständig erreichbar. Das Bildschirmfoto zeigt die
+Seite lesbar; nur reicht die Höhe eines Formularblatts auf dem iPad nicht für
+eine ganze Seite, und der Tarifteil steht deshalb weiter unten.
+
 ## 0.113.5 — 2026-09-08
 
 **Der Tipp sitzt jetzt, und der Fehlschlag ist eine Zeile weitergewandert** —

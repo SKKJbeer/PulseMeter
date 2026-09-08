@@ -25,8 +25,15 @@ import re
 import subprocess
 import sys
 
-# `let x`, `var x`, `guard let x`, `if let x` — der Name direkt dahinter.
-DEKLARATION = re.compile(r"\b(?:let|var)\s+([a-z_][A-Za-z0-9_]*)\b")
+# `let x`, `var x`, `guard let x`, `if let x` — und `for x in …`.
+#
+# **Die Schleife stand hier zuerst nicht drin, und die Prüfung hat sofort
+# falsch angeschlagen.** In 0.113.6 wurde ein `let container = …` durch ein
+# `for container in …` ersetzt: derselbe Name, weiter erklärt, nur anders. Als
+# „verwaist" gemeldet wäre das eine Prüfung, die den Weg versperrt, statt ihn
+# freizuräumen — und die schaltet man beim dritten Mal ab.
+DEKLARATION = re.compile(r"\b(?:let|var)\s+([a-z_][A-Za-z0-9_]*)\b"
+                         r"|\bfor\s+([a-z_][A-Za-z0-9_]*)\s+in\b")
 
 
 def lauf(*befehl: str) -> str:
@@ -35,7 +42,8 @@ def lauf(*befehl: str) -> str:
 
 
 def namen(text: str) -> set[str]:
-    return set(DEKLARATION.findall(text))
+    # `findall` liefert bei mehreren Gruppen Tupel; leer ist, was nicht griff.
+    return {treffer for paar in DEKLARATION.findall(text) for treffer in paar if treffer}
 
 
 def entkleiden(text: str) -> str:
