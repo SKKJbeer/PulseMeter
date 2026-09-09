@@ -1530,6 +1530,33 @@ Zeilen über der Prüfung, die daran fiel.** Wer eine gemeinsam benutzte Hilfe
 umbaut, liest zuerst, was ihre Aufrufer über sie voraussetzen — die Stellen,
 die von ihr abhängen, haben ihre Bedingungen oft längst aufgeschrieben.
 
+### Ein flacher Behälter blättert nicht — und steht gern ganz vorn
+
+Als die Messung endlich ankam, war die Antwort banal und keine der fünf
+Vermutungen davor:
+
+    Fenster:                (0, 0, 1032, 1376)
+    Ziel vor dem Blättern:  (286, 1533, 190, 11)  hittable=false
+    Bildlaufansicht (2):  0: (320, 0, 712, 1376) · 1: (338, 134, 676, 33)
+
+Das Ziel stand 157 Punkte unter dem Rand — ein Wisch. Geblättert wurde aber
+„von hinten nach vorn", und das zuletzt Aufgebaute war eine **waagerechte**
+Leiste von 33 Punkten Höhe. Wische darauf bewegen entweder nichts oder schlagen
+an die Ansicht darunter durch und schießen weit über das Ziel hinaus.
+
+> **Eine Bildlaufansicht ist nicht schon deshalb die richtige, weil sie zuletzt
+> im Baum steht.** Wer nach Reihenfolge greift, prüft vorher die Maße: Was für
+> die gemeinte Richtung zu flach (oder zu schmal) ist, ist keine Blätterfläche,
+> sondern eine Leiste. Ein Schnitt, der weit von beiden Größenordnungen entfernt
+> liegt, kostet nichts und fängt den ganzen Fall ab.
+
+Und die allgemeine Form, die diese Serie über sechs Läufe getragen hat: **Der
+Fehler saß jedes Mal im Griff, nie in der Sache** — falscher Behälter, falscher
+Treffer, falsche Art, zu viele Wische. Die Ansicht war immer in Ordnung. Wenn
+eine Prüfung auf einem größeren Gerät fällt und auf dem kleinen läuft, ist die
+erste Frage nicht „was ist an der Ansicht anders", sondern „was greife ich
+dort, das ich auf dem Telefon nicht greifen konnte".
+
 ---
 
 ## 7. Wie ermittelt wird, wenn etwas nicht geht

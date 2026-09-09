@@ -89,6 +89,12 @@ final class LaunchTests: XCTestCase {
         // dran, statt achtmal ins Leere zu wischen. Das kostet im schlechten
         // Fall ein paar Sekunden mehr und im guten gar nichts.
         //
+        // Wie flach ein Behälter sein darf, um noch als Blätterfläche zu
+        // gelten. Die waagerechte Zeitraumleiste im Bericht ist 33 Punkte
+        // hoch; eine echte Liste war in jeder Messung mindestens zehnmal so
+        // hoch. Der Schnitt liegt weit von beiden entfernt.
+        let mindestHoehe: CGFloat = 200
+
         // **Die Behälter sind Vorschriften, keine Elemente — und das ist der
         // Kern.** In 0.113.6 stand hier eine Liste fertig aufgelöster Elemente,
         // gebaut aus einer Zählung von vorhin. Eine Abfrage in XCUITest löst
@@ -131,6 +137,16 @@ final class LaunchTests: XCTestCase {
                 }
                 let container = hole()
                 guard container.exists else { break }
+                // **Ein flacher Behälter blättert nicht.** Gemessen im Lauf
+                // 407, auf dem iPad: Neben der Berichtsseite (712 × 1376)
+                // steht die Zeitraumleiste im Baum — 676 × **33**, waagerecht.
+                // Sie wird zuletzt aufgebaut und war damit der erste Griff.
+                // Acht Wische auf 33 Punkten Höhe bewegen entweder nichts oder
+                // schlagen an die Ansicht darunter durch und schießen weit über
+                // das Ziel hinaus. Der Hochtarif stand 157 Punkte unter dem
+                // Rand, war also einen einzigen Wisch entfernt — und fiel nach
+                // dem Übermaß ganz aus dem Baum.
+                guard container.frame.height >= mindestHoehe else { break }
                 container.swipeUp()
             }
         }

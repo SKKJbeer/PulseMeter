@@ -9,6 +9,34 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.113.11 — 2026-09-09
+
+**Die Messung ist angekommen, und sie sagt: kein Produktfehler, sondern ein
+33 Punkte hoher Behälter.**
+
+Lauf 407, iPad. Das iPhone lief in demselben Lauf vollständig durch. Was die
+Prüfung berichtet hat:
+
+    Fenster:                    (0, 0, 1032, 1376)
+    Hochtarif vor dem Blättern: (286, 1533, 190, 11)  hittable=false
+    Hochtarif danach:           nicht im Baum
+    Bildlaufansicht (2):  0: (320, 0, 712, 1376) · 1: (338, 134, 676, 33)
+
+Der Tarifteil steht 157 Punkte unter dem Fensterrand — einen einzigen Wisch
+entfernt, in normaler Größe, an der richtigen Stelle. Nichts davon ist kaputt.
+
+Der Griff war falsch. Geblättert wird „von hinten nach vorn", weil ein zuletzt
+aufgebautes Blatt oben liegt. Im Bericht ist das zuletzt Aufgebaute aber die
+**waagerechte** Zeitraumleiste, 676 × 33. Acht Wische auf 33 Punkten Höhe
+bewegen entweder nichts oder schlagen an die Ansicht darunter durch und
+schießen weit über das Ziel hinaus — danach war der Text ganz aus dem Baum.
+
+### Behoben
+
+- Ein Behälter, der niedriger als 200 Punkte ist, gilt nicht mehr als
+  Blätterfläche. Die Zeitraumleiste fällt damit heraus, die Berichtsseite
+  (712 × 1376) ist der erste Griff, und ein Wisch genügt.
+
 ## 0.113.10 — 2026-09-09
 
 **„Nicht im Baum" heißt zweierlei, und 0.113.9 hat die beiden verwechselt.**
