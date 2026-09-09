@@ -336,6 +336,23 @@ final class LaunchTests: XCTestCase {
         return nil
     }
 
+    /// Die Rahmen aller Treffer einer Suche, für eine Fehlermeldung.
+    ///
+    /// **Damit eine Prüfung ihre eigenen Zahlen berichten kann.** Eine Meldung
+    /// wie „nicht zu sehen" ist eine Behauptung; „Fenster 1032×1376, Text bei
+    /// y=1290, Blatt endet bei y=1008" ist ein Befund. In diesem Projekt hat
+    /// genau dieser Unterschied schon einmal vier Vermutungen beendet — die
+    /// Begründung dazu steht in `ReportView`.
+    private func rahmen(_ query: XCUIElementQuery, _ was: String) -> String {
+        let alle = query.allElementsBoundByIndex
+        guard !alle.isEmpty else { return "\(was): keine" }
+        let zeilen = alle.enumerated().map { index, element in
+            "\(index): \(element.frame)"
+                + (element.identifier.isEmpty ? "" : " [\(element.identifier)]")
+        }
+        return "\(was) (\(alle.count)): " + zeilen.joined(separator: " · ")
+    }
+
     /// Der erste Treffer einer Suche, der sich auch **bedienen** lässt.
     ///
     /// **Diese vier Zeilen fassen zwei verlorene Läufe zusammen.** Auf einem
@@ -1741,10 +1758,28 @@ final class LaunchTests: XCTestCase {
         // Die Zusage bleibt trotzdem dieselbe: **erreichbar und dann wirklich
         // zu sehen.** Zeigte die Vorschau wieder leere Seiten, käme der Text
         // auch durch Scrollen nie in Sicht, und die Prüfung fiele wie zuvor.
-        XCTAssertTrue(scroll(to: hoch, in: app),
-                      "Der Hochtarif steht im Baum, ist aber nicht zu sehen — "
-                      + "auch nach dem Blättern nicht. Die Vorschau schneidet "
-                      + "ihren eigenen Inhalt weg")
+        // **Fünf Läufe, fünf Vermutungen, kein Ergebnis — deshalb steht hier
+        // jetzt eine Messung.** Dieselbe Zeile ist in 0.113.3 bis 0.113.7
+        // gefallen, jedes Mal mit einer anderen erklärenden Geschichte, und
+        // jede kostete eine Stunde gemieteten Mac. In `ReportView` steht die
+        // Lehre schon seit 0.33.4: nach dem zweiten Fehlversuch nicht
+        // weiterraten, sondern die Ansicht ihre eigenen Zahlen berichten
+        // lassen. Vier Vermutungen hatten damals je einen Lauf gekostet; die
+        // eine Messung klärte alles.
+        //
+        // Also: Wenn es hier fällt, sagt die Meldung, wo das Fenster steht, wo
+        // der gesuchte Text steht und welche Bildlaufansichten es überhaupt
+        // gibt. Damit ist beim nächsten Mal zu **sehen**, ob der Text unter dem
+        // Rand liegt, hinter dem Blatt, oder eine Größe von null hat.
+        if !scroll(to: hoch, in: app) {
+            XCTFail("Der Hochtarif ist auch nach dem Blättern nicht zu sehen.\n"
+                    + "  Fenster:   \(app.windows.firstMatch.frame)\n"
+                    + "  Hochtarif: \(hoch.frame), exists=\(hoch.exists), "
+                    + "hittable=\(hoch.isHittable)\n"
+                    + "  \(rahmen(app.scrollViews, "Bildlaufansicht"))\n"
+                    + "  \(rahmen(app.collectionViews, "Sammlung"))\n"
+                    + "  \(rahmen(app.sheets, "Blatt"))")
+        }
         let nieder = app.staticTexts.containing(
             NSPredicate(format: "label CONTAINS 'Arbeitspreis Niedertarif'")
         ).firstMatch

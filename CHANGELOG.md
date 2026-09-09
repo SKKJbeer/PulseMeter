@@ -9,6 +9,31 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.113.8 — 2026-09-09
+
+**Fünf Läufe, fünf Erklärungen, kein Ergebnis — deshalb steht in dieser
+Fassung eine Messung statt einer sechsten Vermutung.**
+
+Dieselbe Prüfung ist von 0.113.3 bis 0.113.7 gefallen, jedes Mal mit einer
+anderen plausiblen Geschichte, und jede kostete eine Stunde gemieteten Mac. In
+`ReportView` steht die Lehre seit 0.33.4 wörtlich: nach dem zweiten Fehlversuch
+nicht weiterraten, sondern die Ansicht ihre eigenen Zahlen berichten lassen.
+Damals hatten vier Vermutungen je einen Lauf gekostet und nichts geklärt; die
+eine Messung klärte alles. Diesmal habe ich zu lange gebraucht, um mich daran zu
+erinnern.
+
+### Geändert
+
+- Fällt die Prüfung, nennt sie jetzt den Rahmen des Fensters, den Rahmen des
+  gesuchten Textes samt `exists` und `hittable`, und die Rahmen aller
+  Bildlaufansichten, Sammlungen und Blätter. Damit ist beim nächsten Lauf zu
+  **sehen**, ob der Text unter dem Rand liegt, hinter dem Blatt, oder eine
+  Größe von null hat.
+
+**Bewusst sonst nichts geändert.** Eine Verhaltensänderung im selben Zug hätte
+einen grünen Lauf unerklärlich gemacht — und die nächste Eigenheit des großen
+Geräts wieder eine Stunde gekostet.
+
 ## 0.113.7 — 2026-09-09
 
 **Ein Fehler in der Korrektur von 0.113.6**, und ein lehrreicher:

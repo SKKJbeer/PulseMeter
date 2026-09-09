@@ -1436,6 +1436,27 @@ Bildlaufansichten wurden zwei, und der Griff nach der dritten brach hart ab —
 > angefasst. Ein Index, der aus einer alten Zählung stammt, ist eine Behauptung
 > über einen Baum, den es so nicht mehr gibt.
 
+### Die Regel gegen das Weiterraten muss man sich selbst zurufen
+
+Der eigentliche Fehler dieser Serie steht nicht oben. Er ist, dass **fünf**
+Läufe hintereinander mit fünf verschiedenen plausiblen Erklärungen verbraucht
+wurden — und in derselben Datei, an der gearbeitet wurde, seit Langem der Satz
+stand: *nach dem zweiten Fehlversuch nicht weiterraten, sondern die Ansicht ihre
+eigenen Zahlen berichten lassen.* Er war aus genau demselben Grund einmal
+aufgeschrieben worden und hatte damals vier Läufe beendet.
+
+> **Zwei Fehlversuche an derselben Stelle sind das Signal, das Werkzeug zu
+> wechseln** — von der Erklärung zur Messung. Nicht drei, nicht fünf. Wer beim
+> dritten Anlauf wieder eine Geschichte hat, sollte misstrauisch werden: Eine
+> Erklärung, die zur Meldung passt, ist noch kein Befund.
+>
+> Eine Messung kostet **denselben** einen Lauf wie die nächste Vermutung und
+> liefert im Gegensatz zu ihr eine Antwort, auch wenn sie unerwartet ausfällt.
+
+Und dazu gehört: **In diesem Lauf sonst nichts ändern.** Eine
+Verhaltensänderung neben der Messung macht einen grünen Lauf unerklärlich, und
+die nächste Eigenheit kostet wieder von vorn.
+
 Dreimal dieselbe Wurzel, dreimal eine andere Stelle: **Auf einem großen
 Bildschirm ist „vorne" nicht dasselbe wie „zuerst gefunden".** Wer von einem
 kleinen Gerät kommt, hat diese Unterscheidung nie gebraucht, weil dort ein
