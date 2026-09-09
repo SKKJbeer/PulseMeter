@@ -1475,6 +1475,45 @@ hinter dem Blatt statt der im Blatt. Auf dem kleinen Gerät verdeckt ein Blatt
 den ganzen Schirm, und der Griff ging jahrelang gut. Wer auf einem größeren
 Gerät prüft, prüft jeden `firstMatch` nach.
 
+### Eine Fehlermeldung darf nichts anfassen, was es vielleicht nicht gibt
+
+Die Messung aus dem vorigen Abschnitt kam nie an. Statt der Zahlen stand im
+Protokoll „Failed to get matching snapshot: No matches found" — und zwar in der
+Zeile, die den Fehlschlag beschreiben sollte. `frame` auf einer Abfrage ohne
+Treffer bricht den Test hart ab. Die Meldung hatte `frame` vor `exists`
+abgefragt, und bei einem Element, das gerade verschwunden war, kam sie über das
+erste Wort nicht hinaus.
+
+> **Ein Fehlertext ist selbst Code und kann selbst scheitern.** Alles, was er
+> abfragt, wird erst auf Vorhandensein geprüft und sonst als „nicht da"
+> ausgeschrieben. Sonst kostet die Messung denselben Lauf wie die Vermutung und
+> liefert weniger.
+
+Und doch war es eine Auskunft — nur eine andere als geplant: Das Element war
+Sekunden zuvor noch da und beim Aufschreiben nicht mehr auffindbar. Der
+Unterschied zwischen *unsichtbar* und *nicht gefunden* war damit gemacht, und
+er zeigte auf die nächste Zeile im selben Protokoll.
+
+### Dasselbe Element, zwei Arten — je nachdem, wann man fragt
+
+Unter dem Fehlschlag stand als Nebenbemerkung:
+
+    Automation type mismatch: computed Other from legacy attributes
+    vs StaticText from modern attribute … ElementBaseType = UILabel
+
+XCUITest ordnet dasselbe `UILabel` nicht dauerhaft gleich ein. Eine Abfrage
+über `staticTexts` findet es dann erst und später nicht mehr, obwohl es
+unverändert auf dem Schirm steht — besonders in stark skalierten Ansichten.
+
+> **Wer einen Text sucht, sucht ihn typunabhängig**
+> (`descendants(matching: .any)` mit einer Bedingung auf die Beschriftung),
+> nicht über `staticTexts`. Die Art eines Elements ist eine Auskunft der
+> Prüfumgebung über sich selbst, keine Eigenschaft der App.
+
+Die Zeile darunter gehört dazu: **Wer blättert, hört auf, sobald das Ziel aus
+dem Baum fällt.** Weiterwischen bewegt einen Bildschirm, der mit dem Fehler
+nichts mehr zu tun hat, und macht den Zustand unlesbar, in dem er entstand.
+
 ---
 
 ## 7. Wie ermittelt wird, wenn etwas nicht geht

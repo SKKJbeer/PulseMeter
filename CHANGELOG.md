@@ -9,6 +9,48 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.113.9 — 2026-09-09
+
+**Die Messung aus 0.113.8 ist beim Aufschreiben umgefallen — und hat damit
+genau die Auskunft gegeben, um die es ging.**
+
+Statt der Zahlen stand im Protokoll „Failed to get matching snapshot: No
+matches found". `frame` auf einer Abfrage ohne Treffer bricht den Test hart ab.
+Der gesuchte Text war wenige Sekunden vorher noch da — `waitForExistence` lief
+grün — und beim Aufschreiben des Fehlschlags nicht mehr auffindbar.
+
+Nicht unsichtbar, nicht verdeckt: **nicht mehr gefunden.** Die Begründung stand
+im selben Protokoll eine Zeile weiter unten:
+
+    Automation type mismatch: computed Other from legacy attributes
+    vs StaticText from modern attribute … ElementBaseType = UILabel
+
+XCUITest hat dasselbe `UILabel` erst als `StaticText` eingeordnet und dann als
+`Other`. Eine Abfrage über `staticTexts` findet es damit erst und später nicht
+mehr, obwohl es unverändert auf dem Schirm steht. Der Text ist nirgends hin —
+die Abfrage nach seiner Art hat ihn verloren.
+
+### Behoben
+
+- Der Bericht wird typunabhängig gesucht, über `descendants(matching: .any)`
+  statt über `staticTexts`. Betrifft beide Tarife; beim Niedertarif stand
+  derselbe Fehler nur noch nicht ausgelöst da.
+- Ein Fehlertext fasst nichts mehr an, was es vielleicht nicht gibt. `lage`
+  fragt erst `exists` und schreibt sonst „nicht im Baum". Eine Messung, die
+  sich beim Aufschreiben selbst abschießt, kostet den ganzen Lauf.
+- Das Blättern hört auf, sobald das Ziel aus dem Baum fällt. Vorher wurde bis
+  zu vierzigmal weitergewischt, quer über fünf Behälter — der Zustand, in dem
+  das Ziel verloren ging, war danach nicht mehr zu sehen.
+
+### Geändert
+
+- Die Prüfung hält den Rahmen des Textes **vor** dem Blättern fest und meldet
+  im Fehlerfall beide Stände. Was sich unterwegs verändert hat, ist damit zu
+  sehen und nicht nur, wie es hinterher aussah.
+- Der Kommentar zur Vorschau auf dem iPad ist berichtigt: Die Seite wird dort
+  nicht kleiner, sondern auf die Inhaltsbreite **größer** als das Fenster
+  gerechnet. Deshalb steht der Tarifteil weiter unten.
+
 ## 0.113.8 — 2026-09-09
 
 **Fünf Läufe, fünf Erklärungen, kein Ergebnis — deshalb steht in dieser

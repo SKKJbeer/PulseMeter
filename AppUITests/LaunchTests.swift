@@ -109,13 +109,56 @@ final class LaunchTests: XCTestCase {
 
         for hole in behaelter {
             for _ in 0..<swipes {
-                if element.exists && element.isHittable { return true }
+                // **Verschwunden heißt aufhören.** Bis 0.113.8 wurde hier
+                // weitergewischt, wenn das Ziel aus dem Baum fiel — bis zu
+                // vierzig Wische lang, quer über fünf Behälter. Der Zustand,
+                // in dem das Ziel verloren ging, war danach nicht mehr zu
+                // sehen, und die Fehlermeldung beschrieb einen Bildschirm, der
+                // mit dem Fehler nichts mehr zu tun hatte.
+                guard element.exists else { return false }
+                if element.isHittable { return true }
                 let container = hole()
                 guard container.exists else { break }
                 container.swipeUp()
             }
         }
         return element.exists && element.isHittable
+    }
+
+    /// Sucht einen Text, **ohne** sich auf seine Art festzulegen.
+    ///
+    /// XCUITest ordnet dasselbe `UILabel` nicht immer gleich ein. Im Lauf 405
+    /// stand neben dem Fehlschlag die Begründung mit dabei:
+    ///
+    ///     Automation type mismatch: computed Other from legacy attributes
+    ///     vs StaticText from modern attribute … ElementBaseType = UILabel
+    ///
+    /// Eine Abfrage über `staticTexts` findet den Text dann erst und später
+    /// nicht mehr, obwohl er unverändert auf dem Schirm steht. Genau so las
+    /// sich der Lauf: `waitForExistence` grün, wenige Sekunden später „No
+    /// matches found" auf demselben Text. Über `descendants(matching: .any)`
+    /// ist die Einordnung gleichgültig.
+    ///
+    /// Ein umschließendes Element kann hier nicht dazwischenkommen: Die
+    /// Berichtsseite fasst ihre Kinder mit `children: .contain` zusammen und
+    /// trägt „Seite 1 von 3" als eigene Beschriftung — der gesuchte Text steht
+    /// darin nicht.
+    private func text(_ teil: String, in app: XCUIApplication) -> XCUIElement {
+        app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label CONTAINS %@", teil))
+            .firstMatch
+    }
+
+    /// Beschreibt ein Element, **ohne dabei selbst zu scheitern**.
+    ///
+    /// `frame` auf einer Abfrage ohne Treffer bricht den Test hart ab. Das ist
+    /// in 0.113.8 passiert: Die Messung, die den Fehlschlag erklären sollte,
+    /// hat sich beim Aufschreiben selbst abgeschossen — die Meldung lautete
+    /// „Failed to get matching snapshot" statt der Zahlen, um die es ging.
+    /// Ein Fehlertext darf nichts anfassen, was es vielleicht nicht gibt.
+    private func lage(_ element: XCUIElement, _ was: String) -> String {
+        guard element.exists else { return "\(was): nicht im Baum" }
+        return "\(was): \(element.frame), hittable=\(element.isHittable)"
     }
 
     /// Tippt einen Knopf und **prüft nach, dass sich das Blatt geöffnet hat**.
@@ -1735,11 +1778,13 @@ final class LaunchTests: XCTestCase {
         waermepumpe.tap()
         app.buttons["Bericht erstellen"].tap()
 
-        let hoch = app.staticTexts.containing(
-            NSPredicate(format: "label CONTAINS 'Arbeitspreis Hochtarif'")
-        ).firstMatch
+        let hoch = text("Arbeitspreis Hochtarif", in: app)
         XCTAssertTrue(hoch.waitForExistence(timeout: 10),
                       "Der Hochtarif fehlt im Bericht")
+        // Der Stand **vor** dem Blättern, festgehalten solange es ihn gibt.
+        // Fällt die Prüfung, ist damit zu vergleichen, was sich unterwegs
+        // verändert hat — und nicht nur, wie es hinterher aussah.
+        let vorher = lage(hoch, "Hochtarif vor dem Blättern")
         // **Sichtbar, nicht nur vorhanden** — und das ist der eigentliche Wert
         // dieser Zeile. Genau diese Prüfung lief grün, während die Vorschau
         // sechs leere Seiten zeigte: Der Text stand im Baum, wurde aber
@@ -1747,13 +1792,13 @@ final class LaunchTests: XCTestCase {
         // Rahmens unter `scaleEffect`). Ein Bericht, den man nicht sehen kann,
         // ist keiner — und `exists` allein merkt das nie.
         //
-        // **Gescrollt wird dazu, seit die App auch auf dem iPad läuft.** Dort
-        // ist das Blatt ein Formularblatt in der Bildschirmmitte und damit
-        // deutlich kürzer als auf dem Telefon, wo es den ganzen Schirm füllt.
-        // Der Tarifteil steht dann schlicht weiter unten — vorhanden, gut
-        // lesbar, nur außerhalb des Sichtfensters. Das Bildschirmfoto desselben
-        // Laufs zeigt die Seite vollständig; ein `isHittable` ohne Scrollen
-        // hätte daraus einen Fehler gemacht, den es nicht gibt.
+        // **Gescrollt wird dazu, seit die App auch auf dem iPad läuft.** Die
+        // Vorschau skaliert die Seite auf die Inhaltsbreite; auf dem großen
+        // Schirm wird sie dadurch nicht kleiner, sondern **größer** als das
+        // Fenster. Der Tarifteil steht dann weiter unten — vorhanden, gut
+        // lesbar, nur außerhalb des Sichtfensters. Das Bildschirmfoto
+        // desselben Laufs zeigt die Seite vollständig; ein `isHittable` ohne
+        // Scrollen hätte daraus einen Fehler gemacht, den es nicht gibt.
         //
         // Die Zusage bleibt trotzdem dieselbe: **erreichbar und dann wirklich
         // zu sehen.** Zeigte die Vorschau wieder leere Seiten, käme der Text
@@ -1767,22 +1812,28 @@ final class LaunchTests: XCTestCase {
         // lassen. Vier Vermutungen hatten damals je einen Lauf gekostet; die
         // eine Messung klärte alles.
         //
-        // Also: Wenn es hier fällt, sagt die Meldung, wo das Fenster steht, wo
-        // der gesuchte Text steht und welche Bildlaufansichten es überhaupt
-        // gibt. Damit ist beim nächsten Mal zu **sehen**, ob der Text unter dem
-        // Rand liegt, hinter dem Blatt, oder eine Größe von null hat.
+        // **Und die Messung hat geliefert, wenn auch anders als gedacht.** Sie
+        // fiel beim Aufschreiben selbst um: `frame` auf einer Abfrage ohne
+        // Treffer bricht hart ab, die Meldung lautete „Failed to get matching
+        // snapshot" statt der Zahlen. Genau das war die Auskunft. Der Text war
+        // wenige Sekunden zuvor noch da — `waitForExistence` lief grün — und
+        // dann nicht mehr auffindbar. Nicht unsichtbar, nicht verdeckt:
+        // **nicht mehr gefunden.** Daneben stand die Begründung im Protokoll:
+        // Ein `UILabel` wurde als `Other` eingeordnet, wo `StaticText` erwartet
+        // war. Der Text ist also nirgends hin — nur die Abfrage nach seiner Art
+        // hat ihn verloren. Deshalb sucht `text(_:in:)` jetzt typunabhängig,
+        // und deshalb fasst `lage(_:_:)` nichts an, was es vielleicht nicht
+        // gibt.
         if !scroll(to: hoch, in: app) {
             XCTFail("Der Hochtarif ist auch nach dem Blättern nicht zu sehen.\n"
                     + "  Fenster:   \(app.windows.firstMatch.frame)\n"
-                    + "  Hochtarif: \(hoch.frame), exists=\(hoch.exists), "
-                    + "hittable=\(hoch.isHittable)\n"
+                    + "  \(vorher)\n"
+                    + "  \(lage(hoch, "Hochtarif danach"))\n"
                     + "  \(rahmen(app.scrollViews, "Bildlaufansicht"))\n"
                     + "  \(rahmen(app.collectionViews, "Sammlung"))\n"
                     + "  \(rahmen(app.sheets, "Blatt"))")
         }
-        let nieder = app.staticTexts.containing(
-            NSPredicate(format: "label CONTAINS 'Arbeitspreis Niedertarif'")
-        ).firstMatch
+        let nieder = text("Arbeitspreis Niedertarif", in: app)
         XCTAssertTrue(nieder.exists,
                       "Der Niedertarif fehlt im Bericht — genau der Fehler, den es zu vermeiden gilt")
     }
