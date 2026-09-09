@@ -1424,6 +1424,18 @@ gemeldet wurde „auch nach dem Blättern nicht zu sehen": wieder eine Aussage
 > etwas bewegt werden soll, wird durchprobiert, bis sich etwas bewegt — nicht
 > einmal gewählt und dann achtmal ins Leere gewischt.
 
+Beim Durchprobieren kam sofort die nächste Falle, und die gilt für jede
+Oberflächenprüfung: Eine Liste von Kandidaten wurde **einmal** gebaut, aus einer
+Zählung von vorhin. Eine Abfrage in XCUITest löst sich aber erst beim Benutzen
+auf. Zwischen dem Bauen und dem Zugreifen ging ein Blatt zu, aus drei
+Bildlaufansichten wurden zwei, und der Griff nach der dritten brach hart ab —
+„No matches found for Element at index 2".
+
+> **Eine Kandidatenliste hält Vorschriften, keine Elemente.** Jeder Eintrag
+> zählt beim Aufruf neu, und was es dann nicht gibt, wird übersprungen statt
+> angefasst. Ein Index, der aus einer alten Zählung stammt, ist eine Behauptung
+> über einen Baum, den es so nicht mehr gibt.
+
 Dreimal dieselbe Wurzel, dreimal eine andere Stelle: **Auf einem großen
 Bildschirm ist „vorne" nicht dasselbe wie „zuerst gefunden".** Wer von einem
 kleinen Gerät kommt, hat diese Unterscheidung nie gebraucht, weil dort ein

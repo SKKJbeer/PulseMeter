@@ -88,20 +88,30 @@ final class LaunchTests: XCTestCase {
         // eine ist; und wenn der erste Griff nichts bewegt, ist der nächste
         // dran, statt achtmal ins Leere zu wischen. Das kostet im schlechten
         // Fall ein paar Sekunden mehr und im guten gar nichts.
-        var behaelter: [XCUIElement] = []
-        for query in [app.scrollViews, app.collectionViews, app.tables] {
-            let anzahl = query.count
+        //
+        // **Die Behälter sind Vorschriften, keine Elemente — und das ist der
+        // Kern.** In 0.113.6 stand hier eine Liste fertig aufgelöster Elemente,
+        // gebaut aus einer Zählung von vorhin. Eine Abfrage in XCUITest löst
+        // sich aber erst beim Benutzen auf: Zwischen dem Bauen der Liste und
+        // dem Wischen ging ein Blatt zu, aus drei Bildlaufansichten wurden
+        // zwei, und der Griff nach der dritten brach den Test hart ab — „No
+        // matches found for Element at index 2". Jede Vorschrift zählt deshalb
+        // beim Aufruf neu, und was es dann nicht gibt, wird übersprungen statt
+        // angefasst.
+        let behaelter: [() -> XCUIElement] = [
             // Von hinten nach vorn: Was zuletzt aufgebaut wurde, liegt oben.
-            for index in stride(from: anzahl - 1, through: 0, by: -1) {
-                behaelter.append(query.element(boundBy: index))
-            }
-        }
-        behaelter.append(app)
+            { app.scrollViews.element(boundBy: max(app.scrollViews.count - 1, 0)) },
+            { app.scrollViews.firstMatch },
+            { app.collectionViews.element(boundBy: max(app.collectionViews.count - 1, 0)) },
+            { app.tables.element(boundBy: max(app.tables.count - 1, 0)) },
+            { app },
+        ]
 
-        for container in behaelter.prefix(4) {
-            guard container.exists else { continue }
+        for hole in behaelter {
             for _ in 0..<swipes {
                 if element.exists && element.isHittable { return true }
+                let container = hole()
+                guard container.exists else { break }
                 container.swipeUp()
             }
         }

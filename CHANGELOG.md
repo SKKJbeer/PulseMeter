@@ -9,6 +9,29 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.113.7 — 2026-09-09
+
+**Ein Fehler in der Korrektur von 0.113.6**, und ein lehrreicher:
+
+```
+Failed to swipe up "Zähler auswählen" ScrollView:
+No matches found for Element at index 2 from input {(ScrollView, ScrollView)}
+```
+
+Die Behälterliste war **einmal** gebaut worden, aus einer Zählung von vorhin.
+Eine Abfrage in XCUITest löst sich aber erst beim Benutzen auf: Zwischen dem
+Bauen der Liste und dem Wischen ging ein Blatt zu, aus drei Bildlaufansichten
+wurden zwei, und der Griff nach der dritten brach den Test hart ab.
+
+### Behoben
+
+- Die Behälter sind jetzt **Vorschriften statt Elemente**: Jede zählt beim
+  Aufruf neu, und was es dann nicht gibt, wird übersprungen statt angefasst.
+
+Der iPad-Durchgang steht damit bei **40 von 41**; die eine offene Prüfung ist
+seit vier Fassungen dieselbe, und jede Runde hat eine andere Stelle derselben
+Wurzel freigelegt.
+
 ## 0.113.6 — 2026-09-08
 
 **Dieselbe Falle zum dritten Mal, diesmal in der Blätterhilfe.** Die Meldung

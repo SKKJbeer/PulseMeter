@@ -202,7 +202,17 @@ fi
 
 if [ "$SCOPE" = "alles" ] || [ "$SCOPE" = "schnell" ]; then
   step "Rechenkern und Speicher"
-  run "PulseCore" swift test --package-path Packages/PulseCore || true
+  # **Fehlt Swift, wird das gesagt und übersprungen — nicht als Fehlschlag
+  # gemeldet.** Am 9. September stand in einem Container plötzlich kein
+  # `/opt/swift` mehr; der Lauf meldete daraufhin „PulseCore gefallen", und das
+  # ist eine Aussage über den Rechenkern, wo nur das Werkzeug fehlte. Dieselbe
+  # Unterscheidung wie bei `PulseData` eine Zeile weiter, und dieselbe wie bei
+  # den Berechtigungen: „nicht prüfbar" ist nicht „rot".
+  if command -v swift >/dev/null 2>&1; then
+    run "PulseCore" swift test --package-path Packages/PulseCore || true
+  else
+    note "PulseCore übersprungen — keine Swift-Toolchain auf diesem Rechner."
+  fi
   if [ "$APPLE" = "1" ]; then
     run "PulseData" swift test --package-path Packages/PulseData || true
   else
