@@ -107,16 +107,28 @@ final class LaunchTests: XCTestCase {
             { app },
         ]
 
+        // **„Nicht im Baum" heißt zweierlei, und der Unterschied ist alles.**
+        //
+        // Bei einem `Form` heißt es meistens *noch nicht*: Gebaut wird nur, was
+        // sichtbar ist, und das Preisfeld weiter unten gibt es erst, wenn man
+        // dorthin gewischt hat. Genau dafür ist dieses Blättern da.
+        //
+        // Nachdem das Ziel aber **einmal** da war, heißt dasselbe *weg* — dann
+        // ist die Ansicht abgeräumt worden, und weitere dreißig Wische bewegen
+        // einen Bildschirm, der mit der Sache nichts mehr zu tun hat.
+        //
+        // In 0.113.9 stand hier nur die zweite Hälfte. Drei Prüfungen fielen
+        // sofort mit „Das Feld fehlt", obwohl es nur noch nicht gebaut war —
+        // und drei Zeilen über einer davon stand seit Langem, warum.
+        var jeGesehen = element.exists
         for hole in behaelter {
             for _ in 0..<swipes {
-                // **Verschwunden heißt aufhören.** Bis 0.113.8 wurde hier
-                // weitergewischt, wenn das Ziel aus dem Baum fiel — bis zu
-                // vierzig Wische lang, quer über fünf Behälter. Der Zustand,
-                // in dem das Ziel verloren ging, war danach nicht mehr zu
-                // sehen, und die Fehlermeldung beschrieb einen Bildschirm, der
-                // mit dem Fehler nichts mehr zu tun hatte.
-                guard element.exists else { return false }
-                if element.isHittable { return true }
+                if element.exists {
+                    jeGesehen = true
+                    if element.isHittable { return true }
+                } else if jeGesehen {
+                    return false
+                }
                 let container = hole()
                 guard container.exists else { break }
                 container.swipeUp()

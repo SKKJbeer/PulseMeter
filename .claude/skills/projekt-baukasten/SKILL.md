@@ -1510,9 +1510,25 @@ unverändert auf dem Schirm steht — besonders in stark skalierten Ansichten.
 > nicht über `staticTexts`. Die Art eines Elements ist eine Auskunft der
 > Prüfumgebung über sich selbst, keine Eigenschaft der App.
 
-Die Zeile darunter gehört dazu: **Wer blättert, hört auf, sobald das Ziel aus
-dem Baum fällt.** Weiterwischen bewegt einen Bildschirm, der mit dem Fehler
-nichts mehr zu tun hat, und macht den Zustand unlesbar, in dem er entstand.
+### „Nicht da" heißt beim einen *noch nicht* und beim anderen *nicht mehr*
+
+Die Folgerung daraus — wer blättert, hört auf, sobald das Ziel aus dem Baum
+fällt — stimmt nur zur Hälfte, und die andere Hälfte hat sofort drei Prüfungen
+gekostet. Ein Formular baut nur, was sichtbar ist: Ein Feld weiter unten
+existiert im Zugänglichkeitsbaum **erst, nachdem** man dorthin gewischt hat.
+Der Abbruch griff damit schon vor dem ersten Wisch, und die Meldung lautete
+„Das Feld fehlt" über einem Feld, das es gab.
+
+> **Der Unterschied hängt daran, ob das Ziel schon einmal da war.** Nie
+> gesehen: weiterblättern, es wird gerade erst gebaut. Einmal gesehen und jetzt
+> weg: aufhören, die Ansicht ist abgeräumt — weiterwischen bewegt einen
+> Bildschirm, der mit dem Fehler nichts mehr zu tun hat, und macht den Zustand
+> unlesbar, in dem er entstand.
+
+Ein Merksatz dazu, der teurer war als er aussieht: **Die Begründung stand drei
+Zeilen über der Prüfung, die daran fiel.** Wer eine gemeinsam benutzte Hilfe
+umbaut, liest zuerst, was ihre Aufrufer über sie voraussetzen — die Stellen,
+die von ihr abhängen, haben ihre Bedingungen oft längst aufgeschrieben.
 
 ---
 

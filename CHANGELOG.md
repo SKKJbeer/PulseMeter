@@ -9,6 +9,28 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.113.10 — 2026-09-09
+
+**„Nicht im Baum" heißt zweierlei, und 0.113.9 hat die beiden verwechselt.**
+
+Der Bericht auf dem iPad war damit in Ordnung — diese Prüfung stand im Lauf 406
+nicht mehr unter den gefallenen. Stattdessen fielen drei andere, alle auf dem
+iPhone, alle mit „Das Feld fehlt": Nachtpreis, Arbeitspreis, Bruttohinweis.
+
+Der Grund war der Abbruch, den 0.113.9 eingebaut hatte: Fällt das Ziel aus dem
+Baum, wird nicht weitergeblättert. Bei einem `Form` ist das falsch herum
+gedacht. Ein `Form` baut nur, was sichtbar ist; das Preisfeld weiter unten
+existiert erst, **nachdem** man dorthin gewischt hat. Der Abbruch griff also
+schon vor dem ersten Wisch — und die Begründung stand seit Langem drei Zeilen
+über einer der drei Prüfungen.
+
+### Behoben
+
+- Geblättert wird weiter, solange das Ziel noch nie da war. Erst wenn es
+  **einmal** gesehen wurde und dann verschwindet, wird abgebrochen — dann ist
+  die Ansicht wirklich abgeräumt, und weitere Wische bewegen einen Bildschirm,
+  der mit der Sache nichts mehr zu tun hat.
+
 ## 0.113.9 — 2026-09-09
 
 **Die Messung aus 0.113.8 ist beim Aufschreiben umgefallen — und hat damit
