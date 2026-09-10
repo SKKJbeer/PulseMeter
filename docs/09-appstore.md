@@ -239,6 +239,25 @@ Ab 1.1 gilt: Der Text kommt aus `CHANGELOG.md`, in der Sprache des Nutzers und
 ohne Versionsnummern von Bibliotheken. „Fehlerbehebungen und Verbesserungen"
 ist keine Versionsinformation, sondern deren Verweigerung.
 
+Für 1.1:
+
+```
+Zählora läuft jetzt auch auf dem iPad. Statt der Leiste unten steht die
+Auswahl links am Rand, und deine Zähler liegen nebeneinander statt
+untereinander — auf einem großen Schirm siehst du damit alle vier auf einmal.
+
+Sonst ändert sich nichts. Dieselbe App, dieselben Zahlen, dieselben Ablesungen
+auf beiden Geräten.
+```
+
+**Warum der zweite Absatz dasteht.** Wer eine App auf einem neuen Gerät
+öffnet, rechnet mit einer anderen App. Hier ist es dieselbe, und das ist die
+Zusage — nicht ein Merkmal, das man aufzählen müsste.
+
+**Und was hier absichtlich nicht steht:** dass die Prüfungen jetzt auf beiden
+Geräten laufen. Das war die Arbeit von acht CI-Läufen und interessiert im Store
+niemanden. Ein Nutzer erfährt, was er sieht.
+
 ---
 
 ## 2. Einordnung

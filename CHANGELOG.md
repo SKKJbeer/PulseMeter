@@ -9,6 +9,41 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.113.16 — 2026-09-10
+
+**Apple nimmt die iPad-Bilder — die Frage ist am Hochladeversuch entschieden,
+nicht an der Dokumentation.**
+
+`APP_IPAD_PRO_3GEN_129` steht bei Apple für 2048 × 2732, der Simulator liefert
+2064 × 2752. Alle fünf Bilder gingen unter dieser Kennung durch:
+
+    ✓ APP_IPAD_PRO_3GEN_129 Bild 1 (Übersicht): hochgeladen
+    ✓ APP_IPAD_PRO_3GEN_129 Bild 2 (Ablesen): hochgeladen
+    …
+
+Damit ist Fassung **1.1** bei Apple angelegt und in Bearbeitung, mit beiden
+Bildersätzen. Die Nummer ist 1.1 und nicht 1.0.2, weil iPad-Unterstützung eine
+neue Fähigkeit ist und keine Fehlerbehebung.
+
+### Hinzugefügt
+
+- Die Versionshinweise für 1.1 in `docs/09-appstore.md`. Sie sagen, was ein
+  Nutzer sieht — Auswahl links statt unten, Zähler nebeneinander —, und
+  ausdrücklich **nicht**, dass die Prüfungen jetzt auf beiden Geräten laufen.
+  Das war die Arbeit von acht CI-Läufen und interessiert im Store niemanden.
+
+### Behoben
+
+- Die Einreichungsübersicht meldete „Bildschirmfotos: 5", während zehn oben
+  lagen. Sie sah nur den ersten Satz an. Jetzt zählt sie jede Kennung einzeln
+  und nennt die Summe — ein leerer Satz fällt in einer Summe sonst nicht auf,
+  und genau der hält die Einreichung an.
+
+### Offen
+
+- Bau 33 wird bei Apple noch verarbeitet; seine Testhinweise werden
+  nachgetragen, sobald er steht.
+
 ## 0.113.15 — 2026-09-10
 
 **Zwei grüne Läufe, die ihre Aufgabe nicht erledigt haben.**

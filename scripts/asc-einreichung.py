@@ -729,15 +729,27 @@ def fassung_pruefen(apple: Apple, app_id: str) -> None:
         pruefe(bool(wert.strip()),
                f"{was} ({len(wert)} Zeichen)" if wert else f"{was} fehlt", wem)
 
-    stand, satz = erste(apple, f"v1/appStoreVersionLocalizations/{ort['id']}"
-                               "/appScreenshotSets", **{"limit": 20})
-    anzahl = 0
-    if satz is not None:
-        stand, bilder = apple.holen(f"v1/appScreenshotSets/{satz['id']}/appScreenshots",
-                                    **{"limit": 20})
-        if stand == 200:
-            anzahl = len(bilder.json().get("data", []))
-    pruefe(anzahl > 0, f"Bildschirmfotos: {anzahl}")
+    # **Alle Sätze, nicht der erste.** Hier stand `erste(...)`, und die Zeile
+    # meldete danach „Bildschirmfotos: 5", während zehn Bilder oben lagen —
+    # fünf fürs iPhone und fünf fürs iPad. Eine Zahl, die die Hälfte
+    # verschweigt, ist schlimmer als keine: Sie sieht nach einer Auskunft aus.
+    #
+    # Und sie meldet jede Kennung einzeln. Ein Satz, der leer bleibt, fällt
+    # sonst in einer Summe nicht auf, und genau der hält die Einreichung an.
+    stand, antwort = apple.holen(f"v1/appStoreVersionLocalizations/{ort['id']}"
+                                  "/appScreenshotSets", **{"limit": 20})
+    saetze = antwort.json().get("data", []) if stand == 200 else []
+    gesamt = 0
+    for satz in saetze:
+        stand, bilder = apple.holen(
+            f"v1/appScreenshotSets/{satz['id']}/appScreenshots", **{"limit": 20})
+        wieviele = len(bilder.json().get("data", [])) if stand == 200 else 0
+        gesamt += wieviele
+        pruefe(wieviele > 0,
+               f"Bildschirmfotos {feld(satz, 'screenshotDisplayType')}: {wieviele}"
+               if wieviele else
+               f"Bildschirmfotos {feld(satz, 'screenshotDisplayType')} fehlen")
+    pruefe(gesamt > 0, f"Bildschirmfotos zusammen: {gesamt}")
 
     stand, pruefung = erste(apple,
                             f"v1/appStoreVersions/{fassung['id']}/appStoreReviewDetail")
