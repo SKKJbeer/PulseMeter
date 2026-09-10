@@ -9,6 +9,48 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.113.20 — 2026-09-10
+
+**Die Bauten 33 und 34 sind nicht verloren gegangen — sie wurden nie
+hochgeladen.**
+
+Im Protokoll beider Läufe stand über dem grünen Häkchen:
+
+    UPLOAD FAILED with 1 error
+    Validation failed (409) Invalid bundle. The „UIInterfaceOrientationPortrait"
+    orientations were provided … but you need to include all of the
+    „…PortraitUpsideDown, …LandscapeLeft, …LandscapeRight" orientations to
+    support iPad multitasking.
+
+Zwei Fehler übereinander, und der zweite hat den ersten unsichtbar gemacht.
+
+**Der Produktfehler:** Wer `TARGETED_DEVICE_FAMILY: "1,2"` deklariert, muss auf
+dem iPad alle vier Ausrichtungen erlauben — Apple verlangt das für die
+Mehrfachnutzung des Bildschirms. Die App war überall auf Hochformat gestellt.
+Das war richtig, solange sie nur auf dem Telefon lief, und ist seit 0.112.0
+falsch. Aufgefallen ist es niemandem, weil zwischen 0.112.0 und heute kein Bau
+zu Apple ging.
+
+**Der Werkzeugfehler, und er ist der schlimmere:** `altool` schreibt „UPLOAD
+FAILED" und gibt **0** zurück. Der Schritt war deshalb grün, der Lauf war grün,
+und die Suche ging stundenlang in die falsche Richtung — „Apple verarbeitet
+langsam" statt „es wurde nie hochgeladen". Zwei Baunummern und zwei gemietete
+Macs für einen Fehler, der im Protokoll wörtlich dastand.
+
+### Behoben
+
+- `UISupportedInterfaceOrientations~ipad` erlaubt alle vier Ausrichtungen. Das
+  iPhone bleibt im Hochformat.
+- Der Hochladeschritt **liest die Ausgabe**, statt dem Rückgabewert zu glauben.
+  Steht dort „UPLOAD FAILED", ist der Schritt rot und nennt Apples Begründung.
+  Fehlt die Erfolgsbestätigung, gibt es wenigstens eine Warnung.
+
+### Zu beachten
+
+- Auf dem iPad ist damit **Querformat erreichbar** und noch nie angesehen
+  worden. Die Ansichten hängen an `horizontalSizeClass` und sollten mitgehen —
+  geprüft ist es nicht. Ein Prüfer bei Apple dreht das Gerät.
+
 ## 0.113.19 — 2026-09-10
 
 **Bau 33 ist auf dem Weg zu Apple verloren gegangen — der erste in diesem

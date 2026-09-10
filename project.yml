@@ -72,7 +72,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: de.karjoth.pulsemeter
         PRODUCT_NAME: PulseMeter
-        MARKETING_VERSION: "0.113.19"
+        MARKETING_VERSION: "0.113.20"
         CURRENT_PROJECT_VERSION: "1"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         # **iPhone und iPad**, seit 0.112.0.
@@ -128,7 +128,7 @@ targets:
         # Geräte trägt als die App, lehnt Apple beim Hochladen ab — und die
         # Meldung nennt das Widget nicht.
         TARGETED_DEVICE_FAMILY: "1,2"
-        MARKETING_VERSION: "0.113.19"
+        MARKETING_VERSION: "0.113.20"
         CURRENT_PROJECT_VERSION: "1"
         GENERATE_INFOPLIST_FILE: NO
         INFOPLIST_FILE: Widget/Info.plist

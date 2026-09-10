@@ -640,6 +640,31 @@ lang wurde überall gesucht, nur nicht an der Stelle, die die Antwort hatte.
 > fragen" und „die Gegenseite sagt nein": Ein Fehler auf der eigenen Seite darf
 > nie wie eine Antwort der Gegenseite aussehen.
 
+### Ein Werkzeug, das „FAILED" schreibt und 0 zurückgibt
+
+`xcrun altool --upload-app` meldet einen abgelehnten Bau so:
+
+    UPLOAD FAILED with 1 error
+    Validation failed (409) Invalid bundle. …
+
+— und beendet sich mit **Rückgabewert 0**. Der Schritt wird grün, der Lauf wird
+grün, und beim Gegenüber kommt nichts an. Zwei Bauten und zwei gemietete Macs
+sind so vergangen, während die Suche in die falsche Richtung lief: „die
+Gegenseite ist langsam" statt „es wurde nie abgeschickt". Der Grund stand die
+ganze Zeit wörtlich im Protokoll, zwei Zeilen über dem Häkchen.
+
+> **Bei einem Werkzeug, dessen Erfolg man nicht selbst nachprüfen kann, wird die
+> Ausgabe gelesen — nicht der Rückgabewert geglaubt.** Ausgabe in eine Datei,
+> auf die bekannte Fehlerzeile prüfen, und zusätzlich auf die
+> **Erfolgsbestätigung**: Fehlt sie, ist das mindestens eine Warnung. Ein
+> Rückgabewert ist eine Behauptung des Werkzeugs über sich selbst.
+
+Zwei Dinge, die den Fall überhaupt sichtbar gemacht haben, beide aus demselben
+Vormittag: die Unterscheidung „nicht in der Liste" gegen „noch in Verarbeitung"
+(sonst hätte man weiter gewartet), und eine Untergrenze beim Ausliefern (sonst
+wäre der vorherige, schlechtere Stand hinausgegangen). **Eine Sicherung zeigt
+ihren Wert nicht dann, wenn sie greift, sondern wenn eine zweite danebensteht.**
+
 ### Ein grüner Lauf, der seine Aufgabe nicht erledigt hat, wird geglaubt
 
 Ein Ablauf, dessen einzige Aufgabe es war, einen Text an einen Bau zu hängen,

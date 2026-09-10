@@ -389,6 +389,22 @@ jobs:
             -authenticationKeyIssuerID "$ASC_ISSUER_ID"
           ls -la build/ipa
 
+      # **`altool` sagt „UPLOAD FAILED" und gibt trotzdem 0 zurück.**
+      #
+      # Das hat zwei Bauten gekostet, 33 und 34. Beide Läufe meldeten diesen
+      # Schritt grün, beide Male stand im Protokoll darüber:
+      #
+      #     UPLOAD FAILED with 1 error
+      #     Validation failed (409) Invalid bundle. …
+      #
+      # Bei Apple kam nie etwas an, und die Suche ging stundenlang in die
+      # falsche Richtung — „Apple verarbeitet langsam" statt „es wurde nie
+      # hochgeladen". Erst die Unterscheidung aus 0.113.17 („nicht in der
+      # Liste" statt „noch in Verarbeitung") hat den Blick hierher gelenkt.
+      #
+      # Deshalb wird die Ausgabe gelesen und nicht dem Rückgabewert geglaubt.
+      # `PIPESTATUS[0]`, weil eine Pipe den Wert des **letzten** Gliedes
+      # liefert — hier `tee`, und das gelingt immer.
       - name: Zu TestFlight hochladen
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
@@ -396,11 +412,21 @@ jobs:
         run: |
           IPA=$(find build/ipa -name "*.ipa" | head -1)
           [ -n "$IPA" ] || { echo "::error::Keine .ipa entstanden."; exit 1; }
+          set +e
           xcrun altool --upload-app \
             --type ios \
             --file "$IPA" \
             --apiKey "$ASC_KEY_ID" \
-            --apiIssuer "$ASC_ISSUER_ID"
+            --apiIssuer "$ASC_ISSUER_ID" 2>&1 | tee build/altool.log
+          code=${PIPESTATUS[0]}
+          set -e
+          if [ "$code" -ne 0 ] || grep -q "UPLOAD FAILED" build/altool.log; then
+            echo "::error::Der Upload ist nicht durchgegangen — bei Apple kommt nichts an."
+            grep -E "detail :|ERROR:" build/altool.log | head -10
+            exit 1
+          fi
+          grep -q "No errors uploading" build/altool.log \
+            || echo "::warning::Keine Erfolgsbestätigung von altool im Protokoll."
 
       # Auch bei einem Fehlschlag: Das Protokoll des Signierens ist das, woran
       # sich der erste Lauf erfahrungsgemäß entscheidet.
