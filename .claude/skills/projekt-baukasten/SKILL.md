@@ -640,6 +640,33 @@ lang wurde überall gesucht, nur nicht an der Stelle, die die Antwort hatte.
 > fragen" und „die Gegenseite sagt nein": Ein Fehler auf der eigenen Seite darf
 > nie wie eine Antwort der Gegenseite aussehen.
 
+### Ein grüner Lauf, der seine Aufgabe nicht erledigt hat, wird geglaubt
+
+Ein Ablauf, dessen einzige Aufgabe es war, einen Text an einen Bau zu hängen,
+lief an einem Vormittag zweimal durch und meldete beide Male Erfolg. Beim ersten
+Mal hatte er den Text an den **vorigen** Bau gehängt — ohne Nummer nimmt er den
+neuesten, den die Gegenseite kennt, und der gemeinte stand dort noch nicht.
+Beim zweiten Mal, gezielt mit Nummer, endete er mit „ist noch in Verarbeitung"
+und einem Rückgabewert von null.
+
+Ergebnis: Der neue Bau hatte keine Auskunft, der alte hatte seine zweimal, und
+in der Übersicht stand zweimal grün.
+
+> **Wer ein Ergebnis nicht erreicht hat, meldet das rot — auch wenn niemand
+> etwas falsch gemacht hat.** „Die Gegenseite war noch nicht so weit" ist ein
+> Grund, kein Erfolg. Grün heißt: Die Aufgabe ist erledigt.
+
+Zwei Regeln, die daraus folgen und beide billig sind:
+
+- **Ob ein Ausbleiben ein Fehlschlag ist, hängt an der Aufgabe des Laufs, nicht
+  am Ereignis.** Derselbe Zustand — Bau noch in Verarbeitung — ist im
+  Upload-Lauf ein Hinweis und im Nachtrag-Lauf ein Fehler. Ein Schalter in der
+  Umgebung trennt das sauber; dieselbe Sache zweimal zu programmieren nicht.
+- **Eine Vorgabe wie „nimm den neuesten" sagt laut, was sie genommen hat.**
+  Still das Falsche zu treffen ist teurer als eine Warnung zu viel — besonders
+  dann, wenn das Richtige gerade fehlt und deshalb etwas anderes an seine
+  Stelle rutscht.
+
 ### Ein Zugang, der abläuft, gehört erneuert — nicht einmal geholt
 
 Ein Bau lag hochgeladen bei Apple, und der Schritt danach scheiterte:

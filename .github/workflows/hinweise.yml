@@ -61,4 +61,9 @@ jobs:
           PULSE_BUNDLE_ID: de.karjoth.pulsemeter
           PULSE_BUILD: ${{ steps.nummer.outputs.wert }}
           PULSE_HINWEIS: ${{ inputs.hinweis }}
+          # **Hier ist das Eintragen die einzige Aufgabe.** Bleibt der Bau in
+          # Verarbeitung, hat dieser Lauf nichts erreicht, und das muss rot
+          # sein. Im TestFlight-Lauf gilt das Gegenteil: Dort ist der Upload
+          # die Aufgabe, und der ist dann längst gelungen.
+          PULSE_HINWEIS_PFLICHT: "1"
         run: python3 scripts/asc-testflight.py

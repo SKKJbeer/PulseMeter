@@ -334,16 +334,42 @@ def main() -> None:
     app_id = app_finden(apple, bezeichner)
     if not nummer:
         nummer = neuester_bau(apple, app_id)
-        hinweis(f"Keine Nummer angegeben — genommen wird Bau {nummer}.")
+        # **Der neueste ist nicht immer der gemeinte.** Am 10. September lief
+        # dieser Nachtrag zwölf Minuten nach dem Hochladen von Bau 33 — und
+        # trug den Text an Bau **32** ein, weil 33 in Apples Liste noch gar
+        # nicht stand. Der Lauf meldete Erfolg, der neue Bau blieb ohne
+        # Auskunft, und der alte bekam seine Hinweise ein zweites Mal.
+        #
+        # Die Vorgabe bleibt, sie ist im Regelfall richtig. Aber sie sagt jetzt
+        # laut, was sie getan hat.
+        print(f"::warning::Keine Nummer angegeben — genommen wird der neueste "
+              f"Bau, und das ist Bau {nummer}. Ist ein anderer gemeint, gehört "
+              f"seine Nummer angegeben.")
     bau = bau_abwarten(apple, app_id, nummer)
     if bau is None:
-        # **Kein Fehlschlag.** Der Bau ist hochgeladen und kommt an; nur die
-        # Verarbeitung dauert heute länger als die Geduld dieses Skripts. Den
-        # Lauf deswegen rot zu färben würde eine Meldung erzeugen, die auf
-        # nichts hinweist, was zu tun wäre.
-        hinweis(f"Bau {nummer} ist nach {GEDULD_SEKUNDEN // 60} Minuten noch "
-                "in Verarbeitung. Die Testhinweise lassen sich in App Store "
-                "Connect nachtragen.")
+        # **Ob das ein Fehlschlag ist, hängt daran, wozu der Lauf da war.**
+        #
+        # Im TestFlight-Lauf ist es keiner: Der Bau ist hochgeladen, das war
+        # die Aufgabe, und die Verarbeitung dauert heute eben länger als die
+        # Geduld dieses Skripts. Rot zu färben hieße, einen gelungenen Upload
+        # als gescheitert zu melden.
+        #
+        # Im Nachtrag-Lauf ist es einer, und zwar der einzige, den es dort
+        # geben kann: Dieser Ablauf hat **nur** diese eine Aufgabe. Am
+        # 10. September lief er zweimal grün, ohne die Hinweise zu setzen —
+        # einmal an Bau 32 statt 33, einmal gar nicht. Beide Male stand
+        # „success" daneben, und beide Male hätte niemand nachgesehen.
+        #
+        # Ein grüner Lauf, der seine einzige Aufgabe nicht erledigt hat, ist
+        # schlimmer als ein roter: Er wird geglaubt.
+        pflicht = os.environ.get("PULSE_HINWEIS_PFLICHT", "").strip() == "1"
+        satz = (f"Bau {nummer} ist nach {GEDULD_SEKUNDEN // 60} Minuten noch "
+                "in Verarbeitung — die Testhinweise stehen damit **nicht**. "
+                "Später noch einmal anstoßen oder in App Store Connect "
+                "eintragen.")
+        if pflicht:
+            abbruch(satz)
+        hinweis(satz)
         return
 
     text_setzen(apple, bau, text)

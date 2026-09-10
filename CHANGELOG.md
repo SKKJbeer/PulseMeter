@@ -9,6 +9,40 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.113.15 — 2026-09-10
+
+**Zwei grüne Läufe, die ihre Aufgabe nicht erledigt haben.**
+
+Der Nachtrag der Testhinweise lief heute zweimal durch und meldete beide Male
+Erfolg. Beim ersten Mal trug er den Text an Bau **32** ein statt an 33 — ohne
+Nummer nimmt er den neuesten aus Apples Liste, und 33 stand dort zwölf Minuten
+nach dem Hochladen noch nicht. Beim zweiten Mal, gezielt mit Nummer 33, kam:
+
+    Bau 33 ist nach 20 Minuten noch in Verarbeitung.
+
+Auch das mit „success" daneben. Bau 33 hat damit bis jetzt keine Hinweise, Bau
+32 hat seine zweimal, und niemand hätte nachgesehen.
+
+**Ein grüner Lauf, der seine einzige Aufgabe nicht erledigt hat, ist schlimmer
+als ein roter: Er wird geglaubt.**
+
+### Behoben
+
+- Der Ablauf „Testhinweise nachtragen" wird **rot**, wenn der Bau noch in
+  Verarbeitung ist. Dort ist das Eintragen die einzige Aufgabe. Im
+  TestFlight-Lauf bleibt es ein Hinweis — da ist der Upload die Aufgabe, und
+  der ist dann längst gelungen. Unterschieden wird über
+  `PULSE_HINWEIS_PFLICHT`.
+- Wird die Nummer nicht angegeben, sagt der Lauf jetzt als **Warnung**, welchen
+  Bau er stattdessen genommen hat. Die Vorgabe „der neueste" bleibt — sie ist
+  im Regelfall richtig —, aber sie arbeitet nicht mehr stillschweigend am
+  falschen Bau.
+
+### Offen
+
+- Apple verarbeitet Bau 33 seit 06:02 und war um 07:20 noch nicht fertig. Das
+  liegt nicht an uns; die Hinweise werden nachgetragen, sobald er steht.
+
 ## 0.113.14 — 2026-09-10
 
 **Der Zugang zu Apple lief ab, während auf Apple gewartet wurde.**
