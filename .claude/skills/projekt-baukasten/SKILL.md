@@ -640,6 +640,33 @@ lang wurde überall gesucht, nur nicht an der Stelle, die die Antwort hatte.
 > fragen" und „die Gegenseite sagt nein": Ein Fehler auf der eigenen Seite darf
 > nie wie eine Antwort der Gegenseite aussehen.
 
+### Ein Zugang, der abläuft, gehört erneuert — nicht einmal geholt
+
+Ein Bau lag hochgeladen bei Apple, und der Schritt danach scheiterte:
+
+    401 NOT_AUTHORIZED — Provide a properly configured and signed bearer
+    token, and make sure that it has not expired.
+
+Dieselben Zugangsdaten hatten im selben Lauf drei Minuten vorher noch Profile
+angelegt. Die Ursache war eine Rechnung, die nicht aufging und deren beide
+Hälften weit auseinander standen: Der Zugang wurde für **900** Sekunden
+signiert, die Warteschleife auf denselben Bau lief bis zu **1200**. Der Kopf
+entstand einmal im Konstruktor und wurde danach zwanzig Minuten weiterbenutzt.
+
+Zweiunddreißig Bauten lang ist das nie aufgefallen, weil die Gegenseite immer
+schneller war als die Frist.
+
+> **Wo eine Gültigkeit auf eine Wartezeit trifft, prüft man beide Zahlen
+> gegeneinander — und verlässt sich dann auf keine von beiden.** Ein Zugang
+> wird beim Benutzen erneuert, nicht beim Anlegen geholt. Neu zu signieren
+> kostet Mikrosekunden; ein abgelaufener Zugang kostet den ganzen Lauf, und
+> zwar an seinem teuersten Ende, nachdem die Arbeit schon getan ist.
+
+Der verräterische Zuschnitt: **Der Fehler tritt weit nach dem Start auf, und
+frühere Schritte mit denselben Zugangsdaten waren grün.** Wer in dieser Lage
+den Schlüssel, die Rolle oder die Rechte prüft, sucht am falschen Ort — die
+haben alle funktioniert. Nachzusehen ist, wie alt das Ticket war.
+
 ### Eine Zeitgrenze wird gegen den schlechtesten Lauf gesetzt, nicht gegen den mittleren
 
 Ein Auftrag auf einem gemieteten Mac wurde nach 76 Minuten abgebrochen —

@@ -70,9 +70,43 @@ def anmeldung() -> str:
 
 
 class Apple:
+    """Spricht mit Apple — und **erneuert dabei seinen Zugang**.
+
+    **Der Zugang lief ab, während gewartet wurde.** In Lauf 33 ist genau das
+    passiert: Bau 33 war um 06:02 hochgeladen, die Testhinweise scheiterten um
+    06:19 mit
+
+        401 NOT_AUTHORIZED — make sure that it has not expired
+
+    Dieselben Zugangsdaten hatten im selben Lauf drei Minuten vorher noch
+    Profile angelegt. Der Fehler war eine Rechnung, die nicht aufging:
+    `anmeldung()` signiert für **900** Sekunden, `bau_abwarten` wartet bis zu
+    **1200**. Der Kopf wurde einmal gebaut und danach zwanzig Minuten lang
+    weiterbenutzt. Solange Apple einen Bau in unter einer Viertelstunde
+    verarbeitete, fiel das nie auf.
+
+    Zwei Zahlen, die einander widersprechen und in verschiedenen Dateien
+    stehen, laufen irgendwann auseinander. Deshalb wird der Kopf jetzt beim
+    Benutzen geprüft und nach zehn Minuten neu signiert — mit fünf Minuten Luft
+    zur Gültigkeit. Signieren kostet Mikrosekunden; die Alternative kostet einen
+    Bau ohne Hinweistext.
+    """
+
+    #: Nach so vielen Sekunden wird neu signiert. Deutlich unter den 900, für
+    #: die `anmeldung()` gilt — eine Anfrage darf unterwegs nicht ablaufen.
+    FRISCH_NACH = 600
+
     def __init__(self) -> None:
-        self.kopf = {"Authorization": f"Bearer {anmeldung()}",
-                     "Content-Type": "application/json"}
+        self._kopf: dict[str, str] = {}
+        self._signiert = 0.0
+
+    @property
+    def kopf(self) -> dict[str, str]:
+        if time.time() - self._signiert > self.FRISCH_NACH:
+            self._kopf = {"Authorization": f"Bearer {anmeldung()}",
+                          "Content-Type": "application/json"}
+            self._signiert = time.time()
+        return self._kopf
 
     def holen(self, pfad: str, **werte) -> dict:
         antwort = requests.get(f"{BASIS}/{pfad}", headers=self.kopf,

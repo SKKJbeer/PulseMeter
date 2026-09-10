@@ -9,6 +9,38 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.113.14 — 2026-09-10
+
+**Der Zugang zu Apple lief ab, während auf Apple gewartet wurde.**
+
+Bau 33 lag um 06:02 hochgeladen bei Apple. Die Testhinweise scheiterten um
+06:19:
+
+    401 NOT_AUTHORIZED — Provide a properly configured and signed bearer
+    token, and make sure that it has not expired.
+
+Dieselben Zugangsdaten hatten im selben Lauf drei Minuten vorher noch Profile
+angelegt. Der Fehler war eine Rechnung, die nicht aufging: Der Zugang wird für
+**900** Sekunden signiert, das Warten auf einen verarbeiteten Bau dauert bis zu
+**1200**. Der Kopf wurde einmal gebaut und danach zwanzig Minuten lang
+weiterbenutzt.
+
+Solange Apple einen Bau in unter einer Viertelstunde verarbeitete, fiel das nie
+auf — zweiunddreißig Bauten lang. Diesmal hat Apple länger gebraucht.
+
+### Behoben
+
+- `asc-testflight.py` und `asc-einreichung.py` erneuern ihren Zugang beim
+  Benutzen: nach zehn Minuten wird neu signiert, mit Luft zur Gültigkeit.
+  Signieren kostet Mikrosekunden, die Alternative einen Bau ohne Hinweistext.
+- In `asc-einreichung.py` war das bisher nur eine Möglichkeit und ist seit dem
+  iPad-Bildersatz eine nahe: Statt fünf Bildern gehen jetzt **zehn** in voller
+  Auflösung über die Leitung, jedes als eigener Hochladevorgang.
+
+Beides ist belegt, nicht behauptet: Ein Prüfaufruf ersetzt die Signatur durch
+einen Zähler, stellt die Uhr vor und zeigt, dass ohne Ablauf **nicht** und nach
+Ablauf **doch** neu signiert wird.
+
 ## 0.113.13 — 2026-09-10
 
 **iPhone und iPad sind im selben Lauf grün — zum ersten Mal, in Lauf 409.**

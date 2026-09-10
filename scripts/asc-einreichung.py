@@ -56,9 +56,34 @@ def token() -> str:
 
 
 class Apple:
+    """Spricht mit Apple — und **erneuert dabei seinen Zugang**.
+
+    Derselbe Grund wie in `asc-testflight.py`, wo es zugeschlagen hat: Der Kopf
+    wurde einmal gebaut und danach beliebig lange weiterbenutzt, während der
+    Zugang nach zwanzig Minuten abläuft. Dort kostete das einen Bau ohne
+    Hinweistext.
+
+    Hier ist die Gefahr seit dem iPad-Bildersatz größer, nicht kleiner: Statt
+    fünf Bildern gehen jetzt **zehn** in voller Auflösung über die Leitung, und
+    jedes einzelne ist ein eigener Hochladevorgang. Ein Lauf, der die zwanzig
+    Minuten reißt, ist damit keine ferne Möglichkeit mehr.
+    """
+
+    #: Nach so vielen Sekunden wird neu signiert — mit Luft zu den 1200, für
+    #: die `token()` gilt.
+    FRISCH_NACH = 600
+
     def __init__(self) -> None:
-        self.kopf = {"Authorization": f"Bearer {token()}",
-                     "Content-Type": "application/json"}
+        self._kopf: dict[str, str] = {}
+        self._signiert = 0.0
+
+    @property
+    def kopf(self) -> dict[str, str]:
+        if time.time() - self._signiert > self.FRISCH_NACH:
+            self._kopf = {"Authorization": f"Bearer {token()}",
+                          "Content-Type": "application/json"}
+            self._signiert = time.time()
+        return self._kopf
 
     def holen(self, pfad: str, **werte):
         antwort = requests.get(f"{BASIS}/{pfad}", headers=self.kopf,
