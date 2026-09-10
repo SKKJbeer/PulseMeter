@@ -106,16 +106,33 @@ jobs:
   # `cancel-in-progress: false` — anders als bei der schnellen Prüfung. Ein
   # abgebrochener App-Build ist keine Aussage, sondern eine verlorene
   # Viertelstunde. Lieber laufen zwei hintereinander als keiner zu Ende.
-  # **75 Minuten, nicht 45 — nachgemessen in Lauf 393.** Seit 0.112.0 läuft
-  # alles zweimal: Oberflächenprüfungen auf dem iPhone (15 min) und auf dem
-  # iPad (15 min), Bilder auf dem iPhone (7 min) und auf dem iPad (10 min).
-  # Mit Einrichtung, Rechenkern und Paketbau sind das rund 52 Minuten. Der
-  # Lauf war nach 50 Minuten fertig und wurde trotzdem als „cancelled"
-  # gemeldet — eine Grenze, die immer greift, sagt über den Stand nichts mehr
-  # aus. Die 75 sind Puffer für einen langsamen Läufer, keine Erwartung.
+  # **120 Minuten. Hier stand 75, und das war zu knapp gerechnet.**
+  #
+  # Die alte Zeile veranschlagte rund 52 Minuten für alles und nannte 75 einen
+  # „Puffer für einen langsamen Läufer". Nachgemessen an drei Läufen ist der
+  # Läufer nicht ausnahmsweise langsam, sondern schwankt um den Faktor zwei:
+  #
+  # | Schritt              | Lauf 405 | Lauf 407 | Lauf 408 |
+  # |----------------------|---------:|---------:|---------:|
+  # | Bau und iPhone-Tests |   16 min |   18 min |   16 min |
+  # | Bilder iPhone        |    7 min |    8 min |    9 min |
+  # | Bilder iPad          |   14 min |   21 min |   21 min |
+  # | iPad-Tests           |   15 min |   23 min |  > 25 min |
+  # | **gesamt**           |   55 min |   73 min |  Abbruch |
+  #
+  # Lauf 407 kam mit zwei Minuten Abstand durch, Lauf 408 lief in die Grenze —
+  # abgebrochen mitten in den iPad-Prüfungen, nach der teuersten Stunde und
+  # ohne ein Ergebnis. Eine Grenze, die den Lauf trifft statt einen Hänger,
+  # kostet genau das, wovor sie schützen soll.
+  #
+  # 120 liegt weit über dem schlechtesten gemessenen Fall und immer noch weit
+  # unter einem echten Hänger. Der eigentliche Ausweg ist ein anderer: iPhone
+  # und iPad in **zwei** Aufträge zu trennen, die nebeneinander laufen. Das
+  # halbiert die Wartezeit und macht jede Familie für sich beantwortbar —
+  # steht an, sobald beide grün sind.
   build-and-test:
     runs-on: macos-15
-    timeout-minutes: 75
+    timeout-minutes: 120
     concurrency:
       group: app-${{ github.event.pull_request.head.ref || github.ref_name }}
       cancel-in-progress: false

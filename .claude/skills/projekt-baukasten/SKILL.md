@@ -640,6 +640,30 @@ lang wurde überall gesucht, nur nicht an der Stelle, die die Antwort hatte.
 > fragen" und „die Gegenseite sagt nein": Ein Fehler auf der eigenen Seite darf
 > nie wie eine Antwort der Gegenseite aussehen.
 
+### Eine Zeitgrenze wird gegen den schlechtesten Lauf gesetzt, nicht gegen den mittleren
+
+Ein Auftrag auf einem gemieteten Mac wurde nach 76 Minuten abgebrochen —
+mitten im letzten Prüfschritt, nach dem Bau und beiden Bildersätzen, also nach
+der teuersten Stunde und ohne jedes Ergebnis. Die Grenze war auf 75 Minuten
+gesetzt, mit der Begründung „rund 52 Minuten plus Puffer".
+
+Nachgemessen an drei Läufen schwankte derselbe Auftrag zwischen 55 und über 76
+Minuten — Faktor zwei, bei unverändertem Inhalt. Der Lauf davor kam mit zwei
+Minuten Abstand durch; das war kein Spielraum, das war Glück.
+
+> **Eine Zeitgrenze soll einen Hänger abfangen, nicht einen langsamen Tag.**
+> Sie gehört deshalb weit über den schlechtesten *gemessenen* Lauf gesetzt und
+> nicht knapp über den mittleren geschätzten. Trifft sie den Lauf selbst,
+> kostet sie genau das, wovor sie schützen soll — und schlimmer: Sie meldet
+> „cancelled", also weder grün noch rot, und die nächste Sitzung liest daraus
+> einen Fehler, den es nicht gab.
+
+Der bessere Ausweg, wenn ein Auftrag zwei Geräte nacheinander abarbeitet: ihn
+in zwei nebeneinander laufende Aufträge trennen. Halbe Wartezeit, und jede
+Familie ist für sich beantwortbar. Aber **nicht mitten in eine Fehlersuche
+hinein** — erst die Grenze hochsetzen, damit der laufende Versuch überhaupt ein
+Ergebnis liefert, und den Umbau danach.
+
 ### Ein Zeitplan bei GitHub ist keine Zusage
 
 Ein Ablauf mit `schedule: cron: "23 * * * *"` lag ab 12:12 UTC auf dem

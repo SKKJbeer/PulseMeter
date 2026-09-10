@@ -9,6 +9,41 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.113.12 — 2026-09-10
+
+**Lauf 408 ist nicht gefallen, sondern in die Uhr gelaufen.**
+
+Abgebrochen nach 76 Minuten, mitten in den iPad-Prüfungen — nach dem Bau, nach
+beiden Bildersätzen, nach der teuersten Stunde und ohne ein Ergebnis über
+0.113.11. Die Grenze stand auf 75 Minuten und hat den Lauf getroffen statt
+einen Hänger.
+
+Die alte Begründung veranschlagte rund 52 Minuten und nannte 75 einen Puffer.
+An drei Läufen nachgemessen schwankt der gemietete Mac aber um den Faktor zwei:
+
+| Schritt              | Lauf 405 | Lauf 407 | Lauf 408 |
+|----------------------|---------:|---------:|---------:|
+| Bau und iPhone-Tests |   16 min |   18 min |   16 min |
+| Bilder iPhone        |    7 min |    8 min |    9 min |
+| Bilder iPad          |   14 min |   21 min |   21 min |
+| iPad-Tests           |   15 min |   23 min |  > 25 min |
+| **gesamt**           |   55 min |   73 min |  Abbruch |
+
+Lauf 407 kam mit zwei Minuten Abstand durch. Das war kein Spielraum, das war
+Glück.
+
+### Geändert
+
+- Die Grenze liegt bei 120 Minuten — weit über dem schlechtesten gemessenen
+  Fall und weit unter einem echten Hänger.
+
+### Bekannt und noch offen
+
+- Der eigentliche Ausweg ist, iPhone und iPad in zwei Aufträge zu trennen, die
+  nebeneinander laufen. Das halbiert die Wartezeit und macht jede Familie für
+  sich beantwortbar. Kommt, sobald beide grün sind — nicht mitten in die
+  Fehlersuche hinein.
+
 ## 0.113.11 — 2026-09-09
 
 **Die Messung ist angekommen, und sie sagt: kein Produktfehler, sondern ein
