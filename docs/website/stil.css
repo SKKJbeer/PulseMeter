@@ -390,6 +390,68 @@ p { margin: 0 0 16px; max-width: var(--w-text); text-wrap: pretty; }
   color: var(--tint);
 }
 
+/* -------------------------------------------------------- Was neu ist */
+
+/* Eine Zeitleiste, keine Liste: Der senkrechte Strich mit den Punkten daran
+   zeigt auf einen Blick, dass hier regelmäßig etwas dazukommt. Das Datum
+   steht deshalb vor der Überschrift und nicht klein darunter. */
+.neuerungen {
+  list-style: none;
+  margin: 34px 0 0;
+  padding: 0 0 0 26px;
+  border-left: 2px solid var(--line);
+}
+.neuerungen > li {
+  position: relative;
+  padding-bottom: 34px;
+}
+.neuerungen > li:last-child { padding-bottom: 0; }
+
+/* Der Punkt sitzt auf dem Strich, nicht daneben: halbe Punktbreite nach
+   links, plus die halbe Strichstärke. */
+.neuerungen > li::before {
+  content: "";
+  position: absolute;
+  left: -33px;
+  top: 5px;
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: var(--tint);
+  border: 3px solid var(--ground);
+}
+/* Der oberste Eintrag ist der neueste und bekommt einen Ring, damit das Auge
+   dort anfängt. */
+.neuerungen > li:first-child::before {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--tint) 22%, transparent);
+}
+
+.neuerung-kopf {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.neuerung-kopf time {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tint-ink);
+}
+.fassung {
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  color: var(--ink-2);
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+.neuerungen p { margin: 0 0 10px; color: var(--ink-2); font-size: 15.5px; }
+.neuerungen p:last-child { margin-bottom: 0; }
+
+.neuerungen-fuss { margin-top: 30px; font-size: 15.5px; }
+
 .paar {
   display: grid;
   gap: clamp(30px, 5vw, 60px);

@@ -9,6 +9,30 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.113.22 — 2026-09-10
+
+**Die Website zeigt jetzt, dass an der App gearbeitet wird.**
+
+Vom Gründer verlangt: ein Abschnitt mit den neuesten Fassungen und ihrem Datum,
+damit man sieht, dass regelmäßig etwas dazukommt. „Soll schon auch Werbung für
+uns selber sein."
+
+### Hinzugefügt
+
+- Abschnitt „Was zuletzt dazugekommen ist" auf `index.html`, als Zeitleiste mit
+  Datum, Fassungsnummer und dem, was sie gebracht hat. Der neueste Eintrag
+  bekommt einen Ring um den Punkt, damit das Auge dort anfängt.
+- Ein Verweis „Neu" in der Kopfleiste.
+
+### Entschieden
+
+- **Nur Fassungen, die wirklich im Laden stehen.** 1.1 ist bei Apple in
+  Prüfung, steht also noch nicht drin und kommt erst dazu, wenn sie freigegeben
+  ist. Eine Website, die eine Fassung ankündigt, die Apple noch ablehnen kann,
+  wäre genau die Sorte Behauptung, die `09-appstore.md` verbietet.
+- Datum vor der Überschrift, nicht klein darunter. Der Abschnitt soll in erster
+  Linie zeigen, **wann** etwas kam.
+
 ## 0.113.21 — 2026-09-10
 
 **Zählora 1.1 ist bei Apple eingereicht.**
