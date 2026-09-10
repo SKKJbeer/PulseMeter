@@ -9,6 +9,41 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.113.18 — 2026-09-10
+
+**Eine Notbremse gegen einen Laden, der etwas verspricht, das die App nicht
+kann.**
+
+Fassung 1.1 steht bei Apple vollständig da: zehn Bildschirmfotos, davon fünf
+vom iPad, und Versionshinweise, die iPad-Unterstützung ankündigen. Was fehlt,
+ist der Bau — und genau da wird es gefährlich.
+
+`bau_anhaengen` nimmt „den neuesten tauglichen". Das ist richtig, solange der
+gemeinte Bau auch tauglich ist. Bau 33 ist der erste mit iPad und hing
+stundenlang in Apples Verarbeitung; tauglich danebenstand Bau 32 — ohne iPad.
+Ein Einreichen hätte den Laden mit Bau 32 beliefert, und die Store-Seite hätte
+gelogen. Ohne rote Zeile, ohne Warnung, mit einer Regel, die für sich genommen
+stimmt.
+
+Dieselbe Fehlerklasse wie am 30. August, als Bau 24 an der Fassung hing, während
+25 längst in TestFlight stand. Damals wurde daraus „ein angehängter Bau wird
+verglichen, nicht bestätigt". Das reicht nicht, wenn der Vergleich einen
+Kandidaten wählt, der zu alt ist.
+
+### Hinzugefügt
+
+- `PULSE_MIN_BAU` als Untergrenze, im Ablauf als Eingabe `min_bau`. Liegt der
+  neueste taugliche Bau darunter, wird **nicht** angehängt und **nicht**
+  eingereicht. Wer eine Untergrenze setzt, sagt damit: unterhalb dieser Nummer
+  ist gar nichts besser als etwas Falsches.
+
+### Gelernt
+
+- `einreichen.yml` fällt ohne `fassung` auf **1.0** zurück — die Fassung, die
+  seit dem 4. September im Laden steht. Ein Blick ohne diese Angabe beschreibt
+  die falsche Fassung, ein Einreichen würde am falschen Ende arbeiten. Die
+  Vorgabe stammt aus der Zeit, als es nur eine Fassung gab.
+
 ## 0.113.17 — 2026-09-10
 
 **„Noch in Verarbeitung" war eine Behauptung über etwas, das nicht nachgesehen

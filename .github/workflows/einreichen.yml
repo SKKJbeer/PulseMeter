@@ -28,6 +28,19 @@ on:
         type: string
         required: false
         default: ""
+      # **Die Notbremse gegen einen zu alten Bau.** „Der neueste taugliche" ist
+      # richtig, solange der gemeinte auch tauglich ist. Hängt er noch in der
+      # Verarbeitung, greift die Regel zum vorletzten — und der kann unter
+      # Umständen etwas nicht, das die Fassung schon verspricht.
+      #
+      # Am 10. September stand genau das an: Fassung 1.1 mit zehn
+      # Bildschirmfotos und Versionshinweisen zum iPad, Bau 33 (der erste mit
+      # iPad) stundenlang in Verarbeitung, Bau 32 (ohne iPad) tauglich daneben.
+      min_bau:
+        description: "Kleinste erlaubte Buildnummer, z. B. 33 (leer = egal)"
+        type: string
+        required: false
+        default: ""
       zurueckziehen:
         description: "Stattdessen eine laufende Einreichung zurückziehen"
         type: boolean
@@ -66,6 +79,7 @@ jobs:
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
           PULSE_FASSUNG: ${{ inputs.fassung }}
+          PULSE_MIN_BAU: ${{ inputs.min_bau }}
         run: |
           if [ "${{ inputs.aufraeumen }}" = "true" ]; then
             python3 scripts/asc-einreichen.py --aufraeumen

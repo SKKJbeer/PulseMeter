@@ -175,6 +175,21 @@ def bau_anhaengen(apple: Apple, app_id: str, fassung_id: str) -> bool:
     es an einer roten Zeile gesehen.
 
     Ein angehängter Bau wird deshalb **verglichen**, nicht bestätigt.
+
+    **`PULSE_MIN_BAU` ist die Notbremse dazu.** „Der neueste taugliche" ist die
+    richtige Regel, solange der gemeinte Bau auch tauglich ist. Ist er es
+    gerade nicht — weil Apple ihn noch verarbeitet —, greift die Regel zum
+    **vorletzten**, und der kann etwas nicht, das die Fassung schon verspricht.
+
+    Genau diese Lage stand am 10. September an: Fassung 1.1 mit zehn
+    Bildschirmfotos und Versionshinweisen zum iPad, während Bau 33 (der erste
+    mit iPad) stundenlang in Verarbeitung hing und Bau 32 (ohne iPad) tauglich
+    danebenstand. Ohne Notbremse hätte ein Einreichen den Laden mit Bau 32
+    beliefert, und die Store-Seite hätte etwas versprochen, das die App nicht
+    kann.
+
+    Wer eine Untergrenze setzt, sagt damit: **Unterhalb dieser Nummer ist gar
+    nichts besser als etwas Falsches.**
     """
     stand, antwort = apple.holen("v1/builds", **{
         "filter[app]": app_id, "limit": 50})
@@ -188,6 +203,14 @@ def bau_anhaengen(apple: Apple, app_id: str, fassung_id: str) -> bool:
         print("  ✗ Kein Bau im Zustand VALID — die Verarbeitung läuft noch.")
         return False
     bau = max(tauglich, key=baunummer)
+
+    mindestens = os.environ.get("PULSE_MIN_BAU", "").strip()
+    if mindestens and baunummer(bau) < int(mindestens):
+        print(f"  ✗ Der neueste taugliche Bau ist {feld(bau, 'version')}, "
+              f"verlangt ist mindestens {mindestens}. Nicht angehängt.")
+        print(f"    Ein älterer Bau kann nicht, was diese Fassung verspricht. "
+              f"Erst warten, bis Bau {mindestens} verarbeitet ist.")
+        return False
 
     stand, antwort = apple.holen(f"v1/appStoreVersions/{fassung_id}/build")
     vorhanden = antwort.json().get("data") if stand == 200 else None
