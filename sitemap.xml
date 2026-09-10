@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Ohne das Impressum: Es trägt `noindex` und soll erreichbar sein, nicht
+     auffindbar. Eine Adresse, die man anmeldet und dann vom Index ausschließt,
+     ist ein widersprüchliches Signal. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://zaehlora.pages.dev/</loc></url>
+  <url><loc>https://zaehlora.pages.dev/hilfe</loc></url>
+  <url><loc>https://zaehlora.pages.dev/gas-in-kwh</loc></url>
+  <url><loc>https://zaehlora.pages.dev/abschlag-zu-hoch</loc></url>
+  <url><loc>https://zaehlora.pages.dev/datenschutz</loc></url>
+</urlset>
