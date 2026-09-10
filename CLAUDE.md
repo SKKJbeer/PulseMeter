@@ -257,7 +257,9 @@ danach nur noch Wartezeit gekostet.
 | Auftrag | Gruppe | Bei neuem Push |
 |---|---|---|
 | `prototype` (Ubuntu, Minuten) | `entwurf-<zweig>` | wird abgebrochen — soll er, er läuft gleich wieder |
-| `build-and-test` (macOS, teuer) | `app-<zweig>` | `cancel-in-progress: false` — **reiht sich an**, beide laufen durch |
+| `iphone` (macOS, teuer) | `iphone-<zweig>` | `cancel-in-progress: false` — **reiht sich an**, beide laufen durch |
+| `ipad` (macOS, teuer) | `ipad-<zweig>` | dasselbe, eigene Gruppe — sonst bricht der eine den anderen ab |
+| `bilder` (macOS, kurz) | — | wartet auf beide, legt beide Bildersätze in den Zweig `screenshots` |
 
 Der teure Auftrag ist also geschützt. Wer wartet, wartet umsonst.
 

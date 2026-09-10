@@ -106,11 +106,11 @@ jobs:
   # `cancel-in-progress: false` — anders als bei der schnellen Prüfung. Ein
   # abgebrochener App-Build ist keine Aussage, sondern eine verlorene
   # Viertelstunde. Lieber laufen zwei hintereinander als keiner zu Ende.
-  # **120 Minuten. Hier stand 75, und das war zu knapp gerechnet.**
+  # **Seit 0.113.13 laufen iPhone und iPad nebeneinander, nicht nacheinander.**
   #
-  # Die alte Zeile veranschlagte rund 52 Minuten für alles und nannte 75 einen
-  # „Puffer für einen langsamen Läufer". Nachgemessen an drei Läufen ist der
-  # Läufer nicht ausnahmsweise langsam, sondern schwankt um den Faktor zwei:
+  # Vorher war das ein Auftrag, der beides der Reihe nach abarbeitete. Gemessen
+  # an drei Läufen schwankte er zwischen 55 und über 76 Minuten — Faktor zwei,
+  # bei unverändertem Inhalt:
   #
   # | Schritt              | Lauf 405 | Lauf 407 | Lauf 408 |
   # |----------------------|---------:|---------:|---------:|
@@ -120,21 +120,27 @@ jobs:
   # | iPad-Tests           |   15 min |   23 min |  > 25 min |
   # | **gesamt**           |   55 min |   73 min |  Abbruch |
   #
-  # Lauf 407 kam mit zwei Minuten Abstand durch, Lauf 408 lief in die Grenze —
-  # abgebrochen mitten in den iPad-Prüfungen, nach der teuersten Stunde und
-  # ohne ein Ergebnis. Eine Grenze, die den Lauf trifft statt einen Hänger,
-  # kostet genau das, wovor sie schützen soll.
+  # Lauf 408 lief in die damalige Grenze von 75 Minuten — abgebrochen mitten in
+  # den iPad-Prüfungen, nach der teuersten Stunde und ohne ein Ergebnis. Lauf
+  # 407 kam mit zwei Minuten Abstand durch; das war kein Spielraum, das war
+  # Glück.
   #
-  # 120 liegt weit über dem schlechtesten gemessenen Fall und immer noch weit
-  # unter einem echten Hänger. Der eigentliche Ausweg ist ein anderer: iPhone
-  # und iPad in **zwei** Aufträge zu trennen, die nebeneinander laufen. Das
-  # halbiert die Wartezeit und macht jede Familie für sich beantwortbar —
-  # steht an, sobald beide grün sind.
-  build-and-test:
+  # Nebeneinander ist die Wartezeit die des **längeren** Zweiges statt der
+  # Summe: rund 35 statt rund 75 Minuten. Und jede Familie ist für sich
+  # beantwortbar — ein rotes iPad sagt jetzt nichts mehr darüber aus, ob das
+  # iPhone durchgelaufen ist. Genau diese Frage hat in den Läufen 405 bis 409
+  # jedes Mal eine halbe Stunde gekostet.
+  #
+  # Gesamtkosten an Läuferminuten bleiben etwa gleich: Der iPad-Zweig hat auch
+  # vorher schon einen eigenen Bau angelegt.
+  #
+  # `cancel-in-progress: false` in **beiden** Zweigen, aus demselben Grund wie
+  # zuvor. Eigene Gruppennamen, sonst bricht der eine den anderen ab.
+  iphone:
     runs-on: macos-15
-    timeout-minutes: 120
+    timeout-minutes: 60
     concurrency:
-      group: app-${{ github.event.pull_request.head.ref || github.ref_name }}
+      group: iphone-${{ github.event.pull_request.head.ref || github.ref_name }}
       cancel-in-progress: false
 
     steps:
@@ -254,73 +260,134 @@ jobs:
         continue-on-error: true
         run: scripts/run.sh build
 
-      # Die iPad-Bilder liegen daneben, nicht darüber. Sie sind das, was Apple
-      # zur Einreichung verlangt, sobald die App auf dem iPad läuft — und das,
-      # woran man sieht, ob die Seitenleiste wirklich sitzt.
-      - name: Screenshots auf dem iPad
-        if: always()
-        continue-on-error: true
-        env:
-          PULSE_FAMILIE: ipad
-          PULSE_DERIVED_DATA: build/DerivedData-iPad
-        run: scripts/run.sh build/ipad
-
-      # **Dieselben Prüfungen auf dem iPad**, seit 0.112.0 — die App trägt
-      # `TARGETED_DEVICE_FAMILY: "1,2"`, und Apple sieht sie sich dort an.
-      #
-      # Es ist nicht dasselbe Bild in groß: Auf breiten Fenstern schaltet
-      # `RootView` von der Tableiste auf eine Seitenleiste um. Damit ändert sich
-      # der Zugänglichkeitsbaum, und genau daran scheitern Oberflächenprüfungen,
-      # ohne dass am Produkt etwas falsch wäre — oder eben doch, und dann will
-      # man es hier wissen und nicht aus einer Bewertung.
-      #
-      # **Warum dieser Schritt seit 0.113.3 fast am Ende steht.** GitHub gibt
-      # das Protokoll eines Auftrags erst heraus, wenn der **ganze** Auftrag
-      # fertig ist. Stand die Prüfung wie zuvor in der Mitte, lag zwischen dem
-      # Fehlschlag und seiner Begründung eine halbe Stunde Bilderlauf — bei
-      # fünf Runden hintereinander war das die teuerste Zeile der Datei. Jetzt
-      # folgen darauf nur noch zwei Schritte von zusammen zwei Minuten.
-      #
-      # Gebaut wird dadurch nichts doppelt: `run.sh` legt für das iPad ohnehin
-      # einen Bau an, wenn keiner daliegt, und dieser Schritt benutzt ihn
-      # weiter. Ein eigenes Ableseverzeichnis behält er trotzdem — sonst zählt
-      # der Schritt „Datenschutz-Datei" in einem Paket, das er nicht meint.
-      #
-      # **Nur in der CI, nicht im lokalen Lauf.** Ein zweiter Durchgang kostet
-      # rund fünfzehn Minuten auf einem gemieteten Mac. Die schnelle Schleife
-      # bleibt das iPhone; die Gegenprobe ist hier.
-      - name: Oberflächentests auf dem iPad
-        env:
-          PULSE_FAMILIE: ipad
-          PULSE_DERIVED_DATA: build/DerivedData-iPad
-        run: scripts/test.sh app
-
-      # Die Bilder zusätzlich in einen Zweig, nicht nur ins Artefakt: An ein
-      # Artefakt komme ich aus der Entwicklungsumgebung heraus nicht heran —
-      # der Weg zur GitHub-API ist dort gesperrt, git aber nicht. Und ohne die
-      # Bilder fehlt die produktivste Prüfung, die dieses Projekt hat.
-      - name: Screenshots in den Zweig
-        if: always()
-        continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Der Zweig soll sagen, aus welchem Zustand die Bilder stammen.
-          PULSE_LAUF: ${{ job.status == 'success' && 'grün' || 'rot' }}
-        # **Beide Sätze in einem Aufruf.** Der Zweig trägt immer nur einen
-        # Stand und wird mit `--force` geschoben; zwei Aufrufe hintereinander
-        # hätten den ersten weggeworfen. In Lauf 393 sind die dreizehn
-        # iPad-Bilder deshalb nirgends angekommen — zehn Minuten gemieteter
-        # Mac für Dateien, die niemand je zu sehen bekam.
-        run: scripts/publish-shots.sh build build/ipad
-
-      - name: Ergebnisse sichern
+      # Weitergereicht statt hier veröffentlicht: Der Zweig `screenshots` trägt
+      # beide Familien und wird mit `--force` geschoben. Schöbe ihn jeder
+      # Auftrag für sich, wäre der zweite der letzte und der erste weg. Das
+      # Zusammenlegen macht deshalb `bilder` ganz unten, wenn beide fertig sind.
+      - name: Bilder weiterreichen
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: screenshots-und-protokolle
+          name: bilder-iphone
+          # Nur `build/*` — der gemeinsame Vorfahre der Treffer wird zur Wurzel
+          # des Artefakts. Käme `build/ipad/*` dazu, läge alles eine Ebene
+          # tiefer, und das Herunterladen legte es an die falsche Stelle.
           path: |
             build/*.png
-            build/ipad/*.png
             build/*.log
           if-no-files-found: ignore
           retention-days: 14
+
+  # **Dieselben Prüfungen auf dem iPad**, seit 0.112.0 — die App trägt
+  # `TARGETED_DEVICE_FAMILY: "1,2"`, und Apple sieht sie sich dort an.
+  #
+  # Es ist nicht dasselbe Bild in groß: Auf breiten Fenstern schaltet `RootView`
+  # von der Tableiste auf eine Seitenleiste um. Damit ändert sich der
+  # Zugänglichkeitsbaum, und genau daran scheitern Oberflächenprüfungen, ohne
+  # dass am Produkt etwas falsch wäre — oder eben doch, und dann will man es
+  # hier wissen und nicht aus einer Bewertung.
+  #
+  # Die statischen Prüfungen, `PulseCore` und `PulseData` laufen hier **nicht**
+  # noch einmal. Sie hängen nicht am Gerät, und zweimal geprüft heißt zweimal
+  # bezahlt.
+  #
+  # Die Tests stehen hinter den Bildern, nicht davor. GitHub gibt das Protokoll
+  # eines Auftrags erst heraus, wenn der ganze Auftrag fertig ist — und die
+  # Bilder sollen auch dann entstehen, wenn die Prüfungen fallen. Gebaut wird
+  # dadurch nichts doppelt: `run.sh` legt den Bau an, `test.sh` benutzt ihn.
+  ipad:
+    runs-on: macos-15
+    timeout-minutes: 60
+    concurrency:
+      group: ipad-${{ github.event.pull_request.head.ref || github.ref_name }}
+      cancel-in-progress: false
+    env:
+      PULSE_FAMILIE: ipad
+      PULSE_DERIVED_DATA: build/DerivedData-iPad
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: XcodeGen
+        run: brew install xcodegen
+
+      - name: Xcode-Projekt erzeugen
+        run: xcodegen generate
+
+      - name: Screenshots auf dem iPad
+        continue-on-error: true
+        run: scripts/run.sh build/ipad
+
+      - name: Oberflächentests auf dem iPad
+        run: scripts/test.sh app
+
+      # Das Protokoll heißt in beiden Zweigen gleich (`xcodebuild-test.log`).
+      # Unter demselben Namen zusammengelegt bliebe eines von beiden übrig, und
+      # zwar wortlos — deshalb wandert es hier unter eigenem Namen neben die
+      # Bilder.
+      - name: Protokoll zu den Bildern legen
+        if: always()
+        continue-on-error: true
+        run: |
+          mkdir -p build/ipad
+          cp build/xcodebuild-test.log build/ipad/xcodebuild-test-ipad.log 2>/dev/null || true
+
+      - name: Bilder weiterreichen
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bilder-ipad
+          path: build/ipad/*
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # Die Bilder zusätzlich in einen Zweig, nicht nur ins Artefakt: An ein
+  # Artefakt komme ich aus der Entwicklungsumgebung heraus nicht heran — der Weg
+  # zur GitHub-API ist dort gesperrt, git aber nicht. Und ohne die Bilder fehlt
+  # die produktivste Prüfung, die dieses Projekt hat.
+  #
+  # **`if: always()`, und das ist keine Kleinigkeit.** Mit `success()`
+  # unterdrückte eine einzige rote Prüfung alle Bilder — genau verkehrt herum:
+  # Wenn etwas nicht stimmt, braucht man sie mehr als sonst. Ein ganzer
+  # Nachmittag ist so blind vergangen.
+  #
+  # Läuft auf macOS, weil `publish-shots.sh` mit `sips` verkleinert. Der
+  # Auftrag dauert zwei Minuten und ist der Preis dafür, dass beide Bildersätze
+  # in **einem** Zweig landen.
+  bilder:
+    runs-on: macos-15
+    needs: [iphone, ipad]
+    if: always()
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bilder vom iPhone holen
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: bilder-iphone
+          path: build
+
+      - name: Bilder vom iPad holen
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: bilder-ipad
+          path: build/ipad
+
+      # **Beide Sätze in einem Aufruf.** Der Zweig trägt immer nur einen Stand
+      # und wird mit `--force` geschoben; zwei Aufrufe hintereinander hätten den
+      # ersten weggeworfen. In Lauf 393 sind die dreizehn iPad-Bilder deshalb
+      # nirgends angekommen — zehn Minuten gemieteter Mac für Dateien, die
+      # niemand je zu sehen bekam.
+      - name: Screenshots in den Zweig
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # `job.status` wäre hier immer „success" — dieser Auftrag läuft ja
+          # durch. Gemeint ist der Zustand der **Prüfungen**, und der steht in
+          # den Ergebnissen der beiden Zweige.
+          PULSE_LAUF: ${{ (needs.iphone.result == 'success' && needs.ipad.result == 'success') && 'grün' || 'rot' }}
+        run: scripts/publish-shots.sh build build/ipad

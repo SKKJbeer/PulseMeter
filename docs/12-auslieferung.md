@@ -292,6 +292,31 @@ Store Connect deshalb nie gesehen.
 Zeitangaben in UTC. Ein ✗ heißt: hochgeladen wurde nichts, die Nummer ist
 trotzdem verbraucht.
 
+### Beide Gerätefamilien grün — Lauf 409, 10. September
+
+Seit 0.112.0 laufen die Oberflächenprüfungen zweimal, auf dem iPhone 17 Pro Max
+und auf dem iPad Pro 13". **Grün auf beiden zugleich waren sie zum ersten Mal in
+Lauf 409, mit 0.113.12.** Dazwischen liegen acht Läufe und rund sieben Stunden
+gemieteter Mac.
+
+| Lauf | Version | iPhone | iPad | Was dazwischen lag |
+|---|---|---|---|---|
+| 405 | 0.113.8 | ✓ | 1 Fehler | Messung eingebaut — und beim Aufschreiben selbst gescheitert |
+| 406 | 0.113.9 | 3 Fehler | ✓ | Typunabhängige Suche behob das iPad, der Blätter-Abbruch zerschoss drei iPhone-Prüfungen |
+| 407 | 0.113.10 | ✓ | 1 Fehler | Abbruch berichtigt; die Messung lieferte endlich Zahlen |
+| 408 | 0.113.11 | ✓ | Abbruch | Zeitgrenze von 75 Minuten schlug zu, kein Ergebnis |
+| 409 | 0.113.12 | ✓ | ✓ | **Beide** |
+
+Der Befund am Ende war banal und keine der fünf Vermutungen davor: Der gesuchte
+Text stand 157 Punkte unter dem Fensterrand, in normaler Größe, an der richtigen
+Stelle. Geblättert wurde nur im falschen Behälter — in einer 33 Punkte hohen
+waagerechten Leiste. **Der Fehler saß jedes Mal im Griff, nie in der Sache.**
+
+Was daraus in die Ablaufbeschreibung eingeflossen ist: iPhone und iPad laufen
+seit 0.113.13 in **zwei nebeneinander laufenden Aufträgen**. Die Wartezeit ist
+die des längeren Zweiges statt der Summe — rund 35 statt rund 75 Minuten —, und
+jede Familie ist für sich beantwortbar.
+
 ### Was bei den Testern steht
 
 `altool --upload-app` lädt nur hoch. Die Testhinweise — „Was ist neu" — hängen

@@ -9,6 +9,48 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.113.13 — 2026-09-10
+
+**iPhone und iPad sind im selben Lauf grün — zum ersten Mal, in Lauf 409.**
+
+Acht Läufe und rund sieben Stunden gemieteter Mac liegen dazwischen. Der Befund
+am Ende war banal und keine der fünf Vermutungen davor: Der gesuchte Text stand
+157 Punkte unter dem Fensterrand, in normaler Größe, an der richtigen Stelle.
+Geblättert wurde nur im falschen Behälter. **Der Fehler saß jedes Mal im Griff,
+nie in der Sache.**
+
+### Geändert
+
+- **iPhone und iPad laufen jetzt nebeneinander statt nacheinander.** Aus einem
+  Auftrag sind drei geworden: `iphone`, `ipad` und ein kurzer `bilder`, der auf
+  beide wartet und ihre Bildersätze zusammen in den Zweig `screenshots` legt.
+  Die Wartezeit ist damit die des längeren Zweiges statt der Summe — rund 35
+  statt rund 75 Minuten. Und jede Familie ist für sich beantwortbar: Ein rotes
+  iPad sagt nichts mehr darüber, ob das iPhone durchgelaufen ist. Genau diese
+  Frage hat in den Läufen 405 bis 409 jedes Mal eine halbe Stunde gekostet.
+- Die statischen Prüfungen, `PulseCore` und `PulseData` laufen nur im
+  iPhone-Zweig. Sie hängen nicht am Gerät, und zweimal geprüft heißt zweimal
+  bezahlt.
+
+### Hinzugefügt
+
+- `asc-einreichung.py` kennt den **iPad-Bildersatz**. Ohne ihn geht eine App
+  mit `TARGETED_DEVICE_FAMILY: "1,2"` nicht zur Prüfung.
+- Der Bildersatz wird jetzt **über seine Kennung** gesucht statt über die
+  Position in der Liste. Mit zwei Sätzen wäre „der erste" eine Wette darauf,
+  wie Apple sortiert — und im schlechten Fall lägen die iPad-Bilder im
+  iPhone-Satz.
+
+### Offen
+
+- Ob Apple die Kennung `APP_IPAD_PRO_3GEN_129` für diese Bilder annimmt, ist
+  **nicht nachgeschlagen, sondern auszuprobieren**. Sie steht bei Apple für
+  2048 × 2732; der Simulator liefert 2064 × 2752. Lehnt der Hochladeversuch ab,
+  steht Apples Begründung wörtlich in der offenen Liste des Laufs.
+- Auf dem iPad steht der Inhalt von `Verlauf` und `Zähler` im oberen Drittel,
+  darunter bleibt die Hälfte des Schirms leer. Nicht falsch, aber auch nicht
+  entworfen. Steht in `docs/06-uebergabe.md` als Entscheidung an.
+
 ## 0.113.12 — 2026-09-10
 
 **Lauf 408 ist nicht gefallen, sondern in die Uhr gelaufen.**

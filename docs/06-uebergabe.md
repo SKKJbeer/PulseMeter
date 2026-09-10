@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-09-07, Version 0.112.0
+Stand: 2026-09-10, Version 0.113.13
 
 ---
 
@@ -86,21 +86,46 @@ Tabelle im Baukasten unter „Die Prüfungen".
 
 ## Wo die Arbeit steht
 
-**`main` ist der aktuelle Stand**, Version 0.112.0. Es gibt keinen offenen
+**`main` ist der aktuelle Stand**, Version 0.113.13. Es gibt keinen offenen
 Arbeitszweig; alles ist zusammengeführt. `claude/setup-pruefung-4qyr2u` steht
 noch bei GitHub, vollständig in `main` — aus der Cloud lässt er sich nicht
 löschen (`HTTP 403`), von der Weboberfläche aus mit einem Klick.
 
-| | Stand am 7. September |
+| | Stand am 10. September |
 |---|---|
 | **App Store** | **Zählora 1.0.1 ist freigegeben** — 7. September. 1.0 stand dort seit dem 4. September |
-| `PulseCore` | 238 Tests, grün |
-| Klick-Dummy | 264 Prüfungen, hell und dunkel, grün |
-| Website | 407 Prüfungen, grün, live auf `zaehlora.pages.dev` |
-| App-Build und Oberflächentests | grün auf dem letzten macOS-Lauf |
-| TestFlight | **Bau 32, VALID** — der erste mit iCloud-Abgleich und Widget |
+| `PulseCore` | grün |
+| Klick-Dummy | 278 Prüfungen, hell und dunkel, grün — mit breitem Rahmen fürs Tablet |
+| Website | 415 Prüfungen, grün, live auf `zaehlora.pages.dev` |
+| **Oberflächentests iPhone** | **grün** — 41 Prüfungen, Lauf 409 |
+| **Oberflächentests iPad** | **grün** — dieselben 41 Prüfungen, Lauf 409, zum ersten Mal zugleich mit dem iPhone |
+| TestFlight | Bau 32, VALID — der erste mit iCloud-Abgleich und Widget |
 | Käufe | 6 von 6, mit der Fassung eingereicht |
 | Länder | 175, Deutschland dabei |
+
+### Das iPad ist fertig — und was daran noch aussteht
+
+Seit 0.112.0 läuft die App auf beiden Familien (`TARGETED_DEVICE_FAMILY:
+"1,2"`): Seitenleiste statt Tableiste auf breiten Fenstern, Karten in einem
+mitwachsenden Raster. **Grün auf beiden zugleich waren die Prüfungen zum ersten
+Mal in Lauf 409.** Der Weg dahin steht in `docs/12-auslieferung.md`; die eine
+Lehre daraus, in `projekt-baukasten` ausführlich: *auf einem großen Bildschirm
+ist „vorne" nicht dasselbe wie „zuerst gefunden"* — der Fehler saß jedes Mal im
+Griff der Prüfung, nie in der Ansicht.
+
+**Was am iPad noch offen ist, und zwar am Produkt, nicht an den Prüfungen:**
+Auf `Verlauf` und `Zähler` steht der Inhalt im oberen Drittel, darunter bleibt
+auf einem 13-Zoll-Schirm die Hälfte leer. Es ist nicht falsch, aber es ist auch
+nicht entworfen. Ein zweispaltiger Aufbau — links die Wahl, rechts das
+Ausgewählte — wäre die naheliegende Antwort. Nicht angefangen; erst zu
+entscheiden.
+
+**Zur Einreichung fehlt der iPad-Bildersatz.** `scripts/asc-einreichung.py`
+kennt ihn seit 0.113.13, unter der Kennung `APP_IPAD_PRO_3GEN_129`. Ob Apple
+sie annimmt, ist **nicht nachgeschlagen, sondern auszuprobieren**: Die Kennung
+steht bei Apple für 2048 × 2732, der Simulator liefert 2064 × 2752. Lehnt der
+Hochladeversuch ab, steht Apples Begründung wörtlich in der offenen Liste des
+Laufs — und die richtige Kennung ist daraus abzulesen, nicht zu raten.
 
 **Der Umfang von 1.0 ist vollständig, und seit 1.0.1 kommt er auch an.** Der
 iCloud-Abgleich und das Feld auf dem Sperrbildschirm waren in 1.0 eingebaut und

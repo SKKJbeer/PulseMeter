@@ -327,6 +327,29 @@ BILDER = [
     ("screenshot-zaehler-light.jpg", "Zähler"),
 ]
 
+# **Der iPad-Satz, seit die App auf dem iPad läuft.** Apple verlangt für eine
+# App mit `TARGETED_DEVICE_FAMILY: "1,2"` einen eigenen Bildersatz; ohne ihn
+# geht die Fassung nicht zur Prüfung.
+#
+# **Die Kennung ist eine Vermutung, und sie steht hier als solche.**
+# `APP_IPAD_PRO_3GEN_129` heißt bei Apple 2048 × 2732. Der Simulator „iPad Pro
+# 13-inch (M5)" liefert 2064 × 2752 — sechzehn beziehungsweise zwanzig Pixel
+# mehr. Ob Apple das unter dieser Kennung annimmt, ist **nicht nachgeschlagen,
+# sondern auszuprobieren**: Der Hochladeversuch antwortet eindeutig, eine
+# Suche in der Dokumentation nicht. Lehnt er ab, steht die Begründung von Apple
+# wörtlich in der offenen Liste, und dann ist die richtige Kennung daraus
+# abzulesen — nicht zu raten.
+BILDSCHIRME = [
+    (BILDSCHIRM, BILDER),
+    ("APP_IPAD_PRO_3GEN_129", [
+        ("ipad-screenshot-light.jpg", "Übersicht"),
+        ("ipad-screenshot-capture-light.jpg", "Ablesen"),
+        ("ipad-screenshot-verlauf-light.jpg", "Verlauf"),
+        ("ipad-screenshot-bericht-light.jpg", "Bericht"),
+        ("ipad-screenshot-zaehler-light.jpg", "Zähler"),
+    ]),
+]
+
 
 def bild_hochladen(apple: Apple, satz_id: str, pfad: str, nummer: int) -> str | None:
     """Anmelden, Bytes schicken, Vollzug melden — wie beim Prüfbild der Käufe."""
@@ -369,41 +392,54 @@ def bilder_fuellen(apple: Apple, ort_id: str) -> None:
                      "der Ablauf holt ihn aus dem Zweig screenshots")
         return
 
-    stand, satz = erste(apple, f"v1/appStoreVersionLocalizations/{ort_id}"
-                                "/appScreenshotSets", **{"limit": 20})
-    if satz is None:
-        stand, antwort = apple.anlegen("v1/appScreenshotSets", {"data": {
-            "type": "appScreenshotSets",
-            "attributes": {"screenshotDisplayType": BILDSCHIRM},
-            "relationships": {"appStoreVersionLocalization": {
-                "data": {"type": "appStoreVersionLocalizations", "id": ort_id}}},
-        }})
-        if stand not in (200, 201):
-            offen.append(f"Bildersatz ließ sich nicht anlegen ({stand}) "
-                         f"— {kurz(antwort)}")
-            return
-        satz = antwort.json()["data"]
+    # **Gesucht wird nach der Kennung, nicht nach der Position.** Hier stand
+    # `erste(...)`, also der oberste Satz der Liste. Mit einem einzigen Satz war
+    # das dasselbe; mit iPhone **und** iPad daneben ist es eine Wette darauf,
+    # wie Apple sortiert — und im schlechten Fall landen die iPad-Bilder im
+    # iPhone-Satz. Dieselbe Falle wie bei den Fassungen eine Funktion weiter
+    # unten, und dort hat sie schon einmal zugeschlagen.
+    stand, antwort = apple.holen(f"v1/appStoreVersionLocalizations/{ort_id}"
+                                  "/appScreenshotSets", **{"limit": 20})
+    saetze = antwort.json().get("data", []) if stand == 200 else []
 
-    # **Nicht doppelt hochladen.** Ein zweiter Lauf soll die Seite nicht mit
-    # denselben Bildern zweimal füllen.
-    stand, vorhanden = apple.holen(f"v1/appScreenshotSets/{satz['id']}/appScreenshots",
-                                   **{"limit": 20})
-    schon = {e["attributes"].get("fileName")
-             for e in (vorhanden.json().get("data", []) if stand == 200 else [])}
+    for kennung, bilder in BILDSCHIRME:
+        satz = next((s for s in saetze
+                     if feld(s, "screenshotDisplayType") == kennung), None)
+        if satz is None:
+            stand, antwort = apple.anlegen("v1/appScreenshotSets", {"data": {
+                "type": "appScreenshotSets",
+                "attributes": {"screenshotDisplayType": kennung},
+                "relationships": {"appStoreVersionLocalization": {
+                    "data": {"type": "appStoreVersionLocalizations",
+                             "id": ort_id}}},
+            }})
+            if stand not in (200, 201):
+                offen.append(f"Bildersatz {kennung} ließ sich nicht anlegen "
+                             f"({stand}) — {kurz(antwort)}")
+                continue
+            satz = antwort.json()["data"]
 
-    for nummer, (datei, was) in enumerate(BILDER, start=1):
-        if datei in schon:
-            getan.append(f"Bild {nummer} ({was}): stand schon")
-            continue
-        pfad = os.path.join(ordner, datei)
-        if not os.path.isfile(pfad):
-            offen.append(f"Bild {nummer} ({was}): {datei} liegt nicht im Zweig")
-            continue
-        fehler = bild_hochladen(apple, satz["id"], pfad, nummer)
-        if fehler:
-            offen.append(f"Bild {nummer} ({was}): {fehler}")
-        else:
-            getan.append(f"Bild {nummer} ({was}): hochgeladen")
+        # **Nicht doppelt hochladen.** Ein zweiter Lauf soll die Seite nicht mit
+        # denselben Bildern zweimal füllen.
+        stand, vorhanden = apple.holen(
+            f"v1/appScreenshotSets/{satz['id']}/appScreenshots", **{"limit": 20})
+        schon = {e["attributes"].get("fileName")
+                 for e in (vorhanden.json().get("data", []) if stand == 200 else [])}
+
+        for nummer, (datei, was) in enumerate(bilder, start=1):
+            if datei in schon:
+                getan.append(f"{kennung} Bild {nummer} ({was}): stand schon")
+                continue
+            pfad = os.path.join(ordner, datei)
+            if not os.path.isfile(pfad):
+                offen.append(f"{kennung} Bild {nummer} ({was}): {datei} "
+                             "liegt nicht im Zweig")
+                continue
+            fehler = bild_hochladen(apple, satz["id"], pfad, nummer)
+            if fehler:
+                offen.append(f"{kennung} Bild {nummer} ({was}): {fehler}")
+            else:
+                getan.append(f"{kennung} Bild {nummer} ({was}): hochgeladen")
 
 
 def fassung_fuellen(apple: Apple, app_id: str) -> None:
