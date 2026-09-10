@@ -1,6 +1,6 @@
 # 12 – Auslieferung: vom Code in den App Store, ohne Mac
 
-Stand: 2026-09-07, Version 0.110.2
+Stand: 2026-09-10, Version 0.113.23
 
 Am 17. August ist Zählora zum ersten Mal in TestFlight gelandet — **ohne
 Kabel, ohne Xcode auf dem Rechner des Gründers, ohne einen Klick im
@@ -422,6 +422,28 @@ Ablauf die Veröffentlichung ausdrücklich an — und dafür fehlte
 `permissions: actions: write`. Fünf Stunden lang stand die App im Laden und die
 eigene Seite sagte „Bald im App Store". Behoben in 0.106.6, samt einer Prüfung
 am Ende des Ablaufs, die die **Seite abruft** statt den Push zu zählen.
+
+### Und die dritte, 1.1 — freigegeben am 10. September
+
+**Die erste Fassung, die auf dem iPad läuft.** Seitenleiste statt Tableiste,
+Zähler nebeneinander statt untereinander. Eingereicht um 11:22 UTC mit Bau 35,
+`IN_REVIEW` um 14:05, `READY_FOR_SALE` am selben Abend. Rund acht Stunden von
+der Einreichung bis in den Laden.
+
+Der Weg dorthin hat an einem Tag drei Bauten gekostet, und keiner der drei ist
+am Produkt gescheitert:
+
+| Bau | Was passierte |
+|---|---|
+| 33 | `altool` lehnte ab (fehlende iPad-Ausrichtungen) und gab 0 zurück. Der Schritt war grün, bei Apple kam nichts an |
+| 34 | Derselbe Fehlschlag noch einmal, weil die Ursache im grünen Häkchen steckte |
+| 35 | Ausrichtungen berichtigt, Hochladeschritt liest jetzt die Ausgabe. `VALID` nach 93 Sekunden |
+
+Drei Sicherungen desselben Vormittags haben verhindert, dass daraus ein Schaden
+wurde: die Unterscheidung „nicht in der Liste" gegen „noch in Verarbeitung",
+die Untergrenze `min_bau` beim Einreichen — sonst wäre Bau 32 ohne iPad in den
+Laden gegangen, während die Store-Seite es mit fünf iPad-Bildern verspricht —
+und ein Nachtrag-Lauf, der rot wird, wenn er nichts eingetragen hat.
 
 ### Und die zweite Fassung, 1.0.1 — freigegeben am 7. September
 

@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-09-10, Version 0.113.13
+Stand: 2026-09-10, Version 0.113.23
 
 ---
 
@@ -93,13 +93,13 @@ löschen (`HTTP 403`), von der Weboberfläche aus mit einem Klick.
 
 | | Stand am 10. September |
 |---|---|
-| **App Store** | **Zählora 1.0.1 ist freigegeben** — 7. September. 1.0 stand dort seit dem 4. September |
+| **App Store** | **Zählora 1.1 ist freigegeben** — 10. September, die erste Fassung mit iPad. Davor 1.0.1 am 7. und 1.0 am 4. September |
 | `PulseCore` | grün |
 | Klick-Dummy | 278 Prüfungen, hell und dunkel, grün — mit breitem Rahmen fürs Tablet |
 | Website | 415 Prüfungen, grün, live auf `zaehlora.pages.dev` |
 | **Oberflächentests iPhone** | **grün** — 41 Prüfungen, Lauf 409 |
 | **Oberflächentests iPad** | **grün** — dieselben 41 Prüfungen, Lauf 409, zum ersten Mal zugleich mit dem iPhone |
-| TestFlight | Bau 32, VALID — der erste mit iCloud-Abgleich und Widget |
+| TestFlight | **Bau 35, VALID** — der Bau, der als 1.1 im Laden steht |
 | Käufe | 6 von 6, mit der Fassung eingereicht |
 | Länder | 175, Deutschland dabei |
 

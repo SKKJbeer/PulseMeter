@@ -9,6 +9,38 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.113.23 — 2026-09-10
+
+**Zählora 1.1 ist im App Store.**
+
+    Fassung 1.1: READY_FOR_SALE
+
+Die erste Fassung, die auf dem iPad läuft. Eingereicht um 11:22 UTC mit Bau 35,
+`IN_REVIEW` um 14:05, freigegeben am selben Abend. Rund acht Stunden von der
+Einreichung bis in den Laden.
+
+### Hinzugefügt
+
+- Die Website führt 1.1 im Abschnitt „Was zuletzt dazugekommen ist", mit dem
+  10. September als Datum. Damit stehen dort drei Fassungen in sieben Tagen,
+  und der Abschnitt zeigt, wozu er da ist.
+
+### Geändert
+
+- `docs/12-auslieferung.md` hält den Weg fest: drei Bauten an einem Tag, und
+  keiner der drei ist am Produkt gescheitert. 33 und 34 wurden nie hochgeladen,
+  weil `altool` ablehnte und trotzdem 0 zurückgab; 35 ging nach der Berichtigung
+  der iPad-Ausrichtungen in 93 Sekunden durch.
+- `docs/06-uebergabe.md` steht auf 1.1 im Laden und Bau 35.
+
+### Was noch offen ist
+
+- Auf dem iPad steht der Inhalt von Verlauf und Zähler im oberen Drittel,
+  darunter bleibt die Hälfte des Schirms leer. Nicht falsch, aber nicht
+  entworfen.
+- Querformat auf dem iPad ist erreichbar und ungeprüft. Apple hat nichts
+  beanstandet, angesehen hat es trotzdem niemand.
+
 ## 0.113.22 — 2026-09-10
 
 **Die Website zeigt jetzt, dass an der App gearbeitet wird.**
