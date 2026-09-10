@@ -9,6 +9,38 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.113.19 — 2026-09-10
+
+**Bau 33 ist auf dem Weg zu Apple verloren gegangen — der erste in diesem
+Projekt.**
+
+`altool --upload-app` meldete nach 26 Sekunden Erfolg, der Schritt war grün.
+Bei Apple kam nichts an: nicht abgelehnt, nicht in Verarbeitung, **nicht in der
+Liste**. Nach 52 Minuten stand dort noch Bau 32 als neuester, nach viereinhalb
+Stunden ebenso.
+
+Zwei Sicherungen aus den letzten Stunden haben in genau dieser Lage getragen:
+
+- **0.113.17** unterscheidet „PROCESSING" von „nicht in der Liste". Ohne das
+  hätte in beiden Fällen „noch in Verarbeitung" dagestanden, und die richtige
+  Antwort — neu bauen — wäre nicht in Sicht gewesen.
+- **0.113.18** hat das Einreichen angehalten: `Der neueste taugliche Bau ist 32,
+  verlangt ist mindestens 33.` Ohne die Untergrenze hätte der Laden Bau 32
+  bekommen — ohne iPad, während die Store-Seite mit fünf iPad-Bildern genau das
+  verspricht.
+
+### Hinzugefügt
+
+- `docs/12-auslieferung.md` führt Bau 33 jetzt als ✗ und hält die Regel fest:
+  **Ein grüner Upload ist keine Ankunft.** Erscheint der Bau nach einer Stunde
+  nicht in Apples Liste, ist er nicht langsam, sondern weg — warten hilft nicht,
+  und die Nummer ist ohnehin verbraucht.
+
+### Läuft
+
+- Ein neuer Bau ist angestoßen. Er trägt 0.113.19 und damit alles, was Bau 33
+  gebracht hätte, plus die Werkzeugbehebungen von heute.
+
 ## 0.113.18 — 2026-09-10
 
 **Eine Notbremse gegen einen Laden, der etwas verspricht, das die App nicht

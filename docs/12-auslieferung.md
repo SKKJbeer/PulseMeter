@@ -288,6 +288,7 @@ Store Connect deshalb nie gesehen.
 | 25 | 0.104.0 | 29.08. 17:45 | ✓ | Kosten hängen am Kauf statt an „gibt es Tarife" — der Knopf „Beispieldaten anlegen" verschenkte bis dahin drei von fünf Käufen. Dazu das Widget auf dem Sperrbildschirm (`accessoryRectangular`, `accessoryInline`) |
 | 26 | 0.106.3 | 04.09. 19:32 | ✓ | Kosten für Monat, Quartal und Jahr auf der Übersichtskarte, und das Erklärblatt „Wie diese Zahl entsteht“ hinter der Abschlagszahl — samt der Einspeisevergütung, die der Entwurf bis dahin abzog, ohne sie zu nennen |
 | 32 | 0.108.4 | 06.09. 05:31 | ✓ | **Der erste Bau, der den iCloud-Abgleich und das Feld auf dem Sperrbildschirm wirklich mitbringt.** Am Code lag es nie — es fehlten zwei Kennungen im Entwicklerportal und, zweimal übersehen, das äußere *Save* danach. Die Bauten 27 bis 31 sind auf diesem Weg verbraucht worden |
+| 33 | 0.113.12 | 10.09. 06:02 | ✗ | Hochladen gemeldet erfolgreich, der Bau erschien bei Apple aber **nie in der Liste** — nicht `PROCESSING`, nicht `INVALID`, gar nicht. Nach 52 Minuten stand dort noch Bau 32 als neuester, nach viereinhalb Stunden ebenso. Der erste Bau dieses Projekts, der auf dem Weg verloren ging |
 
 Zeitangaben in UTC. Ein ✗ heißt: hochgeladen wurde nichts, die Nummer ist
 trotzdem verbraucht.
@@ -316,6 +317,26 @@ Was daraus in die Ablaufbeschreibung eingeflossen ist: iPhone und iPad laufen
 seit 0.113.13 in **zwei nebeneinander laufenden Aufträgen**. Die Wartezeit ist
 die des längeren Zweiges statt der Summe — rund 35 statt rund 75 Minuten —, und
 jede Familie ist für sich beantwortbar.
+
+### Ein grüner Upload ist keine Ankunft
+
+Bau 33 ist der erste, der unterwegs verschwand. `altool --upload-app` meldete
+nach 26 Sekunden Erfolg, der Schritt war grün — und bei Apple kam nichts an.
+Nicht abgelehnt, nicht in Verarbeitung: **nicht in der Liste**.
+
+Auffallen konnte das nur, weil der Nachtrag der Testhinweise seit 0.113.17
+unterscheidet, ob Apple den Bau kennt oder nicht. Vorher hätte in beiden Fällen
+„noch in Verarbeitung" dagestanden, und die richtige Antwort — einen neuen Bau
+anstoßen — wäre stundenlang nicht in Sicht gewesen.
+
+> **Nach dem Hochladen wird nachgesehen, ob der Bau in Apples Liste steht.**
+> Erscheint er nach einer Stunde nicht, ist er nicht langsam, sondern weg.
+> Warten hilft dann nicht, und die Nummer ist ohnehin verbraucht.
+
+Die Untergrenze `min_bau` beim Einreichen hat in derselben Stunde verhindert,
+was daraus sonst geworden wäre: Der Laden hätte Bau 32 bekommen — ohne iPad,
+während die Store-Seite mit fünf iPad-Bildern und den Versionshinweisen genau
+das verspricht.
 
 ### Was bei den Testern steht
 
