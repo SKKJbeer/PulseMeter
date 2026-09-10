@@ -9,6 +9,34 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.113.17 — 2026-09-10
+
+**„Noch in Verarbeitung" war eine Behauptung über etwas, das nicht nachgesehen
+wurde.**
+
+Bau 33 liegt seit 06:02 bei Apple und war um 09:14 noch immer ohne Auskunft —
+über drei Stunden. Die Meldung dazu lautete jedes Mal gleich, und sie
+unterschied zwei Fälle nicht, die verschiedene nächste Schritte verlangen:
+
+- Apple **kennt den Bau nicht**. Dann ist entweder die Aufnahme noch nicht
+  durch, oder der Upload ist nie angekommen — und dann hilft Warten nicht.
+- Apple hat ihn und ist **nicht fertig**. Dann hilft nur Warten.
+
+Das Skript sah bisher in beiden Fällen dasselbe und sagte in beiden Fällen das
+Zweite.
+
+### Behoben
+
+- `bau_abwarten` gibt jetzt zurück, wie weit es gekommen ist, und die Meldung
+  nennt es: `PROCESSING` oder `nicht in der Liste`. Der Unterschied entscheidet,
+  ob man wartet oder nachsieht.
+
+### Bestätigt
+
+- Der rote Lauf aus 0.113.15 wirkt: Der Nachtrag der Testhinweise ist mit
+  Rückgabewert 1 gefallen, statt grün zu melden, dass nichts geschehen ist.
+- CI-Lauf 413 grün in allen vier Aufträgen, beide Gerätefamilien.
+
 ## 0.113.16 — 2026-09-10
 
 **Apple nimmt die iPad-Bilder — die Frage ist am Hochladeversuch entschieden,

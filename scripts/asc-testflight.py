@@ -149,27 +149,43 @@ def neuester_bau(apple: Apple, app_id: str) -> str:
     return treffer[0]["attributes"]["version"]
 
 
-def bau_abwarten(apple: Apple, app_id: str, nummer: str) -> str | None:
-    """Wartet, bis Apple den Bau verarbeitet hat. Gibt seine ID zurück."""
+def bau_abwarten(apple: Apple, app_id: str, nummer: str) -> tuple[str | None, str]:
+    """Wartet, bis Apple den Bau verarbeitet hat.
+
+    Gibt die ID zurück und **wie weit es gekommen ist** — denn beides ist zu
+    unterscheiden und war es bisher nicht:
+
+    - `„nicht in der Liste"` — Apple kennt den Bau überhaupt nicht. Entweder
+      dauert die Aufnahme noch, oder der Upload ist nie angekommen.
+    - Ein Zustand wie `PROCESSING` — Apple hat ihn, ist aber nicht fertig.
+
+    Bis 0.113.16 meldete das Skript in beiden Fällen „noch in Verarbeitung".
+    Das ist im zweiten Fall wahr und im ersten eine Behauptung über etwas, das
+    gar nicht nachgesehen wurde. Bau 33 stand danach über drei Stunden ohne
+    Auskunft da, und aus der Meldung ging nicht hervor, ob man warten oder
+    nachsehen muss — zwei sehr verschiedene nächste Schritte.
+    """
     ende = time.time() + GEDULD_SEKUNDEN
     zuletzt = ""
+    gesehen = "nicht in der Liste"
     while time.time() < ende:
         treffer = apple.holen("builds", **{"filter[app]": app_id,
                                            "filter[version]": nummer,
                                            "limit": 1}).get("data", [])
         if treffer:
             zustand = treffer[0]["attributes"]["processingState"]
+            gesehen = zustand
             if zustand != zuletzt:
                 hinweis(f"Bau {nummer}: {zustand}")
                 zuletzt = zustand
             if zustand == "VALID":
-                return treffer[0]["id"]
+                return treffer[0]["id"], zustand
             if zustand in ("INVALID", "FAILED"):
                 abbruch(f"Apple hat Bau {nummer} abgelehnt ({zustand}).",
                         "Der Grund steht in App Store Connect unter TestFlight "
                         "beim Bau selbst.")
         time.sleep(ABSTAND_SEKUNDEN)
-    return None
+    return None, gesehen
 
 
 def zahlen(version: str) -> tuple:
@@ -345,7 +361,7 @@ def main() -> None:
         print(f"::warning::Keine Nummer angegeben — genommen wird der neueste "
               f"Bau, und das ist Bau {nummer}. Ist ein anderer gemeint, gehört "
               f"seine Nummer angegeben.")
-    bau = bau_abwarten(apple, app_id, nummer)
+    bau, gesehen = bau_abwarten(apple, app_id, nummer)
     if bau is None:
         # **Ob das ein Fehlschlag ist, hängt daran, wozu der Lauf da war.**
         #
@@ -363,8 +379,11 @@ def main() -> None:
         # Ein grüner Lauf, der seine einzige Aufgabe nicht erledigt hat, ist
         # schlimmer als ein roter: Er wird geglaubt.
         pflicht = os.environ.get("PULSE_HINWEIS_PFLICHT", "").strip() == "1"
-        satz = (f"Bau {nummer} ist nach {GEDULD_SEKUNDEN // 60} Minuten noch "
-                "in Verarbeitung — die Testhinweise stehen damit **nicht**. "
+        # Der Zustand gehört in die Meldung, weil er den nächsten Schritt
+        # bestimmt: „PROCESSING" heißt warten, „nicht in der Liste" heißt
+        # nachsehen, ob der Upload überhaupt angekommen ist.
+        satz = (f"Bau {nummer} nach {GEDULD_SEKUNDEN // 60} Minuten: "
+                f"{gesehen}. Die Testhinweise stehen damit **nicht**. "
                 "Später noch einmal anstoßen oder in App Store Connect "
                 "eintragen.")
         if pflicht:
