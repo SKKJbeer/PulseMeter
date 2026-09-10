@@ -9,6 +9,36 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.113.21 — 2026-09-10
+
+**Zählora 1.1 ist bei Apple eingereicht.**
+
+    ✓ Bau 35 an die Fassung gehängt
+    ✓ Einreichung angelegt (c0c348df)
+    ✓ Fassung 1.1 der Einreichung hinzugefügt
+    Eingereicht. Zustand: WAITING_FOR_REVIEW
+
+Bau 35 kam nach 93 Sekunden als VALID zurück — die ersten beiden Versuche
+hatten zusammen fünf Stunden gekostet, ohne je bei Apple anzukommen.
+
+### Geändert
+
+- `docs/12-auslieferung.md` führt die Bauten 33, 34 und 35 mit ihren
+  tatsächlichen Ursachen. **Die Zeile aus 0.113.19 ist berichtigt, nicht
+  ergänzt:** Dort stand, Bau 33 sei „unterwegs verschwunden". Er wurde nie
+  hochgeladen, und das stand im Protokoll.
+- Die Regel dort heißt jetzt, was sie meint: Ein grünes Häkchen ist keine
+  Ankunft, und `altool` schreibt „UPLOAD FAILED" mit Rückgabewert 0.
+- Dazu der Satz, der über die Werkzeuge hinausreicht: **Eine Deklaration, die
+  das Zielgerät ändert, ändert auch die Bedingungen, unter denen das Paket
+  angenommen wird** — und die stehen woanders als im Code.
+
+### Offen
+
+- Apple prüft. Die Freigabe geht danach ohne weiteren Handgriff in den Laden.
+- Querformat auf dem iPad ist erreichbar und ungeprüft. Ein Prüfer dreht das
+  Gerät.
+
 ## 0.113.20 — 2026-09-10
 
 **Die Bauten 33 und 34 sind nicht verloren gegangen — sie wurden nie

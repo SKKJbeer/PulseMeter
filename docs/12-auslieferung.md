@@ -288,7 +288,9 @@ Store Connect deshalb nie gesehen.
 | 25 | 0.104.0 | 29.08. 17:45 | ✓ | Kosten hängen am Kauf statt an „gibt es Tarife" — der Knopf „Beispieldaten anlegen" verschenkte bis dahin drei von fünf Käufen. Dazu das Widget auf dem Sperrbildschirm (`accessoryRectangular`, `accessoryInline`) |
 | 26 | 0.106.3 | 04.09. 19:32 | ✓ | Kosten für Monat, Quartal und Jahr auf der Übersichtskarte, und das Erklärblatt „Wie diese Zahl entsteht“ hinter der Abschlagszahl — samt der Einspeisevergütung, die der Entwurf bis dahin abzog, ohne sie zu nennen |
 | 32 | 0.108.4 | 06.09. 05:31 | ✓ | **Der erste Bau, der den iCloud-Abgleich und das Feld auf dem Sperrbildschirm wirklich mitbringt.** Am Code lag es nie — es fehlten zwei Kennungen im Entwicklerportal und, zweimal übersehen, das äußere *Save* danach. Die Bauten 27 bis 31 sind auf diesem Weg verbraucht worden |
-| 33 | 0.113.12 | 10.09. 06:02 | ✗ | Hochladen gemeldet erfolgreich, der Bau erschien bei Apple aber **nie in der Liste** — nicht `PROCESSING`, nicht `INVALID`, gar nicht. Nach 52 Minuten stand dort noch Bau 32 als neuester, nach viereinhalb Stunden ebenso. Der erste Bau dieses Projekts, der auf dem Weg verloren ging |
+| 33 | 0.113.12 | 10.09. 06:02 | ✗ | **Nie hochgeladen.** `altool` lehnte ab (409, fehlende iPad-Ausrichtungen) und gab trotzdem 0 zurück; der Schritt war grün. Die Suche ging deshalb stundenlang in die falsche Richtung |
+| 34 | 0.113.19 | 10.09. 10:45 | ✗ | Derselbe Fehlschlag noch einmal, weil die Ursache im grünen Häkchen versteckt lag |
+| 35 | 0.113.20 | 10.09. 11:16 | ✓ | **Erster Bau mit iPad-Unterstützung, der bei Apple ankam.** `UISupportedInterfaceOrientations~ipad` mit allen vier Ausrichtungen, und der Hochladeschritt liest jetzt die Ausgabe von `altool`, statt seinem Rückgabewert zu glauben. VALID nach 93 Sekunden |
 
 Zeitangaben in UTC. Ein ✗ heißt: hochgeladen wurde nichts, die Nummer ist
 trotzdem verbraucht.
@@ -318,25 +320,39 @@ seit 0.113.13 in **zwei nebeneinander laufenden Aufträgen**. Die Wartezeit ist
 die des längeren Zweiges statt der Summe — rund 35 statt rund 75 Minuten —, und
 jede Familie ist für sich beantwortbar.
 
-### Ein grüner Upload ist keine Ankunft
+### Ein grünes Häkchen ist keine Ankunft — und `altool` lügt
 
-Bau 33 ist der erste, der unterwegs verschwand. `altool --upload-app` meldete
-nach 26 Sekunden Erfolg, der Schritt war grün — und bei Apple kam nichts an.
-Nicht abgelehnt, nicht in Verarbeitung: **nicht in der Liste**.
+**Hier stand zuerst, Bau 33 sei „unterwegs verschwunden". Das war falsch.** Er
+wurde nie hochgeladen. Im Protokoll stand es wörtlich, zwei Zeilen über dem
+grünen Häkchen:
 
-Auffallen konnte das nur, weil der Nachtrag der Testhinweise seit 0.113.17
-unterscheidet, ob Apple den Bau kennt oder nicht. Vorher hätte in beiden Fällen
-„noch in Verarbeitung" dagestanden, und die richtige Antwort — einen neuen Bau
-anstoßen — wäre stundenlang nicht in Sicht gewesen.
+    UPLOAD FAILED with 1 error
+    Validation failed (409) Invalid bundle. The „UIInterfaceOrientationPortrait"
+    orientations were provided … but you need to include all of the
+    „…PortraitUpsideDown, …LandscapeLeft, …LandscapeRight" orientations to
+    support iPad multitasking.
 
-> **Nach dem Hochladen wird nachgesehen, ob der Bau in Apples Liste steht.**
-> Erscheint er nach einer Stunde nicht, ist er nicht langsam, sondern weg.
-> Warten hilft dann nicht, und die Nummer ist ohnehin verbraucht.
+`xcrun altool --upload-app` schreibt diesen Fehler und beendet sich mit
+**Rückgabewert 0**. Der Schritt wurde grün, der Lauf wurde grün, und die Suche
+lief stundenlang in die falsche Richtung: „Apple verarbeitet langsam" statt „es
+wurde nie abgeschickt". Zwei Bauten und zwei gemietete Macs.
 
-Die Untergrenze `min_bau` beim Einreichen hat in derselben Stunde verhindert,
-was daraus sonst geworden wäre: Der Laden hätte Bau 32 bekommen — ohne iPad,
-während die Store-Seite mit fünf iPad-Bildern und den Versionshinweisen genau
-das verspricht.
+> **Bei einem Werkzeug, dessen Erfolg man nicht selbst nachprüfen kann, wird die
+> Ausgabe gelesen, nicht der Rückgabewert geglaubt.** Auf die Fehlerzeile prüfen
+> *und* auf die Erfolgsbestätigung: Fehlt sie, ist das mindestens eine Warnung.
+
+**Der Produktfehler dahinter:** Wer `TARGETED_DEVICE_FAMILY: "1,2"` deklariert,
+muss auf dem iPad alle vier Ausrichtungen erlauben. Das gilt seit 0.112.0 und
+ist niemandem aufgefallen, weil zwischen damals und dem 10. September kein Bau
+zu Apple ging. **Eine Deklaration, die das Zielgerät ändert, ändert auch die
+Bedingungen, unter denen das Paket angenommen wird** — und die stehen woanders
+als im Code.
+
+Zwei Sicherungen desselben Vormittags haben den Fall überhaupt sichtbar gemacht:
+die Unterscheidung „nicht in der Liste" gegen „noch in Verarbeitung", sonst hätte
+man weiter gewartet — und die Untergrenze `min_bau` beim Einreichen, sonst wäre
+Bau 32 in den Laden gegangen, ohne iPad, während die Store-Seite es mit fünf
+iPad-Bildern verspricht.
 
 ### Was bei den Testern steht
 
