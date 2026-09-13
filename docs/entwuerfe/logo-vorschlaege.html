@@ -1,0 +1,482 @@
+<title>Zählora Zeichen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600;700&display=swap">
+
+<style>
+/* Die Marken dieses Projekts, aus docs/website/stil.css übernommen.
+   Ein Vorschlagsblatt, das eigene Farben erfindet, zeigt nicht die App. */
+:root {
+  --ground:   #FBFAF8;
+  --raised:   #F3F0EA;
+  --surface:  #FFFFFF;
+  --ink:      #17150F;
+  --ink-2:    #57524A;
+  --ink-3:    #8B8578;
+  --line:     #E7E3DA;
+  --line-2:   #D8D3C7;
+  --tint:     #B06E08;
+  --tint-ink: #8A5A08;
+
+  /* Das Papierweiß im Zeichen selbst. Bleibt in beiden Erscheinungsbildern
+     gleich: Der Bernstein ist in beiden derselbe, also auch das, was darin
+     ausgespart ist. */
+  --aussparung: #FBFAF8;
+  /* Der Grund des App-Symbols. iOS schneidet die Ecken selbst. */
+  --symbolgrund: #1C1814;
+
+  --schrift: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --technisch: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+:root:not([data-theme="light"]) {
+  @media (prefers-color-scheme: dark) {
+    --ground:  #0F0E0C;
+    --raised:  #171512;
+    --surface: #1B1917;
+    --ink:     #F5F2EC;
+    --ink-2:   #B3ADA1;
+    --ink-3:   #837D71;
+    --line:    #2B2822;
+    --line-2:  #3A362E;
+    --tint:    #E0A040;
+    --tint-ink:#E8C070;
+  }
+}
+:root[data-theme="dark"] {
+  --ground:  #0F0E0C;
+  --raised:  #171512;
+  --surface: #1B1917;
+  --ink:     #F5F2EC;
+  --ink-2:   #B3ADA1;
+  --ink-3:   #837D71;
+  --line:    #2B2822;
+  --line-2:  #3A362E;
+  --tint:    #E0A040;
+  --tint-ink:#E8C070;
+}
+
+body {
+  margin: 0;
+  padding-block: clamp(38px, 7vw, 76px);
+  padding-inline: 20px;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--schrift);
+  font-size: 16.5px;
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+}
+.blatt { max-width: 780px; margin: 0 auto; display: flex; flex-direction: column; gap: clamp(44px, 6vw, 76px); }
+
+h1 {
+  margin: 0 0 10px;
+  font-size: clamp(30px, 5vw, 42px);
+  line-height: 1.1;
+  letter-spacing: -0.028em;
+  font-weight: 700;
+  text-wrap: balance;
+}
+h2 {
+  margin: 0;
+  font-size: clamp(21px, 3vw, 26px);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  font-weight: 650;
+  text-wrap: balance;
+}
+h3 { margin: 0 0 6px; font-size: 16px; font-weight: 650; letter-spacing: -0.005em; }
+p { margin: 0; max-width: 62ch; text-wrap: pretty; }
+.leise { color: var(--ink-2); }
+.marke {
+  display: block;
+  font-family: var(--technisch);
+  font-size: 12px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--tint-ink);
+  margin-bottom: 12px;
+}
+.stapel { display: flex; flex-direction: column; gap: 14px; }
+
+/* ---------------------------------------------------------- Das Zeichen */
+.zeichen { display: block; color: var(--ink); }
+
+/* Der Prüfstand: dasselbe Zeichen auf hellem Papier, auf dunklem Papier und
+   als App-Symbol. Ein Zeichen, das nur auf einem Grund funktioniert, ist
+   keins. */
+.gruende {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.grund {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+}
+.grund-hell   { background: #FBFAF8; color: #17150F; }
+.grund-dunkel { background: #16130F; color: #F5F2EC; border-color: #2B2822; }
+/* Der Eckenradius von iOS, nicht der der Kacheln daneben: Diese Kachel soll
+   nicht als dritte Farbprobe gelesen werden, sondern als das, was auf dem
+   Startbildschirm steht. */
+.grund-symbol {
+  background: var(--symbolgrund);
+  color: var(--aussparung);
+  border: none;
+  border-radius: 22.5%;
+}
+.grund .zeichen { width: 58%; height: 58%; }
+.grund-bild {
+  font-family: var(--technisch);
+  font-size: 10.5px;
+  color: var(--ink-3);
+  text-align: center;
+  margin-top: 7px;
+  letter-spacing: .02em;
+}
+
+/* Die Größenleiter. Jedes Zeichen steht hier in **echter** Größe, nicht
+   skaliert abgebildet: Genau daran entscheidet sich, ob ein Zeichen trägt. */
+.leiter {
+  display: flex;
+  align-items: flex-end;
+  gap: 26px;
+  flex-wrap: wrap;
+  padding: 20px 22px;
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.sprosse { display: flex; flex-direction: column; align-items: center; gap: 9px; }
+.sprosse .zeichen { display: block; }
+.sprosse figcaption {
+  font-family: var(--technisch);
+  font-size: 10.5px;
+  line-height: 1.35;
+  color: var(--ink-3);
+  text-align: center;
+  white-space: nowrap;
+}
+.sprosse b { display: block; color: var(--ink-2); font-weight: 500; }
+
+.vorschlag {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding-top: clamp(30px, 4vw, 44px);
+  border-top: 1px solid var(--line);
+}
+.kopf { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.nummer {
+  font-family: var(--technisch);
+  font-size: 13px;
+  color: var(--tint-ink);
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  padding: 2px 11px;
+  white-space: nowrap;
+}
+
+.abwaegung { display: grid; gap: 14px; grid-template-columns: 1fr 1fr; }
+.abwaegung > div {
+  padding: 15px 17px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.abwaegung p { font-size: 15px; color: var(--ink-2); }
+
+/* Der alte Stand. Bewusst anders gebaut als die Vorschläge: Er ist der
+   Befund, nicht die vierte Wahl. */
+.befund {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 22px;
+  align-items: center;
+  padding: 20px;
+  border-radius: 14px;
+  background: var(--raised);
+  border: 1px solid var(--line);
+}
+.befund .alt { width: 92px; height: 92px; border-radius: 21px; background: var(--symbolgrund); display: grid; place-items: center; }
+.befund .alt svg { width: 66%; height: 66%; }
+
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; padding: 9px 12px 9px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; font-size: 12.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); font-family: var(--technisch); }
+td.jap { color: var(--tint-ink); font-weight: 600; }
+td:last-child, th:last-child { padding-right: 0; }
+
+code { font-family: var(--technisch); font-size: .9em; background: var(--raised); padding: 1px 5px; border-radius: 5px; }
+
+@media (max-width: 560px) {
+  .abwaegung { grid-template-columns: 1fr; }
+  .befund { grid-template-columns: 1fr; text-align: left; }
+  .gruende { gap: 8px; }
+}
+</style>
+
+<!-- Die drei Zeichnungen, je einmal beschrieben. Alles Weitere fällt daraus
+     ab — dasselbe Vorgehen wie in scripts/icon.mjs. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="m1" viewBox="0 0 32 32">
+    <g fill="none" stroke="currentColor" stroke-width="2.4">
+      <rect x="2.8"  y="7.6" width="5.4" height="16.8" rx="1.9"/>
+      <rect x="10.2" y="7.6" width="5.4" height="16.8" rx="1.9"/>
+      <rect x="17.6" y="7.6" width="5.4" height="16.8" rx="1.9"/>
+    </g>
+    <rect x="25" y="7.6" width="5.4" height="16.8" rx="1.9" fill="var(--tint)"/>
+  </symbol>
+
+  <symbol id="m2" viewBox="0 0 32 32">
+    <rect x="2.6" y="2.6" width="26.8" height="26.8" rx="7.6" fill="var(--tint)"/>
+    <path d="M10.7 11.5 H21.3 L10.7 20.5 H21.3" fill="none" stroke="var(--aussparung)"
+          stroke-width="3.2" stroke-linejoin="miter" stroke-linecap="square"/>
+  </symbol>
+
+  <symbol id="m3" viewBox="0 0 32 32">
+    <rect x="11.2" y="12.2" width="9.6" height="7.6" fill="var(--tint)"/>
+    <rect x="10" y="4.6" width="12" height="22.8" rx="6"
+          fill="none" stroke="currentColor" stroke-width="2.4"/>
+    <path d="M10 12.2 H22 M10 19.8 H22" fill="none" stroke="currentColor" stroke-width="2.2"/>
+  </symbol>
+</svg>
+
+<div class="blatt">
+
+  <header>
+    <span class="marke">Zählora · Zeichen</span>
+    <h1>Drei Zeichen, die nicht nach Fitnessgerät aussehen</h1>
+    <p class="leise">
+      Das heutige Zeichen ist ein offener Bogen mit einer Pulslinie darin. Das
+      ist der Formenvorrat von Fitness- und Gesundheitsgeräten, und genau dort
+      ist die Ähnlichkeit hergekommen, die dir aufgefallen ist. Drei Entwürfe,
+      alle aus der Welt des Zählers statt aus der des Trainingsgeräts.
+    </p>
+  </header>
+
+  <section class="stapel">
+    <h2>Der Befund</h2>
+    <div class="befund">
+      <div class="alt">
+        <svg viewBox="0 0 32 32" aria-label="Das heutige Zeichen">
+          <path d="M4 23a12 12 0 0 1 24 0" fill="none" stroke="#D2860F" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M7 23h4.5l2.5-6.5L18 27l2.5-4H25" fill="none" stroke="#FBFAF8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="stapel" style="gap:9px">
+        <p style="font-size:15.5px">
+          In <code>scripts/icon.mjs</code> steht seit dem ersten Tag, was das
+          Zeichen zeigen soll: <em>„ein Meter, der Bogen einer Skala, und ein
+          Puls, die Linie darin."</em>
+        </p>
+        <p class="leise" style="font-size:15.5px">
+          Das buchstabiert <strong>PulseMeter</strong>. Die App heißt seit dem
+          28. August Zählora. Das Zeichen trägt den alten Namen weiter, und mit
+          ihm die Bildsprache einer Kategorie, in der wir nicht sind.
+        </p>
+      </div>
+    </div>
+    <p class="leise" style="font-size:15px">
+      Den Merach-Schriftzug selbst konnte ich nicht nachschlagen. Das ändert
+      nichts: Bogen und Pulslinie sind bei Heimfitnessgeräten Allgemeingut, und
+      an einem geliehenen Formenvorrat lässt sich der Abstand nicht durch
+      Nachbessern gewinnen. Alle drei Entwürfe verlassen ihn.
+    </p>
+  </section>
+
+  <!-- ------------------------------------------------------------ Nr. 1 -->
+  <section class="vorschlag">
+    <div class="kopf">
+      <span class="nummer">Vorschlag 1</span>
+      <h2>Zählwerk</h2>
+    </div>
+
+    <div class="gruende">
+      <figure style="margin:0">
+        <div class="grund grund-hell"><svg class="zeichen"><use href="#m1"/></svg></div>
+        <figcaption class="grund-bild">auf Papier</figcaption>
+      </figure>
+      <figure style="margin:0">
+        <div class="grund grund-dunkel"><svg class="zeichen"><use href="#m1"/></svg></div>
+        <figcaption class="grund-bild">auf Dunkel</figcaption>
+      </figure>
+      <figure style="margin:0">
+        <div class="grund grund-symbol"><svg class="zeichen"><use href="#m1"/></svg></div>
+        <figcaption class="grund-bild">als App-Symbol</figcaption>
+      </figure>
+    </div>
+
+    <p>
+      Vier Ziffernrollen nebeneinander, wie im Fenster eines Zählers. Die
+      letzte ist gefüllt, weil auf deutschen Stromzählern genau die letzte
+      Stelle die ist, die sich dreht. Wer das Zeichen sieht, sieht das Gerät,
+      an dem er gleich steht.
+    </p>
+
+    <div class="leiter">
+      <figure class="sprosse" style="margin:0"><svg class="zeichen" width="60" height="60"><use href="#m1"/></svg><figcaption><b>60 pt</b>Startbildschirm</figcaption></figure>
+      <figure class="sprosse" style="margin:0"><svg class="zeichen" width="40" height="40"><use href="#m1"/></svg><figcaption><b>40 pt</b>Mitteilung</figcaption></figure>
+      <figure class="sprosse" style="margin:0"><svg class="zeichen" width="32" height="32"><use href="#m1"/></svg><figcaption><b>32 px</b>Kopfleiste</figcaption></figure>
+      <figure class="sprosse" style="margin:0"><svg class="zeichen" width="20" height="20"><use href="#m1"/></svg><figcaption><b>20 px</b>Einstellungen</figcaption></figure>
+      <figure class="sprosse" style="margin:0"><svg class="zeichen" width="16" height="16"><use href="#m1"/></svg><figcaption><b>16 px</b>Lesezeichen</figcaption></figure>
+    </div>
+
+    <div class="abwaegung">
+      <div>
+        <h3>Dafür</h3>
+        <p>Zeigt den Gegenstand, um den es geht. Niemand sonst in dieser
+          Kategorie hat Ziffernrollen. Der Akzent sitzt auf der Stelle, die
+          sich bewegt.</p>
+      </div>
+      <div>
+        <h3>Dagegen</h3>
+        <p>Das schwächste Zeichen auf 16 Pixel: vier schmale Balken laufen
+          dort zusammen. Auf dem Startbildschirm trägt es, im Lesezeichen wird
+          es knapp.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------------ Nr. 2 -->
+  <section class="vorschlag">
+    <div class="kopf">
+      <span class="nummer">Vorschlag 2</span>
+      <h2>Das Z im Fenster</h2>
+    </div>
+
+    <div class="gruende">
+      <figure style="margin:0">
+        <div class="grund grund-hell"><svg class="zeichen"><use href="#m2"/></svg></div>
+        <figcaption class="grund-bild">auf Papier</figcaption>
+      </figure>
+      <figure style="margin:0">
+        <div class="grund grund-dunkel"><svg class="zeichen"><use href="#m2"/></svg></div>
+        <figcaption class="grund-bild">auf Dunkel</figcaption>
+      </figure>
+      <figure style="margin:0">
+        <div class="grund grund-symbol"><svg class="zeichen"><use href="#m2"/></svg></div>
+        <figcaption class="grund-bild">als App-Symbol</figcaption>
+      </figure>
+    </div>
+
+    <p>
+      Das Ablesefenster als Form, der Anfangsbuchstabe als Inhalt. Das Z ist
+      ausgespart und nicht aufgedruckt: Man schaut hindurch, so wie man durch
+      das Fenster eines Zählers auf die Zahl schaut. Ein Buchstabe braucht
+      keine Erklärung und keine Übersetzung.
+    </p>
+
+    <div class="leiter">
+      <figure class="sprosse" style="margin:0"><svg class="zeichen" width="60" height="60"><use href="#m2"/></svg><figcaption><b>60 pt</b>Startbildschirm</figcaption></figure>
+      <figure class="sprosse" style="margin:0"><svg class="zeichen" width="40" height="40"><use href="#m2"/></svg><figcaption><b>40 pt</b>Mitteilung</figcaption></figure>
+      <figure class="sprosse" style="margin:0"><svg class="zeichen" width="32" height="32"><use href="#m2"/></svg><figcaption><b>32 px</b>Kopfleiste</figcaption></figure>
+      <figure class="sprosse" style="margin:0"><svg class="zeichen" width="20" height="20"><use href="#m2"/></svg><figcaption><b>20 px</b>Einstellungen</figcaption></figure>
+      <figure class="sprosse" style="margin:0"><svg class="zeichen" width="16" height="16"><use href="#m2"/></svg><figcaption><b>16 px</b>Lesezeichen</figcaption></figure>
+    </div>
+
+    <div class="abwaegung">
+      <div>
+        <h3>Dafür</h3>
+        <p>Hält bis 16 Pixel, weil es aus einer Fläche und einem Loch besteht.
+          Als App-Symbol braucht es keinen eigenen Hintergrund. Der Bernstein
+          bekommt endlich Fläche statt nur Strich.</p>
+      </div>
+      <div>
+        <h3>Dagegen</h3>
+        <p>Ein Buchstabe im abgerundeten Quadrat ist ein häufiger Griff. Es
+          erzählt nichts über Zähler, es trägt nur den Namen.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------------ Nr. 3 -->
+  <section class="vorschlag">
+    <div class="kopf">
+      <span class="nummer">Vorschlag 3</span>
+      <h2>Die Rolle</h2>
+    </div>
+
+    <div class="gruende">
+      <figure style="margin:0">
+        <div class="grund grund-hell"><svg class="zeichen"><use href="#m3"/></svg></div>
+        <figcaption class="grund-bild">auf Papier</figcaption>
+      </figure>
+      <figure style="margin:0">
+        <div class="grund grund-dunkel"><svg class="zeichen"><use href="#m3"/></svg></div>
+        <figcaption class="grund-bild">auf Dunkel</figcaption>
+      </figure>
+      <figure style="margin:0">
+        <div class="grund grund-symbol"><svg class="zeichen"><use href="#m3"/></svg></div>
+        <figcaption class="grund-bild">als App-Symbol</figcaption>
+      </figure>
+    </div>
+
+    <p>
+      Eine einzelne Ziffernrolle, von nahem. Die beiden Nähte sind die Kanten
+      der Trommel, das helle Band dazwischen ist die Stelle, die gerade im
+      Fenster steht. Derselbe Gegenstand wie in Vorschlag 1, nur herangeholt
+      auf das eine, was zählt.
+    </p>
+
+    <div class="leiter">
+      <figure class="sprosse" style="margin:0"><svg class="zeichen" width="60" height="60"><use href="#m3"/></svg><figcaption><b>60 pt</b>Startbildschirm</figcaption></figure>
+      <figure class="sprosse" style="margin:0"><svg class="zeichen" width="40" height="40"><use href="#m3"/></svg><figcaption><b>40 pt</b>Mitteilung</figcaption></figure>
+      <figure class="sprosse" style="margin:0"><svg class="zeichen" width="32" height="32"><use href="#m3"/></svg><figcaption><b>32 px</b>Kopfleiste</figcaption></figure>
+      <figure class="sprosse" style="margin:0"><svg class="zeichen" width="20" height="20"><use href="#m3"/></svg><figcaption><b>20 px</b>Einstellungen</figcaption></figure>
+      <figure class="sprosse" style="margin:0"><svg class="zeichen" width="16" height="16"><use href="#m3"/></svg><figcaption><b>16 px</b>Lesezeichen</figcaption></figure>
+    </div>
+
+    <div class="abwaegung">
+      <div>
+        <h3>Dafür</h3>
+        <p>Ein Motiv, viel Fläche, ein klarer Akzent in der Mitte. Es steht
+          aufrecht und fällt damit in einer Reihe runder Symbole auf.</p>
+      </div>
+      <div>
+        <h3>Dagegen</h3>
+        <p>Aufrechte Kapsel mit farbigem Band: Auf den zweiten Blick könnte
+          jemand eine Batterie sehen. Die beiden Nähte halten dagegen, aber sie
+          sind das Feinste am Zeichen.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------------- Wahl -->
+  <section class="vorschlag stapel">
+    <h2>Woran ich es festmachen würde</h2>
+    <p class="leise">
+      Ein Zeichen wird nicht auf 1024 Pixel entschieden, sondern auf 40. So
+      sieht es der Nutzer, und so oft sieht er es.
+    </p>
+    <table>
+      <thead>
+        <tr><th>Frage</th><th>1 Zählwerk</th><th>2 Z im Fenster</th><th>3 Rolle</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Trägt bis 16 px</td><td>knapp</td><td class="jap">ja</td><td>ja</td></tr>
+        <tr><td>Sagt „Zähler"</td><td class="jap">deutlich</td><td>nein</td><td>ja</td></tr>
+        <tr><td>Sagt „Zählora"</td><td>nein</td><td class="jap">der Name</td><td>nein</td></tr>
+        <tr><td>Eigen genug</td><td class="jap">sehr</td><td>mittel</td><td>gut</td></tr>
+        <tr><td>Verwechselbar mit</td><td>nichts</td><td>anderen Buchstabenzeichen</td><td>einer Batterie</td></tr>
+      </tbody>
+    </table>
+    <p>
+      <strong>Mein Vorschlag ist Nummer 2.</strong> Es ist das einzige, das auf
+      jeder Größe unverändert funktioniert, es bringt den neuen Namen ins Bild
+      statt den alten, und es gibt dem Bernstein endlich Fläche. Nummer 1 ist
+      das schönste Zeichen von den dreien und das schwächste auf dem
+      Startbildschirm. Das ist genau der Einwand, der in <code>icon.mjs</code>
+      schon steht, und er stimmt.
+    </p>
+    <p class="leise">
+      Sag mir eine Nummer, dann setze ich sie um: eine Zeichnung in
+      <code>scripts/icon.mjs</code>, dieselbe in der Kopfleiste der Website und
+      in den fünf Seiten darunter. Das App-Symbol im Store wechselt mit der
+      nächsten Fassung, nicht sofort.
+    </p>
+  </section>
+
+</div>
