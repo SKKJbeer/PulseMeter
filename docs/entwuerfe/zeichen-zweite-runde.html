@@ -1,0 +1,430 @@
+<title>Zählora Markenzeichen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+
+<style>
+:root {
+  --ground:   #FBFAF8;
+  --raised:   #F2EFE9;
+  --surface:  #FFFFFF;
+  --ink:      #17150F;
+  --ink-2:    #57524A;
+  --ink-3:    #8B8578;
+  --line:     #E5E1D7;
+  --line-2:   #D5D0C3;
+  --tint:     #B06E08;
+  --tint-ink: #8A5A08;
+
+  /* Bleibt in beiden Erscheinungsbildern gleich: Der Bernstein ist in beiden
+     derselbe, also auch das, was darin ausgespart ist. */
+  --aussparung: #FBFAF8;
+  --symbolgrund: #1C1814;
+
+  --grotesk: "Archivo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --lese: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --technisch: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:  #100E0C;
+    --raised:  #191714;
+    --surface: #1D1B18;
+    --ink:     #F5F2EC;
+    --ink-2:   #B3ADA1;
+    --ink-3:   #837D71;
+    --line:    #2C2924;
+    --line-2:  #3B372F;
+    --tint:    #E0A040;
+    --tint-ink:#E8C070;
+  }
+}
+:root[data-theme="dark"] {
+  --ground:  #100E0C;
+  --raised:  #191714;
+  --surface: #1D1B18;
+  --ink:     #F5F2EC;
+  --ink-2:   #B3ADA1;
+  --ink-3:   #837D71;
+  --line:    #2C2924;
+  --line-2:  #3B372F;
+  --tint:    #E0A040;
+  --tint-ink:#E8C070;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding-block: clamp(40px, 7vw, 84px);
+  padding-inline: 20px;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--lese);
+  font-size: 17px;
+  line-height: 1.66;
+  -webkit-font-smoothing: antialiased;
+}
+.blatt { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: clamp(52px, 7vw, 88px); }
+
+h1, h2, h3, .grotesk { font-family: var(--grotesk); }
+h1 {
+  margin: 0 0 14px;
+  font-size: clamp(32px, 5.4vw, 46px);
+  line-height: 1.06;
+  letter-spacing: -0.035em;
+  font-weight: 700;
+  text-wrap: balance;
+}
+h2 { margin: 0; font-size: clamp(23px, 3.2vw, 30px); line-height: 1.14; letter-spacing: -0.028em; font-weight: 600; }
+h3 { margin: 0 0 5px; font-size: 14.5px; font-weight: 600; letter-spacing: .01em; font-family: var(--grotesk); }
+p { margin: 0; max-width: 60ch; text-wrap: pretty; }
+.leise { color: var(--ink-2); }
+.stapel { display: flex; flex-direction: column; gap: 16px; }
+
+.marke {
+  display: block;
+  font-family: var(--technisch);
+  font-size: 11.5px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--tint-ink);
+  margin-bottom: 14px;
+}
+.gattung {
+  font-family: var(--technisch);
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* ------------------------------------------------- Die Bühne für das Zeichen
+   Ein Zeichen wird groß entschieden und klein geprüft. Deshalb steht es hier
+   einmal in Ruhe auf großer Fläche, bevor irgendeine Anwendung kommt. */
+.buehne {
+  display: grid;
+  place-items: center;
+  padding: clamp(38px, 6vw, 60px);
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+}
+.buehne svg { width: clamp(108px, 20vw, 152px); height: auto; color: var(--ink); display: block; }
+
+.anwendungen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.anwendung { display: flex; flex-direction: column; gap: 9px; align-items: center; }
+.anwendung figcaption {
+  font-family: var(--technisch);
+  font-size: 10.5px;
+  color: var(--ink-3);
+  text-align: center;
+  letter-spacing: .02em;
+}
+.symbol {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 22.5%;
+  display: grid;
+  place-items: center;
+}
+.symbol svg { width: 56%; height: 56%; display: block; }
+/* Zwei Farben je Zeichen: --ink-farbe trägt die Masse, --akzent den Teil, der
+   bedeutet. Auf Bernstein tauschen sie die Rollen — ein bernsteinfarbener
+   Punkt auf bernsteinfarbenem Grund ist kein Punkt mehr, sondern ein Loch. */
+.sym-dunkel { background: var(--symbolgrund); color: var(--aussparung); --akzent: var(--tint); }
+.sym-hell   { background: #FBFAF8; color: #17150F; --akzent: var(--tint); box-shadow: inset 0 0 0 1px var(--line-2); }
+.sym-bernstein { background: var(--tint); color: #FBFAF8; --akzent: #17150F; }
+
+/* Die Größenleiter: echte Größe, nicht abgebildete. */
+.leiter {
+  display: flex; align-items: flex-end; gap: 24px; flex-wrap: wrap;
+  padding: 18px 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 13px;
+}
+.sprosse { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 0; }
+.sprosse svg { display: block; color: var(--ink); }
+.sprosse figcaption { font-family: var(--technisch); font-size: 10px; line-height: 1.3; color: var(--ink-3); text-align: center; white-space: nowrap; }
+.sprosse b { display: block; color: var(--ink-2); font-weight: 500; }
+
+/* Der Schriftzug. Das Zeichen allein ist nicht die Marke — in der Kopfleiste,
+   im Store und in einer Mail steht der Name daneben. */
+.zug {
+  display: flex; align-items: center; gap: 13px;
+  padding: 18px 22px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 13px;
+}
+.zug svg { height: 30px; width: auto; color: var(--ink); flex: none; }
+.zugname {
+  font-family: var(--grotesk);
+  font-weight: 600;
+  font-size: 25px;
+  letter-spacing: -0.025em;
+}
+
+/* Die Wortmarke aus Vorschlag 2: die zwei Punkte des Umlauts tragen die Farbe.
+   Gesetzt wird ein „a“, die Punkte werden gezeichnet — nur so lassen sie sich
+   getrennt einfärben. */
+.wortmarke { font-family: var(--grotesk); font-weight: 600; letter-spacing: -0.03em; line-height: 1; white-space: nowrap; }
+.uml { position: relative; display: inline-block; }
+.uml::before, .uml::after {
+  content: "";
+  position: absolute;
+  width: .17em; height: .17em;
+  border-radius: 50%;
+  background: var(--akzent, var(--tint));
+  top: -.21em;
+}
+.uml::before { left: .05em; }
+.uml::after  { left: .34em; }
+
+.paar { display: grid; gap: 13px; grid-template-columns: 1fr 1fr; }
+.paar > div { padding: 14px 16px; border-radius: 11px; background: var(--surface); border: 1px solid var(--line); }
+.paar p { font-size: 15px; font-family: var(--grotesk); color: var(--ink-2); line-height: 1.5; }
+
+.entwurf { display: flex; flex-direction: column; gap: 22px; padding-top: clamp(34px, 4vw, 48px); border-top: 1px solid var(--line); }
+.kopf { display: flex; align-items: baseline; gap: 13px; flex-wrap: wrap; }
+
+table { border-collapse: collapse; width: 100%; font-size: 15px; font-family: var(--grotesk); }
+th, td { text-align: left; padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 500; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); font-family: var(--technisch); }
+td.jap { color: var(--tint-ink); font-weight: 600; }
+th:last-child, td:last-child { padding-right: 0; }
+
+code { font-family: var(--technisch); font-size: .88em; background: var(--raised); padding: 1px 5px; border-radius: 5px; }
+
+@media (max-width: 580px) {
+  .paar { grid-template-columns: 1fr; }
+  .anwendungen { gap: 9px; }
+}
+</style>
+
+<!-- Jede Zeichnung einmal beschrieben, in einem 32er-Raster konstruiert.
+     Alles Weitere fällt daraus ab. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+
+  <!-- 1 · Monogramm. Ein Z aus zwei Teilen: Der waagerechte Schnitt durch die
+       Diagonale ist die Naht, an der ein Zählwerk überträgt. -->
+  <symbol id="z1" viewBox="0 0 32 32">
+    <path d="M5 5 H27 V10 L20.76 15.2 H13.16 L19.4 10 H5 Z" fill="currentColor"/>
+    <path d="M18.84 16.8 L12.6 22 H27 V27 H5 V22 L11.24 16.8 Z" fill="currentColor"/>
+  </symbol>
+
+  <!-- 2 · Wortmarke, auf ihr Zeichen eingedampft: das ä. Gezeichnet, nicht
+       gesetzt — Kreis und Schaft wie in einer geometrischen Grotesk, damit die
+       beiden Punkte allein die Farbe tragen. -->
+  <symbol id="z2" viewBox="0 0 32 32">
+    <circle cx="14.2" cy="20.6" r="5.6" fill="none" stroke="currentColor" stroke-width="3.2"/>
+    <rect x="19.9" y="12.4" width="3.2" height="14.6" fill="currentColor"/>
+    <circle cx="12.6" cy="7.0" r="2.05" fill="var(--akzent, var(--tint))"/>
+    <circle cx="19.1" cy="7.0" r="2.05" fill="var(--akzent, var(--tint))"/>
+  </symbol>
+
+  <!-- 3 · Signet. Der Übertrag als Körper: die Ziffer, die vorn steht, und
+       darüber die nächste, die wegkippt — deshalb schmaler und trapezförmig. -->
+  <symbol id="z3" viewBox="0 0 32 32">
+    <path d="M10.6 6.8 H21.4 L23.2 11.8 H8.8 Z"
+          fill="var(--akzent, var(--tint))" stroke="var(--akzent, var(--tint))"
+          stroke-width="1.7" stroke-linejoin="round"/>
+    <rect x="6.2" y="14.2" width="19.6" height="12.8" rx="3.4" fill="currentColor"/>
+  </symbol>
+</svg>
+
+<div class="blatt">
+
+  <header>
+    <span class="marke">Zählora · Zeichen · zweite Runde</span>
+    <h1>Ein Monogramm, eine Wortmarke, ein Signet</h1>
+    <p class="leise">
+      Die erste Runde war falsch angelegt. Das waren drei Piktogramme, mittig in
+      einer Kachel — Symbole für einen Startbildschirm, keine Marke. Und der
+      Entwurf, den ich empfohlen habe, war ein Buchstabe im abgerundeten
+      Quadrat, also die häufigste Vorlage überhaupt. Das stand sogar in meiner
+      eigenen Bewertung, und ich habe ihn trotzdem vorgeschlagen.
+    </p>
+    <p class="leise" style="margin-top:14px">
+      Diesmal drei Entwürfe aus drei Gattungen. Jeder hat eine Konstruktion, die
+      man erklären kann, jeder steht in Anwendung, und jeder ist bis auf
+      16&nbsp;Pixel geprüft.
+    </p>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════════════ 1 -->
+  <section class="entwurf">
+    <div class="kopf">
+      <span class="gattung">Monogramm</span>
+      <h2>Der Übertrag</h2>
+    </div>
+
+    <div class="buehne"><svg viewBox="0 0 32 32"><use href="#z1"/></svg></div>
+
+    <p>
+      Ein Z aus zwei Teilen. Der waagerechte Schnitt durch die Diagonale ist
+      die Naht, an der ein mechanisches Zählwerk überträgt: Die Neun dreht sich
+      weg, die Null kommt nach. Der Buchstabe steht für den Namen, der Schnitt
+      für das, was das Gerät tut.
+    </p>
+    <p class="leise">
+      Gebaut wie eine Letter, nicht wie ein Symbol: Balken und Diagonale tragen
+      dasselbe optische Gewicht, die Diagonale ist minimal schwerer, weil das
+      Auge sie sonst dünner sieht. Unter 20&nbsp;Pixel schließt sich der Schnitt
+      und es bleibt ein sauberes Z. Das ist kein Verlust, sondern der Grund,
+      warum Monogramme auf jeder Größe halten.
+    </p>
+
+    <div class="anwendungen">
+      <figure class="anwendung"><div class="symbol sym-dunkel"><svg viewBox="0 0 32 32"><use href="#z1"/></svg></div><figcaption>App-Symbol</figcaption></figure>
+      <figure class="anwendung"><div class="symbol sym-bernstein"><svg viewBox="0 0 32 32"><use href="#z1"/></svg></div><figcaption>auf Bernstein</figcaption></figure>
+      <figure class="anwendung"><div class="symbol sym-hell"><svg viewBox="0 0 32 32"><use href="#z1"/></svg></div><figcaption>auf Papier</figcaption></figure>
+    </div>
+
+    <div class="zug">
+      <svg viewBox="0 0 32 32"><use href="#z1"/></svg>
+      <span class="zugname">Zählora</span>
+    </div>
+
+    <div class="leiter">
+      <figure class="sprosse"><svg viewBox="0 0 32 32" width="60" height="60"><use href="#z1"/></svg><figcaption><b>60 pt</b>Startbildschirm</figcaption></figure>
+      <figure class="sprosse"><svg viewBox="0 0 32 32" width="40" height="40"><use href="#z1"/></svg><figcaption><b>40 pt</b>Mitteilung</figcaption></figure>
+      <figure class="sprosse"><svg viewBox="0 0 32 32" width="29" height="29"><use href="#z1"/></svg><figcaption><b>29 pt</b>Einstellungen</figcaption></figure>
+      <figure class="sprosse"><svg viewBox="0 0 32 32" width="16" height="16"><use href="#z1"/></svg><figcaption><b>16 px</b>Lesezeichen</figcaption></figure>
+    </div>
+
+    <div class="paar">
+      <div><h3>Stärke</h3><p>Eine Silhouette, die man aus dem Augenwinkel erkennt. Trägt einfarbig, geprägt, gestickt, gefaxt.</p></div>
+      <div><h3>Preis</h3><p>Es erzählt nichts, bis man die Naht erklärt. Ein Monogramm lebt von Wiederholung, nicht vom ersten Blick.</p></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════ 2 -->
+  <section class="entwurf">
+    <div class="kopf">
+      <span class="gattung">Wortmarke</span>
+      <h2>Die zwei Punkte</h2>
+    </div>
+
+    <div class="buehne">
+      <span class="wortmarke" style="font-size:clamp(38px,8vw,62px)">Z<span class="uml">a</span>hlora</span>
+    </div>
+
+    <p>
+      Die Marke ist der Name, und der Name hat etwas, das kaum eine App hat:
+      <strong>einen Umlaut</strong>. Die zwei Punkte über dem a sind das
+      einzige Farbige am Schriftzug. Sie sind nicht Schmuck, sondern die
+      Ablesung: zwei Stände, dieses Jahr und letztes.
+    </p>
+    <p class="leise">
+      Ein Umlaut schützt zusätzlich vor Verwechslung. Eine internationale
+      Fitnessmarke setzt keine Punkte über ihr a, und sie kann es auch nicht
+      nachmachen, ohne deutsch zu werden. Als Zeichen allein bleibt das ä
+      übrig, gezeichnet statt gesetzt: Kreis, Schaft, zwei Punkte.
+    </p>
+
+    <div class="anwendungen">
+      <figure class="anwendung"><div class="symbol sym-dunkel"><svg viewBox="0 0 32 32"><use href="#z2"/></svg></div><figcaption>App-Symbol</figcaption></figure>
+      <figure class="anwendung"><div class="symbol sym-bernstein"><svg viewBox="0 0 32 32" style="color:var(--aussparung)"><use href="#z2"/></svg></div><figcaption>auf Bernstein</figcaption></figure>
+      <figure class="anwendung"><div class="symbol sym-hell"><svg viewBox="0 0 32 32"><use href="#z2"/></svg></div><figcaption>auf Papier</figcaption></figure>
+    </div>
+
+    <div class="zug">
+      <svg viewBox="0 0 32 32"><use href="#z2"/></svg>
+      <span class="wortmarke" style="font-size:25px">Z<span class="uml">a</span>hlora</span>
+    </div>
+
+    <div class="leiter">
+      <figure class="sprosse"><svg viewBox="0 0 32 32" width="60" height="60"><use href="#z2"/></svg><figcaption><b>60 pt</b>Startbildschirm</figcaption></figure>
+      <figure class="sprosse"><svg viewBox="0 0 32 32" width="40" height="40"><use href="#z2"/></svg><figcaption><b>40 pt</b>Mitteilung</figcaption></figure>
+      <figure class="sprosse"><svg viewBox="0 0 32 32" width="29" height="29"><use href="#z2"/></svg><figcaption><b>29 pt</b>Einstellungen</figcaption></figure>
+      <figure class="sprosse"><svg viewBox="0 0 32 32" width="16" height="16"><use href="#z2"/></svg><figcaption><b>16 px</b>Lesezeichen</figcaption></figure>
+    </div>
+
+    <div class="paar">
+      <div><h3>Stärke</h3><p>Der Name wird gelernt, nicht nur das Bild. Im Store, in der Kopfleiste und in einer Mail steht ohnehin immer der Schriftzug.</p></div>
+      <div><h3>Preis</h3><p>Als kleines Symbol ist ein Kleinbuchstabe leiser als eine Fläche. Auf dunklem Grund braucht das ä Luft, sonst wirkt es zart.</p></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════ 3 -->
+  <section class="entwurf">
+    <div class="kopf">
+      <span class="gattung">Signet</span>
+      <h2>Die nächste Zahl</h2>
+    </div>
+
+    <div class="buehne"><svg viewBox="0 0 32 32"><use href="#z3"/></svg></div>
+
+    <p>
+      Kein Buchstabe, kein Gerät: nur der Vorgang. Unten die Ziffer, die vorn
+      steht. Darüber die nächste, die gerade wegkippt und deshalb schmaler und
+      trapezförmig ist. Zwei Formen, eine Perspektive, fertig.
+    </p>
+    <p class="leise">
+      Die Verjüngung ist der ganze Trick. Zwei gleich breite Balken wären ein
+      Diagramm; die Verkürzung macht daraus einen Körper, der sich dreht.
+      Deshalb trägt die obere Form die Farbe: Sie ist das, was kommt.
+    </p>
+
+    <div class="anwendungen">
+      <figure class="anwendung"><div class="symbol sym-dunkel"><svg viewBox="0 0 32 32"><use href="#z3"/></svg></div><figcaption>App-Symbol</figcaption></figure>
+      <figure class="anwendung"><div class="symbol sym-bernstein"><svg viewBox="0 0 32 32" style="color:var(--aussparung)"><use href="#z3"/></svg></div><figcaption>auf Bernstein</figcaption></figure>
+      <figure class="anwendung"><div class="symbol sym-hell"><svg viewBox="0 0 32 32"><use href="#z3"/></svg></div><figcaption>auf Papier</figcaption></figure>
+    </div>
+
+    <div class="zug">
+      <svg viewBox="0 0 32 32"><use href="#z3"/></svg>
+      <span class="zugname">Zählora</span>
+    </div>
+
+    <div class="leiter">
+      <figure class="sprosse"><svg viewBox="0 0 32 32" width="60" height="60"><use href="#z3"/></svg><figcaption><b>60 pt</b>Startbildschirm</figcaption></figure>
+      <figure class="sprosse"><svg viewBox="0 0 32 32" width="40" height="40"><use href="#z3"/></svg><figcaption><b>40 pt</b>Mitteilung</figcaption></figure>
+      <figure class="sprosse"><svg viewBox="0 0 32 32" width="29" height="29"><use href="#z3"/></svg><figcaption><b>29 pt</b>Einstellungen</figcaption></figure>
+      <figure class="sprosse"><svg viewBox="0 0 32 32" width="16" height="16"><use href="#z3"/></svg><figcaption><b>16 px</b>Lesezeichen</figcaption></figure>
+    </div>
+
+    <div class="paar">
+      <div><h3>Stärke</h3><p>Am weitesten weg von allem, was die Nachbarschaft benutzt. Viel Fläche, klare Silhouette, hält bis ganz klein.</p></div>
+      <div><h3>Preis</h3><p>Ohne Erklärung ein abstraktes Paar Formen. Es muss sich seine Bedeutung über Zeit verdienen.</p></div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════ Auswahl -->
+  <section class="entwurf stapel">
+    <h2>Was wofür spricht</h2>
+    <table>
+      <thead>
+        <tr><th>&nbsp;</th><th>1 Übertrag</th><th>2 Zwei Punkte</th><th>3 Nächste Zahl</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Gattung</td><td>Monogramm</td><td>Wortmarke</td><td>Signet</td></tr>
+        <tr><td>Hält bis 16 px</td><td class="jap">ja</td><td>knapp</td><td class="jap">ja</td></tr>
+        <tr><td>Trägt den Namen</td><td>den Buchstaben</td><td class="jap">ganz</td><td>nein</td></tr>
+        <tr><td>Einfarbig druckbar</td><td class="jap">ja</td><td>ja</td><td>ja</td></tr>
+        <tr><td>Braucht Erklärung</td><td>ein Satz</td><td class="jap">keinen</td><td>zwei Sätze</td></tr>
+        <tr><td>Abstand zur Nachbarschaft</td><td>groß</td><td class="jap">sehr groß</td><td class="jap">sehr groß</td></tr>
+      </tbody>
+    </table>
+
+    <p>
+      <strong>Ich würde Nummer 2 nehmen, und diesmal aus einem Grund, der über
+      das Bild hinausgeht.</strong> Zählora ist kein Konzern mit Werbebudget,
+      sondern eine App, die über ihren Namen gefunden wird. Eine Wortmarke
+      arbeitet an jeder Stelle mit, an der der Name ohnehin steht, und der
+      Umlaut macht sie von sich aus unverwechselbar. Nummer 1 ist das
+      handwerklich sauberste Zeichen. Nummer 3 ist das mutigste und das
+      einsamste.
+    </p>
+    <p class="leise">
+      Sag mir eine Nummer. Daraus wird eine Zeichnung in
+      <code>scripts/icon.mjs</code>, die Kopfleiste der Website samt der fünf
+      Seiten darunter, und das Symbol im Store mit der nächsten Fassung. Wenn
+      dir an einem Entwurf nur ein Teil gefällt, sag welcher — Formen lassen
+      sich tauschen, Gattungen nicht.
+    </p>
+  </section>
+
+</div>

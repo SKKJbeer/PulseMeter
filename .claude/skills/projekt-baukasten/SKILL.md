@@ -1660,6 +1660,40 @@ eine Prüfung auf einem größeren Gerät fällt und auf dem kleinen läuft, ist
 erste Frage nicht „was ist an der Ansicht anders", sondern „was greife ich
 dort, das ich auf dem Telefon nicht greifen konnte".
 
+### Ein Zeichen wird auf jedem Grund geprüft, den es später trifft
+
+Drei Entwürfe für ein App-Symbol, jeder auf drei Kacheln gezeigt: dunkel, in
+der Akzentfarbe, auf Papier. Zwei der drei waren auf der Akzentkachel kaputt —
+beim einen verschwanden die beiden Punkte, die das ganze Zeichen ausmachen,
+beim anderen das halbe Zeichen. Der Grund stand in der Zeichnung selbst:
+
+```html
+<circle … fill="var(--tint)"/>    <!-- fest auf Bernstein -->
+```
+
+Bernstein auf Bernstein ist kein Punkt, sondern ein Loch. Und die Kachel, auf
+der es auffällt, ist keine erfundene Übung: Der Store zeigt das Symbol vor
+wechselndem Hintergrund, eine Mail zeigt es auf Weiß, ein dunkles System auf
+Schwarz.
+
+> **Eine Farbe im Zeichen wird als Rolle gesetzt, nicht als Wert.** Masse und
+> Akzent sind zwei Variablen (`currentColor` und ein `--akzent` mit Rückfall);
+> jeder Grund setzt beide. Dann tauschen sie auf der Akzentfläche die Rollen,
+> statt sich gegenseitig aufzufressen.
+
+Dazu die Gattungsfrage, die eine ganze Runde gekostet hat: Die erste Vorlage
+waren drei Piktogramme, mittig in einer Kachel — Symbole für einen
+Startbildschirm, keine Marke. Empfohlen wurde ein Buchstabe im abgerundeten
+Quadrat, also die häufigste Vorlage überhaupt; **dass sie die häufigste ist,
+stand in derselben Bewertung**, die sie empfohlen hat. Vom Gründer in einem
+Satz abgelehnt.
+
+> **Wer drei Vorschläge macht, macht sie aus drei Gattungen** — Monogramm,
+> Wortmarke, Signet —, nicht dreimal dieselbe Zeichnung in drei Motiven. Drei
+> Varianten einer Gattung sind eine Auswahl der Pinselführung; drei Gattungen
+> sind eine Entscheidung. Und eine Schwäche, die man selbst hinschreibt, ist
+> ein Ausschlussgrund und keine Fußnote.
+
 ---
 
 ## 7. Wie ermittelt wird, wenn etwas nicht geht

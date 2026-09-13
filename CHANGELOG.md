@@ -9,6 +9,44 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.113.24 — 2026-09-13
+
+**Drei Entwürfe für ein eigenes Zeichen.**
+
+Das heutige Symbol ist ein offener Bogen mit einer Pulslinie darin. Das ist die
+Formensprache von Fitness- und Gesundheitsgeräten, und daher kommt die
+Ähnlichkeit, die dem Gründer aufgefallen ist. `icon.mjs` schreibt seit dem
+ersten Tag hin, was das Zeichen zeigen soll: „ein Messgerät, der Bogen einer
+Skala, und ein Puls, die Linie darin". Das buchstabiert PulseMeter. Die App
+heißt seit dem 28. August Zählora.
+
+Eine erste Runde ging am selben Tag raus und war falsch angelegt — drei
+Piktogramme mittig in einer Kachel, also Symbole für einen Startbildschirm und
+keine Marke. Der Entwurf, den sie empfohlen hat, war ein Buchstabe im
+abgerundeten Quadrat: die häufigste Vorlage überhaupt. Das stand sogar in ihrer
+eigenen Bewertung. Vom Gründer abgelehnt.
+
+Die zweite Runde nimmt deshalb drei **Gattungen** statt drei Zeichnungen:
+
+- **Monogramm** — ein Z aus zwei Teilen, der waagerechte Schnitt durch die
+  Diagonale ist die Naht, an der ein Zählwerk überträgt.
+- **Wortmarke** — der Name, gesetzt in Archivo, mit den beiden Umlautpunkten als
+  einzigem Farbigen. Als Zeichen allein bleibt ein gezeichnetes ä.
+- **Signet** — ein verkürztes Trapez über einem Rechteck: die Ziffer, die vorn
+  steht, und darüber die nächste, die wegkippt.
+
+Jeder Entwurf steht groß, dann als App-Symbol, auf Bernstein und auf Papier,
+dann im Schriftzug und auf einer Leiter in echter Größe bis 16 Pixel.
+
+Zwei Farben je Zeichen, und auf Bernstein tauschen sie die Rollen. Der erste
+Satz Kacheln hatte den Akzent fest auf Bernstein: Auf bernsteinfarbenem Grund
+verschwanden die Umlautpunkte und beim Signet das ganze Trapez. Ein Zeichen
+gehört auf jedem Grund geprüft, den es später wirklich trifft.
+
+Nichts ist übernommen. Was gewählt wird, wird eine Zeichnung in
+`scripts/icon.mjs`, die Kopfleiste der Website samt der fünf Seiten darunter und
+das Symbol im Store mit der nächsten Fassung.
+
 ## 0.113.23 — 2026-09-10
 
 **Zählora 1.1 ist im App Store.**
