@@ -1676,10 +1676,16 @@ der es auffällt, ist keine erfundene Übung: Der Store zeigt das Symbol vor
 wechselndem Hintergrund, eine Mail zeigt es auf Weiß, ein dunkles System auf
 Schwarz.
 
-> **Eine Farbe im Zeichen wird als Rolle gesetzt, nicht als Wert.** Masse und
-> Akzent sind zwei Variablen (`currentColor` und ein `--akzent` mit Rückfall);
-> jeder Grund setzt beide. Dann tauschen sie auf der Akzentfläche die Rollen,
-> statt sich gegenseitig aufzufressen.
+> **Die sichere Antwort ist eine Farbe.** Ein Zeichen wird einfarbig gezeichnet,
+> und was nach einer zweiten Farbe aussieht, ist eine **Aussparung** — ein Loch,
+> durch das der Grund scheint. Dann kann kein Teil verschwinden, egal worauf es
+> liegt, und es trägt auch geprägt, gestickt, gefaxt und schwarz auf einem
+> Kassenbon.
+>
+> Braucht es doch zwei Farben, werden sie als **Rollen** gesetzt, nicht als
+> Werte: Masse und Akzent sind zwei Variablen (`currentColor` und ein
+> `--akzent` mit Rückfall), und jeder Grund setzt beide — auf der Akzentfläche
+> tauschen sie.
 
 Dazu die Gattungsfrage, die eine ganze Runde gekostet hat: Die erste Vorlage
 waren drei Piktogramme, mittig in einer Kachel — Symbole für einen
@@ -1688,11 +1694,35 @@ Quadrat, also die häufigste Vorlage überhaupt; **dass sie die häufigste ist,
 stand in derselben Bewertung**, die sie empfohlen hat. Vom Gründer in einem
 Satz abgelehnt.
 
-> **Wer drei Vorschläge macht, macht sie aus drei Gattungen** — Monogramm,
-> Wortmarke, Signet —, nicht dreimal dieselbe Zeichnung in drei Motiven. Drei
-> Varianten einer Gattung sind eine Auswahl der Pinselführung; drei Gattungen
-> sind eine Entscheidung. Und eine Schwäche, die man selbst hinschreibt, ist
-> ein Ausschlussgrund und keine Fußnote.
+> **Wer drei Vorschläge macht, macht sie unterscheidbar** — drei Silhouetten
+> (rund, rechteckig, diagonal), nicht dreimal dieselbe Zeichnung in drei
+> Motiven. Drei Varianten einer Form sind eine Auswahl der Pinselführung; drei
+> Silhouetten sind eine Entscheidung. Und eine Schwäche, die man selbst
+> hinschreibt, ist ein Ausschlussgrund und keine Fußnote.
+
+### Die Ausschlüsse werden gesammelt, bevor gezeichnet wird
+
+Drei Runden Entwürfe, und die zweite ist an etwas gescheitert, das mit der
+Zeichnung nichts zu tun hatte: **Das lateinische Z ist seit 2022 das
+Erkennungszeichen für den russischen Angriffskrieg**, in mehreren deutschen
+Bundesländern wird das öffentliche Zeigen als Billigung verfolgt. Ein Monogramm
+für eine App namens Zählora ist damit erledigt — unabhängig davon, wie gut es
+gezeichnet ist und was gemeint war.
+
+Das war vorher wissbar. Es kam nur nicht zur Sprache, weil niemand danach
+gefragt hat.
+
+> **Ein Zeichen wird nicht nur gegen die Nachbarschaft geprüft, sondern gegen
+> die Gegenwart.** Ein Buchstabe, eine Farbe, eine Geste trägt mit, was die Welt
+> in den letzten Jahren damit gemacht hat. Das steht in keinem Stilhandbuch und
+> fällt auch keiner automatischen Prüfung auf.
+
+Und daraus die Arbeitsform: **Vor der ersten Zeichnung wird die Liste der
+Ausschlüsse aufgestellt** — was das Zeichen nicht sein darf, welche Formen die
+Nachbarschaft besetzt, welche Symbole verbrannt sind, was der Auftraggeber
+nicht mag. Die Liste kommt sichtbar in die Mappe, damit sie widersprochen
+werden kann. Ein Ausschluss, der vorher genannt wird, kostet einen Satz; einer,
+der nachher auffällt, kostet eine ganze Runde.
 
 ---
 

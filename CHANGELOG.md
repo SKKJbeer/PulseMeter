@@ -9,6 +9,43 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.113.25 — 2026-09-13
+
+**Dritte Runde: kein Buchstabe, keine zweite Farbe, drei Silhouetten.**
+
+Zwei Einwände vom Gründer, und der zweite erledigt eine ganze Gattung: Das
+freistehende lateinische Z ist seit 2022 das Erkennungszeichen für den
+russischen Angriffskrieg; in mehreren Bundesländern wird das öffentliche Zeigen
+als Billigung verfolgt. Damit fällt jedes Monogramm weg — und mit ihm, für
+diese App, Buchstaben überhaupt. Der ausgeschriebene Name bleibt davon
+unberührt.
+
+Was diese Runde anders macht:
+
+- **Eine Liste der Ausschlüsse steht vor der ersten Zeichnung.** Bogen mit
+  Linie darin, freistehender Buchstabe, zwei Farben im Zeichen, dreimal
+  dasselbe Motiv. Zwei Runden sind daran vorbeigelaufen, weil niemand die Liste
+  aufgestellt hat.
+- **Drei Silhouetten statt drei Motiven** — rund, rechteckig, diagonal. Die
+  drei stehen zuerst nebeneinander auf einem Blatt, ohne ein Wort dazu.
+- **Ein Zeichen, eine Farbe.** Was nach einer zweiten aussieht, ist eine
+  Aussparung. Das ist die Konsequenz aus 0.113.24, wo auf bernsteinfarbenem
+  Grund zweimal ein Teil der Zeichnung verschwand.
+
+Die drei Entwürfe:
+
+- **Die Scheibe** — die Aluminiumscheibe des alten Stromzählers mit der
+  schwarzen Marke auf dem Rand. Die Marke steht schräg, weil eine Scheibe, die
+  sich dreht, ihre Marke nie oben stehen hat.
+- **Der Unterschied** — das Ablesefenster mit zwei Ständen übereinander,
+  getrennt von einer Naht. Die Felder sind ungleich hoch; gleiche Felder wären
+  ein Tabellensymbol.
+- **Die Stufen** — gleich breit, ungleich hoch. Der Monat ist immer gleich
+  lang, der Verbrauch nie, und ein Zählerstand geht nur nach oben.
+
+Empfohlen ist die Scheibe: die einzige der drei Formen, die sonst niemand
+benutzt. Nichts ist übernommen.
+
 ## 0.113.24 — 2026-09-13
 
 **Drei Entwürfe für ein eigenes Zeichen.**

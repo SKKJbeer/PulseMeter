@@ -1,0 +1,571 @@
+<title>Drei Zeichen ohne Buchstaben</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Karla:wght@400;500;700&family=Martian+Mono:wght@400;500&display=swap">
+
+<style>
+/* Die Mappe ist kühl gehalten, damit der Bernstein das einzig Warme darauf ist.
+   In den beiden Runden davor lag alles auf Papierton — dort ging die Farbe der
+   Marke im Ton des Blattes unter. */
+:root {
+  --ground:   #F4F5F7;
+  --raised:   #E8EAEE;
+  --surface:  #FFFFFF;
+  --ink:      #14171C;
+  --ink-2:    #4D535D;
+  --ink-3:    #858C97;
+  --line:     #DCDFE5;
+  --line-2:   #C7CCD4;
+
+  /* Der Bernstein der App, unverändert aus icon.mjs übernommen. */
+  --tint:     #B06E08;
+  --tint-ink: #8A5A08;
+  --papier:   #FBFAF8;
+  --tinte:    #14171C;
+
+  --display:   "Fraunces", Georgia, "Times New Roman", serif;
+  --text:      "Karla", "Helvetica Neue", Arial, sans-serif;
+  --technisch: "Martian Mono", "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:  #0C0E11;
+    --raised:  #15181D;
+    --surface: #101318;
+    --ink:     #ECEEF2;
+    --ink-2:   #A6ADB8;
+    --ink-3:   #757C87;
+    --line:    #23272E;
+    --line-2:  #333941;
+    --tint:    #E0A040;
+    --tint-ink:#E8C070;
+  }
+}
+:root[data-theme="dark"] {
+  --ground:  #0C0E11;
+  --raised:  #15181D;
+  --surface: #101318;
+  --ink:     #ECEEF2;
+  --ink-2:   #A6ADB8;
+  --ink-3:   #757C87;
+  --line:    #23272E;
+  --line-2:  #333941;
+  --tint:    #E0A040;
+  --tint-ink:#E8C070;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--ground); color: var(--ink); font-family: var(--text); }
+h1, h2, h3, p, ul, ol, figure, table { margin: 0; }
+
+.blatt {
+  max-width: 1060px;
+  margin: 0 auto;
+  padding-inline: 20px;
+  padding-block: clamp(40px, 6vw, 76px) clamp(56px, 8vw, 104px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(46px, 6vw, 76px);
+}
+
+/* ------------------------------------------------------------------- Kopf */
+.marke {
+  font-family: var(--technisch);
+  font-size: 10px;
+  letter-spacing: .01em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  display: block;
+  margin-bottom: 20px;
+}
+h1 {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(34px, 6.2vw, 58px);
+  line-height: 1.03;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+  max-width: 17ch;
+}
+.vorwort { display: grid; gap: 18px; max-width: 63ch; margin-top: 26px; }
+.vorwort p { font-size: 17px; line-height: 1.62; color: var(--ink-2); }
+.vorwort strong { color: var(--ink); font-weight: 700; }
+
+/* Der Ausschlusskasten. Was ein Zeichen nicht sein darf, gehört vor die erste
+   Zeichnung — zwei Runden sind daran vorbeigelaufen. */
+.ausschluss {
+  margin-top: 30px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--tint);
+  border-radius: 4px;
+  background: var(--surface);
+  padding: 20px 22px;
+  display: grid;
+  gap: 12px;
+  max-width: 66ch;
+}
+.ausschluss h3 {
+  font-family: var(--technisch);
+  font-size: 10px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+.ausschluss li { font-size: 15.5px; line-height: 1.55; color: var(--ink-2); }
+.ausschluss ul { display: grid; gap: 9px; padding-left: 19px; }
+.ausschluss b { color: var(--ink); }
+
+/* ------------------------------------------------------- Die Silhouetten */
+.reihe {
+  display: flex;
+  gap: clamp(20px, 5vw, 64px);
+  align-items: flex-end;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: clamp(26px, 4vw, 40px) 24px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.reihe figure { display: grid; justify-items: center; gap: 13px; }
+.reihe svg { width: clamp(58px, 9vw, 82px); height: auto; color: var(--ink); display: block; }
+.reihe figcaption { font-family: var(--technisch); font-size: 10px; color: var(--ink-3); }
+
+/* --------------------------------------------------------- Ein Vorschlag */
+.entwurf {
+  display: grid;
+  gap: clamp(24px, 3vw, 34px);
+  padding-top: clamp(34px, 4vw, 46px);
+  border-top: 1px solid var(--line);
+}
+.nummer {
+  font-family: var(--technisch);
+  font-size: 10px;
+  color: var(--ink-3);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+h2 {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(27px, 3.6vw, 37px);
+  line-height: 1.08;
+  letter-spacing: -0.018em;
+  margin-top: 8px;
+}
+
+/* Die Platte: das Zeichen groß und allein, auf einem Konstruktionsraster.
+   Das Raster ist kein Schmuck — es zeigt, dass die Form auf ein Raster
+   gezeichnet ist und nicht freihändig entstand. */
+.aufteilung { display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(20px, 3vw, 34px); align-items: start; }
+.platte {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.platte::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(to right, var(--line-2) 0 1px, transparent 1px 12.5%),
+    repeating-linear-gradient(to bottom, var(--line-2) 0 1px, transparent 1px 12.5%);
+  opacity: .34;
+}
+.platte svg { position: relative; width: 46%; height: auto; color: var(--ink); display: block; }
+
+.worte { display: grid; gap: 16px; }
+.worte p { font-size: 16px; line-height: 1.62; color: var(--ink-2); }
+.worte p b { color: var(--ink); font-weight: 700; }
+.bau {
+  font-family: var(--technisch);
+  font-size: 10.5px;
+  line-height: 1.75;
+  color: var(--ink-3);
+  border-top: 1px solid var(--line);
+  padding-top: 13px;
+}
+
+/* Anwendung: drei Gründe, die das Zeichen wirklich trifft. */
+.anwendungen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.anwendung { display: grid; justify-items: center; gap: 9px; }
+.feld {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 22.5%;
+  display: grid;
+  place-items: center;
+}
+.feld svg { width: 54%; height: 54%; display: block; }
+/* Ein Zeichen, eine Farbe. Der Grund wechselt, die Zeichnung nie — deshalb
+   kann hier nichts mehr verschwinden. */
+.f-tinte  { background: var(--tinte);  color: var(--tint); }
+.f-tint   { background: var(--tint);   color: var(--papier); }
+.f-papier { background: var(--papier); color: var(--tinte); box-shadow: inset 0 0 0 1px var(--line-2); }
+.anwendung figcaption { font-family: var(--technisch); font-size: 9.5px; color: var(--ink-3); text-align: center; }
+
+/* Der Schriftzug und die Leiter stehen nebeneinander: beides sind Proben, */
+.proben { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: stretch; }
+.zug, .leiter {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 16px 20px;
+}
+.zug { display: flex; align-items: center; gap: 12px; }
+.zug svg { height: 30px; width: auto; color: var(--ink); flex: none; }
+.zugname { font-family: var(--text); font-weight: 700; font-size: 24px; letter-spacing: -0.028em; }
+
+.leiter { display: flex; align-items: flex-end; gap: 22px; flex-wrap: wrap; }
+.sprosse { display: grid; justify-items: center; gap: 7px; }
+.sprosse svg { display: block; color: var(--ink); }
+.sprosse figcaption { font-family: var(--technisch); font-size: 9px; line-height: 1.4; color: var(--ink-3); text-align: center; white-space: nowrap; }
+.sprosse b { display: block; color: var(--ink-2); font-weight: 500; }
+
+.paar { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+.paar > div { padding: 15px 17px; border-radius: 6px; background: var(--surface); border: 1px solid var(--line); }
+.paar h3 { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+.paar p { font-size: 15px; color: var(--ink-2); line-height: 1.55; }
+
+/* ------------------------------------------------------------- Der Schluss */
+.schluss { border-top: 1px solid var(--line); padding-top: clamp(34px, 4vw, 46px); display: grid; gap: 18px; }
+.schluss p { font-size: 17px; line-height: 1.62; color: var(--ink-2); max-width: 63ch; }
+.schluss strong { color: var(--ink); font-weight: 700; }
+
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; padding: 11px 14px 11px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--technisch); font-weight: 500; font-size: 9.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); }
+td b { font-weight: 700; }
+.tabelle { overflow-x: auto; }
+
+code { font-family: var(--technisch); font-size: .84em; background: var(--raised); padding: 2px 5px; border-radius: 3px; }
+
+@media (max-width: 720px) {
+  .aufteilung { grid-template-columns: 1fr; }
+  .proben { grid-template-columns: 1fr; }
+  .paar { grid-template-columns: 1fr; }
+}
+</style>
+
+<!-- Jede Zeichnung auf einem 32er-Raster konstruiert und einfarbig gehalten.
+     Was wie eine zweite Farbe aussieht, ist eine Aussparung: Dadurch kann auf
+     keinem Grund ein Teil des Zeichens verschwinden. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+
+  <!-- 1 · Die Scheibe. Der Ferraris-Zähler hat eine Aluminiumscheibe mit einer
+       schwarzen Marke darauf; sie dreht sich, solange Strom fließt. -->
+  <symbol id="s1" viewBox="0 0 32 32">
+    <mask id="m1" maskUnits="userSpaceOnUse" x="0" y="0" width="32" height="32">
+      <rect width="32" height="32" fill="#000"/>
+      <circle cx="16" cy="16" r="11.2" fill="#fff"/>
+      <rect x="18.65" y="7.06" width="3.2" height="7" rx="0.5" fill="#000"
+            transform="rotate(38 20.25 10.56)"/>
+    </mask>
+    <rect width="32" height="32" fill="currentColor" mask="url(#m1)"/>
+  </symbol>
+
+  <!-- 2 · Der Unterschied. Das Fenster, durch das man abliest, und darin zwei
+       Stände übereinander. Die Naht dazwischen ist die Rechnung der App. -->
+  <symbol id="s2" viewBox="0 0 32 32">
+    <mask id="m2" maskUnits="userSpaceOnUse" x="0" y="0" width="32" height="32">
+      <rect width="32" height="32" fill="#000"/>
+      <rect x="4.4" y="5.6" width="23.2" height="20.8" rx="4.8" fill="#fff"/>
+      <rect x="9" y="10.2" width="14" height="11.6" rx="1.5" fill="#000"/>
+      <rect x="9" y="16.4" width="14" height="1.5" fill="#fff"/>
+    </mask>
+    <rect width="32" height="32" fill="currentColor" mask="url(#m2)"/>
+  </symbol>
+
+  <!-- 3 · Die Stufen. Gleich breit, ungleich hoch: Der Monat ist immer gleich
+       lang, der Verbrauch nie. Ein Zählerstand geht nur nach oben. -->
+  <symbol id="s3" viewBox="0 0 32 32">
+    <path fill="currentColor" d="M4 25.2 L4 20
+      A2.4 2.4 0 0 1 6.4 17.6 L12 17.6 L12 15.3
+      A2.4 2.4 0 0 1 14.4 12.9 L20 12.9 L20 8
+      A2.4 2.4 0 0 1 22.4 5.6 L25.6 5.6
+      A2.4 2.4 0 0 1 28 8 L28 25.2
+      A2.4 2.4 0 0 1 25.6 27.6 L6.4 27.6
+      A2.4 2.4 0 0 1 4 25.2 Z"/>
+  </symbol>
+</svg>
+
+<div class="blatt">
+
+  <header>
+    <span class="marke">Zählora · Zeichen · dritte Runde</span>
+    <h1>Kein Buchstabe, keine zweite Farbe, drei Silhouetten</h1>
+
+    <div class="vorwort">
+      <p>
+        Der Einwand gegen das Z ist richtig und erledigt die ganze Gattung.
+        Seit 2022 ist das freistehende lateinische Z das Erkennungszeichen für
+        den russischen Angriffskrieg; in mehreren Bundesländern wird das
+        öffentliche Zeigen als Billigung verfolgt. <strong>Ein Zeichen, das man
+        erklären muss, ist kein Zeichen.</strong> Also fällt jedes Monogramm
+        weg — und mit ihm, für diese App, Buchstaben überhaupt.
+      </p>
+      <p>
+        Der Name bleibt davon unberührt. „Zählora“ ausgeschrieben ist ein Wort
+        und kein Kürzel; niemand liest darin ein Symbol. Was wegfällt, ist der
+        einzeln stehende Buchstabe.
+      </p>
+      <p>
+        Und noch etwas ändert sich gegenüber den zwei Runden davor:
+        <strong>jedes Zeichen hat genau eine Farbe.</strong> Was nach einer
+        zweiten aussieht, ist eine Aussparung. Damit kann kein Teil mehr
+        verschwinden, wenn der Grund wechselt — auf Bernstein war das zuletzt
+        zweimal passiert.
+      </p>
+    </div>
+
+    <div class="ausschluss">
+      <h3>Was ausgeschlossen ist</h3>
+      <ul>
+        <li><b>Der Bogen mit der Linie darin.</b> Die Formensprache von
+          Fitness- und Gesundheitsgeräten. Daher kam die Ähnlichkeit.</li>
+        <li><b>Der freistehende Buchstabe</b> — das Z aus dem Grund oben, und
+          jeder andere, weil ein Buchstabe im abgerundeten Quadrat die
+          häufigste Vorlage überhaupt ist.</li>
+        <li><b>Zwei Farben im Zeichen.</b> Ein Zeichen muss einfarbig tragen:
+          geprägt, gestickt, gefaxt, schwarz auf einem Kassenbon.</li>
+        <li><b>Dreimal dasselbe in drei Motiven.</b> Deshalb: eine runde, eine
+          rechteckige und eine diagonale Silhouette.</li>
+      </ul>
+    </div>
+  </header>
+
+  <section class="reihe" aria-label="Die drei Zeichen nebeneinander">
+    <figure><svg viewBox="0 0 32 32"><use href="#s1"/></svg><figcaption>1 · rund</figcaption></figure>
+    <figure><svg viewBox="0 0 32 32"><use href="#s2"/></svg><figcaption>2 · rechteckig</figcaption></figure>
+    <figure><svg viewBox="0 0 32 32"><use href="#s3"/></svg><figcaption>3 · diagonal</figcaption></figure>
+  </section>
+
+  <!-- ============================================================== 1 -->
+  <section class="entwurf">
+    <div>
+      <span class="nummer">Vorschlag 1</span>
+      <h2>Die Scheibe</h2>
+    </div>
+
+    <div class="aufteilung">
+      <div class="platte"><svg viewBox="0 0 32 32"><use href="#s1"/></svg></div>
+      <div class="worte">
+        <p>
+          In jedem alten Stromzähler dreht sich eine Aluminiumscheibe, und auf
+          ihrem Rand sitzt eine schwarze Marke. <b>Wer wissen will, ob gerade
+          etwas läuft, schaut auf diese Marke.</b> Steht sie still, kostet
+          nichts. Je schneller sie wandert, desto teurer wird es.
+        </p>
+        <p>
+          Das ist der einzige Gegenstand aus der Welt der Zähler, den man nicht
+          erklären muss und den niemand sonst benutzt. Die Marke steht schräg,
+          weil eine Scheibe, die sich dreht, ihre Marke nie oben stehen hat —
+          eine senkrechte Aussparung wäre ein Schalter, eine schräge ist eine
+          Bewegung.
+        </p>
+        <p class="bau">Kreis r 11,2 · Aussparung 3,2 × 7,0 · 38° · Rand 0,8</p>
+      </div>
+    </div>
+
+    <div class="anwendungen">
+      <figure class="anwendung"><div class="feld f-tinte"><svg viewBox="0 0 32 32"><use href="#s1"/></svg></div><figcaption>App-Symbol</figcaption></figure>
+      <figure class="anwendung"><div class="feld f-tint"><svg viewBox="0 0 32 32"><use href="#s1"/></svg></div><figcaption>auf Bernstein</figcaption></figure>
+      <figure class="anwendung"><div class="feld f-papier"><svg viewBox="0 0 32 32"><use href="#s1"/></svg></div><figcaption>auf Papier</figcaption></figure>
+    </div>
+
+    <div class="proben">
+      <div class="zug">
+        <svg viewBox="0 0 32 32"><use href="#s1"/></svg>
+        <span class="zugname">Zählora</span>
+      </div>
+      <div class="leiter">
+        <figure class="sprosse"><svg viewBox="0 0 32 32" width="60" height="60"><use href="#s1"/></svg><figcaption><b>60</b>Startbildschirm</figcaption></figure>
+        <figure class="sprosse"><svg viewBox="0 0 32 32" width="40" height="40"><use href="#s1"/></svg><figcaption><b>40</b>Mitteilung</figcaption></figure>
+        <figure class="sprosse"><svg viewBox="0 0 32 32" width="29" height="29"><use href="#s1"/></svg><figcaption><b>29</b>Einstellungen</figcaption></figure>
+        <figure class="sprosse"><svg viewBox="0 0 32 32" width="16" height="16"><use href="#s1"/></svg><figcaption><b>16</b>Lesezeichen</figcaption></figure>
+      </div>
+    </div>
+
+    <div class="paar">
+      <div>
+        <h3>Stärke</h3>
+        <p>Eine geschlossene Fläche mit einem Einschnitt. Das hält bis 16 Pixel
+          und ist aus dem Augenwinkel eindeutig — kein anderes Symbol auf einem
+          Startbildschirm sieht so aus.</p>
+      </div>
+      <div>
+        <h3>Preis</h3>
+        <p>Die Scheibe gehört zum alten Ferraris-Zähler. Wer nur einen digitalen
+          kennt, sieht einen Kreis mit einer Kerbe und nichts weiter.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================== 2 -->
+  <section class="entwurf">
+    <div>
+      <span class="nummer">Vorschlag 2</span>
+      <h2>Der Unterschied</h2>
+    </div>
+
+    <div class="aufteilung">
+      <div class="platte"><svg viewBox="0 0 32 32"><use href="#s2"/></svg></div>
+      <div class="worte">
+        <p>
+          Das Fenster, durch das man abliest — und darin stehen zwei Stände
+          übereinander. <b>Die Naht dazwischen ist die ganze App.</b> Ein
+          einzelner Zählerstand sagt nichts; erst der zweite macht ihn zu einer
+          Zahl, mit der sich rechnen lässt.
+        </p>
+        <p>
+          Die beiden Felder sind ungleich hoch, und das ist der Punkt: Zwei
+          gleiche Felder wären ein Formular. Ungleich sind sie, weil zwei
+          Ablesungen nie gleich ausfallen — sonst bräuchte man die zweite nicht.
+        </p>
+        <p class="bau">Körper 23,2 × 20,8 · r 4,8 · Fenster 14,0 × 11,6 · Naht 1,5 · Felder 6,2 / 3,9</p>
+      </div>
+    </div>
+
+    <div class="anwendungen">
+      <figure class="anwendung"><div class="feld f-tinte"><svg viewBox="0 0 32 32"><use href="#s2"/></svg></div><figcaption>App-Symbol</figcaption></figure>
+      <figure class="anwendung"><div class="feld f-tint"><svg viewBox="0 0 32 32"><use href="#s2"/></svg></div><figcaption>auf Bernstein</figcaption></figure>
+      <figure class="anwendung"><div class="feld f-papier"><svg viewBox="0 0 32 32"><use href="#s2"/></svg></div><figcaption>auf Papier</figcaption></figure>
+    </div>
+
+    <div class="proben">
+      <div class="zug">
+        <svg viewBox="0 0 32 32"><use href="#s2"/></svg>
+        <span class="zugname">Zählora</span>
+      </div>
+      <div class="leiter">
+        <figure class="sprosse"><svg viewBox="0 0 32 32" width="60" height="60"><use href="#s2"/></svg><figcaption><b>60</b>Startbildschirm</figcaption></figure>
+        <figure class="sprosse"><svg viewBox="0 0 32 32" width="40" height="40"><use href="#s2"/></svg><figcaption><b>40</b>Mitteilung</figcaption></figure>
+        <figure class="sprosse"><svg viewBox="0 0 32 32" width="29" height="29"><use href="#s2"/></svg><figcaption><b>29</b>Einstellungen</figcaption></figure>
+        <figure class="sprosse"><svg viewBox="0 0 32 32" width="16" height="16"><use href="#s2"/></svg><figcaption><b>16</b>Lesezeichen</figcaption></figure>
+      </div>
+    </div>
+
+    <div class="paar">
+      <div>
+        <h3>Stärke</h3>
+        <p>Die meiste Fläche von allen dreien, also der beste Kontrast auf einem
+          vollen Startbildschirm. Und es sagt genau, was die App tut: zwei
+          Stände nehmen und die Differenz bilden.</p>
+      </div>
+      <div>
+        <h3>Preis</h3>
+        <p>Ein Rahmen mit zwei Feldern darin ist kein seltener Umriss — bei
+          gleicher Höhe wäre es ein Tabellensymbol. Es lebt davon, dass die
+          Felder ungleich sind.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================== 3 -->
+  <section class="entwurf">
+    <div>
+      <span class="nummer">Vorschlag 3</span>
+      <h2>Die Stufen</h2>
+    </div>
+
+    <div class="aufteilung">
+      <div class="platte"><svg viewBox="0 0 32 32"><use href="#s3"/></svg></div>
+      <div class="worte">
+        <p>
+          Ein Zählerstand geht nur nach oben. Er fällt nie, er bleibt höchstens
+          stehen — und genau das macht ihn zu einer Treppe und nicht zu einer
+          Kurve. Interessant ist nicht, wie hoch er steht, sondern wie hoch die
+          letzte Stufe war.
+        </p>
+        <p>
+          <b>Gleich breit, ungleich hoch.</b> Die Abstände sind gleich, weil ein
+          Monat immer gleich lang ist; die Höhen nicht, weil der Verbrauch nie
+          gleich ist. Ein Symbol mit drei gleich hohen Stufen wäre eine
+          Dekoration — hier steckt die Aussage in der Ungleichheit.
+        </p>
+        <p class="bau">Drei Tritte à 8,0 breit · Höhen 10,0 / 4,7 / 7,3 · r 2,4 außen, innen scharf</p>
+      </div>
+    </div>
+
+    <div class="anwendungen">
+      <figure class="anwendung"><div class="feld f-tinte"><svg viewBox="0 0 32 32"><use href="#s3"/></svg></div><figcaption>App-Symbol</figcaption></figure>
+      <figure class="anwendung"><div class="feld f-tint"><svg viewBox="0 0 32 32"><use href="#s3"/></svg></div><figcaption>auf Bernstein</figcaption></figure>
+      <figure class="anwendung"><div class="feld f-papier"><svg viewBox="0 0 32 32"><use href="#s3"/></svg></div><figcaption>auf Papier</figcaption></figure>
+    </div>
+
+    <div class="proben">
+      <div class="zug">
+        <svg viewBox="0 0 32 32"><use href="#s3"/></svg>
+        <span class="zugname">Zählora</span>
+      </div>
+      <div class="leiter">
+        <figure class="sprosse"><svg viewBox="0 0 32 32" width="60" height="60"><use href="#s3"/></svg><figcaption><b>60</b>Startbildschirm</figcaption></figure>
+        <figure class="sprosse"><svg viewBox="0 0 32 32" width="40" height="40"><use href="#s3"/></svg><figcaption><b>40</b>Mitteilung</figcaption></figure>
+        <figure class="sprosse"><svg viewBox="0 0 32 32" width="29" height="29"><use href="#s3"/></svg><figcaption><b>29</b>Einstellungen</figcaption></figure>
+        <figure class="sprosse"><svg viewBox="0 0 32 32" width="16" height="16"><use href="#s3"/></svg><figcaption><b>16</b>Lesezeichen</figcaption></figure>
+      </div>
+    </div>
+
+    <div class="paar">
+      <div>
+        <h3>Stärke</h3>
+        <p>Versteht jeder ohne einen Satz Erklärung, und es ist die einzige der
+          drei Formen, die auch als Bewegung funktioniert: Die Stufen können
+          beim Start nacheinander hochkommen.</p>
+      </div>
+      <div>
+        <h3>Preis</h3>
+        <p>Von den dreien steht diese einem Diagramm am nächsten. Sie gewinnt
+          über die Silhouette, nicht über die Geschichte — und Silhouetten mit
+          Stufen gibt es anderswo.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================== Schluss -->
+  <section class="schluss">
+    <h2>Was wofür spricht</h2>
+
+    <div class="tabelle">
+      <table>
+        <thead>
+          <tr><th></th><th>1 · Scheibe</th><th>2 · Unterschied</th><th>3 · Stufen</th></tr>
+        </thead>
+        <tbody>
+          <tr><th>Silhouette</th><td><b>rund</b>, geschlossen</td><td><b>rechteckig</b>, gerahmt</td><td><b>diagonal</b>, steigend</td></tr>
+          <tr><th>Bei 16 Pixel</th><td>Kerbe bleibt sichtbar</td><td>Naht wird fein, hält</td><td>trägt vollständig</td></tr>
+          <tr><th>Verstanden ohne Erklärung</th><td>nur mit altem Zähler</td><td>ja</td><td>ja</td></tr>
+          <tr><th>Einzigartig</th><td><b>hoch</b> — benutzt niemand</td><td>mittel</td><td>mittel</td></tr>
+          <tr><th>Als Bewegung</th><td>dreht sich</td><td>oberes Feld füllt sich</td><td>Stufen kommen hoch</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      <strong>Mein Rat: Nummer 1.</strong> Nicht weil sie am schönsten ist,
+      sondern weil sie als einzige niemandem sonst gehört. Nummer 2 ist die
+      sicherste Wahl und Nummer 3 die verständlichste — aber beide Formen gibt
+      es in der Nachbarschaft schon, und in zwei Jahren wäre das wieder ein
+      Gespräch wie das über den Bogen mit der Linie darin. Die Scheibe hat
+      genau ein Problem, und es ist ein lösbares: Sie will einmal erzählt
+      werden. Danach vergisst man sie nicht mehr.
+    </p>
+
+    <p>
+      Sag mir eine Nummer. Daraus wird eine Zeichnung in
+      <code>scripts/icon.mjs</code>, die Kopfleiste der Website samt der fünf
+      Seiten darunter, und das Symbol im Store mit der nächsten Fassung. Und
+      wenn auch diese Runde nichts trifft, sag mir bitte <em>woran</em> — zu
+      technisch, zu kalt, zu verspielt, falsche Farbe, falsche Form. Ein
+      Ausschluss mehr ist wertvoller als drei weitere Zeichnungen.
+    </p>
+  </section>
+
+</div>
