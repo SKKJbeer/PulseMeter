@@ -9,6 +9,31 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.113.26 — 2026-09-14
+
+**Das Zeichen bleibt. Die Frage ist geschlossen.**
+
+Drei Runden Entwürfe, drei Ablehnungen, und die letzte war die entscheidende:
+„das aktuelle logo sieht um welten besser aus." Sie stimmt. Nichts aus den drei
+Runden war besser als das, was seit 1.0 im Store steht.
+
+`scripts/icon.mjs` ist unverändert geblieben, die App ist nie berührt worden,
+die drei Blätter liegen als Historie in `docs/entwuerfe/`.
+
+Der Fehler war nicht zeichnerisch, sondern im Aufbau der Mappe: Auf jedem Blatt
+standen drei Entwürfe nebeneinander und das Bestehende auf keinem. Verglichen
+wurde immer gegen nichts — und gegen nichts gewinnt jeder Entwurf. Dazu, dass
+in jeder der drei Runden eine andere Nummer empfohlen wurde. Beides steht jetzt
+im Baukasten, zusammen mit dem Abbruchkriterium, das gefehlt hat: Zwei
+abgelehnte Runden sind eine Aussage über die Methode, nicht über die
+Zeichnungen.
+
+`docs/06-uebergabe.md` ist auf den laufenden Stand gebracht — mit der
+Entscheidung, damit eine kalte Sitzung sie nicht von selbst wieder aufmacht,
+und ohne die überholte Zeile, der iPad-Bildersatz sei noch auszuprobieren. Er
+ist mit 1.1 tatsächlich hochgeladen worden, zehn Bilder, Kennung
+`APP_IPAD_PRO_3GEN_129`.
+
 ## 0.113.25 — 2026-09-13
 
 **Dritte Runde: kein Buchstabe, keine zweite Farbe, drei Silhouetten.**

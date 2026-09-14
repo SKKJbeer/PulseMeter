@@ -1724,6 +1724,33 @@ nicht mag. Die Liste kommt sichtbar in die Mappe, damit sie widersprochen
 werden kann. Ein Ausschluss, der vorher genannt wird, kostet einen Satz; einer,
 der nachher auffällt, kostet eine ganze Runde.
 
+### Der Maßstab ist das Bestehende, nicht das leere Blatt
+
+Drei Runden Entwürfe, drei Ablehnungen, und die letzte lautete: „das aktuelle
+logo sieht um welten besser aus." Sie war richtig. Jede Runde ist abstrakter und
+kälter geworden, und **in jeder habe ich eine andere Nummer empfohlen** — erst
+die 2, dann die 2, dann die 1. Drei verschiedene Empfehlungen in drei Runden
+sind kein Standpunkt, sondern Raten mit Selbstbewusstsein.
+
+Der Fehler war nicht zeichnerisch. Er lag im Aufbau der Mappe: **Auf jedem
+Blatt standen drei Entwürfe nebeneinander, und das Bestehende stand auf keinem.**
+Verglichen wurde also immer gegen nichts — und gegen nichts gewinnt jeder
+Entwurf.
+
+> **Wer etwas Bestehendes ablösen soll, stellt es in die Mappe.** Groß, in
+> derselben Größe, in derselben Anwendung. Ein Entwurf, der daneben nicht
+> gewinnt, gewinnt auch nicht auf dem Startbildschirm. Und wenn keiner gewinnt,
+> ist das ein Ergebnis und kein Fehlschlag: Dann bleibt das Bestehende, und die
+> Runde hat genau das geklärt.
+
+Dazu das Abbruchkriterium, das gefehlt hat: **Zwei abgelehnte Runden sind eine
+Aussage über die Methode, nicht über die Zeichnungen.** Nach der zweiten wird
+nicht ein drittes Mal dasselbe gemacht, sondern die Frage umgestellt — kleine
+Operation am Bestehenden statt Neuentwurf, oder ein Mensch, der das beruflich
+macht. Ein Sprachmodell kann eine entschiedene Richtung sauber durch Icon,
+Website und Store ziehen. Eine Marke aus dem Nichts erfinden kann es
+erkennbar nicht.
+
 ---
 
 ## 7. Wie ermittelt wird, wenn etwas nicht geht

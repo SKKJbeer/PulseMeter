@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-09-10, Version 0.113.23
+Stand: 2026-09-14, Version 0.113.25
 
 ---
 
@@ -86,7 +86,7 @@ Tabelle im Baukasten unter „Die Prüfungen".
 
 ## Wo die Arbeit steht
 
-**`main` ist der aktuelle Stand**, Version 0.113.13. Es gibt keinen offenen
+**`main` ist der aktuelle Stand**, Version 0.113.25. Es gibt keinen offenen
 Arbeitszweig; alles ist zusammengeführt. `claude/setup-pruefung-4qyr2u` steht
 noch bei GitHub, vollständig in `main` — aus der Cloud lässt er sich nicht
 löschen (`HTTP 403`), von der Weboberfläche aus mit einem Klick.
@@ -102,6 +102,29 @@ löschen (`HTTP 403`), von der Weboberfläche aus mit einem Klick.
 | TestFlight | **Bau 35, VALID** — der Bau, der als 1.1 im Laden steht |
 | Käufe | 6 von 6, mit der Fassung eingereicht |
 | Länder | 175, Deutschland dabei |
+
+### Entschieden und geschlossen: Das Zeichen bleibt
+
+Am 13. und 14. September sind **drei Runden Entwürfe für ein neues App-Symbol**
+entstanden und alle drei abgelehnt worden. Anlass war der Gründer: Das heutige
+Zeichen — ein offener Bogen mit einer Pulslinie darin — sehe aus wie das von
+Merach. Dazu kam, dass diese Formensprache „PulseMeter" buchstabiert und nicht
+„Zählora".
+
+**Entschieden am 14. September: Es bleibt, wie es ist.** Wörtlich: „das
+aktuelle logo sieht um welten besser aus." Drei Runden haben nichts
+hervorgebracht, das besser war als das Bestehende, und Merach verkauft
+Rudergeräte — andere Warenklasse, andere Suche im Store, keine Beschwerde.
+
+> **Diese Frage wird nicht von selbst wieder aufgemacht.** Nur auf ausdrückliche
+> Ansage des Gründers. `scripts/icon.mjs` ist unverändert; die drei Blätter
+> liegen als Historie in `docs/entwuerfe/` und sind **keine** Vorlage.
+
+Wenn er es doch wieder aufmacht, stehen drei Wege offen, und keiner heißt „drei
+neue Entwürfe auf leerem Blatt": nichts tun; eine kleine Operation am
+bestehenden Zeichen, bei der Bernstein, warmes Dunkel und der runde Körper
+bleiben und nur die Pulslinie getauscht wird — beurteilt **neben** dem Original,
+nicht gegen ein leeres Blatt; oder ein Briefing an einen Menschen.
 
 ### Das iPad ist fertig — und was daran noch aussteht
 
@@ -120,12 +143,11 @@ nicht entworfen. Ein zweispaltiger Aufbau — links die Wahl, rechts das
 Ausgewählte — wäre die naheliegende Antwort. Nicht angefangen; erst zu
 entscheiden.
 
-**Zur Einreichung fehlt der iPad-Bildersatz.** `scripts/asc-einreichung.py`
-kennt ihn seit 0.113.13, unter der Kennung `APP_IPAD_PRO_3GEN_129`. Ob Apple
-sie annimmt, ist **nicht nachgeschlagen, sondern auszuprobieren**: Die Kennung
-steht bei Apple für 2048 × 2732, der Simulator liefert 2064 × 2752. Lehnt der
-Hochladeversuch ab, steht Apples Begründung wörtlich in der offenen Liste des
-Laufs — und die richtige Kennung ist daraus abzulesen, nicht zu raten.
+**Der iPad-Bildersatz ist drin und die Kennung ist geklärt.** Hier stand, ob
+Apple `APP_IPAD_PRO_3GEN_129` für die Maße des Simulators annimmt, sei
+auszuprobieren. Ist es: Die Kennung steht bei Apple für 2048 × 2732, der
+Simulator liefert 2064 × 2752, und **Apple nimmt es an** — mit 1.1 am
+10. September tatsächlich hochgeladen, fünf Bilder je Familie, zehn insgesamt.
 
 **Der Umfang von 1.0 ist vollständig, und seit 1.0.1 kommt er auch an.** Der
 iCloud-Abgleich und das Feld auf dem Sperrbildschirm waren in 1.0 eingebaut und
