@@ -291,6 +291,7 @@ Store Connect deshalb nie gesehen.
 | 33 | 0.113.12 | 10.09. 06:02 | ✗ | **Nie hochgeladen.** `altool` lehnte ab (409, fehlende iPad-Ausrichtungen) und gab trotzdem 0 zurück; der Schritt war grün. Die Suche ging deshalb stundenlang in die falsche Richtung |
 | 34 | 0.113.19 | 10.09. 10:45 | ✗ | Derselbe Fehlschlag noch einmal, weil die Ursache im grünen Häkchen versteckt lag |
 | 35 | 0.113.20 | 10.09. 11:16 | ✓ | **Erster Bau mit iPad-Unterstützung, der bei Apple ankam.** `UISupportedInterfaceOrientations~ipad` mit allen vier Ausrichtungen, und der Hochladeschritt liest jetzt die Ausgabe von `altool`, statt seinem Rückgabewert zu glauben. VALID nach 93 Sekunden |
+| 36 | 0.114.1 | 22.09. 08:41 | ✓ | **Bühne und Leiste: `Verlauf` und `Zähler` stehen auf dem Tablet in zwei Spalten.** Dazu wächst das Diagramm mit der Breite, und das Querformat wird zum ersten Mal geprüft — `testTabletUsesItsWidthInLandscape` dreht und misst, wo die Leiste steht. VALID, Testhinweise eingetragen |
 
 Zeitangaben in UTC. Ein ✗ heißt: hochgeladen wurde nichts, die Nummer ist
 trotzdem verbraucht.
