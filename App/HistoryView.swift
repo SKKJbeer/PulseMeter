@@ -113,82 +113,143 @@ struct HistoryView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    if let problem {
-                        StatusBanner(tone: .notice, message: AttributedString(problem))
-                    } else if meters.isEmpty {
-                        emptyState
-                    } else {
-                        meterPicker
-                        granularityPicker
-                        modePicker
-                        if buckets.isEmpty {
-                            noHistoryYet
-                        } else if mode == .chart {
-                            chartCard
-                            if granularity == .year {
-                                if let jahresmonate {
-                                    jahresmonateCard(jahresmonate)
-                                }
-                            } else if let comparison {
-                                comparisonCard(comparison)
-                            }
+            // **Der `GeometryReader` misst das Fenster, nicht das Gerät.**
+            //
+            // Die Größenklasse reicht hier nicht: `.regular` sagt nur „kein
+            // Telefon" und gilt für die 710 Punkte der Detailspalte im
+            // Hochformat genauso wie für die 1050 im Querformat. In der einen
+            // Lage lohnen zwei Spalten, in der anderen nicht. Die Begründung
+            // im Ganzen steht bei ``WideLayout``.
+            GeometryReader { geometrie in
+                let breite = geometrie.size.width
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        if let problem {
+                            StatusBanner(tone: .notice, message: AttributedString(problem))
+                        } else if meters.isEmpty {
+                            emptyState
                         } else {
-                            if !tariffs.isEmpty { metricPicker }
-                            tableCard
+                            // Die drei Wähler bleiben quer über die ganze
+                            // Breite: Sie gehören zu beiden Spalten, und eine
+                            // Auswahl, die nur über der halben Ansicht steht,
+                            // sieht aus, als gälte sie auch nur dort.
+                            meterPicker
+                            granularityPicker
+                                .frame(maxWidth: WideLayout.controlWidth(breite) ?? .infinity,
+                                       alignment: .leading)
+                            modePicker
+                                .frame(maxWidth: WideLayout.controlWidth(breite) ?? .infinity,
+                                       alignment: .leading)
+
+                            if WideLayout.splits(breite) {
+                                HStack(alignment: .top, spacing: WideLayout.gutter) {
+                                    VStack(alignment: .leading, spacing: 16) {
+                                        buehne(breite)
+                                    }
+                                    VStack(alignment: .leading, spacing: 16) {
+                                        leiste
+                                    }
+                                    .frame(width: WideLayout.railWidth)
+                                }
+                            } else {
+                                buehne(breite)
+                                leiste
+                            }
                         }
-                        if !buckets.isEmpty { exportRow }
-                        kostenSperre
-                        reportRow
-                        readingsRow
+                    }
+                    .padding(.horizontal, WideLayout.margin(breite))
+                    .padding(.bottom, 28)
+                }
+                .background(PulseColor.ground)
+                .navigationTitle("Verlauf")
+                .onAppear {
+                    load()
+                    uebernimmWunsch()
+                    // Nur für die Bildschirmfotos: `simctl` kann nicht tippen, und
+                    // ein Dokument, das niemand ansieht, ist ein Dokument, in dem
+                    // sich ein Fehler beliebig lange hält.
+                    if Startschalter.gesetzt("-pulse-bericht") {
+                        showingReport = true
                     }
                 }
-                .padding(.horizontal, 18)
-                .padding(.bottom, 28)
-            }
-            .background(PulseColor.ground)
-            .navigationTitle("Verlauf")
-            .onAppear {
-                load()
-                uebernimmWunsch()
-                // Nur für die Bildschirmfotos: `simctl` kann nicht tippen, und
-                // ein Dokument, das niemand ansieht, ist ein Dokument, in dem
-                // sich ein Fehler beliebig lange hält.
-                if Startschalter.gesetzt("-pulse-bericht") {
-                    showingReport = true
+                // Beim ersten Mal ist der Verlauf noch gar nicht gebaut, dann
+                // greift `onAppear`. Beim zweiten Mal steht er schon und bekommt
+                // nur den neuen Wunsch — deshalb beide Wege.
+                .onChange(of: zeige) { _, _ in uebernimmWunsch() }
+                // Auch wenn die Änderung woanders passiert ist: Ein Stand, der auf
+                // der Übersicht eingetragen wurde, gehört in dieselbe Reihe wie
+                // einer aus der Ablesungsliste hier.
+                .onChange(of: datenstand.version) { _, _ in load() }
+                .sheet(isPresented: $showingReport) {
+                    ReportView()
+                }
+                .sheet(isPresented: $showingReadings) {
+                    ReadingsList(readings: readings, unit: unit,
+                                 fractionDigits: register?.fractionDigits ?? 1,
+                                 labels: registerLabels,
+                                 meteringPoint: meter,
+                                 onChanged: {
+                                     // Neu laden statt nur neu rechnen: Die Liste
+                                     // hat gerade den Bestand geändert, und
+                                     // `readings` hängt an ihm. Über den Datenstand
+                                     // und nicht mit `load()`, damit die Übersicht
+                                     // und die Zählerliste dieselbe Meldung
+                                     // bekommen.
+                                     datenstand.geaendert()
+                                 })
+                }
+                .sheet(item: $paywallProdukt) { produkt in
+                    UnlockSheet(product: produkt)
                 }
             }
-            // Beim ersten Mal ist der Verlauf noch gar nicht gebaut, dann
-            // greift `onAppear`. Beim zweiten Mal steht er schon und bekommt
-            // nur den neuen Wunsch — deshalb beide Wege.
-            .onChange(of: zeige) { _, _ in uebernimmWunsch() }
-            // Auch wenn die Änderung woanders passiert ist: Ein Stand, der auf
-            // der Übersicht eingetragen wurde, gehört in dieselbe Reihe wie
-            // einer aus der Ablesungsliste hier.
-            .onChange(of: datenstand.version) { _, _ in load() }
-            .sheet(isPresented: $showingReport) {
-                ReportView()
-            }
-            .sheet(isPresented: $showingReadings) {
-                ReadingsList(readings: readings, unit: unit,
-                             fractionDigits: register?.fractionDigits ?? 1,
-                             labels: registerLabels,
-                             meteringPoint: meter,
-                             onChanged: {
-                                 // Neu laden statt nur neu rechnen: Die Liste
-                                 // hat gerade den Bestand geändert, und
-                                 // `readings` hängt an ihm. Über den Datenstand
-                                 // und nicht mit `load()`, damit die Übersicht
-                                 // und die Zählerliste dieselbe Meldung
-                                 // bekommen.
-                                 datenstand.geaendert()
-                             })
-            }
-            .sheet(item: $paywallProdukt) { produkt in
-                UnlockSheet(product: produkt)
-            }
         }
+    }
+
+    // MARK: - Die zwei Spalten
+
+    /// Die Bühne: das eine, wofür der Schirm da ist.
+    ///
+    /// Im Diagrammbetrieb das Diagramm und darunter, was den angetippten
+    /// Abschnitt erklärt: in der Jahresansicht dessen Monate, sonst der
+    /// Vergleich mit den Vorjahren.
+    ///
+    /// **Die Gegenüberstellung steht bei ihrem Diagramm und nicht in der
+    /// Leiste.** Sie gehört zu dem Balken, den jemand gerade angetippt hat;
+    /// eine Karte, die auf einen Tipp hin am anderen Rand des Fensters
+    /// erscheint, wird nicht als Antwort darauf gelesen.
+    @ViewBuilder
+    private func buehne(_ breite: CGFloat) -> some View {
+        if buckets.isEmpty {
+            noHistoryYet
+        } else if mode == .chart {
+            chartCard(breite)
+            if granularity == .year {
+                if let jahresmonate {
+                    jahresmonateCard(jahresmonate, breite: breite)
+                }
+            } else if let comparison {
+                comparisonCard(comparison)
+            }
+        } else {
+            if !tariffs.isEmpty { metricPicker }
+            tableCard
+        }
+    }
+
+    /// Die Leiste: alles, was das Diagramm begleitet.
+    ///
+    /// Zeilen aus einem Wort und einem Pfeil. Über die ganze Breite eines
+    /// Tablets gezogen sahen sie aus wie ein Fehler im Aufbau; in 360 Punkten
+    /// sehen sie aus wie eine Liste.
+    ///
+    /// Schmal steht dasselbe untereinander, und zwar in genau der Reihenfolge,
+    /// die vorher galt — an der Abfolge ändert die Aufteilung nichts.
+    @ViewBuilder
+    private var leiste: some View {
+        if !buckets.isEmpty { exportRow }
+        kostenSperre
+        reportRow
+        readingsRow
     }
 
     // MARK: - Bausteine
@@ -512,7 +573,7 @@ struct HistoryView: View {
             )
     }
 
-    private var chartCard: some View {
+    private func chartCard(_ breite: CGFloat) -> some View {
         PulseCard {
             VStack(alignment: .leading, spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
@@ -547,7 +608,8 @@ struct HistoryView: View {
                 .accessibilityElement(children: .combine)
 
                 PeriodBars(columns: chartColumns, accent: accent,
-                           selection: selectedSlot, unit: unit) { slot in
+                           selection: selectedSlot, unit: unit,
+                           height: WideLayout.chartHeight(breite)) { slot in
                     selectedSlot = selectedSlot == slot ? nil : slot
                     recomputeComparison()
                     recomputeJahresmonate()
@@ -685,7 +747,7 @@ struct HistoryView: View {
     /// Woher das Jahr kommt — zwölf Monate, das Vorjahr als Marke dahinter.
     ///
     /// Die Begründung steht bei ``recomputeJahresmonate()``.
-    private func jahresmonateCard(_ daten: Jahresmonate) -> some View {
+    private func jahresmonateCard(_ daten: Jahresmonate, breite: CGFloat) -> some View {
         PulseCard {
             VStack(alignment: .leading, spacing: 13) {
                 HStack(alignment: .firstTextBaseline) {
@@ -723,7 +785,8 @@ struct HistoryView: View {
                 .accessibilityIdentifier("jahresmonate-titel")
 
                 PeriodBars(columns: daten.spalten, accent: accent,
-                           selection: monatWahl, unit: unit) { slot in
+                           selection: monatWahl, unit: unit,
+                           height: WideLayout.chartHeight(breite)) { slot in
                     monatWahl = monatWahl == slot ? nil : slot
                 }
 

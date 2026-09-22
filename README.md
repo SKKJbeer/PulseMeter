@@ -99,7 +99,7 @@ iCloud-Abgleich wie Käufe lassen sich noch nicht ausprobieren.
 
 ## Status
 
-Version **0.113.26**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
+Version **0.114.0**. Strategie, Datenmodell und Rechenkern stehen, der Klick-Dummy
 rechnet echt. Alle vier Bildschirme — Übersicht, Erfassung, Verlauf und Zähler —
 laufen als SwiftUI-App im Simulator und werden auf jedem Lauf fotografiert,
 hell und dunkel. Siehe [CHANGELOG.md](CHANGELOG.md).
@@ -146,7 +146,7 @@ nicht eingecheckt. Wer gar nicht gefragt werden will, startet mit
 
 ## Klick-Dummy
 
-**[Zuletzt veröffentlichter Entwurf →](https://claude.ai/code/artifact/2417cd13-06ae-4ad3-87c9-cd8add20f987)**
+**[Zuletzt veröffentlichter Entwurf →](https://claude.ai/artifact/7r8r3yvK4XxGVSmGVmAtNW)**
 
 Seit 0.113.0 steht unter dem Gerät ein Knopf **„Auf dem Tablet ansehen"**: Der
 Rahmen wird breit, an die Stelle der Tab-Leiste tritt die Seitenleiste, und die

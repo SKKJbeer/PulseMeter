@@ -1260,6 +1260,83 @@ for (const scheme of ["light", "dark"]) {
   note(gewechselt.markiert === "history",
        `Die Seitenleiste markiert, wo man ist (markiert: ${gewechselt.markiert})`);
 
+  // ---------------------------------------------------------- Bühne und Leiste
+  //
+  // **Diese Prüfungen gibt es, weil es die Aufteilung vorher nicht gab.** Bis
+  // 1.1 waren `Verlauf` und `Zähler` auch auf dem Tablet eine einzige Spalte
+  // quer über die ganze Breite: Der Inhalt endete im oberen Drittel, und eine
+  // Zeile aus zwei Wörtern hatte ihren Pfeil tausend Punkte weiter rechts.
+  //
+  // Geprüft wird die Zusage, nicht das Maß: Steht die Leiste **neben** der
+  // Bühne und beginnt sie rechts von deren Mitte? Eine Angabe im Stilblatt
+  // sagt darüber nichts — zwei Spalten, von denen eine umbricht, sind eine.
+  for (const [pane, name] of [["pane-history", "Verlauf"], ["pane-meters", "Zähler"]]) {
+    await page.locator(`#sidebar [data-pane="${pane.replace("pane-", "")}"]`).click();
+    await page.waitForTimeout(250);
+    const lage = await page.evaluate(id => {
+      const wurzel = document.getElementById(id);
+      const b = wurzel.querySelector(".buehne"), l = wurzel.querySelector(".leiste");
+      if (!b || !l) return null;
+      const rb = b.getBoundingClientRect(), rl = l.getBoundingClientRect();
+      return {
+        nebeneinander: rl.left >= rb.right - 1,
+        // Gleiche Oberkante: Untereinander stünde die Leiste tiefer.
+        gleicheHoehe: Math.abs(rl.top - rb.top) < 2,
+        leisteBreit: Math.round(rl.width),
+        buehneBreit: Math.round(rb.width)
+      };
+    }, pane);
+    note(!!lage && lage.nebeneinander && lage.gleicheHoehe,
+         `${name}: Die Leiste steht neben der Bühne `
+         + (lage ? `(Bühne ${lage.buehneBreit}, Leiste ${lage.leisteBreit})` : "(nicht gefunden)"));
+    note(!!lage && lage.leisteBreit >= 340 && lage.leisteBreit <= 380,
+         `${name}: Die Leiste hält ihre Breite `
+         + (lage ? `(${lage.leisteBreit} statt 360)` : "(nicht gefunden)"));
+  }
+
+  // Der Umschalter über den Spalten ist gekappt: Zwei Felder über die ganze
+  // Tabletbreite sind keine Wahl mehr, sondern eine Wand.
+  await page.locator('#sidebar [data-pane="history"]').click();
+  await page.waitForTimeout(250);
+  const umschalter = await page.evaluate(() => {
+    const m = document.getElementById("mode");
+    const b = document.querySelector("#pane-history .buehne");
+    return { mode: Math.round(m.getBoundingClientRect().width),
+             buehne: Math.round(b.getBoundingClientRect().width) };
+  });
+  note(Math.abs(umschalter.mode - umschalter.buehne) < 3,
+       `Der Umschalter steht über der Bühne und nicht über beidem `
+       + `(${umschalter.mode} zu ${umschalter.buehne})`);
+
+  // Und die andere Hälfte derselben Zusage: Wird das Fenster zu schmal für
+  // eine Bühne von 440 Punkten, fällt die Leiste darunter statt sich zu
+  // quetschen. Ein iPad im Hochformat gibt der Detailspalte rund 710 Punkte —
+  // dort ist eine Spalte die richtige Antwort und keine Ausnahme.
+  await page.setViewportSize({ width: 900, height: 1000 });
+  await page.waitForTimeout(300);
+  const schmalBreit = await page.evaluate(() => {
+    const w = document.getElementById("pane-history");
+    const b = w.querySelector(".buehne"), l = w.querySelector(".leiste");
+    const rb = b.getBoundingClientRect(), rl = l.getBoundingClientRect();
+    return { untereinander: rl.top >= rb.bottom - 1,
+             schirm: Math.round(document.querySelector(".screen").getBoundingClientRect().width) };
+  });
+  note(schmalBreit.untereinander,
+       `Zu schmal für zwei Spalten: Die Leiste rückt darunter `
+       + `(Bildschirmfläche ${schmalBreit.schirm})`);
+  await page.setViewportSize({ width: 1280, height: 1000 });
+  await page.waitForTimeout(300);
+
+  // Kein leerer Kasten, wo nichts zu sagen ist. `.note` hat Hintergrund und
+  // Innenabstand; ohne Text stand unter dem Knopf ein graues Feld.
+  await page.locator('#sidebar [data-pane="meters"]').click();
+  await page.waitForTimeout(250);
+  const leererKasten = await page.evaluate(() => {
+    const n = document.getElementById("limit-note");
+    return !!n && n.textContent.trim() === "" && n.getClientRects().length > 0;
+  });
+  note(!leererKasten, "Kein leerer Hinweiskasten unter dem Knopf");
+
   const overflowBreit = await page.evaluate(() =>
     document.documentElement.scrollWidth > document.documentElement.clientWidth);
   note(!overflowBreit, "Kein horizontaler Überlauf im breiten Rahmen");

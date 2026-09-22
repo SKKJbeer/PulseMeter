@@ -1700,6 +1700,33 @@ Satz abgelehnt.
 > Silhouetten sind eine Entscheidung. Und eine Schwäche, die man selbst
 > hinschreibt, ist ein Ausschlussgrund und keine Fußnote.
 
+### Eine Größenklasse ist keine Breite
+
+Ein Tablet hat zwei Lagen, und die Größenklasse kennt beide nicht auseinander.
+`.regular` heißt nur „kein Telefon" und gilt für die 710 Punkte der
+Detailspalte im Hochformat genauso wie für die 1050 im Querformat. Wer daran
+entscheidet, ob zwei Spalten stehen, bekommt im Hochformat eine Bühne von 334
+Punkten — schmaler als das Telefon, für das die Ansicht ursprünglich entworfen
+war.
+
+> **Am Layout entscheidet die Breite, die wirklich da ist.** Ein
+> `GeometryReader` um den Bildlauf herum kostet nichts und misst das Fenster,
+> nicht das Gerät. Die Schwelle wird von unten gedacht: nicht „ab wann ist es
+> breit", sondern „was muss der Hauptspalte danach mindestens bleiben".
+
+Und die Regel darunter, die zweimal gekostet hat: **Ein einspaltiger Aufbau,
+über ein doppelt so breites Fenster gezogen, ist nicht großzügig, sondern
+kaputt.** Eine Zeile aus zwei Wörtern hat ihren Pfeil dann tausend Punkte
+weiter rechts. Die Antwort ist eine **feste** zweite Spalte — kein Anteil: Der
+Inhalt einer Leiste hat eine natürliche Breite, und ein Anteil ließe sie
+mitwachsen und genau den Fehler wiederholen.
+
+**Eine Lage, die keine Prüfung je einnimmt, ist nicht geprüft.** Das Querformat
+stand seit einer Fassung in `Info.plist` — Apple verlangt auf dem iPad alle
+vier Lagen, sonst wird der Bau abgelehnt. Angesehen hatte es niemand: Kein Lauf
+hat je gedreht, und ein Simulator startet im Hochformat. Wer eine Lage
+freischaltet, schreibt im selben Zug die Prüfung, die sie einnimmt.
+
 ### Die Ausschlüsse werden gesammelt, bevor gezeichnet wird
 
 Drei Runden Entwürfe, und die zweite ist an etwas gescheitert, das mit der

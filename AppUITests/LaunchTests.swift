@@ -2325,4 +2325,60 @@ final class LaunchTests: XCTestCase {
         ).firstMatch
         XCTAssertTrue(grundpreis.exists, "Am Grundpreis fehlt derselbe Hinweis")
     }
+
+    /// Das Querformat auf dem Tablet, und was die Breite dort trägt.
+    ///
+    /// **Diese Prüfung gibt es, weil es sie nicht gab.** Seit 1.1 lässt sich
+    /// die App auf dem iPad drehen — die vier Lagen stehen seitdem in
+    /// `Info.plist`, sonst hätte Apple den Bau abgelehnt. Angesehen hat das
+    /// Querformat nie jemand: Kein Lauf hat je gedreht, und ein Simulator
+    /// startet im Hochformat. Eine Lage, die niemand prüft, ist eine Lage, in
+    /// der sich ein Fehler beliebig lange hält.
+    ///
+    /// Geprüft wird die Zusage der Aufteilung, nicht ihre Maße: Ist das
+    /// Fenster breit genug für zwei Spalten, steht die Leiste **neben** der
+    /// Bühne und ist ohne Blättern erreichbar. Ist es das nicht — auf dem
+    /// Telefon bleibt es beim Hochformat, das Drehen läuft dort ins Leere —,
+    /// endet die Prüfung nach dem Rauchtest. Das ist Absicht: Einspaltig ist
+    /// dort die richtige Antwort und keine Ausnahme.
+    func testTabletUsesItsWidthInLandscape() {
+        let app = launchWithData()
+        XCUIDevice.shared.orientation = .landscapeLeft
+        // Zurückdrehen, egal wie es ausgeht: Die Läufe teilen sich geklonte
+        // Simulatoren, und eine liegen gelassene Lage wäre eine Abhängigkeit
+        // zwischen Prüfungen — genau das, was ``launchWithData`` verhindert.
+        defer { XCUIDevice.shared.orientation = .portrait }
+
+        guard wechsel(zu: "Verlauf", in: app) else { return }
+        XCTAssertTrue(app.buttons["Monat"].waitForExistence(timeout: erscheint),
+                      "Die Zeitraumwahl fehlt im Querformat")
+
+        let ablesungen = text("Alle Ablesungen", in: app)
+        XCTAssertTrue(ablesungen.waitForExistence(timeout: erscheint),
+                      "Der Zugang zu den Ablesungen fehlt im Querformat")
+
+        // Dieselbe Schwelle wie in `WideLayout.splits`: Leiste 360, Abstand 18,
+        // Bühne mindestens 440. Sie steht hier als Zahl und nicht als Import,
+        // weil der Testbereich die Oberflächenbibliothek nicht kennt — ändert
+        // sich die eine Stelle, fällt diese Prüfung auf und nicht durch.
+        let fenster = app.windows.firstMatch.frame.width
+        guard fenster >= 818 else { return }
+
+        XCTAssertTrue(ablesungen.isHittable,
+                      "Die Leiste steht zwar da, ist aber nur durch Blättern zu erreichen — "
+                      + "dann ist sie keine zweite Spalte, sondern eine längere erste")
+        XCTAssertGreaterThan(ablesungen.frame.minX, fenster / 2,
+                             "„Alle Ablesungen“ steht in der linken Hälfte, gehört aber in die "
+                             + "Leiste rechts. Fensterbreite \(Int(fenster)), Zeile bei "
+                             + "\(Int(ablesungen.frame.minX))")
+
+        // Und derselbe Aufbau auf dem zweiten Schirm. Zwei Ansichten, die sich
+        // verschieden verhalten, sind schlimmer als eine, die es nicht tut.
+        guard wechsel(zu: "Zähler", in: app) else { return }
+        let erinnerungen = text("Erinnerungen", in: app)
+        XCTAssertTrue(erinnerungen.waitForExistence(timeout: erscheint),
+                      "Der Abschnitt Erinnerungen fehlt im Querformat")
+        XCTAssertGreaterThan(erinnerungen.frame.minX, fenster / 2,
+                             "Auf „Zähler“ steht die Leiste nicht neben der Liste, sondern darunter")
+    }
 }

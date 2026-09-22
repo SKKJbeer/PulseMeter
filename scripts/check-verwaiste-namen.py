@@ -32,7 +32,14 @@ import sys
 # `for container in …` ersetzt: derselbe Name, weiter erklärt, nur anders. Als
 # „verwaist" gemeldet wäre das eine Prüfung, die den Weg versperrt, statt ihn
 # freizuräumen — und die schaltet man beim dritten Mal ab.
-DEKLARATION = re.compile(r"\b(?:let|var)\s+([a-z_][A-Za-z0-9_]*)\b"
+#
+# **`func` gehört dazu, und das hat ein Lauf gekostet.** Aus
+# `private var chartCard: some View` wurde `private func chartCard(_:)` — die
+# Ansicht braucht jetzt die Fensterbreite. Für diese Prüfung war die Deklaration
+# damit verschwunden, während der Name weiter benutzt wurde, und sie meldete
+# einen verwaisten Namen, der keiner war. Eine Prüfung, die bei einer
+# gewöhnlichen Umformung Fehlalarm gibt, wird nach dem dritten Mal überlesen.
+DEKLARATION = re.compile(r"\b(?:let|var|func)\s+([a-z_][A-Za-z0-9_]*)\b"
                          r"|\bfor\s+([a-z_][A-Za-z0-9_]*)\s+in\b")
 
 

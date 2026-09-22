@@ -31,99 +31,133 @@ struct MetersView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
-                    if let problem {
-                        StatusBanner(tone: .notice, message: AttributedString(problem))
-                    }
+            // Warum hier gemessen und nicht die Größenklasse gefragt wird:
+            // siehe ``WideLayout``. Dieselbe Aufteilung wie im Verlauf —
+            // zwei Schirme, die sich verschieden verhalten, sind schlimmer
+            // als einer, der es nicht tut.
+            GeometryReader { geometrie in
+                let breite = geometrie.size.width
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 14) {
+                        if let problem {
+                            StatusBanner(tone: .notice, message: AttributedString(problem))
+                        }
 
-                    if meters.isEmpty {
-                        emptyState
-                    } else {
-                        PulseCard {
-                            VStack(spacing: 0) {
-                                ForEach(Array(meters.enumerated()), id: \.element.id) { index, point in
-                                    if index > 0 { Divider().overlay(PulseColor.hairline) }
-                                    row(for: point)
+                        if WideLayout.splits(breite) {
+                            HStack(alignment: .top, spacing: WideLayout.gutter) {
+                                VStack(alignment: .leading, spacing: 14) {
+                                    buehne
                                 }
+                                VStack(alignment: .leading, spacing: 14) {
+                                    leiste
+                                }
+                                .frame(width: WideLayout.railWidth)
                             }
-                        }
-                    }
-
-                    // **Der Knopf bleibt derselbe, auch wenn die Grenze
-                    // erreicht ist.** Er führt dann zur Kaufseite statt zum
-                    // Formular. Ihn auszugrauen wäre die schlechtere Lösung:
-                    // Der Nutzer sähe, dass es nicht geht, aber nicht, warum —
-                    // und Produktprinzip 4 verbietet genau diese Sackgasse.
-                    Button {
-                        if canAddMeter {
-                            editing = MeterDraft()
                         } else {
-                            showingPaywall = true
+                            buehne
+                            leiste
                         }
-                    } label: {
-                        Label("Zähler hinzufügen",
-                              systemImage: canAddMeter ? "plus" : "lock")
-                            .font(.system(.body, weight: .semibold))
-                            .foregroundStyle(PulseColor.onAccent)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
-                            .background(PulseColor.tint,
-                                        in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityHint(canAddMeter
-                                       ? "Öffnet das Formular für einen neuen Zähler"
-                                       : "Kostenlos sind \(AccessPolicy.freeMeterLimit) Zähler. Doppeltippen, um die Freischaltungen anzusehen")
-
-                    if let note = limitNote {
-                        Text(note)
-                            .font(PulseText.caption)
-                            .foregroundStyle(PulseColor.inkTertiary)
-                            .frame(maxWidth: .infinity, alignment: .center)
-                    }
-
-                    if !meters.isEmpty { reminderSection }
-
-                    if !archived.isEmpty {
-                        archivedSection
-                    }
-
-                    freischaltenSection
+                    .padding(.horizontal, WideLayout.margin(breite))
+                    .padding(.bottom, 28)
                 }
-                .padding(.horizontal, 18)
-                .padding(.bottom, 28)
-            }
-            .background(PulseColor.ground)
-            .navigationTitle("Zähler")
-            .onAppear {
-                load()
-                // Nur für die Bildschirmfotos: Die Kaufseite ist der einzige
-                // Schirm, den ein automatischer Lauf nie erreicht — `simctl`
-                // kann nicht tippen —, und zugleich der, bei dem am meisten
-                // davon abhängt, wie er wirkt.
-                if Startschalter.gesetzt("-pulse-kaufen") {
-                    showingPaywall = true
+                .background(PulseColor.ground)
+                .navigationTitle("Zähler")
+                .onAppear {
+                    load()
+                    // Nur für die Bildschirmfotos: Die Kaufseite ist der einzige
+                    // Schirm, den ein automatischer Lauf nie erreicht — `simctl`
+                    // kann nicht tippen —, und zugleich der, bei dem am meisten
+                    // davon abhängt, wie er wirkt.
+                    if Startschalter.gesetzt("-pulse-kaufen") {
+                        showingPaywall = true
+                    }
                 }
-            }
-            // Ein gelöschter oder umbenannter Zähler ändert die Übersicht
-            // mit; ein hier eingetragener Stand ändert diese Liste.
-            .onChange(of: datenstand.version) { _, _ in load() }
-            .sheet(item: $editing) { draft in
-                MeterEditor(draft: draft,
-                            readingCount: draft.existing.flatMap { readingCounts[$0.id] } ?? 0,
-                            onDone: { datenstand.geaendert() })
-            }
-            .sheet(isPresented: $showingPaywall) {
-                UnlockSheet(product: .additionalMeters)
-            }
-            .sheet(isPresented: $paywallErinnerung) {
-                UnlockSheet(product: .reminders)
-            }
-            .sheet(isPresented: $showingStore) {
-                StoreView()
+                // Ein gelöschter oder umbenannter Zähler ändert die Übersicht
+                // mit; ein hier eingetragener Stand ändert diese Liste.
+                .onChange(of: datenstand.version) { _, _ in load() }
+                .sheet(item: $editing) { draft in
+                    MeterEditor(draft: draft,
+                                readingCount: draft.existing.flatMap { readingCounts[$0.id] } ?? 0,
+                                onDone: { datenstand.geaendert() })
+                }
+                .sheet(isPresented: $showingPaywall) {
+                    UnlockSheet(product: .additionalMeters)
+                }
+                .sheet(isPresented: $paywallErinnerung) {
+                    UnlockSheet(product: .reminders)
+                }
+                .sheet(isPresented: $showingStore) {
+                    StoreView()
+                }
             }
         }
+    }
+
+    // MARK: - Die zwei Spalten
+
+    /// Die Bühne: die Zähler selbst und der Knopf, der einen dazutut.
+    ///
+    /// Das ist, wofür dieser Schirm da ist. Alles andere hier ist Verwaltung
+    /// und gehört daneben, nicht darunter.
+    @ViewBuilder
+    private var buehne: some View {
+        if meters.isEmpty {
+            emptyState
+        } else {
+            PulseCard {
+                VStack(spacing: 0) {
+                    ForEach(Array(meters.enumerated()), id: \.element.id) { index, point in
+                        if index > 0 { Divider().overlay(PulseColor.hairline) }
+                        row(for: point)
+                    }
+                }
+            }
+        }
+
+        // **Der Knopf bleibt derselbe, auch wenn die Grenze erreicht ist.**
+        // Er führt dann zur Kaufseite statt zum Formular. Ihn auszugrauen wäre
+        // die schlechtere Lösung: Der Nutzer sähe, dass es nicht geht, aber
+        // nicht, warum — und Produktprinzip 4 verbietet genau diese Sackgasse.
+        Button {
+            if canAddMeter {
+                editing = MeterDraft()
+            } else {
+                showingPaywall = true
+            }
+        } label: {
+            Label("Zähler hinzufügen",
+                  systemImage: canAddMeter ? "plus" : "lock")
+                .font(.system(.body, weight: .semibold))
+                .foregroundStyle(PulseColor.onAccent)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(PulseColor.tint,
+                            in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .accessibilityHint(canAddMeter
+                           ? "Öffnet das Formular für einen neuen Zähler"
+                           : "Kostenlos sind \(AccessPolicy.freeMeterLimit) Zähler. Doppeltippen, um die Freischaltungen anzusehen")
+
+        if let note = limitNote {
+            Text(note)
+                .font(PulseText.caption)
+                .foregroundStyle(PulseColor.inkTertiary)
+                .frame(maxWidth: .infinity, alignment: .center)
+        }
+    }
+
+    /// Die Leiste: Erinnerungen, Archiv, Freischaltungen.
+    ///
+    /// Drei Abschnitte, die man einmal einstellt und dann Monate nicht
+    /// anfasst. Sie standen bisher unter der Zählerliste und haben den Schirm
+    /// nach unten verlängert, ohne dass jemand dorthin wollte.
+    @ViewBuilder
+    private var leiste: some View {
+        if !meters.isEmpty { reminderSection }
+        if !archived.isEmpty { archivedSection }
+        freischaltenSection
     }
 
     /// Ob noch ein Zähler dazu darf.

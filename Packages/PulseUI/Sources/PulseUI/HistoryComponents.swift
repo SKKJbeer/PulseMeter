@@ -168,17 +168,22 @@ public struct PeriodBars: View {
     private let accent: Color
     private let selection: Int?
     private let unit: String
+    private let height: CGFloat
     private let onSelect: (Int) -> Void
 
     /// - Parameter unit: Einheit für die Ansage. Ein Balken, der „312" sagt,
     ///   sagt nichts — kWh und m³ stehen in derselben App nebeneinander, und
     ///   ohne Einheit ist die Zahl nicht zu deuten.
+    /// - Parameter height: Wie hoch die Balken stehen. Der Vorgabewert ist das
+    ///   Maß des Telefons; wer mehr Platz hat, gibt mehr an (`WideLayout`).
     public init(columns: [Column], accent: Color, selection: Int?, unit: String = "",
+                height: CGFloat = 140,
                 onSelect: @escaping (Int) -> Void) {
         self.columns = columns
         self.accent = accent
         self.selection = selection
         self.unit = unit
+        self.height = height
         self.onSelect = onSelect
     }
 
@@ -222,7 +227,7 @@ public struct PeriodBars: View {
                     bar(for: column)
                 }
             }
-            .frame(height: 140)
+            .frame(height: height)
 
             // Eine durchgehende Grundlinie statt einer Spur je Spalte.
             //

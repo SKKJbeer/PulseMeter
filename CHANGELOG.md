@@ -9,6 +9,66 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.114.0 — 2026-09-22
+
+**Auf dem Tablet stehen `Verlauf` und `Zähler` jetzt in zwei Spalten.**
+
+Seit 1.1 läuft die App auf dem iPad, aber entworfen war sie dafür nicht. Beide
+Schirme waren eine einzige Spalte aus Karten quer über die ganze Fensterbreite.
+Auf einem 13-Zöller im Querformat heißt das: Eine Zeile „Alle Ablesungen · 32
+Einträge" steht links, ihr Pfeil tausend Punkte weiter rechts, dazwischen ist
+nichts — und der Inhalt endet im oberen Drittel, während darunter der halbe
+Bildschirm leer bleibt.
+
+Die Antwort ist **eine Bühne und eine Leiste**:
+
+- **Links** das eine, wofür der Schirm da ist. Im Verlauf das Diagramm oder die
+  Tabelle, dazu die Gegenüberstellung des angetippten Abschnitts. Auf `Zähler`
+  die Zählerliste und der Knopf, der einen dazutut.
+- **Rechts**, in festen 360 Punkten, was dazugehört: Ablesungen, Tabellen,
+  Bericht, Kostensperre — beziehungsweise Erinnerungen, Archiv und
+  Freischaltungen.
+
+**Entschieden wird an der Breite, nicht an der Größenklasse.** `.regular` heißt
+nur „kein Telefon" und gilt für die 710 Punkte der Detailspalte im Hochformat
+genauso wie für die 1050 im Querformat. Zwei Spalten gibt es erst, wenn der
+Bühne danach noch 440 Punkte bleiben; darunter rückt die Leiste darunter, und
+das ist dort die richtige Antwort. Die eine Stelle, an der das steht, ist
+`PulseUI.WideLayout` — App und Klick-Dummy rechnen mit denselben Zahlen.
+
+**Das Diagramm wächst jetzt mit.** Die 140 Punkte Balkenhöhe waren nie ein Maß,
+sondern ein Rest vom Telefon; breiter wurde das Bild trotzdem, sodass die
+Balken in die Breite zogen und flach blieben. Das Verhältnis ist nicht
+erfunden, sondern aus dem Klick-Dummy abgelesen, wo dasselbe Diagramm seit
+jeher ein SVG mit dem Ansichtsfeld 322 × 148 ist.
+
+**Und das Querformat wird zum ersten Mal geprüft.** Seit 1.1 lässt sich die App
+drehen — die vier Lagen mussten in `Info.plist`, sonst hätte Apple den Bau
+abgelehnt. Angesehen hatte es nie jemand: Kein Lauf hat je gedreht, und ein
+Simulator startet im Hochformat. `testTabletUsesItsWidthInLandscape` dreht
+jetzt, prüft auf beiden Schirmen, dass die Leiste rechts der Fenstermitte steht
+und ohne Blättern erreichbar ist, und dreht zurück.
+
+Zwei Abweichungen zwischen App und Entwurf sind beim Umbau aufgefallen und
+behoben (Regel 2):
+
+- Die Zeile „Alle Ablesungen" steckte im Entwurf in `#view-chart` und
+  verschwand beim Umschalten auf „Alle Zahlen". In der App stand sie dort
+  weiter.
+- Unter „Zähler hinzufügen" stand ein leerer grauer Kasten, wenn es nichts
+  über die Grenze zu sagen gab. `.note` hat Hintergrund und Innenabstand; die
+  App zeigt die Zeile in diesem Fall gar nicht.
+
+Dazu eine Prüfung, die an einer gewöhnlichen Umformung falsch anschlug:
+`check-verwaiste-namen.py` kannte `let` und `var`, aber kein `func`. Aus
+`private var chartCard` wurde `private func chartCard(_:)`, und die Prüfung
+meldete einen verwaisten Namen, der keiner war.
+
+Neu im Entwurf geprüft: 292 statt 278 Prüfungen — die Leiste steht neben der
+Bühne und hält ihre 360 Punkte, der Umschalter steht über der Bühne und nicht
+über beidem, zu schmal rückt die Leiste darunter, und kein leerer Hinweiskasten
+mehr.
+
 ## 0.113.26 — 2026-09-14
 
 **Das Zeichen bleibt. Die Frage ist geschlossen.**

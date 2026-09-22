@@ -173,8 +173,8 @@ body {
 /* Der breite Rahmen. Kein iPad-Nachbau, sondern derselbe Rahmen in den
    Maßen, in denen die App auf die Seitenleiste umschaltet. */
 .device.breit {
-  width: min(1040px, 100%);
-  height: min(760px, calc(100vh - 190px));
+  width: min(1240px, 100%);
+  height: min(930px, calc(100vh - 190px));
   border-radius: 26px;
   border-width: 12px;
 }
@@ -395,6 +395,21 @@ ul.includes.done li::before { content: "✓"; color: var(--tint); font-size: 12p
 .sidebar button[aria-selected="true"] svg { color: var(--tint-ink); }
 .sidebar button:focus-visible { outline: 2px solid var(--tint); outline-offset: -2px; }
 
+/* Bühne und Leiste, wie `WideLayout` in der App.
+   Links das eine, wofür der Schirm da ist; rechts in fester Breite alles, was
+   es begleitet. Gefragt wird die **Behälterbreite** und nicht die des
+   Fensters: In der App entscheidet die Detailspalte, hier die Bildschirmfläche
+   — und beide sind schmaler als das, worin sie stecken. */
+.screen { container-type: inline-size; }
+.spalten { display: grid; gap: 16px; align-items: start; }
+@container (min-width: 818px) {
+  .spalten { grid-template-columns: minmax(440px, 1fr) 360px; column-gap: 18px; }
+  /* Ein Umschalter mit zwei Feldern über die ganze Tabletbreite ist keine Wahl
+     mehr, sondern eine Wand. Gekappt auf die Breite der Bühne — 360 für die
+     Leiste, 18 dazwischen —, damit seine Kante die des Diagramms trifft.
+     Dasselbe Maß wie `WideLayout.controlWidth`. */
+  #pane-history > .segmented { max-width: calc(100% - 378px); }
+}
 /* Das Raster wie in `OverviewView`: eine Angabe für ganzes Fenster, Hälfte
    und Drittel, ohne dass irgendwo eine Spaltenzahl festgeschrieben wäre. */
 .device.breit .cards {
@@ -871,7 +886,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>Zählora</h1>
-  <p>Klickbarer Entwurf · v0.113.26</p>
+  <p>Klickbarer Entwurf · v0.114.0</p>
 </div>
 
 <div class="device" id="device">
@@ -921,6 +936,12 @@ select.field { cursor: pointer; }
         <button type="button" aria-selected="false" data-mode="table">Alle Zahlen</button>
       </div>
 
+      <!-- Bühne und Leiste, wie `HistoryView.buehne` und `.leiste`. Links das
+           Diagramm oder die Tabelle, rechts die Zeilen, die dazugehören. Über
+           die ganze Breite eines Tablets gezogen war „Alle Ablesungen" links
+           und sein Pfeil tausend Punkte weiter rechts. -->
+      <div class="spalten">
+      <div class="buehne">
       <div id="view-chart">
         <div class="segmented" id="scale">
           <button type="button" aria-selected="true" data-scale="month">Monat</button>
@@ -943,12 +964,6 @@ select.field { cursor: pointer; }
         <div id="compare-block">
           <div class="section-label" id="cmp-label">Damals im August</div>
           <div class="chart-card" id="compare"></div>
-        </div>
-        <div class="list" style="margin-top:18px">
-          <button type="button" class="rowbtn" data-open="readings">
-            <div class="rl">Alle Ablesungen<small id="readings-count"></small></div>
-            <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
-          </button>
         </div>
       </div>
 
@@ -974,6 +989,20 @@ select.field { cursor: pointer; }
           <div class="tablewrap" id="table"></div>
           <div class="footnote" id="tablenote"></div>
         </div>
+      </div>
+      </div><!-- /buehne -->
+
+      <div class="leiste">
+      <!-- **Die Ablesungen stehen jetzt in der Leiste und nicht mehr im
+           Diagrammteil.** Vorher steckten sie in `#view-chart` und
+           verschwanden dadurch, sobald jemand auf „Alle Zahlen" umschaltete —
+           in der App standen sie dort weiter. Eine Abweichung nach Regel 2,
+           gefunden beim Umbau. -->
+      <div class="list">
+        <button type="button" class="rowbtn" data-open="readings">
+          <div class="rl">Alle Ablesungen<small id="readings-count"></small></div>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+        </button>
       </div>
 
       <!-- Ein Knopf statt zweier Marken. Zwei Marken mit „Ablesungen" und
@@ -1022,18 +1051,29 @@ select.field { cursor: pointer; }
           <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
         </button>
       </div>
+      </div><!-- /leiste -->
+      </div><!-- /spalten -->
     </section>
 
     <!-- ZÄHLER -->
     <section class="pane" id="pane-meters">
       <h2 class="large">Zähler</h2>
       <p class="datum">4 Zähler · Zuhause</p>
+
+      <!-- Dieselbe Aufteilung wie im Verlauf, siehe `MetersView.buehne`:
+           links die Zähler selbst, rechts, was man einmal einstellt und dann
+           Monate nicht anfasst. -->
+      <div class="spalten">
+      <div class="buehne">
       <div class="list" id="meterlist"></div>
       <button type="button" class="save" id="add-meter" style="--c:var(--tint);--c-ink:var(--tint-ink);margin-top:14px">
         Zähler hinzufügen
       </button>
       <div class="note" id="limit-note" style="text-align:center"></div>
-      <div class="section-label">Erinnerungen</div>
+      </div><!-- /buehne -->
+
+      <div class="leiste">
+      <div class="section-label" style="margin-top:0">Erinnerungen</div>
       <!-- Ungekauft steht hier eine Sperre statt eines toten Schalters. Ein
            ausgegrauter Schalter sagt nur, dass etwas nicht geht; diese Zeile
            sagt, was es ist und was es kostet — und führt dorthin
@@ -1073,6 +1113,9 @@ select.field { cursor: pointer; }
           <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
         </button>
       </div>
+
+      </div><!-- /leiste -->
+      </div><!-- /spalten -->
 
       <div class="section-label">Nur im Entwurf</div>
       <!-- `data-entwurf` markiert, was es in der App nicht gibt. Die
@@ -3542,6 +3585,12 @@ function renderLimitNote() {
     : rest === 0 ? `Kostenlos sind ${FREE_METER_LIMIT} Zähler. Freischalten kostet ${price("additionalMeters")}.`
     : rest === 1 ? "Noch ein Zähler ist kostenlos."
     : `Noch ${rest} Zähler sind kostenlos.`;
+  // **Ein leerer Kasten ist kein leerer Platz.** `.note` hat Hintergrund und
+  // Innenabstand; ohne Text stand unter dem Knopf ein graues Feld, das nichts
+  // sagt. Auf dem Telefon fiel es kaum auf, neben der Leiste sofort. In der
+  // App gibt es die Zeile in diesem Fall gar nicht (`if let note = limitNote`)
+  // — der Entwurf war von ihr abgewichen, Regel 2.
+  note.style.display = note.textContent ? "" : "none";
 }
 
 /* ============================================================
