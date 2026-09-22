@@ -1700,6 +1700,44 @@ Satz abgelehnt.
 > Silhouetten sind eine Entscheidung. Und eine Schwäche, die man selbst
 > hinschreibt, ist ein Ausschlussgrund und keine Fußnote.
 
+### Ein Index aus einer Zählung ist keine Adresse
+
+Zwei Läufe, derselbe Abbruch, zwei verschiedene Indizes:
+
+    No matches found for Element at index 2 from input {( ScrollView )}
+    No matches found for Element at index 1 from input {( ScrollView )}
+
+Beim ersten Mal lautete die Lehre „nicht die Elemente vorab auflösen, sondern
+bei jedem Aufruf neu zählen". **Das war zu wenig, und das zweite Mal hat es
+bewiesen.** Zählen und Zugreifen sind *zwei* Auflösungen des Baums, nicht eine:
+`count` liest ihn jetzt, `element(boundBy:)` liest ihn beim Benutzen noch
+einmal. Dazwischen legt sich ein Blatt über die Ansicht darunter oder eine
+Tastatur kommt hoch — und der Index von eben zeigt ins Leere.
+
+> **Ein Index, der aus einer Zählung stammt, ist nach dem nächsten Umbau
+> falsch.** `firstMatch` hat das Problem nicht: Index 0 gibt es, solange es
+> überhaupt einen Treffer gibt. Wer wirklich unterscheiden muss, unterscheidet
+> an einer **Eigenschaft** — Höhe, Beschriftung, Kennung —, nicht an der
+> Reihenfolge.
+
+Der Auslöser war harmlos und deshalb lehrreich: Ein `GeometryReader` um eine
+Bildlaufansicht ließ diese **hinter** einem Blatt im Baum stehen. Aus einer
+Bildlaufansicht wurden zwei, und ein Griff, der jahrelang gehalten hatte, weil
+es immer nur eine gab, brach.
+
+### Was groß gesetzt wird, wird auch groß gemeldet
+
+Eine Prüfung suchte den Abschnitt „Erinnerungen" und meldete, er fehle — auf
+dem Bildschirmfoto desselben Laufs war er zu sehen. Die Überschrift trägt
+`.textCase(.uppercase)`, und die Bedienhilfen melden dann **ERINNERUNGEN**. Der
+Vergleich war `label CONTAINS`, also mit Unterscheidung von Groß und Klein.
+
+> **Eine Textsuche in einer Oberflächenprüfung greift nie eine Überschrift, die
+> der Stil umformt.** Entweder auf eine Zeile ausweichen, die in normaler
+> Schreibweise dasteht, oder ausdrücklich `CONTAINS[c]` schreiben. Und die
+> Fehlermeldung „X fehlt" ist in diesem Fall gelogen: Sie beschreibt den
+> Griff, nicht die Ansicht.
+
 ### Eine Größenklasse ist keine Breite
 
 Ein Tablet hat zwei Lagen, und die Größenklasse kennt beide nicht auseinander.

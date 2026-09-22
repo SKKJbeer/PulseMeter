@@ -95,21 +95,34 @@ final class LaunchTests: XCTestCase {
         // hoch. Der Schnitt liegt weit von beiden entfernt.
         let mindestHoehe: CGFloat = 200
 
-        // **Die Behälter sind Vorschriften, keine Elemente — und das ist der
-        // Kern.** In 0.113.6 stand hier eine Liste fertig aufgelöster Elemente,
-        // gebaut aus einer Zählung von vorhin. Eine Abfrage in XCUITest löst
-        // sich aber erst beim Benutzen auf: Zwischen dem Bauen der Liste und
-        // dem Wischen ging ein Blatt zu, aus drei Bildlaufansichten wurden
-        // zwei, und der Griff nach der dritten brach den Test hart ab — „No
-        // matches found for Element at index 2". Jede Vorschrift zählt deshalb
-        // beim Aufruf neu, und was es dann nicht gibt, wird übersprungen statt
-        // angefasst.
+        // **Kein Zugriff über einen Index, der aus einer Zählung stammt.**
+        //
+        // Hier stand, es genüge, bei jedem Aufruf neu zu zählen — die Liste
+        // dürfe nur keine fertig aufgelösten Elemente enthalten. **Das war zu
+        // wenig, und Lauf 430 hat es bezahlt.** Zählung und Zugriff sind zwei
+        // Auflösungen, nicht eine: `count` liest den Baum jetzt, und
+        // `element(boundBy:)` liest ihn beim Wischen noch einmal. Dazwischen
+        // baut SwiftUI um — ein Blatt legt sich über die Ansicht darunter, eine
+        // Tastatur kommt hoch —, und der Index von eben zeigt ins Leere:
+        //
+        //     Failed to swipe up ScrollView at {{20, 62}, {400, 869.1}}:
+        //     No matches found for Element at index 1 from input {( ScrollView )}
+        //
+        // Aufgefallen ist es erst, als 0.114.0 den Ansichten einen
+        // `GeometryReader` gab und dadurch die Bildlaufansicht **hinter** dem
+        // Blatt im Baum stehen blieb: aus einer wurden zwei, und der Griff nach
+        // „der letzten" wurde zum Griff auf Sand.
+        //
+        // `firstMatch` hat dieses Problem nicht: Index 0 gibt es, solange es
+        // überhaupt einen Treffer gibt. Und der Grund, aus dem hier einmal „die
+        // letzte" stand — auf dem iPad stand eine 33 Punkte hohe Zeitraumleiste
+        // ganz hinten im Baum —, ist längst anders gelöst: durch
+        // ``mindestHoehe`` weiter oben. Eine Leiste wird übersprungen, weil sie
+        // flach ist, nicht weil sie an der falschen Stelle steht.
         let behaelter: [() -> XCUIElement] = [
-            // Von hinten nach vorn: Was zuletzt aufgebaut wurde, liegt oben.
-            { app.scrollViews.element(boundBy: max(app.scrollViews.count - 1, 0)) },
             { app.scrollViews.firstMatch },
-            { app.collectionViews.element(boundBy: max(app.collectionViews.count - 1, 0)) },
-            { app.tables.element(boundBy: max(app.tables.count - 1, 0)) },
+            { app.collectionViews.firstMatch },
+            { app.tables.firstMatch },
             { app },
         ]
 
@@ -2357,12 +2370,16 @@ final class LaunchTests: XCTestCase {
         XCTAssertTrue(ablesungen.waitForExistence(timeout: erscheint),
                       "Der Zugang zu den Ablesungen fehlt im Querformat")
 
-        // Dieselbe Schwelle wie in `WideLayout.splits`: Leiste 360, Abstand 18,
-        // Bühne mindestens 440. Sie steht hier als Zahl und nicht als Import,
-        // weil der Testbereich die Oberflächenbibliothek nicht kennt — ändert
-        // sich die eine Stelle, fällt diese Prüfung auf und nicht durch.
-        let fenster = app.windows.firstMatch.frame.width
-        guard fenster >= 818 else { return }
+        // **Gemessen wird das Fenster, entschieden wird an der Detailspalte —
+        // und die ist um die Seitenleiste schmaler.** Deshalb ist die Schwelle
+        // hier nicht die 818 aus `WideLayout.splits`, sondern die Breite, bei
+        // der die Detailspalte **sicher** darüber liegt: das große iPad Pro im
+        // Querformat, also das Gerät, das `scripts/sim.sh` für diesen Lauf
+        // wählt. Ein kleineres Tablet bleibt auch quer einspaltig, und das ist
+        // richtig und keine Ausnahme.
+        let rahmen = app.windows.firstMatch.frame
+        guard rahmen.width > rahmen.height, rahmen.width >= 1300 else { return }
+        let fenster = rahmen.width
 
         XCTAssertTrue(ablesungen.isHittable,
                       "Die Leiste steht zwar da, ist aber nur durch Blättern zu erreichen — "
@@ -2375,10 +2392,21 @@ final class LaunchTests: XCTestCase {
         // Und derselbe Aufbau auf dem zweiten Schirm. Zwei Ansichten, die sich
         // verschieden verhalten, sind schlimmer als eine, die es nicht tut.
         guard wechsel(zu: "Zähler", in: app) else { return }
-        let erinnerungen = text("Erinnerungen", in: app)
-        XCTAssertTrue(erinnerungen.waitForExistence(timeout: erscheint),
-                      "Der Abschnitt Erinnerungen fehlt im Querformat")
-        XCTAssertGreaterThan(erinnerungen.frame.minX, fenster / 2,
+        // **Nicht die Abschnittsüberschrift, und das hat Lauf 430 gekostet.**
+        // Hier stand „Erinnerungen" — die Überschrift des ersten Abschnitts in
+        // der Leiste. Sie trägt `.textCase(.uppercase)`, und was die
+        // Bedienhilfen dann melden, ist **ERINNERUNGEN**. Der Vergleich in
+        // ``text(_:in:)`` unterscheidet Groß und Klein, also fand er nichts,
+        // und die Meldung lautete „Der Abschnitt fehlt" — obwohl er auf dem
+        // Bildschirmfoto desselben Laufs zu sehen war.
+        //
+        // Gegriffen wird deshalb die Ladenzeile: normale Schreibweise, fester
+        // Wortlaut, und sie steht als letzte in der Leiste — was für sie
+        // stimmt, stimmt für die ganze Spalte.
+        let laden = text("Alle Funktionen freischalten", in: app)
+        XCTAssertTrue(laden.waitForExistence(timeout: erscheint),
+                      "Die Leiste auf „Zähler“ fehlt im Querformat")
+        XCTAssertGreaterThan(laden.frame.minX, fenster / 2,
                              "Auf „Zähler“ steht die Leiste nicht neben der Liste, sondern darunter")
     }
 }

@@ -9,6 +9,45 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.114.1 — 2026-09-22
+
+**Lauf 430: 41 von 42 grün auf beiden Familien — und die zwei Fehlschläge
+steckten beide im Prüfcode, nicht im Produkt.**
+
+Der Aufbau selbst hält: Auf dem iPad im Querformat steht die Leiste neben der
+Bühne, und alle Prüfungen, die durch `Verlauf` und `Zähler` gehen, sind
+durchgelaufen. Gefallen sind genau zwei Stellen.
+
+**iPad — „Der Abschnitt Erinnerungen fehlt im Querformat."** Er fehlte nicht.
+Die Überschrift trägt `.textCase(.uppercase)`, die Bedienhilfen melden also
+**ERINNERUNGEN**, und `label CONTAINS` unterscheidet Groß und Klein. Gegriffen
+wird jetzt die Ladenzeile „Alle Funktionen freischalten": normale Schreibweise,
+fester Wortlaut, und als letzte Zeile der Leiste steht sie für die ganze
+Spalte.
+
+**iPhone — `testEnteringAPriceOnANewMeter`, abgebrochen beim Wischen:**
+
+    Failed to swipe up ScrollView at {{20, 62}, {400, 869.1}}:
+    No matches found for Element at index 1 from input {( ScrollView )}
+
+Die Blätterhilfe griff die Bildlaufansicht über `element(boundBy: count - 1)`.
+Zählen und Zugreifen sind aber zwei Auflösungen des Baums, nicht eine — und
+0.114.0 hat genau dazwischen etwas verändert: Der `GeometryReader` ließ die
+Ansicht **hinter** dem Blatt im Baum stehen, aus einer Bildlaufansicht wurden
+zwei, und der Index von eben zeigte ins Leere. Gegriffen wird jetzt überall
+`firstMatch`. Der Grund, aus dem hier einmal „die letzte" stand — eine 33 Punkte
+hohe Leiste ganz hinten im Baum —, ist seit 0.113.20 anders gelöst: über die
+Mindesthöhe. Die alte Begründung stand nur noch da.
+
+Dazu enger gefasst: Die Querformatprüfung verlangte zwei Spalten ab 818 Punkten
+**Fensterbreite**. Entschieden wird aber an der Detailspalte, und die ist um die
+Seitenleiste schmaler. Jetzt läuft sie nur auf dem großen iPad Pro im
+Querformat — dem Gerät, das `scripts/sim.sh` wählt. Ein kleineres Tablet bleibt
+auch quer einspaltig, und das ist richtig.
+
+Zwei Einträge im Baukasten: ein Index aus einer Zählung ist keine Adresse, und
+was groß gesetzt wird, wird auch groß gemeldet.
+
 ## 0.114.0 — 2026-09-22
 
 **Auf dem Tablet stehen `Verlauf` und `Zähler` jetzt in zwei Spalten.**
