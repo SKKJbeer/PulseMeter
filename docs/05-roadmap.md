@@ -39,7 +39,7 @@ und stehen nirgends öffentlich (siehe „Öffentlich und intern" unten).
 
 | Fassung | Einreichen | Inhalt | Stand |
 |---|---|---|---|
-| **1.2** | 23.09. | Zwei Spalten auf dem iPad im Querformat · Diagramm wächst mit der Breite | **fertig**, Bau 36 VALID |
+| **1.2** | 23.09. | Zwei Spalten auf dem iPad im Querformat · Diagramm wächst mit der Breite | **eingereicht** 23.09., Bau 36, wartet auf Apple |
 | **1.3** | 07.10. | **Direkt zum Ziffernblock:** Erinnerung, Feld am Sperrbildschirm und Siri öffnen den Ziffernblock des richtigen Zählers · Umschalter im iPad-Hochformat kappen | mittel |
 | **1.4** | 21.10. | **Rundgang:** nach dem Sichern „Weiter mit Wasser", bis alle fälligen Zähler durch sind | mittel |
 | **1.5** | 04.11. | Import aus einer Tabelle, für Umsteiger mit Excel-Listen oder anderen Apps | mittel |
@@ -214,7 +214,7 @@ Die Reihenfolge ist bewusst nicht „Screens von oben nach unten", sondern nach 
 
 ---
 
-## Aktueller Stand — Version 0.115.3
+## Aktueller Stand — Version 0.115.4
 
 > **Hier stand achtzig Versionen lang „Aktueller Stand — Version 0.34.1".**
 > Darin: „Paywall und StoreKit — offen, braucht das Apple Developer Program."

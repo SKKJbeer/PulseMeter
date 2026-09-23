@@ -9,6 +9,18 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.115.4 — 2026-09-23
+
+**Fassung 1.2 ist bei Apple eingereicht, mit Bau 36.**
+
+    ✓ Bau 36 an die Fassung gehängt
+    Eingereicht. Zustand: WAITING_FOR_REVIEW
+
+Die erste Fassung im Zwei-Wochen-Takt, am ersten Einreichungstag. Vorher hat
+„Einreichung nachsehen" die Fassung angelegt und die Versionshinweise aus
+`09-appstore.md` eingetragen: 21 Punkte stehen, 0 offen. Die Bildschirmfotos
+hat Apple aus 1.1 übernommen; mit 1.3 kommen frische.
+
 ## 0.115.3 — 2026-09-23
 
 **Der Plan, am selben Abend umgeschnitten: ein Weg direkt zum Ziffernblock.**

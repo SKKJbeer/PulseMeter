@@ -424,6 +424,19 @@ Ablauf die Veröffentlichung ausdrücklich an — und dafür fehlte
 eigene Seite sagte „Bald im App Store". Behoben in 0.106.6, samt einer Prüfung
 am Ende des Ablaufs, die die **Seite abruft** statt den Push zu zählen.
 
+### Die vierte, 1.2 — eingereicht am 23. September
+
+**Die erste Fassung im Zwei-Wochen-Takt.** Zwei Spalten auf dem iPad im
+Querformat, und das Diagramm wächst mit der Breite. Eingereicht um 18:55 UTC
+mit Bau 36, belegt aus dem Protokoll:
+
+    ✓ Bau 36 an die Fassung gehängt
+    Eingereicht. Zustand: WAITING_FOR_REVIEW
+
+`min_bau: 36` stand dabei, damit kein älterer Bau ohne die Spalten angehängt
+wird. Die Bildschirmfotos hat Apple aus 1.1 übernommen; sie zeigen das
+Hochformat und sind damit nicht falsch, werden aber mit 1.3 erneuert.
+
 ### Und die dritte, 1.1 — freigegeben am 10. September
 
 **Die erste Fassung, die auf dem iPad läuft.** Seitenleiste statt Tableiste,
