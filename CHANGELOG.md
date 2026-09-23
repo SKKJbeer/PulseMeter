@@ -9,6 +9,46 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.115.0 — 2026-09-23
+
+**Eine Seite, die sagt, was drin ist und was kommt.**
+
+Vom Gründer verlangt: ein aktueller Stand der Funktionen und eine Roadmap,
+damit man sieht, dass die App weitergebaut wird. Beides steht jetzt auf
+`zaehlora.pages.dev/entwicklung.html`, in der Kopfleiste unter „Entwicklung".
+
+Drei Teile:
+
+- **Das kann Zählora jetzt** — sechs Karten über Eintragen, Sehen, Kosten,
+  Mitnehmen, Erinnern und die Geräte. Was Geld kostet, trägt ein Abzeichen.
+- **Woran gerade gearbeitet wird** — Bald, Danach, und „Angesehen, nicht
+  entschieden". Ohne Termine.
+- **Jede Fassung mit Datum** — die Zeitleiste, die vorher nur auf der
+  Startseite stand. Drei Fassungen in der ersten Woche sind das Argument, und
+  sie machen es besser als jeder Satz darüber.
+
+**Keine Termine, und das ist der Punkt.** Ein Datum auf einer Website ist ein
+Versprechen. Die Seite sagt das selbst: „Das ist ein Plan und kein
+Versprechen."
+
+Beim Schreiben ist mir ein eigener Fehler aufgefallen, bevor er online ging:
+Die zwei Spalten auf dem iPad standen unter „Das kann Zählora **jetzt**". Sie
+stehen aber in Bau 36 und damit in TestFlight, nicht im App Store. Jetzt
+stehen sie unter „Bald", ausdrücklich als „fertig, gerade im Test".
+
+**Und die interne Roadmap war achtzig Versionen alt.** In
+`docs/05-roadmap.md` stand „Aktueller Stand — Version 0.34.1" und darin
+„Paywall und StoreKit — offen, braucht das Apple Developer Program". Zu dem
+Zeitpunkt verkaufte die App seit Wochen sechs Freischaltungen. Der Abschnitt
+ist ersetzt: Stand, was im Laden steht, was in TestFlight liegt, und die zwei
+Dinge, die aus den alten Listen wirklich noch offen sind (Siri-Kurzbefehl,
+Foto-Belege). Dazu der Hinweis, dass dieselbe Aussage jetzt an zwei Orten
+steht und die Website im Zweifel das Dringendere ist.
+
+Die neue Seite steht in `sitemap.xml` und in der Liste, die
+`check-website.mjs` prüft: 0 Gedankenstriche auf 715 Wörter, keine Wörter, die
+auf jede App passen, kein Verweis auf ein Arbeitsmittel.
+
 ## 0.114.1 — 2026-09-22
 
 **Lauf 430: 41 von 42 grün auf beiden Familien — und die zwei Fehlschläge

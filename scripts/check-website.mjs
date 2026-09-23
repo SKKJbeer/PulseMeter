@@ -22,7 +22,7 @@ const base = "file://" + process.cwd() + "/" + dir + "/";
 // Die Antwortseiten zählen mit: Sie sind der Teil, über den jemand die
 // Website überhaupt findet (`docs/10-sichtbarkeit.md`, Abschnitt 7), und ein
 // toter Verweis dorthin fällt sonst niemandem auf.
-const seiten = ["index.html", "hilfe.html", "gas-in-kwh.html",
+const seiten = ["index.html", "entwicklung.html", "hilfe.html", "gas-in-kwh.html",
                 "abschlag-zu-hoch.html", "datenschutz.html", "impressum.html"];
 
 const failures = [];

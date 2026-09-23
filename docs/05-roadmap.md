@@ -167,83 +167,52 @@ Die Reihenfolge ist bewusst nicht „Screens von oben nach unten", sondern nach 
 
 ---
 
-## Aktueller Stand — Version 0.34.1
+## Aktueller Stand — Version 0.114.1
 
-| Schritt | Stand |
+> **Hier stand achtzig Versionen lang „Aktueller Stand — Version 0.34.1".**
+> Darin: „Paywall und StoreKit — offen, braucht das Apple Developer Program."
+> Zu dem Zeitpunkt verkaufte die App seit Wochen sechs Freischaltungen im
+> App Store. Ein Dokument, das niemand liest, wird nicht gepflegt, und dann
+> lügt es. Aufgefallen ist es, als der Gründer nach einer Roadmap fragte.
+
+| | Stand am 23. September 2026 |
 |---|---|
-| 1. `PulseCore` + Tests | **fertig** — 155 Prüfungen, alle Randfälle aus `02`, Abschnitt 3 |
-| 2. `PulseData` + Repositories | **fertig** — auf macOS geprüft |
-| 3. `PulseUI` Design-System | **fertig** — Hell und Dunkel, auf jedem Lauf fotografiert |
-| 4. Erfassungsfluss | **fertig** — Zählwerk-Optik, Plausibilisierung, Vorbelegung |
-| 5. Übersicht | **fertig** — Statuszeile, Karten, Kosten, Abschlagsvorschau |
-| 6. Verlauf und Zählerverwaltung | **fertig** — Monat/Quartal/Jahr, Diagramm und Tabelle, Menge oder Kosten, CSV-Export; Zählerverwaltung mit Preisen, Abschlag, Archiv |
-| 7. Tarife, Kosten, Prognose | **fertig** — saisonale Hochrechnung, Abschlagsvergleich |
-| 8. Widgets, Kurzbefehle, Erinnerungen | Erinnerungen und Widget **fertig**; Siri offen |
-| 9. Paywall und StoreKit | offen — braucht das Apple Developer Program |
-| 4. Erfassungsfluss — Nachtrag | **0.30.1** — aus dem zweiten Zählwerk führt ein Weg zurück; ohne ihn war der Tippfehler eine Sackgasse |
-| 10. Politur | **angefangen** (0.27.0), fortgesetzt in **0.32.0** und **0.34.0** — Verlauf und Zählerverwaltung durchgegangen: Diagrammbalken sagen Wert, Einheit, Vorjahr und Unvollständigkeit; Tabellenzeilen lesen sich als ein Satz; Preisfelder tragen ihre Beschriftung selbst — Karte und Fußzeilen lesen sich für VoiceOver als ein Satz, Bilder bei größter Schrift, Startzeit im Protokoll. Die 800 ms auf einem **Gerät** sind weiter offen |
+| **Im App Store** | **1.1** seit dem 10. September. Davor 1.0.1 am 7., 1.0 am 4. September |
+| **In TestFlight** | Bau 36 aus 0.114.1: zwei Spalten auf dem iPad, Querformat zum ersten Mal geprüft |
+| Käufe | 6 von 6 eingereicht und im Laden |
+| Länder | 175, Deutschland dabei |
+| `PulseCore` | grün |
+| Oberflächentests | 42 Prüfungen, grün auf iPhone **und** iPad |
+| Klick-Dummy | 292 Prüfungen, hell und dunkel |
+| Website | 415 Prüfungen, live auf `zaehlora.pages.dev` |
 
-### Was die App noch nicht kann, obwohl der Rechenkern es kann
+Die zehn Schritte aus „Reihenfolge der Umsetzung" sind abgearbeitet, Paywall
+und StoreKit eingeschlossen. Offen sind aus den alten Listen noch zwei Dinge,
+und beide sind Komfort und keine Lücke:
 
-Diese Liste ist wichtiger als sie aussieht: Was in `PulseCore` steht und in
-der Oberfläche fehlt, sieht in den Tests grün aus und ist trotzdem nicht da.
+- **Siri-Kurzbefehl** — der letzte offene Punkt aus Schritt 8.
+- **Foto-Belege** — die einzige Zeile, die auch der Entwurf nie kannte.
 
-| Fähigkeit | Rechenkern | App | Entwurf |
-|---|---|---|---|
-| Zweirichtungszähler (PV-Einspeisung) | ja | ja | ja |
-| Doppeltarif (HT/NT) | ja | ja | ja |
-| Zählerwechsel | ja | ja | ja |
-| PDF-Bericht | ja | ja | ja |
-| Foto-Belege | — | nein | nein |
+### Was öffentlich davon steht
 
-Der Zweirichtungszähler ist mit 0.22.0 geschlossen, der Zählerwechsel mit
-0.23.0 — dort allerdings **nur in der App**.
+Die kurze, für Käufer geschriebene Fassung dieses Plans steht auf
+**`docs/website/entwicklung.html`** und ist unter `zaehlora.pages.dev`
+erreichbar: was die App heute kann, woran gearbeitet wird, und jede Fassung
+mit Datum.
 
-Mit 0.24.0 ist auch der Entwurf nachgezogen: Er rechnet jetzt über dieselbe
-aufsummierte Reihe wie `PulseCore`, mit Gerätewechsel und Zählerüberlauf, und
-der Wechsel lässt sich anklicken. Damit gilt Regel 2 wieder ohne Einschränkung.
-
-Der Doppeltarifzähler ist mit 0.30.0 im Entwurf entstanden und mit **0.31.0**
-in der App angekommen: Er lässt sich anlegen, beide Zahlen werden in einem
-Vorgang erfasst, und Karte, Verlauf, Widget und Export rechnen über den
-ganzen Zähler statt über sein erstes Zählwerk. Der Grundpreis fällt dabei
-einmal an, nicht je Zählwerk.
-
-Mit **0.32.0** ist auch der PDF-Bericht angekommen: Zeitraum und Umfang zur
-Wahl, echte A4-Seiten, Zusammenfassung mit Abschlagssaldo, je Zähler die
-Monatstabelle mit Vorjahresvergleich und die Kosten je Zählwerk. Der
-rechnende Teil steht in `PulseCore` und ist damit ohne Xcode prüfbar.
-
-Damit ist die Tabelle geschlossen — bis auf die Foto-Belege, die auch der
-Entwurf nicht kennt.
-
-Zusätzlich entstanden, weil der Prototyp es nötig machte: Datenansicht mit
-Monats-, Quartals- und Jahresvergleich, Verbrauchsbericht mit Zeitraumwahl,
-CSV-Export, `BillingCycle`, `ScaledDecimal`, `PulseSnapshot`.
-
-Das Xcode-Projekt entsteht aus `project.yml`, und eine CI auf einem
-macOS-Läufer baut, testet und startet die App bei jedem Push. Sie legt
-Screenshots in Hell und Dunkel ab — damit lässt sich das Ergebnis auch ohne
-Mac beurteilen.
-
-### Die nächsten drei Schritte
-
-1. **Foto-Belege.** Die letzte offene Zeile in der Tabelle darüber — und
-   die einzige, die auch der Entwurf nicht kennt.
-
-2. **Siri-Kurzbefehl.** Der letzte offene Punkt aus Schritt 8.
-
-Danach Paywall und StoreKit, sobald das Apple Developer Program vorliegt. Das
-Widget wartet ebenfalls darauf: Die App-Gruppe greift ohne Entwicklerkonto
-nicht, im Simulator läuft der Ersatzpfad.
+> **Zwei Orte, eine Aussage.** Ändert sich hier die Reihenfolge, ändert sie
+> sich dort mit. Läuft es auseinander, gilt die Website als das Dringendere:
+> Sie ist die, die jemand liest, der die App kauft. Die Seite nennt bewusst
+> **keine Termine** — ein Termin auf einer Website ist ein Versprechen, und
+> versprochen wird hier nichts, was nicht schon gebaut ist.
 
 ### Wo gearbeitet wird
 
-`PulseCore` und der Klick-Dummy lassen sich unter Linux vollständig prüfen —
-Swift-Toolchain unter `/opt/swift/usr/bin`, Chromium für Playwright unter
-`/opt/pw-browsers`. Alles mit SwiftUI, SwiftData oder CloudKit braucht Xcode
-auf einem Mac.
+`PulseCore` und der Klick-Dummy lassen sich unter Linux prüfen, sofern eine
+Swift-Toolchain da ist; `scripts/pruefen.sh` **benennt**, was es überspringt,
+statt still darüber hinwegzugehen. Alles mit SwiftUI, SwiftData oder CloudKit
+braucht Xcode auf einem Mac oder den macOS-Läufer der CI.
 
-Wer dort mit Claude Code weiterarbeitet, findet die Arbeitsweise in `CLAUDE.md`
-und den Ablauf für Versionen, Release Notes und Tests in
-`.claude/skills/release-discipline/SKILL.md`. Beides wird automatisch gelesen.
+Wer hier weiterarbeitet, findet die Arbeitsweise in `CLAUDE.md`, den laufenden
+Zustand in `docs/06-uebergabe.md` und den Ablauf für Versionen, Release Notes
+und Tests in `.claude/skills/release-discipline/SKILL.md`.
