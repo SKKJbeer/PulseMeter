@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UserNotifications
 import PulseData
 
 @main
@@ -23,6 +24,18 @@ struct PulseMeterApp: App {
     /// Ansichten hören darauf, und drei eigene Kopien wären drei Zähler, die
     /// einander nicht erreichen.
     @State private var datenstand = Datenstand()
+
+    /// Wohin ein Tipp von außen führt — auf eine Erinnerung, das Widget oder
+    /// eine Adresse. Einmal für die ganze App, aus demselben Grund wie die
+    /// beiden darüber.
+    @State private var wegweiser: Wegweiser
+
+    /// Hält den Empfänger für Mitteilungen am Leben.
+    ///
+    /// `UNUserNotificationCenter` hält seinen Delegaten nur schwach. Ohne diese
+    /// Eigenschaft wäre er nach dem Konstruktor fort, und ein Tipp auf die
+    /// Erinnerung öffnete die App wieder irgendwo.
+    private let mitteilungen: MitteilungsEmpfang
 
     init() {
         // **Drei Stufen, nicht ein Schalter.**
@@ -85,6 +98,15 @@ struct PulseMeterApp: App {
         // der Kindersicherung, oder eine Rückerstattung. Ohne diese Zeile
         // erführe die Oberfläche davon erst beim nächsten Start.
         store.onChange = { [weak purchase] neu in purchase?.synchronise(with: neu) }
+
+        // **Im Konstruktor und nicht in einer Ansicht.** Tippt jemand auf eine
+        // Erinnerung, während die App geschlossen ist, liefert iOS den Tipp
+        // gleich nach dem Start ab. Wer den Empfänger erst in einer Ansicht
+        // einsetzt, kommt zu spät, und die App öffnet auf der Übersicht.
+        let wegweiser = Wegweiser()
+        _wegweiser = State(initialValue: wegweiser)
+        mitteilungen = MitteilungsEmpfang(wegweiser: wegweiser)
+        UNUserNotificationCenter.current().delegate = mitteilungen
     }
 
     var body: some Scene {
@@ -92,6 +114,7 @@ struct PulseMeterApp: App {
             RootView()
                 .environment(purchase)
                 .environment(datenstand)
+                .environment(wegweiser)
                 .task {
                     // **Nicht im Konstruktor.** Beides geht übers Netz, und
                     // ein Konstruktor kann nicht warten. Solange nichts

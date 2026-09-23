@@ -80,12 +80,47 @@ fi
 
 # Eine Berechtigung, die niemand braucht, ist ein Ablehnungsgrund und ein
 # Datenschutzversprechen weniger.
-rechte=$(grep -oE 'NS[A-Za-z]+UsageDescription|NSAllowsArbitraryLoads|CFBundleURLSchemes' \
+rechte=$(grep -oE 'NS[A-Za-z]+UsageDescription|NSAllowsArbitraryLoads' \
          App/Info.plist Widget/Info.plist 2>/dev/null || true)
 if [ -z "$rechte" ]; then
   printf "  %s✓%s Keine unbenutzten Berechtigungen in Info.plist\n" "$GRUEN" "$AUS"
 else
   printf "  %s✗%s In Info.plist steht:\n%s\n" "$ROT" "$AUS" "$rechte"; FEHLER=$((FEHLER + 1))
+fi
+
+# **Genau ein Adressschema, und genau das, das die App auch zerlegt.**
+#
+# Bis 0.115.4 schlug hier jedes `CFBundleURLSchemes` an, weil es keines gab
+# und jedes eine unbenutzte Tür gewesen wäre. Seit 0.116.0 gibt es eines:
+# `zaehlora://erfassen` führt vom Widget in den Ziffernblock.
+#
+# Ein Schema kann jede Website und jede App auslösen. Deshalb zählt, was diese
+# Tür kann, und das ist wenig: Sie öffnet einen Ziffernblock. Sie liest nichts,
+# sie schreibt nichts, und gesichert wird erst, wenn jemand Ziffern tippt und
+# „Sichern" drückt. `AppAddress` weist alles ab, was nicht genau so aussieht.
+#
+# Geprüft wird deshalb dreierlei: Es gibt nur dieses eine Schema, das Widget
+# meldet keines an, und es ist dasselbe, das `AppAddress` erwartet. Ein
+# zweites Schema, und sei es ein Tippfehler, fällt hier auf.
+schemata=$(python3 -c '
+import plistlib
+def lies(pfad):
+    try:
+        with open(pfad, "rb") as f:
+            d = plistlib.load(f)
+    except OSError:
+        return []
+    return [s for t in d.get("CFBundleURLTypes", []) for s in t.get("CFBundleURLSchemes", [])]
+print(",".join(lies("App/Info.plist")) + "|" + ",".join(lies("Widget/Info.plist")))
+')
+erwartet=$(grep -oE 'static let scheme = "[a-z]+"' \
+           Packages/PulseCore/Sources/PulseCore/Engine/AppAddress.swift 2>/dev/null \
+           | sed -E 's/.*"([a-z]+)"/\1/')
+if [ -n "$erwartet" ] && [ "$schemata" = "${erwartet}|" ]; then
+  printf "  %s✓%s Ein Adressschema, %s, und AppAddress erwartet dasselbe\n" "$GRUEN" "$AUS" "$erwartet"
+else
+  printf "  %s✗%s Adressschemata App|Widget: %s, erwartet: %s|\n" "$ROT" "$AUS" "$schemata" "$erwartet"
+  FEHLER=$((FEHLER + 1))
 fi
 
 # **Das Privacy-Manifest muss dasselbe sagen wie die Startseite.**

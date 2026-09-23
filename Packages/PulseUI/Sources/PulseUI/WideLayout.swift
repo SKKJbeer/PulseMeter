@@ -69,11 +69,20 @@ public enum WideLayout {
     /// Wie breit ein Umschalter über den Spalten sein darf.
     ///
     /// **Ein Segmentwähler mit zwei Feldern über 1300 Punkte ist keine Wahl
-    /// mehr, sondern eine Wand.** Gekappt wird auf die Breite der Bühne, nicht
-    /// auf ein rundes Maß: Dann steht der Umschalter genau über dem, was er
-    /// umschaltet, und die Kante stimmt mit der des Diagramms überein.
+    /// mehr, sondern eine Wand.** In zwei Spalten wird deshalb auf die Breite
+    /// der Bühne gekappt, nicht auf ein rundes Maß: Dann steht der Umschalter
+    /// genau über dem, was er umschaltet.
+    ///
+    /// **Im Hochformat des iPads stand er bis 1.2 über die ganze Breite**,
+    /// „Diagramm | Alle Zahlen" auf rund 740 Punkten. Dort gibt es keine Bühne,
+    /// an deren Kante er sich halten könnte, also ein festes Maß: 480 Punkte,
+    /// linksbündig. Die Zählerwahl darüber ist ebenfalls linksbündig und so
+    /// breit wie ihr Inhalt; die beiden Umschalter stehen damit in derselben
+    /// Flucht wie sie und nicht in der der Karten darunter.
     public static func controlWidth(_ width: CGFloat) -> CGFloat? {
-        splits(width) ? stageWidth(width) : nil
+        if splits(width) { return stageWidth(width) }
+        if roomy(width) { return 480 }
+        return nil
     }
 
     /// Wie hoch die Balken eines Diagramms stehen.

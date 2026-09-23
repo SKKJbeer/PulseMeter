@@ -410,6 +410,12 @@ ul.includes.done li::before { content: "✓"; color: var(--tint); font-size: 12p
      Dasselbe Maß wie `WideLayout.controlWidth`. */
   #pane-history > .segmented { max-width: calc(100% - 378px); }
 }
+/* Im Hochformat des Tablets gibt es keine Bühne, an deren Kante sich der
+   Umschalter halten könnte. Dasselbe feste Maß wie `WideLayout.controlWidth`:
+   480 Punkte, linksbündig, in der Flucht der Zählerwahl darüber. */
+@container (min-width: 640px) and (max-width: 817.98px) {
+  #pane-history > .segmented, #scale { max-width: 480px; }
+}
 /* Das Raster wie in `OverviewView`: eine Angabe für ganzes Fenster, Hälfte
    und Drittel, ohne dass irgendwo eine Spaltenzahl festgeschrieben wäre. */
 .device.breit .cards {
@@ -886,7 +892,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>Zählora</h1>
-  <p>Klickbarer Entwurf · v0.115.4</p>
+  <p>Klickbarer Entwurf · v0.116.0</p>
 </div>
 
 <div class="device" id="device">
@@ -1123,6 +1129,19 @@ select.field { cursor: pointer; }
            Produkt bewerten, nicht die Schalter, mit denen man den Entwurf
            umstellt. -->
       <div class="list" data-entwurf="1">
+        <!-- **Wo ein Tipp von außen ankommt.** Eine Mitteilung oder ein Widget
+             gibt es im Entwurf nicht, also stehen hier die beiden Tipps, die
+             sie auslösen. Sie rufen dieselbe Funktion wie in der App
+             (`OverviewView.uebernimmWunsch`): mit Kennung genau dieser Zähler,
+             ohne den fälligen, der am längsten wartet. -->
+        <div class="row" style="flex-direction:column;align-items:stretch;gap:10px">
+          <div class="rl">Tipp auf eine Erinnerung<small>So kommt „Zeit für eine Ablesung“ an: im Ziffernblock genau dieses Zählers</small></div>
+          <div id="sprung-erinnerung" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+        </div>
+        <div class="row">
+          <div class="rl">Tipp auf das Feld am Sperrbildschirm<small>Öffnet den fälligen Zähler, der am längsten wartet</small></div>
+          <button type="button" class="pick" data-springe="" id="sprung-widget">Antippen</button>
+        </div>
         <div class="row">
           <div class="rl">Kaufzustand<small>Zum Ansehen beider Seiten der Grenze — in der App gibt es diesen Schalter nicht</small></div>
           <div class="segmented" style="flex:0 0 auto;width:170px">
@@ -3785,6 +3804,41 @@ function openReadingEdit(idx) {
   openSheet("sheet-capture");
 }
 
+/* ============================================================
+   Wo ein Tipp von außen ankommt — wie `OverviewView.uebernimmWunsch`
+   ============================================================ */
+
+/* Mit Kennung genau dieser Zähler. Ohne, oder wenn es ihn nicht mehr gibt: der
+   fällige, der am längsten wartet; ist keiner fällig, der, der am längsten
+   nicht abgelesen wurde. Ein Zähler ohne jede Ablesung gilt als der
+   dringendste, er ist fällig, seit es ihn gibt. Derselbe Schlüssel wie in der
+   App, damit beide denselben Zähler wählen (Regel 2). */
+function springe(id) {
+  const zaehler = activeMeters();
+  if (!zaehler.length) return;
+  const schluessel = m => [isDue(m) ? 1 : 0, daysSinceReading(m) ?? Infinity];
+  const spaeter = (a, b) => {
+    const [x, y] = [schluessel(a), schluessel(b)];
+    return x[0] !== y[0] ? x[0] > y[0] : x[1] > y[1];
+  };
+  const ziel = (id && zaehler.find(m => m.id === id))
+    || zaehler.reduce((a, b) => (spaeter(b, a) ? b : a));
+  // Das Blatt hängt an der Übersicht; wer woanders steht, wird erst dorthin
+  // gebracht — wie `RootView`, das auf `tab = 0` schaltet.
+  document.querySelectorAll("#tabs button, #sidebar button").forEach(b =>
+    b.setAttribute("aria-selected", String(b.dataset.pane === "home")));
+  document.querySelectorAll(".pane").forEach(p =>
+    p.classList.toggle("on", p.id === "pane-home"));
+  openCapture(ziel.id);
+}
+
+function renderSprungTasten() {
+  const host = document.getElementById("sprung-erinnerung");
+  if (!host) return;
+  host.innerHTML = activeMeters().map(m =>
+    `<button type="button" class="pick" style="--c:${m.color};--c-ink:${textFarbe(m.color)}" data-springe="${m.id}">${m.name}</button>`).join("");
+}
+
 function openCapture(id) {
   capMeter = METERS.find(m => m.id === id);
   capIndex = 0;
@@ -4197,6 +4251,7 @@ function renderAll() {
   renderPicker();
   renderHistory();
   renderMeterList();
+  renderSprungTasten();
   renderLimitNote();
   renderStoreRow();
   renderReportRow();
@@ -4337,6 +4392,7 @@ function deleteMeter() {
 
 function refreshAfterMeterChange() {
   renderMeterList();
+  renderSprungTasten();
   renderStatus();
   renderCards();
   renderPicker();
@@ -4344,9 +4400,10 @@ function refreshAfterMeterChange() {
 
 /* Ereignisse */
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-capture],[data-reading],#cap-delete,[data-history],[data-meterchange],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export],[data-month],[data-open],[data-kaufen],[data-scope],[data-period],[data-meter],[data-pro],[data-unlock],#add-meter,#first-meter,#ed-save,#ed-archive,#ed-delete");
+  const t = e.target.closest("[data-capture],[data-reading],#cap-delete,[data-history],[data-meterchange],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export],[data-month],[data-open],[data-kaufen],[data-scope],[data-period],[data-meter],[data-pro],[data-springe],[data-unlock],#add-meter,#first-meter,#ed-save,#ed-archive,#ed-delete");
   if (!t) return;
 
+  if (t.dataset.springe !== undefined) return springe(t.dataset.springe || null);
   if (t.dataset.pro !== undefined) return setPro(t.dataset.pro === "1");
   if (t.dataset.unlock) return openPaywall(t.dataset.unlock);
   // In der Übersicht wird **direkt** gekauft, nicht erst ein Kaufblatt

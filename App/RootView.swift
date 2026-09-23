@@ -34,6 +34,9 @@ struct RootView: View {
     /// jeder dieser Lagen die falsche Oberfläche.
     @Environment(\.horizontalSizeClass) private var breite
 
+    /// Wohin ein Tipp von außen führt. Siehe ``Wegweiser``.
+    @Environment(Wegweiser.self) private var wegweiser
+
     /// Die drei Ziele an einer Stelle. Vorher standen Name, Symbol und Nummer
     /// dreimal im `TabView`; mit einer zweiten Navigation wären es sechs
     /// Stellen gewesen, und die laufen auseinander.
@@ -52,6 +55,21 @@ struct RootView: View {
             }
         }
         .tint(PulseColor.tint)
+        // Das Widget und jede Adresse `zaehlora://erfassen` kommen hier an.
+        // Eine fremde Adresse zerlegt ``AppAddress`` zu nichts, und dann
+        // passiert auch nichts.
+        .onOpenURL { url in
+            if let adresse = AppAddress(url: url) {
+                wegweiser.springe(zu: adresse)
+            }
+        }
+        // **Der Ziffernblock gehört zur Übersicht**, dort hängt das Blatt.
+        // Wer gerade im Verlauf steht, wird deshalb erst dorthin gebracht.
+        // Geöffnet wird das Blatt dann von der Übersicht selbst, die weiß,
+        // welche Zähler es gibt.
+        .onChange(of: wegweiser.ziel) { _, ziel in
+            if ziel != nil { tab = 0 }
+        }
     }
 
     /// Schmal: die Tableiste, unverändert seit 0.1.
@@ -255,6 +273,7 @@ struct OverviewView: View {
     @State private var rows: [MeterRow] = []
     @State private var points: [MeteringPoint] = []
     @State private var capturing: MeteringPoint?
+    @Environment(Wegweiser.self) private var wegweiser
     @State private var addingMeter = false
     @State private var problem: String?
     /// Welche Zahl gerade erklärt wird — `nil`, solange kein Blatt offen ist.
@@ -311,6 +330,10 @@ struct OverviewView: View {
             // Zählerliste ankommt. Zwei Wege wären zwei Gelegenheiten, dass
             // einer davon etwas ausrechnet, was der andere nicht kennt.
             .onChange(of: datenstand.version) { _, _ in reload() }
+            // Beim ersten Mal ist die Übersicht noch nicht gebaut, dann greift
+            // `start`. Steht sie schon, kommt der Wunsch hier an. Deshalb
+            // beide Wege, wie beim Verlauf.
+            .onChange(of: wegweiser.ziel) { _, _ in uebernimmWunsch() }
             .sheet(item: $capturing) { point in
                 CaptureView(meteringPoint: point, onSaved: { datenstand.geaendert() })
             }
@@ -680,6 +703,7 @@ struct OverviewView: View {
     /// Bildschirmfotos hingen dadurch voneinander ab.
     private func start() {
         reload()
+        uebernimmWunsch()
 
         // Öffnet den Erfassungsschirm gleich beim Start. Nur für die
         // Bildschirmfotos: Es ist der wichtigste Schirm der App und der
@@ -694,6 +718,34 @@ struct OverviewView: View {
         } else if Startschalter.gesetzt("-pulse-capture") {
             capturing = points.first
         }
+    }
+
+    /// Öffnet den Ziffernblock, wenn ein Tipp von außen es verlangt.
+    ///
+    /// **Mit Kennung** genau diesen Zähler — so kommt die Erinnerung an.
+    /// **Ohne Kennung, oder wenn es den Zähler nicht mehr gibt**, den fälligen,
+    /// der am längsten wartet; ist keiner fällig, den, der am längsten nicht
+    /// abgelesen wurde. Das ist die Frage, die das Widget auf dem
+    /// Sperrbildschirm stellt, und auf einen gelöschten Zähler zu zeigen wäre
+    /// eine Sackgasse (Produktprinzip 4).
+    ///
+    /// Ein Zähler ganz ohne Ablesung hat keine Tage seit der letzten und gilt
+    /// als der dringendste: Er ist fällig, seit es ihn gibt.
+    private func uebernimmWunsch() {
+        guard case .capture(let gewuenscht)? = wegweiser.ziel else { return }
+        wegweiser.erledigt()
+        // Ohne Zähler gibt es nichts abzulesen; die Übersicht zeigt dann ihren
+        // leeren Zustand mit dem Weg zum ersten Zähler.
+        guard !points.isEmpty else { return }
+
+        if let gewuenscht, let point = points.first(where: { $0.id == gewuenscht }) {
+            capturing = point
+            return
+        }
+        let laengste = rows.max { a, b in
+            (a.isDue ? 1 : 0, a.daysSinceReading ?? .max) < (b.isDue ? 1 : 0, b.daysSinceReading ?? .max)
+        }
+        capturing = laengste.flatMap { row in points.first { $0.id == row.id } } ?? points.first
     }
 
     private func reload() {
@@ -1077,6 +1129,7 @@ struct OverviewView: View {
         .modelContainer(try! PulseStore.container(inMemory: true, cloudKit: false))
         .environment(Purchase())
         .environment(Datenstand())
+        .environment(Wegweiser())
 }
 
 /// Der Anlass, ein Erklärblatt zu öffnen.

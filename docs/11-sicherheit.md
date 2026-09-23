@@ -25,7 +25,7 @@ spricht. Zählora spricht mit niemandem:
 | Fremde Pakete in `Package.swift` | **keine** — nur die eigenen drei |
 | `UIPasteboard` | **keine** |
 | `print`, `NSLog`, `os_log`, `Logger` | **keine** |
-| Eigene URL-Schemata (`CFBundleURLSchemes`) | **keine** |
+| Eigene URL-Schemata (`CFBundleURLSchemes`) | **eines**, `zaehlora://erfassen`, seit 0.116.0. Es öffnet nur den Ziffernblock, siehe Abschnitt 3 |
 | `NSAllowsArbitraryLoads` oder sonstige ATS-Ausnahmen | **keine** |
 | Berechtigungstexte für Kamera, Ort, Kontakte, Fotos | **keine** |
 
@@ -96,6 +96,18 @@ Einstufung: **niedrig**, und jetzt weg.
 
 ## 3. Angesehen und für richtig befunden
 
+**Das Adressschema `zaehlora`.** Seit 0.116.0 führt ein Tipp auf das Widget
+über `zaehlora://erfassen` in den Ziffernblock. Ein eigenes Schema ist eine Tür,
+die **jede** Website und jede App auslösen kann, deshalb zählt, was hinter ihr
+liegt: Sie öffnet einen Ziffernblock, sonst nichts. Sie liest keine Daten und
+gibt keine heraus, sie schreibt nichts, und gesichert wird erst, wenn jemand
+Ziffern tippt und „Sichern" drückt. `AppAddress` weist jede Adresse ab, die
+nicht genau `zaehlora://erfassen` oder `zaehlora://erfassen/<Kennung>` lautet;
+eine unbekannte Kennung öffnet den am längsten wartenden Zähler und nicht einen,
+den der Absender bestimmt. Schlimmstenfalls öffnet also eine fremde Seite ein
+Blatt, das man mit „Abbrechen" schließt. `check-sicherheit.sh` hält fest, dass
+es bei diesem einen Schema bleibt.
+
 **Wo die Daten liegen.** In der SwiftData-Ablage im App-Container. Kein Ordner
 außerhalb, keine zweite Kopie, kein Zwischenspeicher.
 
@@ -165,6 +177,8 @@ deshalb bei jedem Lauf mit — `scripts/pruefen.sh` prüft über
   Mixpanel, Amplitude, Bugsnag, Crashlytics, TelemetryDeck, PostHog),
 - `cloudKitDatabase` nie `.public` oder `.shared` — nur die private Datenbank
   des Nutzers,
+- genau ein Adressschema, `zaehlora`, nur in der App und nicht im Widget, und
+  dasselbe, das `AppAddress` erwartet,
 - die **Privacy-Manifeste** von App und Widget sind gültige Plists und sagen
   „kein Tracking, keine erfassten Daten" — dasselbe wie der Fragebogen,
 - kein direkter Zugriff auf `processInfo.arguments` außerhalb von

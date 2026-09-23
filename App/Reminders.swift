@@ -83,6 +83,9 @@ enum Reminders {
             content.title = entry.meteringPoint.name
             content.body = "Zeit für eine Ablesung."
             content.sound = .default
+            // Der Zähler reist mit. Ohne ihn öffnet ein Tipp auf „Strom" die
+            // App dort, wo sie zuletzt stand, und man sucht ihn noch einmal.
+            content.userInfo = [AppAddress.meterKey: entry.meteringPoint.id.uuidString]
 
             var components = DateComponents()
             components.year = entry.day.year

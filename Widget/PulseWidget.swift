@@ -47,7 +47,14 @@ struct PulseWidgetView: View {
     let entry: PulseEntry
 
     var body: some View {
-        inhalt.containerBackground(hintergrund, for: .widget)
+        inhalt
+            .containerBackground(hintergrund, for: .widget)
+            // **Ein Tipp führt zum Ziffernblock, nicht nur in die App.** Das
+            // Widget fragt „ist etwas fällig?" — wer darauf tippt, will
+            // ablesen. Ohne Kennung: Die App nimmt den Zähler, der am
+            // längsten nicht abgelesen wurde, denn das Widget fasst alle
+            // zusammen und kennt keinen einzelnen.
+            .widgetURL(AppAddress.capture(nil).url)
     }
 
     @ViewBuilder

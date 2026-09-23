@@ -1327,6 +1327,70 @@ for (const scheme of ["light", "dark"]) {
   await page.setViewportSize({ width: 1280, height: 1000 });
   await page.waitForTimeout(300);
 
+  // ------------------------------------------------ Tipp von außen, 1.3
+  //
+  // Eine Erinnerung oder das Feld am Sperrbildschirm führt in den
+  // Ziffernblock, und zwar auch dann, wenn gerade ein anderer Schirm offen
+  // ist: Das Blatt hängt an der Übersicht. Begonnen wird deshalb im Verlauf.
+  //
+  // Der erwartete Zähler wird hier **unabhängig** bestimmt, aus `isDue` und
+  // `daysSinceReading` und nicht aus `springe`. Eine Prüfung, die die Wahl mit
+  // derselben Funktion nachrechnet, die sie prüft, prüft nichts.
+  await page.locator('#sidebar [data-pane="history"]').click();
+  await page.waitForTimeout(200);
+  const vonAussen = await page.evaluate(() => {
+    const faellig = activeMeters().filter(isDue)
+      .sort((a, b) => (daysSinceReading(b) ?? Infinity) - (daysSinceReading(a) ?? Infinity));
+    const erwartet = (faellig[0] || activeMeters()[0]).name;
+    springe(null);
+    return {
+      erwartet,
+      offen: document.getElementById("sheet-capture").classList.contains("on"),
+      titel: document.getElementById("cap-title").textContent,
+      schirm: document.querySelector(".pane.on")?.id
+    };
+  });
+  note(vonAussen.offen && vonAussen.titel === vonAussen.erwartet,
+       `Das Feld am Sperrbildschirm öffnet den Ziffernblock des Zählers, der am längsten wartet `
+       + `(öffnet ${vonAussen.titel || "nichts"}, erwartet ${vonAussen.erwartet})`);
+  note(vonAussen.schirm === "pane-home",
+       `Dabei wechselt die App auf die Übersicht (offen: ${vonAussen.schirm})`);
+  await page.evaluate(() => closeSheets());
+  await page.waitForTimeout(150);
+
+  // Die Erinnerung trägt ihren Zähler mit: genau der öffnet sich, auch wenn
+  // ein anderer länger wartet.
+  await page.locator('#sidebar [data-pane="meters"]').click();
+  await page.waitForTimeout(200);
+  const erinnerung = await page.evaluate(() => {
+    const knopf = [...document.querySelectorAll('#sprung-erinnerung [data-springe]')].pop();
+    return knopf ? { id: knopf.dataset.springe, name: knopf.textContent.trim() } : null;
+  });
+  if (erinnerung) {
+    await page.locator(`#sprung-erinnerung [data-springe="${erinnerung.id}"]`).click();
+    await page.waitForTimeout(250);
+  }
+  const angekommen = await page.evaluate(() => document.getElementById("cap-title").textContent);
+  note(!!erinnerung && angekommen === erinnerung.name,
+       `Eine Erinnerung öffnet genau ihren Zähler (öffnet ${angekommen || "nichts"}, erwartet ${erinnerung?.name})`);
+  await page.evaluate(() => closeSheets());
+  await page.waitForTimeout(150);
+
+  // Die Umschalter im Hochformat des Tablets: zu schmal für zwei Spalten, zu
+  // breit für die Maße des Telefons. Festes Maß wie `WideLayout.controlWidth`.
+  await page.setViewportSize({ width: 1000, height: 1000 });
+  await page.locator('#sidebar [data-pane="history"]').click();
+  await page.waitForTimeout(300);
+  const hochformat = await page.evaluate(() => ({
+    schirm: Math.round(document.querySelector(".screen").getBoundingClientRect().width),
+    mode: Math.round(document.getElementById("mode").getBoundingClientRect().width)
+  }));
+  note(hochformat.schirm < 640 || hochformat.schirm >= 818 || hochformat.mode <= 481,
+       `Im Hochformat des Tablets hält der Umschalter 480 Punkte `
+       + `(${hochformat.mode} bei ${hochformat.schirm} Bildschirmfläche)`);
+  await page.setViewportSize({ width: 1280, height: 1000 });
+  await page.waitForTimeout(300);
+
   // Kein leerer Kasten, wo nichts zu sagen ist. `.note` hat Hintergrund und
   // Innenabstand; ohne Text stand unter dem Knopf ein graues Feld.
   await page.locator('#sidebar [data-pane="meters"]').click();

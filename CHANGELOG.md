@@ -9,6 +9,67 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.116.0 — 2026-09-23
+
+**Direkt zum Ziffernblock: der erste Teil von Fassung 1.3.**
+
+Bis hierher führte kein Eingang zu einem bestimmten Zähler. Die Erinnerung
+„Strom — Zeit für eine Ablesung" öffnete die App dort, wo sie zuletzt stand,
+das Feld auf dem Sperrbildschirm ebenso. Wer darauf tippte, musste den Zähler
+noch einmal suchen, ausgerechnet am Zähler, mit einer Hand frei.
+
+Jetzt gibt es **einen** Weg und zwei Eingänge, die ihn nutzen:
+
+| Eingang | Wo er ankommt |
+|---|---|
+| Tipp auf die Erinnerung „Strom" | im Ziffernblock für Strom |
+| Tipp auf das Feld am Sperrbildschirm | im Ziffernblock des fälligen Zählers, der am längsten wartet |
+
+Wer gerade im Verlauf oder in der Zählerliste steht, wird erst auf die
+Übersicht gebracht, denn dort hängt das Blatt. Die Rückfrage bei einem
+unplausiblen Wert bleibt, weil jeder Eingang im selben Ziffernblock endet.
+
+**Wie es gebaut ist.**
+
+- `PulseCore.AppAddress` — die Adresse `zaehlora://erfassen` mit oder ohne
+  Kennung, an **einer** Stelle, weil sie das Widget schreibt und die App liest.
+  Zerlegt wird sie ohne Xcode prüfbar: sieben neue Prüfungen, darunter „eine
+  fremde Adresse öffnet nichts" und „eine Erinnerung aus einer älteren Fassung,
+  die keinen Zähler mitgab, landet trotzdem im Ziffernblock".
+- `Wegweiser` — der Wunsch, wohin die App springen soll, nach demselben
+  Muster wie `verlaufFuer`: Die Übersicht nimmt ihn entgegen und setzt ihn
+  zurück.
+- `MitteilungsEmpfang` — nimmt den Tipp auf eine Erinnerung entgegen. Er wird
+  im Konstruktor der App eingesetzt und nicht in einer Ansicht: Wer die App
+  über die Erinnerung kalt startet, bekommt den Tipp gleich nach dem Start
+  zugestellt, und eine Ansicht käme dafür zu spät. Er lässt Erinnerungen jetzt
+  auch bei offener App erscheinen; vorher verschluckte iOS sie.
+- Jede Erinnerung trägt ihren Zähler mit, das Widget trägt die Adresse ohne
+  Kennung, und `Info.plist` meldet das Schema `zaehlora` an.
+
+**Dazu die Umschalter im iPad-Hochformat.** „Diagramm | Alle Zahlen" stand
+dort auf rund 740 Punkten. Jetzt hält er 480, linksbündig, in der Flucht der
+Zählerwahl darüber. In zwei Spalten bleibt es bei der Breite der Bühne. Auf dem
+iPhone ändert sich nichts.
+
+**Geprüft:** zwei neue Oberflächenprüfungen öffnen die Adresse aus dem Verlauf
+heraus und erwarten den Ziffernblock für Gas, den in den Beispieldaten
+überfälligen Zähler, und eine fremde Adresse darf nichts öffnen. Im Klick-Dummy
+stehen unter „Nur im Entwurf" die beiden Tipps zum Ausprobieren, mit vier
+neuen Prüfungen, die den erwarteten Zähler unabhängig bestimmen und nicht mit
+derselben Funktion, die sie prüfen.
+
+**Die Sicherheitsprüfung schlug an, und zu Recht.** `check-sicherheit.sh`
+verbot jedes `CFBundleURLSchemes`, weil es keines gab und jedes eine unbenutzte
+Tür gewesen wäre. Gelockert ist das nicht pauschal, sondern für genau dieses
+eine Schema: nur in der App, nicht im Widget, und dasselbe, das `AppAddress`
+erwartet. Ein zweites fällt weiter auf. In `docs/11-sicherheit.md` steht, was
+die Tür kann: einen Ziffernblock öffnen. Sie liest nichts, schreibt nichts, und
+gesichert wird erst nach Ziffern und „Sichern".
+
+Offen für 1.3: der Siri-Kurzbefehl. Er ist das größte Stück; wird er nicht
+rechtzeitig fertig, fährt er mit 1.4.
+
 ## 0.115.4 — 2026-09-23
 
 **Fassung 1.2 ist bei Apple eingereicht, mit Bau 36.**

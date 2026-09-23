@@ -2409,4 +2409,41 @@ final class LaunchTests: XCTestCase {
         XCTAssertGreaterThan(laden.frame.minX, fenster / 2,
                              "Auf „Zähler“ steht die Leiste nicht neben der Liste, sondern darunter")
     }
+
+    /// Ein Tipp auf das Widget führt in den Ziffernblock, nicht nur in die App.
+    ///
+    /// **Geprüft wird über die Adresse, weil sich ein Widget nicht antippen
+    /// lässt.** Das Widget trägt `zaehlora://erfassen`, und genau diese Adresse
+    /// öffnet die Prüfung. Die Erinnerung kommt über einen anderen Eingang an,
+    /// endet aber in derselben Funktion der Übersicht.
+    ///
+    /// Begonnen wird im Verlauf und nicht auf der Übersicht: Das Blatt hängt an
+    /// der Übersicht, und wer woanders steht, muss erst dorthin gebracht
+    /// werden. Genau das ist der Schritt, der am leichtesten vergessen wird.
+    ///
+    /// Erwartet wird **Gas**: In den Beispieldaten ist er absichtlich drei
+    /// Monate überfällig, alle anderen sind frisch abgelesen.
+    func testTheWidgetAddressOpensTheKeypadOfTheMostOverdueMeter() {
+        let app = launchWithData()
+        guard wechsel(zu: "Verlauf", in: app) else { return }
+        XCTAssertTrue(app.buttons["Monat"].waitForExistence(timeout: erscheint),
+                      "Der Verlauf wurde nicht geöffnet")
+
+        app.open(URL(string: "zaehlora://erfassen")!)
+
+        XCTAssertTrue(app.buttons["7"].waitForExistence(timeout: erscheint),
+                      "Die Adresse öffnete keinen Ziffernblock")
+        XCTAssertTrue(app.navigationBars["Gas"].exists,
+                      "Der Ziffernblock gehört nicht zum überfälligen Zähler. Zu sehen war: "
+                      + beschriftungen(in: app))
+    }
+
+    /// Eine fremde Adresse öffnet nichts. Sonst wäre jeder verstümmelte Verweis
+    /// ein Ziffernblock, den niemand bestellt hat.
+    func testAForeignAddressOpensNothing() {
+        let app = launchWithData()
+        app.open(URL(string: "zaehlora://verlauf")!)
+        XCTAssertFalse(app.buttons["7"].waitForExistence(timeout: 3),
+                       "Eine unbekannte Adresse öffnete den Ziffernblock")
+    }
 }
