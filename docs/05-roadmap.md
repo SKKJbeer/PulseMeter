@@ -40,19 +40,44 @@ und stehen nirgends öffentlich (siehe „Öffentlich und intern" unten).
 | Fassung | Einreichen | Inhalt | Stand |
 |---|---|---|---|
 | **1.2** | 23.09. | Zwei Spalten auf dem iPad im Querformat · Diagramm wächst mit der Breite | **fertig**, Bau 36 VALID |
-| **1.3** | 07.10. | Umschalter im iPad-Hochformat kappen · Siri-Kurzbefehl „Zählerstand eintragen" | klein |
-| **1.4** | 21.10. | Ablesen direkt aus der Erinnerung, ohne die App zu öffnen | mittel |
-| **1.5** | 04.11. | Rundgang: mehrere Zähler in einem Durchgang | mittel |
-| **1.6** | 18.11. | Import aus einer Tabelle, für Umsteiger mit Excel-Listen oder anderen Apps | mittel |
+| **1.3** | 07.10. | **Direkt zum Ziffernblock:** Erinnerung, Feld am Sperrbildschirm und Siri öffnen den Ziffernblock des richtigen Zählers · Umschalter im iPad-Hochformat kappen | mittel |
+| **1.4** | 21.10. | **Rundgang:** nach dem Sichern „Weiter mit Wasser", bis alle fälligen Zähler durch sind | mittel |
+| **1.5** | 04.11. | Import aus einer Tabelle, für Umsteiger mit Excel-Listen oder anderen Apps | mittel |
+| **1.6** | 18.11. | Puffer | — |
 
-**Warum 1.4 vor dem 1. November liegt.** Viele lesen zum Monatsanfang ab,
-und ab November läuft die Heizung. Wenn das Ablesen aus der Erinnerung heraus
-etwas bringt, dann in dem Monat, in dem die meisten zum ersten Mal wirklich
-einen Grund haben, auf den Gaszähler zu sehen.
+**Am Abend des 23. September umgeschnitten.** Mittags stand 1.3 mit Siri und
+den Umschaltern im Plan und 1.4 mit „ablesen direkt aus der Erinnerung, ohne
+die App zu öffnen". Beim Nachsehen im Code fiel zweierlei auf:
+
+1. **Kein Eingang führt zu einem bestimmten Zähler.** Die Erinnerung „Strom —
+   Zeit für eine Ablesung" öffnet die App dort, wo sie zuletzt stand. Das Feld
+   am Sperrbildschirm ebenso. Siri gibt es nicht. Alle drei brauchen denselben
+   Weg „Ziffernblock für Zähler X", und der ist einmal zu bauen, nicht dreimal.
+   Das Muster steht schon in der App: Eine Karte auf der Übersicht öffnet den
+   Verlauf ihres Zählers über einen Wunsch in `RootView`, der nach dem Erfüllen
+   verfällt.
+2. **Eine Eingabe in der Mitteilung umginge die Rückfrage.** Die App sieht sich
+   einen Wert an, bevor sie ihn sichert, und fragt nach, wenn er unter dem
+   letzten Stand oder weit über dem Üblichen liegt. So steht es auf der Website.
+   Eine Mitteilung kann nicht zurückfragen; ein Tippfehler landete ungeprüft im
+   Verlauf. **Deshalb gestrichen**, zugunsten eines Tipps, der im Ziffernblock
+   ankommt.
+
+Siri ist das größte Stück in 1.3. Braucht es länger, fährt es mit 1.4, und die
+beiden Tipp-Eingänge gehen trotzdem am 7. Oktober hinaus. Der Rundgang rückt
+dadurch zwei Wochen vor und baut auf demselben Weg auf.
+
+**Warum 1.3 vor dem 1. November liegt.** Viele lesen zum Monatsanfang ab,
+und ab November läuft die Heizung. Wer dann auf die Erinnerung tippt, soll im
+Ziffernblock landen und nicht auf der Übersicht.
 
 **Warum der Import zuletzt kommt.** Er gewinnt neue Nutzer, der Schwerpunkt
 ist aber, die zu halten, die schon da sind. Er bleibt im Plan, weil er die
 Hürde für jeden senkt, der nicht bei null anfangen will.
+
+**Warum ein Puffer.** Ein Zug, der einmal nicht rechtzeitig fertig ist, soll
+den Takt nicht reißen. Bleibt der Puffer frei, füllt ihn, was bis dahin an
+kleinen Dingen zusammenkommt.
 
 ### Voraussetzung: Zahlen
 
@@ -189,7 +214,7 @@ Die Reihenfolge ist bewusst nicht „Screens von oben nach unten", sondern nach 
 
 ---
 
-## Aktueller Stand — Version 0.115.2
+## Aktueller Stand — Version 0.115.3
 
 > **Hier stand achtzig Versionen lang „Aktueller Stand — Version 0.34.1".**
 > Darin: „Paywall und StoreKit — offen, braucht das Apple Developer Program."

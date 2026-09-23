@@ -9,6 +9,33 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.115.3 — 2026-09-23
+
+**Der Plan, am selben Abend umgeschnitten: ein Weg direkt zum Ziffernblock.**
+
+Auf die Frage des Gründers, welche Funktionen als Nächstes dran sind, habe ich
+im Code nachgesehen statt in der Roadmap. Zwei Befunde:
+
+- **Kein Eingang führt zu einem bestimmten Zähler.** Die Erinnerung „Strom —
+  Zeit für eine Ablesung" öffnet die App dort, wo sie zuletzt stand, das Feld
+  am Sperrbildschirm ebenso, und einen Siri-Kurzbefehl gibt es nicht. Alle drei
+  brauchen denselben Weg, und er ist einmal zu bauen.
+- **Die geplante Eingabe in der Mitteilung umginge die Rückfrage.** Die App
+  fragt nach, wenn ein Wert unter dem letzten Stand oder weit über dem Üblichen
+  liegt, und so steht es auf der Website. Eine Mitteilung kann nicht
+  zurückfragen. Gestrichen.
+
+Neu geschnitten, vom Gründer bestätigt:
+
+| Fassung | Einreichen | Inhalt |
+|---|---|---|
+| 1.3 | 07.10. | Direkt zum Ziffernblock: Erinnerung, Sperrbildschirm, Siri · Umschalter im iPad-Hochformat |
+| 1.4 | 21.10. | Rundgang über alle fälligen Zähler |
+| 1.5 | 04.11. | Import aus einer Tabelle |
+| 1.6 | 18.11. | Puffer |
+
+Dazu am selben Abend die Freigabe, 1.2 mit Bau 36 einzureichen.
+
 ## 0.115.2 — 2026-09-23
 
 **Die interne Roadmap, im Sparring mit dem Gründer ausgearbeitet.**
