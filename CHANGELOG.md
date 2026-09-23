@@ -9,6 +9,36 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.115.1 — 2026-09-23
+
+**Öffentlich steht nur, was fertig ist oder getestet wird.**
+
+0.115.0 hatte auf der Website drei Stufen mit Einzelheiten veröffentlicht,
+bis hin zu „Zählora auf dem Mac" und „CO₂ je Zähler". Das war die interne
+Planung, auf einer Seite für Käufer. Der Gründer hat es getrennt: öffentlich
+eine Tabelle mit dem, was gemacht ist und woran wirklich gerade gearbeitet
+wird, alles andere als „Demnächst".
+
+Die Tabelle auf `entwicklung.html`, von oben nach unten:
+
+| Stand | Was |
+|---|---|
+| Demnächst | Weitere Verbesserungen, ohne Einzelheiten |
+| Im Test | Zwei Spalten auf dem iPad (Bau 36) |
+| Fassung 1.1 | Zählora auf dem iPad, 10.09. |
+| Fassung 1.0.1 | Dieselben Zahlen auf allen Geräten, 07.09. |
+| Fassung 1.0 | Der Start, 04.09. |
+
+Oben die Zukunft, unten der Anfang, damit die Richtung der Arbeit sichtbar
+ist. Schmal wird jede Zeile ein Block mit Stand und Datum oben.
+
+**Die Regel dahinter** steht jetzt in `docs/05-roadmap.md`: Eine Zeile wandert
+erst auf die Website, wenn sie im Test ist. Was geplant ist, kann sich ändern,
+und dann stünde öffentlich etwas, das nie kam.
+
+Dazu ein Satz, der in der Trennung leicht untergeht: **„Intern" heißt nicht
+geheim.** Das Repository ist öffentlich, und die interne Roadmap liegt darin.
+
 ## 0.115.0 — 2026-09-23
 
 **Eine Seite, die sagt, was drin ist und was kommt.**

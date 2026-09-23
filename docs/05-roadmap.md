@@ -193,18 +193,26 @@ und beide sind Komfort und keine Lücke:
 - **Siri-Kurzbefehl** — der letzte offene Punkt aus Schritt 8.
 - **Foto-Belege** — die einzige Zeile, die auch der Entwurf nie kannte.
 
-### Was öffentlich davon steht
+### Öffentlich und intern
 
-Die kurze, für Käufer geschriebene Fassung dieses Plans steht auf
-**`docs/website/entwicklung.html`** und ist unter `zaehlora.pages.dev`
-erreichbar: was die App heute kann, woran gearbeitet wird, und jede Fassung
-mit Datum.
+Seit dem 23. September getrennt, auf Ansage des Gründers:
 
-> **Zwei Orte, eine Aussage.** Ändert sich hier die Reihenfolge, ändert sie
-> sich dort mit. Läuft es auseinander, gilt die Website als das Dringendere:
-> Sie ist die, die jemand liest, der die App kauft. Die Seite nennt bewusst
-> **keine Termine** — ein Termin auf einer Website ist ein Versprechen, und
-> versprochen wird hier nichts, was nicht schon gebaut ist.
+| | Öffentlich (`docs/website/entwicklung.html`) | Intern (diese Datei) |
+|---|---|---|
+| Was schon im App Store ist | ja, je Fassung mit Datum | ja |
+| Was gerade im Test ist | ja, eine Zeile „Im Test" | ja, mit Bau-Nummer |
+| Was geplant ist | **nein**, nur eine Zeile „Demnächst" ohne Einzelheiten | ja, mit Begründung und Reihenfolge |
+| Termine | nie | nur, wo sie feststehen |
+
+> **Eine Zeile wandert erst auf die Website, wenn sie im Test ist.** Nicht wenn
+> sie geplant ist, nicht wenn jemand daran arbeitet. Was im Test ist, kommt mit
+> hoher Wahrscheinlichkeit; was geplant ist, kann sich ändern, und dann stünde
+> öffentlich etwas, das nie kam.
+
+**„Intern" heißt hier: nicht auf der Website. Es heißt nicht: geheim.** Das
+Repository ist öffentlich (am 31. August nachgemessen). Wer sucht, liest diese
+Datei. Soll die Planung wirklich niemand sehen, gehört sie nicht hierher,
+sondern an einen privaten Ort.
 
 ### Wo gearbeitet wird
 

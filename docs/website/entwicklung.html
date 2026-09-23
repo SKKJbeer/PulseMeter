@@ -49,9 +49,8 @@
       <h1>Was drin ist, und was als Nächstes kommt</h1>
       <p class="blass" style="max-width:var(--w-text)">
         Zählora ist im September 2026 im App Store gestartet und hat in der
-        ersten Woche drei Fassungen bekommen. Hier steht beides: was die App
-        heute kann, und woran gearbeitet wird. Ohne Termine, weil Termine
-        Versprechen sind und ein Plan keines ist.
+        ersten Woche drei Fassungen bekommen. Hier steht, was die App heute
+        kann, und in welcher Fassung es dazukam.
       </p>
     </div>
   </section>
@@ -135,117 +134,59 @@
     </div>
   </section>
 
-  <!-- ====================================================== Woran gebaut -->
+  <!-- ============================================================ Stand -->
+  <!-- **Öffentlich steht nur, was fertig ist oder gerade getestet wird.**
+       Bis 0.115.0 standen hier drei Stufen mit Einzelheiten bis hin zu „Mac"
+       und „CO₂". Das war die interne Planung, auf einer Seite für Käufer.
+       Vom Gründer am 23. September getrennt: öffentlich die Tabelle, intern
+       die Roadmap in docs/05-roadmap.md. Was noch nicht gebaut wird, steht
+       hier als „Demnächst" und ohne Einzelheiten. -->
   <section>
     <div class="bahn">
-      <span class="marke-klein">Als Nächstes</span>
-      <h2>Woran gerade gearbeitet wird</h2>
+      <span class="marke-klein">Stand</span>
+      <h2>Was fertig ist, und was gerade getestet wird</h2>
       <p class="blass" style="max-width:var(--w-text)">
-        Das ist ein Plan und kein Versprechen. Die Reihenfolge ändert sich,
-        sobald sich herausstellt, dass etwas anderes wichtiger ist. Was hier
-        fertig wird, steht danach oben in der Liste und unten in der Zeitleiste.
+        Jede Zeile ist eine Fassung. Oben steht, woran gerade gearbeitet wird,
+        darunter, was schon im App Store ist.
       </p>
 
-      <div class="karten">
-
-        <div class="karte">
-          <b>Bald</b>
-          <p style="margin:6px 0 0">Kleine Sachen, die in den nächsten Fassungen landen.</p>
-          <ul class="liste" style="margin-top:14px">
-            <li><strong>Fertig, gerade im Test:</strong> Auf dem iPad im Querformat stehen Verlauf und Zähler in zwei Spalten. Links das Diagramm oder die Zählerliste, rechts alles, was dazugehört. Das Diagramm nimmt sich die Höhe, die da ist</li>
-            <li>Bestehende Ablesungen aus einer Tabelle einlesen, damit ein Umstieg nicht bei null anfängt</li>
-            <li>Mehrere Zähler in einem Durchgang eintragen, ohne nach jedem zurückzugehen</li>
-          </ul>
-        </div>
-
-        <div class="karte">
-          <b>Danach</b>
-          <p style="margin:6px 0 0">Größere Stücke, die je für sich eine Fassung füllen.</p>
-          <ul class="liste" style="margin-top:14px">
-            <li>Den Zählerstand mit der Kamera vorschlagen lassen. Auf dem Gerät gerechnet, und immer nur als Vorschlag, den du bestätigst</li>
-            <li>Eine Ablesung direkt aus der Erinnerung eintragen, ohne die App zu öffnen</li>
-            <li>Mehrere Wohnungen getrennt halten, für alle, die nicht nur einen Haushalt abrechnen</li>
-          </ul>
-        </div>
-
-        <div class="karte">
-          <b>Angesehen, nicht entschieden</b>
-          <p style="margin:6px 0 0">Hier steht, was wir erwägen. Mehr nicht.</p>
-          <ul class="liste" style="margin-top:14px">
-            <li>Zählora auf dem Mac</li>
-            <li>Ein Haushalt, zwei Leute, dieselben Zähler</li>
-            <li>CO₂ je Zähler, aber nur mit einer Quelle, für die wir geradestehen können</li>
-          </ul>
-        </div>
-
-      </div>
+      <table class="stand-tabelle">
+        <thead>
+          <tr><th scope="col">Stand</th><th scope="col">Was</th><th scope="col">Seit</th></tr>
+        </thead>
+        <tbody>
+          <tr class="stand-demnaechst">
+            <td><span class="stand stand-bald">Demnächst</span></td>
+            <td><b>Weitere Verbesserungen</b><span>Sie stehen hier, sobald sie in den Test gehen.</span></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td><span class="stand stand-test">Im Test</span></td>
+            <td><b>Zwei Spalten auf dem iPad</b><span>Im Querformat stehen Verlauf und Zähler nebeneinander: links das Diagramm oder die Liste, rechts alles, was dazugehört. Das Diagramm nimmt sich die Höhe, die da ist.</span></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td><span class="stand stand-laden">Fassung 1.1</span></td>
+            <td><b>Zählora auf dem iPad</b><span>Die Auswahl steht links am Rand, die Zähler liegen nebeneinander.</span></td>
+            <td><time datetime="2026-09-10">10.09.2026</time></td>
+          </tr>
+          <tr>
+            <td><span class="stand stand-laden">Fassung 1.0.1</span></td>
+            <td><b>Dieselben Zahlen auf allen Geräten</b><span>Abgleich über iCloud ohne Konto, ein Feld auf dem Sperrbildschirm, Kosten je Monat, Quartal und Jahr.</span></td>
+            <td><time datetime="2026-09-07">07.09.2026</time></td>
+          </tr>
+          <tr>
+            <td><span class="stand stand-laden">Fassung 1.0</span></td>
+            <td><b>Der Start</b><span>Zählerstände eintragen, Verbrauch und Kosten sehen, den Verlauf vergleichen, alles als Tabelle mitnehmen.</span></td>
+            <td><time datetime="2026-09-04">04.09.2026</time></td>
+          </tr>
+        </tbody>
+      </table>
 
       <p class="neuerungen-fuss">
-        Dir fehlt etwas, das hier nicht steht?
+        Dir fehlt etwas?
         <a href="hilfe.html">Schreib uns.</a> Die Adresse geht direkt an den
         Entwickler, nicht an ein Formular.
-      </p>
-    </div>
-  </section>
-
-  <!-- ========================================================= Zeitleiste -->
-  <section class="abschnitt-hell">
-    <div class="bahn">
-      <span class="marke-klein">Jede Fassung</span>
-      <h2>Was wann dazugekommen ist</h2>
-      <p class="blass" style="max-width:var(--w-text)">
-        Mit dem Tag, an dem die Fassung im App Store stand.
-      </p>
-
-      <ol class="neuerungen">
-        <li>
-          <div class="neuerung-kopf">
-            <time datetime="2026-09-10">10. September 2026</time>
-            <span class="fassung">Fassung 1.1</span>
-          </div>
-          <h3>Zählora läuft jetzt auch auf dem iPad</h3>
-          <p>
-            Statt der Leiste unten steht die Auswahl links am Rand, und deine
-            Zähler liegen nebeneinander statt untereinander. Auf einem großen
-            Schirm siehst du damit alle auf einmal.
-          </p>
-          <p>
-            Sonst ändert sich nichts. Dieselbe App, dieselben Zahlen, dieselben
-            Ablesungen auf beiden Geräten.
-          </p>
-        </li>
-        <li>
-          <div class="neuerung-kopf">
-            <time datetime="2026-09-07">7. September 2026</time>
-            <span class="fassung">Fassung 1.0.1</span>
-          </div>
-          <h3>Auf zwei Geräten dieselben Zahlen</h3>
-          <p>
-            Trägst du auf dem iPhone eine Ablesung ein, steht sie kurz darauf
-            auch auf deinem zweiten Gerät. Ohne Konto, ohne Schalter, ohne dass
-            du etwas einrichtest.
-          </p>
-          <p>
-            Dazu das Feld auf dem Sperrbildschirm und die Kosten je Monat,
-            Quartal und Jahr auf der Übersicht. Tippst du auf den Betrag,
-            rechnet Zählora dir vor, wie er zustande kommt.
-          </p>
-        </li>
-        <li>
-          <div class="neuerung-kopf">
-            <time datetime="2026-09-04">4. September 2026</time>
-            <span class="fassung">Fassung 1.0</span>
-          </div>
-          <h3>Der Anfang</h3>
-          <p>
-            Zählerstände eintragen, Verbrauch und Kosten sehen, den Verlauf
-            vergleichen, alles als Tabelle mitnehmen.
-          </p>
-        </li>
-      </ol>
-
-      <p class="neuerungen-fuss">
-        <a href="index.html">Zurück zur Startseite</a>
       </p>
     </div>
   </section>

@@ -559,3 +559,80 @@ p { margin: 0 0 16px; max-width: var(--w-text); text-wrap: pretty; }
 .fuss nav { display: flex; flex-wrap: wrap; gap: 20px; }
 .fuss a { color: var(--ink-2); text-decoration: none; }
 .fuss a:hover { color: var(--ink); text-decoration: underline; }
+
+/* ------------------------------------------------------- Stand-Tabelle */
+
+/* Eine Tabelle und keine Kartenreihe: Die Zeilen sind gleichartig, und das
+   Auge soll die Spalte „Stand" hinunterlaufen können. Oben die Zukunft, unten
+   der Anfang, damit die Richtung der Arbeit sichtbar ist. */
+.stand-tabelle {
+  width: 100%;
+  margin-top: 30px;
+  border-collapse: collapse;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  font-size: 15.5px;
+}
+.stand-tabelle th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.stand-tabelle td {
+  padding: 18px 20px;
+  vertical-align: top;
+  border-top: 1px solid var(--line);
+}
+.stand-tabelle tbody tr:first-child td { border-top: 0; }
+.stand-tabelle td:first-child { width: 150px; white-space: nowrap; }
+.stand-tabelle td:last-child {
+  width: 110px;
+  text-align: right;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.stand-tabelle td b { display: block; color: var(--ink); font-weight: 600; margin-bottom: 3px; }
+.stand-tabelle td span:not(.stand) { color: var(--ink-2); }
+.stand-demnaechst td { background: var(--raised); }
+
+.stand {
+  display: inline-block;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  border-radius: 999px;
+  padding: 3px 10px;
+  border: 1px solid var(--line);
+  color: var(--ink-2);
+  background: var(--surface);
+}
+.stand-test  { color: var(--tint-ink); border-color: var(--tint); }
+.stand-laden { color: var(--good); border-color: color-mix(in srgb, var(--good) 45%, transparent); }
+.stand-bald  { color: var(--ink-2); border-style: dashed; }
+
+/* Schmal steht jede Zeile als Block: Stand und Datum oben, Text darunter.
+   Drei Spalten auf 320 Punkten lassen dem Text eine Handbreit. */
+@media (max-width: 620px) {
+  .stand-tabelle thead { display: none; }
+  .stand-tabelle tr {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px 12px;
+    padding: 16px 18px;
+    border-top: 1px solid var(--line);
+  }
+  .stand-tabelle tbody tr:first-child { border-top: 0; }
+  .stand-tabelle td { padding: 0; border: 0; width: auto !important; }
+  .stand-tabelle td:nth-child(2) { grid-column: 1 / -1; grid-row: 2; }
+  .stand-demnaechst { background: var(--raised); }
+  .stand-demnaechst td { background: none; }
+}
