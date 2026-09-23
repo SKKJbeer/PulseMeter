@@ -258,6 +258,24 @@ Zusage — nicht ein Merkmal, das man aufzählen müsste.
 Geräten laufen. Das war die Arbeit von acht CI-Läufen und interessiert im Store
 niemanden. Ein Nutzer erfährt, was er sieht.
 
+Für 1.2:
+
+```
+Auf dem iPad im Querformat stehen Verlauf und Zähler jetzt nebeneinander.
+Links das Diagramm oder die Liste deiner Zähler, rechts, was dazugehört:
+Ablesungen, Tabellen, Bericht und Erinnerungen.
+
+Das Diagramm nimmt sich die Höhe, die der Schirm hergibt, im Querformat wie
+im Hochformat.
+
+Auf dem iPhone ändert sich nichts.
+```
+
+**Warum keine Zahl zur Höhe dasteht.** Auf dem 13-Zoll-iPad im Hochformat ist
+das Diagramm mehr als doppelt so hoch wie vorher, auf dem 11-Zoll-Gerät etwa
+anderthalbmal. Eine Zahl, die nur auf einem Gerät stimmt, ist auf dem anderen
+falsch.
+
 ---
 
 ## 2. Einordnung

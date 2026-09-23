@@ -9,6 +9,44 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.115.2 — 2026-09-23
+
+**Die interne Roadmap, im Sparring mit dem Gründer ausgearbeitet.**
+
+Vier Fragen, jede mit Begründung vorgelegt, alle vier entschieden:
+
+| Frage | Entscheidung |
+|---|---|
+| Takt | alle zwei Wochen eine Fassung, eingereicht mittwochs |
+| Schwerpunkt | schneller ablesen, also die halten, die schon da sind |
+| Vermieter | geparkt, bis Zahlen da sind |
+| Ablage | im Repository, obwohl es öffentlich ist |
+
+Daraus der Plan in `docs/05-roadmap.md`: 1.2 mit den zwei iPad-Spalten
+(fertig), 1.3 mit den Umschaltern im Hochformat und einem Siri-Kurzbefehl, 1.4
+mit dem Ablesen direkt aus der Erinnerung, 1.5 mit dem Rundgang über mehrere
+Zähler, 1.6 mit dem Import. Dazu „Später", „Geparkt" und „Nie", und eine
+Voraussetzung, die nur der Gründer schaffen kann: ein Schlüssel für App Store
+Connect, der Nutzungsberichte lesen darf. Ohne ihn ist alles unter „Später"
+geraten.
+
+**Der Kopf von `05-roadmap.md` war ebenso alt wie sein Ende.** Dort stand
+„Apple Developer Program, blockiert alles Weitere" unter „Für 1.0 offen", und
+unter „Geld" standen die Erinnerungen als kostenlos. Sie kosten seit August
+0,99 €. Der Kopf ist ersetzt, und die Liste zum Geld ist gestrichen statt
+korrigiert: Die eine Quelle dafür ist `Entitlement.swift`. Die alten Pläne für
+1.1, 1.2 und 2.0 von vor dem Start stehen nicht mehr daneben; eine Zeile sagt,
+was davon übernommen und was verschoben wurde.
+
+**Außendarstellung, aus dem Plan abgeleitet:**
+
+- Versionshinweise für 1.2 in `09-appstore.md`, ohne Zahl zur Diagrammhöhe,
+  weil sie nur auf dem 13-Zoll-Gerät stimmt.
+- Die Testzeile auf `entwicklung.html` trägt jetzt die Fassung: „1.2 · im
+  Test".
+- `CLAUDE.md` bekommt Regel 4a: der Takt, was öffentlich steht, und dass das
+  Einreichen eine Freigabe des Gründers bleibt.
+
 ## 0.115.1 — 2026-09-23
 
 **Öffentlich steht nur, was fertig ist oder getestet wird.**

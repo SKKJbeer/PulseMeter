@@ -245,6 +245,22 @@ Bau kostet einen gemieteten Mac und eine Nummer, die verbraucht ist.
 ansehen. Ein Bau ohne Hinweistext ist bei den Testern ein Bau ohne Auskunft —
 zehn Bauten lang stand dort nichts, und niemandem ist es aufgefallen.
 
+### Regel 4a — Alle zwei Wochen in den Laden
+
+Vom Gründer am 23. September entschieden: **alle zwei Wochen eine Fassung,
+eingereicht mittwochs.** Was an dem Tag nicht grün in TestFlight steht, fährt
+mit der nächsten. Der Plan, die Reihenfolge und die Begründung stehen in
+`docs/05-roadmap.md` unter „Der Plan".
+
+**Öffentlich steht nur, was im Test oder im Laden ist.** Geplantes erscheint
+auf `entwicklung.html` als „Demnächst", ohne Einzelheiten und ohne Termin.
+Welche Zeile wann wohin wandert, steht in `05-roadmap.md` unter „Wie eine
+Zeile nach außen wandert".
+
+Das Einreichen selbst bleibt eine Freigabe des Gründers: vorher eine Zeile an
+ihn, welche Fassung mit welchem Bau. Regel 4 endet in TestFlight, nicht im
+Laden.
+
 ### Pushen während eines laufenden Prüflaufs ist erlaubt
 
 **Diese Regel stand hier umgekehrt und war überholt.** Sie lautete „nie pushen,

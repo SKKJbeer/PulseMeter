@@ -1,68 +1,101 @@
 # 05 – Roadmap und v1-Scope
 
 Status: laufend gepflegt
-Letzte Änderung: 2026-08-10
+Letzte Änderung: 2026-09-23
 
 ---
 
 ## Leitsatz
 
-Der v1-Scope ist bewusst schmerzhaft klein. Jede Funktion, die wir vor dem ersten echten Nutzer bauen, ist eine Wette ohne Rückmeldung. Die größte Gefahr für dieses Projekt ist nicht ein fehlendes Feature — es ist eine Version 1, die nie fertig wird (Risiko R7).
+**Alle zwei Wochen eine Fassung im App Store.** Der Zug fährt, auch wenn ein
+Wagen fehlt: Was am Einreichungstag nicht grün in TestFlight steht, fährt mit
+dem nächsten.
+
+Der Leitsatz davor lautete, der Umfang von 1.0 sei „bewusst schmerzhaft
+klein". Er hat seinen Zweck erfüllt: 1.0 stand am 4. September im Laden. Jetzt
+ist die Gefahr eine andere. In der ersten Woche kamen drei Fassungen, danach
+dreizehn Tage keine. Wer von außen hinsieht, kann eine App, an der gearbeitet
+wird, nicht von einer unterscheiden, die liegengeblieben ist, außer am Takt.
 
 ---
 
-## Gesamtübersicht auf einen Blick
+## Entschieden am 23. September
 
-Für den schnellen Einstieg. Die Begründungen stehen weiter unten und in
-[`07-v1-plan.md`](07-v1-plan.md); hier steht nur, **was da ist und was nicht.**
+Im Sparring mit dem Gründer, jede Frage mit Begründung vorgelegt:
 
-### Gebaut und grün geprüft
+| Frage | Entscheidung | Warum |
+|---|---|---|
+| Takt | **alle zwei Wochen**, eingereicht mittwochs | Der Takt zeigt Weiterentwicklung, nicht die Größe einer Fassung |
+| Schwerpunkt | **schneller ablesen** | hält die, die schon da sind; das Monatsritual ist das Produkt |
+| Vermieter | **geparkt, bis Zahlen da sind** | widerspricht sonst „Ein Abo gibt es nicht" auf der Website |
+| Ablage dieser Datei | **im Repository** | jede Sitzung liest sie mit; die Offenheit ist in `CLAUDE.md` in Kauf genommen |
 
-| Bereich | Was |
+---
+
+## Der Plan
+
+Eingereicht wird mittwochs, alle zwei Wochen. Die Daten sind **Ziele für uns**
+und stehen nirgends öffentlich (siehe „Öffentlich und intern" unten).
+
+| Fassung | Einreichen | Inhalt | Stand |
+|---|---|---|---|
+| **1.2** | 23.09. | Zwei Spalten auf dem iPad im Querformat · Diagramm wächst mit der Breite | **fertig**, Bau 36 VALID |
+| **1.3** | 07.10. | Umschalter im iPad-Hochformat kappen · Siri-Kurzbefehl „Zählerstand eintragen" | klein |
+| **1.4** | 21.10. | Ablesen direkt aus der Erinnerung, ohne die App zu öffnen | mittel |
+| **1.5** | 04.11. | Rundgang: mehrere Zähler in einem Durchgang | mittel |
+| **1.6** | 18.11. | Import aus einer Tabelle, für Umsteiger mit Excel-Listen oder anderen Apps | mittel |
+
+**Warum 1.4 vor dem 1. November liegt.** Viele lesen zum Monatsanfang ab,
+und ab November läuft die Heizung. Wenn das Ablesen aus der Erinnerung heraus
+etwas bringt, dann in dem Monat, in dem die meisten zum ersten Mal wirklich
+einen Grund haben, auf den Gaszähler zu sehen.
+
+**Warum der Import zuletzt kommt.** Er gewinnt neue Nutzer, der Schwerpunkt
+ist aber, die zu halten, die schon da sind. Er bleibt im Plan, weil er die
+Hürde für jeden senkt, der nicht bei null anfangen will.
+
+### Voraussetzung: Zahlen
+
+**Offen beim Gründer.** Der Schlüssel für App Store Connect hat zu wenige Rechte
+für Nutzungsberichte. Damit wissen wir nicht, wie viele die App laden, was sie
+kaufen und wer nach vier Wochen noch abliest. Jede Entscheidung unter „Später"
+und „Geparkt" wartet genau darauf. Zu ändern in App Store Connect unter
+*Benutzer und Zugriff › Integrationen*: eine Rolle, die Berichte lesen darf.
+
+### Später
+
+| Was | Warum nicht jetzt |
 |---|---|
-| **Fundament** | `PulseCore` (155 Prüfungen) · `PulseData` mit SwiftData und CloudKit · `PulseUI` in Hell und Dunkel, Dynamic Type |
-| **Übersicht** | Statuszeile, Zähler-Karten, Kosten, Abschlagsvorschau, Fällig-Hinweis |
-| **Erfassung** | Zählwerk-Optik, Live-Plausibilisierung, Vorbelegung, mehrere Zählwerke in einem Vorgang, Weg zurück |
-| **Verlauf** | Monat/Quartal/Jahr, Diagramm und Tabelle, Menge oder Kosten, Vorjahresvergleich |
-| **Zählerverwaltung** | Preise, Abschlag, Archiv, Zählerwechsel |
-| **Rechnen** | Tarife und Kosten · saisonale Jahresprognose · Abschlagsvergleich · Zweirichtungszähler (PV) · Doppeltarif (HT/NT) · Zählerwechsel · Zählerüberlauf |
-| **Ausgabe** | CSV-Export *(frei)* · PDF-Bericht mit Zeitraumwahl · Erinnerungen · Home- und Lock-Screen-Widget |
-| **Werkzeug** | `pruefen.sh` als ein Befehl für alles · `mac-start.sh` und Doppelklick-Start · CI auf Linux und macOS · Bilder auch bei rotem Lauf · Zweige `screenshots` und `pruefungen` · Klick-Dummy mit echtem Rechenkern (44 Prüfungen) |
+| Kamera schlägt den Zählerstand vor (auf dem Gerät, immer zum Bestätigen) | größter Effekt, aber schwer zuverlässig. Eine falsch gelesene Ziffer ist schlimmer als keine |
+| Mehrere Wohnungen getrennt halten | wird zusammen mit „Vermieter" entschieden, sobald Zahlen da sind |
 
-### Für 1.0 offen
+### Geparkt
 
-| Was | Bei wem |
+Kein Signal, dass jemand danach fragt. Wieder angesehen, wenn Zahlen oder
+Zuschriften etwas anderes sagen.
+
+- **Vermieter als eigene Zielgruppe** — braucht ein eigenes Preismodell, und
+  die Website sagt „Ein Abo gibt es nicht".
+- Mac-App · geteilter Haushalt · CO₂ mit belastbarer Quelle · Foto-Belege ·
+  Steuerung im Kontrollzentrum
+
+### Nie
+
+Watch-App · Vergleich mit anderen Haushalten · Prognose über maschinelles
+Lernen. Die Begründungen stehen unter „v1.0 – Nicht enthalten".
+
+### Wie eine Zeile nach außen wandert
+
+| Wenn | Dann |
 |---|---|
-| **Apple Developer Program** (99 €) | **Nutzer** — blockiert alles Weitere und lässt sich nicht vorarbeiten |
-| Paywall, StoreKit 2, Kaufwiederherstellung | Sitzung am Mac, sobald das Programm da ist |
-| **App-Store-Material** — Icon, Bilder je Gerätegröße, Texte, Datenschutzerklärung, Support-Adresse | gemeinsam, **nicht angefangen** |
-| App-Privacy-Angaben | Nutzer |
-| Barrierefreiheit zu Ende | Sitzung am Mac |
-| 800 ms Kaltstart auf einem **Gerät** | Nutzer |
-| **Zwei Wochen echte Nutzung** | Nutzer |
+| eine Fassung in TestFlight steht | Zeile „Im Test" auf `entwicklung.html` |
+| sie im App Store steht | Zeile „Fassung x.y" mit Datum auf `entwicklung.html` **und** Eintrag unter „Was zuletzt dazugekommen ist" auf der Startseite · Versionshinweise aus `09-appstore.md` |
+| sie nur geplant ist | nichts. Öffentlich steht „Demnächst" |
 
-### Nach 1.0
-
-| Version | Inhalt |
-|---|---|
-| **1.1** | Objekte und Einheiten · Mieterzuordnung mit Ein-/Auszugsprotokoll und Unterschrift · Sammelerfassung · Vermieter-Abo · iPad-Layout · Import · **Foto-Belege** und **Siri-Kurzbefehl** (aus 1.0 gestrichen) |
-| **1.2** | Kamera-Erkennung des Zählerstands (on-device, immer als Vorschlag) · Erfassung aus der Benachrichtigung · Control-Center |
-| **2.0** | offen, marktabhängig: Mac-App · geteilte Haushalte · optionale Live-Datenquellen · CO₂ mit belastbarer Datenquelle |
-| **nie** | Watch-App · Vergleich mit anderen Haushalten · ML-Prognose |
-
-### Was das fürs Geldverdienen heißt
-
-**Frei bleibt dauerhaft:** bis zwei Zähler, unbegrenzte Ablesungen und
-Historie, Verlauf, Vorjahresvergleich, Erinnerungen und der CSV-Export.
-
-**Pro trägt zum Start mit fünf Dingen, die alle fertig sind:** unbegrenzte
-Zähler und Zählwerke, Kosten und Tarife, Abschlagsvergleich, Jahresprognose,
-PDF-Bericht.
-
-> ⚠️ **Fürs Store-Material:** In `04-monetarisierung.md` stehen **Foto-Belege**
-> und **Siri-Kurzbefehle** in der Pro-Liste. Beide sind aus 1.0 gestrichen und
-> dürfen in der Store-Beschreibung nicht auftauchen. Ein verkauftes Merkmal,
-> das es nicht gibt, ist eine Rückerstattung und eine schlechte Bewertung.
+> **Geld und Freischaltungen stehen nicht hier.** Die eine Quelle dafür ist
+> `Entitlement.swift`, und `check-versprechen.py` hält die Website daran fest.
+> Die Liste, die hier früher stand, führte die Erinnerungen als kostenlos. Sie
+> kosten seit August 0,99 €.
 
 ---
 
@@ -127,24 +160,13 @@ das Apple Developer Program.
 
 ---
 
-## v1.1 – „Für mehr als eine Wohnung"
+## Die Pläne für 1.1, 1.2 und 2.0 von vor dem Start
 
-- Objekte und Einheiten in der Oberfläche
-- Mieterzuordnung, Ein- und Auszugsprotokoll mit Unterschrift
-- Sammelerfassung mehrerer Zähler in einem Durchgang
-- Vermieter-Abo
-- iPad-Layout mit Sidebar
-- Import aus CSV und den verbreitetsten Wettbewerber-Formaten
-
-## v1.2 – „Weniger tippen"
-
-- Kamera-Erkennung des Zählerstands (on-device, Vision), immer als Vorschlag mit Bestätigung
-- Erfassung direkt aus der Benachrichtigung
-- Control-Center-Steuerung
-
-## v2.0 – offen, marktabhängig
-
-Kandidaten, in dieser Reihenfolge zu prüfen: Mac-App, geteilte Haushalte, optionale Live-Datenquellen (nur als zusätzliche Quelle für dasselbe Modell), CO₂ mit belastbarer Datenquelle.
+Am 23. September durch „Der Plan" oben ersetzt. Die alte Fassung stand bis
+dahin hier und ist in der Versionsgeschichte zu finden. Übernommen wurde, was
+weiter trägt: iPad-Layout (in 1.1 und 1.2 umgesetzt), Sammelerfassung,
+Import, Erfassung aus der Benachrichtigung, Kamera. Verschoben wurde, was an
+Vermietern hängt: Objekte und Einheiten, Mieterzuordnung, das Vermieter-Abo.
 
 ---
 
@@ -167,7 +189,7 @@ Die Reihenfolge ist bewusst nicht „Screens von oben nach unten", sondern nach 
 
 ---
 
-## Aktueller Stand — Version 0.114.1
+## Aktueller Stand — Version 0.115.2
 
 > **Hier stand achtzig Versionen lang „Aktueller Stand — Version 0.34.1".**
 > Darin: „Paywall und StoreKit — offen, braucht das Apple Developer Program."
