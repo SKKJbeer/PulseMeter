@@ -9,6 +9,32 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.116.1 — 2026-09-24
+
+**Lauf 439: 43 von 44 grün, und die eine neue Prüfung fand einen echten
+Fehler.**
+
+    Die Adresse öffnete keinen Ziffernblock
+
+Die Adresse kam an, während der Verlauf offen stand. `RootView` schaltete auf
+die Übersicht um, und die Übersicht nahm den Wunsch **im selben Zug**
+entgegen, öffnete das Blatt und hakte den Wunsch ab. Nur stand sie in diesem
+Moment noch nicht auf dem Schirm, und ein Blatt aus einer verborgenen Ansicht
+verwirft SwiftUI stillschweigend. Der Wunsch war weg, das Blatt nie offen.
+
+Jetzt merkt sich die Übersicht, ob sie sichtbar ist, und nimmt den Wunsch nur
+dann. Ist sie es nicht, bleibt er liegen, und ihr `onAppear` holt ihn ab. Ein
+Nutzer wäre genau hierüber gestolpert: Erinnerung antippen, während die App im
+Verlauf offen steht, und nichts passiert.
+
+Die Prüfung meldet jetzt, an welchem der beiden Glieder es hängt: ob die
+Adresse nie ankam, oder ob sie ankam und das Blatt nicht aufging.
+
+Dazu ein Eintrag im Baukasten: Ein Wunsch wird erst abgehakt, wenn er erfüllt
+werden kann.
+
+Nebenbei: Fassung 1.2 steht bei Apple auf `IN_REVIEW`.
+
 ## 0.116.0 — 2026-09-23
 
 **Direkt zum Ziffernblock: der erste Teil von Fassung 1.3.**

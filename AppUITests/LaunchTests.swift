@@ -2431,8 +2431,17 @@ final class LaunchTests: XCTestCase {
 
         app.open(URL(string: "zaehlora://erfassen")!)
 
-        XCTAssertTrue(app.buttons["7"].waitForExistence(timeout: erscheint),
-                      "Die Adresse öffnete keinen Ziffernblock")
+        // **Die Meldung sagt, an welchem Glied es hängt.** Die Kette hat zwei:
+        // Die Adresse kommt an und schaltet auf die Übersicht, dann öffnet die
+        // Übersicht das Blatt. Lauf 439 meldete nur „kein Ziffernblock", und
+        // welches Glied fehlte, war daraus nicht abzulesen.
+        guard app.buttons["7"].waitForExistence(timeout: erscheint) else {
+            XCTFail(app.navigationBars["Übersicht"].exists
+                    ? "Die Adresse kam an und schaltete auf die Übersicht, aber der Ziffernblock ging nicht auf"
+                    : "Die Adresse kam nicht an, die App blieb, wo sie war. Zu sehen war: "
+                      + beschriftungen(in: app))
+            return
+        }
         XCTAssertTrue(app.navigationBars["Gas"].exists,
                       "Der Ziffernblock gehört nicht zum überfälligen Zähler. Zu sehen war: "
                       + beschriftungen(in: app))

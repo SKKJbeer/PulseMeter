@@ -1700,6 +1700,25 @@ Satz abgelehnt.
 > Silhouetten sind eine Entscheidung. Und eine Schwäche, die man selbst
 > hinschreibt, ist ein Ausschlussgrund und keine Fußnote.
 
+### Ein Blatt aus einer verborgenen Ansicht geht nie auf
+
+Ein Tipp von außen (Adresse, Mitteilung) soll ein Blatt öffnen, das an einer
+Ansicht hängt, die gerade nicht zu sehen ist. Der naheliegende Aufbau: Die
+Wurzel schaltet auf den richtigen Tab, und die Ansicht hört im selben Zug auf
+den Wunsch, öffnet das Blatt und hakt ihn ab. Auf beiden Geräten: kein Blatt,
+keine Fehlermeldung. SwiftUI verwirft eine Präsentation aus einer Ansicht, die
+noch nicht auf dem Schirm steht, stillschweigend — und der Wunsch war da schon
+abgehakt.
+
+> **Ein Wunsch wird erst abgehakt, wenn er erfüllt werden kann.** Die Ansicht
+> merkt sich in `onAppear`/`onDisappear`, ob sie sichtbar ist, und nimmt den
+> Wunsch nur dann. Ist sie es nicht, bleibt er liegen, und ihr nächstes
+> `onAppear` holt ihn ab.
+
+Und die Prüfung dazu meldet, **an welchem Glied** es hängt. „Kein Blatt" sagt
+nicht, ob die Adresse nie ankam oder ob sie ankam und das Blatt nicht aufging.
+Das sind zwei verschiedene Fehler an zwei verschiedenen Stellen.
+
 ### Ein Index aus einer Zählung ist keine Adresse
 
 Zwei Läufe, derselbe Abbruch, zwei verschiedene Indizes:

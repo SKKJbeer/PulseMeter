@@ -274,6 +274,8 @@ struct OverviewView: View {
     @State private var points: [MeteringPoint] = []
     @State private var capturing: MeteringPoint?
     @Environment(Wegweiser.self) private var wegweiser
+    /// Ob die Übersicht gerade auf dem Schirm steht. Siehe ``uebernimmWunsch()``.
+    @State private var sichtbar = false
     @State private var addingMeter = false
     @State private var problem: String?
     /// Welche Zahl gerade erklärt wird — `nil`, solange kein Blatt offen ist.
@@ -323,7 +325,11 @@ struct OverviewView: View {
             }
             .background(PulseColor.ground)
             .navigationTitle("Übersicht")
-            .onAppear(perform: start)
+            .onAppear {
+                sichtbar = true
+                start()
+            }
+            .onDisappear { sichtbar = false }
             // **Ein Weg für alle drei Ansichten.** Die Blätter melden nur, dass
             // sich etwas geändert hat; neu geladen wird hier, an derselben
             // Stelle, an der auch eine Änderung aus dem Verlauf oder der
@@ -732,7 +738,14 @@ struct OverviewView: View {
     /// Ein Zähler ganz ohne Ablesung hat keine Tage seit der letzten und gilt
     /// als der dringendste: Er ist fällig, seit es ihn gibt.
     private func uebernimmWunsch() {
-        guard case .capture(let gewuenscht)? = wegweiser.ziel else { return }
+        // **Nur, wenn die Übersicht zu sehen ist.** Ein Blatt, das eine
+        // verborgene Ansicht öffnen soll, verwirft SwiftUI stillschweigend.
+        // Genau das geschah in 0.116.0: Die Adresse kam an, während der
+        // Verlauf offen stand, die Übersicht nahm den Wunsch im selben Zug
+        // entgegen, in dem `RootView` erst auf sie umschaltete, hakte ihn ab,
+        // und das Blatt ging nie auf. Jetzt bleibt der Wunsch liegen, bis die
+        // Übersicht erscheint; ihr `onAppear` holt ihn dann ab.
+        guard sichtbar, case .capture(let gewuenscht)? = wegweiser.ziel else { return }
         wegweiser.erledigt()
         // Ohne Zähler gibt es nichts abzulesen; die Übersicht zeigt dann ihren
         // leeren Zustand mit dem Weg zum ersten Zähler.
