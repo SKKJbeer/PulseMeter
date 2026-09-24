@@ -42,6 +42,10 @@ struct RootView: View {
     /// Der Zähler, dessen Ziffernblock ein Tipp von außen geöffnet hat.
     @State private var vonAussen: MeteringPoint?
 
+    /// Ob die Szene im Vordergrund steht. Ein Wunsch wird erst dann genommen,
+    /// siehe ``uebernimmWunsch()``.
+    @Environment(\.scenePhase) private var phase
+
     /// Die drei Ziele an einer Stelle. Vorher standen Name, Symbol und Nummer
     /// dreimal im `TabView`; mit einer zweiten Navigation wären es sechs
     /// Stellen gewesen, und die laufen auseinander.
@@ -69,18 +73,16 @@ struct RootView: View {
             }
         }
         // **Der Ziffernblock für einen Tipp von außen hängt hier, an der
-        // Wurzel, und nicht an der Übersicht.**
-        //
-        // In 0.116.0 und 0.116.1 hing er an der Übersicht, und wer im Verlauf
-        // stand, wurde erst dorthin gebracht. Zweimal ging das Blatt nicht auf:
-        // erst, weil die Übersicht den Wunsch nahm, solange sie verborgen war,
-        // dann, weil ein Blatt mitten im Wechsel der Ansicht ebenso verworfen
-        // wird. Hier gibt es keinen Wechsel. Der Ziffernblock geht über dem
-        // Schirm auf, der gerade offen ist, und danach steht man wieder dort.
+        // Wurzel.** Es gibt keinen Wechsel des Schirms: Er geht über dem auf,
+        // der gerade offen ist, und nach dem Sichern steht man wieder dort.
         .onChange(of: wegweiser.ziel) { _, _ in uebernimmWunsch() }
         // Beim Kaltstart kann der Wunsch schon stehen, bevor diese Ansicht da
-        // ist. Dann holt ihn das erste Erscheinen ab.
+        // ist, oder bevor die Szene im Vordergrund steht. Dann holt ihn das
+        // eine oder das andere ab, je nachdem, was zuletzt kommt.
         .onAppear { uebernimmWunsch() }
+        .onChange(of: phase) { _, neu in
+            if neu == .active { uebernimmWunsch() }
+        }
         .sheet(item: $vonAussen) { point in
             CaptureView(meteringPoint: point, onSaved: { datenstand.geaendert() })
         }
@@ -95,15 +97,31 @@ struct RootView: View {
     /// eine Sackgasse (Produktprinzip 4), und eine zweite Regel, welcher Zähler
     /// „am längsten wartet", hätte hier nichts verloren: Es gibt sie schon, im
     /// Rechenkern und geprüft.
+    ///
+    /// **Erst im Vordergrund, und einen Takt später.** Ein Tipp auf das Widget
+    /// oder die Erinnerung startet die App meistens neu: Sie war beendet oder
+    /// von iOS abgeräumt. Dann kommt die Adresse, während die Szene noch
+    /// aufgebaut wird, und ein Blatt, das in diesem Moment aufgehen soll,
+    /// verwirft SwiftUI ohne Meldung. Drei Läufe sind daran vergangen (439 bis
+    /// 441). Der Wunsch bleibt deshalb stehen, bis die Szene aktiv ist, und
+    /// das Blatt geht erst nach dem laufenden Durchgang auf.
     private func uebernimmWunsch() {
-        guard case .capture(let gewuenscht)? = wegweiser.ziel else { return }
+        guard case .capture(let gewuenscht)? = wegweiser.ziel,
+              phase == .active else { return }
         wegweiser.erledigt()
         guard let points = try? PulseRepository(context: context).meteringPoints(),
               !points.isEmpty else { return }
         let bevorzugt = [gewuenscht, WidgetBridge.read()?.headline?.id].compactMap { $0 }
-        vonAussen = bevorzugt.lazy
+        let ziel = bevorzugt.lazy
             .compactMap { id in points.first { $0.id == id } }
             .first ?? points.first
+        // Eine Viertelsekunde, damit das Fenster steht. Kürzer als jede
+        // Bewegung, die ein Mensch am Zähler macht, und lang genug, dass der
+        // erste Aufbau nach einem Kaltstart vorbei ist.
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(250))
+            vonAussen = ziel
+        }
     }
 
     /// Schmal: die Tableiste, unverändert seit 0.1.

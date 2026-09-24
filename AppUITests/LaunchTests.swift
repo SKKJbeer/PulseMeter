@@ -2410,34 +2410,77 @@ final class LaunchTests: XCTestCase {
                              "Auf „Zähler“ steht die Leiste nicht neben der Liste, sondern darunter")
     }
 
-    /// Ein Tipp auf das Widget führt in den Ziffernblock, nicht nur in die App.
+    /// Ein Tipp auf das Widget führt in den Ziffernblock, auch wenn die App
+    /// dafür erst starten muss.
     ///
     /// **Geprüft wird über die Adresse, weil sich ein Widget nicht antippen
     /// lässt.** Das Widget trägt `zaehlora://erfassen`, und genau diese Adresse
-    /// öffnet die Prüfung. Die Erinnerung kommt über einen anderen Eingang an,
-    /// endet aber in derselben Funktion der Übersicht.
+    /// öffnet die Prüfung.
     ///
-    /// Begonnen wird im Verlauf und nicht auf der Übersicht. In 0.116.0 und
-    /// 0.116.1 hing das Blatt an der Übersicht, und genau aus dem Verlauf heraus
-    /// ging es zweimal nicht auf. Seit 0.116.2 hängt es an der Wurzel und geht
-    /// über jedem Schirm auf; diese Prüfung hält fest, dass es dabei bleibt.
+    /// **`app.open(_:)` startet die App neu.** Bis 0.116.2 stand hier, die
+    /// Prüfung beginne im Verlauf und halte fest, dass das Blatt über jedem
+    /// Schirm aufgeht. Drei Läufe lang zeigte der Abzug danach die Übersicht,
+    /// und ich las das als Umschalten. Lauf 441 hat es widerlegt: Da schaltete
+    /// nichts mehr um, und trotzdem stand die Übersicht da. Die App war neu
+    /// gestartet. Diese Prüfung ist also der **Kaltstart**, und das ist der
+    /// häufigere Fall am Telefon. Die laufende App prüft die nächste.
     ///
     /// Erwartet wird **Gas**: In den Beispieldaten ist er absichtlich drei
     /// Monate überfällig, alle anderen sind frisch abgelesen.
     func testTheWidgetAddressOpensTheKeypadOfTheMostOverdueMeter() {
         let app = launchWithData()
-        guard wechsel(zu: "Verlauf", in: app) else { return }
-        XCTAssertTrue(app.buttons["Monat"].waitForExistence(timeout: erscheint),
-                      "Der Verlauf wurde nicht geöffnet")
 
         app.open(URL(string: "zaehlora://erfassen")!)
 
         guard app.buttons["7"].waitForExistence(timeout: erscheint) else {
-            XCTFail("Die Adresse öffnete keinen Ziffernblock. Zu sehen war: " + beschriftungen(in: app))
+            XCTFail("Die Adresse öffnete beim Start keinen Ziffernblock. Zu sehen war: "
+                    + beschriftungen(in: app))
             return
         }
         XCTAssertTrue(app.navigationBars["Gas"].exists,
                       "Der Ziffernblock gehört nicht zum überfälligen Zähler. Zu sehen war: "
+                      + beschriftungen(in: app))
+    }
+
+    /// Dieselbe Adresse, während die App läuft und im Verlauf steht.
+    ///
+    /// Das ist der Fall, in dem jemand eine Tabelle liest, die Erinnerung
+    /// kommt, und er auf sie tippt. Geöffnet wird über das System und nicht
+    /// über `app.open(_:)`, weil nur so die App dabei weiterläuft.
+    ///
+    /// Erwartet wird, dass der Ziffernblock **über** dem Verlauf aufgeht und
+    /// nach dem Schließen wieder der Verlauf dasteht.
+    func testTheAddressOpensTheKeypadOverTheScreenThatIsOpen() {
+        let app = launchWithData()
+        guard wechsel(zu: "Verlauf", in: app) else { return }
+        XCTAssertTrue(app.buttons["Monat"].waitForExistence(timeout: erscheint),
+                      "Der Verlauf wurde nicht geöffnet")
+
+        XCUIDevice.shared.system.open(URL(string: "zaehlora://erfassen")!)
+        // Der Simulator fragt bei einem eigenen Schema unter Umständen nach,
+        // ob die App geöffnet werden soll. Auf dem Telefon kommt die Frage bei
+        // einem Tipp auf Widget oder Erinnerung nicht; hier wird sie bejaht.
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        for wort in ["Öffnen", "Open"] where springboard.buttons[wort].waitForExistence(timeout: 2) {
+            springboard.buttons[wort].tap()
+            break
+        }
+
+        guard app.buttons["7"].waitForExistence(timeout: erscheint) else {
+            let wo = app.navigationBars["Verlauf"].exists
+                ? "Der Verlauf stand noch da, das Blatt ging nicht auf."
+                : "Der Verlauf stand nicht mehr da."
+            XCTFail("Die Adresse öffnete keinen Ziffernblock. \(wo) Zu sehen war: "
+                    + beschriftungen(in: app))
+            return
+        }
+        XCTAssertTrue(app.navigationBars["Gas"].exists,
+                      "Der Ziffernblock gehört nicht zum überfälligen Zähler. Zu sehen war: "
+                      + beschriftungen(in: app))
+
+        app.buttons["Abbrechen"].tap()
+        XCTAssertTrue(app.navigationBars["Verlauf"].waitForExistence(timeout: erscheint),
+                      "Nach dem Schließen stand nicht mehr der Verlauf da. Zu sehen war: "
                       + beschriftungen(in: app))
     }
 

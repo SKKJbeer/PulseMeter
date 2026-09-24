@@ -1700,36 +1700,42 @@ Satz abgelehnt.
 > Silhouetten sind eine Entscheidung. Und eine Schwäche, die man selbst
 > hinschreibt, ist ein Ausschlussgrund und keine Fußnote.
 
-### Ein Blatt für einen Tipp von außen hängt an der Wurzel
+### `app.open(URL)` startet die App neu — und ein Blatt beim Start braucht die aktive Szene
 
-Ein Tipp von außen (Adresse, Mitteilung) soll ein Blatt öffnen. Der erste
-Aufbau hängte es an die Ansicht, zu der es inhaltlich gehört, hier die
-Übersicht: Die Wurzel schaltet auf ihren Tab, die Übersicht öffnet das Blatt.
-Zwei Läufe, zweimal kein Blatt, und beide Male ohne Meldung:
+Ein Tipp von außen (Adresse, Mitteilung) soll ein Blatt öffnen. Drei Läufe,
+dreimal kein Blatt, und zweimal habe ich die falsche Ursache behoben:
 
-1. Die Übersicht nahm den Wunsch im selben Zug, in dem auf sie umgeschaltet
-   wurde, also noch verborgen. SwiftUI verwirft eine Präsentation aus einer
-   Ansicht, die nicht auf dem Schirm steht.
-2. Behoben mit „nur nehmen, wenn sichtbar" und `onAppear`. Lauf 440, mit einer
-   Prüfung, die das Glied nennt: *„Die Adresse kam an und schaltete auf die
-   Übersicht, aber der Ziffernblock ging nicht auf."* Auch ein Blatt, das im
-   `onAppear` mitten im Wechsel des Tabs aufgehen soll, wird verworfen. Beim
-   Start der App klappt dasselbe, weil dort nichts wechselt.
+1. Lauf 439: Die Prüfung stand im Verlauf, rief `app.open(URL)` auf, danach
+   stand die Übersicht da. Gelesen als: Die Wurzel schaltet auf die Übersicht,
+   und die nimmt den Wunsch, solange sie verborgen ist. Behoben mit „erst
+   nehmen, wenn sichtbar".
+2. Lauf 440: dasselbe Bild. Gelesen als: Auch ein Blatt mitten im Tabwechsel
+   wird verworfen. Behoben, indem das Blatt an die Wurzel kam und nichts mehr
+   umschaltet.
+3. Lauf 441: **Es schaltete nichts mehr um, und trotzdem stand die Übersicht
+   da.** Das geht nur auf einem Weg: Die App war neu gestartet.
 
-**Die Lehre aus 1. war zu kurz: Das Problem war nicht der Zeitpunkt, sondern
-der Ort.**
+> **`XCUIApplication.open(_:)` beendet die App und startet sie mit der Adresse
+> neu.** Wer damit „die laufende App bekommt eine Adresse" prüfen will, prüft
+> den Kaltstart. Für die laufende App gibt es `XCUIDevice.shared.system.open(_:)`;
+> der Simulator fragt dabei unter Umständen nach, ob geöffnet werden soll.
 
-> **Ein Blatt, das von außen ausgelöst wird, hängt an der Wurzel der App.**
-> Dort gibt es keinen Wechsel, der es verschlucken kann, und es geht über dem
-> Schirm auf, der gerade offen ist. Nach dem Schließen steht man wieder dort,
-> wo man war. Das ist ohnehin das Richtige: Wer aus dem Verlauf heraus auf eine
-> Erinnerung tippt, will ablesen und danach weiterlesen.
+> **Ein Blatt, das beim Kaltstart von außen ausgelöst wird, wartet auf
+> `scenePhase == .active` und einen Takt danach.** Die Adresse kommt, während
+> die Szene noch aufgebaut wird, und eine Präsentation in diesem Moment
+> verwirft SwiftUI ohne Meldung. Der Wunsch bleibt so lange stehen.
 
-Dazu eine Regel für die Prüfung: **Eine Oberflächenprüfung für eine Kette meldet,
-an welchem Glied sie reißt.** „Kein Blatt" allein hätte beim zweiten Mal
-wieder auf den Zeitpunkt gezeigt. Erst die Meldung „kam an, aber das Blatt ging
-nicht auf" hat die Vermutung widerlegt, bevor ich ein drittes Mal daran
-gedreht hätte.
+An der Wurzel hängt das Blatt trotzdem weiter, aus einem anderen Grund als
+dem, den ich zuerst genannt hatte: Es geht über dem Schirm auf, der gerade
+offen ist, und nach dem Schließen steht man wieder dort.
+
+**Die eigentliche Lehre ist die über das Lesen eines Abzugs.** Das Bild
+„Übersicht statt Verlauf" passte zu zwei Erklärungen, und ich habe zweimal die
+genommen, die zu meinem Code passte, statt die, die zur Prüfung passte. Wenn
+ein Abzug einen Zustand zeigt, den der Code gar nicht mehr herstellen kann,
+**hat jemand anderes ihn hergestellt**, und das ist zuerst das Werkzeug.
+Und: Eine Oberflächenprüfung für eine Kette meldet, an welchem Glied sie
+reißt. Ohne die Meldung aus 0.116.1 wäre Lauf 441 nicht lesbar gewesen.
 
 ### Ein Index aus einer Zählung ist keine Adresse
 

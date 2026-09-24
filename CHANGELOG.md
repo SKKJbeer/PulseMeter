@@ -9,6 +9,31 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.116.3 — 2026-09-24
+
+**Der Ziffernblock geht jetzt auch auf, wenn die App erst starten muss.**
+
+Lauf 441 war wieder rot, an derselben Prüfung. Diesmal hat der Abzug die
+Ursache verraten: Die Prüfung stand im Verlauf, rief die Adresse auf, und
+danach stand die Übersicht da. Seit 0.116.2 schaltet aber nichts mehr auf die
+Übersicht um. Die App war also neu gestartet, und zwar von der Prüfung selbst:
+`app.open(URL)` beendet die App und startet sie mit der Adresse neu.
+
+Damit waren die Erklärungen aus 0.116.1 (verborgene Ansicht) und 0.116.2
+(Tabwechsel) beide falsch. Alle drei Läufe haben den **Kaltstart** geprüft,
+und dort wird ein Blatt verworfen, das aufgehen soll, während die Szene noch
+aufgebaut wird. Am Telefon ist das der häufigere Fall: Wer auf das Widget
+tippt, hat die App meistens nicht offen.
+
+- **Der Wunsch wartet, bis die App im Vordergrund steht**, und das Blatt geht
+  eine Viertelsekunde danach auf.
+- **Zwei Prüfungen statt einer.** Die bisherige heißt jetzt, was sie ist: der
+  Kaltstart. Die neue öffnet die Adresse über das System, während die App im
+  Verlauf läuft, und erwartet den Ziffernblock darüber und nach dem Schließen
+  wieder den Verlauf.
+- Der Baukasten-Eintrag zu 0.116.2 ist ersetzt, nicht ergänzt: Seine
+  Begründung war widerlegt.
+
 ## 0.116.2 — 2026-09-24
 
 **Der Ziffernblock für einen Tipp von außen hängt jetzt an der Wurzel der App.**
