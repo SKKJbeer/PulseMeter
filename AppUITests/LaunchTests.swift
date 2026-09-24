@@ -2417,9 +2417,10 @@ final class LaunchTests: XCTestCase {
     /// öffnet die Prüfung. Die Erinnerung kommt über einen anderen Eingang an,
     /// endet aber in derselben Funktion der Übersicht.
     ///
-    /// Begonnen wird im Verlauf und nicht auf der Übersicht: Das Blatt hängt an
-    /// der Übersicht, und wer woanders steht, muss erst dorthin gebracht
-    /// werden. Genau das ist der Schritt, der am leichtesten vergessen wird.
+    /// Begonnen wird im Verlauf und nicht auf der Übersicht. In 0.116.0 und
+    /// 0.116.1 hing das Blatt an der Übersicht, und genau aus dem Verlauf heraus
+    /// ging es zweimal nicht auf. Seit 0.116.2 hängt es an der Wurzel und geht
+    /// über jedem Schirm auf; diese Prüfung hält fest, dass es dabei bleibt.
     ///
     /// Erwartet wird **Gas**: In den Beispieldaten ist er absichtlich drei
     /// Monate überfällig, alle anderen sind frisch abgelesen.
@@ -2431,15 +2432,8 @@ final class LaunchTests: XCTestCase {
 
         app.open(URL(string: "zaehlora://erfassen")!)
 
-        // **Die Meldung sagt, an welchem Glied es hängt.** Die Kette hat zwei:
-        // Die Adresse kommt an und schaltet auf die Übersicht, dann öffnet die
-        // Übersicht das Blatt. Lauf 439 meldete nur „kein Ziffernblock", und
-        // welches Glied fehlte, war daraus nicht abzulesen.
         guard app.buttons["7"].waitForExistence(timeout: erscheint) else {
-            XCTFail(app.navigationBars["Übersicht"].exists
-                    ? "Die Adresse kam an und schaltete auf die Übersicht, aber der Ziffernblock ging nicht auf"
-                    : "Die Adresse kam nicht an, die App blieb, wo sie war. Zu sehen war: "
-                      + beschriftungen(in: app))
+            XCTFail("Die Adresse öffnete keinen Ziffernblock. Zu sehen war: " + beschriftungen(in: app))
             return
         }
         XCTAssertTrue(app.navigationBars["Gas"].exists,

@@ -9,6 +9,40 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.116.2 — 2026-09-24
+
+**Der Ziffernblock für einen Tipp von außen hängt jetzt an der Wurzel der App.**
+
+Lauf 440 meldete, was die Prüfung seit 0.116.1 melden kann:
+
+    Die Adresse kam an und schaltete auf die Übersicht,
+    aber der Ziffernblock ging nicht auf
+
+Die Behebung aus 0.116.1 (den Wunsch erst nehmen, wenn die Übersicht sichtbar
+ist) war richtig gedacht und reichte nicht: Auch ein Blatt, das im `onAppear`
+mitten im Wechsel des Tabs aufgehen soll, verwirft SwiftUI. Das Problem war
+nicht der Zeitpunkt, sondern der Ort.
+
+Jetzt:
+
+- **Das Blatt hängt an `RootView`.** Es gibt keinen Wechsel mehr; der
+  Ziffernblock geht über dem Schirm auf, der gerade offen ist, und nach dem
+  Sichern steht man wieder dort. Wer im Verlauf auf eine Erinnerung tippt,
+  liest ab und liest danach weiter.
+- **Das Widget gibt den Zähler mit, den es zeigt.** Wer auf „Gas fällig"
+  tippt, bekommt Gas, aus derselben Zahl. Die Regel dafür steht schon im
+  Rechenkern, `WidgetSummary.headline`, und ist dort geprüft. Die eigene
+  Auswahl „am längsten wartend", die 0.116.0 in die Übersicht geschrieben
+  hatte, ist gestrichen: zwei Regeln für dieselbe Frage laufen auseinander.
+- Die Übersicht ist wieder so wie vor 0.116.0.
+
+Der Klick-Dummy wechselt ebenfalls nicht mehr den Schirm, und seine Prüfung
+hält jetzt fest, dass der Verlauf offen bleibt.
+
+Im Baukasten ist der Eintrag von 0.116.1 **ersetzt, nicht ergänzt**: Ein Blatt
+für einen Tipp von außen hängt an der Wurzel, und eine Prüfung für eine Kette
+meldet, an welchem Glied sie reißt.
+
 ## 0.116.1 — 2026-09-24
 
 **Lauf 439: 43 von 44 grün, und die eine neue Prüfung fand einen echten

@@ -49,12 +49,11 @@ struct PulseWidgetView: View {
     var body: some View {
         inhalt
             .containerBackground(hintergrund, for: .widget)
-            // **Ein Tipp führt zum Ziffernblock, nicht nur in die App.** Das
-            // Widget fragt „ist etwas fällig?" — wer darauf tippt, will
-            // ablesen. Ohne Kennung: Die App nimmt den Zähler, der am
-            // längsten nicht abgelesen wurde, denn das Widget fasst alle
-            // zusammen und kennt keinen einzelnen.
-            .widgetURL(AppAddress.capture(nil).url)
+            // **Ein Tipp führt zum Ziffernblock, nicht nur in die App**, und
+            // zwar zu dem Zähler, den das Widget zeigt. Wer auf „Gas fällig"
+            // tippt, will Gas ablesen. Ohne Zusammenfassung bleibt die Kennung
+            // leer, und die App nimmt denselben Zähler aus derselben Datei.
+            .widgetURL(AppAddress.capture(entry.summary?.headline?.id).url)
     }
 
     @ViewBuilder

@@ -1330,8 +1330,8 @@ for (const scheme of ["light", "dark"]) {
   // ------------------------------------------------ Tipp von außen, 1.3
   //
   // Eine Erinnerung oder das Feld am Sperrbildschirm führt in den
-  // Ziffernblock, und zwar auch dann, wenn gerade ein anderer Schirm offen
-  // ist: Das Blatt hängt an der Übersicht. Begonnen wird deshalb im Verlauf.
+  // Ziffernblock, und zwar über dem Schirm, der gerade offen ist. Begonnen
+  // wird deshalb im Verlauf, und der muss danach noch offen sein.
   //
   // Der erwartete Zähler wird hier **unabhängig** bestimmt, aus `isDue` und
   // `daysSinceReading` und nicht aus `springe`. Eine Prüfung, die die Wahl mit
@@ -1353,8 +1353,8 @@ for (const scheme of ["light", "dark"]) {
   note(vonAussen.offen && vonAussen.titel === vonAussen.erwartet,
        `Das Feld am Sperrbildschirm öffnet den Ziffernblock des Zählers, der am längsten wartet `
        + `(öffnet ${vonAussen.titel || "nichts"}, erwartet ${vonAussen.erwartet})`);
-  note(vonAussen.schirm === "pane-home",
-       `Dabei wechselt die App auf die Übersicht (offen: ${vonAussen.schirm})`);
+  note(vonAussen.schirm === "pane-history",
+       `Der Ziffernblock geht über dem offenen Schirm auf, ohne ihn zu wechseln (offen: ${vonAussen.schirm})`);
   await page.evaluate(() => closeSheets());
   await page.waitForTimeout(150);
 

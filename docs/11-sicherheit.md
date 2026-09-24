@@ -103,8 +103,8 @@ liegt: Sie öffnet einen Ziffernblock, sonst nichts. Sie liest keine Daten und
 gibt keine heraus, sie schreibt nichts, und gesichert wird erst, wenn jemand
 Ziffern tippt und „Sichern" drückt. `AppAddress` weist jede Adresse ab, die
 nicht genau `zaehlora://erfassen` oder `zaehlora://erfassen/<Kennung>` lautet;
-eine unbekannte Kennung öffnet den am längsten wartenden Zähler und nicht einen,
-den der Absender bestimmt. Schlimmstenfalls öffnet also eine fremde Seite ein
+eine unbekannte Kennung öffnet den Zähler, den das Widget gerade zeigt, und nicht
+einen, den der Absender bestimmt. Schlimmstenfalls öffnet also eine fremde Seite ein
 Blatt, das man mit „Abbrechen" schließt. `check-sicherheit.sh` hält fest, dass
 es bei diesem einen Schema bleibt.
 

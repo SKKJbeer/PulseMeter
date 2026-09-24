@@ -36,6 +36,11 @@ struct RootView: View {
 
     /// Wohin ein Tipp von außen führt. Siehe ``Wegweiser``.
     @Environment(Wegweiser.self) private var wegweiser
+    @Environment(\.modelContext) private var context
+    @Environment(Datenstand.self) private var datenstand
+
+    /// Der Zähler, dessen Ziffernblock ein Tipp von außen geöffnet hat.
+    @State private var vonAussen: MeteringPoint?
 
     /// Die drei Ziele an einer Stelle. Vorher standen Name, Symbol und Nummer
     /// dreimal im `TabView`; mit einer zweiten Navigation wären es sechs
@@ -63,13 +68,42 @@ struct RootView: View {
                 wegweiser.springe(zu: adresse)
             }
         }
-        // **Der Ziffernblock gehört zur Übersicht**, dort hängt das Blatt.
-        // Wer gerade im Verlauf steht, wird deshalb erst dorthin gebracht.
-        // Geöffnet wird das Blatt dann von der Übersicht selbst, die weiß,
-        // welche Zähler es gibt.
-        .onChange(of: wegweiser.ziel) { _, ziel in
-            if ziel != nil { tab = 0 }
+        // **Der Ziffernblock für einen Tipp von außen hängt hier, an der
+        // Wurzel, und nicht an der Übersicht.**
+        //
+        // In 0.116.0 und 0.116.1 hing er an der Übersicht, und wer im Verlauf
+        // stand, wurde erst dorthin gebracht. Zweimal ging das Blatt nicht auf:
+        // erst, weil die Übersicht den Wunsch nahm, solange sie verborgen war,
+        // dann, weil ein Blatt mitten im Wechsel der Ansicht ebenso verworfen
+        // wird. Hier gibt es keinen Wechsel. Der Ziffernblock geht über dem
+        // Schirm auf, der gerade offen ist, und danach steht man wieder dort.
+        .onChange(of: wegweiser.ziel) { _, _ in uebernimmWunsch() }
+        // Beim Kaltstart kann der Wunsch schon stehen, bevor diese Ansicht da
+        // ist. Dann holt ihn das erste Erscheinen ab.
+        .onAppear { uebernimmWunsch() }
+        .sheet(item: $vonAussen) { point in
+            CaptureView(meteringPoint: point, onSaved: { datenstand.geaendert() })
         }
+    }
+
+    /// Öffnet den Ziffernblock, den ein Tipp von außen verlangt.
+    ///
+    /// **Mit Kennung** genau diesen Zähler: So kommen Erinnerung und Widget an.
+    /// **Ohne Kennung, oder wenn es den Zähler nicht mehr gibt**, den Zähler,
+    /// den das Widget gerade zeigt (`WidgetSummary.headline`, der dringendste
+    /// fällige, sonst der erste). Auf einen gelöschten Zähler zu zeigen wäre
+    /// eine Sackgasse (Produktprinzip 4), und eine zweite Regel, welcher Zähler
+    /// „am längsten wartet", hätte hier nichts verloren: Es gibt sie schon, im
+    /// Rechenkern und geprüft.
+    private func uebernimmWunsch() {
+        guard case .capture(let gewuenscht)? = wegweiser.ziel else { return }
+        wegweiser.erledigt()
+        guard let points = try? PulseRepository(context: context).meteringPoints(),
+              !points.isEmpty else { return }
+        let bevorzugt = [gewuenscht, WidgetBridge.read()?.headline?.id].compactMap { $0 }
+        vonAussen = bevorzugt.lazy
+            .compactMap { id in points.first { $0.id == id } }
+            .first ?? points.first
     }
 
     /// Schmal: die Tableiste, unverändert seit 0.1.
@@ -273,9 +307,6 @@ struct OverviewView: View {
     @State private var rows: [MeterRow] = []
     @State private var points: [MeteringPoint] = []
     @State private var capturing: MeteringPoint?
-    @Environment(Wegweiser.self) private var wegweiser
-    /// Ob die Übersicht gerade auf dem Schirm steht. Siehe ``uebernimmWunsch()``.
-    @State private var sichtbar = false
     @State private var addingMeter = false
     @State private var problem: String?
     /// Welche Zahl gerade erklärt wird — `nil`, solange kein Blatt offen ist.
@@ -325,21 +356,13 @@ struct OverviewView: View {
             }
             .background(PulseColor.ground)
             .navigationTitle("Übersicht")
-            .onAppear {
-                sichtbar = true
-                start()
-            }
-            .onDisappear { sichtbar = false }
+            .onAppear(perform: start)
             // **Ein Weg für alle drei Ansichten.** Die Blätter melden nur, dass
             // sich etwas geändert hat; neu geladen wird hier, an derselben
             // Stelle, an der auch eine Änderung aus dem Verlauf oder der
             // Zählerliste ankommt. Zwei Wege wären zwei Gelegenheiten, dass
             // einer davon etwas ausrechnet, was der andere nicht kennt.
             .onChange(of: datenstand.version) { _, _ in reload() }
-            // Beim ersten Mal ist die Übersicht noch nicht gebaut, dann greift
-            // `start`. Steht sie schon, kommt der Wunsch hier an. Deshalb
-            // beide Wege, wie beim Verlauf.
-            .onChange(of: wegweiser.ziel) { _, _ in uebernimmWunsch() }
             .sheet(item: $capturing) { point in
                 CaptureView(meteringPoint: point, onSaved: { datenstand.geaendert() })
             }
@@ -709,7 +732,6 @@ struct OverviewView: View {
     /// Bildschirmfotos hingen dadurch voneinander ab.
     private func start() {
         reload()
-        uebernimmWunsch()
 
         // Öffnet den Erfassungsschirm gleich beim Start. Nur für die
         // Bildschirmfotos: Es ist der wichtigste Schirm der App und der
@@ -724,41 +746,6 @@ struct OverviewView: View {
         } else if Startschalter.gesetzt("-pulse-capture") {
             capturing = points.first
         }
-    }
-
-    /// Öffnet den Ziffernblock, wenn ein Tipp von außen es verlangt.
-    ///
-    /// **Mit Kennung** genau diesen Zähler — so kommt die Erinnerung an.
-    /// **Ohne Kennung, oder wenn es den Zähler nicht mehr gibt**, den fälligen,
-    /// der am längsten wartet; ist keiner fällig, den, der am längsten nicht
-    /// abgelesen wurde. Das ist die Frage, die das Widget auf dem
-    /// Sperrbildschirm stellt, und auf einen gelöschten Zähler zu zeigen wäre
-    /// eine Sackgasse (Produktprinzip 4).
-    ///
-    /// Ein Zähler ganz ohne Ablesung hat keine Tage seit der letzten und gilt
-    /// als der dringendste: Er ist fällig, seit es ihn gibt.
-    private func uebernimmWunsch() {
-        // **Nur, wenn die Übersicht zu sehen ist.** Ein Blatt, das eine
-        // verborgene Ansicht öffnen soll, verwirft SwiftUI stillschweigend.
-        // Genau das geschah in 0.116.0: Die Adresse kam an, während der
-        // Verlauf offen stand, die Übersicht nahm den Wunsch im selben Zug
-        // entgegen, in dem `RootView` erst auf sie umschaltete, hakte ihn ab,
-        // und das Blatt ging nie auf. Jetzt bleibt der Wunsch liegen, bis die
-        // Übersicht erscheint; ihr `onAppear` holt ihn dann ab.
-        guard sichtbar, case .capture(let gewuenscht)? = wegweiser.ziel else { return }
-        wegweiser.erledigt()
-        // Ohne Zähler gibt es nichts abzulesen; die Übersicht zeigt dann ihren
-        // leeren Zustand mit dem Weg zum ersten Zähler.
-        guard !points.isEmpty else { return }
-
-        if let gewuenscht, let point = points.first(where: { $0.id == gewuenscht }) {
-            capturing = point
-            return
-        }
-        let laengste = rows.max { a, b in
-            (a.isDue ? 1 : 0, a.daysSinceReading ?? .max) < (b.isDue ? 1 : 0, b.daysSinceReading ?? .max)
-        }
-        capturing = laengste.flatMap { row in points.first { $0.id == row.id } } ?? points.first
     }
 
     private func reload() {

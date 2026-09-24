@@ -892,7 +892,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>Zählora</h1>
-  <p>Klickbarer Entwurf · v0.116.1</p>
+  <p>Klickbarer Entwurf · v0.116.2</p>
 </div>
 
 <div class="device" id="device">
@@ -1132,8 +1132,9 @@ select.field { cursor: pointer; }
         <!-- **Wo ein Tipp von außen ankommt.** Eine Mitteilung oder ein Widget
              gibt es im Entwurf nicht, also stehen hier die beiden Tipps, die
              sie auslösen. Sie rufen dieselbe Funktion wie in der App
-             (`OverviewView.uebernimmWunsch`): mit Kennung genau dieser Zähler,
-             ohne den fälligen, der am längsten wartet. -->
+             (`RootView.uebernimmWunsch`): mit Kennung genau dieser Zähler,
+             ohne den, den das Widget zeigt. Der Ziffernblock geht über dem
+             Schirm auf, der gerade offen ist. -->
         <div class="row" style="flex-direction:column;align-items:stretch;gap:10px">
           <div class="rl">Tipp auf eine Erinnerung<small>So kommt „Zeit für eine Ablesung“ an: im Ziffernblock genau dieses Zählers</small></div>
           <div id="sprung-erinnerung" style="display:flex;gap:6px;flex-wrap:wrap"></div>
@@ -3805,31 +3806,34 @@ function openReadingEdit(idx) {
 }
 
 /* ============================================================
-   Wo ein Tipp von außen ankommt — wie `OverviewView.uebernimmWunsch`
+   Wo ein Tipp von außen ankommt — wie `RootView.uebernimmWunsch`
    ============================================================ */
 
-/* Mit Kennung genau dieser Zähler. Ohne, oder wenn es ihn nicht mehr gibt: der
-   fällige, der am längsten wartet; ist keiner fällig, der, der am längsten
-   nicht abgelesen wurde. Ein Zähler ohne jede Ablesung gilt als der
-   dringendste, er ist fällig, seit es ihn gibt. Derselbe Schlüssel wie in der
-   App, damit beide denselben Zähler wählen (Regel 2). */
+/* Der Zähler, den das Widget zeigt: der dringendste fällige, sonst der erste.
+   Dieselbe Regel wie `WidgetSummary.headline` im Rechenkern (Regel 2): nie
+   abgelesen steht vorn, dann die meisten Tage, bei Gleichstand der Name. */
+function widgetHeadline() {
+  const zaehler = activeMeters();
+  const faellig = zaehler.filter(isDue).sort((a, b) => {
+    const x = daysSinceReading(a), y = daysSinceReading(b);
+    if (x === null && y === null) return a.name.localeCompare(b.name);
+    if (x === null) return -1;
+    if (y === null) return 1;
+    return x === y ? a.name.localeCompare(b.name) : y - x;
+  });
+  return faellig[0] || zaehler[0] || null;
+}
+
+/* Mit Kennung genau dieser Zähler, sonst oder bei einer unbekannten Kennung
+   der des Widgets. **Kein Schirmwechsel**: Der Ziffernblock geht über dem auf,
+   was gerade offen ist, und danach steht man wieder dort. In der App hing er
+   bis 0.116.1 an der Übersicht, und aus dem Verlauf heraus ging er dort
+   zweimal nicht auf. */
 function springe(id) {
   const zaehler = activeMeters();
   if (!zaehler.length) return;
-  const schluessel = m => [isDue(m) ? 1 : 0, daysSinceReading(m) ?? Infinity];
-  const spaeter = (a, b) => {
-    const [x, y] = [schluessel(a), schluessel(b)];
-    return x[0] !== y[0] ? x[0] > y[0] : x[1] > y[1];
-  };
-  const ziel = (id && zaehler.find(m => m.id === id))
-    || zaehler.reduce((a, b) => (spaeter(b, a) ? b : a));
-  // Das Blatt hängt an der Übersicht; wer woanders steht, wird erst dorthin
-  // gebracht — wie `RootView`, das auf `tab = 0` schaltet.
-  document.querySelectorAll("#tabs button, #sidebar button").forEach(b =>
-    b.setAttribute("aria-selected", String(b.dataset.pane === "home")));
-  document.querySelectorAll(".pane").forEach(p =>
-    p.classList.toggle("on", p.id === "pane-home"));
-  openCapture(ziel.id);
+  const ziel = (id && zaehler.find(m => m.id === id)) || widgetHeadline();
+  if (ziel) openCapture(ziel.id);
 }
 
 function renderSprungTasten() {

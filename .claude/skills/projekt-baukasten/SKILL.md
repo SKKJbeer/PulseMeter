@@ -1700,24 +1700,36 @@ Satz abgelehnt.
 > Silhouetten sind eine Entscheidung. Und eine Schwäche, die man selbst
 > hinschreibt, ist ein Ausschlussgrund und keine Fußnote.
 
-### Ein Blatt aus einer verborgenen Ansicht geht nie auf
+### Ein Blatt für einen Tipp von außen hängt an der Wurzel
 
-Ein Tipp von außen (Adresse, Mitteilung) soll ein Blatt öffnen, das an einer
-Ansicht hängt, die gerade nicht zu sehen ist. Der naheliegende Aufbau: Die
-Wurzel schaltet auf den richtigen Tab, und die Ansicht hört im selben Zug auf
-den Wunsch, öffnet das Blatt und hakt ihn ab. Auf beiden Geräten: kein Blatt,
-keine Fehlermeldung. SwiftUI verwirft eine Präsentation aus einer Ansicht, die
-noch nicht auf dem Schirm steht, stillschweigend — und der Wunsch war da schon
-abgehakt.
+Ein Tipp von außen (Adresse, Mitteilung) soll ein Blatt öffnen. Der erste
+Aufbau hängte es an die Ansicht, zu der es inhaltlich gehört, hier die
+Übersicht: Die Wurzel schaltet auf ihren Tab, die Übersicht öffnet das Blatt.
+Zwei Läufe, zweimal kein Blatt, und beide Male ohne Meldung:
 
-> **Ein Wunsch wird erst abgehakt, wenn er erfüllt werden kann.** Die Ansicht
-> merkt sich in `onAppear`/`onDisappear`, ob sie sichtbar ist, und nimmt den
-> Wunsch nur dann. Ist sie es nicht, bleibt er liegen, und ihr nächstes
-> `onAppear` holt ihn ab.
+1. Die Übersicht nahm den Wunsch im selben Zug, in dem auf sie umgeschaltet
+   wurde, also noch verborgen. SwiftUI verwirft eine Präsentation aus einer
+   Ansicht, die nicht auf dem Schirm steht.
+2. Behoben mit „nur nehmen, wenn sichtbar" und `onAppear`. Lauf 440, mit einer
+   Prüfung, die das Glied nennt: *„Die Adresse kam an und schaltete auf die
+   Übersicht, aber der Ziffernblock ging nicht auf."* Auch ein Blatt, das im
+   `onAppear` mitten im Wechsel des Tabs aufgehen soll, wird verworfen. Beim
+   Start der App klappt dasselbe, weil dort nichts wechselt.
 
-Und die Prüfung dazu meldet, **an welchem Glied** es hängt. „Kein Blatt" sagt
-nicht, ob die Adresse nie ankam oder ob sie ankam und das Blatt nicht aufging.
-Das sind zwei verschiedene Fehler an zwei verschiedenen Stellen.
+**Die Lehre aus 1. war zu kurz: Das Problem war nicht der Zeitpunkt, sondern
+der Ort.**
+
+> **Ein Blatt, das von außen ausgelöst wird, hängt an der Wurzel der App.**
+> Dort gibt es keinen Wechsel, der es verschlucken kann, und es geht über dem
+> Schirm auf, der gerade offen ist. Nach dem Schließen steht man wieder dort,
+> wo man war. Das ist ohnehin das Richtige: Wer aus dem Verlauf heraus auf eine
+> Erinnerung tippt, will ablesen und danach weiterlesen.
+
+Dazu eine Regel für die Prüfung: **Eine Oberflächenprüfung für eine Kette meldet,
+an welchem Glied sie reißt.** „Kein Blatt" allein hätte beim zweiten Mal
+wieder auf den Zeitpunkt gezeigt. Erst die Meldung „kam an, aber das Blatt ging
+nicht auf" hat die Vermutung widerlegt, bevor ich ein drittes Mal daran
+gedreht hätte.
 
 ### Ein Index aus einer Zählung ist keine Adresse
 

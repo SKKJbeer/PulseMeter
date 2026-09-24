@@ -21,10 +21,10 @@ public enum AppAddress: Equatable, Sendable {
 
     /// Den Ziffernblock öffnen.
     ///
-    /// Mit Kennung für genau diesen Zähler — so kommt die Erinnerung an. Ohne
-    /// Kennung für den, der am längsten nicht abgelesen wurde — so kommt das
-    /// Widget an, das den Stand aller Zähler zusammenfasst und keinen einzelnen
-    /// kennt.
+    /// Mit Kennung für genau diesen Zähler: So kommen die Erinnerung und das
+    /// Widget an, das die Kennung seines angezeigten Zählers mitgibt. Ohne
+    /// Kennung für den Zähler, den das Widget zeigen würde
+    /// (``WidgetSummary/headline``).
     case capture(UUID?)
 
     public static let scheme = "zaehlora"
