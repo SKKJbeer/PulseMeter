@@ -9,6 +9,33 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.116.4 — 2026-09-24
+
+**Reichweite: Analyse, ein neues Konzept und zwei Fehler, die sofort behoben
+sind. Dazu ist 1.2 im Laden.**
+
+Gefunden bei der Analyse von Website, Produktseite und Konkurrenz:
+
+- **`zählerstand` stand seit der Umbenennung in keinem durchsuchten Feld.**
+  Das Schlagwortfeld war gegen den alten Namen „Zählerstände" geschrieben. Neu:
+  `zählerstand,stromzähler,gaszähler,wasserzähler,nebenkosten,abrechnung,abschlag,photovoltaik`,
+  91 Zeichen. Wirksam mit dem Einreichen von 1.3.
+- **Die Bewertungsfrage wurde nie gebaut**, obwohl sie seit August Punkt 1
+  war. Die Produktseite hat eine einzige Bewertung. Sie kommt mit 1.3.
+- **Die Website hat jetzt das App-Store-Banner** (`apple-itunes-app`): Wer auf
+  dem iPhone über eine Antwortseite kommt, steht einen Tipp vor der App.
+- Geprüft und in Ordnung: Canonical und Sitemap der ausgelieferten Seite
+  zeigen auf die Adressen ohne `.html`.
+
+`docs/10-sichtbarkeit.md` ist neu geschrieben: Befund mit Belegen, der
+Kalender nach der Heizsaison, vier Hebel (App Store, Antwortseiten, Presse und
+Foren, Empfehlung über den Bericht), und was beim Gründer liegt: Werbetext,
+eigene Adresse, Search Console, Rolle für Nutzungsberichte.
+
+**1.2 ist freigegeben**, seit dem Morgen des 24. September im Laden. Website
+(`entwicklung.html`, Neuigkeiten auf der Startseite), Roadmap und
+Auslieferungsprotokoll sind nachgezogen.
+
 ## 0.116.3 — 2026-09-24
 
 **Der Ziffernblock geht jetzt auch auf, wenn die App erst starten muss.**

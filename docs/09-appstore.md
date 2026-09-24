@@ -52,18 +52,37 @@ Es gehört deshalb dem jeweils Neuesten, nicht der Dauerbeschreibung.
 ### Schlagworte (max. 100 Zeichen, komma-getrennt, ohne Leerzeichen)
 
 ```
-nebenkosten,abrechnung,abschlag,heizkosten,gaszähler,wasserzähler,photovoltaik,einspeisung,wallbox
+zählerstand,stromzähler,gaszähler,wasserzähler,nebenkosten,abrechnung,abschlag,photovoltaik
 ```
 
-98 Zeichen. Regeln, gegen die das geprüft ist: keine Wörter aus Name und
+91 Zeichen, 95 Byte. Beides unter 100, also gleich, wie Apple zählt.
+
+**Seit 0.116.4 steht `zählerstand` wieder vorn, und das war ein echtes Loch.**
+Mit der Umbenennung am 28. August wurde aus „Zählora – Zählerstände" der Name
+„Zählora – Zähler & Verbrauch". Damit stand das Wort, das in dieser Kategorie
+am häufigsten getippt wird, **in keinem durchsuchten Feld mehr**: nicht im
+Namen, nicht im Untertitel, nicht hier. Apple zerlegt deutsche
+Zusammensetzungen nicht; aus `zähler` wird kein `zählerstand`. Die
+Schlagwortliste war vor der Umbenennung geschrieben und danach nicht
+nachgezogen worden. Dasselbe galt für `stromzähler`. Die größte Konkurrenz
+heißt übrigens wörtlich „Zählerstände | Ablesen, sparen".
+
+Dafür gestrichen: `heizkosten` (Heizkostenverteiler kann Zählora nicht
+ablesen, das Wort verspricht zu viel), `einspeisung` (steht im Anzeigenamen des
+Kaufs „Nachtstrom & Einspeisung erfassen" und wird dort durchsucht) und
+`wallbox`.
+
+**Die Regel dazu:** Ändert sich Name oder Untertitel, wird diese Liste im
+selben Zug neu geprüft, denn sie ist gegen beide geschrieben. Regeln, gegen die das geprüft ist: keine Wörter aus Name und
 Untertitel wiederholen (Apple wertet sie ohnehin), keine Mehrzahl **und**
 Einzahl desselben Worts, keine Wortpaare — die bildet Apple selbst —, keine
 fremden Markennamen. Der letzte Punkt ist ein Ablehnungsgrund und kein
 Kavaliersdelikt.
 
 **Bis 0.43.1 stand hier eine andere Liste**, die mit `zählerstand`,
-`stromzähler`, `ablesen` und `verbrauch` begann. Alle vier stehen bereits in
-Name und Untertitel und waren damit doppelt — ein Viertel des Feldes für
+`stromzähler`, `ablesen` und `verbrauch` begann. Alle vier standen damals
+bereits in Name und Untertitel („Zählora – Zählerstände", „Zähler ablesen,
+Kosten sehen") und waren damit doppelt — ein Viertel des Feldes für
 nichts. An ihrer Stelle steht jetzt, worauf `10-sichtbarkeit.md` setzt: die
 Wörter, die jemand tippt, der gerade eine Abrechnung in der Hand hält, und die
 Fälle, die andere Apps nicht abdecken. Nachprüfbar wird die Wette vier Wochen
@@ -74,8 +93,8 @@ Die Liste kam damit auf **101** Zeichen, also eine zu viel — App Store Connect
 hätte sie beim Einfügen abgeschnitten, und zwar stillschweigend am Ende. Das
 Wort ist ohnehin abgedeckt, weil der Anzeigename des Kaufs
 „Nachtstrom & Einspeisung erfassen" ebenfalls durchsucht wird
-(`10-sichtbarkeit.md`, Abschnitt 4). An seiner Stelle steht `wallbox` — ein
-Fall, den kaum eine andere Zähler-App kennt.
+(`10-sichtbarkeit.md`, Abschnitt 4). An seiner Stelle stand bis 0.116.3
+`wallbox`.
 
 ### Beschreibung (max. 4000 Zeichen)
 

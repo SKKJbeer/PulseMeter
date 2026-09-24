@@ -1737,6 +1737,26 @@ ein Abzug einen Zustand zeigt, den der Code gar nicht mehr herstellen kann,
 Und: Eine Oberflächenprüfung für eine Kette meldet, an welchem Glied sie
 reißt. Ohne die Meldung aus 0.116.1 wäre Lauf 441 nicht lesbar gewesen.
 
+### Nach einer Umbenennung wird das Schlagwortfeld neu geschrieben
+
+Das Schlagwortfeld im App Store ist **gegen Name und Untertitel** geschrieben:
+Was dort steht, fehlt im Feld absichtlich, weil Apple jedes Wort nur einmal
+wertet. Ändert sich der Name, stimmt die Lücke nicht mehr. Hier wurde aus
+„Zählora – Zählerstände" der Name „Zählora – Zähler & Verbrauch", und
+`zählerstand` stand danach vier Wochen lang **in keinem durchsuchten Feld**:
+das meistgetippte Wort der Kategorie, bei einem Mitbewerber, der wörtlich so
+heißt. Apple zerlegt deutsche Zusammensetzungen nicht; aus `zähler` wird kein
+`zählerstand`.
+
+> **Name, Untertitel und Schlagwortfeld sind ein Feld in drei Teilen.** Wer
+> einen Teil ändert, prüft die anderen beiden im selben Zug.
+
+Und eine zweite Lehre aus derselben Analyse: **Eine Reihenfolge in einem
+Dokument ist kein Auftrag.** „Bewertungsfrage nach der dritten Ablesung" stand
+seit dem 13. August als Punkt 1 in `10-sichtbarkeit.md` und wurde nie gebaut,
+weil nichts darauf zeigte. Was gebaut werden soll, gehört in den Plan
+(`05-roadmap.md`) mit einer Fassung dahinter.
+
 ### Ein Index aus einer Zählung ist keine Adresse
 
 Zwei Läufe, derselbe Abbruch, zwei verschiedene Indizes:

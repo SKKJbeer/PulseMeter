@@ -424,7 +424,7 @@ Ablauf die Veröffentlichung ausdrücklich an — und dafür fehlte
 eigene Seite sagte „Bald im App Store". Behoben in 0.106.6, samt einer Prüfung
 am Ende des Ablaufs, die die **Seite abruft** statt den Push zu zählen.
 
-### Die vierte, 1.2 — eingereicht am 23. September
+### Die vierte, 1.2 — freigegeben am 24. September
 
 **Die erste Fassung im Zwei-Wochen-Takt.** Zwei Spalten auf dem iPad im
 Querformat, und das Diagramm wächst mit der Breite. Eingereicht um 18:55 UTC
@@ -436,6 +436,12 @@ mit Bau 36, belegt aus dem Protokoll:
 `min_bau: 36` stand dabei, damit kein älterer Bau ohne die Spalten angehängt
 wird. Die Bildschirmfotos hat Apple aus 1.1 übernommen; sie zeigen das
 Hochformat und sind damit nicht falsch, werden aber mit 1.3 erneuert.
+
+`IN_REVIEW` um 00:04 UTC, im Laden am Morgen des 24. September. Die genaue
+Uhrzeit ist nicht protokolliert: Die geplante Nachschau fiel mit der Sitzung
+weg, und belegt ist erst die Abfrage um 18:26 UTC (`Fassung 1.2:
+READY_FOR_SALE`); die Produktseite nannte da „vor 13 Stunden". Rund elf Stunden
+von der Einreichung bis in den Laden.
 
 ### Und die dritte, 1.1 — freigegeben am 10. September
 
