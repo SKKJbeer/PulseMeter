@@ -1,6 +1,6 @@
 # 10 – Sichtbarkeit: gefunden werden, ohne Werbebudget
 
-Stand: 2026-09-25, Version 0.116.5.
+Stand: 2026-09-25, Version 0.116.7.
 
 Die Frage: **Wie erfährt jemand von Zählora, der uns nicht kennt?** Bezahlte
 Werbung ist keine Antwort (Abschnitt 8).
@@ -22,10 +22,10 @@ Werbung ist keine Antwort (Abschnitt 8).
 
 > **Was gemessen ist und was nicht.** Gemessen am 24. und 25. September: die
 > Produktseite im App Store, die ausgelieferte Website, die Suchfelder, die
-> Konkurrenz im Store und in der Websuche. **Vom Gründer genannt, ungefähr:**
-> rund 50 Aufrufe der Produktseite aus dem Store, rund 10 Laden. **Nicht
-> gemessen:** Suchvolumen, Impressionen, ob Google die Seite schon führt. Was
-> nach Rangfolge klingt, ist eine begründete Schätzung.
+> Konkurrenz im Store und in der Websuche. **Aus App Store Connect**, vom
+> Gründer am 25. September als Bildschirmfoto geschickt: die Zahlen in
+> Abschnitt 1. **Nicht gemessen:** Suchvolumen, Suchwörter, ob Google die
+> Seite schon führt. Was nach Rangfolge klingt, ist eine begründete Schätzung.
 
 ---
 
@@ -33,17 +33,35 @@ Werbung ist keine Antwort (Abschnitt 8).
 
 ### Was die Zahlen sagen
 
-Rund 50 Aufrufe, rund 10 Laden. **Wenn das so stimmt, lädt jeder fünfte, der
-die Produktseite sieht.** Das ist für eine App ohne Sterne gut. Die Seite
-überzeugt; es kommen nur fast keine Leute hin.
+App Store Connect, Übersicht, Stand 23. September, also rund drei Wochen seit
+dem Start am 4. September:
 
-> **Das Problem ist nicht die Produktseite. Es ist die Zahl der Menschen, die
-> sie überhaupt erreichen.** Alles unten zielt deshalb zuerst auf mehr
-> Besucher und erst danach auf bessere Bilder.
+| Zahl | Wert | Anteil |
+|---|---|---|
+| Impressionen (Zählora stand in einer Liste oder wurde angezeigt) | **275** | |
+| Produktseitenaufrufe | **52** | 19 % der Impressionen |
+| Erstmalige Downloads | **10** | 19 % der Aufrufe |
+| Konversionsrate laut Apple (Tagesdurchschnitt) | **6,1 %** | |
+| Aktualisierungen | 6 | |
+| Erlöse | 2 $ | ein bis zwei Käufe |
 
-Belegt ist das erst mit den Impressionen aus App Store Connect: Sie sagen, wie
-oft Zählora in einer Suchliste stand. Dafür fehlt dem Schlüssel die Rolle für
-Nutzungsberichte (Abschnitt 7).
+**Was das heißt:**
+
+- **Wer die Seite sieht, lädt oft.** Jeder fünfte Aufruf wird ein Download,
+  bei einer App ohne Sterne. An der Produktseite liegt es nicht.
+- **Wer Zählora in einer Liste sieht, tippt oft.** Auch jeder fünfte. Symbol,
+  Name und Untertitel tragen.
+- **Es sehen sie nur fast keine Leute.** 275 Impressionen in drei Wochen sind
+  rund 13 am Tag, im ganzen deutschen App Store. Das passt genau zum Loch im
+  Schlagwortfeld: Wer „Zählerstand" sucht, bekommt uns nicht angezeigt.
+
+> **Der Engpass ist die Reichweite, nicht die Überzeugung.** Das Schlagwortfeld
+> mit 1.3 ist deshalb der wichtigste Einzelschritt im Store, und die Website
+> der wichtigste außerhalb. An Bildern und Texten zu feilen lohnt erst, wenn
+> mehr Leute kommen.
+
+Die Zahlen sind klein und schwanken mit jedem einzelnen Download. Als Anteil
+gelesen sind sie Richtwerte, keine Messung auf das Prozent.
 
 ### Im App Store
 
@@ -326,10 +344,16 @@ steht ohnehin der Schriftzug darüber; offen ist nur der gekaufte.
 
 **Die Kette, und wo sie heute reißt:**
 
-    Leute mit einer Frage → finden eine Seite → kommen zur Produktseite → laden
-          ?                      ?                    ~50                 ~10
+    Suche im Store → Impression → Produktseite → Download
+         ?              275           52           10
 
-Die beiden Fragezeichen sind die Arbeit. **Das Ziel für Ende November:**
+    Frage bei Google → Seite von uns → Produktseite → Download
+         ?                 ?               ?             ?
+
+Die Fragezeichen sind die Arbeit. Für die obere Kette fehlt, **welche Wörter**
+die 275 Impressionen gebracht haben; das zeigt App Store Connect unter
+„Quellen" nur mit der Rolle für Nutzungsberichte. Für die untere fehlt alles,
+bis Search Console läuft. **Das Ziel für Ende November:**
 Search Console zeigt, dass die neuen Seiten für ihre Fragen auftauchen, und
 App Store Connect zeigt Verweise von der Website als eigene Quelle. Erst dann
 lohnt es, an Bildern und Wörtern zu drehen.
@@ -355,8 +379,8 @@ eine Besucherzählung auf der Website.
 |---|---|---|
 | **erledigt, 0.116.4** | `zählerstand` und `stromzähler` ins Schlagwortfeld; App-Store-Banner | — |
 | **jetzt** | eigene Adresse entscheiden und eintragen; Search Console; Rolle für Nutzungsberichte | Gründer |
-| **jetzt** | Werbetext aus 4.3; erster Satz der Beschreibung aus 3.2 | Gründer gibt frei |
-| **ab nächster Woche, eine je Woche** | Seiten aus 3.1 in der Reihenfolge der Tabelle, zuerst Umzug mit Protokoll, dann die zwei Rechner | ich |
+| **erledigt, 0.116.7** | Werbetext aus 4.3 (freigegeben am 25.09., im Laden eingetragen); erster Satz der Beschreibung (kommt mit 1.3); Seite „Zählerstände beim Umzug" mit Protokoll zum Ausdrucken; Rechner auf der Gas- und der Abschlagsseite; Übersichtsseite „Ratgeber"; strukturierte Daten (Artikel, Brotkrumen) auf allen Ratgeberseiten | — |
+| **ab nächster Woche, eine je Woche** | die übrigen Seiten aus 3.1: Stromverbrauch normal, Anbieterwechsel, Zweirichtungszähler, Zählerwechsel, Wärmepumpe | ich |
 | **mit 1.3, 07.10.** | Bewertungsfrage, neue Bilder, neues Schlagwortfeld, neuer Beschreibungsanfang | ich |
 | **nach 1.4** | Presseseite, fünf Mails | ich schreibe vor, Gründer schickt |
 | **laufend** | Antworten in Foren | Gründer |

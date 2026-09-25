@@ -846,9 +846,46 @@ def freigabe_pruefen(apple: Apple, app_id: str) -> None:
     pruefe(art in wie, f"Nach der Freigabe: {wie.get(art, art)}", gehoert_ihm)
 
 
+def werbetext_setzen(apple: Apple, app_id: str) -> None:
+    """Nur den Werbetext, und zwar an einer Fassung, die schon im Laden steht.
+
+    **Warum ein eigener Weg.** `--fuellen` setzt Beschreibung, Schlagworte und
+    Werbetext in einem Zug. An einer freigegebenen Fassung lehnt Apple alles
+    davon ab bis auf den Werbetext; er ist das einzige Feld, das sich ohne
+    neue Fassung ändern lässt. Dafür eine neue Fassung einzureichen hieße, eine
+    Prüfung für einen Satz abzuwarten.
+    """
+    stand, antwort = apple.holen(f"v1/apps/{app_id}/appStoreVersions",
+                                 **{"limit": 50, "filter[platform]": "IOS"})
+    vorhandene = antwort.json().get("data", []) if stand == 200 else []
+    fassung = next((f for f in vorhandene
+                    if feld(f, "versionString") == FASSUNG), None)
+    if fassung is None:
+        offen.append(f"Werbetext: Fassung {FASSUNG} gibt es nicht")
+        return
+    stand, ort = erste(apple,
+                       f"v1/appStoreVersions/{fassung['id']}/appStoreVersionLocalizations",
+                       **{"limit": 20, "filter[locale]": SPRACHE})
+    if ort is None:
+        offen.append(f"Werbetext: Fassung {FASSUNG} hat keine deutschen Texte ({stand})")
+        return
+    setzen(apple, "v1/appStoreVersionLocalizations",
+           "appStoreVersionLocalizations", ort["id"],
+           {"promotionalText": store_text("Werbetext (max. 170 Zeichen, jederzeit ohne neue Version änderbar)")},
+           f"Werbetext an {FASSUNG}")
+
+
 def main() -> None:
     apple = Apple()
     app_id = app_finden(apple)
+
+    if "--werbetext" in sys.argv:
+        werbetext_setzen(apple, app_id)
+        for zeile in getan:
+            print(f"  ✓ {zeile}")
+        for zeile in offen:
+            print(f"  · {zeile}")
+        sys.exit(1 if offen else 0)
 
     if "--fuellen" in sys.argv:
         print("::notice::Trage ein, was aus dem Repository kommt.")

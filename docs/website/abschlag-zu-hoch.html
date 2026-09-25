@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Abschlag zu hoch? So rechnest du es nach — Zählora</title>
-<meta name="description" content="Jahresverbrauch mal Arbeitspreis, plus Grundpreis, geteilt durch zwölf: So prüfst du in zwei Minuten, ob dein monatlicher Abschlag für Strom oder Gas passt.">
+<title>Abschlag zu hoch? Nachrechnen mit Rechner — Zählora</title>
+<meta name="description" content="Jahresverbrauch mal Arbeitspreis, plus Grundpreis, geteilt durch zwölf. Mit Rechner: So prüfst du in zwei Minuten, ob dein Abschlag für Strom oder Gas passt.">
 <meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0F0E0C" media="(prefers-color-scheme: dark)">
 <!-- Safari auf dem iPhone blendet darüber eine Leiste mit „Öffnen" oder
@@ -16,12 +16,37 @@
 <meta property="og:site_name" content="Zählora">
 <meta property="og:locale" content="de_DE">
 <meta property="og:title" content="Abschlag zu hoch? So rechnest du es nach — Zählora">
-<meta property="og:description" content="Jahresverbrauch mal Arbeitspreis, plus Grundpreis, geteilt durch zwölf: So prüfst du in zwei Minuten, ob dein monatlicher Abschlag für Strom oder Gas passt.">
+<meta property="og:description" content="Jahresverbrauch mal Arbeitspreis, plus Grundpreis, geteilt durch zwölf. Mit Rechner: So prüfst du in zwei Minuten, ob dein Abschlag für Strom oder Gas passt.">
 <meta property="og:url" content="https://zaehlora.pages.dev/abschlag-zu-hoch.html">
 <meta property="og:image" content="https://zaehlora.pages.dev/bilder/light.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2317150F'/%3E%3Cpath d='M6 21a10 10 0 0 1 20 0' fill='none' stroke='%23E0A040' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M9 21h4l2-5 3 8 2-3h3' fill='none' stroke='%23E0A040' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="stil.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "Abschlag zu hoch? So rechnest du es nach",
+      "description": "Jahresverbrauch mal Arbeitspreis, plus Grundpreis, geteilt durch zwölf. Mit Rechner für Strom und Gas.",
+      "inLanguage": "de",
+      "dateModified": "2026-09-25",
+      "author": {"@type": "Organization", "name": "Zählora", "url": "https://zaehlora.pages.dev/"},
+      "publisher": {"@type": "Organization", "name": "Zählora", "url": "https://zaehlora.pages.dev/"},
+      "mainEntityOfPage": "https://zaehlora.pages.dev/abschlag-zu-hoch.html"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Zählora", "item": "https://zaehlora.pages.dev/"},
+        {"@type": "ListItem", "position": 2, "name": "Ratgeber", "item": "https://zaehlora.pages.dev/ratgeber.html"},
+        {"@type": "ListItem", "position": 3, "name": "Abschlag nachrechnen"}
+      ]
+    }
+  ]
+}
+</script>
 </head>
 <body>
 
@@ -49,8 +74,8 @@
     <h1>Abschlag zu hoch? So rechnest du es nach</h1>
     <p class="blass">
       <strong>Kurz gesagt:</strong> Rechne nach, statt zu schätzen. Dein
-      Jahresverbrauch mal Arbeitspreis, plus Grundpreis, geteilt durch zwölf.
-      das ist der Abschlag, der passen würde. Alles deutlich darüber zahlst du
+      Jahresverbrauch mal Arbeitspreis, plus Grundpreis, geteilt durch zwölf:
+      Das ist der Abschlag, der passen würde. Alles deutlich darüber zahlst du
       vor, ohne Zinsen dafür zu bekommen.
     </p>
 
@@ -68,9 +93,87 @@
       ÷ 12 = <strong>91 € im Monat</strong>
     </div>
     <p>
-      Wer hier 130 € zahlt, überlässt dem Versorger übers Jahr rund 470 €.
-      und bekommt sie erst mit der Abrechnung zurück.
+      Wer hier 130 € zahlt, überlässt dem Versorger übers Jahr rund 470 € und
+      bekommt sie erst mit der Abrechnung zurück.
     </p>
+
+    <h2 id="rechner">Mit deinen Zahlen</h2>
+    <form class="rechner" id="abschlagrechner" onsubmit="return false" aria-describedby="a-ergebnis">
+      <div class="rechner-felder">
+        <label>Verbrauch im Jahr in kWh
+          <input id="a-kwh" inputmode="decimal" autocomplete="off" value="2800">
+          <small>Von der letzten Abrechnung. Gas in kWh, nicht in m³</small>
+        </label>
+        <label>Arbeitspreis in Cent/kWh
+          <input id="a-ap" inputmode="decimal" autocomplete="off" value="34">
+          <small>Brutto, wie auf der Rechnung</small>
+        </label>
+        <label>Grundpreis in €
+          <input id="a-gp" inputmode="decimal" autocomplete="off" value="140">
+          <small>Brutto</small>
+        </label>
+        <label>Der Grundpreis gilt
+          <select id="a-gpart">
+            <option value="jahr" selected>im Jahr</option>
+            <option value="monat">im Monat</option>
+          </select>
+        </label>
+        <label>Dein Abschlag im Monat in €
+          <input id="a-ab" inputmode="decimal" autocomplete="off" value="130">
+          <small>Darf leer bleiben</small>
+        </label>
+      </div>
+      <div class="rechner-ergebnis" id="a-ergebnis" aria-live="polite"></div>
+    </form>
+    <script>
+    // Verbrauch × Arbeitspreis + Grundpreis, auf zwölf Monate verteilt.
+    // Nichts wird gesendet oder gespeichert.
+    (function () {
+      function zahl(t) {
+        t = String(t || "").replace(/\s/g, "");
+        // „1.267" ist im Deutschen eintausendzweihundertsiebenundsechzig, nicht
+        // eins Komma zwei. Ein Punkt vor genau drei Ziffern trennt Tausender;
+        // „0.9523" oder „11.4" bleiben Kommazahlen.
+        if (t.indexOf(",") >= 0) t = t.replace(/\./g, "").replace(",", ".");
+        else if (/^\d{1,3}(\.\d{3})+$/.test(t)) t = t.replace(/\./g, "");
+        var n = parseFloat(t);
+        return isFinite(n) ? n : NaN;
+      }
+      var eur = new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" });
+      function wert(id) { return zahl(document.getElementById(id).value); }
+      function rechne() {
+        var kwh = wert("a-kwh"), ap = wert("a-ap"), gp = wert("a-gp"), ab = wert("a-ab");
+        var jahr = document.getElementById("a-gpart").value === "jahr";
+        var aus = document.getElementById("a-ergebnis");
+        if (!(kwh >= 0) || !(ap >= 0)) {
+          aus.innerHTML = "<p>Trag Verbrauch und Arbeitspreis ein.</p>";
+          return;
+        }
+        var grund = gp >= 0 ? (jahr ? gp : gp * 12) : 0;
+        var kosten = kwh * ap / 100 + grund;
+        var passend = kosten / 12;
+        var html = "<strong>" + eur.format(passend) + " im Monat</strong>" +
+          "<p>würden passen. Übers Jahr sind das " + eur.format(kosten) + ".</p>";
+        if (ab > 0) {
+          var diff = (ab - passend) * 12;
+          if (Math.abs(diff) < 1) {
+            html += "<p>Dein Abschlag passt.</p>";
+          } else if (diff > 0) {
+            html += "<p>Mit " + eur.format(ab) + " zahlst du übers Jahr rund " + eur.format(diff) +
+              " zu viel vor. Das kommt mit der Abrechnung zurück, wenn der Verbrauch so bleibt.</p>";
+          } else {
+            html += "<p>Mit " + eur.format(ab) + " fehlen übers Jahr rund " + eur.format(-diff) +
+              ". Die kommen mit der Abrechnung als Nachzahlung, wenn der Verbrauch so bleibt.</p>";
+          }
+        }
+        aus.innerHTML = html;
+      }
+      var f = document.getElementById("abschlagrechner");
+      f.addEventListener("input", rechne);
+      f.addEventListener("change", rechne);
+      rechne();
+    })();
+    </script>
 
     <h2>Warum der Abschlag oft zu hoch angesetzt ist</h2>
     <ul>
@@ -93,9 +196,10 @@
     </p>
     <p>
       <a href="index.html">Zählora</a> nimmt dir das ab: Es kennt deinen
-      Abschlag, rechnet aufs Jahresende hoch und sagt dir schon im Oktober, ob
-      eine Nachzahlung kommt oder Geld zurück. Was geschätzt ist, steht dabei
-      als geschätzt da. Mehr auf der <a href="hilfe.html">Hilfeseite</a>.
+      Abschlag, rechnet bis zum Ende deines Abrechnungsjahrs hoch und sagt dir
+      Monate vorher, ob eine Nachzahlung kommt oder Geld zurück. Was geschätzt ist, steht dabei
+      als geschätzt da. Mehr zum Nachrechnen im <a href="ratgeber.html">Ratgeber</a>, Fragen zur
+      App auf der <a href="hilfe.html">Hilfeseite</a>.
     </p>
 
   </div>
@@ -106,6 +210,7 @@
     <span>Zählora — gebaut in Deutschland, von einem Menschen.</span>
     <nav aria-label="Rechtliches">
       <a href="index.html">Start</a>
+      <a href="ratgeber.html">Ratgeber</a>
       <a href="hilfe.html">Hilfe &amp; Kontakt</a>
       <a href="datenschutz.html">Datenschutz</a>
       <a href="impressum.html">Impressum</a>

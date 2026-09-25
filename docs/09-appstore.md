@@ -41,10 +41,15 @@ Die drei Energiearten sind das, was jemand tatsächlich eintippt.
 ### Werbetext (max. 170 Zeichen, jederzeit ohne neue Version änderbar)
 
 ```
-Neu: Du kaufst nur, was dir fehlt. Ein paar Euro, kein Abo. Den
-Verbrauchsbericht kannst du immer ansehen und drucken — freischalten musst du
-ihn erst zum Weitergeben.
+Du trägst deinen Zählerstand ein und siehst Monate vorher, ob dein Abschlag reicht. Ohne Abo, und deine Zahlen bleiben bei dir.
 ```
+
+127 Zeichen. Vom Gründer am 25. September freigegeben. Vorher stand hier seit
+dem Start „Neu: Du kaufst nur, was dir fehlt", und das war drei Fassungen später
+nicht mehr neu. Der Satz nimmt auf, was vor dem Tipp auf die App sonst niemand
+sieht: kein Abo und keine Daten, während der größte Mitbewerber beides hat
+(`10-sichtbarkeit.md`). Eingetragen wird er mit `einreichung.yml`, Schalter
+`werbetext`, auch an der Fassung, die im Laden steht.
 
 Dieses Feld ist der einzige Text, der sich **ohne** neue Version ändern lässt.
 Es gehört deshalb dem jeweils Neuesten, nicht der Dauerbeschreibung.
@@ -99,7 +104,8 @@ Wort ist ohnehin abgedeckt, weil der Anzeigename des Kaufs
 ### Beschreibung (max. 4000 Zeichen)
 
 ```
-Du trägst eine Zahl ein. Zählora sagt dir, ob alles im Rahmen ist.
+Deine Zählerstände für Strom, Gas und Wasser an einem Ort. Du trägst eine
+Zahl ein, Zählora sagt dir, ob alles im Rahmen ist.
 
 Zählerstände landen auf einem Zettel am Sicherungskasten, in einer Tabelle, die
 niemand pflegt, oder nirgends. Und einmal im Jahr kommt die Abrechnung, und man
@@ -132,8 +138,8 @@ geschätzt da. Diese App rechnet nie still.
 VERLAUF, DER ETWAS ZEIGT
 
 Monat, Quartal oder Jahr, als Diagramm oder als Tabelle, immer neben demselben
-Zeitraum des Vorjahres. Mai gegen Mai — und wenn der Mai noch läuft, gegen
-denselben Ausschnitt. Klingt selbstverständlich. Ist es nicht.
+Zeitraum des Vorjahres. Mai gegen Mai, und läuft der Mai noch, gegen
+denselben Ausschnitt.
 
 Trag den Stichtag deines Versorgers ein, und Bericht und Vorschau rechnen nach
 deinem Abrechnungsjahr. Bei Gas fängt das oft im Oktober an.

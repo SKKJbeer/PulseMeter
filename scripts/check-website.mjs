@@ -23,7 +23,8 @@ const base = "file://" + process.cwd() + "/" + dir + "/";
 // Website überhaupt findet (`docs/10-sichtbarkeit.md`, Abschnitt 7), und ein
 // toter Verweis dorthin fällt sonst niemandem auf.
 const seiten = ["index.html", "entwicklung.html", "hilfe.html", "gas-in-kwh.html",
-                "abschlag-zu-hoch.html", "datenschutz.html", "impressum.html"];
+                "abschlag-zu-hoch.html", "zaehlerstand-umzug.html", "ratgeber.html",
+                "datenschutz.html", "impressum.html"];
 
 const failures = [];
 const note = (ok, text) => {

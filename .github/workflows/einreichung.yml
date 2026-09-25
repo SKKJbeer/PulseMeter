@@ -27,6 +27,13 @@ on:
         type: boolean
         required: false
         default: false
+      # Nur der Werbetext, auch an einer Fassung, die schon im Laden steht.
+      # Er ist das einzige Feld, das Apple dort noch ändern lässt.
+      werbetext:
+        description: "Nur den Werbetext eintragen (geht auch im Laden)"
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -73,7 +80,9 @@ jobs:
           # Fehlt sie, gilt die aus dem Impressum.
           ASC_KONTAKT_MAIL: ${{ secrets.ASC_KONTAKT_MAIL }}
         run: |
-          if [ "${{ inputs.fuellen }}" = "true" ]; then
+          if [ "${{ inputs.werbetext }}" = "true" ]; then
+            python3 scripts/asc-einreichung.py --werbetext
+          elif [ "${{ inputs.fuellen }}" = "true" ]; then
             python3 scripts/asc-einreichung.py --fuellen
           else
             python3 scripts/asc-einreichung.py

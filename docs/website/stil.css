@@ -636,3 +636,101 @@ p { margin: 0 0 16px; max-width: var(--w-text); text-wrap: pretty; }
   .stand-demnaechst { background: var(--raised); }
   .stand-demnaechst td { background: none; }
 }
+
+/* -------------------------------------------------------------- Rechner
+
+   **Die Rechner rechnen im Browser, und nichts verlässt ihn.** Kein
+   Formular wird abgeschickt, nichts gespeichert. Das ist dieselbe Pointe wie
+   oben: Eine Seite, die „wir sehen nichts" sagt, schickt auch keine
+   Eingaben weg.
+
+   Die Felder sind so groß wie auf dem Telefon nötig. Wer mit der Rechnung in
+   der einen Hand tippt, trifft sonst das Feld daneben. */
+
+.rechner {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+  padding: 22px 24px 24px;
+  max-width: var(--w-text);
+  display: grid;
+  gap: 16px;
+}
+.rechner-felder {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px 18px;
+}
+.rechner label { display: grid; gap: 6px; font-size: 15px; color: var(--ink-2); }
+.rechner label small { color: var(--ink-3); font-size: 13.5px; }
+.rechner input, .rechner select {
+  font: inherit;
+  font-size: 18px;
+  color: var(--ink);
+  background: var(--ground);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-s);
+  padding: 11px 12px;
+  min-height: 48px;
+  width: 100%;
+  font-variant-numeric: tabular-nums;
+}
+.rechner input:focus-visible, .rechner select:focus-visible {
+  outline: 2px solid var(--tint);
+  outline-offset: 2px;
+}
+.rechner-ergebnis {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+  font-variant-numeric: tabular-nums;
+}
+.rechner-ergebnis strong { font-size: 26px; color: var(--ink); display: block; line-height: 1.3; }
+.rechner-ergebnis p { margin: 6px 0 0; }
+
+/* ----------------------------------------------------------- Protokoll */
+
+.protokoll {
+  width: 100%;
+  max-width: 760px;
+  border-collapse: collapse;
+  background: var(--surface);
+  font-size: 15px;
+}
+.protokoll th, .protokoll td {
+  border: 1px solid var(--line-2);
+  padding: 10px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+.protokoll th { background: var(--raised); font-weight: 600; color: var(--ink); }
+/* Links die Beschriftung, rechts Platz zum Schreiben. Ohne feste Breite
+   nimmt sich die Beschriftung die ganze Zeile. */
+.protokoll th[scope="row"] { width: 30%; }
+/* In der Zählertabelle wird in Nummer und Stand geschrieben, also bekommen
+   die beiden den Platz und nicht die Beschriftung. */
+.protokoll-zaehler th:nth-child(1) { width: 30%; }
+.protokoll-zaehler th:nth-child(2), .protokoll-zaehler th:nth-child(3) { width: 29%; }
+.protokoll-zaehler th:nth-child(4) { width: 12%; }
+.protokoll td { height: 44px; }
+.protokoll-rahmen { overflow-x: auto; max-width: 100%; }
+.unterschriften {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 28px;
+  max-width: 760px;
+  margin-top: 26px;
+}
+.unterschriften div { border-top: 1px solid var(--ink-3); padding-top: 6px; font-size: 14px; color: var(--ink-3); }
+
+/* Gedruckt wird nur das Protokoll. Kopf, Fuß, Erklärtext und Knöpfe bleiben
+   auf dem Schirm; auf dem Blatt stehen die Tabelle und die Unterschriften,
+   schwarz auf weiß, auch wenn der Schirm gerade dunkel ist. */
+@media print {
+  .kopf, .fuss, .sprung, .nicht-drucken { display: none !important; }
+  body { background: #fff; color: #000; font-size: 12pt; }
+  .rechtstext { padding: 0; }
+  .druckbereich { display: block !important; }
+  .protokoll, .protokoll th, .protokoll td { background: #fff; color: #000; border-color: #000; }
+  .protokoll td { height: 34pt; }
+  .unterschriften div { border-color: #000; color: #000; }
+}

@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Gaszähler: Kubikmeter in Kilowattstunden umrechnen — Zählora</title>
-<meta name="description" content="Der Gaszähler zählt Kubikmeter, abgerechnet werden Kilowattstunden. Die Formel mit Zustandszahl und Brennwert, ein Beispiel zum Nachrechnen und die drei häufigsten Fehler.">
+<title>Gas: m³ in kWh umrechnen, mit Rechner — Zählora</title>
+<meta name="description" content="Gas von Kubikmetern in kWh umrechnen, mit Zustandszahl und Brennwert von deiner Rechnung. Rechner zum Eintippen, ein Beispiel und die drei häufigsten Fehler.">
 <meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0F0E0C" media="(prefers-color-scheme: dark)">
 <!-- Safari auf dem iPhone blendet darüber eine Leiste mit „Öffnen" oder
@@ -22,6 +22,31 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2317150F'/%3E%3Cpath d='M6 21a10 10 0 0 1 20 0' fill='none' stroke='%23E0A040' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M9 21h4l2-5 3 8 2-3h3' fill='none' stroke='%23E0A040' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="stil.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "Gaszähler: Kubikmeter in Kilowattstunden umrechnen",
+      "description": "Die Formel mit Zustandszahl und Brennwert, ein Rechner mit deinen eigenen Werten und die drei häufigsten Fehler.",
+      "inLanguage": "de",
+      "dateModified": "2026-09-25",
+      "author": {"@type": "Organization", "name": "Zählora", "url": "https://zaehlora.pages.dev/"},
+      "publisher": {"@type": "Organization", "name": "Zählora", "url": "https://zaehlora.pages.dev/"},
+      "mainEntityOfPage": "https://zaehlora.pages.dev/gas-in-kwh.html"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Zählora", "item": "https://zaehlora.pages.dev/"},
+        {"@type": "ListItem", "position": 2, "name": "Ratgeber", "item": "https://zaehlora.pages.dev/ratgeber.html"},
+        {"@type": "ListItem", "position": 3, "name": "Gas in kWh umrechnen"}
+      ]
+    }
+  ]
+}
+</script>
 </head>
 <body>
 
@@ -56,6 +81,70 @@
     <div class="anschrift">
       <strong>Kilowattstunden = Kubikmeter × Zustandszahl × Brennwert</strong>
     </div>
+
+    <h2 id="rechner">Mit deinen Zahlen</h2>
+    <form class="rechner" id="gasrechner" onsubmit="return false" aria-describedby="gas-ergebnis">
+      <div class="rechner-felder">
+        <label>Verbrauch in m³
+          <input id="g-m3" inputmode="decimal" autocomplete="off" value="250">
+          <small>Neuer Stand minus alter Stand</small>
+        </label>
+        <label>Zustandszahl
+          <input id="g-z" inputmode="decimal" autocomplete="off" value="0,9650">
+          <small>Von der Rechnung, meist zwischen 0,9 und 1</small>
+        </label>
+        <label>Brennwert in kWh/m³
+          <input id="g-b" inputmode="decimal" autocomplete="off" value="11,2">
+          <small>Von der Rechnung</small>
+        </label>
+        <label>Arbeitspreis in Cent/kWh
+          <input id="g-p" inputmode="decimal" autocomplete="off" value="12">
+          <small>Brutto, wie auf der Rechnung. Darf leer bleiben</small>
+        </label>
+      </div>
+      <div class="rechner-ergebnis" id="gas-ergebnis" aria-live="polite"></div>
+    </form>
+    <script>
+    // Dieselbe Rechnung wie in der App (PulseCore, GasConversion.energy):
+    // Kubikmeter × Zustandszahl × Brennwert. Nichts wird gesendet oder gespeichert.
+    (function () {
+      function zahl(t) {
+        t = String(t || "").replace(/\s/g, "");
+        // „1.267" ist im Deutschen eintausendzweihundertsiebenundsechzig, nicht
+        // eins Komma zwei. Ein Punkt vor genau drei Ziffern trennt Tausender;
+        // „0.9523" oder „11.4" bleiben Kommazahlen.
+        if (t.indexOf(",") >= 0) t = t.replace(/\./g, "").replace(",", ".");
+        else if (/^\d{1,3}(\.\d{3})+$/.test(t)) t = t.replace(/\./g, "");
+        var n = parseFloat(t);
+        return isFinite(n) ? n : NaN;
+      }
+      var fmt0 = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 0 });
+      var eur = new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" });
+      function rechne() {
+        var m3 = zahl(document.getElementById("g-m3").value);
+        var z = zahl(document.getElementById("g-z").value);
+        var b = zahl(document.getElementById("g-b").value);
+        var p = zahl(document.getElementById("g-p").value);
+        var aus = document.getElementById("gas-ergebnis");
+        if (!(m3 >= 0) || !(z > 0) || !(b > 0)) {
+          aus.innerHTML = "<p>Trag Verbrauch, Zustandszahl und Brennwert ein.</p>";
+          return;
+        }
+        var kwh = m3 * z * b;
+        var faust = m3 * 10;
+        var html = "<strong>" + fmt0.format(kwh) + " kWh</strong>";
+        if (p > 0) html += "<p>Das sind " + eur.format(kwh * p / 100) + " Arbeitspreis, dazu kommt der Grundpreis.</p>";
+        var abw = faust - kwh;
+        if (Math.abs(abw) >= 1) {
+          html += "<p>Mit der Faustformel „mal zehn“ kämen " + fmt0.format(faust) +
+            " kWh heraus, " + fmt0.format(Math.abs(abw)) + " kWh " + (abw > 0 ? "zu viel" : "zu wenig") + ".</p>";
+        }
+        aus.innerHTML = html;
+      }
+      document.getElementById("gasrechner").addEventListener("input", rechne);
+      rechne();
+    })();
+    </script>
 
     <h2>Ein Beispiel zum Nachrechnen</h2>
     <p>
@@ -97,7 +186,8 @@
     <p>
       Genau dafür gibt es <a href="index.html">Zählora</a>: Zustandszahl und
       Brennwert einmal eintragen, danach rechnet die App bei jeder Ablesung
-      selbst, in Kilowattstunden und in Euro. Weitere Fragen beantwortet die
+      selbst, in Kilowattstunden und in Euro. Mehr zum Nachrechnen im
+      <a href="ratgeber.html">Ratgeber</a>, weitere Fragen beantwortet die
       <a href="hilfe.html">Hilfeseite</a>.
     </p>
 
@@ -109,6 +199,7 @@
     <span>Zählora — gebaut in Deutschland, von einem Menschen.</span>
     <nav aria-label="Rechtliches">
       <a href="index.html">Start</a>
+      <a href="ratgeber.html">Ratgeber</a>
       <a href="hilfe.html">Hilfe &amp; Kontakt</a>
       <a href="datenschutz.html">Datenschutz</a>
       <a href="impressum.html">Impressum</a>

@@ -9,6 +9,51 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.116.7 — 2026-09-25
+
+**Für Google: eine Seite zum Umzug, zwei Rechner und ein Ratgeber. Dazu die
+ersten echten Zahlen aus App Store Connect.**
+
+Die Zahlen, vom Gründer als Bildschirmfoto geschickt: 275 Impressionen,
+52 Aufrufe der Produktseite, 10 Downloads in rund drei Wochen. Wer die App in
+einer Liste sieht, tippt zu einem Fünftel; wer die Seite sieht, lädt zu einem
+Fünftel. Es sehen sie nur kaum Leute, rund 13 am Tag. Der Engpass ist die
+Reichweite, und das passt zum fehlenden Wort `zählerstand` im Schlagwortfeld.
+
+Website:
+
+- **Neu: „Zählerstände beim Umzug"** mit einem Übergabeprotokoll zum
+  Ausdrucken. Gedruckt wird nur das Blatt, schwarz auf weiß, auch wenn der
+  Schirm dunkel ist.
+- **Die Gasseite rechnet jetzt**: Verbrauch, Zustandszahl, Brennwert und
+  Preis eintippen, heraus kommen kWh und Euro, dazu, wie weit „mal zehn"
+  danebenliegt. Dieselbe Formel wie `GasConversion.energy` in PulseCore.
+- **Die Abschlagsseite rechnet jetzt**: welcher Abschlag passt und wie viel
+  übers Jahr zu viel oder zu wenig vorausgezahlt wird. Grundpreis im Jahr
+  oder im Monat. Zwei Satzfehler aus einer früheren Runde behoben, und das
+  „schon im Oktober" ist raus.
+- **Neu: „Ratgeber"** als Übersicht, verlinkt aus dem Kopf der Startseite und
+  aus dem Fuß jeder Seite. Strukturierte Daten für Artikel und Brotkrumen auf
+  allen Ratgeberseiten, Sitemap mit Datum.
+- Beim Nachrechnen gefunden: „1.267" wurde als eins Komma zwei gelesen. Ein
+  Punkt vor genau drei Ziffern gilt jetzt als Tausendertrenner.
+
+Die Rechner rechnen im Browser; nichts wird gesendet oder gespeichert, und
+`check-website.mjs` prüft weiter, dass keine Anfrage an einen fremden Server
+geht.
+
+Store:
+
+- **Werbetext** vom Gründer freigegeben: „Du trägst deinen Zählerstand ein und
+  siehst Monate vorher, ob dein Abschlag reicht. Ohne Abo, und deine Zahlen
+  bleiben bei dir." `einreichung.yml` hat dafür den Schalter `werbetext`, der
+  nur dieses Feld setzt; das geht auch an der Fassung, die im Laden steht.
+- **Die Beschreibung beginnt mit dem, wonach bei Google gesucht wird**
+  („Deine Zählerstände für Strom, Gas und Wasser an einem Ort"), wirksam mit
+  1.3. Dafür fällt „Klingt selbstverständlich. Ist es nicht." weg; mit dem
+  neuen Satz stand die Beschreibung bei 4040 von 4000 Zeichen, und
+  `check-strings.py` hat es gemerkt.
+
 ## 0.116.6 — 2026-09-25
 
 **Die Kaltstart-Prüfung nimmt jetzt den Weg, den ein Tipp aufs Widget nimmt.**
