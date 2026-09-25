@@ -145,9 +145,11 @@ a:hover { text-decoration-thickness: 2px; }
   font-size: 16px;
 }
 .marke svg { width: 22px; height: 22px; display: block; }
-.kopf nav { display: flex; gap: 20px; font-size: 15px; }
-.kopf nav a { color: var(--ink-2); text-decoration: none; }
+.kopf nav { display: flex; flex-wrap: wrap; gap: 4px 20px; font-size: 15px; }
+.kopf nav a { color: var(--ink-2); text-decoration: none; padding-block: 6px; }
 .kopf nav a:hover { color: var(--ink); }
+/* Wo man ist, steht in der Leiste. Ohne das sieht jede Unterseite gleich aus. */
+.kopf nav a[aria-current="page"] { color: var(--ink); font-weight: 600; }
 
 /* Auf einem schmalen Telefon rutscht die Navigation in die zweite Zeile,
    statt aus dem Bild zu laufen. Sie zu verstecken wäre der bequemere Weg —
@@ -159,7 +161,7 @@ a:hover { text-decoration-thickness: 2px; }
     padding-block: 10px 11px;
     gap: 6px 16px;
   }
-  .kopf nav { gap: 18px; font-size: 14.5px; width: 100%; }
+  .kopf nav { gap: 0 18px; font-size: 14.5px; width: 100%; }
 }
 
 /* -------------------------------------------------------------- Anfang */
@@ -318,13 +320,24 @@ a.apfel:hover { transform: translateY(-1px); }
 
 /* -------------------------------------------------------------- Geräte */
 
+/* **Das Bild füllt den Rahmen, und der Rahmen ist ein Block.** `<picture>` ist
+   von sich aus ein Inline-Element, und das Bild trägt `width="460"`. War die
+   Spalte breiter als 460, blieb rechts ein weißer Streifen im Rahmen stehen,
+   auf jedem Telefon der Seite. */
 .geraet {
+  display: block;
   border-radius: 34px;
   box-shadow: var(--shadow-lift);
   border: 1px solid var(--line);
   overflow: hidden;
   background: var(--surface);
 }
+.geraet img { width: 100%; }
+/* Neben einem Text ein Telefon in Telefongröße, nicht über die halbe Seite.
+   In voller Spaltenbreite war es auf dem Desktop über tausend Punkte hoch;
+   der Text daneben stand verloren in der Mitte, und die Seite war zehn
+   Bildschirme lang. */
+.paar > .geraet { max-width: 340px; width: 100%; justify-self: center; }
 .geraet-reihe {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -384,6 +397,50 @@ p { margin: 0 0 16px; max-width: var(--w-text); text-wrap: pretty; }
   box-shadow: var(--shadow);
 }
 .karte p { margin: 0; color: var(--ink-2); font-size: 15.5px; }
+/* Text unter einem Kartenraster braucht Luft. Ohne den Abstand klebte der
+   Absatz unter „Deine Daten" an der letzten Kartenreihe. */
+.karten + p, .karten + .blass { margin-top: 34px; }
+
+/* Eine Karte, die woanders hinführt, ist als Ganzes der Verweis. Nur die
+   Überschrift anklickbar zu machen heißt, auf dem Telefon eine Zeile zu
+   treffen statt einer Fläche. */
+a.karte-verweis {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: inherit;
+  text-decoration: none;
+  transition: border-color .15s ease, transform .15s ease;
+}
+a.karte-verweis:hover { border-color: var(--line-2); transform: translateY(-2px); }
+a.karte-verweis:focus-visible { outline: 2px solid var(--tint); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { a.karte-verweis:hover { transform: none; } }
+a.karte-verweis b { font-size: 17px; color: var(--ink); }
+a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-ink); font-weight: 600; font-size: 15px; }
+.art {
+  align-self: flex-start;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--tint-ink);
+  background: color-mix(in srgb, var(--tint) 12%, transparent);
+  border-radius: 999px;
+  padding: 3px 9px;
+}
+
+/* Der Pfad über einer Ratgeberseite. Google zeigt ihn in der Trefferliste,
+   wenn er auf der Seite steht und im Markup dasselbe sagt; beides prüft
+   `check-website.mjs`. */
+.pfad { font-size: 14px; color: var(--ink-3); margin: 0 0 18px; }
+.pfad ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 8px; }
+.pfad li + li::before { content: "›"; margin-right: 8px; color: var(--ink-3); }
+.pfad a { color: var(--ink-2); text-decoration: none; }
+.pfad a:hover { color: var(--ink); text-decoration: underline; }
+
+.weiterlesen { margin-top: 48px; padding-top: 26px; border-top: 1px solid var(--line); max-width: var(--w-text); }
+.weiterlesen h2 { margin-top: 0; }
+.weiterlesen .karten { margin-top: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
 .karte-zeichen {
   width: 34px; height: 34px;
   margin-bottom: 14px;
@@ -661,7 +718,16 @@ p { margin: 0 0 16px; max-width: var(--w-text); text-wrap: pretty; }
   grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 14px 18px;
 }
-.rechner label { display: grid; gap: 6px; font-size: 15px; color: var(--ink-2); }
+.rechner label {
+  display: grid;
+  gap: 6px;
+  font-size: 15px;
+  color: var(--ink-2);
+  /* Oben anfangen. Sonst verteilt das Raster die Höhe eines zweizeiligen
+     Hinweises nebenan auf die Zeilen, und die Felder einer Reihe stehen
+     versetzt. */
+  align-content: start;
+}
 .rechner label small { color: var(--ink-3); font-size: 13.5px; }
 .rechner input, .rechner select {
   font: inherit;
@@ -726,7 +792,7 @@ p { margin: 0 0 16px; max-width: var(--w-text); text-wrap: pretty; }
    auf dem Schirm; auf dem Blatt stehen die Tabelle und die Unterschriften,
    schwarz auf weiß, auch wenn der Schirm gerade dunkel ist. */
 @media print {
-  .kopf, .fuss, .sprung, .nicht-drucken { display: none !important; }
+  .kopf, .fuss, .sprung, .nicht-drucken, .pfad, .weiterlesen { display: none !important; }
   body { background: #fff; color: #000; font-size: 12pt; }
   .rechtstext { padding: 0; }
   .druckbereich { display: block !important; }

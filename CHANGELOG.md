@@ -9,6 +9,58 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.116.8 — 2026-09-25
+
+**Die Website, noch einmal mit den Augen eines Gestalters angesehen, und
+sechs Fehler, die keine Prüfung gesehen hatte. Jeder hat jetzt eine.**
+
+Gefunden auf den Bildschirmfotos, nicht in der Prüfung:
+
+- **Rechts in jedem Telefonrahmen ein weißer Streifen.** Das Bild war 460
+  Punkte breit, der Rahmen breiter. Jetzt füllt es ihn.
+- **Die Telefone neben den Texten waren über 1000 Punkte hoch**, der Text
+  daneben stand verloren in der Mitte. Jetzt höchstens 340 breit.
+- **Die Bilder waren vom 2. September.** Im Bericht stand unten „PulseMeter",
+  auf der Übersicht der 28. August. Neu: `scripts/website-bilder.sh` holt die
+  aktuellen aus dem Zweig `screenshots`, in dem die CI sie ohnehin ablegt.
+- **Die Felder im Rechner standen versetzt**, sobald der Hinweis neben einem
+  Feld zwei Zeilen hatte.
+- **Unter „Deine Daten" klebte der Absatz an den Karten.**
+- **Die Unterseiten hatten eine andere Kopfleiste** als die Startseite, ohne
+  Ratgeber und ohne Entwicklung. Jetzt überall dieselbe, mit Markierung der
+  Seite, auf der man ist, und derselbe Fuß.
+
+Überarbeitet:
+
+- **Neuer Abschnitt auf der Startseite: „Nachrechnen, auch ohne die App"**,
+  mit den zwei Rechnern und dem Umzugsprotokoll.
+- **Karten, die woanders hinführen, sind als Ganzes anklickbar**, mit Art
+  (Rechner, Anleitung und Vorlage) und einem „Zum Rechner".
+- **Auf jeder Ratgeberseite steht der Pfad** „Zählora › Ratgeber › …" und
+  unten „Weiterlesen" mit den anderen Seiten. Der Pfad sagt sichtbar dasselbe
+  wie die strukturierten Daten; das verlangt Google.
+
+Neue Prüfungen in `check-website.mjs`, sie laufen bei jedem
+`pruefen.sh` und in der CI:
+
+- jede Seite im Ordner steht in der Prüfliste und, außer dem Impressum, in der
+  Sitemap
+- strukturierte Daten sind gültiges JSON, der sichtbare Pfad gleicht dem im
+  Markup, jeder Artikel ist von der Startseite und aus dem Ratgeber verlinkt
+- dieselbe Kopfleiste auf jeder Seite, und sie zeigt, wo man ist
+- nirgends „PulseMeter"
+- die Rechner rechnen richtig, mit Zahlen: 2.702 kWh, 324,24 €, „1.267" als
+  Tausend, 91,00 € im Monat, 468 € zu viel, Grundpreis im Monat; leere Felder
+  und Buchstaben ergeben nie `NaN`
+- Felder einer Reihe auf einer Höhe, jedes Feld und jeder Knopf mindestens
+  44 Punkte hoch
+- gedruckt wird nur das Protokoll, mit zwei Tabellen und drei Unterschriften
+- jedes Bild füllt seinen Rahmen, kein Telefonbild höher als 800 px
+- unter einem Kartenraster mindestens 24 px Luft, Ratgeberkarten sind Verweise
+
+Gegenprobe: Die sechs alten Fehler wieder eingebaut, und die Prüfung ist an
+allen sechs rot geworden. 862 Prüfpunkte statt 493.
+
 ## 0.116.7 — 2026-09-25
 
 **Für Google: eine Seite zum Umzug, zwei Rechner und ein Ratgeber. Dazu die

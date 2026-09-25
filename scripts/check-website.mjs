@@ -277,6 +277,99 @@ if (platzhalter.length === 0) {
   console.log(`  offen  Platzhalter in ${platzhalter.join(", ")} — siehe ${dir}/EINTRAGEN.md`);
 }
 
+
+// --- Aufbau: Was es an Seiten gibt, muss überall bekannt sein
+//
+// **Eine neue Seite, die hier fehlt, wird nie geprüft.** Die Liste oben ist
+// von Hand gepflegt; mit 0.116.7 kamen zwei Seiten dazu, und ob sie in der
+// Liste standen, hing daran, dass jemand daran dachte. Jetzt muss jede Datei
+// im Ordner in der Liste stehen, und jede außer dem Impressum in der Sitemap.
+console.log("\nAufbau");
+{
+  const imOrdner = readdirSync(dir).filter(d => d.endsWith(".html")).sort();
+  const fehlend = imOrdner.filter(d => !seiten.includes(d));
+  note(fehlend.length === 0,
+       fehlend.length === 0 ? `Alle ${imOrdner.length} Seiten stehen in der Prüfliste`
+                            : `Nicht in der Prüfliste: ${fehlend.join(", ")}`);
+  const xml = readFileSync(`${dir}/sitemap.xml`, "utf8");
+  const angemeldet = [...xml.matchAll(/<loc>https:\/\/[^/]+\/([^<]*)<\/loc>/g)]
+    .map(m => m[1] || "index.html");
+  const soll = imOrdner.filter(d => d !== "impressum.html");
+  const nichtAngemeldet = soll.filter(d => !angemeldet.includes(d));
+  const zuviel = angemeldet.filter(d => !imOrdner.includes(d));
+  note(nichtAngemeldet.length === 0 && zuviel.length === 0,
+       nichtAngemeldet.length || zuviel.length
+         ? `Sitemap: fehlt ${nichtAngemeldet.join(", ") || "nichts"}, zu viel ${zuviel.join(", ") || "nichts"}`
+         : `Sitemap führt genau die ${soll.length} Seiten außer dem Impressum`);
+}
+
+// **Strukturierte Daten müssen gültig sein und dasselbe sagen wie die Seite.**
+// Ein Komma zu viel im JSON, und Google verwirft den ganzen Block, ohne dass es
+// jemand merkt. Und ein Pfad im Markup, der nicht sichtbar auf der Seite
+// steht, gilt bei Google als irreführend.
+const artikel = [];
+for (const datei of seiten) {
+  const html = readFileSync(`${dir}/${datei}`, "utf8");
+  const bloecke = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
+  for (const [, roh] of bloecke) {
+    let daten = null;
+    try { daten = JSON.parse(roh); } catch (e) { note(false, `${datei}: strukturierte Daten sind kein gültiges JSON (${e.message})`); continue; }
+    note(true, `${datei}: strukturierte Daten sind gültiges JSON`);
+    const knoten = daten["@graph"] || [daten];
+    if (knoten.some(k => k["@type"] === "Article")) artikel.push(datei);
+    const pfad = knoten.find(k => k["@type"] === "BreadcrumbList");
+    if (pfad) {
+      const imMarkup = pfad.itemListElement.map(e => e.name);
+      const sichtbar = [...html.matchAll(/<nav class="pfad"[\s\S]*?<\/nav>/g)]
+        .flatMap(m => [...m[0].matchAll(/<li[^>]*>([\s\S]*?)<\/li>/g)])
+        .map(m => m[1].replace(/<[^>]+>/g, "").trim());
+      note(JSON.stringify(imMarkup) === JSON.stringify(sichtbar),
+           `${datei}: Pfad sichtbar wie im Markup (${sichtbar.join(" › ") || "keiner sichtbar"})`);
+    }
+  }
+}
+
+// **Jeder Artikel ist erreichbar: von der Startseite und aus dem Ratgeber.**
+// Google findet eine Seite über Verweise. Eine Seite, auf die nichts zeigt,
+// steht in der Sitemap und sonst nirgends.
+{
+  const start = readFileSync(`${dir}/index.html`, "utf8");
+  const ratgeber = readFileSync(`${dir}/ratgeber.html`, "utf8");
+  for (const datei of artikel) {
+    note(start.includes(`href="${datei}"`), `${datei}: von der Startseite verlinkt`);
+    note(ratgeber.includes(`href="${datei}"`), `${datei}: aus dem Ratgeber verlinkt`);
+  }
+}
+
+// **Dieselbe Kopfleiste auf jeder Seite.** Bis 0.116.8 hatte die Startseite
+// fünf Einträge und die Unterseiten drei, ohne Ratgeber und ohne Entwicklung.
+// Wer über Google auf einer Unterseite ankam, fand den Rest der Website nicht.
+{
+  const leiste = d => {
+    const m = readFileSync(`${dir}/${d}`, "utf8").match(/<nav aria-label="Bereiche">([\s\S]*?)<\/nav>/);
+    return m ? [...m[1].matchAll(/>([^<]+)<\/a>/g)].map(x => x[1].trim()) : [];
+  };
+  const vorbild = leiste("index.html");
+  for (const datei of seiten) {
+    const hier = leiste(datei);
+    note(JSON.stringify(hier) === JSON.stringify(vorbild),
+         `${datei}: Kopfleiste wie auf der Startseite (${hier.join(", ")})`);
+    const html = readFileSync(`${dir}/${datei}`, "utf8");
+    if (html.includes(`<nav aria-label="Bereiche">`) && new RegExp(`href="${datei}"`).test(html.match(/<nav aria-label="Bereiche">[\s\S]*?<\/nav>/)[0])) {
+      note(new RegExp(`href="${datei}" aria-current="page"`).test(html),
+           `${datei}: die Kopfleiste zeigt, wo man ist`);
+    }
+  }
+}
+
+// **Der alte Name kommt nirgends vor, auch nicht in einer Bildbeschreibung.**
+// Seit dem 28. August heißt die App Zählora. Im Repository heißt noch vieles
+// PulseMeter, und das ist Absicht; auf der Website hat es nichts zu suchen.
+for (const datei of seiten) {
+  const html = readFileSync(`${dir}/${datei}`, "utf8").replace(/<!--[\s\S]*?-->/g, " ");
+  note(!/PulseMeter/i.test(html), `${datei}: kein „PulseMeter"`);
+}
+
 // --- Mit Browser
 
 const browser = await chromium.launch({
@@ -338,6 +431,131 @@ for (const scheme of ["light", "dark"]) {
 
     await page.close();
   }
+}
+
+
+// --- Verhalten: Was die neuen Teile können müssen
+//
+// Die Prüfungen oben sehen, ob eine Seite da ist und nicht überläuft. Ob der
+// Rechner richtig rechnet, sehen sie nicht. Beim ersten Nachrechnen von Hand
+// kam „1.267 m³" als 14 kWh heraus; das hätte keine Prüfung gemerkt.
+console.log("\nVerhalten");
+{
+  const page = await browser.newPage({ viewport: { width: 390, height: 900 } });
+  const fehler = [];
+  page.on("pageerror", e => fehler.push(e.message));
+  const text = async sel => (await page.textContent(sel)).replace(/\s+/g, " ").trim();
+
+  // Gas: dieselbe Rechnung wie GasConversion.energy in PulseCore.
+  await page.goto(base + "gas-in-kwh.html");
+  note((await text("#gas-ergebnis")).startsWith("2.702 kWh"), `Gasrechner: 250 m³ × 0,9650 × 11,2 = 2.702 kWh`);
+  note((await text("#gas-ergebnis")).includes("324,24 €"), `Gasrechner: 2.702 kWh zu 12 ct = 324,24 €`);
+  await page.fill("#g-m3", "1.267"); await page.fill("#g-z", "0,9523"); await page.fill("#g-b", "11,4");
+  note((await text("#gas-ergebnis")).startsWith("13.755 kWh"), `Gasrechner: „1.267" ist eintausendzweihundertsiebenundsechzig (${await text("#gas-ergebnis")})`);
+  await page.fill("#g-m3", "1267,5");
+  note((await text("#gas-ergebnis")).startsWith("13.760 kWh"), `Gasrechner: Komma als Dezimalzeichen`);
+  await page.fill("#g-z", "");
+  note(!/NaN|Infinity|undefined/.test(await text("#gas-ergebnis")) && (await text("#gas-ergebnis")).includes("Trag"),
+       `Gasrechner: ein leeres Feld ergibt einen Hinweis, keine kaputte Zahl`);
+  await page.fill("#g-z", "abc");
+  note(!/NaN|Infinity|undefined/.test(await text("#gas-ergebnis")), `Gasrechner: Buchstaben ergeben keine kaputte Zahl`);
+
+  // Abschlag: Verbrauch × Arbeitspreis + Grundpreis, auf zwölf Monate.
+  await page.goto(base + "abschlag-zu-hoch.html");
+  note((await text("#a-ergebnis")).startsWith("91,00 € im Monat"), `Abschlagsrechner: 2.800 kWh, 34 ct, 140 € im Jahr = 91,00 € im Monat`);
+  note((await text("#a-ergebnis")).includes("468,00 € zu viel"), `Abschlagsrechner: 130 € statt 91 € sind 468 € im Jahr zu viel`);
+  await page.selectOption("#a-gpart", "monat"); await page.fill("#a-gp", "11,50"); await page.fill("#a-ab", "80");
+  const monat = await text("#a-ergebnis");
+  note(monat.startsWith("90,83 € im Monat") && monat.includes("130,00 €") && monat.includes("Nachzahlung"),
+       `Abschlagsrechner: Grundpreis im Monat, zu wenig gezahlt (${monat.slice(0, 60)})`);
+  await page.fill("#a-kwh", "");
+  note(!/NaN|Infinity|undefined/.test(await text("#a-ergebnis")), `Abschlagsrechner: ein leeres Feld ergibt keine kaputte Zahl`);
+
+  // **Felder einer Reihe stehen auf einer Höhe.** Ein zweizeiliger Hinweis
+  // neben einem einzeiligen hat die Felder um acht Punkte versetzt; gesehen
+  // habe ich es erst auf dem Bildschirmfoto.
+  await page.setViewportSize({ width: 1280, height: 900 });
+  for (const datei of ["gas-in-kwh.html", "abschlag-zu-hoch.html"]) {
+    await page.goto(base + datei);
+    const versatz = await page.evaluate(() => {
+      const reihen = {};
+      for (const l of document.querySelectorAll(".rechner label")) {
+        const top = Math.round(l.getBoundingClientRect().top);
+        const feld = l.querySelector("input, select").getBoundingClientRect().top;
+        (reihen[top] ||= []).push(feld);
+      }
+      return Math.max(0, ...Object.values(reihen).map(r => Math.max(...r) - Math.min(...r)));
+    });
+    note(versatz <= 1, `${datei}: Felder einer Reihe stehen auf einer Höhe (Versatz ${Math.round(versatz)} px)`);
+  }
+
+  // **Groß genug für einen Daumen.** Wer mit der Rechnung in der einen Hand
+  // tippt, trifft ein kleines Feld nicht.
+  await page.setViewportSize({ width: 390, height: 900 });
+  for (const datei of ["gas-in-kwh.html", "abschlag-zu-hoch.html", "zaehlerstand-umzug.html"]) {
+    await page.goto(base + datei);
+    const klein = await page.evaluate(() =>
+      [...document.querySelectorAll(".rechner input, .rechner select, main button")]
+        .filter(e => e.getBoundingClientRect().height < 44).map(e => e.id || e.textContent.trim()));
+    note(klein.length === 0, `${datei}: jedes Feld und jeder Knopf mindestens 44 Punkte hoch${klein.length ? " (zu klein: " + klein.join(", ") + ")" : ""}`);
+  }
+
+  // **Gedruckt wird nur das Protokoll.** Kopf, Fuß, Pfad und Erklärtext
+  // gehören nicht aufs Blatt, das jemand am Übergabetag unterschreibt.
+  await page.goto(base + "zaehlerstand-umzug.html");
+  await page.emulateMedia({ media: "print" });
+  const druck = await page.evaluate(() => {
+    const zu = s => [...document.querySelectorAll(s)].every(e => getComputedStyle(e).display === "none");
+    const tabellen = [...document.querySelectorAll("#protokoll table")];
+    return {
+      versteckt: zu(".kopf") && zu(".fuss") && zu(".nicht-drucken") && zu(".pfad"),
+      sichtbar: getComputedStyle(document.querySelector("#protokoll")).display !== "none",
+      zeilen: document.querySelectorAll("#protokoll tbody tr").length,
+      unterschriften: document.querySelectorAll(".unterschriften div").length,
+      tabellen: tabellen.length,
+    };
+  });
+  await page.emulateMedia({ media: "screen" });
+  note(druck.versteckt, "Protokoll: Kopf, Fuß, Pfad und Erklärtext werden nicht gedruckt");
+  note(druck.sichtbar && druck.tabellen === 2 && druck.zeilen >= 10 && druck.unterschriften === 3,
+       `Protokoll: zwei Tabellen, ${druck.zeilen} Zeilen, ${druck.unterschriften} Unterschriften auf dem Blatt`);
+
+  // **Das Bild füllt den Telefonrahmen.** Bis 0.116.8 blieb rechts in jedem
+  // Rahmen ein weißer Streifen, weil das Bild 460 Punkte breit war und der
+  // Rahmen breiter.
+  for (const breite of [390, 1280]) {
+    await page.setViewportSize({ width: breite, height: 900 });
+    await page.goto(base + "index.html");
+    const luecke = await page.evaluate(() =>
+      Math.max(0, ...[...document.querySelectorAll(".geraet")]
+        .filter(g => g.offsetParent !== null)
+        .map(g => g.clientWidth - g.querySelector("img").getBoundingClientRect().width)));
+    note(luecke <= 1, `Startseite ${breite} px: jedes Bild füllt seinen Telefonrahmen (Lücke ${Math.round(luecke)} px)`);
+    // Ein Telefon neben einem Text bleibt telefongroß.
+    const hoehe = await page.evaluate(() =>
+      Math.max(0, ...[...document.querySelectorAll(".paar > .geraet")].map(g => g.getBoundingClientRect().height)));
+    note(hoehe <= 800, `Startseite ${breite} px: kein Telefonbild höher als 800 px (${Math.round(hoehe)} px)`);
+  }
+
+  // **Text unter einem Kartenraster klebt nicht daran.** Unter „Deine Daten"
+  // stand der Absatz direkt an der letzten Kartenreihe, null Punkte Abstand.
+  for (const datei of ["index.html", "ratgeber.html"]) {
+    await page.goto(base + datei);
+    const knapp = await page.evaluate(() =>
+      [...document.querySelectorAll(".karten + *")]
+        .map(e => e.getBoundingClientRect().top - e.previousElementSibling.getBoundingClientRect().bottom)
+        .filter(a => a < 24).length);
+    note(knapp === 0, `${datei}: unter jedem Kartenraster mindestens 24 px Luft`);
+  }
+
+  // **Eine Karte, die woanders hinführt, ist als Ganzes anklickbar.**
+  await page.goto(base + "ratgeber.html");
+  const karten = await page.evaluate(() => [...document.querySelectorAll("main .karte")].map(k => k.tagName));
+  note(karten.length >= 3 && karten.every(t => t === "A"),
+       `Ratgeber: ${karten.length} Karten, jede als Ganzes ein Verweis`);
+
+  note(fehler.length === 0, fehler.length ? `JavaScript-Fehler beim Rechnen: ${fehler[0]}` : "Keine JavaScript-Fehler beim Rechnen und Drucken");
+  await page.close();
 }
 
 await browser.close();

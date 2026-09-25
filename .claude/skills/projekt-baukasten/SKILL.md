@@ -1777,6 +1777,32 @@ gefunden:**
   dort zählt der Anfang der Beschreibung, den Apple für die eigene Suche
   ignoriert.
 
+### Eine Website prüft man, indem man sie ansieht, und dann schreibt man auf, was man gesehen hat
+
+Die Prüfung der Website war grün, 493 Punkte, hell und dunkel, drei Breiten.
+Ein Blick auf die Bildschirmfotos fand trotzdem sechs Fehler, und keiner davon
+war ein Überlauf, ein toter Verweis oder ein JavaScript-Fehler:
+
+| Gesehen | Ursache | Jetzt geprüft |
+|---|---|---|
+| Rechts in jedem Telefonrahmen ein weißer Streifen | `<picture>` ist inline, das Bild trägt `width="460"`, die Spalte war breiter | Bild so breit wie sein Rahmen |
+| Telefonbilder über 1000 Punkte hoch, Seite zehn Bildschirme lang | Bild in voller Spaltenbreite | höchstens 800 px |
+| Felder im Rechner um 7 bis 16 Punkte versetzt | Rastereintrag streckt sich nach dem zweizeiligen Hinweis nebenan | Felder einer Reihe auf einer Höhe |
+| Absatz klebt an der Kartenreihe | kein Abstand nach dem Raster | mindestens 24 px |
+| Unterseiten mit drei statt fünf Einträgen in der Kopfleiste | von Hand gepflegt, einmal vergessen | dieselbe Leiste auf jeder Seite |
+| Im Bericht auf dem Bild stand „PulseMeter" | Bilder von Hand kopiert, am 2. September | `scripts/website-bilder.sh` holt sie aus dem Zweig `screenshots` |
+
+> **Eine Prüfung, die nur nach Fehlern sucht, die man schon kennt, findet die
+> neuen nicht.** Deshalb gehört vor jede Änderung an einer Website ein Blick auf
+> die Bilder, und nach jedem Fund eine Prüfung, die genau diesen Fund meldet.
+> Und die Gegenprobe: den alten Fehler absichtlich wieder einbauen und sehen,
+> dass sie rot wird. Hier schlugen alle sechs an.
+
+Dazu: **Ein Rechner auf einer Website wird mit Zahlen geprüft, nicht mit
+Anwesenheit.** „1.267 m³" kam als 14 kWh heraus, weil der Punkt als Komma
+gelesen wurde. Die Seite war da, fehlerfrei und schön; nur die Zahl war um den
+Faktor tausend falsch.
+
 ### Ein Index aus einer Zählung ist keine Adresse
 
 Zwei Läufe, derselbe Abbruch, zwei verschiedene Indizes:
