@@ -1803,6 +1803,36 @@ Anwesenheit.** „1.267 m³" kam als 14 kWh heraus, weil der Punkt als Komma
 gelesen wurde. Die Seite war da, fehlerfrei und schön; nur die Zahl war um den
 Faktor tausend falsch.
 
+### Cloudflare Pages ohne `404.html` beantwortet jede Adresse mit der Startseite
+
+Gemessen, nicht vermutet: `curl -w "%{http_code}"` auf `/gibt-es-nicht`,
+`/favicon.ico` und `/ratgeber/xyz` gab jedes Mal **200** und die Startseite.
+Cloudflare Pages behandelt eine Website ohne `404.html` wie eine Einzelseiten-
+Anwendung und fällt auf `index.html` zurück. Für Google sind das beliebig viele
+Kopien der Startseite; im Browser fällt es niemandem auf.
+
+> **Vor dem ersten Veröffentlichen eine `404.html` mit `noindex`, ohne
+> kanonische Adresse und mit absoluten Pfaden für Stil und Symbole.** Sie
+> antwortet unter jeder Adresse, auch unter `/a/b/c`, und dort zeigt
+> `stil.css` auf `/a/b/stil.css`.
+
+Zwei Folgefunde aus derselben Messung:
+
+- **Ein eingebettetes Symbol (`data:image/svg+xml`) sieht Google nicht.** In
+  der Trefferliste steht dann ein Platzhalter. Es braucht eine Datei, am
+  einfachsten `favicon.ico` mit 48 × 48 und dazu `favicon.svg`. Eine ICO-Datei
+  lässt sich ohne Grafikprogramm bauen: sechs Byte Kopf, sechzehn Byte
+  Eintrag, dann ein PNG.
+- **Eine Prüfung, die Seiten als `file://` öffnet, kann absolute Pfade nicht
+  prüfen.** `/favicon.ico` zeigt dort auf die Wurzel der Festplatte. Ein
+  kleiner Webserver in der Prüfung (`node:http`, dreißig Zeilen) liefert die
+  Dateien so aus wie die echte Seite.
+
+Und die allgemeine Lehre: **Was beim Ausliefern umgeschrieben wird, muss auch
+in der Prüfung umgeschrieben werden.** `website-fertig.sh` lief nur beim
+Veröffentlichen; dass es `index.html#preise` stehen ließ, hat keine Prüfung
+gesehen.
+
 ### Ein Index aus einer Zählung ist keine Adresse
 
 Zwei Läufe, derselbe Abbruch, zwei verschiedene Indizes:

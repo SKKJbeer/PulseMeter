@@ -1,6 +1,6 @@
 # 10 – Sichtbarkeit: gefunden werden, ohne Werbebudget
 
-Stand: 2026-09-25, Version 0.116.7.
+Stand: 2026-09-25, Version 0.117.0.
 
 Die Frage: **Wie erfährt jemand von Zählora, der uns nicht kennt?** Bezahlte
 Werbung ist keine Antwort (Abschnitt 8).
@@ -213,13 +213,39 @@ Eine neue Seite findet Google über Verweise. Die kostenlosen und ehrlichen:
 
 Nicht: gekaufte Verweise, Verzeichnisse, Tausch.
 
-### 3.4 Technik, die schon stimmt
+### 3.4 Technik: gemessen an der ausgelieferten Seite
 
-Sitemap, Canonical, `robots.txt`, strukturierte Daten
-(`SoftwareApplication`, die Fragen auf der Hilfeseite), OG-Bilder, schnelle
-Seiten ohne fremde Server, jetzt das App-Store-Banner. Für jeden Rechner kommt
-`HowTo` oder `WebApplication` als Markup dazu. Mehr Technik bringt hier nichts;
-es fehlen Seiten, nicht Auszeichnungen.
+**Hier stand „Technik, die schon stimmt" und „mehr Technik bringt hier
+nichts". Das war zu früh gesagt.** Am 25. September an der echten Seite
+nachgemessen, nicht am Quelltext:
+
+| Befund | Folge bei Google | Seit 0.117.0 |
+|---|---|---|
+| **Jede unbekannte Adresse lieferte die Startseite mit Status 200** (Cloudflare fällt ohne `404.html` auf die Startseite zurück) | beliebig viele Kopien der Startseite, „Soft 404" | eigene Seite `404.html` mit `noindex`, antwortet mit 404 |
+| **`/favicon.ico` lieferte ebenfalls die Startseite**, das Symbol stand nur eingebettet in der Seite | kein Symbol neben dem Treffer; Google holt es nur als Datei | `favicon.ico` (48 × 48), `favicon.svg`, `apple-touch-icon.png`, `icon-512.png` |
+| Vorschaubild war ein hochkantes Telefonbild | beschnitten in Messengern und Netzwerken | `bilder/teilen.jpg`, 1200 × 630, mit Maßen und Beschreibung |
+| Bilder mit `max-age=0` | jeder Aufruf lädt rund 600 KB neu; Ladezeit zählt | eine Woche Zwischenspeicher; Bilder unterhalb des ersten Bildschirms laden erst beim Scrollen |
+| Verweise mit Sprungmarke (`index.html#preise`) blieben beim Ausliefern relativ | auf der 404-Seite unter `/ratgeber/xyz` tote Verweise | werden mit umgeschrieben |
+| Startseite beschrieb nur die App | kein Bezug zwischen Website, Herausgeber und App | `WebSite`, `Organization`, `SoftwareApplication` mit Verweis auf den App Store |
+| Titel der Startseite ohne das Wort, nach dem gesucht wird | | „Zählora: die Zählerstand-App für Strom, Gas und Wasser" |
+
+**Bewusst nicht:** keine Sternebewertung im Markup. Google zeigt Sterne für
+Apps nur mit Bewertungen, und es gibt eine. Erfundene wären ein Grund, die
+Seite abzustrafen. Kein `HowTo`-Markup für die Rechner: Google zeigt es seit
+2023 nicht mehr an.
+
+Alles davon prüft `check-website.mjs` bei jedem Lauf, und `website.yml` misst
+nach jedem Veröffentlichen an der echten Seite, ob eine unbekannte Adresse
+404 antwortet, das Symbol ein Bild ist und die Bilder zwischengespeichert
+werden.
+
+### 3.4a IndexNow: melden statt warten
+
+Nach jedem Veröffentlichen meldet `scripts/indexnow.sh` alle Adressen der
+Sitemap an IndexNow. Das nehmen Bing, Yandex, Seznam und Naver an; über Bing
+kommen DuckDuckGo, Ecosia und die Websuche von ChatGPT mit. **Google nimmt
+IndexNow nicht an.** Der Schlüssel liegt öffentlich als Datei auf der Seite,
+so ist das Verfahren gedacht.
 
 ### 3.5 Keine Besucherzählung
 
@@ -239,10 +265,31 @@ Rund 5 bis 15 € im Jahr. Die Seite bleibt bei Cloudflare. Die Adresse steht an
 drei Orten, `check-strings.py` hält sie zusammen. Die Eintragung beim
 Registrar kann nur der Gründer machen. **Entscheidung beim Gründer.**
 
-### 3.7 Search Console
+### 3.7 Search Console: der offizielle Weg in Googles Verzeichnis
 
-Anmeldung mit einem Google-Konto und ein Eintrag bei Cloudflare, also beim
-Gründer. Am besten gleich mit der eigenen Adresse, sonst zweimal.
+Google führt eine Seite auch ohne Anmeldung, wenn es sie findet. Mit der
+Search Console sagt man ihm, dass es sie gibt, reicht die Sitemap ein, sieht,
+welche Seiten im Index sind und für welche Suchen sie erscheinen. **Das
+Anmelden geht nur mit dem Google-Konto des Gründers.**
+
+1. https://search.google.com/search-console öffnen, „Property hinzufügen",
+   **„URL-Präfix"** wählen und `https://zaehlora.pages.dev/` eintragen.
+   (Die Variante „Domain" braucht einen DNS-Eintrag, und `pages.dev` gehört
+   Cloudflare. Mit einer eigenen Adresse ginge es später auch so.)
+2. Als Bestätigung **„HTML-Tag"** wählen. Google zeigt eine Zeile
+   `<meta name="google-site-verification" content="…">`. Der Wert nach
+   `content=` kommt auf die Startseite. Er ist nicht geheim, er steht danach
+   für jeden lesbar im Quelltext.
+3. Nach dem Veröffentlichen „Bestätigen" drücken.
+4. Unter „Sitemaps" `sitemap.xml` einreichen.
+5. Unter „URL-Prüfung" die Startseite und `/ratgeber` eintragen und
+   „Indexierung beantragen".
+
+Danach **Bing Webmaster Tools** (https://www.bing.com/webmasters): Dort gibt
+es „Aus Google Search Console importieren", ein Klick.
+
+Stand: offen, beim Gründer. Sobald der Wert aus Schritt 2 da ist, steht er
+eine Minute später auf der Seite.
 
 ---
 

@@ -9,6 +9,55 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.117.0 — 2026-09-25
+
+**Die Website für Google und die anderen Suchdienste, gemessen an der
+ausgelieferten Seite.**
+
+An der echten Seite nachgemessen, nicht am Quelltext, und dabei zwei ernste
+Fehler gefunden:
+
+- **Jede unbekannte Adresse lieferte die Startseite mit Status 200.**
+  Cloudflare fällt ohne `404.html` auf die Startseite zurück; für Google
+  sind das beliebig viele Kopien. Neu: eine Seite „Diese Seite gibt es nicht"
+  mit `noindex`, die mit 404 antwortet und zur Startseite, zum Ratgeber und
+  zur Hilfe führt.
+- **Es gab kein Symbol als Datei.** `/favicon.ico` lieferte ebenfalls die
+  Startseite; Google zeigt neben einem Treffer nur ein Symbol, das es als
+  Datei holen kann. Neu: `favicon.ico`, `favicon.svg`, `apple-touch-icon.png`
+  und `icon-512.png`, aus demselben Zeichen erzeugt.
+
+Außerdem:
+
+- **Ein Vorschaubild zum Teilen** in 1200 × 630 statt des hochkanten
+  Telefonbilds, mit Maßen und Beschreibung.
+- **Bilder bleiben eine Woche im Browser**, die unterhalb des ersten
+  Bildschirms laden erst beim Scrollen, das erste zuerst.
+- **Strukturierte Daten der Startseite** beschreiben Website, Herausgeber und
+  App mit Verweis auf den App Store. Keine Sterne im Markup, solange es keine
+  echten gibt.
+- **Titel der Startseite:** „Zählora: die Zählerstand-App für Strom, Gas und
+  Wasser".
+- **Große Bildvorschau in den Suchergebnissen erlaubt**, jede Adresse in der
+  Sitemap mit Datum.
+- **IndexNow:** Nach jedem Veröffentlichen werden alle Adressen an Bing,
+  Yandex und Seznam gemeldet, über Bing auch an DuckDuckGo und die Websuche
+  von ChatGPT. Google nimmt IndexNow nicht an.
+- **Verweise mit Sprungmarke** werden beim Ausliefern jetzt mit umgeschrieben.
+
+Prüfungen: `check-website.mjs` läuft über einen kleinen Webserver statt über
+`file://`, prüft Titel und Beschreibungen auf Doppel, kanonische Adressen,
+Symbole in Format und Größe, das Vorschaubild in seinen echten Maßen, die
+404-Seite, die Sitemap, die strukturierten Daten, das Ladeverhalten der
+Bilder und den IndexNow-Schlüssel, und führt `website-fertig.sh` selbst aus,
+um das Ergebnis anzusehen. `website.yml` misst nach jedem Veröffentlichen an
+der echten Seite: 404 für eine unbekannte Adresse, das Symbol ein Bild, die
+Bilder zwischengespeichert. 1001 Prüfpunkte; die Gegenprobe mit fünf
+eingebauten Fehlern wurde fünfmal rot.
+
+Offen beim Gründer: die Anmeldung in der Search Console
+(`docs/10-sichtbarkeit.md`, Abschnitt 3.7).
+
 ## 0.116.9 — 2026-09-25
 
 **„Alle Zahlen" nennt beim laufenden Abschnitt jetzt dieselbe Erwartung wie

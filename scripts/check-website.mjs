@@ -14,17 +14,46 @@
  *   node scripts/check-website.mjs [ordner]
  */
 import { chromium } from "playwright";
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 
 const dir = process.argv[2] || "docs/website";
-const base = "file://" + process.cwd() + "/" + dir + "/";
+// **Über einen Webserver, nicht als Datei.** Bis 0.117.0 öffnete die Prüfung
+// die Seiten mit `file://`. Mit absoluten Pfaden wie `/favicon.ico` zeigt das
+// auf die Wurzel der Festplatte, und die Seite für unbekannte Adressen braucht
+// genau solche Pfade. Ein kleiner Server auf dem eigenen Rechner liefert die
+// Dateien so aus, wie Cloudflare es tut, und `fremd` heißt dann: nicht von
+// diesem Server.
+import { createServer } from "node:http";
+import { extname, join, normalize } from "node:path";
+const ARTEN = { ".html": "text/html; charset=utf-8", ".css": "text/css", ".svg": "image/svg+xml",
+                ".png": "image/png", ".jpg": "image/jpeg", ".ico": "image/x-icon",
+                ".xml": "application/xml", ".txt": "text/plain" };
+const server = createServer((req, res) => {
+  const pfad = normalize(decodeURIComponent(req.url.split("?")[0])).replace(/^(\.\.[/\\])+/, "");
+  const datei = join(dir, pfad.endsWith("/") ? pfad + "index.html" : pfad);
+  if (!datei.startsWith(normalize(dir)) || !existsSync(datei)) {
+    res.writeHead(404, { "Content-Type": ARTEN[".html"] });
+    return res.end(existsSync(join(dir, "404.html")) ? readFileSync(join(dir, "404.html")) : "404");
+  }
+  res.writeHead(200, { "Content-Type": ARTEN[extname(datei)] || "application/octet-stream" });
+  res.end(readFileSync(datei));
+});
+await new Promise(r => server.listen(0, "127.0.0.1", r));
+const base = `http://127.0.0.1:${server.address().port}/`;
 
 // Die Antwortseiten zählen mit: Sie sind der Teil, über den jemand die
 // Website überhaupt findet (`docs/10-sichtbarkeit.md`, Abschnitt 7), und ein
 // toter Verweis dorthin fällt sonst niemandem auf.
 const seiten = ["index.html", "entwicklung.html", "hilfe.html", "gas-in-kwh.html",
                 "abschlag-zu-hoch.html", "zaehlerstand-umzug.html", "ratgeber.html",
-                "datenschutz.html", "impressum.html"];
+                "datenschutz.html", "impressum.html", "404.html"];
+
+// Was nicht in den Index soll: das Impressum (erreichbar, nicht auffindbar)
+// und die Seite für unbekannte Adressen. Beide tragen `noindex`, keine steht
+// in der Sitemap, und die Seite für unbekannte Adressen hat keine kanonische
+// Adresse, weil sie unter jeder beliebigen antwortet.
+const ohneIndex = d => /<meta name="robots" content="noindex">/.test(readFileSync(`${dir}/${d}`, "utf8"));
 
 const failures = [];
 const note = (ok, text) => {
@@ -102,7 +131,7 @@ for (const datei of seiten) {
 // halten `canonical` für die Wahrheit und werfen weg, was auf eine fremde
 // Adresse verweist. `scripts/domain-setzen.sh` stellt um, das hier merkt, wenn
 // es jemand doch von Hand versucht hat.
-const adressen = new Set(seiten.map(d => {
+const adressen = new Set(seiten.filter(d => d !== "404.html").map(d => {
   const m = readFileSync(`${dir}/${d}`, "utf8").match(/rel="canonical" href="https:\/\/([^/"]+)/);
   return m ? m[1] : "—";
 }));
@@ -294,13 +323,13 @@ console.log("\nAufbau");
   const xml = readFileSync(`${dir}/sitemap.xml`, "utf8");
   const angemeldet = [...xml.matchAll(/<loc>https:\/\/[^/]+\/([^<]*)<\/loc>/g)]
     .map(m => m[1] || "index.html");
-  const soll = imOrdner.filter(d => d !== "impressum.html");
+  const soll = imOrdner.filter(d => !ohneIndex(d));
   const nichtAngemeldet = soll.filter(d => !angemeldet.includes(d));
   const zuviel = angemeldet.filter(d => !imOrdner.includes(d));
   note(nichtAngemeldet.length === 0 && zuviel.length === 0,
        nichtAngemeldet.length || zuviel.length
          ? `Sitemap: fehlt ${nichtAngemeldet.join(", ") || "nichts"}, zu viel ${zuviel.join(", ") || "nichts"}`
-         : `Sitemap führt genau die ${soll.length} Seiten außer dem Impressum`);
+         : `Sitemap führt genau die ${soll.length} Seiten, die in den Index sollen`);
 }
 
 // **Strukturierte Daten müssen gültig sein und dasselbe sagen wie die Seite.**
@@ -370,6 +399,138 @@ for (const datei of seiten) {
   note(!/PulseMeter/i.test(html), `${datei}: kein „PulseMeter"`);
 }
 
+
+// --- Suchmaschinen: was Google braucht, um die Seite ordentlich zu führen
+//
+// **Gemessen an der ausgelieferten Seite am 25. September:** Jede unbekannte
+// Adresse lieferte die Startseite mit Status 200, `/favicon.ico` ebenfalls, und
+// das Symbol stand nur eingebettet in der Seite. Für Google heißt das: beliebig
+// viele Kopien der Startseite und kein Symbol in der Trefferliste. Keine der
+// Prüfungen oben hatte danach gefragt.
+console.log("\nSuchmaschinen");
+{
+  const indexierbar = seiten.filter(d => !ohneIndex(d));
+  const kopf = d => readFileSync(`${dir}/${d}`, "utf8");
+  const titel = d => (kopf(d).match(/<title>([^<]+)<\/title>/) || [])[1];
+  const beschr = d => (kopf(d).match(/<meta name="description" content="([^"]+)"/) || [])[1];
+  const doppelt = xs => xs.filter((x, i) => x && xs.indexOf(x) !== i);
+  note(doppelt(indexierbar.map(titel)).length === 0, "Jeder Titel kommt nur einmal vor");
+  note(doppelt(indexierbar.map(beschr)).length === 0, "Jede Beschreibung kommt nur einmal vor");
+
+  for (const d of seiten) {
+    const html = kopf(d);
+    if (ohneIndex(d)) {
+      note(!/<[^>]+max-image-preview/.test(html), `${d}: noindex und sonst keine Robots-Angabe`);
+    } else {
+      note(/<meta name="robots" content="max-image-preview:large">/.test(html),
+           `${d}: große Bildvorschau in den Suchergebnissen erlaubt`);
+      const eigene = d === "index.html" ? "" : d;
+      note(new RegExp(`rel="canonical" href="https://[^/"]+/${eigene.replace(".", "\\.")}"`).test(html),
+           `${d}: kanonische Adresse ist die eigene`);
+    }
+    // Das Symbol als Datei, nicht eingebettet: Google holt es sich über die
+    // Adresse und zeigt es neben dem Treffer.
+    note(/<link rel="icon" href="\/favicon\.ico" sizes="48x48">/.test(html) && !/rel="icon" href="data:/.test(html),
+         `${d}: Symbol als Datei verlinkt`);
+    const og = (html.match(/<meta property="og:image" content="https:\/\/[^/]+\/([^"]+)"/) || [])[1];
+    if (og) note(existsSync(`${dir}/${og}`), `${d}: Vorschaubild ${og} liegt vor`);
+  }
+
+  // Die Symbole selbst: vorhanden, im richtigen Format, in der richtigen Größe.
+  const png = f => { const b = readFileSync(`${dir}/${f}`); return b.readUInt32BE(0) === 0x89504e47 ? [b.readUInt32BE(16), b.readUInt32BE(20)] : null; };
+  const ico = readFileSync(`${dir}/favicon.ico`);
+  note(ico.readUInt16LE(2) === 1 && ico[6] === 48 && ico[7] === 48, "favicon.ico ist eine ICO-Datei mit 48 × 48");
+  note(JSON.stringify(png("apple-touch-icon.png")) === "[180,180]", "apple-touch-icon.png hat 180 × 180");
+  note(JSON.stringify(png("icon-512.png")) === "[512,512]", "icon-512.png hat 512 × 512 (Logo in den strukturierten Daten)");
+  note(existsSync(`${dir}/favicon.svg`) && /<svg/.test(readFileSync(`${dir}/favicon.svg`, "utf8")), "favicon.svg liegt vor");
+
+  // Das Vorschaubild zum Teilen hat die Maße, die in der Seite stehen.
+  {
+    const b = readFileSync(`${dir}/bilder/teilen.jpg`);
+    let i = 2, masse = null;
+    while (i < b.length) {
+      const marke = b[i + 1], laenge = b.readUInt16BE(i + 2);
+      if (marke >= 0xc0 && marke <= 0xc3) { masse = [b.readUInt16BE(i + 7), b.readUInt16BE(i + 5)]; break; }
+      i += 2 + laenge;
+    }
+    const start = kopf("index.html");
+    const w = +(start.match(/og:image:width" content="(\d+)"/) || [])[1];
+    const h = +(start.match(/og:image:height" content="(\d+)"/) || [])[1];
+    note(masse && masse[0] === w && masse[1] === h && w === 1200 && h === 630,
+         `Vorschaubild zum Teilen: ${masse ? masse.join(" × ") : "?"}, angegeben ${w} × ${h}`);
+  }
+
+  // Die Seite für unbekannte Adressen antwortet unter jeder Adresse, auch
+  // unter `/ratgeber/xyz`. Ein relativer Verweis auf das Stylesheet ginge dort
+  // ins Leere.
+  {
+    const html = kopf("404.html");
+    note(ohneIndex("404.html") && !/rel="canonical"/.test(html), "404.html: noindex, keine kanonische Adresse");
+    const relativ = [...html.matchAll(/<link[^>]+href="([^"]+)"/g)].map(m => m[1]).filter(h => !h.startsWith("/") && !h.startsWith("http"));
+    note(relativ.length === 0, `404.html: Stil und Symbole mit absolutem Pfad${relativ.length ? " (relativ: " + relativ.join(", ") + ")" : ""}`);
+  }
+
+  // Jede Adresse in der Sitemap sagt, wann sie sich zuletzt geändert hat.
+  {
+    const xml = readFileSync(`${dir}/sitemap.xml`, "utf8");
+    const eintraege = xml.match(/<url>[\s\S]*?<\/url>/g) || [];
+    note(eintraege.length > 0 && eintraege.every(e => /<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/.test(e)),
+         "Sitemap: jede Adresse mit Datum");
+  }
+
+  // Die Startseite beschreibt sich als Website, Herausgeber und App.
+  {
+    const roh = (kopf("index.html").match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/) || [])[1];
+    const g = roh ? (JSON.parse(roh)["@graph"] || []) : [];
+    const typ = t => g.find(k => k["@type"] === t);
+    note(!!typ("WebSite") && !!typ("Organization") && !!typ("SoftwareApplication"),
+         "Startseite: strukturierte Daten für Website, Herausgeber und App");
+    const app = typ("SoftwareApplication") || {};
+    note(/apps\.apple\.com\/de\/app\/id\d+/.test(app.installUrl || ""), "Startseite: die App verweist auf ihren Eintrag im App Store");
+    note(!app.aggregateRating, "Startseite: keine Sternebewertung im Markup, solange es keine zehn echten gibt");
+  }
+
+  // Bilder: Das erste lädt sofort und zuerst, alles unterhalb des ersten
+  // Bildschirms erst, wenn man hinscrollt.
+  {
+    const bilder = [...kopf("index.html").matchAll(/<img[^>]*>/g)].map(m => m[0]);
+    note(/fetchpriority="high"/.test(bilder[0]) && !/loading="lazy"/.test(bilder[0]),
+         "Startseite: das erste Bild lädt zuerst und nicht verzögert");
+    const unten = bilder.slice(3);
+    note(unten.length > 0 && unten.every(b => /loading="lazy"/.test(b)),
+         `Startseite: ${unten.length} Bilder unterhalb des ersten Bildschirms laden erst beim Scrollen`);
+  }
+
+  // IndexNow: Der Schlüssel liegt als Datei vor, und die Datei enthält ihn.
+  {
+    const dateien = readdirSync(dir).filter(d => /^[0-9a-f]{32}\.txt$/.test(d));
+    note(dateien.length === 1 && readFileSync(`${dir}/${dateien[0]}`, "utf8").trim() === dateien[0].slice(0, 32),
+         "IndexNow: genau ein Schlüssel, und die Datei enthält ihn");
+  }
+}
+
+// --- Auslieferung: was wirklich ins Netz geht
+//
+// `website-fertig.sh` lief bis 0.117.0 nur beim Veröffentlichen. Was es
+// umschreibt, hat keine Prüfung je gesehen; ein Verweis `index.html#preise`
+// blieb deshalb unbemerkt relativ. Jetzt läuft es hier mit, in einen
+// Wegwerfordner, und das Ergebnis wird angesehen.
+if (dir === "docs/website") {
+  console.log("\nAuslieferung");
+  const aus = "build/website-pruefung";
+  execFileSync("scripts/website-fertig.sh", [aus], { stdio: "pipe" });
+  const html = readdirSync(aus).filter(d => d.endsWith(".html"));
+  const relativ = html.flatMap(d => [...readFileSync(`${aus}/${d}`, "utf8").matchAll(/href="([a-z0-9-]+\.html[^"]*)"/g)].map(m => `${d}: ${m[1]}`));
+  note(relativ.length === 0, relativ.length ? `Relativer Seitenverweis nach dem Umschreiben: ${relativ[0]}` : "Alle Seitenverweise sind absolut, auch die mit Sprungmarke");
+  const headers = readFileSync(`${aus}/_headers`, "utf8");
+  note(/\/bilder\/\*\s*\n\s*Cache-Control: public, max-age=604800/.test(headers), "Bilder dürfen eine Woche im Browser bleiben");
+  note(/X-Content-Type-Options: nosniff/.test(headers), "Sicherheitsangaben stehen weiter drin");
+  note(existsSync(`${aus}/404.html`) && existsSync(`${aus}/favicon.ico`), "404-Seite und Symbol werden mit ausgeliefert");
+  note(readdirSync(aus).every(d => !d.endsWith(".md")), "Keine Markdown-Datei im Auslieferordner");
+  const sm = readFileSync(`${aus}/sitemap.xml`, "utf8");
+  note(!/\.html</.test(sm), "Die ausgelieferte Sitemap nennt die Adressen ohne .html");
+}
+
 // --- Mit Browser
 
 const browser = await chromium.launch({
@@ -389,7 +550,7 @@ for (const scheme of ["light", "dark"]) {
     const fremd = [];
     page.on("pageerror", e => jsErrors.push(e.message));
     page.on("console", m => { if (m.type() === "error") jsErrors.push(m.text()); });
-    page.on("request", r => { if (!r.url().startsWith("file:")) fremd.push(r.url()); });
+    page.on("request", r => { if (!r.url().startsWith(base)) fremd.push(r.url()); });
 
     for (const datei of seiten) {
       await page.goto(base + datei);
@@ -559,6 +720,7 @@ console.log("\nVerhalten");
 }
 
 await browser.close();
+server.close();
 
 console.log(`\n${failures.length === 0 ? "Alles grün" : failures.length + " Prüfung(en) gefallen"}`);
 if (failures.length) {

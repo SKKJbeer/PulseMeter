@@ -26,11 +26,33 @@ rm -f "$ZIEL"/EINTRAGEN.md "$ZIEL"/CLOUDFLARE.md
 
 # **Kein Verzeichnis auflisten.** Ohne diese Datei liefert Pages `/bilder/` als
 # Liste aus, und die Dateiablage stünde offen im Netz.
+#
+# **Bilder und Symbole dürfen eine Woche im Browser bleiben.** Bis 0.117.0
+# kam alles mit `max-age=0`: Jeder Aufruf lud die zehn Telefonbilder der
+# Startseite neu, rund 600 KB, und Googles Messung der Ladezeit zählt genau
+# das. Die Seiten selbst bleiben bei `max-age=0`, damit eine Änderung sofort
+# ankommt. Das Stylesheet eine Stunde: Sein Name trägt keine Fassung, und
+# eine Woche alter Stil zu neuem Text sähe kaputt aus.
 cat > "$ZIEL/_headers" <<'ENDE'
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: SAMEORIGIN
+
+/bilder/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/favicon.ico
+  Cache-Control: public, max-age=604800
+
+/favicon.svg
+  Cache-Control: public, max-age=604800
+
+/apple-touch-icon.png
+  Cache-Control: public, max-age=604800
+
+/stil.css
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
 ENDE
 
 # **Adressen ohne `.html`.** Cloudflare Pages liefert `/datenschutz.html` nicht
@@ -57,9 +79,16 @@ for datei in list(ordner.glob("*.html")) + [ordner / "sitemap.xml"]:
     if not datei.exists():
         continue
     text = datei.read_text(encoding="utf-8")
-    # Verweise zwischen den Seiten: href="hilfe.html" → href="/hilfe"
-    text = re.sub(r'href="([a-z0-9-]+)\.html"',
-                  lambda m: f'href="{adresse(m)}"' if m.group(1) in namen else m.group(0),
+    # Verweise zwischen den Seiten: href="hilfe.html" → href="/hilfe", und
+    # mit Sprungmarke: href="index.html#preise" → href="/#preise".
+    #
+    # **Die Sprungmarke fehlte bis 0.117.0.** Solange jede Seite im
+    # Wurzelverzeichnis lag, fiel das nicht auf: `index.html#preise` leitete
+    # Cloudflare auf `/#preise` weiter. Die Seite für unbekannte Adressen
+    # antwortet aber auch unter `/ratgeber/xyz`, und dort zeigt derselbe
+    # Verweis auf `/ratgeber/index.html`, also wieder ins Leere.
+    text = re.sub(r'href="([a-z0-9-]+)\.html(#[^"]*)?"',
+                  lambda m: f'href="{adresse(m)}{m.group(2) or ""}"' if m.group(1) in namen else m.group(0),
                   text)
     # Absolute Adressen in canonical, og:url und Sitemap
     text = re.sub(r'(https://[^"<\s]+/)([a-z0-9-]+)\.html',
@@ -70,7 +99,7 @@ for datei in list(ordner.glob("*.html")) + [ordner / "sitemap.xml"]:
 # Nachzählen statt hoffen: Bleibt ein `.html`-Verweis stehen, war die Regel zu eng.
 rest = []
 for datei in ordner.glob("*.html"):
-    for treffer in re.findall(r'href="[^"]*\.html"', datei.read_text(encoding="utf-8")):
+    for treffer in re.findall(r'href="[^"]*\.html(?:#[^"]*)?"', datei.read_text(encoding="utf-8")):
         rest.append(f"{datei.name}: {treffer}")
 if rest:
     sys.exit("Verweise mit .html sind stehengeblieben:\n  " + "\n  ".join(rest))

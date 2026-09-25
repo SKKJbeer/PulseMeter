@@ -44,7 +44,7 @@ concurrency:
 jobs:
   veroeffentlichen:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -147,3 +147,36 @@ jobs:
       - name: Was jetzt dasteht
         if: steps.zugang.outputs.bereit == 'ja'
         run: echo "::notice::Die Website steht auf https://zaehlora.pages.dev/"
+
+      # **Die Änderung melden, statt zu warten, bis jemand vorbeikommt.**
+      # Bing, Yandex und Seznam nehmen IndexNow an; über Bing kommen auch
+      # DuckDuckGo und die Websuche von ChatGPT mit. Google nicht, dort gilt
+      # die Search Console. Ein Fehler hier hält nichts auf: Die Website ist
+      # zu diesem Zeitpunkt schon online.
+      # **Gemessen an der echten Seite, nicht am Quelltext.** Bis 0.117.0
+      # lieferte jede unbekannte Adresse die Startseite mit 200 aus, und
+      # `/favicon.ico` ebenso. Im Quelltext war das nicht zu sehen, nur hier.
+      # Gewartet wird, bis der neue Stand online ist: Cloudflare baut den Zweig
+      # `website` erst nach dem Hochladen.
+      - name: Antwortet die Website so, wie Google es braucht?
+        run: |
+          W=https://zaehlora.pages.dev
+          schluessel=$(ls docs/website | grep -E '^[0-9a-f]{32}\.txt$' | sed 's/\.txt$//')
+          for versuch in $(seq 1 12); do
+            [ "$(curl -fsS "$W/$schluessel.txt" 2>/dev/null || true)" = "$schluessel" ] && break
+            sleep 20
+          done
+          fehler=0
+          pruefe() { if [ "$2" = "$3" ]; then echo "✓ $1"; else echo "::error::$1: $2 statt $3"; fehler=1; fi; }
+          pruefe "Unbekannte Adresse antwortet mit 404" "$(curl -sS -o /dev/null -w '%{http_code}' "$W/gibt-es-nicht-$GITHUB_RUN_ID")" 404
+          # Nur die Hauptart: Cloudflare nennt ICO mal `image/x-icon`, mal
+          # `image/vnd.microsoft.icon`. Falsch ist nur `text/html`.
+          pruefe "Symbol ist ein Bild" "$(curl -sS -o /dev/null -w '%{content_type}' "$W/favicon.ico" | cut -d'/' -f1)" image
+          pruefe "Sitemap ist erreichbar" "$(curl -sS -o /dev/null -w '%{http_code}' "$W/sitemap.xml")" 200
+          pruefe "Startseite ist erreichbar" "$(curl -sS -o /dev/null -w '%{http_code}' "$W/")" 200
+          pruefe "Bilder bleiben eine Woche" "$(curl -sSI "$W/bilder/light.jpg" | tr -d '\r' | grep -i '^cache-control:' | cut -d' ' -f2-)" "public, max-age=604800, stale-while-revalidate=86400"
+          exit $fehler
+
+      - name: Bei IndexNow melden
+        continue-on-error: true
+        run: scripts/indexnow.sh
