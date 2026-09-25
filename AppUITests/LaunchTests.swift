@@ -856,6 +856,23 @@ final class LaunchTests: XCTestCase {
                       "Das schon Gemessene ist nicht als solches benannt: \(text)")
         XCTAssertTrue(text.contains(" von ") && text.contains("Tagen"),
                       "Die Prognose nennt ihre Tagesgrundlage nicht: \(text)")
+
+        // **Und „Alle Zahlen" nennt dieselbe Erwartung.** Bis 1.2 stand sie
+        // nur im Diagramm; in der Tabelle hatte der laufende Monat eine halbe
+        // Zahl ohne Blick nach vorn. Der Gründer fragte am Wasserzähler, ob es
+        // gar keine Hochrechnung gebe.
+        guard let zahl = text.range(of: #"≈ [\d.]+"#, options: .regularExpression)
+            .map({ String(text[$0].dropFirst(2)) }) else {
+            XCTFail("In der Leiste steht keine erwartete Zahl: \(text)")
+            return
+        }
+        app.buttons["Alle Zahlen"].tap()
+        let zeile = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label CONTAINS %@", "voraussichtlich \(zahl)"))
+            .firstMatch
+        XCTAssertTrue(zeile.waitForExistence(timeout: erscheint),
+                      "„Alle Zahlen“ nennt beim laufenden Monat nicht dieselbe Erwartung "
+                      + "(\(zahl)) wie das Diagramm. Zu sehen war: " + beschriftungen(in: app))
     }
 
     /// Ein Zähler lässt sich anlegen, ohne dass vorher Beispieldaten nötig

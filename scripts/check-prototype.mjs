@@ -530,6 +530,25 @@ for (const scheme of ["light", "dark"]) {
        `Die Erwartung liegt nicht unter dem Gemessenen `
        + `(${Math.round(prognose.erwartet)} zu ${Math.round(prognose.gemessen)})`);
 
+  // **Die Tabelle sagt dasselbe wie das Diagramm.** Bis 0.116.9 stand in
+  // „Alle Zahlen" beim laufenden Monat ein Strich, während das Diagramm
+  // daneben die Erwartung zeigte. Der Gründer fragte darauf, ob es beim
+  // Wasser gar keine Hochrechnung gebe. Geprüft wird hier, dass die Zahl in
+  // der Tabelle dieselbe ist wie in der Leiste unter dem Diagramm.
+  await page.locator('[data-mode="table"]').first().click();
+  await page.waitForTimeout(300);
+  const tabelle = await page.evaluate(`(() => {
+    const zelle = document.querySelector("#table td.now small.erw");
+    return zelle ? zelle.textContent.trim() : "";
+  })()`);
+  const zahlAus = t => (t.match(/≈\s*([\d.,]+)/) || [])[1] || "";
+  note(tabelle !== "" && /erwartet/.test(tabelle),
+       `„Alle Zahlen" nennt beim laufenden Monat die Erwartung („${tabelle}")`);
+  note(zahlAus(tabelle) !== "" && zahlAus(tabelle) === zahlAus(prognose.rechts),
+       `Tabelle und Diagramm nennen dieselbe Erwartung (${zahlAus(tabelle)} und ${zahlAus(prognose.rechts)})`);
+  await page.locator('[data-mode="chart"]').first().click();
+  await page.waitForTimeout(200);
+
   // **Die Leiste zeigt dasselbe Verhältnis, das die Zahlen nennen.**
   //
   // Eine Leiste, die halb voll aussieht, während daneben ein Zehntel steht,

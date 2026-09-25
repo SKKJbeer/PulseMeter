@@ -661,6 +661,7 @@ table.data td {
 }
 table.data td:first-child { text-align: left; padding-left: 0; color: var(--ink-2); }
 table.data td.now { font-weight: 640; color: var(--ink); }
+table.data td small.erw { display: block; font-size: 11px; font-weight: 500; color: var(--ink-2); white-space: nowrap; }
 table.data td.na { color: var(--ink-3); }
 table.data td.delta.down { color: var(--good); font-weight: 600; }
 table.data td.delta.up { color: var(--red); font-weight: 600; }
@@ -892,7 +893,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>Zählora</h1>
-  <p>Klickbarer Entwurf · v0.116.8</p>
+  <p>Klickbarer Entwurf · v0.116.9</p>
 </div>
 
 <div class="device" id="device">
@@ -2919,7 +2920,8 @@ function renderTable() {
                  est: periodEstimated(target, shifted) };
       });
       const a = cells[0].v, b = cells[1].v;
-      return { label: p.label, cells, delta: a !== null && b !== null && b !== 0 ? (a - b) / b : null };
+      return { label: p.label, cells, delta: a !== null && b !== null && b !== 0 ? (a - b) / b : null,
+               laufend: histGran === "month" && p.from.y === TODAY.y && p.from.m === TODAY.m };
     });
 
     const sums = YEARS.map((y, k) => {
@@ -2941,10 +2943,20 @@ function renderTable() {
       ? (paired.length === rows.length ? "Gesamt" : `${paired[0].label}–${paired[paired.length - 1].label}`)
       : "—";
 
+    // **Der laufende Monat mit derselben Erwartung wie im Diagramm.** Bis
+    // 0.116.9 stand hier ein Strich: Der Monat ist nicht vollständig, also
+    // leer. Das Diagramm daneben zeigte „≈ 12 m³ erwartet", die Tabelle
+    // nichts, und am Wasserzähler kam die Frage, ob es gar keine Hochrechnung
+    // gebe. Jetzt steht hier, was bisher gemessen ist, und darunter die
+    // Erwartung, aus `monthForecast`, derselben Rechnung wie im Diagramm.
+    const tm = target === "all" ? null : METERS.find(x => x.id === target);
+    const mfTab = tm && histMetric !== "cost" && !histPerDay ? monthForecast(tm, TODAY.y, TODAY.m) : null;
     html = `<table class="data"><thead><tr><th>${histGran === "quarter" ? "Quartal" : "Monat"}</th>` +
       YEARS.map(y => `<th>${y}</th>`).join("") + `<th>Δ</th></tr></thead><tbody>` +
       rows.map(r => `<tr class="${r.cells[0].est ? "est" : ""}"><td>${r.label}</td>` +
-        r.cells.map((c, k) => c.v === null
+        r.cells.map((c, k) => k === 0 && r.laufend && mfTab
+          ? `<td class="now">${fmtCell(target, mfTab.gemessen)}<small class="erw">≈ ${fmtCell(target, mfTab.value)} erwartet</small></td>`
+          : c.v === null
           ? '<td class="na">—</td>'
           : `<td class="${k === 0 ? "now" : ""}">${fmtCell(target, c.v)}</td>`).join("") +
         deltaCell(r.delta) + `</tr>`).join("") +

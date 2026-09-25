@@ -9,6 +9,32 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.116.9 — 2026-09-25
+
+**„Alle Zahlen" nennt beim laufenden Abschnitt jetzt dieselbe Erwartung wie
+das Diagramm.**
+
+Der Gründer am Wasserzähler, erste Ablesung am 10. September: „bei wasser sehe
+ich keinen forecast". Es gab ihn, im Diagramm: „6 m³ gemessen, ≈ 12 m³
+erwartet, gleichmäßig aus dem bisherigen Tagesschnitt". In der Tabelle stand
+beim September nur die 6 und „nur 10. bis 25. September". Zwei Ansichten
+derselben Zahlen, eine mit Blick nach vorn, eine ohne.
+
+- **App:** Unter der Zahl des laufenden Abschnitts steht „≈ 12 erwartet",
+  vorgelesen als „voraussichtlich 12 m³". Es ist dieselbe `vorschau` wie im
+  Diagramm, keine zweite Rechnung. Bei Kosten steht sie nicht, weil die
+  Hochrechnung eine Menge ist.
+- **Klick-Dummy:** Der laufende Monat zeigt in der Tabelle, was bisher
+  gemessen ist, und darunter die Erwartung aus `monthForecast`. Vorher stand
+  dort ein Strich.
+- **Prüfungen:** `check-prototype.mjs` verlangt, dass Tabelle und Diagramm
+  dieselbe Zahl nennen. Die Oberflächenprüfung der App liest die Erwartung
+  aus der Leiste und sucht sie in „Alle Zahlen".
+
+Dass beim Wasser gleichmäßig hochgerechnet wird, ist gewollt: Für Wasser gibt
+es kein Jahresprofil, und der Verbrauch hängt kaum an der Jahreszeit. Nach
+einem vollständigen eigenen Jahr rechnet Zählora mit dessen Verlauf.
+
 ## 0.116.8 — 2026-09-25
 
 **Die Website, noch einmal mit den Augen eines Gestalters angesehen, und

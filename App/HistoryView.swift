@@ -402,10 +402,26 @@ struct HistoryView: View {
                             }
                         }
                         Spacer(minLength: 8)
-                        Text(cellText(for: bucket))
-                            .font(PulseText.detail)
-                            .foregroundStyle(bucket.hasData ? PulseColor.ink : PulseColor.inkTertiary)
-                            .frame(width: 108, alignment: .trailing)
+                        VStack(alignment: .trailing, spacing: 2) {
+                            Text(cellText(for: bucket))
+                                .font(PulseText.detail)
+                                .foregroundStyle(bucket.hasData ? PulseColor.ink : PulseColor.inkTertiary)
+                            // **Dieselbe Erwartung wie im Diagramm.** Bis 1.2
+                            // stand sie nur dort. Wer auf „Alle Zahlen"
+                            // umschaltete, sah beim laufenden Monat eine
+                            // halbe Zahl ohne Blick nach vorn, und der Gründer
+                            // fragte am Wasserzähler, ob es gar keine
+                            // Hochrechnung gebe. Eine Frage, auf die zwei
+                            // Ansichten verschieden antworten, ist eine
+                            // Sackgasse (Produktprinzip 4).
+                            if let erwartet = erwartetMenge(for: bucket) {
+                                Text("≈ \(erwartet) erwartet")
+                                    .font(PulseText.caption)
+                                    .foregroundStyle(PulseColor.inkSecondary)
+                                    .accessibilityLabel("voraussichtlich \(erwartet) \(unit)")
+                            }
+                        }
+                        .frame(width: 108, alignment: .trailing)
                     }
                     .padding(.horizontal, 15)
                     .padding(.vertical, 10)
@@ -1274,6 +1290,18 @@ struct HistoryView: View {
             return costs[bucket.id].map(money) ?? "—"
         }
         return number(bucket.value, digits: 0)
+    }
+
+    /// Die Erwartung für den laufenden Abschnitt, als Zahl ohne Einheit wie
+    /// die Spalte daneben. `nil` für jeden anderen Abschnitt, bei Kosten und
+    /// wenn nichts hochzurechnen ist.
+    ///
+    /// Dieselbe `vorschau` wie im Diagramm, nicht eine zweite Rechnung: Zwei
+    /// Wege zur selben Zahl laufen auseinander.
+    private func erwartetMenge(for bucket: PeriodEngine.Bucket) -> String? {
+        guard metric == .quantity, bucket.range.contains(today),
+              let vorschau, vorschau.daysRemaining > 0 else { return nil }
+        return number(vorschau.projected.value, digits: 0)
     }
 
     /// Die Summe zählt nur, was auch in der Spalte steht.
