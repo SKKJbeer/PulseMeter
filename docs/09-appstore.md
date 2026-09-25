@@ -102,7 +102,7 @@ Wort ist ohnehin abgedeckt, weil der Anzeigename des Kaufs
 Du trägst eine Zahl ein. Zählora sagt dir, ob alles im Rahmen ist.
 
 Zählerstände landen auf einem Zettel am Sicherungskasten, in einer Tabelle, die
-niemand pflegt, oder nirgends. Und im Frühjahr kommt die Abrechnung, und man
+niemand pflegt, oder nirgends. Und einmal im Jahr kommt die Abrechnung, und man
 glaubt ihr einfach. Zählora macht aus zehn Sekunden am Zähler eine Zahl, mit
 der sich etwas anfangen lässt.
 
@@ -141,11 +141,11 @@ deinem Abrechnungsjahr. Bei Gas fängt das oft im Oktober an.
 Tipp einen Monat an, und du siehst, woher der Unterschied kommt.
 
 
-DIE NACHZAHLUNG SIEHST DU IM OKTOBER
+DIE NACHZAHLUNG SIEHST DU VORHER
 
 Zwei Zahlen von deiner Rechnung genügen: Arbeitspreis und Grundpreis. Ab da
-rechnet Zählora mit. Kommt dein Abschlag hin, oder legst du im Frühjahr
-nach? Die Antwort steht auf der Übersicht, das ganze Jahr über.
+rechnet Zählora mit. Kommt dein Abschlag hin, oder legst du mit der
+Abrechnung nach? Die Antwort steht auf der Übersicht, das ganze Jahr über.
 
 Bei Gas mit Zustandszahl und Brennwert. Wer Kubikmeter einfach mal zehn nimmt,
 liegt daneben.
@@ -645,5 +645,5 @@ Skript und läuft überall, wo der Schlüssel liegt.
 [`10-sichtbarkeit.md`](10-sichtbarkeit.md): welche Felder der App Store
 überhaupt durchsucht (die Beschreibung gehört **nicht** dazu), welche Wörter
 ins Schlagwortfeld gehören, warum die Anzeigenamen der fünf Käufe fünf
-zusätzliche Suchfelder sind, und wann veröffentlicht wird — diese App hat eine
-Saison, und sie liegt im Januar.
+zusätzliche Suchfelder sind, und warum die Website vor dem Store kommt: Wer
+eine Zählerfrage hat, fragt zuerst Google, nicht den App Store.

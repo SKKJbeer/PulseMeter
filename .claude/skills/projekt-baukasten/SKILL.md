@@ -1757,6 +1757,22 @@ seit dem 13. August als Punkt 1 in `10-sichtbarkeit.md` und wurde nie gebaut,
 weil nichts darauf zeigte. Was gebaut werden soll, gehört in den Plan
 (`05-roadmap.md`) mit einer Fassung dahinter.
 
+**Und zwei Fehler im Konzept selbst, beide vom Gründer am nächsten Tag
+gefunden:**
+
+- **Eine Saison, die es nicht gibt.** Ich hatte geschrieben, gefunden werde
+  die App zwischen Oktober und März, weil dann die Abrechnungen kämen. Die
+  App selbst rechnet mit einem Abrechnungsjahr ab jedem Stichtag; abgelesen,
+  gewechselt und umgezogen wird das ganze Jahr. **Bevor eine These über die
+  Nutzer ins Konzept kommt, gegen das eigene Produkt halten.** Wenn die App
+  etwas anders modelliert, als die These annimmt, ist meist die These falsch.
+- **Der Store vor dem Netz.** Im Store sucht, wer schon eine App will. Wer eine
+  Frage hat, fragt Google oder eine KI und bekommt eine Seite. Bei einer
+  Nischen-App ohne Bekanntheit ist die Website der Eingang, der Store der
+  Abschluss. Und die Produktseite im Store ist bei Google selbst ein Treffer;
+  dort zählt der Anfang der Beschreibung, den Apple für die eigene Suche
+  ignoriert.
+
 ### Ein Index aus einer Zählung ist keine Adresse
 
 Zwei Läufe, derselbe Abbruch, zwei verschiedene Indizes:

@@ -9,6 +9,30 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.116.5 — 2026-09-25
+
+**Das Konzept für mehr Reichweite ist aus der Sicht der Suchmaschine neu
+geschrieben.**
+
+Der Gründer hat zwei Fehler der Fassung vom Vortag benannt:
+
+- **Es gibt keine Saison von Oktober bis März.** Abgelesen, gewechselt und
+  umgezogen wird das ganze Jahr, und die Abrechnung kommt zum Ende des eigenen
+  Abrechnungsjahrs. Die App rechnet selbst so. Das Konzept geht jetzt von
+  **Anlässen** aus: Umzug, Anbieterwechsel, Brief mit neuem Abschlag,
+  Abrechnung, neuer Zähler, neue Anlage.
+- **Gefunden werden soll Zählora auch bei Google und in KI-Antworten.** Die
+  Website steht jetzt vor dem App Store. Drei Arten von Seiten: Anlassseiten,
+  Rechner, die im Browser mit derselben Rechnung wie die App rechnen, und
+  Vorlagen (zuerst ein Übergabeprotokoll für Zählerstände). Eine je Woche.
+
+Dazu die Zahlen, die der Gründer genannt hat: rund 50 Aufrufe der
+Produktseite, rund 10 Laden. Jeder fünfte lädt; es kommen nur zu wenige hin.
+
+Nachgezogen, wo dieselbe Annahme stand: die Überschrift auf der Startseite
+(„Die Nachzahlung siehst du Monate vorher, nicht erst im Brief"), zwei Stellen
+der Store-Beschreibung (wirksam mit 1.3) und der Vorschlag für den Werbetext.
+
 ## 0.116.4 — 2026-09-24
 
 **Reichweite: Analyse, ein neues Konzept und zwei Fehler, die sofort behoben
