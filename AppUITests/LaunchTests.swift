@@ -2417,29 +2417,48 @@ final class LaunchTests: XCTestCase {
     /// lässt.** Das Widget trägt `zaehlora://erfassen`, und genau diese Adresse
     /// öffnet die Prüfung.
     ///
-    /// **`app.open(_:)` startet die App neu.** Bis 0.116.2 stand hier, die
-    /// Prüfung beginne im Verlauf und halte fest, dass das Blatt über jedem
-    /// Schirm aufgeht. Drei Läufe lang zeigte der Abzug danach die Übersicht,
-    /// und ich las das als Umschalten. Lauf 441 hat es widerlegt: Da schaltete
-    /// nichts mehr um, und trotzdem stand die Übersicht da. Die App war neu
-    /// gestartet. Diese Prüfung ist also der **Kaltstart**, und das ist der
-    /// häufigere Fall am Telefon. Die laufende App prüft die nächste.
+    /// **Beendet, dann über das System geöffnet, wie beim Tipp aufs Widget.**
+    /// Bis 0.116.5 stand hier `app.open(_:)`. Das startet die App neu, und vier
+    /// Läufe lang (439 bis 442) ging danach kein Ziffernblock auf, auch nicht
+    /// mit dem Warten auf die aktive Szene aus 0.116.3. Ob die Adresse auf
+    /// diesem Weg überhaupt in `onOpenURL` ankommt, hat keiner der Läufe
+    /// belegt. Derselbe Weg über das System ist in Lauf 442 bei laufender App
+    /// grün. Hier läuft er bei beendeter App, und das ist, was am Telefon
+    /// passiert.
     ///
     /// Erwartet wird **Gas**: In den Beispieldaten ist er absichtlich drei
     /// Monate überfällig, alle anderen sind frisch abgelesen.
     func testTheWidgetAddressOpensTheKeypadOfTheMostOverdueMeter() {
         let app = launchWithData()
+        app.terminate()
 
-        app.open(URL(string: "zaehlora://erfassen")!)
+        oeffneUeberDasSystem("zaehlora://erfassen")
 
-        guard app.buttons["7"].waitForExistence(timeout: erscheint) else {
-            XCTFail("Die Adresse öffnete beim Start keinen Ziffernblock. Zu sehen war: "
+        guard app.buttons["7"].waitForExistence(timeout: 20) else {
+            let lage = app.state == .runningForeground
+                ? "Die App lief im Vordergrund, aber ohne Ziffernblock."
+                : "Die App war nicht im Vordergrund (Zustand \(app.state.rawValue))."
+            XCTFail("Die Adresse öffnete beim Start keinen Ziffernblock. \(lage) Zu sehen war: "
                     + beschriftungen(in: app))
             return
         }
         XCTAssertTrue(app.navigationBars["Gas"].exists,
                       "Der Ziffernblock gehört nicht zum überfälligen Zähler. Zu sehen war: "
                       + beschriftungen(in: app))
+    }
+
+    /// Öffnet eine Adresse so, wie es ein Widget oder eine andere App tut.
+    ///
+    /// Der Simulator fragt bei einem eigenen Schema unter Umständen nach, ob
+    /// die App geöffnet werden soll. Auf dem Telefon kommt die Frage bei einem
+    /// Tipp auf Widget oder Erinnerung nicht; hier wird sie bejaht.
+    private func oeffneUeberDasSystem(_ adresse: String) {
+        XCUIDevice.shared.system.open(URL(string: adresse)!)
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        for wort in ["Öffnen", "Open"] where springboard.buttons[wort].waitForExistence(timeout: 2) {
+            springboard.buttons[wort].tap()
+            break
+        }
     }
 
     /// Dieselbe Adresse, während die App läuft und im Verlauf steht.
@@ -2456,15 +2475,7 @@ final class LaunchTests: XCTestCase {
         XCTAssertTrue(app.buttons["Monat"].waitForExistence(timeout: erscheint),
                       "Der Verlauf wurde nicht geöffnet")
 
-        XCUIDevice.shared.system.open(URL(string: "zaehlora://erfassen")!)
-        // Der Simulator fragt bei einem eigenen Schema unter Umständen nach,
-        // ob die App geöffnet werden soll. Auf dem Telefon kommt die Frage bei
-        // einem Tipp auf Widget oder Erinnerung nicht; hier wird sie bejaht.
-        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
-        for wort in ["Öffnen", "Open"] where springboard.buttons[wort].waitForExistence(timeout: 2) {
-            springboard.buttons[wort].tap()
-            break
-        }
+        oeffneUeberDasSystem("zaehlora://erfassen")
 
         guard app.buttons["7"].waitForExistence(timeout: erscheint) else {
             let wo = app.navigationBars["Verlauf"].exists

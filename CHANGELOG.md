@@ -9,6 +9,20 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.116.6 — 2026-09-25
+
+**Die Kaltstart-Prüfung nimmt jetzt den Weg, den ein Tipp aufs Widget nimmt.**
+
+Lauf 442 zu 0.116.3: Die neue Prüfung mit laufender App ist grün. Die Adresse
+kommt über das System an, der Ziffernblock geht über dem Verlauf auf, und nach
+dem Schließen steht wieder der Verlauf da. Rot blieb nur der Kaltstart über
+`app.open(URL)`, zum vierten Mal.
+
+Ob die Adresse auf diesem Weg beim Neustart überhaupt ankommt, hat keiner der
+vier Läufe belegt. Die Prüfung beendet die App jetzt und öffnet die Adresse
+über das System, wie ein Widget es tut. Schlägt sie fehl, sagt sie, ob die
+App im Vordergrund war.
+
 ## 0.116.5 — 2026-09-25
 
 **Das Konzept für mehr Reichweite ist aus der Sicht der Suchmaschine neu

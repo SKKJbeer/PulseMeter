@@ -1715,10 +1715,14 @@ dreimal kein Blatt, und zweimal habe ich die falsche Ursache behoben:
 3. Lauf 441: **Es schaltete nichts mehr um, und trotzdem stand die Übersicht
    da.** Das geht nur auf einem Weg: Die App war neu gestartet.
 
-> **`XCUIApplication.open(_:)` beendet die App und startet sie mit der Adresse
-> neu.** Wer damit „die laufende App bekommt eine Adresse" prüfen will, prüft
-> den Kaltstart. Für die laufende App gibt es `XCUIDevice.shared.system.open(_:)`;
-> der Simulator fragt dabei unter Umständen nach, ob geöffnet werden soll.
+> **`XCUIApplication.open(_:)` beendet die App und startet sie neu.** Wer
+> damit „die laufende App bekommt eine Adresse" prüfen will, prüft etwas
+> anderes. Und ob die Adresse auf diesem Weg beim Neustart in `onOpenURL`
+> ankommt, hat in vier Läufen keiner belegt; der Ziffernblock ging nie auf.
+> **Für beide Fälle `XCUIDevice.shared.system.open(_:)`:** bei laufender App
+> für den warmen Weg (in Lauf 442 grün), nach `app.terminate()` für den
+> Kaltstart. Das ist der Weg, den ein Tipp aufs Widget nimmt. Der Simulator
+> fragt dabei unter Umständen nach, ob geöffnet werden soll.
 
 > **Ein Blatt, das beim Kaltstart von außen ausgelöst wird, wartet auf
 > `scenePhase == .active` und einen Takt danach.** Die Adresse kommt, während
