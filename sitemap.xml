@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Ohne das Impressum: Es trägt `noindex` und soll erreichbar sein, nicht
+     auffindbar. Eine Adresse, die man anmeldet und dann vom Index ausschließt,
+     ist ein widersprüchliches Signal. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://zaehlora.pages.dev/</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://zaehlora.pages.dev/entwicklung</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://zaehlora.pages.dev/hilfe</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://zaehlora.pages.dev/gas-in-kwh</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://zaehlora.pages.dev/abschlag-zu-hoch</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://zaehlora.pages.dev/verbrauch-berechnen</loc><lastmod>2026-09-26</lastmod></url>
+  <url><loc>https://zaehlora.pages.dev/zaehlerstand-umzug</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://zaehlora.pages.dev/ratgeber</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://zaehlora.pages.dev/datenschutz</loc><lastmod>2026-09-25</lastmod></url>
+</urlset>
