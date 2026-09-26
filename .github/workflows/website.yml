@@ -121,7 +121,13 @@ jobs:
         run: scripts/cloudflare-projekt.sh zaehlora main
 
       - name: Zu Cloudflare Pages hochladen
+        id: hochladen
         if: steps.zugang.outputs.bereit == 'ja'
+        # Scheitert es, übernimmt der Schritt darunter ohne Zählung. Lauf 33
+        # scheiterte an „You need to enable Analytics Engine": ein Schalter im
+        # Konto, den kein Token umlegen kann. Eine Seite, die wegen ihrer
+        # Statistik nicht mehr aktualisiert wird, wäre der falsche Tausch.
+        continue-on-error: true
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -132,6 +138,23 @@ jobs:
           # das ist hier der frisch gebaute Ordner selbst.
           workingDirectory: build/pages
           command: pages deploy inhalt --project-name=zaehlora --branch=main --commit-dirty=true
+
+      # **Ohne Zählung, aber online.** Außerhalb von `build/pages` findet
+      # wrangler weder `functions/` noch `wrangler.toml` und lädt nur die
+      # Seiten hoch. Die Warnung sagt, was zu tun ist, damit es beim nächsten
+      # Mal wieder mit Zählung geht.
+      - name: Ohne Zählung hochladen, falls es mit ihr nicht ging
+        if: steps.zugang.outputs.bereit == 'ja' && steps.hochladen.outcome == 'failure'
+        run: |
+          rm -f build/pages/inhalt/_routes.json
+          echo "::warning::Die Website ging ohne Zählung online. Meist fehlt der Schalter für Analytics Engine: dash.cloudflare.com → Workers & Pages → Analytics Engine → Enable. Danach zählt der nächste Lauf von selbst."
+      - name: Seiten ohne Zählung hochladen
+        if: steps.zugang.outputs.bereit == 'ja' && steps.hochladen.outcome == 'failure'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy build/pages/inhalt --project-name=zaehlora --branch=main --commit-dirty=true
 
       # **Die alte Adresse blieb nach dem Umzug stehen** und lieferte eine
       # vollständige Kopie mit einem `canonical` auf sich selbst — zwei Seiten
@@ -187,7 +210,9 @@ jobs:
           pruefe "Symbol ist ein Bild" "$(curl -sS -o /dev/null -w '%{content_type}' "$W/favicon.ico" | cut -d'/' -f1)" image
           pruefe "Sitemap ist erreichbar" "$(curl -sS -o /dev/null -w '%{http_code}' "$W/sitemap.xml")" 200
           pruefe "Startseite ist erreichbar" "$(curl -sS -o /dev/null -w '%{http_code}' "$W/")" 200
-          pruefe "Seiten laufen durch die Zählung" "$(curl -sSI "$W/" | tr -d '\r' | grep -i '^x-zaehlung:' | cut -d' ' -f2-)" "ohne-personenbezug"
+          if [ "${{ steps.hochladen.outcome }}" = "success" ]; then
+            pruefe "Seiten laufen durch die Zählung" "$(curl -sSI "$W/" | tr -d '\r' | grep -i '^x-zaehlung:' | cut -d' ' -f2-)" "ohne-personenbezug"
+          fi
           pruefe "Seiten behalten ihre Sicherheitsangaben" "$(curl -sSI "$W/" | tr -d '\r' | grep -i '^x-content-type-options:' | cut -d' ' -f2-)" "nosniff"
           pruefe "Bilder bleiben eine Woche" "$(curl -sSI "$W/bilder/light.jpg" | tr -d '\r' | grep -i '^cache-control:' | cut -d' ' -f2-)" "public, max-age=604800, stale-while-revalidate=86400"
           exit $fehler

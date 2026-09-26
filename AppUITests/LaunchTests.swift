@@ -2577,7 +2577,11 @@ final class LaunchTests: XCTestCase {
          ["-pulse-verlauf", "-pulse-verlauf-vorschau", "-pulse-verlauf-tabelle"],
          { $0.buttons["Alle Zahlen"] }),
         ("Zähler", ["-pulse-zaehler"], { $0.staticTexts["Zähler"] }),
-        ("Ziffernblock", ["-pulse-capture"], { $0.buttons["7"] }),
+        // Die „1", nicht die „7": In größter Schrift passen auf dem iPad nur
+        // drei Tasten auf den Schirm, und das Raster legt die übrigen erst
+        // beim Blättern an. Lauf 456 wartete auf die „7" und fand sie nicht,
+        // obwohl der Ziffernblock dastand.
+        ("Ziffernblock", ["-pulse-capture"], { $0.buttons["1"] }),
         // `-pulse-frei` nach `-pulse-pro` überstimmt es, wie in `run.sh`.
         ("Kaufseite", ["-pulse-kaufen", "-pulse-frei"], {
             $0.staticTexts.matching(

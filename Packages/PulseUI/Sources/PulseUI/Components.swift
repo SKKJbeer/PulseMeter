@@ -273,6 +273,10 @@ public struct ValueCard<Footer: View>: View {
                         .frame(width: 78, height: 34)
                 }
             }
+            // Untereinander ist der Stapel nur so breit wie sein Inhalt, und
+            // die Karte setzte ihn mittig. Auf dem iPad in größter Schrift
+            // stand der Wert dadurch eingerückt statt bündig (Lauf 455).
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 15)
             .padding(.top, 8)
             .padding(.bottom, 15)

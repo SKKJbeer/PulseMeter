@@ -1900,6 +1900,11 @@ Was dabei je einen Umweg kostet:
 - Die Zählung darf die Seite nie aufhalten: `next()` zuerst, Schreiben in
   `try`, Antwort immer zurück.
 - Lokal probieren geht ohne Zugang: `npx wrangler pages dev` im Paketordner.
+- **Analytics Engine muss im Konto einmal von Hand eingeschaltet werden**
+  (Workers & Pages → Analytics Engine → Enable). Vorher scheitert jedes
+  Hochladen mit Bindung an „You need to enable Analytics Engine", und kein
+  Token kann das umlegen. Deshalb ein Rückfall ohne Funktion im Ablauf: Die
+  Seite darf nie an ihrer Statistik hängen bleiben.
 
 Und die Prüfung liest mit, was die Funktion schreibt, und scheitert an einer
 IP-Adresse in der Zeile. Ein Datenschutzversprechen, das nur im Text steht,

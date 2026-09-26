@@ -9,6 +9,35 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.117.6 — 2026-09-26
+
+**Was die ersten Bilder in größter Schrift noch zeigten, und eine Website, die
+nicht an ihrer Zählung hängt.**
+
+Aus Lauf 455 (0.117.3), dem ersten mit Bildern vom iPhone SE (iOS 18.5) und
+iPad mini:
+
+- **Tabelle im Verlauf, iPhone SE, größte Schrift:** Der Spaltenkopf stand als
+  „VER-" über „BRAUC" über „H". Gestapelt gibt es keine Spalten mehr; der Kopf
+  heißt dann „Verbrauch je Monat" (oder Quartal, Jahr, Kosten).
+- **Übersicht, iPad, größte Schrift:** Zeitraum, Zahl und Linie standen
+  eingerückt, weil die Karte den gestapelten Block mittig setzte. Jetzt bündig.
+- Die Randprüfung wartete auf die Taste „7". In größter Schrift passen auf dem
+  iPad nur drei Tasten auf den Schirm, und das Raster legt die übrigen erst
+  beim Blättern an; sie fiel deshalb auf beiden Geräten, obwohl der
+  Ziffernblock dastand. Sie wartet jetzt auf die „1".
+
+Unverändert rot auf dem iPad: `testCapturingBothDirectionsInOneGo` einmal in
+Lauf 456, auf dem iPhone im selben Lauf grün. Noch nicht eingeordnet; der
+nächste Lauf zeigt, ob es wiederkommt.
+
+Website: Das Hochladen mit Zählung scheiterte an „You need to enable Analytics
+Engine", einem Schalter im Cloudflare-Konto, den kein Token umlegen kann. Die
+Seite blieb dabei auf dem vorigen Stand online. Scheitert es künftig, geht
+sie ohne Zählung hoch, und der Lauf nennt den fehlenden Schalter.
+
+---
+
 ## 0.117.5 — 2026-09-26
 
 **Die Website zählt ihre Aufrufe, auf dem Server und ohne Personenbezug.**

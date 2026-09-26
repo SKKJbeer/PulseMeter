@@ -374,15 +374,35 @@ struct HistoryView: View {
 
     private var tabelleGestapelt: Bool { schriftgroesse.isAccessibilitySize }
 
+    private var abschnittName: String {
+        switch granularity {
+        case .month: return "Monat"
+        case .quarter: return "Quartal"
+        case .year: return "Jahr"
+        }
+    }
+
     private var tableCard: some View {
         PulseCard {
             VStack(spacing: 0) {
-                HStack {
-                    Text("Zeitraum")
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    Text(metric == .cost ? "Kosten" : "Verbrauch")
-                        .frame(width: tabelleGestapelt ? nil : wertspalte,
-                               alignment: .trailing)
+                // **Gestapelt eine Überschrift statt zwei.** Nebeneinander
+                // bekam in größter Schrift jede Spalte die halbe Breite, und
+                // auf dem iPhone SE stand „VER-" über „BRAUC" über „H"
+                // (Lauf 455). Wenn der Wert unter dem Zeitraum steht, gibt es
+                // keine Spalten mehr, die zu benennen wären; es gibt nur noch
+                // die Frage, was die Zeilen zeigen.
+                Group {
+                    if tabelleGestapelt {
+                        Text("\(metric == .cost ? "Kosten" : "Verbrauch") je \(abschnittName)")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    } else {
+                        HStack {
+                            Text("Zeitraum")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            Text(metric == .cost ? "Kosten" : "Verbrauch")
+                                .frame(width: wertspalte, alignment: .trailing)
+                        }
+                    }
                 }
                 .font(PulseText.sectionLabel)
                 .foregroundStyle(PulseColor.inkTertiary)
