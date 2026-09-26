@@ -415,6 +415,7 @@ docs/05-roadmap.md            v1-Umfang, Ausschlüsse, Reihenfolge
 docs/06-uebergabe.md          Der laufende Zustand — für eine kalte Sitzung
 docs/09-appstore.md           Alle Store-Texte, fertig zum Einfügen
 docs/12-auslieferung.md       Vom Code in den App Store, ohne Mac
+docs/13-zugaenge.md           Was nur der Gründer anlegen kann, mit Links
 docs/prototype/index.html     Klick-Dummy, in sich geschlossen
 .claude/skills/               Das übertragbare Wissen — Baukasten zuerst
 Packages/PulseCore/           Domäne und Rechenkern, nur Foundation

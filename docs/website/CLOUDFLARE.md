@@ -116,7 +116,7 @@ ohne Cookie und ohne IP-Adresse (was genau, steht in `datenschutz.html` und in
 `docs/website-server/_middleware.js`). Das Zählen braucht nichts von dir, es
 läuft mit dem Hochladen.
 
-**Nur das Lesen braucht einen eigenen Schlüssel**, einmal:
+**Nur das Lesen braucht vielleicht einen eigenen Schlüssel.** Alle Zugänge mit direkten Links stehen in `docs/13-zugaenge.md`; hier dasselbe für Cloudflare:
 
 1. [dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens)
    → **Create Token** → **Create Custom Token**.

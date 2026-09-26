@@ -9,6 +9,30 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.117.7 — 2026-09-26
+
+**Die Zahlen kommen von selbst, sobald ein Schlüssel da ist.**
+
+Der Gründer am 26. September: „übernimm du alles soweit es geht mit
+automatisierung und key", und für den Rest direkte Links.
+
+- `docs/13-zugaenge.md`: sechs Dinge, die nur der Kontoinhaber anlegen kann,
+  je mit direktem Link und dem, was danach von allein passiert.
+- „Zahlen" (App Store Connect) nimmt einen Berichtsschlüssel
+  `ASC_BERICHT_KEY_ID`/`ASC_BERICHT_KEY_P8`, sobald es ihn gibt. Der
+  vorhandene darf keine Berichte lesen (403 seit dem 5. September). Beim
+  ersten erfolgreichen Lauf fordert er die Vergangenheit gleich mit an, ohne
+  dass jemand an den Schalter denken muss.
+- „Website-Zahlen" versucht es für Cloudflare zuerst mit dem vorhandenen
+  Schlüssel und meldet, wenn ein eigener nötig ist. Neu darin: Google.
+  `scripts/gsc-zahlen.py` liest über ein Dienstkonto Suchbegriffe,
+  Einblendungen, Klicks und Position je Seite und meldet bei jedem Lauf die
+  Sitemap an.
+- Beide Berichtsschritte bleiben grün, wenn ein Schlüssel fehlt, und sagen,
+  welcher.
+
+---
+
 ## 0.117.6 — 2026-09-26
 
 **Was die ersten Bilder in größter Schrift noch zeigten, und eine Website, die

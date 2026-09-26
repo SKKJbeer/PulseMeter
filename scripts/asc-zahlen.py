@@ -284,7 +284,11 @@ def main() -> int:
     if "--anfordern" in sys.argv or not bestehend:
         print("\n── Laufenden Bericht anfordern")
         anfordern(apple, app_id, "ONGOING")
-    if "--rueckwirkend" in sys.argv:
+    # Beim allerersten Mal auch die Vergangenheit: Ein laufender Bericht fängt
+    # heute an, und die Wochen seit dem Start im Laden wären sonst verloren.
+    # Dass es das erste Mal ist, zeigt sich daran, dass noch nichts bestand;
+    # niemand soll dafür an einen Schalter denken müssen.
+    if "--rueckwirkend" in sys.argv or not bestehend:
         print("\n── Rückwirkenden Bericht anfordern")
         anfordern(apple, app_id, "ONE_TIME_SNAPSHOT")
 

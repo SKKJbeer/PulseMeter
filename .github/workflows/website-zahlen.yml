@@ -7,10 +7,13 @@ name: Website-Zahlen
 # Das Repository ist öffentlich, also auch diese Zusammenfassung. Es stehen
 # darin nur Summen. Wer das nicht will, schaltet den Ablauf unter Actions ab.
 #
-# **Einmalig einzurichten:** ein Cloudflare-Token mit genau einem Recht,
-# „Account Analytics: Read", als Geheimnis `CLOUDFLARE_STATISTIK_TOKEN`.
-# Das Token für das Hochladen bleibt, wie es ist: Ein Bericht soll nichts
-# hochladen können.
+# Dazu, was Google sieht: Suchbegriffe, Einblendungen und Klicks aus der
+# Search Console, und bei jedem Lauf die Sitemap neu gemeldet.
+#
+# **Einmalig einzurichten**, beides in `docs/13-zugaenge.md`: ein
+# Cloudflare-Token mit genau einem Recht, „Account Analytics: Read", als
+# `CLOUDFLARE_STATISTIK_TOKEN`, und ein Google-Dienstkonto als
+# `GOOGLE_SC_SCHLUESSEL`.
 
 on:
   schedule:
@@ -20,7 +23,7 @@ on:
   workflow_dispatch:
     inputs:
       tage:
-        description: "Wie viele Tage zurück"
+        description: "Wie viele Tage zurück (Website)"
         default: "7"
 
 permissions:
@@ -32,13 +35,34 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - name: Zahlen holen
+      # **Erst der eigene Leseschlüssel, sonst der zum Hochladen.** Ob der
+      # schon lesen darf, hängt davon ab, wie er einmal angelegt wurde; das
+      # weiß niemand mehr, also wird es versucht. Scheitert es, sagt der Lauf,
+      # welcher Schlüssel fehlt, und bleibt grün: Ein fehlender Bericht ist
+      # kein Fehler an der Website.
+      - name: Aufrufe der Website
+        continue-on-error: true
         env:
-          CLOUDFLARE_STATISTIK_TOKEN: ${{ secrets.CLOUDFLARE_STATISTIK_TOKEN }}
+          CLOUDFLARE_STATISTIK_TOKEN: ${{ secrets.CLOUDFLARE_STATISTIK_TOKEN || secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           if [ -z "$CLOUDFLARE_STATISTIK_TOKEN" ]; then
-            echo "::notice::CLOUDFLARE_STATISTIK_TOKEN fehlt. Gezählt wird trotzdem, nur lesen kann der Bericht noch nicht."
+            echo "::notice::Kein Cloudflare-Schlüssel. Anleitung: docs/13-zugaenge.md"
             exit 0
           fi
-          python3 scripts/website-zahlen.py "${{ inputs.tage || '7' }}"
+          python3 scripts/website-zahlen.py "${{ inputs.tage || '7' }}" || {
+            echo "::warning::Die Zählung ließ sich nicht lesen. Meist fehlt der Leseschlüssel CLOUDFLARE_STATISTIK_TOKEN oder Analytics Engine ist noch aus. Anleitung: docs/13-zugaenge.md"
+            exit 1
+          }
+
+      - name: Google (Search Console)
+        continue-on-error: true
+        env:
+          GOOGLE_SC_SCHLUESSEL: ${{ secrets.GOOGLE_SC_SCHLUESSEL }}
+        run: |
+          if [ -z "$GOOGLE_SC_SCHLUESSEL" ]; then
+            echo "::notice::Kein Google-Dienstkonto. Anleitung: docs/13-zugaenge.md"
+            exit 0
+          fi
+          pip3 install --quiet google-auth requests
+          python3 scripts/gsc-zahlen.py 28
