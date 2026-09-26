@@ -792,6 +792,13 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
   min-width: 0;
   font-variant-numeric: tabular-nums;
 }
+/* Safari zeichnet das Innere eines Datumsfelds mit eigener Breite und lässt es
+   über das Feld hinausragen: bei 300 % Textgröße 142 Pixel Inhalt in einem
+   101 Pixel breiten Feld, und die Seite lief seitlich über. Chromium schneidet
+   es ab, deshalb fiel es erst in der Prüfung mit WebKit auf. */
+.rechner input[type="date"] {
+  overflow: hidden;
+}
 .rechner input:focus-visible, .rechner select:focus-visible {
   outline: 2px solid var(--tint);
   outline-offset: 2px;
@@ -935,7 +942,8 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
    in die Kacheln passen. Eine Zahl bricht auch hier nicht um. */
 @media (max-width: 260px) {
   .bahn { padding-inline: 12px; }
-  .knopf { padding: 12px 16px; text-align: center; justify-content: center; }
+  .knopf { padding: 12px 16px; text-align: center; justify-content: center; max-width: 100%; }
+  .rechner input, .rechner select { font-size: 16px; padding-inline: 8px; }
   .art { white-space: normal; }
   .rechner { padding: 0; border: 0; background: none; }
   .kachel { padding: 8px 10px; }

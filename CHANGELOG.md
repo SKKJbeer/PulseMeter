@@ -9,6 +9,26 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.117.8 — 2026-09-26
+
+**Die Website hält 300 % Textgröße auch in Safari, und `pruefen.sh` prüft in
+WebKit mit.**
+
+Die CI-Läufe 457 bis 461 waren rot, alle am selben Schritt „Website in WebKit
+prüfen": Bei 300 % Textgröße liefen „Verbrauch berechnen" 9 und „Zählerstand
+beim Umzug" 2 Pixel über. Chromium zeigte beides nicht, und `pruefen.sh`
+prüfte bis hierher nur in Chromium.
+
+- Safari zeichnet das Innere eines Datumsfelds mit eigener Breite, 142 Pixel
+  in einem 101 Pixel breiten Feld. Jetzt `overflow: hidden` am Feld.
+- „Protokoll drucken" blieb einzeilig 115 Pixel breit; unter 260 Pixeln darf
+  er schmaler werden. Die Felder im Rechner nehmen dort 16 Pixel Schrift und
+  weniger Innenabstand, damit das Datum ganz zu sehen bleibt.
+- `pruefen.sh` prüft die Website zusätzlich in WebKit, wenn es installiert
+  ist, und sagt in der Zusammenfassung, wenn nicht. 1194 Prüfungen in beiden.
+
+---
+
 ## 0.117.7 — 2026-09-26
 
 **Die Zahlen kommen von selbst, sobald ein Schlüssel da ist.**

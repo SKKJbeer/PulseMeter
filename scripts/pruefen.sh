@@ -168,6 +168,8 @@ PROTO_PID=""
 PROTO_LOG="build/pruefen-entwurf.log"
 WEB_PID=""
 WEB_LOG="build/pruefen-website.log"
+WK_PID=""
+WK_LOG="build/pruefen-website-webkit.log"
 NF_PID=""
 NF_LOG="build/pruefen-nichtfunktional.log"
 if [ "$SCOPE" != "bilder" ] && [ "$SCOPE" != "app" ]; then
@@ -189,6 +191,15 @@ if [ "$SCOPE" != "bilder" ] && [ "$SCOPE" != "app" ]; then
   # daran denken muss. Genau daran ist der Klick-Dummy vorher gescheitert.
   ( node scripts/check-website.mjs > "$WEB_LOG" 2>&1 ) &
   WEB_PID=$!
+  # **Und in WebKit, wenn es da ist.** Jedes iPhone zeigt die Seite mit
+  # WebKit, und die CI prüft sie seit 0.117.2 auch darin. Hier lief nur
+  # Chromium, und 0.117.4 ging grün hinaus und kam dreimal rot zurück: Ein
+  # Datumsfeld ragte in Safari über den Rand, in Chromium nicht. Fehlt WebKit,
+  # sagt die Zusammenfassung es, statt es stillschweigend auszulassen.
+  if node -e "const p=require('playwright');process.exit(require('fs').existsSync(p.webkit.executablePath())?0:1)" 2>/dev/null; then
+    ( PULSE_ENGINE=webkit node scripts/check-website.mjs > "$WK_LOG" 2>&1 ) &
+    WK_PID=$!
+  fi
   # Bedienbarkeit und Geschwindigkeit hängen am selben Chromium und laufen
   # ebenfalls nebenher. Sie prüfen nicht, ob die App das Richtige tut, sondern
   # ob man es auch kann: Trefferflächen, Kontrast, Namen für die
@@ -346,6 +357,16 @@ if [ -n "$WEB_PID" ]; then
   else
     bad "Website" "—"
     grep "FEHL" "$WEB_LOG" | sed 's/^/    /'
+  fi
+  if [ -n "$WK_PID" ]; then
+    if wait "$WK_PID"; then
+      ok "$(grep -c '  ok   ' "$WK_LOG" || true) Prüfungen in WebKit, wie Safari" "—"
+    else
+      bad "Website in WebKit" "—"
+      grep "FEHL" "$WK_LOG" | sed 's/^/    /'
+    fi
+  else
+    printf "  %sWebKit übersprungen — npx playwright install --with-deps webkit%s\n" "$DIM" "$RESET"
   fi
 fi
 

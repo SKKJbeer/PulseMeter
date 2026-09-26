@@ -1850,6 +1850,12 @@ fehlt, findet man nur, indem man die Funktionen zählt:
 | `hyphens` ohne `-webkit-` | iOS 17 | keine Silbentrennung, lange deutsche Wörter brechen hart |
 | `inset` | iOS 14.5 | Lage des Elements falsch |
 | `:focus-visible` | iOS 15.4 | kein Fokusrahmen, sonst harmlos |
+| `<input type="date">` | jedes Safari | das Innere hat eine eigene Breite und ragt aus dem Feld; bei 300 % Textgröße lief die Seite 9 Pixel über. `overflow: hidden` am Feld |
+
+**Und die Prüfung in WebKit gehört auch an den eigenen Rechner**, nicht nur in
+die CI. 0.117.4 ging lokal grün hinaus, weil `pruefen.sh` nur Chromium kannte,
+und kam in drei Läufen rot zurück. Jetzt läuft WebKit dort mit, wenn es
+installiert ist, und die Zusammenfassung sagt, wenn nicht.
 
 > **Jede Farbe aus `color-mix()` bekommt davor eine Zeile mit einer einfachen
 > Farbe.** Und die Probe dafür: das Stylesheet ohne `color-mix()` ausliefern
