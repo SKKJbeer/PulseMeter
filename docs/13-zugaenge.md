@@ -15,7 +15,7 @@ Bestätigungscode, eine Anbieterkennung), darf in den Chat.
 | # | Was | Wer es liest | Zustand |
 |---|---|---|---|
 | 1 | Analytics Engine einschalten | die Zählung auf der Website | offen |
-| 2 | Leseschlüssel Cloudflare | Wochenbericht Website | offen (vielleicht reicht der vorhandene) |
+| 2 | Leseschlüssel Cloudflare | Wochenbericht Website | offen, nötig: der vorhandene bekommt 403 (gemessen am 26. September) |
 | 3 | Search Console | Google-Verzeichnis | offen |
 | 4 | Google-Dienstkonto | Wochenbericht Google, Sitemap | offen |
 | 5 | Berichtsschlüssel App Store Connect | täglicher Ablauf „Zahlen" | offen, scheitert seit dem 5. September |
@@ -33,10 +33,11 @@ Dort **Enable** (oder „Set up"). Kostet nichts.
 Zählung hoch. Bis dahin geht die Seite ohne Zählung online, und der Lauf sagt
 es mit einer Warnung.
 
-## 2. Leseschlüssel Cloudflare (nur wenn der Bericht es verlangt)
+## 2. Leseschlüssel Cloudflare
 
-Der Wochenbericht versucht es zuerst mit dem Schlüssel zum Hochladen. Meldet
-er „Die Zählung ließ sich nicht lesen", braucht es einen eigenen:
+Der Schlüssel zum Hochladen darf keine Statistik lesen: Am 26. September
+antwortete Cloudflare darauf mit 403 „Authentication error". Es braucht also
+einen eigenen, der nur lesen kann:
 
 <https://dash.cloudflare.com/profile/api-tokens> → **Create Token** →
 **Create Custom Token**
