@@ -2520,4 +2520,69 @@ final class LaunchTests: XCTestCase {
         XCTAssertFalse(app.buttons["7"].waitForExistence(timeout: 3),
                        "Eine unbekannte Adresse öffnete den Ziffernblock")
     }
+
+    /// **In der größten Schrift läuft kein Text aus dem Bild.**
+    ///
+    /// Bis 0.117.2 gab es davon nur ein Bild der Übersicht, und niemand hat es
+    /// je gegen etwas gehalten. Auf dem iPad stand darin „1.9" über „58", das
+    /// Schild „FÄLLIG" war getrennt, und die Karten standen versetzt. Diese
+    /// Prüfung läuft auf jedem Gerät der CI und fragt auf vier Schirmen, ob ein
+    /// Text links oder rechts über den Rand reicht. Das passiert genau dort,
+    /// wo etwas nicht umbrechen darf und deshalb fest steht, und genau solche
+    /// Stellen sind mit 0.117.3 dazugekommen.
+    ///
+    /// Texte in Knöpfen fallen heraus: Die Zählerwahl im Verlauf ist eine
+    /// Leiste zum Wischen, dort steht ein Knopf am Rand mit Absicht halb im
+    /// Bild.
+    func testTheLargestTextStaysOnScreen() throws {
+        let schirme: [(name: String, schalter: [String], steht: @MainActor (XCUIApplication) -> XCUIElement)] = [
+            ("Übersicht", [], { $0.staticTexts["Strom"] }),
+            ("Verlauf als Tabelle",
+             ["-pulse-verlauf", "-pulse-verlauf-vorschau", "-pulse-verlauf-tabelle"],
+             { $0.buttons["Alle Zahlen"] }),
+            ("Zähler", ["-pulse-zaehler"], { $0.staticTexts["Zähler"] }),
+            ("Ziffernblock", ["-pulse-capture"], { $0.buttons["7"] }),
+        ]
+        for schirm in schirme {
+            let app = XCUIApplication()
+            app.launchArguments = ["-pulse-reset", "-pulse-pro"] + schirm.schalter + [
+                "-UIPreferredContentSizeCategoryName",
+                "UICTContentSizeCategoryAccessibilityXXXL",
+            ]
+            app.launch()
+            XCTAssertTrue(schirm.steht(app).waitForExistence(timeout: 15),
+                          "\(schirm.name) kam in großer Schrift nicht. Zu sehen war: "
+                          + beschriftungen(in: app))
+            let ueber = try ueberstehendeTexte(in: app)
+            XCTAssertTrue(ueber.isEmpty,
+                          "\(schirm.name): In größter Schrift reicht über den Rand: "
+                          + ueber.joined(separator: ", "))
+            app.terminate()
+        }
+    }
+
+    /// Texte, die links oder rechts über das Fenster reichen, soweit sie in
+    /// der Höhe gerade zu sehen sind.
+    ///
+    /// Über eine einzige Momentaufnahme statt über jedes Element einzeln:
+    /// Jede Frage nach einem Rahmen ist sonst ein eigener Umlauf zur App, und
+    /// eine Übersicht in großer Schrift hat davon Dutzende.
+    private func ueberstehendeTexte(in app: XCUIApplication) throws -> [String] {
+        let fenster = app.windows.firstMatch.frame
+        var funde: [String] = []
+        func gehe(_ knoten: any XCUIElementSnapshot, imKnopf: Bool) {
+            let rahmen = knoten.frame
+            if knoten.elementType == .staticText, !imKnopf, !rahmen.isEmpty,
+               rahmen.maxY > fenster.minY, rahmen.minY < fenster.maxY,
+               rahmen.minX < fenster.minX - 1 || rahmen.maxX > fenster.maxX + 1 {
+                funde.append("„\(knoten.label)“ (\(Int(rahmen.minX)) bis \(Int(rahmen.maxX)) "
+                             + "bei \(Int(fenster.width)) Breite)")
+            }
+            let knopf = imKnopf || knoten.elementType == .button
+            for kind in knoten.children { gehe(kind, imKnopf: knopf) }
+        }
+        gehe(try app.snapshot(), imKnopf: false)
+        return funde
+    }
 }
+

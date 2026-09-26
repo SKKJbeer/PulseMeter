@@ -27,6 +27,10 @@ struct MeterChangeView: View {
 
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    /// Wie breit ein Zahlenfeld höchstens wird, mit der Schrift gewachsen.
+    /// Fest 130 Punkt zeigten in der größten Stufe nur noch vier Ziffern, und
+    /// wer einen Stand mit Nachkommastellen tippte, sah den Anfang nicht mehr.
+    @ScaledMetric(relativeTo: .body) private var feldbreite: CGFloat = 130
 
     @State private var finalValue = ""
     @State private var initialValue = "0"
@@ -124,7 +128,7 @@ struct MeterChangeView: View {
             TextField("0", text: text)
                 .keyboardType(.decimalPad)
                 .multilineTextAlignment(.trailing)
-                .frame(maxWidth: 130)
+                .frame(maxWidth: feldbreite)
                 .accessibilityLabel(register.map { "\(label) in \($0.unit.spokenName)" } ?? label)
             Text(register?.unit.symbol ?? "")
                 .foregroundStyle(PulseColor.inkTertiary)

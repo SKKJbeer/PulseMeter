@@ -65,8 +65,15 @@ struct HistoryView: View {
     @State private var readings: [Reading] = []
     @State private var showingReadings = false
     @State private var showingReport = false
-    @State private var mode: Mode = .chart
+    // Der Schalter nur für das Bild der Tabelle in großer Schrift. Ohne ihn
+    // gab es davon keines, und die Tabelle ist die Stelle, an der eine feste
+    // Spaltenbreite auf wachsende Schrift trifft.
+    @State private var mode: Mode = Startschalter.gesetzt("-pulse-verlauf-tabelle") ? .table : .chart
     @State private var metric: Metric = .quantity
+    @Environment(\.dynamicTypeSize) private var schriftgroesse
+    /// Die Wertspalte der Tabelle, mit der Schrift gewachsen. Bis 0.117.2
+    /// stand sie fest auf 108 Punkt, während die Zahl darin mitwuchs.
+    @ScaledMetric(relativeTo: .subheadline) private var wertspalte: CGFloat = 108
     @State private var tariffs: [Tariff] = []
     /// Kosten je Abschnitt, nach ``PeriodEngine/Bucket/id``.
     @State private var costs: [String: Money] = [:]
@@ -365,6 +372,8 @@ struct HistoryView: View {
         .pickerStyle(.segmented)
     }
 
+    private var tabelleGestapelt: Bool { schriftgroesse.isAccessibilitySize }
+
     private var tableCard: some View {
         PulseCard {
             VStack(spacing: 0) {
@@ -372,7 +381,8 @@ struct HistoryView: View {
                     Text("Zeitraum")
                         .frame(maxWidth: .infinity, alignment: .leading)
                     Text(metric == .cost ? "Kosten" : "Verbrauch")
-                        .frame(width: 108, alignment: .trailing)
+                        .frame(width: tabelleGestapelt ? nil : wertspalte,
+                               alignment: .trailing)
                 }
                 .font(PulseText.sectionLabel)
                 .foregroundStyle(PulseColor.inkTertiary)
@@ -386,7 +396,14 @@ struct HistoryView: View {
 
                 ForEach(buckets) { bucket in
                     Divider().overlay(PulseColor.hairline)
-                    HStack(alignment: .firstTextBaseline) {
+                    // **Bei sehr großer Schrift untereinander.** Eine Spalte,
+                    // die mit der Schrift wächst, wäre in der größten Stufe
+                    // über 300 Punkt breit, also breiter als der Platz auf
+                    // einem iPhone SE. Dann steht der Wert unter dem Zeitraum.
+                    let zeile = tabelleGestapelt
+                        ? AnyLayout(VStackLayout(alignment: .leading, spacing: 4))
+                        : AnyLayout(HStackLayout(alignment: .firstTextBaseline))
+                    zeile {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(slotName(bucket))
                                 .font(PulseText.detail)
@@ -401,8 +418,9 @@ struct HistoryView: View {
                                     .foregroundStyle(PulseColor.noticeInk)
                             }
                         }
-                        Spacer(minLength: 8)
-                        VStack(alignment: .trailing, spacing: 2) {
+                        if !tabelleGestapelt { Spacer(minLength: 8) }
+                        VStack(alignment: tabelleGestapelt ? .leading : .trailing,
+                               spacing: 2) {
                             Text(cellText(for: bucket))
                                 .font(PulseText.detail)
                                 .foregroundStyle(bucket.hasData ? PulseColor.ink : PulseColor.inkTertiary)
@@ -421,8 +439,10 @@ struct HistoryView: View {
                                     .accessibilityLabel("voraussichtlich \(erwartet) \(unit)")
                             }
                         }
-                        .frame(width: 108, alignment: .trailing)
+                        .frame(width: tabelleGestapelt ? nil : wertspalte,
+                               alignment: tabelleGestapelt ? .leading : .trailing)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 15)
                     .padding(.vertical, 10)
                     // Als ein Satz: „Januar, nur 1. bis 15. Januar, 312 kWh".

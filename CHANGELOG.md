@@ -9,6 +9,44 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.117.3 — 2026-09-26
+
+**Die App in größter Schrift auf iPad und iPhone: Zahlen brechen nicht mehr
+um, und Karten stehen bündig.**
+
+Zweiter Teil des Auftrags vom 26. September, die Kompatibilität „für
+webseite wie auch app" sicherzustellen. Das vorhandene Bild der Übersicht in
+größter Schrift zeigte auf dem iPad:
+
+- **„1.9" über „58", „kW" über „h".** Die große Zahl brach in einer schmalen
+  Karte mitten in den Ziffern um. Sie bleibt jetzt in einer Zeile und wird
+  notfalls kleiner, die Einheit bleibt ganz.
+- **„FÄL-" über „LIG".** Das Schild wird nicht mehr getrennt.
+- **Karten versetzt**, auch in normaler Schrift: Das Raster setzte jede Karte
+  in ihrer Zeile senkrecht mittig. Jetzt stehen alle oben bündig.
+- **Zwei Spalten zu je 330 Punkt.** Die Mindestbreite wächst mit der Schrift,
+  und bei großer Schrift wird aus dem Raster eine Spalte.
+
+Bei den Größen für Bedienungshilfen (ab AX1) stehen außerdem untereinander,
+was vorher nebeneinander zu eng war: Stand und Datum, Abschlag und Ergebnis,
+die drei Kostenabschnitte, Zeitraum und Wert in der Tabelle im Verlauf. Die
+kleine Linie auf der Karte steht dann unter der Zahl. Die Wertspalte der
+Tabelle und die Zahlenfelder für Preise und den Zählerwechsel wachsen mit der
+Schrift, statt fest 108, 110 und 130 Punkt zu haben.
+
+Neue Prüfung `testTheLargestTextStaysOnScreen`: Sie läuft auf jedem Gerät der
+CI und fragt auf Übersicht, Verlauf als Tabelle, Zählerliste und
+Ziffernblock, ob in größter Schrift ein Text über den Rand reicht. Dazu drei
+neue Bilder in großer Schrift (Verlauf als Tabelle, Ziffernblock,
+Zählerliste), die ersten beiden auch vom iPhone SE und iPad mini. Der
+Startschalter `-pulse-verlauf-tabelle` öffnet den Verlauf gleich als
+Tabelle.
+
+Der Klick-Dummy kennt keine Schriftgrößen und kein iPad-Raster. Er ändert
+sich nur in der Versionsnummer.
+
+---
+
 ## 0.117.2 — 2026-09-26
 
 **Die Website auf allen Geräten geprüft, auch auf alten, und die App künftig

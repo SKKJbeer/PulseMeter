@@ -283,7 +283,7 @@ jobs:
         continue-on-error: true
         env:
           PULSE_FAMILIE: iphone-klein
-          PULSE_NUR: "screenshot-light screenshot-dark screenshot-capture-light screenshot-pv-light screenshot-verlauf-light screenshot-vorschau-light screenshot-zaehler-light screenshot-pro-light screenshot-bericht-light screenshot-grossschrift-light"
+          PULSE_NUR: "screenshot-light screenshot-dark screenshot-capture-light screenshot-pv-light screenshot-verlauf-light screenshot-vorschau-light screenshot-zaehler-light screenshot-pro-light screenshot-bericht-light screenshot-grossschrift-light screenshot-grossschrift-verlauf-light screenshot-grossschrift-capture-light"
         run: scripts/run.sh build/klein
 
       - name: Bilder vom iPhone SE weiterreichen
@@ -355,7 +355,7 @@ jobs:
         continue-on-error: true
         env:
           PULSE_FAMILIE: ipad-klein
-          PULSE_NUR: "screenshot-light screenshot-dark screenshot-capture-light screenshot-pv-light screenshot-verlauf-light screenshot-vorschau-light screenshot-zaehler-light screenshot-pro-light screenshot-bericht-light screenshot-grossschrift-light"
+          PULSE_NUR: "screenshot-light screenshot-dark screenshot-capture-light screenshot-pv-light screenshot-verlauf-light screenshot-vorschau-light screenshot-zaehler-light screenshot-pro-light screenshot-bericht-light screenshot-grossschrift-light screenshot-grossschrift-verlauf-light screenshot-grossschrift-capture-light"
         run: scripts/run.sh build/ipad-mini
 
       - name: Oberflächentests auf dem iPad

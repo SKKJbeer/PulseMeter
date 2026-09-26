@@ -89,6 +89,7 @@ public struct ValueCard<Footer: View>: View {
     private let series: [Double]
     private let onOpen: (() -> Void)?
     private let footer: Footer
+    @Environment(\.dynamicTypeSize) private var schriftgroesse
 
     /// - Parameter caption: Der Zeitraum, den der Wert abdeckt. Kein
     ///   Standardwert und nicht optional: Eine große Zahl ohne Zeitraum ist
@@ -175,6 +176,11 @@ public struct ValueCard<Footer: View>: View {
                     Text(badge)
                         .font(.system(.caption2, weight: .semibold))
                         .textCase(.uppercase)
+                        // Ein Schild wird nicht getrennt. Auf der größten
+                        // Schrift stand in einer schmalen Karte „FÄL-" über
+                        // „LIG"; lieber gibt der Name daneben eine Zeile her.
+                        .lineLimit(1)
+                        .fixedSize()
                         .foregroundStyle(accent)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
@@ -206,7 +212,14 @@ public struct ValueCard<Footer: View>: View {
             .padding(.horizontal, 15)
             .padding(.top, 14)
 
-            HStack(alignment: .bottom, spacing: 14) {
+            // **Bei sehr großer Schrift steht die Linie unter der Zahl.**
+            // Daneben nimmt sie 78 Punkt, und die fehlen dann genau der Zahl.
+            // Sie ist Schmuck und für VoiceOver ausgeblendet; die Zahl ist es
+            // nicht.
+            let werteLayout = schriftgroesse.isAccessibilitySize
+                ? AnyLayout(VStackLayout(alignment: .leading, spacing: 10))
+                : AnyLayout(HStackLayout(alignment: .bottom, spacing: 14))
+            werteLayout {
                 VStack(alignment: .leading, spacing: 4) {
                     // Über der Zahl, nicht darunter: Der Zeitraum ist die
                     // Frage, die Zahl die Antwort. In dieser Reihenfolge
@@ -225,12 +238,22 @@ public struct ValueCard<Footer: View>: View {
                                 .accessibilityLabel("ungefähr")
                                 .padding(.trailing, -2)
                         }
+                        // **Eine Zahl bricht nicht um.** Bis 0.117.2 tat sie
+                        // es, wenn der Platz fehlte: Auf dem iPad in größter
+                        // Schrift stand „1.9" über „58", und „kW" über „h".
+                        // Das liest sich als zwei Zahlen. Kleiner werden darf
+                        // sie, zerteilt werden nicht.
                         Text(value)
                             .font(PulseText.value)
                             .foregroundStyle(PulseColor.ink)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.5)
+                            .layoutPriority(1)
                         Text(unit)
                             .font(PulseText.unit)
                             .foregroundStyle(PulseColor.inkSecondary)
+                            .lineLimit(1)
+                            .fixedSize()
                     }
                     detail
                         .font(PulseText.detail)
@@ -242,7 +265,9 @@ public struct ValueCard<Footer: View>: View {
                 // und der Zusammenhang, auf den es hier ankommt, ginge
                 // genau dabei verloren.
                 .accessibilityElement(children: .combine)
-                Spacer(minLength: 0)
+                if !schriftgroesse.isAccessibilitySize {
+                    Spacer(minLength: 0)
+                }
                 if series.count > 1 {
                     Sparkline(values: series, accent: accent)
                         .frame(width: 78, height: 34)
@@ -315,6 +340,7 @@ public struct Sparkline: View {
 public struct CardFooterRow<Trailing: View>: View {
     private let label: String
     private let trailing: Trailing
+    @Environment(\.dynamicTypeSize) private var schriftgroesse
 
     public init(_ label: String, @ViewBuilder trailing: () -> Trailing) {
         self.label = label
@@ -324,20 +350,38 @@ public struct CardFooterRow<Trailing: View>: View {
     public var body: some View {
         VStack(spacing: 0) {
             Divider().overlay(PulseColor.hairline)
-            HStack {
-                Text(label)
-                    .font(PulseText.detail)
-                    .foregroundStyle(PulseColor.inkSecondary)
-                Spacer(minLength: 10)
-                trailing
+            // **Bei sehr großer Schrift untereinander.** Nebeneinander brach
+            // auf dem iPad in größter Schrift „Stand 47.499,90" hinter dem
+            // Komma um, und das Datum daneben stand in vier Zeilen. Auf einem
+            // iPhone SE ist noch weniger Platz. Untereinander hat jede Angabe
+            // die ganze Breite.
+            if schriftgroesse.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(label)
+                        .font(PulseText.detail)
+                        .foregroundStyle(PulseColor.inkSecondary)
+                    trailing
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 15)
+                .padding(.vertical, 10)
+                .accessibilityElement(children: .combine)
+            } else {
+                HStack {
+                    Text(label)
+                        .font(PulseText.detail)
+                        .foregroundStyle(PulseColor.inkSecondary)
+                    Spacer(minLength: 10)
+                    trailing
+                }
+                .padding(.horizontal, 15)
+                .padding(.vertical, 10)
+                // „Kosten bis 1. Mai" und „1.399,41 €" gehören zusammen. Getrennt
+                // gelesen stünde der Betrag ohne seinen Zeitraum da — und das ist
+                // die wiederkehrende Fehlerklasse dieses Projekts, nur mit den
+                // Ohren statt mit den Augen.
+                .accessibilityElement(children: .combine)
             }
-            .padding(.horizontal, 15)
-            .padding(.vertical, 10)
-            // „Kosten bis 1. Mai" und „1.399,41 €" gehören zusammen. Getrennt
-            // gelesen stünde der Betrag ohne seinen Zeitraum da — und das ist
-            // die wiederkehrende Fehlerklasse dieses Projekts, nur mit den
-            // Ohren statt mit den Augen.
-            .accessibilityElement(children: .combine)
         }
     }
 }
@@ -378,6 +422,7 @@ public struct CostSpanRow: View {
 
     private let spans: [Span]
     private let caption: String
+    @Environment(\.dynamicTypeSize) private var schriftgroesse
 
     public init(spans: [Span], caption: String = "Kosten") {
         self.spans = spans
@@ -399,7 +444,14 @@ public struct CostSpanRow: View {
                 .foregroundStyle(PulseColor.inkSecondary)
                 .padding(.horizontal, 15)
                 .padding(.top, 9)
-            HStack(alignment: .top, spacing: 10) {
+            // Bei sehr großer Schrift untereinander. Nebeneinander hat auf
+            // einem iPhone SE jeder Betrag knapp 100 Punkt, und „≈ 555,60 €"
+            // braucht in der größten Stufe fast das Dreifache. Auch auf 70 %
+            // verkleinert endet er dann in drei Punkten.
+            let reihe = schriftgroesse.isAccessibilitySize
+                ? AnyLayout(VStackLayout(alignment: .leading, spacing: 8))
+                : AnyLayout(HStackLayout(alignment: .top, spacing: 10))
+            reihe {
                 ForEach(spans) { span in
                     VStack(alignment: .leading, spacing: 2) {
                         Text(span.label)

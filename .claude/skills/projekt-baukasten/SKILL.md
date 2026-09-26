@@ -1928,6 +1928,31 @@ vier Lagen, sonst wird der Bau abgelehnt. Angesehen hatte es niemand: Kein Lauf
 hat je gedreht, und ein Simulator startet im Hochformat. Wer eine Lage
 freischaltet, schreibt im selben Zug die Prüfung, die sie einnimmt.
 
+### Ein Bild, das niemand gegen etwas hält, prüft nichts
+
+Seit 0.27.0 entstand bei jedem Lauf ein Bild der Übersicht in größter Schrift,
+auf iPhone und iPad. Angesehen hat es bis 0.117.3 niemand gründlich. Darauf
+stand auf dem iPad „1.9" über „58" (eine Zahl, in einer schmalen Karte mitten
+in den Ziffern umgebrochen), „FÄL-" über „LIG" und zwei Karten versetzt. Den
+Versatz gab es auch in normaler Schrift: `LazyVGrid` setzt eine Zelle in ihrer
+Zeile **senkrecht mittig**, wenn man `GridItem(alignment: .top)` nicht sagt,
+und Karten verschiedener Höhe stehen dann treppenartig.
+
+> **Was nicht umbrechen darf, sagt es:** `lineLimit(1)` mit
+> `minimumScaleFactor` für Zahlen, `fixedSize()` für Einheiten und Schilder.
+> **Was fest breit ist, wächst mit:** `@ScaledMetric` statt einer Zahl, auch
+> für die Mindestbreite eines adaptiven Rasters. **Was ab AX1 nebeneinander
+> nicht mehr passt, steht untereinander:** `dynamicTypeSize.isAccessibilitySize`
+> mit `AnyLayout(HStackLayout …)` / `AnyLayout(VStackLayout …)`, dann behält
+> die Ansicht ihren Zustand beim Umschalten.
+
+Und die Prüfung dazu kostet eine Momentaufnahme: `app.snapshot()` holt den
+ganzen Baum auf einmal, und jeder Text, dessen Rahmen links oder rechts über
+das Fenster reicht, ist ein Fund. Texte in Knöpfen bleiben draußen, weil
+eine Wischleiste ihre Knöpfe mit Absicht halb aus dem Bild setzt. Die Schrift
+stellt das Startargument `-UIPreferredContentSizeCategoryName
+UICTContentSizeCategoryAccessibilityXXXL` ein, für jeden Start einzeln.
+
 ### Die Ausschlüsse werden gesammelt, bevor gezeichnet wird
 
 Drei Runden Entwürfe, und die zweite ist an etwas gescheitert, das mit der

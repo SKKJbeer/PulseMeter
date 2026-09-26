@@ -322,6 +322,15 @@ struct OverviewView: View {
     @Environment(Purchase.self) private var purchase
     /// Siehe `RootView.breite`: gemessen wird das Fenster, nicht das Gerät.
     @Environment(\.horizontalSizeClass) private var breite
+    /// Wie breit eine Karte im iPad-Raster mindestens ist, mit der Schrift
+    /// gewachsen.
+    ///
+    /// Bis 0.117.2 standen hier feste 320 Punkt. Auf der größten Schriftstufe
+    /// bekam das iPad damit zwei Spalten zu je 330 Punkt, und in einer davon
+    /// passte „1.958 kWh" nicht mehr in eine Zeile. Die Zahl brach mitten in
+    /// den Ziffern um und las sich als „1.9" über „58". Mit der Schrift
+    /// wachsend wird aus dem Raster rechtzeitig eine Spalte.
+    @ScaledMetric(relativeTo: .body) private var kartenbreite: CGFloat = 320
     @State private var rows: [MeterRow] = []
     @State private var points: [MeteringPoint] = []
     @State private var capturing: MeteringPoint?
@@ -360,8 +369,14 @@ struct OverviewView: View {
                         // Raster trägt das halbe und das ganze Fenster, und im
                         // Splitview zu einem Drittel wird von selbst wieder
                         // eine Spalte daraus.
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 320),
-                                                     spacing: 12)],
+                        //
+                        // `.top`, weil das Raster sonst jede Karte in ihrer
+                        // Zeile senkrecht mittig setzt. Eine Karte mit
+                        // Einspeisung ist höher als eine ohne, und bis 0.117.2
+                        // standen die Karten deshalb versetzt, die Köpfe auf
+                        // verschiedener Höhe.
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: kartenbreite),
+                                                     spacing: 12, alignment: .top)],
                                   spacing: 12) {
                             ForEach(rows) { row in card(for: row) }
                         }

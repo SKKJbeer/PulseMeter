@@ -557,6 +557,10 @@ struct MeterEditor: View {
 
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    /// Wie breit ein Zahlenfeld höchstens wird, mit der Schrift gewachsen.
+    /// Fest 110 Punkt zeigten in der größten Stufe nur noch vier Ziffern, und
+    /// wer einen Stand mit Nachkommastellen tippte, sah den Anfang nicht mehr.
+    @ScaledMetric(relativeTo: .body) private var feldbreite: CGFloat = 110
     @Environment(Purchase.self) private var purchase
 
     /// Welche Sperre die Kaufseite geöffnet hat, oder `nil`.
@@ -965,7 +969,7 @@ struct MeterEditor: View {
             TextField(placeholder, text: text)
                 .keyboardType(.decimalPad)
                 .multilineTextAlignment(.trailing)
-                .frame(maxWidth: 110)
+                .frame(maxWidth: feldbreite)
                 .accessibilityLabel(spokenUnit.map { "\(title) in \($0)" } ?? title)
             if let unit {
                 Text(unit)

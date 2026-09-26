@@ -55,7 +55,7 @@ xcrun simctl install "$DEVICE" "$APP"
 # mehr Zeit. Bleibt er auch dann leer, ist die Frage beantwortet.
 #
 # `PULSE_NUR` beschränkt auf eine Auswahl, durch Leerzeichen getrennt. Für die
-# kleinen Geräte genügen die Schirme, auf denen es eng wird; alle 27 Bilder
+# kleinen Geräte genügen die Schirme, auf denen es eng wird; alle 30 Bilder
 # kosteten dort zehn Minuten gemieteten Mac für jeden Lauf.
 shoot() {
   local mode="$1" name="$2"
@@ -135,6 +135,13 @@ shoot dark  screenshot-uebersicht-frei-dark  -pulse-frei
 xcrun simctl ui "$DEVICE" content_size accessibility-extra-extra-extra-large >/dev/null 2>&1 || true
 shoot light screenshot-grossschrift-light
 shoot dark  screenshot-grossschrift-dark
+# Bis 0.117.2 gab es in großer Schrift nur die Übersicht. Die Fehler saßen
+# aber auch dort, wo eine feste Breite auf wachsende Schrift trifft: in der
+# Tabelle im Verlauf, auf dem Ziffernblock und in der Zählerliste. Ein Bild
+# je Schirm, nur hell; die Fehler sind in beiden Darstellungen dieselben.
+shoot light screenshot-grossschrift-verlauf-light -pulse-verlauf -pulse-verlauf-vorschau -pulse-verlauf-tabelle
+shoot light screenshot-grossschrift-capture-light -pulse-capture
+shoot light screenshot-grossschrift-zaehler-light -pulse-zaehler
 # Zurückstellen, damit ein wiederverwendeter Simulator nicht dauerhaft auf der
 # größten Stufe steht und alle künftigen Bilder verfälscht.
 xcrun simctl ui "$DEVICE" content_size medium >/dev/null 2>&1 || true
