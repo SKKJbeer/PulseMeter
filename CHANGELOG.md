@@ -9,6 +9,48 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.117.5 — 2026-09-26
+
+**Die Website zählt ihre Aufrufe, auf dem Server und ohne Personenbezug.**
+
+Der Gründer am 26. September: „so haben wir aktuell wirklich 0 transparenz
+für seitenaufrufe der webseite wie die erreicht wird." Entschieden, mit
+„ok machen wir", für drei Wege, keiner davon im Browser:
+
+- **Zählung auf dem Server** (`docs/website-server/_middleware.js`, eine
+  Cloudflare Pages Function). Sie schreibt je Seitenaufruf fünf grobe Angaben
+  in Cloudflares Workers Analytics Engine: Seite, Name der Herkunftsseite,
+  Land, Geräteart (Telefon, Tablet, Rechner oder Bot) und ein selbst gesetztes
+  `?von=`. Keine IP-Adresse, keine Browserkennung, keine Suchanfrage, kein
+  Cookie, kein Skript. Nach drei Monaten löscht Cloudflare. Scheitert die
+  Zählung, wird die Seite trotzdem ausgeliefert. Bilder, Stylesheet und
+  Symbole laufen über `_routes.json` an ihr vorbei.
+- **Wochenbericht** `website-zahlen.yml` mit `scripts/website-zahlen.py`:
+  Aufrufe je Tag, je Seite, Herkunft, Quelle, Gerät und Land. Braucht einen
+  eigenen Lese-Schlüssel (`CLOUDFLARE_STATISTIK_TOKEN`, nur „Account
+  Analytics: Read"); Anleitung in `docs/website/CLOUDFLARE.md`.
+- **Kampagne am Laden-Knopf:** `website-fertig.sh` hängt `pt` und `ct` an,
+  sobald die Anbieterkennung in `website.yml` steht. Bis dahin bleibt der
+  Knopf, wie er war.
+
+Die Datenschutzerklärung beschreibt die Zählung in einem eigenen Abschnitt.
+„Kein Analysewerkzeug" heißt dort jetzt genauer: keines im Browser, nichts
+auf dem Gerät gespeichert oder ausgelesen. Die Startseite („keine Cookies,
+keine Zählpixel, keine fremden Schriftarten") bleibt wahr und unverändert.
+`10-sichtbarkeit.md` 3.5 hieß „Keine Besucherzählung" und ist umgeschrieben.
+
+`website-paket.sh` baut das Paket aus Seiten, Funktion und `wrangler.toml`;
+`website.yml` lädt es hoch und prüft danach an der echten Seite, dass Seiten
+durch die Zählung laufen und ihre Sicherheitsangaben behalten.
+`check-website.mjs` ruft die Funktion auf wie Cloudflare und liest mit, was
+sie schreibt: 15 Prüfungen, darunter keine IP-Adresse in der Zeile, keine im
+Quelltext, und die Datenschutzerklärung nennt, was gezählt wird. Gegenprobe:
+Mit gespeicherter IP-Adresse fallen vier davon.
+
+Kein App-Bau: Das ändert nur Website, Abläufe und Dokumente.
+
+---
+
 ## 0.117.4 — 2026-09-26
 
 **Die Website hält die Textgröße in Safari bis 300 %, und die Randprüfung der

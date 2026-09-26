@@ -287,11 +287,31 @@ kommen DuckDuckGo, Ecosia und die Websuche von ChatGPT mit. **Google nimmt
 IndexNow nicht an.** Der Schlüssel liegt öffentlich als Datei auf der Seite,
 so ist das Verfahren gedacht.
 
-### 3.5 Keine Besucherzählung
+### 3.5 Gezählt wird auf dem Server, nicht im Browser
 
-Auch keine „datenschutzfreundliche". Eine Seite, die mit „wir sehen nichts"
-wirbt, zählt ihre Besucher nicht. Gemessen wird über Search Console, die nur
-sieht, was Google ohnehin sieht, und nichts auf die Seite setzt.
+Hier stand bis 0.117.4 „keine Besucherzählung, auch keine
+datenschutzfreundliche". Das Ergebnis war null Auskunft darüber, wie die
+Seite erreicht wird. Der Gründer am 26. September: „so haben wir aktuell
+wirklich 0 transparenz". Entschieden wurde für drei Wege, keiner davon im
+Browser:
+
+| Weg | Was er zeigt | Was er kostet |
+|---|---|---|
+| Search Console | Suchbegriffe, Einblendungen, Klicks je Seite bei Google | nichts; ein Bestätigungscode vom Gründer |
+| Kampagne am Laden-Knopf (`pt`, `ct`) | Store-Besuche und Ladungen, die von der Website kommen | nichts; die Anbieterkennung vom Gründer |
+| Zählung auf dem Server (`docs/website-server/`) | Aufrufe je Seite, Herkunft als Name, Land, Geräteart, `?von=` | ein Lese-Schlüssel für den Wochenbericht |
+
+Die Grenze, die bleibt: **kein Cookie, kein Skript, kein Zählpixel, keine
+IP-Adresse, keine Browserkennung.** Die Zählung sieht deshalb Aufrufe, keine
+Menschen; wer drei Seiten liest, zählt dreimal. Das ist der Preis, und er ist
+richtig: Ein „Besucher" ließe sich nur mit einer Kennung zählen, und dann
+wäre das Versprechen auf der Startseite falsch.
+
+`?von=` ist für Verweise, die wir selbst streuen: `…/abschlag-zu-hoch?von=reddit`
+in einem Forenbeitrag zeigt im Bericht, was dieser Beitrag gebracht hat.
+
+Der Bericht kommt montags aus `website-zahlen.yml`. Das Repository ist
+öffentlich, die Zusammenfassung des Laufs also auch; sie enthält nur Summen.
 
 ### 3.6 Eine eigene Adresse
 

@@ -56,7 +56,7 @@
   <div class="bahn">
 
     <h1>Datenschutzerklärung</h1>
-    <p class="stand">Stand: 28. August 2026</p>
+    <p class="stand">Stand: 26. September 2026</p>
 
     <h2>Kurz gesagt</h2>
     <p>
@@ -148,9 +148,10 @@
     <h2>7. Diese Website</h2>
     <p>
       Diese Seiten setzen <strong>keine Cookies</strong>, binden keine
-      Schriften, Karten oder Videos von fremden Servern ein und enthalten kein
-      Analysewerkzeug. Deshalb steht Ihnen hier auch kein Zustimmungsfenster
-      im Weg — es gibt nichts, wozu Sie Ihre Einwilligung geben müssten.
+      Schriften, Karten oder Videos von fremden Servern ein, und in Ihrem
+      Browser läuft kein Analysewerkzeug und kein Zählpixel. Auf Ihrem Gerät
+      wird nichts gespeichert und nichts ausgelesen. Deshalb steht Ihnen hier
+      auch kein Zustimmungsfenster im Weg.
     </p>
     <!-- Der Hoster stand bis 0.95.4 in eckigen Klammern: Er war geplant, aber
          nicht bestätigt, und was hier steht, ist ein Rechtstext. Bestätigt hat
@@ -164,8 +165,31 @@
       IP-Adresse, Zeitpunkt, aufgerufene Adresse, übertragene Datenmenge und
       Angaben Ihres Browsers. Rechtsgrundlage ist unser berechtigtes Interesse
       am sicheren und störungsfreien Betrieb (Artikel 6 Absatz 1 Buchstabe f
-      DSGVO). Wir werten diese Daten nicht aus und führen sie mit nichts
-      zusammen.
+      DSGVO). Diese Zugriffsdaten werten wir nicht aus und führen sie mit
+      nichts zusammen.
+    </p>
+    <!-- Seit 0.117.5, vom Gründer am 26. September freigegeben („ok machen
+         wir"). Was hier steht, muss mit docs/website-server/_middleware.js
+         übereinstimmen; check-website.mjs prüft beides gegeneinander. -->
+    <h3>Zählung der Seitenaufrufe</h3>
+    <p>
+      Damit wir wissen, ob und wie diese Seiten gefunden werden, zählt der
+      Server jeden Aufruf einer Seite. Gespeichert werden dabei nur: welche
+      Seite aufgerufen wurde, der Name der Website, von der Sie kamen (etwa
+      „google" oder „apps.apple.com", nicht die genaue Adresse und nicht Ihre
+      Suchanfrage), das Land, die Art des Geräts (Telefon, Tablet oder
+      Rechner) und der Zeitpunkt. Enthält ein Verweis den Zusatz
+      <code>?von=</code>, wird auch dieses Kennwort gezählt.
+    </p>
+    <p>
+      <strong>Nicht gespeichert werden Ihre IP-Adresse, Ihre Browserkennung
+      und alles, womit sich ein Aufruf einem Menschen zuordnen ließe.</strong>
+      Wir sehen also, dass eine Seite gestern zwölfmal über Google aufgerufen
+      wurde, aber nicht, von wem, und auch nicht, ob es zwölf Menschen waren
+      oder einer zwölfmal. Die Zählung liegt bei Cloudflare (Workers Analytics
+      Engine) und wird nach drei Monaten gelöscht. Rechtsgrundlage ist unser
+      berechtigtes Interesse zu erfahren, wie die Seiten gefunden werden
+      (Artikel 6 Absatz 1 Buchstabe f DSGVO).
     </p>
 
     <h2>8. Ihre Rechte</h2>

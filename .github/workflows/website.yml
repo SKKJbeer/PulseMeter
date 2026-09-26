@@ -31,6 +31,9 @@ on:
     branches: [main]
     paths:
       - "docs/website/**"
+      - "docs/website-server/**"
+      - "scripts/website-fertig.sh"
+      - "scripts/website-paket.sh"
       - ".github/workflows/website.yml"
   workflow_dispatch:
 
@@ -93,9 +96,18 @@ jobs:
       # liegen zwei Anleitungen, die niemanden außer dem Gründer etwas angehen;
       # `website-fertig.sh` nimmt sie heraus — dasselbe Skript, das auch den
       # Zweig füllt.
+      #
+      # Seit 0.117.5 mit der Zählung daneben: `website-paket.sh` legt die
+      # Seiten nach `build/pages/inhalt` und die Funktion nach
+      # `build/pages/functions`, und wrangler läuft in `build/pages`, weil es
+      # Funktionen dort sucht, wo es gestartet wird.
       - name: Auslieferordner bauen
         if: steps.zugang.outputs.bereit == 'ja'
-        run: scripts/website-fertig.sh build/website
+        env:
+          # Anbieterkennung aus App Store Connect, siehe `website-fertig.sh`.
+          # Leer heißt: Der Laden-Knopf bleibt ohne Kampagne.
+          APPSTORE_PT: ""
+        run: scripts/website-paket.sh build/pages
 
       # **Auch das Projekt legt der Ablauf an.** Der erste Versuch von Hand
       # endete in Cloudflares eigenem Bau, der zweite mit „Project not found".
@@ -118,7 +130,8 @@ jobs:
           # Vorschau. `--commit-dirty` schweigt die Warnung, dass der
           # Arbeitsordner Dateien enthält, die nicht im Repository stehen —
           # das ist hier der frisch gebaute Ordner selbst.
-          command: pages deploy build/website --project-name=zaehlora --branch=main --commit-dirty=true
+          workingDirectory: build/pages
+          command: pages deploy inhalt --project-name=zaehlora --branch=main --commit-dirty=true
 
       # **Die alte Adresse blieb nach dem Umzug stehen** und lieferte eine
       # vollständige Kopie mit einem `canonical` auf sich selbst — zwei Seiten
@@ -174,6 +187,8 @@ jobs:
           pruefe "Symbol ist ein Bild" "$(curl -sS -o /dev/null -w '%{content_type}' "$W/favicon.ico" | cut -d'/' -f1)" image
           pruefe "Sitemap ist erreichbar" "$(curl -sS -o /dev/null -w '%{http_code}' "$W/sitemap.xml")" 200
           pruefe "Startseite ist erreichbar" "$(curl -sS -o /dev/null -w '%{http_code}' "$W/")" 200
+          pruefe "Seiten laufen durch die Zählung" "$(curl -sSI "$W/" | tr -d '\r' | grep -i '^x-zaehlung:' | cut -d' ' -f2-)" "ohne-personenbezug"
+          pruefe "Seiten behalten ihre Sicherheitsangaben" "$(curl -sSI "$W/" | tr -d '\r' | grep -i '^x-content-type-options:' | cut -d' ' -f2-)" "nosniff"
           pruefe "Bilder bleiben eine Woche" "$(curl -sSI "$W/bilder/light.jpg" | tr -d '\r' | grep -i '^cache-control:' | cut -d' ' -f2-)" "public, max-age=604800, stale-while-revalidate=86400"
           exit $fehler
 

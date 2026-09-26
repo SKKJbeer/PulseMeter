@@ -109,6 +109,26 @@ einem das Hinsehen ab.
 - **Das App-Store-Abzeichen** steht auf „Bald im App Store" und führt
   nirgendwohin. Am Starttag: `scripts/appstore-knopf.sh an`.
 
+## Zählung der Seitenaufrufe
+
+Seit 0.117.5 zählt eine kleine Funktion bei Cloudflare jeden Seitenaufruf,
+ohne Cookie und ohne IP-Adresse (was genau, steht in `datenschutz.html` und in
+`docs/website-server/_middleware.js`). Das Zählen braucht nichts von dir, es
+läuft mit dem Hochladen.
+
+**Nur das Lesen braucht einen eigenen Schlüssel**, einmal:
+
+1. [dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens)
+   → **Create Token** → **Create Custom Token**.
+2. Name: `Zählora Statistik`. Permissions: **Account** · **Account Analytics** ·
+   **Read**. Sonst nichts.
+3. **Continue to summary** → **Create Token**, den Schlüssel kopieren.
+4. Im Repository unter Settings › Secrets and variables › Actions ein neues
+   Geheimnis `CLOUDFLARE_STATISTIK_TOKEN` mit diesem Schlüssel.
+
+Danach kommt montags ein Bericht (Ablauf „Website-Zahlen"), und unter Actions
+lässt er sich jederzeit von Hand starten.
+
 ## Später: eigene Domain
 
 `zaehlora.de` kaufen (Cloudflare Registrar verkauft zum Einkaufspreis),

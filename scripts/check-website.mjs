@@ -959,6 +959,68 @@ console.log("\nGeräte");
   await alt.close();
 }
 
+// --- Zählung auf dem Server
+//
+// Die Datenschutzerklärung sagt, was gezählt wird und was nicht. Diese
+// Prüfung ruft die Funktion so auf, wie Cloudflare es tut, und liest mit, was
+// sie schreibt. Steht darin je eine IP-Adresse, eine Browserkennung oder eine
+// vollständige Herkunftsadresse, ist das Versprechen gebrochen, und genau
+// daran soll es scheitern, nicht an einem Leser, der es bemerkt.
+console.log("\nZählung");
+{
+  const z = await import(new URL("../docs/website-server/_middleware.js", import.meta.url));
+  const IP = "203.0.113.42", KENNUNG = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) Mobile/15E148";
+  const aufruf = async ({ pfad = "/abschlag-zu-hoch", art = "text/html; charset=utf-8", status = 200,
+                          verweis = "https://www.google.de/search?q=abschlag+zu+hoch", ua = KENNUNG,
+                          bindung = true, wirft = false } = {}) => {
+    const punkte = [];
+    const antwort = await z.onRequest({
+      request: new Request("https://zaehlora.pages.dev" + pfad, { headers: {
+        "referer": verweis, "user-agent": ua, "cf-connecting-ip": IP, "x-forwarded-for": IP } }),
+      env: bindung ? { ZAEHLUNG: { writeDataPoint: p => { if (wirft) throw new Error("kaputt"); punkte.push(p); } } } : {},
+      next: async () => new Response("<p>Seite</p>", { status, headers: { "content-type": art } }),
+    });
+    return { antwort, punkte };
+  };
+
+  const { antwort, punkte } = await aufruf();
+  const zeile = JSON.stringify(punkte);
+  note(punkte.length === 1 && JSON.stringify(punkte[0].blobs) === JSON.stringify(["/abschlag-zu-hoch", "google", "", "Telefon", ""]),
+       `Ein Seitenaufruf ergibt eine Zeile: ${JSON.stringify(punkte[0] && punkte[0].blobs)}`);
+  note(!zeile.includes(IP) && !zeile.includes("Mozilla") && !zeile.includes("search?q"),
+       "Keine IP-Adresse, keine Browserkennung, keine Suchanfrage in der Zeile");
+  note(antwort.status === 200 && (await antwort.text()) === "<p>Seite</p>" && antwort.headers.get("x-content-type-options") === "nosniff",
+       "Die Seite kommt unverändert an, mit den Sicherheitsangaben");
+
+  note((await aufruf({ pfad: "/stil.css", art: "text/css" })).punkte.length === 0, "Stylesheet wird nicht gezählt");
+  note((await aufruf({ pfad: "/wp-login.php", status: 404 })).punkte[0].blobs[0] === "404",
+       "Eine unbekannte Adresse zählt als 404, nicht mit ihrem Namen");
+  note((await aufruf({ pfad: "/irgendwas" })).punkte[0].blobs[0] === "andere", "Eine fremde Seite zählt als „andere“");
+  note((await aufruf({ pfad: "/datenschutz.html" })).punkte[0].blobs[0] === "/datenschutz", "„.html“ und ohne zählen gleich");
+  note((await aufruf({ pfad: "/?von=Reddit_Forum!" })).punkte[0].blobs[4] === "redditforum",
+       "Eine selbst gesetzte Quelle wird auf ein Kennwort gekürzt");
+  note((await aufruf({ verweis: "https://zaehlora.pages.dev/ratgeber" })).punkte[0].blobs[1] === "intern", "Klicks innerhalb der Seite heißen „intern“");
+  note((await aufruf({ verweis: "" })).punkte[0].blobs[1] === "direkt", "Ohne Herkunft heißt es „direkt“");
+  note((await aufruf({ ua: "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" })).punkte[0].blobs[3] === "Bot: Google",
+       "Googlebot wird als Bot gezählt, getrennt von Menschen");
+  note(z.geraet("Mozilla/5.0 (iPad; CPU OS 17_5 like Mac OS X)") === "Tablet" && z.geraet("Mozilla/5.0 (Windows NT 10.0; Win64; x64)") === "Rechner",
+       "iPad als Tablet, Windows als Rechner");
+
+  const ohne = await aufruf({ bindung: false });
+  const kaputt = await aufruf({ wirft: true });
+  note(ohne.antwort.status === 200 && kaputt.antwort.status === 200 && (await kaputt.antwort.text()) === "<p>Seite</p>",
+       "Ohne Zählung oder mit kaputter Zählung wird die Seite trotzdem ausgeliefert");
+
+  // Und dasselbe Versprechen im Text: Was die Funktion schreibt, steht in der
+  // Datenschutzerklärung, und was dort ausgeschlossen ist, fehlt im Code.
+  const erklaerung = readFileSync(`${dir}/datenschutz.html`, "utf8").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+  const quelltext = readFileSync(new URL("../docs/website-server/_middleware.js", import.meta.url), "utf8").replace(/\/\/.*$/gm, "");
+  note(/zählt/.test(erklaerung) && /IP-Adresse/.test(erklaerung) && /drei Monate/.test(erklaerung),
+       "Die Datenschutzerklärung beschreibt die Zählung, nennt die IP-Adresse und die Aufbewahrung");
+  note(!/cf-connecting-ip|x-forwarded-for|\.ip\b|clientAddress/i.test(quelltext),
+       "Die Funktion liest keine IP-Adresse aus");
+}
+
 await browser.close();
 server.close();
 

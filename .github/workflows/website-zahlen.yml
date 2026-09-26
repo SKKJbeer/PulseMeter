@@ -1,0 +1,44 @@
+name: Website-Zahlen
+
+# **Wie die Website gefunden wird, einmal die Woche.** Liest die Zählung, die
+# `docs/website-server/_middleware.js` auf dem Server schreibt, und legt Summen
+# je Seite, Herkunft, Gerät und Land in die Zusammenfassung dieses Laufs.
+#
+# Das Repository ist öffentlich, also auch diese Zusammenfassung. Es stehen
+# darin nur Summen. Wer das nicht will, schaltet den Ablauf unter Actions ab.
+#
+# **Einmalig einzurichten:** ein Cloudflare-Token mit genau einem Recht,
+# „Account Analytics: Read", als Geheimnis `CLOUDFLARE_STATISTIK_TOKEN`.
+# Das Token für das Hochladen bleibt, wie es ist: Ein Bericht soll nichts
+# hochladen können.
+
+on:
+  schedule:
+    # Montags früh, nicht zur vollen Stunde: Zur vollen Stunde startet halb
+    # GitHub, und ein Zeitplan dort ist ohnehin keine Zusage.
+    - cron: "41 5 * * 1"
+  workflow_dispatch:
+    inputs:
+      tage:
+        description: "Wie viele Tage zurück"
+        default: "7"
+
+permissions:
+  contents: read
+
+jobs:
+  zahlen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Zahlen holen
+        env:
+          CLOUDFLARE_STATISTIK_TOKEN: ${{ secrets.CLOUDFLARE_STATISTIK_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CLOUDFLARE_STATISTIK_TOKEN" ]; then
+            echo "::notice::CLOUDFLARE_STATISTIK_TOKEN fehlt. Gezählt wird trotzdem, nur lesen kann der Bericht noch nicht."
+            exit 0
+          fi
+          python3 scripts/website-zahlen.py "${{ inputs.tage || '7' }}"

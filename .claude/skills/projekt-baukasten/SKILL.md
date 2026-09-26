@@ -1875,6 +1875,36 @@ einem iPhone SE ein Fünftel des Bildschirms. Ziele für den Finger (Fuß, Pfad,
 Mailadresse) brauchen 44 Punkte, mit `@media (pointer: coarse)` nur dort, wo
 ein Finger tippt.
 
+### „Kein Tracking" und „keine Zahlen" sind zwei verschiedene Versprechen
+
+Die Website versprach keine Cookies und kein Zustimmungsfenster und hielt sich
+daran, indem sie gar nichts zählte. Nach einem Monat wusste niemand, ob sie
+überhaupt jemand fand. Das Versprechen gilt dem Besucher, nicht der Statistik:
+**Gezählt werden darf, was keinen Menschen erkennen lässt, und zwar auf dem
+Server.** Eine Cloudflare Pages Function (`functions/_middleware.js`) schreibt
+je Aufruf eine Zeile in Workers Analytics Engine (kostenlos, drei Monate):
+Seite, Name der Herkunftsseite, Land, Geräteart. Keine IP, keine Kennung,
+nichts im Browser, also auch nichts, wofür es eine Einwilligung bräuchte.
+
+Was dabei je einen Umweg kostet:
+
+- Wrangler sucht `functions/` im Ordner, **in dem es läuft**, nicht im
+  hochgeladenen. Liegt die Funktion bei den Seiten, wird ihr Quelltext als
+  Datei ausgeliefert. Ein eigenes Paket (`inhalt/`, `functions/`,
+  `wrangler.toml`) und `workingDirectory` in `wrangler-action` lösen beides.
+- Ohne `_routes.json` läuft die Funktion auch für jedes Bild, und jeder Aufruf
+  zählt gegen die 100 000 am Tag. Die Ausnahmen aus dem Ordner erzeugen,
+  nicht von Hand.
+- Ob `_headers` für Antworten gilt, die durch eine Funktion laufen, ist nicht
+  belegt. Die Sicherheitsangaben setzt die Funktion deshalb selbst.
+- Die Zählung darf die Seite nie aufhalten: `next()` zuerst, Schreiben in
+  `try`, Antwort immer zurück.
+- Lokal probieren geht ohne Zugang: `npx wrangler pages dev` im Paketordner.
+
+Und die Prüfung liest mit, was die Funktion schreibt, und scheitert an einer
+IP-Adresse in der Zeile. Ein Datenschutzversprechen, das nur im Text steht,
+hält bis zur ersten gut gemeinten Erweiterung.
+
 ### Ein Index aus einer Zählung ist keine Adresse
 
 Zwei Läufe, derselbe Abbruch, zwei verschiedene Indizes:

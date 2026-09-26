@@ -105,6 +105,30 @@ if rest:
     sys.exit("Verweise mit .html sind stehengeblieben:\n  " + "\n  ".join(rest))
 ENDE_PY
 
+# **Der Laden-Knopf sagt dem App Store, dass er von hier kommt.** Mit `pt`
+# (der Anbieterkennung aus App Store Connect) und `ct` (einem Kennwort je
+# Seite) zeigt App Store Connect unter „Kampagnen", wie viele über die Website
+# auf die Store-Seite kamen und wie viele geladen haben. Die Kennung ist nicht
+# geheim, sie steht in jedem Kampagnen-Link. Solange sie fehlt, bleibt der
+# Knopf, wie er ist: Ein `ct` ohne `pt` wertet Apple nicht aus.
+APPSTORE_PT="${APPSTORE_PT:-}"
+if [ -n "$APPSTORE_PT" ]; then
+  python3 - "$ZIEL" "$APPSTORE_PT" <<'ENDE_PY'
+import pathlib, re, sys
+ordner, pt = pathlib.Path(sys.argv[1]), sys.argv[2]
+if not re.fullmatch(r"[0-9]{4,12}", pt):
+    sys.exit(f"APPSTORE_PT sieht nicht aus wie eine Anbieterkennung: {pt!r}")
+laden = 'href="https://apps.apple.com/de/app/id6802262743"'
+for datei in ordner.glob("*.html"):
+    text = datei.read_text(encoding="utf-8")
+    if laden in text:
+        kennwort = "website-" + ("start" if datei.stem == "index" else datei.stem)
+        text = text.replace(laden, f'href="https://apps.apple.com/de/app/id6802262743?pt={pt}&amp;ct={kennwort}&amp;mt=8"')
+        datei.write_text(text, encoding="utf-8")
+        print(f"Kampagne {kennwort} in {datei.name}")
+ENDE_PY
+fi
+
 # Fällt jemandem eine weitere Datei ein, die nicht ins Netz gehört, gehört sie
 # hierher — und die Prüfung darunter merkt es, wenn sie es doch tut.
 if find "$ZIEL" -name "*.md" | grep -q .; then
