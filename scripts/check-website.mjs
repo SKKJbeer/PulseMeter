@@ -863,6 +863,11 @@ console.log("\nGeräte");
     ["iPhone SE quer", 667, 375, true], ["iPad mini", 744, 1133, true],
     ["iPad 10,2 Zoll", 810, 1080, true], ["iPad Pro 12,9 Zoll", 1024, 1366, true],
     ["iPad Pro 12,9 Zoll quer", 1366, 1024, true], ["Desktop", 1920, 1080, false],
+    // **Textgröße über „aA" in Safari.** Safari bricht die Seite dann um, als
+    // wäre der Bildschirm um den Faktor schmaler. Bis 0.117.4 lief bei 200 %
+    // jede Seite über den Rand, weil Rasterspalten ohne Untergrenze so breit
+    // blieben wie ihr breitestes Wort und Felder ihre eigene Breite behielten.
+    ["iPhone SE, Textgröße 200 %", 188, 334, true], ["iPhone SE, Textgröße 300 %", 125, 222, true],
   ];
   for (const [name, w, h, finger] of GERAETE) {
     const page = await browser.newPage({ viewport: { width: w, height: h }, deviceScaleFactor: 2, isMobile: finger && w < 1024, hasTouch: finger });
@@ -882,6 +887,9 @@ console.log("\nGeräte");
             .filter(e => sichtbar(e) && e.getBoundingClientRect().height < 44)
             .map(e => `${(e.textContent.trim() || e.tagName).slice(0, 18)} ${Math.round(e.getBoundingClientRect().height)}`) : [],
           kopfAnteil: klebt ? kopf.getBoundingClientRect().height / innerHeight : 0,
+          // Der Sprungverweis steht über dem Rand, bis er den Fokus bekommt.
+          // Mit festem Versatz schaute er bei großer Textgröße heraus.
+          sprung: (() => { const e = document.querySelector(".sprung"); return e ? Math.round(e.getBoundingClientRect().bottom) : 0; })(),
           // Die Einträge im Pfad stehen auf einer Linie, wenn sie in eine
           // Zeile passen. Gemessen wird die Mitte, nicht die Oberkante.
           pfadVersatz: (() => {
@@ -898,9 +906,25 @@ console.log("\nGeräte");
       if (r.klein.length) fehler.push(`${datei}: Schrift unter 12 px („${r.klein[0]}")`);
       if (r.ziele.length) fehler.push(`${datei}: Ziel unter 44 px (${r.ziele[0]})`);
       if (r.kopfAnteil > 0.18) fehler.push(`${datei}: stehende Kopfleiste nimmt ${Math.round(r.kopfAnteil * 100)} % der Höhe`);
+      if (r.sprung > 0) fehler.push(`${datei}: „Zum Inhalt springen" ragt ${r.sprung} px ins Bild`);
       if (r.pfadVersatz > 2) fehler.push(`${datei}: Pfad steht versetzt (${Math.round(r.pfadVersatz)} px)`);
     }
     note(fehler.length === 0, `${name} (${w} × ${h}): ${fehler.length ? fehler.slice(0, 2).join("; ") : "alle Seiten ohne Überlauf, lesbar, mit Zielen für den Finger"}`);
+    await page.close();
+  }
+
+  // Und die Gegenprobe: Mit der Tabulatortaste kommt er ins Bild. Ein
+  // Verweis, der nie erscheint, wäre versteckt statt nur weggeräumt.
+  {
+    const page = await browser.newPage({ viewport: { width: 188, height: 334 } });
+    await page.goto(base + "index.html");
+    await page.keyboard.press("Tab");
+    const oben = await page.evaluate(() => {
+      const e = document.querySelector(".sprung"), b = e.getBoundingClientRect();
+      return { fokus: document.activeElement === e, top: Math.round(b.top), bottom: Math.round(b.bottom) };
+    });
+    note(oben.fokus && oben.top >= 0 && oben.bottom > 0,
+         `„Zum Inhalt springen" erscheint mit der Tabulatortaste (${oben.top} bis ${oben.bottom} px)`);
     await page.close();
   }
 

@@ -9,6 +9,39 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.117.4 — 2026-09-26
+
+**Die Website hält die Textgröße in Safari bis 300 %, und die Randprüfung der
+App läuft in jeder Schrift und auf dem iPad auch quer.**
+
+Website: Über „aA" lässt sich in Safari jede Seite bis auf das Dreifache
+vergrößern. Safari bricht sie dann um, als wäre der Bildschirm um diesen Faktor
+schmaler, auf einem iPhone SE also 188 Pixel bei 200 % und 125 Pixel bei 300 %.
+Bei 200 % lief bis hierher **jede** Seite 26 bis 82 Pixel über den Rand:
+
+- Rasterspalten ohne Untergrenze (`minmax(248px, 1fr)`, die stille Spalte
+  `auto`) blieben so breit wie ihr breitestes Wort. Jetzt `minmax(min(…,
+  100%), 1fr)` und `minmax(0, 1fr)`.
+- Eingabefelder behielten ihre eigene Breite von etwa zwanzig Zeichen.
+- Die Mailadresse ließ sich nicht umbrechen.
+- Die Tabelle auf „Entwicklung" blieb als Tabelle so breit wie ihr Inhalt.
+- Unter 260 Pixeln gehen die Abstände zurück, Knöpfe und Schilder dürfen
+  umbrechen, und der Rechner verliert seinen Rahmen. Zahlen brechen nicht um.
+- „Zum Inhalt springen" war um feste 70 Pixel nach oben geschoben. In zwei
+  Zeilen ist er 78 hoch und schaute als weißer Streifen über die Kopfleiste.
+  Jetzt um die eigene Höhe.
+
+`check-website.mjs` nimmt beide Textgrößen in die Geräteliste auf (zwölf
+Geräte), prüft auf jedem, dass der Sprungverweis nicht ins Bild ragt, und dass
+er mit der Tabulatortaste erscheint. 1179 Prüfungen.
+
+App: Aus `testTheLargestTextStaysOnScreen` wird `testNoTextReachesPastTheEdge`.
+Sie prüft fünf Schirme (dazu die Kaufseite) in normaler und größter Schrift,
+auf dem iPad zusätzlich im Querformat, und sammelt alle Funde, statt beim
+ersten abzubrechen.
+
+---
+
 ## 0.117.3 — 2026-09-26
 
 **Die App in größter Schrift auf iPad und iPhone: Zahlen brechen nicht mehr

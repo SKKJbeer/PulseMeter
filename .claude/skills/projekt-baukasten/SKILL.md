@@ -1857,6 +1857,18 @@ fehlt, findet man nur, indem man die Funktionen zählt:
 > Kommentare entfernen**, sonst greift der Suchausdruck von einem Kommentar,
 > der `color-mix()` erwähnt, bis in die Rückfall-Zeile und entfernt genau die.
 
+**Die Textgröße in Safari ist eine eigene Bildschirmbreite.** Über „aA" lässt
+sich jede Seite bis 300 % vergrößern, und Safari bricht sie dann um, als wäre
+der Bildschirm um den Faktor schmaler: 188 Pixel bei 200 % auf einem iPhone SE,
+125 bei 300 %. Bei 200 % lief hier jede Seite über, obwohl 320 Pixel sauber
+waren. Die Ursache war immer dieselbe: **eine Rasterspalte ohne Untergrenze**
+(`minmax(248px, 1fr)` oder die stille Spalte `auto`) bleibt so breit wie ihr
+breitestes Wort, ein `<input>` so breit wie zwanzig Zeichen. Die Antwort ist
+`minmax(min(248px, 100%), 1fr)`, `minmax(0, 1fr)` und `min-width: 0` am Feld.
+Und ein Element, das mit festem Versatz aus dem Bild geschoben ist (der
+Sprungverweis mit `top: -70px`), schaut heraus, sobald sein Text umbricht; um
+die eigene Höhe verschieben, `translateY(calc(-100% - 8px))`.
+
 Und für kleine Telefone: Eine Kopfleiste mit fünf Einträgen bricht bei 320 bis
 390 Punkten in zwei Zeilen um. Bleibt sie beim Scrollen stehen, nimmt sie auf
 einem iPhone SE ein Fünftel des Bildschirms. Ziele für den Finger (Fuß, Pfad,

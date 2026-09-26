@@ -1,3 +1,4 @@
+import UIKit
 import XCTest
 
 /// Rauchtests: Startet die App und geht die Hauptflüsse durch.
@@ -2521,45 +2522,69 @@ final class LaunchTests: XCTestCase {
                        "Eine unbekannte Adresse öffnete den Ziffernblock")
     }
 
-    /// **In der größten Schrift läuft kein Text aus dem Bild.**
+    /// **Kein Text läuft aus dem Bild, in keiner Schrift und keiner Lage.**
     ///
-    /// Bis 0.117.2 gab es davon nur ein Bild der Übersicht, und niemand hat es
-    /// je gegen etwas gehalten. Auf dem iPad stand darin „1.9" über „58", das
-    /// Schild „FÄLLIG" war getrennt, und die Karten standen versetzt. Diese
-    /// Prüfung läuft auf jedem Gerät der CI und fragt auf vier Schirmen, ob ein
-    /// Text links oder rechts über den Rand reicht. Das passiert genau dort,
-    /// wo etwas nicht umbrechen darf und deshalb fest steht, und genau solche
+    /// Bis 0.117.2 gab es davon nur ein Bild der Übersicht in größter Schrift,
+    /// und niemand hat es je gegen etwas gehalten. Auf dem iPad stand darin
+    /// „1.9" über „58", das Schild „FÄLLIG" war getrennt, und die Karten
+    /// standen versetzt. Diese Prüfung läuft auf jedem Gerät der CI, also auch
+    /// auf dem iPhone SE und dem iPad mini, und fragt auf fünf Schirmen, ob ein
+    /// Text links oder rechts über den Rand reicht: in normaler und in größter
+    /// Schrift, auf dem iPad zusätzlich quer. Das passiert genau dort, wo
+    /// etwas nicht umbrechen darf und deshalb fest steht, und genau solche
     /// Stellen sind mit 0.117.3 dazugekommen.
     ///
     /// Texte in Knöpfen fallen heraus: Die Zählerwahl im Verlauf ist eine
     /// Leiste zum Wischen, dort steht ein Knopf am Rand mit Absicht halb im
     /// Bild.
-    func testTheLargestTextStaysOnScreen() throws {
-        let schirme: [(name: String, schalter: [String], steht: @MainActor (XCUIApplication) -> XCUIElement)] = [
-            ("Übersicht", [], { $0.staticTexts["Strom"] }),
-            ("Verlauf als Tabelle",
-             ["-pulse-verlauf", "-pulse-verlauf-vorschau", "-pulse-verlauf-tabelle"],
-             { $0.buttons["Alle Zahlen"] }),
-            ("Zähler", ["-pulse-zaehler"], { $0.staticTexts["Zähler"] }),
-            ("Ziffernblock", ["-pulse-capture"], { $0.buttons["7"] }),
-        ]
-        for schirm in schirme {
-            let app = XCUIApplication()
-            app.launchArguments = ["-pulse-reset", "-pulse-pro"] + schirm.schalter + [
-                "-UIPreferredContentSizeCategoryName",
-                "UICTContentSizeCategoryAccessibilityXXXL",
-            ]
-            app.launch()
-            XCTAssertTrue(schirm.steht(app).waitForExistence(timeout: 15),
-                          "\(schirm.name) kam in großer Schrift nicht. Zu sehen war: "
-                          + beschriftungen(in: app))
-            let ueber = try ueberstehendeTexte(in: app)
-            XCTAssertTrue(ueber.isEmpty,
-                          "\(schirm.name): In größter Schrift reicht über den Rand: "
-                          + ueber.joined(separator: ", "))
-            app.terminate()
+    func testNoTextReachesPastTheEdge() throws {
+        let tablet = UIDevice.current.userInterfaceIdiom == .pad
+        var faelle: [(schrift: String?, quer: Bool)] = [(nil, false), (Self.groessteSchrift, false)]
+        if tablet { faelle += [(nil, true), (Self.groessteSchrift, true)] }
+        defer { XCUIDevice.shared.orientation = .portrait }
+
+        var funde: [String] = []
+        for fall in faelle {
+            XCUIDevice.shared.orientation = fall.quer ? .landscapeLeft : .portrait
+            let lage = (fall.schrift == nil ? "normale Schrift" : "größte Schrift")
+                + (fall.quer ? ", quer" : "")
+            for schirm in Self.schirme {
+                let app = XCUIApplication()
+                app.launchArguments = ["-pulse-reset", "-pulse-pro"] + schirm.schalter
+                if let schrift = fall.schrift {
+                    app.launchArguments += ["-UIPreferredContentSizeCategoryName", schrift]
+                }
+                app.launch()
+                XCTAssertTrue(schirm.steht(app).waitForExistence(timeout: 15),
+                              "\(schirm.name) kam nicht (\(lage)). Zu sehen war: "
+                              + beschriftungen(in: app))
+                // Gesammelt statt beim ersten Fund abgebrochen: Ein Lauf auf dem
+                // Mac kostet eine Viertelstunde, und er soll alle Stellen auf
+                // einmal nennen, nicht eine je Lauf.
+                funde += try ueberstehendeTexte(in: app).map { "\(schirm.name) (\(lage)): \($0)" }
+                app.terminate()
+            }
         }
+        XCTAssertTrue(funde.isEmpty, "Über den Rand reicht: " + funde.joined(separator: "; "))
     }
+
+    private static let groessteSchrift = "UICTContentSizeCategoryAccessibilityXXXL"
+
+    private static let schirme: [(name: String, schalter: [String],
+                                  steht: @MainActor (XCUIApplication) -> XCUIElement)] = [
+        ("Übersicht", [], { $0.staticTexts["Strom"] }),
+        ("Verlauf als Tabelle",
+         ["-pulse-verlauf", "-pulse-verlauf-vorschau", "-pulse-verlauf-tabelle"],
+         { $0.buttons["Alle Zahlen"] }),
+        ("Zähler", ["-pulse-zaehler"], { $0.staticTexts["Zähler"] }),
+        ("Ziffernblock", ["-pulse-capture"], { $0.buttons["7"] }),
+        // `-pulse-frei` nach `-pulse-pro` überstimmt es, wie in `run.sh`.
+        ("Kaufseite", ["-pulse-kaufen", "-pulse-frei"], {
+            $0.staticTexts.matching(
+                NSPredicate(format: "label CONTAINS[c] 'Dauerhaft kostenlos'")
+            ).firstMatch
+        }),
+    ]
 
     /// Texte, die links oder rechts über das Fenster reichen, soweit sie in
     /// der Höhe gerade zu sehen sind.

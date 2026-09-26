@@ -103,7 +103,11 @@ a:hover { text-decoration-thickness: 2px; }
 .sprung {
   position: absolute;
   left: 12px;
-  top: -70px;
+  top: 0;
+  /* Um die eigene Höhe nach oben, nicht um feste 70 Pixel: Bei großer
+     Textgröße bricht der Verweis in zwei Zeilen, wird 78 Pixel hoch und
+     schaute unten als weißer Streifen über die Kopfleiste. */
+  transform: translateY(calc(-100% - 8px));
   background: var(--surface);
   color: var(--ink);
   padding: 12px 18px;
@@ -111,7 +115,7 @@ a:hover { text-decoration-thickness: 2px; }
   box-shadow: var(--shadow);
   z-index: 10;
 }
-.sprung:focus { top: 12px; }
+.sprung:focus { top: 12px; transform: none; }
 
 .bahn {
   width: 100%;
@@ -420,7 +424,7 @@ p { margin: 0 0 16px; max-width: var(--w-text); text-wrap: pretty; }
   display: grid;
   gap: 18px;
   margin-top: 34px;
-  grid-template-columns: repeat(auto-fit, minmax(248px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(248px, 100%), 1fr));
 }
 .karte {
   background: var(--surface);
@@ -474,7 +478,7 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
 
 .weiterlesen { margin-top: 48px; padding-top: 26px; border-top: 1px solid var(--line); max-width: var(--w-text); }
 .weiterlesen h2 { margin-top: 0; }
-.weiterlesen .karten { margin-top: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.weiterlesen .karten { margin-top: 16px; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); }
 .karte-zeichen {
   width: 34px; height: 34px;
   margin-bottom: 14px;
@@ -545,6 +549,10 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
 
 .paar {
   display: grid;
+  /* `minmax(0, 1fr)` statt der stillen Spalte `auto`: Die wird mindestens so
+     breit wie ihr breitestes Wort. Mit der Textgröße 200 % in Safari lief die
+     Startseite dadurch 27 Pixel über den Rand. */
+  grid-template-columns: minmax(0, 1fr);
   gap: clamp(30px, 5vw, 60px);
   align-items: center;
 }
@@ -576,7 +584,7 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
 .preis-tafel {
   display: grid;
   gap: 16px;
-  grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(215px, 100%), 1fr));
   margin-top: 30px;
 }
 .preis {
@@ -714,9 +722,13 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
    Drei Spalten auf 320 Punkten lassen dem Text eine Handbreit. */
 @media (max-width: 620px) {
   .stand-tabelle thead { display: none; }
+  /* Als Tabelle bliebe sie so breit wie ihr Inhalt, auch wenn die Zeilen
+     Raster sind. */
+  .stand-tabelle, .stand-tabelle tbody { display: block; }
+  .stand-tabelle td:first-child { white-space: normal; }
   .stand-tabelle tr {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 8px 12px;
     padding: 16px 18px;
     border-top: 1px solid var(--line);
@@ -745,15 +757,17 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
   padding: 22px 24px 24px;
   max-width: var(--w-text);
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
 }
 .rechner-felder {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr));
   gap: 14px 18px;
 }
 .rechner label {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 6px;
   font-size: 15px;
   color: var(--ink-2);
@@ -773,6 +787,9 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
   padding: 11px 12px;
   min-height: 48px;
   width: 100%;
+  /* Ein Feld hat von sich aus eine Breite für etwa zwanzig Zeichen und gibt
+     sie ohne diese Zeile nicht her. */
+  min-width: 0;
   font-variant-numeric: tabular-nums;
 }
 .rechner input:focus-visible, .rechner select:focus-visible {
@@ -815,7 +832,7 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
 .protokoll-rahmen { overflow-x: auto; max-width: 100%; }
 .unterschriften {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
   gap: 28px;
   max-width: 760px;
   margin-top: 26px;
@@ -846,7 +863,7 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
    bezieht. Gerechnete Werte tragen ein ≈ vor der Zahl, gemessene nicht. */
 .kacheln {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr));
   gap: 10px;
 }
 .kachel {
@@ -901,7 +918,28 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
   .pfad li { display: inline-flex; align-items: center; min-height: 44px; }
   a[href^="mailto:"] {
     display: inline-block;
+    max-width: 100%;
+    overflow-wrap: anywhere;
     padding-block: 12px;
     margin-block: -12px;
   }
+}
+
+/* -------------------------------------------------- Sehr schmale Anzeige
+
+   **Textgröße 300 % in Safari.** Über „aA" lässt sich jede Seite bis auf das
+   Dreifache vergrößern, und Safari bricht sie dann um, als wäre der
+   Bildschirm ein Drittel so breit: auf einem iPhone SE 125 Pixel. Wer das
+   einstellt, braucht es. Dann gehen die Abstände zurück, Knöpfe und Schilder
+   dürfen umbrechen, und der Rechner verliert seinen Rahmen, damit die Zahlen
+   in die Kacheln passen. Eine Zahl bricht auch hier nicht um. */
+@media (max-width: 260px) {
+  .bahn { padding-inline: 12px; }
+  .knopf { padding: 12px 16px; text-align: center; justify-content: center; }
+  .art { white-space: normal; }
+  .rechner { padding: 0; border: 0; background: none; }
+  .kachel { padding: 8px 10px; }
+  .kachel-wert { font-size: 18px; }
+  .karte { padding: 16px 14px; }
+  .rechner select { padding-inline: 8px 4px; }
 }
