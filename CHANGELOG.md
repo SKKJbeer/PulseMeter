@@ -9,6 +9,42 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.117.2 — 2026-09-26
+
+**Die Website auf allen Geräten geprüft, auch auf alten, und die App künftig
+auch auf dem kleinsten iPhone und dem iPad mini.**
+
+Vom Gründer am 26. September: prüfen, „ob das überall perfekt dargestellt
+wird, auch für ältere Modelle und nicht nur die neuesten".
+
+Website, gemessen über zehn Geräte vom iPhone SE der ersten Generation
+(320 × 568) bis zum iPad Pro quer, in Chromium **und in WebKit**:
+
+- **Kein Überlauf auf keinem Gerät.**
+- **Ältere iPhones (iOS 15 und 16):** Die stehende Kopfleiste war dort
+  durchsichtig, weil `color-mix()` erst ab iOS 16.2 geht. Jetzt steht vor
+  jeder solchen Farbe eine einfache. Silbentrennung mit `-webkit-hyphens`
+  (vor iOS 17 nötig), `inset` durch Einzelangaben ersetzt (vor iOS 14.5).
+- **Kleine iPhones:** Die Kopfleiste stand mit zwei Zeilen 124 Punkte hoch und
+  blieb stehen. Unter 560 Punkten scrollt sie jetzt mit.
+- **Fingerbedienung:** Verweise im Fuß und im Pfad und die Mailadresse waren
+  19 bis 23 Punkte hoch, jetzt 44. Mit Maus bleibt das Bild, wie es war.
+- **Pfad** steht in WebKit bündig; vorher stand der letzte Eintrag versetzt.
+- „Laden im" auf dem App-Store-Knopf von 11 auf 12 Pixel.
+
+Prüfungen in `check-website.mjs`, bei jedem Lauf: zehn Geräte mit echter
+Größe, Pixeldichte und Fingerbedienung, je Seite Überlauf, Schrift ab 12 px,
+Ziele ab 44 px, Anteil einer stehenden Kopfleiste, bündiger Pfad; dazu ein
+nachgestelltes altes Safari (Stylesheet ohne `color-mix()`), und eine
+Zählung der Funktionen, die ältere Safari nicht kennen. Die CI prüft die
+Website jetzt zusätzlich in WebKit (`PULSE_ENGINE=webkit`).
+
+App: Die CI fotografiert zusätzlich ein **iPhone SE** und ein **iPad mini**,
+jeweils mit dem ältesten iOS ab 18, das der Läufer mitbringt, und legt die
+Bilder als `klein-…` und `ipad-mini-…` in den Zweig `screenshots`. `sim.sh`
+legt die Geräte an, wenn sie fehlen; `run.sh` nimmt mit `PULSE_NUR` nur die
+zehn Schirme, auf denen es eng werden kann.
+
 ## 0.117.1 — 2026-09-26
 
 **Verbrauch zuerst, Datenschutz direkt dahinter, und Rechner, die man auf

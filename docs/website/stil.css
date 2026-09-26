@@ -75,6 +75,10 @@ body {
      Zeilen steht „Datenschutz-Grundverordnung" auf einem schmalen Telefon
      über den Rand hinaus — sichtbar erst dort, wo es niemand ausprobiert. */
   overflow-wrap: break-word;
+  /* Mit Präfix: Safari trennt vor iOS 17 nur mit `-webkit-hyphens`. Ohne
+     die Zeile blieb „Zählerstandsübermittlung" auf einem älteren iPhone
+     ungetrennt und wurde nur hart umbrochen. */
+  -webkit-hyphens: auto;
   hyphens: auto;
 }
 
@@ -122,6 +126,10 @@ a:hover { text-decoration-thickness: 2px; }
   position: sticky;
   top: 0;
   z-index: 5;
+  /* Deckend zuerst: `color-mix()` kennt Safari erst ab iOS 16.2. Ohne diese
+     Zeile war die Leiste auf einem iPhone 7 oder 8 durchsichtig, und der
+     Text lief sichtbar darunter durch. */
+  background: var(--ground);
   background: color-mix(in srgb, var(--ground) 88%, transparent);
   backdrop-filter: saturate(1.6) blur(14px);
   -webkit-backdrop-filter: saturate(1.6) blur(14px);
@@ -181,10 +189,12 @@ a:hover { text-decoration-thickness: 2px; }
 .anfang::before {
   content: "";
   position: absolute;
-  inset: -20% 0 auto 50%;
+  /* Einzeln statt `inset`: Das kürzere Wort kennt Safari erst ab iOS 14.5. */
+  top: -20%; right: 0; bottom: auto; left: 50%;
   translate: -50% 0;
   width: min(900px, 120%);
   aspect-ratio: 1;
+  background: radial-gradient(closest-side, rgba(176, 110, 8, .13), transparent 70%);
   background: radial-gradient(closest-side, color-mix(in srgb, var(--tint) 13%, transparent), transparent 70%);
   pointer-events: none;
   z-index: -1;
@@ -234,7 +244,7 @@ h1 {
 @media (prefers-reduced-motion: reduce) { .knopf:hover { transform: none; } }
 
 .knopf-voll { background: var(--tint); color: var(--on-tint); }
-.knopf-voll:hover { background: color-mix(in srgb, var(--tint) 88%, var(--ink)); }
+.knopf-voll:hover { background: var(--tint-ink); background: color-mix(in srgb, var(--tint) 88%, var(--ink)); }
 .knopf-rand { border-color: var(--line-2); color: var(--ink); background: var(--surface); }
 .knopf-rand:hover { border-color: var(--ink-3); }
 
@@ -259,7 +269,7 @@ h1 {
 }
 .apfel svg { width: 25px; height: 25px; fill: currentColor; flex: none; }
 .apfel-text { display: flex; flex-direction: column; }
-.apfel small { font-size: 11px; letter-spacing: .01em; opacity: .92; }
+.apfel small { font-size: 12px; letter-spacing: .01em; opacity: .92; }
 .apfel b { font-size: 19px; font-weight: 550; letter-spacing: -0.01em; }
 a.apfel:hover { transform: translateY(-1px); }
 
@@ -447,6 +457,7 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
   letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--tint-ink);
+  background: var(--raised);
   background: color-mix(in srgb, var(--tint) 12%, transparent);
   border-radius: 999px;
   padding: 3px 9px;
@@ -696,7 +707,7 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
   background: var(--surface);
 }
 .stand-test  { color: var(--tint-ink); border-color: var(--tint); }
-.stand-laden { color: var(--good); border-color: color-mix(in srgb, var(--good) 45%, transparent); }
+.stand-laden { color: var(--good); border-color: var(--good); border-color: color-mix(in srgb, var(--good) 45%, transparent); }
 .stand-bald  { color: var(--ink-2); border-style: dashed; }
 
 /* Schmal steht jede Zeile als Block: Stand und Datum oben, Text darunter.
@@ -851,7 +862,46 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
 .kachel-name { font-size: 13px; color: var(--ink-3); font-weight: 600; }
 .kachel-wert { font-size: 24px; font-weight: 700; color: var(--ink); line-height: 1.25; letter-spacing: -0.01em; }
 .kachel-zusatz { font-size: 13px; color: var(--ink-2); }
-.kachel-haupt { border-color: color-mix(in srgb, var(--tint) 45%, var(--line)); background: color-mix(in srgb, var(--tint) 7%, var(--ground)); }
+.kachel-haupt {
+  border-color: var(--tint);
+  border-color: color-mix(in srgb, var(--tint) 45%, var(--line));
+  background: var(--raised);
+  background: color-mix(in srgb, var(--tint) 7%, var(--ground));
+}
 .kachel-gut .kachel-wert { color: var(--good); }
 .kachel-achtung .kachel-wert { color: var(--tint-ink); }
 .rechner-hinweis { margin: 0; color: var(--ink-2); font-size: 15px; }
+
+
+/* ------------------------------------------------- Kleine und alte Geräte
+
+   Gemessen am 26. September über 16 Gerätegrößen, vom iPhone SE der ersten
+   Generation (320 × 568) bis zum iPad Pro quer (1366 × 1024):
+
+   - **Die Kopfleiste stand auf schmalen iPhones 124 Punkte hoch**, weil die
+     fünf Einträge in zwei Zeilen umbrechen, und blieb beim Scrollen stehen.
+     Auf einem iPhone SE ist das ein Fünftel des Bildschirms. Dort scrollt sie
+     jetzt mit weg; oben auf jeder Seite steht sie trotzdem.
+   - **Verweise im Fuß waren 23 Punkte hoch**, die Mailadresse 19. Apple
+     empfiehlt für einen Finger 44. Auf Geräten mit Fingerbedienung bekommen
+     sie die Höhe; mit Maus bleibt das Bild, wie es war. */
+@media (max-width: 560px) {
+  .kopf { position: static; }
+}
+@media (pointer: coarse) {
+  .kopf nav a, .fuss nav a, .pfad a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+  .kopf nav a { padding-block: 0; }
+  /* Auch der letzte Eintrag im Pfad, der kein Verweis ist, bekommt die Höhe.
+     Sonst stand er im Querformat eine halbe Zeile über den anderen. */
+  .pfad ol { align-items: center; }
+  .pfad li { display: inline-flex; align-items: center; min-height: 44px; }
+  a[href^="mailto:"] {
+    display: inline-block;
+    padding-block: 12px;
+    margin-block: -12px;
+  }
+}

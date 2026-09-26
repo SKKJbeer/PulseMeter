@@ -53,9 +53,16 @@ xcrun simctl install "$DEVICE" "$APP"
 # Ob die Vorschau nur noch nicht fertig war oder der Bericht wirklich leer
 # rendert, war daran nicht zu unterscheiden — deshalb bekommt er hier deutlich
 # mehr Zeit. Bleibt er auch dann leer, ist die Frage beantwortet.
+#
+# `PULSE_NUR` beschränkt auf eine Auswahl, durch Leerzeichen getrennt. Für die
+# kleinen Geräte genügen die Schirme, auf denen es eng wird; alle 27 Bilder
+# kosteten dort zehn Minuten gemieteten Mac für jeden Lauf.
 shoot() {
   local mode="$1" name="$2"
   shift 2
+  if [ -n "${PULSE_NUR:-}" ] && [[ " $PULSE_NUR " != *" $name "* ]]; then
+    return 0
+  fi
   xcrun simctl ui "$DEVICE" appearance "$mode" >/dev/null 2>&1 || true
   xcrun simctl terminate "$DEVICE" de.karjoth.pulsemeter >/dev/null 2>&1 || true
   # `-pulse-pro` gehört zum Ausgangszustand wie `-pulse-reset`: Die

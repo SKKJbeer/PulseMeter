@@ -13,7 +13,7 @@
  * Läuft unter Linux und braucht keinen macOS-Läufer. Aufruf:
  *   node scripts/check-website.mjs [ordner]
  */
-import { chromium } from "playwright";
+import { chromium, webkit } from "playwright";
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 
@@ -531,11 +531,46 @@ if (dir === "docs/website") {
   note(!/\.html</.test(sm), "Die ausgelieferte Sitemap nennt die Adressen ohne .html");
 }
 
+
+// --- Ältere Geräte: was Safari vor iOS 17 nicht kann
+//
+// Ein iPhone 7 oder 8 bleibt bei iOS 15 oder 16 stehen, und sein Safari
+// kennt manches nicht, was hier benutzt wird. Gemessen am 26. September:
+// `color-mix()` erst ab iOS 16.2, und die Kopfleiste war ohne Rückfall
+// durchsichtig. `hyphens` nur mit Präfix vor iOS 17. `inset` erst ab 14.5.
+console.log("\nÄltere Geräte");
+{
+  const css = readFileSync(`${dir}/stil.css`, "utf8").replace(/\/\*[\s\S]*?\*\//g, " ");
+  const bloecke = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)];
+  const ohne = [];
+  for (const [, wahl, inhalt] of bloecke) {
+    const zeilen = inhalt.split(";").map(z => z.trim()).filter(Boolean);
+    zeilen.forEach((z, i) => {
+      const [eig] = z.split(":");
+      if (!/color-mix\(/.test(z) || !/^(background|background-color|border-color|color)$/.test(eig.trim())) return;
+      const vorher = zeilen.slice(0, i).some(v => v.split(":")[0].trim() === eig.trim() && !/color-mix\(/.test(v));
+      if (!vorher) ohne.push(`${wahl.trim()} { ${eig.trim()} }`);
+    });
+  }
+  note(ohne.length === 0, ohne.length ? `color-mix() ohne Rückfall: ${ohne.join("; ")}` : "Jede Farbe aus color-mix() hat einen Rückfall für Safari vor iOS 16.2");
+  note(!/(^|[^-])hyphens:/m.test(css.replace(/-webkit-hyphens:[^;]*;\s*hyphens:/g, "")),
+       "hyphens steht nie ohne -webkit-hyphens davor");
+  note(!/\binset:/.test(css), "kein inset (Safari erst ab iOS 14.5)");
+  note(!/(^|[^-])backdrop-filter:/m.test(css.replace(/backdrop-filter:[^;]*;\s*-webkit-backdrop-filter:/g, "")),
+       "backdrop-filter nie ohne -webkit-backdrop-filter");
+}
+
 // --- Mit Browser
 
-const browser = await chromium.launch({
-  executablePath: process.env.PULSE_CHROMIUM || undefined
-});
+// **WebKit, die Engine von Safari, auf Zuruf.** Jedes iPhone und jedes iPad
+// zeigt die Website mit WebKit, egal welcher Browser drübersteht. Chromium
+// allein prüft also nicht, was die Zielgruppe sieht. `PULSE_ENGINE=webkit`
+// nimmt WebKit; die CI tut das in einem eigenen Schritt.
+const ENGINE = process.env.PULSE_ENGINE === "webkit" ? "webkit" : "chromium";
+console.log(`\nEngine: ${ENGINE}`);
+const browser = ENGINE === "webkit"
+  ? await webkit.launch()
+  : await chromium.launch({ executablePath: process.env.PULSE_CHROMIUM || undefined });
 
 for (const scheme of ["light", "dark"]) {
   for (const breite of [320, 768, 1280]) {
@@ -811,6 +846,93 @@ console.log("\nVerhalten");
 
   note(fehler.length === 0, fehler.length ? `JavaScript-Fehler beim Rechnen: ${fehler[0]}` : "Keine JavaScript-Fehler beim Rechnen und Drucken");
   await page.close();
+}
+
+
+// --- Geräte: vom iPhone SE der ersten Generation bis zum iPad Pro quer
+//
+// Bis 0.117.1 prüfte die Seite drei Breiten. Die Kopfleiste stand aber
+// nur auf den schmalen iPhones 124 Punkte hoch, und die Ziele im Fuß waren
+// nur mit Fingerbedienung zu klein. Beides sieht man erst, wenn das Gerät
+// stimmt: Größe, Pixeldichte, Fingerbedienung.
+console.log("\nGeräte");
+{
+  const GERAETE = [
+    ["iPhone SE (1. Gen.)", 320, 568, true], ["iPhone SE (2./3. Gen.), 8", 375, 667, true],
+    ["iPhone 11, XR", 414, 896, true], ["iPhone 15 Pro Max", 430, 932, true],
+    ["iPhone SE quer", 667, 375, true], ["iPad mini", 744, 1133, true],
+    ["iPad 10,2 Zoll", 810, 1080, true], ["iPad Pro 12,9 Zoll", 1024, 1366, true],
+    ["iPad Pro 12,9 Zoll quer", 1366, 1024, true], ["Desktop", 1920, 1080, false],
+  ];
+  for (const [name, w, h, finger] of GERAETE) {
+    const page = await browser.newPage({ viewport: { width: w, height: h }, deviceScaleFactor: 2, isMobile: finger && w < 1024, hasTouch: finger });
+    const fehler = [];
+    for (const datei of seiten) {
+      await page.goto(base + datei);
+      const r = await page.evaluate(({ finger }) => {
+        const sichtbar = e => e.offsetParent !== null && e.getBoundingClientRect().height > 0;
+        const kopf = document.querySelector(".kopf");
+        const klebt = kopf && getComputedStyle(kopf).position === "sticky";
+        return {
+          ueber: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          klein: [...document.querySelectorAll("p, li, a, span, small, label, td, th, b, h3")]
+            .filter(e => sichtbar(e) && e.textContent.trim() && parseFloat(getComputedStyle(e).fontSize) < 12)
+            .map(e => e.textContent.trim().slice(0, 20)),
+          ziele: finger ? [...document.querySelectorAll(".kopf nav a, .fuss nav a, .pfad a, a[href^='mailto:'], button, input, select")]
+            .filter(e => sichtbar(e) && e.getBoundingClientRect().height < 44)
+            .map(e => `${(e.textContent.trim() || e.tagName).slice(0, 18)} ${Math.round(e.getBoundingClientRect().height)}`) : [],
+          kopfAnteil: klebt ? kopf.getBoundingClientRect().height / innerHeight : 0,
+          // Die Einträge im Pfad stehen auf einer Linie, wenn sie in eine
+          // Zeile passen. Gemessen wird die Mitte, nicht die Oberkante.
+          pfadVersatz: (() => {
+            const li = [...document.querySelectorAll(".pfad li")];
+            if (li.length < 2) return 0;
+            const mitte = e => { const r = e.getBoundingClientRect(); return (r.top + r.bottom) / 2; };
+            const zeilen = {};
+            for (const e of li) { const k = Math.round(e.getBoundingClientRect().top / 30); (zeilen[k] ||= []).push(mitte(e)); }
+            return Math.max(0, ...Object.values(zeilen).filter(z => z.length > 1).map(z => Math.max(...z) - Math.min(...z)));
+          })(),
+        };
+      }, { finger });
+      if (r.ueber > 1) fehler.push(`${datei}: ${r.ueber} px Überlauf`);
+      if (r.klein.length) fehler.push(`${datei}: Schrift unter 12 px („${r.klein[0]}")`);
+      if (r.ziele.length) fehler.push(`${datei}: Ziel unter 44 px (${r.ziele[0]})`);
+      if (r.kopfAnteil > 0.18) fehler.push(`${datei}: stehende Kopfleiste nimmt ${Math.round(r.kopfAnteil * 100)} % der Höhe`);
+      if (r.pfadVersatz > 2) fehler.push(`${datei}: Pfad steht versetzt (${Math.round(r.pfadVersatz)} px)`);
+    }
+    note(fehler.length === 0, `${name} (${w} × ${h}): ${fehler.length ? fehler.slice(0, 2).join("; ") : "alle Seiten ohne Überlauf, lesbar, mit Zielen für den Finger"}`);
+    await page.close();
+  }
+
+  // **Ein altes Safari, nachgestellt.** Das Stylesheet wird ohne color-mix()
+  // ausgeliefert, so wie ein Safari vor iOS 16.2 es liest: Die Angabe fällt
+  // weg, und es gilt, was davor steht. Dann muss die Kopfleiste trotzdem
+  // deckend sein und die hervorgehobene Kachel trotzdem hervorgehoben.
+  const alt = await browser.newPage({ viewport: { width: 375, height: 667 }, isMobile: true, hasTouch: true });
+  await alt.route("**/stil.css", async route => {
+    // Erst die Kommentare weg: Einer davon erklärt color-mix(), und der
+    // Ausdruck darunter hätte von dort bis zur Rückfall-Zeile gegriffen und
+    // genau die mit entfernt, um die es geht.
+    const css = readFileSync(`${dir}/stil.css`, "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/[a-z-]+:[^;{}]*color-mix\([^;{}]*;/g, "");
+    await route.fulfill({ status: 200, contentType: "text/css", body: css });
+  });
+  await alt.goto(base + "abschlag-zu-hoch.html");
+  const altBild = await alt.evaluate(() => {
+    const k = document.querySelector(".kopf"), h = document.querySelector(".kachel-haupt");
+    const hg = getComputedStyle(k).backgroundColor;
+    const art = document.querySelector(".art");
+    return {
+      kopf: hg, deckend: !/rgba\(0, 0, 0, 0\)|transparent/.test(hg),
+      kachel: h ? getComputedStyle(h).borderTopColor : "", kachelNormal: h ? getComputedStyle(h.nextElementSibling || h).borderTopColor : "",
+      art: art ? getComputedStyle(art).backgroundColor : "rgb(1, 1, 1)",
+    };
+  });
+  note(altBild.deckend, `Altes Safari: Kopfleiste deckend (${altBild.kopf})`);
+  note(altBild.kachel && altBild.kachel !== altBild.kachelNormal, `Altes Safari: die Hauptkachel hebt sich ab (${altBild.kachel} gegen ${altBild.kachelNormal})`);
+  note(!/rgba\(0, 0, 0, 0\)/.test(altBild.art), `Altes Safari: die Art auf den Karten hat einen Hintergrund (${altBild.art})`);
+  await alt.close();
 }
 
 await browser.close();

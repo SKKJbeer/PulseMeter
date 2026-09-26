@@ -17,9 +17,53 @@ set -euo pipefail
 
 FAMILIE="${1:-iphone}"
 case "$FAMILIE" in
-  iphone|ipad) ;;
-  *) echo "Unbekannt: $FAMILIE — erlaubt sind „iphone\" und „ipad\"." >&2; exit 1 ;;
+  iphone|ipad|iphone-klein|ipad-klein) ;;
+  *) echo "Unbekannt: $FAMILIE — erlaubt sind iphone, ipad, iphone-klein und ipad-klein." >&2; exit 1 ;;
 esac
+
+# **Kleine und ältere Geräte, seit 0.117.2.** Vom Gründer am 26. September:
+# prüfen, „ob das überall perfekt dargestellt wird, auch für ältere Modelle
+# und nicht nur die neuesten". Bis dahin fotografierte die CI nur das größte
+# iPhone und das größte iPad mit dem neuesten iOS.
+#
+# `iphone-klein` ist ein iPhone SE, 4,7 Zoll mit Home-Taste: der kleinste
+# Schirm, auf dem die App läuft. `ipad-klein` ist ein iPad mini. Beide mit dem
+# **ältesten** iOS ab 18, das der Rechner mitbringt, weil die App ab iOS 18
+# läuft und ein älteres Gerät oft auf einem älteren System bleibt. Fehlt das
+# Gerät, wird es angelegt: Ein Läufer bringt die Gerätetypen mit, aber nicht
+# für jeden eine fertige Instanz.
+if [ -z "${PULSE_SIMULATOR:-}" ] && [ "${FAMILIE%-klein}" != "$FAMILIE" ]; then
+  DEVICE=$(PULSE_FAMILIE="$FAMILIE" python3 - <<'PY_KLEIN'
+import json, os, re, subprocess, sys
+familie = os.environ["PULSE_FAMILIE"]
+wunsch = ["iPhone SE (3rd generation)", "iPhone SE (2nd generation)"] if familie == "iphone-klein" \
+    else ["iPad mini (A17 Pro)", "iPad mini (6th generation)"]
+def lade(*args):
+    return json.loads(subprocess.check_output(["xcrun", "simctl", "list", *args, "-j"]))
+laufzeiten = [r for r in lade("runtimes")["runtimes"]
+              if r.get("isAvailable") and r.get("platform", "iOS") == "iOS"
+              and tuple(int(x) for x in r["version"].split(".")[:2]) >= (18, 0)]
+laufzeiten.sort(key=lambda r: tuple(int(x) for x in r["version"].split(".")))
+typen = {t["name"]: t["identifier"] for t in lade("devicetypes")["devicetypes"]}
+geraete = lade("devices", "available")["devices"]
+for laufzeit in laufzeiten:
+    unterstuetzt = {t["name"] for t in laufzeit.get("supportedDeviceTypes", [])}
+    for name in wunsch:
+        if unterstuetzt and name not in unterstuetzt:
+            continue
+        for g in geraete.get(laufzeit["identifier"], []):
+            if g["name"] == name:
+                print(g["udid"]); print(f"{name}, iOS {laufzeit['version']}", file=sys.stderr); sys.exit(0)
+        if name in typen:
+            udid = subprocess.check_output(["xcrun", "simctl", "create", f"{name} (Zählora)",
+                                            typen[name], laufzeit["identifier"]]).decode().strip()
+            print(udid); print(f"{name}, iOS {laufzeit['version']}, neu angelegt", file=sys.stderr); sys.exit(0)
+sys.exit(f"Kein Gerät für {familie}: weder {', '.join(wunsch)} mit iOS ab 18")
+PY_KLEIN
+)
+  echo "$DEVICE"
+  exit 0
+fi
 
 DEVICE="${PULSE_SIMULATOR:-}"
 if [ -z "$DEVICE" ]; then

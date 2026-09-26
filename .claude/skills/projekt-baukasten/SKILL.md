@@ -1833,6 +1833,36 @@ in der Prüfung umgeschrieben werden.** `website-fertig.sh` lief nur beim
 Veröffentlichen; dass es `index.html#preise` stehen ließ, hat keine Prüfung
 gesehen.
 
+### Chromium ist nicht Safari, und das neueste Safari ist nicht das alte
+
+Jedes iPhone und jedes iPad zeigt eine Website mit WebKit, auch in Chrome. Eine
+Prüfung, die nur in Chromium läuft, prüft also nicht, was die Zielgruppe sieht.
+Am 26. September zeigte WebKit einen versetzten Pfad, den Chromium nicht
+zeigte. WebKit läuft unter Linux mit `npx playwright install --with-deps
+webkit`; in der CI ist das ein Schritt von zwei Minuten.
+
+Das **neueste** WebKit sagt aber nichts über ein iPhone 8 mit iOS 16. Was dort
+fehlt, findet man nur, indem man die Funktionen zählt:
+
+| Funktion | Safari ab | Was ohne passiert |
+|---|---|---|
+| `color-mix()` | iOS 16.2 | die ganze Angabe fällt weg; eine stehende Kopfleiste wird durchsichtig |
+| `hyphens` ohne `-webkit-` | iOS 17 | keine Silbentrennung, lange deutsche Wörter brechen hart |
+| `inset` | iOS 14.5 | Lage des Elements falsch |
+| `:focus-visible` | iOS 15.4 | kein Fokusrahmen, sonst harmlos |
+
+> **Jede Farbe aus `color-mix()` bekommt davor eine Zeile mit einer einfachen
+> Farbe.** Und die Probe dafür: das Stylesheet ohne `color-mix()` ausliefern
+> und nachsehen, ob Kopfleiste und Hervorhebungen noch stimmen. **Vorher die
+> Kommentare entfernen**, sonst greift der Suchausdruck von einem Kommentar,
+> der `color-mix()` erwähnt, bis in die Rückfall-Zeile und entfernt genau die.
+
+Und für kleine Telefone: Eine Kopfleiste mit fünf Einträgen bricht bei 320 bis
+390 Punkten in zwei Zeilen um. Bleibt sie beim Scrollen stehen, nimmt sie auf
+einem iPhone SE ein Fünftel des Bildschirms. Ziele für den Finger (Fuß, Pfad,
+Mailadresse) brauchen 44 Punkte, mit `@media (pointer: coarse)` nur dort, wo
+ein Finger tippt.
+
 ### Ein Index aus einer Zählung ist keine Adresse
 
 Zwei Läufe, derselbe Abbruch, zwei verschiedene Indizes:

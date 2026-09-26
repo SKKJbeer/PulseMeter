@@ -53,7 +53,7 @@ jobs:
   # beim Ausprobieren.
   prototype:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     concurrency:
       group: entwurf-${{ github.event.pull_request.head.ref || github.ref_name }}
       cancel-in-progress: true
@@ -90,6 +90,15 @@ jobs:
       # hätte die Seite auf Dauer ungeprüft mitgeführt.
       - name: Website prüfen
         run: node scripts/check-website.mjs
+
+      # **Dieselbe Prüfung in WebKit, der Engine von Safari.** Jedes iPhone
+      # und jedes iPad zeigt die Website mit WebKit, auch in Chrome. Chromium
+      # allein prüft also nicht, was die Zielgruppe sieht; am 26. September hat
+      # WebKit einen versetzten Pfad gezeigt, den Chromium nicht zeigte.
+      - name: Website in WebKit prüfen
+        run: |
+          npx playwright install --with-deps webkit
+          PULSE_ENGINE=webkit node scripts/check-website.mjs
 
   # **Läuft wieder bei jedem Push**, auch auf einen Arbeitszweig.
   #
@@ -264,6 +273,28 @@ jobs:
       # beide Familien und wird mit `--force` geschoben. Schöbe ihn jeder
       # Auftrag für sich, wäre der zweite der letzte und der erste weg. Das
       # Zusammenlegen macht deshalb `bilder` ganz unten, wenn beide fertig sind.
+      # **Dazu das kleinste iPhone, mit dem ältesten iOS ab 18.** Ein iPhone
+      # SE hat 375 Punkte Breite und 667 Höhe, das 17 Pro Max 440 und 956. Was
+      # dort eng wird, sieht man auf dem großen nie. Nur die Schirme, auf denen
+      # es eng werden kann, und aus demselben Bau: Die App ist schon übersetzt,
+      # hier wird nur installiert und fotografiert.
+      - name: Screenshots auf dem iPhone SE
+        if: always()
+        continue-on-error: true
+        env:
+          PULSE_FAMILIE: iphone-klein
+          PULSE_NUR: "screenshot-light screenshot-dark screenshot-capture-light screenshot-pv-light screenshot-verlauf-light screenshot-vorschau-light screenshot-zaehler-light screenshot-pro-light screenshot-bericht-light screenshot-grossschrift-light"
+        run: scripts/run.sh build/klein
+
+      - name: Bilder vom iPhone SE weiterreichen
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bilder-iphone-klein
+          path: build/klein/*.png
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Bilder weiterreichen
         if: always()
         uses: actions/upload-artifact@v4
@@ -318,6 +349,15 @@ jobs:
         continue-on-error: true
         run: scripts/run.sh build/ipad
 
+      # Das iPad mini: 744 Punkte hoch, zu schmal für Bühne und Leiste, und mit
+      # dem ältesten iOS ab 18, das der Läufer kennt.
+      - name: Screenshots auf dem iPad mini
+        continue-on-error: true
+        env:
+          PULSE_FAMILIE: ipad-klein
+          PULSE_NUR: "screenshot-light screenshot-dark screenshot-capture-light screenshot-pv-light screenshot-verlauf-light screenshot-vorschau-light screenshot-zaehler-light screenshot-pro-light screenshot-bericht-light screenshot-grossschrift-light"
+        run: scripts/run.sh build/ipad-mini
+
       - name: Oberflächentests auf dem iPad
         run: scripts/test.sh app
 
@@ -338,6 +378,15 @@ jobs:
         with:
           name: bilder-ipad
           path: build/ipad/*
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Bilder vom iPad mini weiterreichen
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bilder-ipad-klein
+          path: build/ipad-mini/*.png
           if-no-files-found: ignore
           retention-days: 14
 
@@ -377,6 +426,20 @@ jobs:
           name: bilder-ipad
           path: build/ipad
 
+      - name: Bilder vom iPhone SE holen
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: bilder-iphone-klein
+          path: build/klein
+
+      - name: Bilder vom iPad mini holen
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: bilder-ipad-klein
+          path: build/ipad-mini
+
       # **Beide Sätze in einem Aufruf.** Der Zweig trägt immer nur einen Stand
       # und wird mit `--force` geschoben; zwei Aufrufe hintereinander hätten den
       # ersten weggeworfen. In Lauf 393 sind die dreizehn iPad-Bilder deshalb
@@ -390,4 +453,4 @@ jobs:
           # durch. Gemeint ist der Zustand der **Prüfungen**, und der steht in
           # den Ergebnissen der beiden Zweige.
           PULSE_LAUF: ${{ (needs.iphone.result == 'success' && needs.ipad.result == 'success') && 'grün' || 'rot' }}
-        run: scripts/publish-shots.sh build build/ipad
+        run: scripts/publish-shots.sh build build/ipad build/klein build/ipad-mini
