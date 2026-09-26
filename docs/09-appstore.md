@@ -41,11 +41,15 @@ Die drei Energiearten sind das, was jemand tatsächlich eintippt.
 ### Werbetext (max. 170 Zeichen, jederzeit ohne neue Version änderbar)
 
 ```
-Du trägst deinen Zählerstand ein und siehst Monate vorher, ob dein Abschlag reicht. Ohne Abo, und deine Zahlen bleiben bei dir.
+Du siehst jeden Monat, was du an Strom, Gas und Wasser verbrauchst. Deine Zählerstände bleiben auf deinem Gerät, wir sehen sie nie.
 ```
 
-127 Zeichen. Vom Gründer am 25. September freigegeben. Vorher stand hier seit
-dem Start „Neu: Du kaufst nur, was dir fehlt", und das war drei Fassungen später
+131 Zeichen. **Seit 26. September:** Verbrauch und Datenschutz statt
+Abschlag. Vom Gründer verlangt: „nicht nur Fokus auf Abschlag und Kosten,
+sondern auch Transparenz über den tatsächlichen Verbrauch", und „stärker als
+Marketing raus, dass wir keine Daten der Zählerstände tracken oder besitzen".
+Die Fassung vom 25. September sprach vom Abschlag. Davor stand hier seit dem
+Start „Neu: Du kaufst nur, was dir fehlt", und das war drei Fassungen später
 nicht mehr neu. Der Satz nimmt auf, was vor dem Tipp auf die App sonst niemand
 sieht: kein Abo und keine Daten, während der größte Mitbewerber beides hat
 (`10-sichtbarkeit.md`). Eingetragen wird er mit `einreichung.yml`, Schalter
@@ -104,8 +108,8 @@ Wort ist ohnehin abgedeckt, weil der Anzeigename des Kaufs
 ### Beschreibung (max. 4000 Zeichen)
 
 ```
-Deine Zählerstände für Strom, Gas und Wasser an einem Ort. Du trägst eine
-Zahl ein, Zählora sagt dir, ob alles im Rahmen ist.
+Trag deine Zählerstände für Strom, Gas und Wasser ein und sieh jeden Monat,
+was du verbrauchst, nicht erst mit der Jahresabrechnung.
 
 Zählerstände landen auf einem Zettel am Sicherungskasten, in einer Tabelle, die
 niemand pflegt, oder nirgends. Und einmal im Jahr kommt die Abrechnung, und man
@@ -113,16 +117,19 @@ glaubt ihr einfach. Zählora macht aus zehn Sekunden am Zähler eine Zahl, mit
 der sich etwas anfangen lässt.
 
 
-ZEHN SEKUNDEN AM ZÄHLER
+WIR WISSEN NICHT, WIE VIEL STROM DU VERBRAUCHST
 
-App öffnen, Zahl eintippen, sichern. Das Datum steht schon auf heute, der
-Ziffernblock ist groß genug, dass man ihn einhändig trifft. Auch im
-Halbdunkel und mit klammen Fingern.
+Und das soll so bleiben. Kein Konto, keine Anmeldung, keine Werbung, kein
+Tracking, keine Absturzberichte. Deine Ablesungen liegen auf deinem Telefon
+und, wenn du magst, in deiner eigenen iCloud. Auf unseren Servern liegen sie
+nicht — wir haben keine. Deshalb steht über dieser App im Store „Keine Daten
+erfasst", und nicht die lange Liste, die du sonst kennst.
 
-Und bevor der Wert in deinen Daten landet, sieht die App ihn sich an. Eine Zahl
-unter dem letzten Stand, eine Zahl weit über dem, was bei dir üblich ist: dann
-fragt sie nach. Am Zähler kannst du noch einmal hinsehen, im Februar vor dem
-Diagramm nicht mehr.
+Du entfernst die App, und die Daten auf dem Gerät sind weg. Nutzt du iCloud,
+löschst du die Kopie dort in den Einstellungen mit. Bei uns gibt es keine.
+
+Und du kommst jederzeit wieder heraus. Der Export als Tabelle ist kostenlos und
+bleibt es, auch wenn du nie einen Cent ausgibst.
 
 
 FÜNF SEKUNDEN, UND DU WEISST, WO DU STEHST
@@ -145,6 +152,18 @@ Trag den Stichtag deines Versorgers ein, und Bericht und Vorschau rechnen nach
 deinem Abrechnungsjahr. Bei Gas fängt das oft im Oktober an.
 
 Tipp einen Monat an, und du siehst, woher der Unterschied kommt.
+
+
+ZEHN SEKUNDEN AM ZÄHLER
+
+App öffnen, Zahl eintippen, sichern. Das Datum steht schon auf heute, der
+Ziffernblock ist groß genug, dass man ihn einhändig trifft, auch mit
+klammen Fingern.
+
+Und bevor der Wert in deinen Daten landet, sieht die App ihn sich an. Eine Zahl
+unter dem letzten Stand, eine Zahl weit über dem, was bei dir üblich ist: dann
+fragt sie nach. Am Zähler kannst du noch einmal hinsehen, im Februar vor dem
+Diagramm nicht mehr.
 
 
 DIE NACHZAHLUNG SIEHST DU VORHER
@@ -173,21 +192,6 @@ DAMIT DU NICHT DARAN DENKEN MUSST
 Wöchentlich, monatlich, vierteljährlich oder jährlich, je Zähler: Die App
 meldet sich abends, wenn eine Ablesung fällig ist. Und ein Feld auf dem
 Sperrbildschirm zeigt es auch ohne Mitteilung.
-
-
-WIR WISSEN NICHT, WIE VIEL STROM DU VERBRAUCHST
-
-Und das soll so bleiben. Kein Konto, keine Anmeldung, keine Werbung, kein
-Tracking, keine Absturzberichte. Deine Ablesungen liegen auf deinem Telefon
-und, wenn du magst, in deiner eigenen iCloud. Auf unseren Servern liegen sie
-nicht — wir haben keine. Deshalb steht über dieser App im Store „Keine Daten
-erfasst", und nicht die lange Liste, die du sonst kennst.
-
-Du entfernst die App, und die Daten auf dem Gerät sind weg. Nutzt du iCloud,
-löschst du die Kopie dort in den Einstellungen mit. Bei uns gibt es keine.
-
-Und du kommst jederzeit wieder heraus. Der Export als Tabelle ist kostenlos und
-bleibt es, auch wenn du nie einen Cent ausgibst.
 
 
 EIN PAAR EURO, EINMAL. KEIN ABO.

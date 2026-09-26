@@ -28,7 +28,7 @@ import { createServer } from "node:http";
 import { extname, join, normalize } from "node:path";
 const ARTEN = { ".html": "text/html; charset=utf-8", ".css": "text/css", ".svg": "image/svg+xml",
                 ".png": "image/png", ".jpg": "image/jpeg", ".ico": "image/x-icon",
-                ".xml": "application/xml", ".txt": "text/plain" };
+                ".xml": "application/xml", ".txt": "text/plain", ".js": "text/javascript" };
 const server = createServer((req, res) => {
   const pfad = normalize(decodeURIComponent(req.url.split("?")[0])).replace(/^(\.\.[/\\])+/, "");
   const datei = join(dir, pfad.endsWith("/") ? pfad + "index.html" : pfad);
@@ -47,7 +47,7 @@ const base = `http://127.0.0.1:${server.address().port}/`;
 // toter Verweis dorthin fällt sonst niemandem auf.
 const seiten = ["index.html", "entwicklung.html", "hilfe.html", "gas-in-kwh.html",
                 "abschlag-zu-hoch.html", "zaehlerstand-umzug.html", "ratgeber.html",
-                "datenschutz.html", "impressum.html", "404.html"];
+                "verbrauch-berechnen.html", "datenschutz.html", "impressum.html", "404.html"];
 
 // Was nicht in den Index soll: das Impressum (erreichbar, nicht auffindbar)
 // und die Seite für unbekannte Adressen. Beide tragen `noindex`, keine steht
@@ -607,36 +607,111 @@ console.log("\nVerhalten");
   page.on("pageerror", e => fehler.push(e.message));
   const text = async sel => (await page.textContent(sel)).replace(/\s+/g, " ").trim();
 
+  // **Ergebnisse stehen als Kacheln: Name, Zahl, Bezug.** Gelesen wird über
+  // die Kennung der Kachel, nicht über den Wortlaut, damit eine bessere
+  // Beschriftung die Prüfung nicht bricht.
+  const kachel = async k => {
+    const e = await page.$(`[data-kachel="${k}"]`);
+    if (!e) return { name: "", wert: "", zusatz: "" };
+    // Beträge stehen mit geschütztem Leerzeichen vor dem €; verglichen wird
+    // mit einem gewöhnlichen.
+    return e.evaluate(el => {
+      const t = s => ((el.querySelector(s) || {}).textContent || "").replace(/\u00a0/g, " ");
+      return { name: t(".kachel-name"), wert: t(".kachel-wert"), zusatz: t(".kachel-zusatz") };
+    });
+  };
+  const kaputt = async sel => /NaN|Infinity|undefined/.test(await text(sel));
+
   // Gas: dieselbe Rechnung wie GasConversion.energy in PulseCore.
   await page.goto(base + "gas-in-kwh.html");
-  note((await text("#gas-ergebnis")).startsWith("2.702 kWh"), `Gasrechner: 250 m³ × 0,9650 × 11,2 = 2.702 kWh`);
-  note((await text("#gas-ergebnis")).includes("324,24 €"), `Gasrechner: 2.702 kWh zu 12 ct = 324,24 €`);
+  note((await kachel("kwh")).wert === "2.702 kWh", `Gasrechner: 250 m³ × 0,9650 × 11,2 = 2.702 kWh (${(await kachel("kwh")).wert})`);
+  note((await kachel("kosten")).wert === "324,24 €", `Gasrechner: 2.702 kWh zu 12 ct = 324,24 €`);
+  note((await kachel("faust")).wert === "2.500 kWh" && /202 kWh zu wenig/.test((await kachel("faust")).zusatz),
+       `Gasrechner: „mal zehn“ ergibt 2.500 kWh, 202 kWh zu wenig`);
   await page.fill("#g-m3", "1.267"); await page.fill("#g-z", "0,9523"); await page.fill("#g-b", "11,4");
-  note((await text("#gas-ergebnis")).startsWith("13.755 kWh"), `Gasrechner: „1.267" ist eintausendzweihundertsiebenundsechzig (${await text("#gas-ergebnis")})`);
+  note((await kachel("kwh")).wert === "13.755 kWh", `Gasrechner: „1.267" ist eintausendzweihundertsiebenundsechzig (${(await kachel("kwh")).wert})`);
   await page.fill("#g-m3", "1267,5");
-  note((await text("#gas-ergebnis")).startsWith("13.760 kWh"), `Gasrechner: Komma als Dezimalzeichen`);
+  note((await kachel("kwh")).wert === "13.760 kWh", `Gasrechner: Komma als Dezimalzeichen`);
   await page.fill("#g-z", "");
-  note(!/NaN|Infinity|undefined/.test(await text("#gas-ergebnis")) && (await text("#gas-ergebnis")).includes("Trag"),
+  note(!(await kaputt("#gas-ergebnis")) && (await text("#gas-ergebnis")).includes("Trag"),
        `Gasrechner: ein leeres Feld ergibt einen Hinweis, keine kaputte Zahl`);
   await page.fill("#g-z", "abc");
-  note(!/NaN|Infinity|undefined/.test(await text("#gas-ergebnis")), `Gasrechner: Buchstaben ergeben keine kaputte Zahl`);
+  note(!(await kaputt("#gas-ergebnis")), `Gasrechner: Buchstaben ergeben keine kaputte Zahl`);
 
   // Abschlag: Verbrauch × Arbeitspreis + Grundpreis, auf zwölf Monate.
   await page.goto(base + "abschlag-zu-hoch.html");
-  note((await text("#a-ergebnis")).startsWith("91,00 € im Monat"), `Abschlagsrechner: 2.800 kWh, 34 ct, 140 € im Jahr = 91,00 € im Monat`);
-  note((await text("#a-ergebnis")).includes("468,00 € zu viel"), `Abschlagsrechner: 130 € statt 91 € sind 468 € im Jahr zu viel`);
+  note((await kachel("passend")).wert === "91,00 €" && (await kachel("passend")).zusatz === "im Monat",
+       `Abschlagsrechner: 2.800 kWh, 34 ct, 140 € im Jahr = 91,00 € im Monat`);
+  note((await kachel("kosten")).wert === "1.092,00 €", `Abschlagsrechner: Kosten im Jahr 1.092,00 €`);
+  const zuviel = await kachel("differenz");
+  note(zuviel.name === "Zu viel im Jahr" && zuviel.wert === "468,00 €",
+       `Abschlagsrechner: 130 € statt 91 € sind 468 € im Jahr zu viel („${zuviel.name}: ${zuviel.wert}")`);
   await page.selectOption("#a-gpart", "monat"); await page.fill("#a-gp", "11,50"); await page.fill("#a-ab", "80");
-  const monat = await text("#a-ergebnis");
-  note(monat.startsWith("90,83 € im Monat") && monat.includes("130,00 €") && monat.includes("Nachzahlung"),
-       `Abschlagsrechner: Grundpreis im Monat, zu wenig gezahlt (${monat.slice(0, 60)})`);
+  const fehlt = await kachel("differenz");
+  note((await kachel("passend")).wert === "90,83 €" && fehlt.name === "Fehlt im Jahr" && fehlt.wert === "130,00 €",
+       `Abschlagsrechner: Grundpreis im Monat, zu wenig gezahlt („${fehlt.name}: ${fehlt.wert}")`);
   await page.fill("#a-kwh", "");
-  note(!/NaN|Infinity|undefined/.test(await text("#a-ergebnis")), `Abschlagsrechner: ein leeres Feld ergibt keine kaputte Zahl`);
+  note(!(await kaputt("#a-ergebnis")), `Abschlagsrechner: ein leeres Feld ergibt keine kaputte Zahl`);
+
+  // **Verbrauch aus zwei Ständen.** 12.480 am 1. August, 12.731 am
+  // 1. September: 251 kWh in 31 Tagen, 8,1 am Tag, aufs Jahr gerechnet
+  // 2.955. Monat und Jahr sind hochgerechnet und tragen deshalb ein ≈.
+  await page.goto(base + "verbrauch-berechnen.html");
+  const menge = await kachel("menge");
+  note(menge.wert === "251 kWh" && menge.zusatz === "in 31 Tagen", `Verbrauchsrechner: 251 kWh in 31 Tagen (${menge.wert}, ${menge.zusatz})`);
+  note((await kachel("tag")).wert === "8,1 kWh", `Verbrauchsrechner: 8,1 kWh am Tag`);
+  note((await kachel("monat")).wert === "≈ 246 kWh", `Verbrauchsrechner: ≈ 246 kWh im Monat (${(await kachel("monat")).wert})`);
+  note((await kachel("jahr")).wert === "≈ 2.955 kWh", `Verbrauchsrechner: ≈ 2.955 kWh im Jahr (${(await kachel("jahr")).wert})`);
+  note(!/≈/.test(menge.wert) && !/≈/.test((await kachel("tag")).wert),
+       "Verbrauchsrechner: Gemessenes ohne ≈, Hochgerechnetes mit");
+  await page.selectOption("#v-einheit", "m³");
+  await page.fill("#v-alt", "412,5"); await page.fill("#v-neu", "418,7");
+  note((await kachel("menge")).wert === "6,2 m³" && (await kachel("tag")).wert === "0,20 m³",
+       `Verbrauchsrechner: Wasser in m³ mit Kommastellen (${(await kachel("menge")).wert}, ${(await kachel("tag")).wert} am Tag)`);
+  await page.fill("#v-neu", "400");
+  note((await text("#v-ergebnis")).includes("kleiner") && !(await kaputt("#v-ergebnis")),
+       "Verbrauchsrechner: ein kleinerer neuer Stand ergibt einen Hinweis statt eines negativen Verbrauchs");
+  await page.fill("#v-neu", "418,7"); await page.fill("#v-neu-tag", "2026-07-01");
+  note((await text("#v-ergebnis")).includes("Datum"), "Verbrauchsrechner: ein Datum vor dem früheren ergibt einen Hinweis");
+  await page.fill("#v-neu-tag", "2026-09-01"); await page.selectOption("#v-einheit", "m³ Gas");
+  note(await page.$('#v-ergebnis a[href="gas-in-kwh.html"]') !== null, "Verbrauchsrechner: bei Gas der Verweis aufs Umrechnen");
+
+  // **Auf einen Blick.** Vom Gründer am 26. September: nicht zu viel Text,
+  // klare Benennungen. Gezählt wird, was sonst schleichend wieder wächst:
+  // der Hinweis unter einem Feld, der Text im Ergebnis, und wo der Rechner
+  // steht.
+  for (const datei of ["gas-in-kwh.html", "abschlag-zu-hoch.html", "verbrauch-berechnen.html"]) {
+    await page.goto(base + datei);
+    const blick = await page.evaluate(() => {
+      const erg = document.querySelector(".rechner-ergebnis");
+      const kacheln = [...erg.querySelectorAll(".kachel")];
+      const lose = [...erg.childNodes].filter(n => !(n.nodeType === 1 && n.classList.contains("kacheln")))
+        .map(n => n.textContent).join(" ").trim();
+      const hinweise = [...document.querySelectorAll(".rechner small")].map(s => s.textContent.trim().split(/\s+/).length);
+      const vorDemRechner = (() => {
+        let n = 0, e = document.querySelector("h1").nextElementSibling;
+        while (e && !e.matches("form.rechner")) { if (e.matches("h2")) n++; e = e.nextElementSibling; }
+        return n;
+      })();
+      return {
+        kacheln: kacheln.length,
+        benannt: kacheln.every(k => k.querySelector(".kachel-name")?.textContent.trim() && k.querySelector(".kachel-wert")?.textContent.trim()),
+        worte: lose ? lose.split(/\s+/).length : 0,
+        hinweisMax: Math.max(0, ...hinweise),
+        vorDemRechner,
+      };
+    });
+    note(blick.kacheln >= 2 && blick.benannt, `${datei}: Ergebnis in ${blick.kacheln} Kacheln, jede mit Name und Zahl`);
+    note(blick.worte <= 15, `${datei}: neben den Kacheln höchstens 15 Wörter (${blick.worte})`);
+    note(blick.hinweisMax <= 5, `${datei}: jeder Hinweis unter einem Feld höchstens fünf Wörter (längster: ${blick.hinweisMax})`);
+    note(blick.vorDemRechner === 0, `${datei}: der Rechner steht direkt unter der Überschrift`);
+  }
 
   // **Felder einer Reihe stehen auf einer Höhe.** Ein zweizeiliger Hinweis
   // neben einem einzeiligen hat die Felder um acht Punkte versetzt; gesehen
   // habe ich es erst auf dem Bildschirmfoto.
   await page.setViewportSize({ width: 1280, height: 900 });
-  for (const datei of ["gas-in-kwh.html", "abschlag-zu-hoch.html"]) {
+  for (const datei of ["gas-in-kwh.html", "abschlag-zu-hoch.html", "verbrauch-berechnen.html"]) {
     await page.goto(base + datei);
     const versatz = await page.evaluate(() => {
       const reihen = {};
@@ -653,7 +728,7 @@ console.log("\nVerhalten");
   // **Groß genug für einen Daumen.** Wer mit der Rechnung in der einen Hand
   // tippt, trifft ein kleines Feld nicht.
   await page.setViewportSize({ width: 390, height: 900 });
-  for (const datei of ["gas-in-kwh.html", "abschlag-zu-hoch.html", "zaehlerstand-umzug.html"]) {
+  for (const datei of ["gas-in-kwh.html", "abschlag-zu-hoch.html", "verbrauch-berechnen.html", "zaehlerstand-umzug.html"]) {
     await page.goto(base + datei);
     const klein = await page.evaluate(() =>
       [...document.querySelectorAll(".rechner input, .rechner select, main button")]
@@ -709,10 +784,29 @@ console.log("\nVerhalten");
     note(knapp === 0, `${datei}: unter jedem Kartenraster mindestens 24 px Luft`);
   }
 
+  // **Die Botschaft steht oben, nicht irgendwo.** Vom Gründer am
+  // 26. September: Verbrauch sichtbar machen, nicht nur Abschlag und Kosten,
+  // und stärker herausstellen, dass wir keine Zählerstände haben. Geprüft
+  // wird die Reihenfolge, weil sie beim nächsten Umbau am leichtesten
+  // verrutscht.
+  await page.goto(base + "index.html");
+  const oben = await page.evaluate(() => ({
+    abschnitte: [...document.querySelectorAll("main > section")].map(x => x.id || ""),
+    zusage: (document.querySelector(".zusagen li") || {}).textContent || "",
+    daten: (document.querySelector("#daten h2") || {}).textContent || "",
+    dunkel: document.querySelector("#daten")?.classList.contains("abschnitt-dunkel"),
+  }));
+  note(oben.abschnitte[0] === "funktionen" && oben.abschnitte[1] === "daten",
+       `Startseite: erst Verbrauch, dann Datenschutz (${oben.abschnitte.slice(0, 3).join(", ")})`);
+  note(/Zählerstände/.test(oben.zusage) && /nie|nicht/.test(oben.zusage),
+       `Startseite: die erste Zusage ganz oben sagt, dass wir die Zählerstände nicht sehen („${oben.zusage}")`);
+  note(/haben wir nicht|sehen wir nie/.test(oben.daten) && oben.dunkel,
+       `Startseite: der Datenschutz-Abschnitt ist als einziger dunkel („${oben.daten}")`);
+
   // **Eine Karte, die woanders hinführt, ist als Ganzes anklickbar.**
   await page.goto(base + "ratgeber.html");
   const karten = await page.evaluate(() => [...document.querySelectorAll("main .karte")].map(k => k.tagName));
-  note(karten.length >= 3 && karten.every(t => t === "A"),
+  note(karten.length >= 4 && karten.every(t => t === "A"),
        `Ratgeber: ${karten.length} Karten, jede als Ganzes ein Verweis`);
 
   note(fehler.length === 0, fehler.length ? `JavaScript-Fehler beim Rechnen: ${fehler[0]}` : "Keine JavaScript-Fehler beim Rechnen und Drucken");

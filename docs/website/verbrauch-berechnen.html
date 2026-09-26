@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verbrauch aus zwei Zählerständen berechnen — Zählora</title>
+<meta name="robots" content="max-image-preview:large">
+<meta name="description" content="Zwei Zählerstände mit Datum eintippen und sehen, was du am Tag, im Monat und aufs Jahr verbrauchst. Für Strom, Gas und Wasser, direkt im Browser.">
+<meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F0E0C" media="(prefers-color-scheme: dark)">
+<!-- Safari auf dem iPhone blendet darüber eine Leiste mit „Öffnen" oder
+     „Laden" ein. Wer über eine Antwortseite kommt, steht damit einen Tipp
+     vor der App statt einen Umweg über den Store. -->
+<meta name="apple-itunes-app" content="app-id=6802262743">
+<link rel="canonical" href="https://zaehlora.pages.dev/verbrauch-berechnen.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Zählora">
+<meta property="og:locale" content="de_DE">
+<meta property="og:title" content="Verbrauch aus zwei Zählerständen berechnen — Zählora">
+<meta property="og:description" content="Zwei Zählerstände mit Datum eintippen und sehen, was du am Tag, im Monat und aufs Jahr verbrauchst. Für Strom, Gas und Wasser, direkt im Browser.">
+<meta property="og:url" content="https://zaehlora.pages.dev/verbrauch-berechnen.html">
+<meta property="og:image" content="https://zaehlora.pages.dev/bilder/teilen.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Zählora: Jeden Monat wissen, was du verbrauchst. Daneben die Übersicht der App auf einem iPhone.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="stylesheet" href="stil.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "Verbrauch aus zwei Zählerständen berechnen",
+      "description": "Zwei Zählerstände mit Datum eintippen und sehen, was du am Tag, im Monat und aufs Jahr verbrauchst.",
+      "inLanguage": "de",
+      "datePublished": "2026-09-26",
+      "dateModified": "2026-09-26",
+      "author": {"@type": "Organization", "name": "Zählora", "url": "https://zaehlora.pages.dev/"},
+      "publisher": {"@type": "Organization", "name": "Zählora", "url": "https://zaehlora.pages.dev/"},
+      "mainEntityOfPage": "https://zaehlora.pages.dev/verbrauch-berechnen.html"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Zählora", "item": "https://zaehlora.pages.dev/"},
+        {"@type": "ListItem", "position": 2, "name": "Ratgeber", "item": "https://zaehlora.pages.dev/ratgeber.html"},
+        {"@type": "ListItem", "position": 3, "name": "Verbrauch berechnen"}
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<a class="sprung" href="#inhalt">Zum Inhalt springen</a>
+
+<header class="kopf">
+  <div class="bahn kopf-innen">
+    <a class="marke" href="index.html">
+      <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <path d="M4 23a12 12 0 0 1 24 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".28"/>
+        <path d="M7 23h4.5l2.5-6.5L18 27l2.5-4H25" fill="none" stroke="#C77A0E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Zählora
+    </a>
+    <nav aria-label="Bereiche">
+      <a href="index.html#funktionen">Funktionen</a>
+      <a href="ratgeber.html">Ratgeber</a>
+      <a href="index.html#preise">Preise</a>
+      <a href="entwicklung.html">Entwicklung</a>
+      <a href="hilfe.html">Hilfe</a>
+    </nav>
+  </div>
+</header>
+
+<main id="inhalt" class="rechtstext">
+  <div class="bahn">
+    <nav class="pfad" aria-label="Pfad">
+      <ol>
+        <li><a href="index.html">Zählora</a></li>
+        <li><a href="ratgeber.html">Ratgeber</a></li>
+        <li aria-current="page">Verbrauch berechnen</li>
+      </ol>
+    </nav>
+    <h1 id="rechner">Was verbrauche ich eigentlich?</h1>
+    <p class="blass">
+      Die meisten erfahren es einmal im Jahr, mit der Abrechnung. Zwei
+      Zählerstände mit Datum reichen, um es jetzt zu wissen.
+    </p>
+
+    <form class="rechner" id="verbrauchrechner" onsubmit="return false" aria-describedby="v-ergebnis">
+      <div class="rechner-felder">
+        <label>Zähler
+          <select id="v-einheit">
+            <option value="kWh" selected>Strom in kWh</option>
+            <option value="m³ Gas">Gas in m³</option>
+            <option value="m³">Wasser in m³</option>
+          </select>
+        </label>
+        <label>Früherer Stand
+          <input id="v-alt" inputmode="decimal" autocomplete="off" value="12.480">
+        </label>
+        <label>abgelesen am
+          <input id="v-alt-tag" type="date" value="2026-08-01">
+        </label>
+        <label>Heutiger Stand
+          <input id="v-neu" inputmode="decimal" autocomplete="off" value="12.731">
+        </label>
+        <label>abgelesen am
+          <input id="v-neu-tag" type="date" value="2026-09-01">
+        </label>
+      </div>
+      <div class="rechner-ergebnis" id="v-ergebnis" aria-live="polite"></div>
+    </form>
+    <script src="rechner.js"></script>
+    <script>
+    // Verbrauch = neuer Stand minus früherer Stand, geteilt durch die Tage
+    // dazwischen. Hochgerechnet wird gleichmäßig; das ist dieselbe Annahme,
+    // die die App trifft, solange kein eigenes Vorjahr vorliegt, und deshalb
+    // trägt jede hochgerechnete Zahl ein ≈.
+    (function () {
+      var R = window.Rechner;
+      function tag(id) {
+        var v = document.getElementById(id).value;
+        var t = v ? Date.parse(v + "T00:00:00Z") : NaN;
+        return isFinite(t) ? t : NaN;
+      }
+      function rechne() {
+        var art = document.getElementById("v-einheit").value;
+        var einheit = art === "kWh" ? "kWh" : "m³";
+        var alt = R.zahl(document.getElementById("v-alt").value);
+        var neu = R.zahl(document.getElementById("v-neu").value);
+        var tage = Math.round((tag("v-neu-tag") - tag("v-alt-tag")) / 86400000);
+        var aus = document.getElementById("v-ergebnis");
+        if (!(alt >= 0) || !(neu >= 0) || !isFinite(tage)) {
+          aus.innerHTML = R.hinweis("Trag beide Stände mit Datum ein.");
+          return;
+        }
+        if (tage <= 0) { aus.innerHTML = R.hinweis("Das zweite Datum muss nach dem ersten liegen."); return; }
+        if (neu < alt) { aus.innerHTML = R.hinweis("Der heutige Stand ist kleiner als der frühere. Wurde der Zähler getauscht?"); return; }
+        var menge = neu - alt, proTag = menge / tage;
+        // Ganze Kilowattstunden, Kubikmeter mit einer Stelle; am Tag eine
+        // Stelle mehr, sonst stünde beim Wasser „0 m³".
+        var st = einheit === "kWh" ? 0 : 1;
+        var liste = [
+          R.kachel("menge", "Verbrauch", R.format(menge, st) + " " + einheit, "in " + tage + (tage === 1 ? " Tag" : " Tagen"), "haupt"),
+          R.kachel("tag", "Am Tag", R.format(proTag, st + 1) + " " + einheit, "im Schnitt"),
+          R.kachel("monat", "Im Monat", "≈ " + R.format(proTag * 365 / 12, st) + " " + einheit, "hochgerechnet"),
+          R.kachel("jahr", "Im Jahr", "≈ " + R.format(proTag * 365, st) + " " + einheit, "hochgerechnet")
+        ];
+        var html = R.kacheln(liste);
+        if (art === "m³ Gas") html += '<p class="rechner-hinweis">Abgerechnet wird Gas in kWh: <a href="gas-in-kwh.html">so rechnest du um</a>.</p>';
+        aus.innerHTML = html;
+      }
+      var f = document.getElementById("verbrauchrechner");
+      f.addEventListener("input", rechne);
+      f.addEventListener("change", rechne);
+      rechne();
+    })();
+    </script>
+
+    <h2>So wird gerechnet</h2>
+    <div class="anschrift">
+      <strong>(heutiger Stand − früherer Stand) ÷ Tage dazwischen</strong>
+    </div>
+    <p>
+      Monat und Jahr sind gleichmäßig hochgerechnet. Beim Wasser passt das,
+      beim Gas nicht: Im Januar heizt man, im Juli nicht. Wer im Sommer
+      abliest und aufs Jahr rechnet, liegt beim Gas weit darunter.
+    </p>
+
+    <h2>Warum sich das lohnt</h2>
+    <p>
+      Ob 250 kWh im Monat viel sind, weißt du erst, wenn du die Zahl vom
+      letzten Jahr danebenlegen kannst. Wer nur einmal im Jahr eine Rechnung
+      bekommt, hat genau eine Zahl, und die kommt, wenn sich nichts mehr ändern
+      lässt.
+    </p>
+    <p>
+      <a href="index.html">Zählora</a> macht aus jeder Ablesung diese Rechnung,
+      Monat für Monat, und legt das Vorjahr daneben. Deine Zählerstände bleiben
+      dabei auf deinem Telefon. Wir haben keinen Server, auf dem sie landen
+      könnten.
+    </p>
+
+    <aside class="weiterlesen nicht-drucken" aria-labelledby="weiterlesen-titel">
+      <h2 id="weiterlesen-titel">Weiterlesen</h2>
+      <div class="karten">
+      <a class="karte karte-verweis" href="gas-in-kwh.html">
+        <span class="art">Rechner</span>
+        <b>Gas von m³ in kWh</b>
+        <p>Mit Zustandszahl und Brennwert von deiner Rechnung, und warum „mal zehn“ danebenliegt.</p>
+        <span class="weiter">Zum Rechner ›</span>
+      </a>
+      <a class="karte karte-verweis" href="abschlag-zu-hoch.html">
+        <span class="art">Rechner</span>
+        <b>Abschlag zu hoch?</b>
+        <p>Welcher Abschlag zu deinem Verbrauch passt, und wie viel du übers Jahr vorstreckst.</p>
+        <span class="weiter">Zum Rechner ›</span>
+      </a>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="fuss">
+  <div class="bahn fuss-innen">
+    <span>Zählora — gebaut in Deutschland, von einem Menschen.</span>
+    <nav aria-label="Rechtliches">
+      <a href="index.html">Start</a>
+      <a href="ratgeber.html">Ratgeber</a>
+      <a href="entwicklung.html">Entwicklung</a>
+      <a href="hilfe.html">Hilfe &amp; Kontakt</a>
+      <a href="datenschutz.html">Datenschutz</a>
+      <a href="impressum.html">Impressum</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>

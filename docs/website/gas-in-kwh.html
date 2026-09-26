@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Gas: m³ in kWh umrechnen, mit Rechner — Zählora</title>
 <meta name="robots" content="max-image-preview:large">
-<meta name="description" content="Gas von Kubikmetern in kWh umrechnen, mit Zustandszahl und Brennwert von deiner Rechnung. Rechner zum Eintippen, ein Beispiel und die drei häufigsten Fehler.">
+<meta name="description" content="Gas von Kubikmetern in kWh umrechnen, mit Zustandszahl und Brennwert von deiner Rechnung. Rechner zum Eintippen und die drei häufigsten Fehler.">
 <meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0F0E0C" media="(prefers-color-scheme: dark)">
 <!-- Safari auf dem iPhone blendet darüber eine Leiste mit „Öffnen" oder
@@ -17,12 +17,12 @@
 <meta property="og:site_name" content="Zählora">
 <meta property="og:locale" content="de_DE">
 <meta property="og:title" content="Gaszähler: Kubikmeter in Kilowattstunden umrechnen — Zählora">
-<meta property="og:description" content="Der Gaszähler zählt Kubikmeter, abgerechnet werden Kilowattstunden. Die Formel mit Zustandszahl und Brennwert, ein Beispiel zum Nachrechnen und die drei häufigsten Fehler.">
+<meta property="og:description" content="Gas von Kubikmetern in kWh umrechnen, mit Zustandszahl und Brennwert von deiner Rechnung. Rechner zum Eintippen und die drei häufigsten Fehler.">
 <meta property="og:url" content="https://zaehlora.pages.dev/gas-in-kwh.html">
 <meta property="og:image" content="https://zaehlora.pages.dev/bilder/teilen.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Zählora: Zählerstände für Strom, Gas und Wasser, daneben die Übersicht der App auf einem iPhone.">
+<meta property="og:image:alt" content="Zählora: Jeden Monat wissen, was du verbrauchst. Daneben die Übersicht der App auf einem iPhone.">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/favicon.ico" sizes="48x48">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -86,93 +86,65 @@
         <li aria-current="page">Gas in kWh umrechnen</li>
       </ol>
     </nav>
-    <h1>Gaszähler: Kubikmeter in Kilowattstunden umrechnen</h1>
+    <h1 id="rechner">Gas: Kubikmeter in Kilowattstunden umrechnen</h1>
     <p class="blass">
-      <strong>Kurz gesagt:</strong> Dein Zähler zählt Kubikmeter, abgerechnet
-      werden Kilowattstunden. Umgerechnet wird mit zwei Zahlen, die auf deiner
-      Rechnung stehen: Zustandszahl und Brennwert.
+      Der Zähler zählt Kubikmeter, die Rechnung Kilowattstunden. Tipp die
+      Werte von deiner Rechnung ein.
     </p>
 
-    <div class="anschrift">
-      <strong>Kilowattstunden = Kubikmeter × Zustandszahl × Brennwert</strong>
-    </div>
-
-    <h2 id="rechner">Mit deinen Zahlen</h2>
     <form class="rechner" id="gasrechner" onsubmit="return false" aria-describedby="gas-ergebnis">
       <div class="rechner-felder">
         <label>Verbrauch in m³
           <input id="g-m3" inputmode="decimal" autocomplete="off" value="250">
-          <small>Neuer Stand minus alter Stand</small>
+          <small>neuer minus alter Stand</small>
         </label>
         <label>Zustandszahl
           <input id="g-z" inputmode="decimal" autocomplete="off" value="0,9650">
-          <small>Von der Rechnung, meist zwischen 0,9 und 1</small>
+          <small>steht auf der Rechnung</small>
         </label>
         <label>Brennwert in kWh/m³
           <input id="g-b" inputmode="decimal" autocomplete="off" value="11,2">
-          <small>Von der Rechnung</small>
+          <small>steht auf der Rechnung</small>
         </label>
-        <label>Arbeitspreis in Cent/kWh
+        <label>Arbeitspreis in ct/kWh
           <input id="g-p" inputmode="decimal" autocomplete="off" value="12">
-          <small>Brutto, wie auf der Rechnung. Darf leer bleiben</small>
+          <small>brutto, darf leer bleiben</small>
         </label>
       </div>
       <div class="rechner-ergebnis" id="gas-ergebnis" aria-live="polite"></div>
     </form>
+    <script src="rechner.js"></script>
     <script>
     // Dieselbe Rechnung wie in der App (PulseCore, GasConversion.energy):
-    // Kubikmeter × Zustandszahl × Brennwert. Nichts wird gesendet oder gespeichert.
+    // Kubikmeter × Zustandszahl × Brennwert.
     (function () {
-      function zahl(t) {
-        t = String(t || "").replace(/\s/g, "");
-        // „1.267" ist im Deutschen eintausendzweihundertsiebenundsechzig, nicht
-        // eins Komma zwei. Ein Punkt vor genau drei Ziffern trennt Tausender;
-        // „0.9523" oder „11.4" bleiben Kommazahlen.
-        if (t.indexOf(",") >= 0) t = t.replace(/\./g, "").replace(",", ".");
-        else if (/^\d{1,3}(\.\d{3})+$/.test(t)) t = t.replace(/\./g, "");
-        var n = parseFloat(t);
-        return isFinite(n) ? n : NaN;
-      }
-      var fmt0 = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 0 });
-      var eur = new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" });
+      var R = window.Rechner;
+      function wert(id) { return R.zahl(document.getElementById(id).value); }
       function rechne() {
-        var m3 = zahl(document.getElementById("g-m3").value);
-        var z = zahl(document.getElementById("g-z").value);
-        var b = zahl(document.getElementById("g-b").value);
-        var p = zahl(document.getElementById("g-p").value);
+        var m3 = wert("g-m3"), z = wert("g-z"), b = wert("g-b"), p = wert("g-p");
         var aus = document.getElementById("gas-ergebnis");
         if (!(m3 >= 0) || !(z > 0) || !(b > 0)) {
-          aus.innerHTML = "<p>Trag Verbrauch, Zustandszahl und Brennwert ein.</p>";
+          aus.innerHTML = R.hinweis("Trag Verbrauch, Zustandszahl und Brennwert ein.");
           return;
         }
-        var kwh = m3 * z * b;
-        var faust = m3 * 10;
-        var html = "<strong>" + fmt0.format(kwh) + " kWh</strong>";
-        if (p > 0) html += "<p>Das sind " + eur.format(kwh * p / 100) + " Arbeitspreis, dazu kommt der Grundpreis.</p>";
-        var abw = faust - kwh;
-        if (Math.abs(abw) >= 1) {
-          html += "<p>Mit der Faustformel „mal zehn“ kämen " + fmt0.format(faust) +
-            " kWh heraus, " + fmt0.format(Math.abs(abw)) + " kWh " + (abw > 0 ? "zu viel" : "zu wenig") + ".</p>";
-        }
-        aus.innerHTML = html;
+        var kwh = m3 * z * b, faust = m3 * 10, abw = faust - kwh;
+        var liste = [R.kachel("kwh", "Verbrauch in kWh", R.format(kwh, 0) + " kWh",
+                              R.format(m3, m3 % 1 ? 1 : 0) + " m³ umgerechnet", "haupt")];
+        if (p > 0) liste.push(R.kachel("kosten", "Arbeitspreis", R.euro.format(kwh * p / 100), "ohne Grundpreis"));
+        liste.push(R.kachel("faust", "Mit „mal zehn“", R.format(faust, 0) + " kWh",
+          Math.abs(abw) < 1 ? "stimmt hier zufällig" : R.format(Math.abs(abw), 0) + " kWh " + (abw > 0 ? "zu viel" : "zu wenig"),
+          Math.abs(abw) < 1 ? "" : "achtung"));
+        aus.innerHTML = R.kacheln(liste);
       }
       document.getElementById("gasrechner").addEventListener("input", rechne);
       rechne();
     })();
     </script>
 
-    <h2>Ein Beispiel zum Nachrechnen</h2>
-    <p>
-      Zwischen zwei Ablesungen sind 250 m³ vergangen. Auf der Rechnung stehen
-      eine Zustandszahl von 0,9650 und ein Brennwert von 11,2 kWh/m³:
-    </p>
+    <h2>So wird gerechnet</h2>
     <div class="anschrift">
-      250 × 0,9650 × 11,2 = <strong>2.702 kWh</strong>
+      <strong>Kilowattstunden = Kubikmeter × Zustandszahl × Brennwert</strong>
     </div>
-    <p>
-      Bei einem Arbeitspreis von 12 Cent brutto sind das 324,24 € für diesen
-      Zeitraum, plus Grundpreis.
-    </p>
 
     <h2>Was dabei am häufigsten schiefgeht</h2>
     <ul>
@@ -201,7 +173,8 @@
     <p>
       Genau dafür gibt es <a href="index.html">Zählora</a>: Zustandszahl und
       Brennwert einmal eintragen, danach rechnet die App bei jeder Ablesung
-      selbst, in Kilowattstunden und in Euro. Mehr zum Nachrechnen im
+      selbst, in Kilowattstunden und in Euro. Deine Zählerstände bleiben dabei
+      auf deinem Telefon; wir bekommen sie nie zu sehen. Mehr zum Nachrechnen im
       <a href="ratgeber.html">Ratgeber</a>, weitere Fragen beantwortet die
       <a href="hilfe.html">Hilfeseite</a>.
     </p>
@@ -210,6 +183,12 @@
     <aside class="weiterlesen nicht-drucken" aria-labelledby="weiterlesen-titel">
       <h2 id="weiterlesen-titel">Weiterlesen</h2>
       <div class="karten">
+      <a class="karte karte-verweis" href="verbrauch-berechnen.html">
+        <span class="art">Rechner</span>
+        <b>Was verbrauche ich eigentlich?</b>
+        <p>Zwei Zählerstände mit Datum, und du siehst deinen Verbrauch am Tag, im Monat und aufs Jahr.</p>
+        <span class="weiter">Zum Rechner ›</span>
+      </a>
       <a class="karte karte-verweis" href="zaehlerstand-umzug.html">
         <span class="art">Anleitung und Vorlage</span>
         <b>Zählerstände beim Umzug</b>

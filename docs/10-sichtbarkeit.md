@@ -1,6 +1,6 @@
 # 10 – Sichtbarkeit: gefunden werden, ohne Werbebudget
 
-Stand: 2026-09-25, Version 0.117.0.
+Stand: 2026-09-26, Version 0.117.1.
 
 Die Frage: **Wie erfährt jemand von Zählora, der uns nicht kennt?** Bezahlte
 Werbung ist keine Antwort (Abschnitt 8).
@@ -26,6 +26,45 @@ Werbung ist keine Antwort (Abschnitt 8).
 > Gründer am 25. September als Bildschirmfoto geschickt: die Zahlen in
 > Abschnitt 1. **Nicht gemessen:** Suchvolumen, Suchwörter, ob Google die
 > Seite schon führt. Was nach Rangfolge klingt, ist eine begründete Schätzung.
+
+---
+
+## 0. Die Botschaft, in dieser Reihenfolge
+
+Vom Gründer am 26. September: nicht nur Abschlag und Kosten, sondern
+**Transparenz über den tatsächlichen Verbrauch**, weil „man unterschätzt, wie
+viele nicht sagen können, was sie unterjährig verbrauchen". Und **stärker
+herausstellen, dass wir keine Zählerstände tracken oder besitzen.**
+
+| Rang | Aussage | Warum an dieser Stelle |
+|---|---|---|
+| 1 | **Du weißt jeden Monat, was du verbrauchst**, nicht erst mit der Jahresabrechnung | Das Problem, das fast jeder hat und kaum jemand benennt. Wer fragt „Was verbrauchen wir eigentlich?", bekommt sonst einmal im Jahr eine Antwort |
+| 2 | **Deine Zählerstände haben wir nicht.** Kein Konto, kein Server, keine Kopie | Der Unterschied zur Konkurrenz, der sich prüfen lässt: „Keine Daten erfasst" im App Store gegen Standort, Geräte-ID und Nutzungsdaten beim größten Mitbewerber |
+| 3 | **Die Nachzahlung siehst du vorher** | Der Nutzen, der Geld wert ist. Er folgt aus 1: Wer den Verbrauch kennt, kennt den Abschlag |
+
+Die Reihenfolge gilt überall, wo jemand zum ersten Mal von Zählora liest: Kopf
+der Startseite, Werbetext, erster Absatz der Store-Beschreibung, Vorschaubild
+zum Teilen, Presseseite. `check-website.mjs` hält auf der Startseite fest, dass
+zuerst der Verbrauch kommt und direkt danach, als einziger dunkler Abschnitt,
+der Datenschutz.
+
+**Was dabei nicht passiert:** Der Datenschutz wird nicht größer behauptet, als
+er ist. „Wir sehen deine Zählerstände nie" stimmt, weil es keinen Server gibt,
+die iCloud privat ist und `check-sicherheit.sh` jeden Netzverkehr verbietet.
+„Unknackbar" oder „sicherste App" stimmt so nicht und steht nirgends.
+
+### Die Rechner: auf einen Blick
+
+Ebenfalls vom 26. September: „nicht zu viel Text", „auf einen Blick mit Daten
+erkennbar", „klare Benennungen". Seitdem:
+
+- **Der Rechner steht direkt unter der Überschrift**, davor ein Satz.
+- **Das Ergebnis sind Kacheln**: oben der Name („Passender Abschlag", „Am Tag",
+  „Im Jahr"), groß die Zahl, klein der Bezug („im Monat", „hochgerechnet").
+  Gerechnetes trägt ein ≈, Gemessenes nicht.
+- **Feldhinweise höchstens fünf Wörter**, neben den Kacheln höchstens
+  fünfzehn. Beides zählt `check-website.mjs`.
+- Formel, Beispiel und Erklärung stehen darunter, für den, der es wissen will.
 
 ---
 
@@ -165,6 +204,7 @@ Geordnet nach Wirkung je Aufwand; die Suchmenge ist geschätzt, nicht gemessen.
 
 | Seite | Art | Warum sie zuerst dran ist |
 |---|---|---|
+| `verbrauch-berechnen`: **„Was verbrauche ich eigentlich?"** | Rechner | **erledigt 0.117.1.** Botschaft 1 als Werkzeug: zwei Stände mit Datum, heraus kommt Tag, Monat, Jahr |
 | `zaehlerstand-umzug` mit **Übergabeprotokoll zum Ausdrucken** | Anlass + Vorlage | ganzjährig, dünn besetzt, ein Ding zum Mitnehmen |
 | `gas-in-kwh` **als Rechner** ausbauen | Rechner | die Seite gibt es schon; mit einem Rechner, der Zustandszahl und Brennwert von der eigenen Rechnung nimmt, wird sie besser als die meisten davor |
 | `abschlag-zu-hoch` **als Rechner** ausbauen | Rechner | dasselbe; das ist die Frage nach jedem Brief mit neuem Abschlag |
@@ -319,15 +359,15 @@ bei Google neben der Produktseite.
 
 ### 4.3 Der Werbetext — sofort änderbar
 
-Vorschlag, 127 Zeichen, ohne neue Fassung eintragbar:
+Seit 26. September eingetragen, 131 Zeichen:
 
 ```
-Du trägst deinen Zählerstand ein und siehst Monate vorher, ob dein Abschlag
-reicht. Ohne Abo, und deine Zahlen bleiben bei dir.
+Du siehst jeden Monat, was du an Strom, Gas und Wasser verbrauchst. Deine
+Zählerstände bleiben auf deinem Gerät, wir sehen sie nie.
 ```
 
-Die Fassung vom Vortag sagte „schon im Oktober" und hing an der falschen
-Saison-These.
+Botschaft 1 und 2 aus Abschnitt 0. Die Fassung vom 25. September sprach vom
+Abschlag, die davor „schon im Oktober" und hing an der falschen Saison-These.
 
 ### 4.4 Die Bilder
 

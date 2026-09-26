@@ -9,6 +9,52 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.117.1 — 2026-09-26
+
+**Verbrauch zuerst, Datenschutz direkt dahinter, und Rechner, die man auf
+einen Blick liest.**
+
+Vom Gründer am 26. September: nicht nur Abschlag und Kosten, sondern
+Transparenz über den tatsächlichen Verbrauch, „man unterschätzt, wie viele
+nicht sagen können, was sie unterjährig verbrauchen". Stärker herausstellen,
+dass wir keine Zählerstände tracken oder besitzen. Und bei den Rechnern nicht
+zu viel Text, klare Benennungen.
+
+Website:
+
+- **Neuer Rechner „Was verbrauche ich eigentlich?"**: zwei Zählerstände mit
+  Datum, heraus kommen Verbrauch, am Tag, im Monat und im Jahr. Für Strom,
+  Gas und Wasser; bei Gas der Verweis aufs Umrechnen. Ein kleinerer neuer
+  Stand oder ein falsches Datum ergibt einen Hinweis, keinen negativen
+  Verbrauch.
+- **Alle Rechner zeigen ihr Ergebnis als Kacheln**: Name, Zahl, Bezug.
+  Gerechnetes mit ≈, Gemessenes ohne. Der Rechner steht direkt unter der
+  Überschrift, Feldhinweise sind kurz, das doppelte Rechenbeispiel auf der
+  Gasseite ist gestrichen. Das Einlesen von Zahlen steht in `rechner.js`, an
+  einer Stelle statt in jeder Seite.
+- **Startseite:** Der Kopf spricht vom Verbrauch („Die meisten erfahren einmal
+  im Jahr, was sie verbraucht haben"), die erste Zusage heißt „Deine
+  Zählerstände sehen wir nie". Der Abschnitt „Deine Zählerstände haben wir
+  nicht" steht jetzt an zweiter Stelle, als einziger dunkel.
+- **Vorschaubild zum Teilen** und Beschreibung mit derselben Botschaft.
+
+Store:
+
+- **Werbetext:** „Du siehst jeden Monat, was du an Strom, Gas und Wasser
+  verbrauchst. Deine Zählerstände bleiben auf deinem Gerät, wir sehen sie nie."
+- **Beschreibung** beginnt mit dem Verbrauch, der Abschnitt „Wir wissen nicht,
+  wie viel Strom du verbrauchst" steht an zweiter Stelle. 3982 von 4000
+  Zeichen. Wirksam mit 1.3.
+
+Konzept: `docs/10-sichtbarkeit.md` hat einen neuen Abschnitt 0 mit der
+Reihenfolge der drei Aussagen und den Regeln für die Rechner.
+
+Prüfungen: Die Rechner werden über ihre Kacheln geprüft, nicht über Sätze;
+neu sind der Verbrauchsrechner mit Zahlen und Fehlerfällen, höchstens fünf
+Wörter je Feldhinweis und fünfzehn neben den Kacheln, der Rechner direkt
+unter der Überschrift, und auf der Startseite die Reihenfolge Verbrauch vor
+Datenschutz mit der Zusage ganz oben. 1159 Prüfpunkte.
+
 ## 0.117.0 — 2026-09-25
 
 **Die Website für Google und die anderen Suchdienste, gemessen an der

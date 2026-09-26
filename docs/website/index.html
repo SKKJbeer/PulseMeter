@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Zählora: die Zählerstand-App für Strom, Gas und Wasser</title>
 <meta name="robots" content="max-image-preview:large">
-<meta name="description" content="Zählerstände für Strom, Gas, Wasser und Photovoltaik eintragen und sehen, ob alles im Rahmen ist. Ohne Konto, ohne Werbung, ohne Server. Ab 0,99 €, kein Abo.">
+<meta name="description" content="Zählerstände für Strom, Gas und Wasser eintragen und jeden Monat sehen, was du verbrauchst. Ohne Konto und ohne Server: Deine Zählerstände bleiben auf deinem Gerät.">
 <meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0F0E0C" media="(prefers-color-scheme: dark)">
 <!-- Safari auf dem iPhone blendet darüber eine Leiste mit „Öffnen" oder
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="Zählora">
 <meta property="og:locale" content="de_DE">
 <meta property="og:title" content="Zählora: die Zählerstand-App für Strom, Gas und Wasser">
-<meta property="og:description" content="Zählerstände eintragen und sehen, ob alles im Rahmen ist. Ohne Konto, ohne Werbung, ohne Server. Ab 0,99 €, kein Abo.">
+<meta property="og:description" content="Jeden Monat sehen, was du an Strom, Gas und Wasser verbrauchst. Deine Zählerstände bleiben auf deinem Gerät, wir sehen sie nie.">
 <meta property="og:url" content="https://zaehlora.pages.dev/">
 <meta property="og:image" content="https://zaehlora.pages.dev/bilder/teilen.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Zählora: Zählerstände für Strom, Gas und Wasser, daneben die Übersicht der App auf einem iPhone.">
+<meta property="og:image:alt" content="Zählora: Jeden Monat wissen, was du verbrauchst. Daneben die Übersicht der App auf einem iPhone.">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="stil.css">
 <script type="application/ld+json">
@@ -109,10 +109,9 @@
       <div>
         <h1>Einmal im Monat ablesen. Den Rest des Jahres Bescheid wissen.</h1>
         <p class="vorspann">
-          Du trägst deinen Zählerstand ein, Zählora macht den Rest.
-          Strom, Gas, Wasser, Photovoltaik und Wärme. Auf dem ersten
-          Bildschirm siehst du, wie viel seit Januar zusammengekommen ist,
-          wie viel es im Vorjahr war und was das kostet.
+          Die meisten erfahren einmal im Jahr, was sie verbraucht haben: mit
+          der Abrechnung. Mit Zählora weißt du es jeden Monat, für Strom, Gas,
+          Wasser, Photovoltaik und Wärme, und das Vorjahr steht daneben.
         </p>
         <div class="knoepfe">
           <!-- APPSTORE-KNOPF — von scripts/appstore-knopf.sh gesetzt, nicht von Hand.
@@ -138,9 +137,9 @@
           <a class="knopf knopf-rand" href="#funktionen">Was drinsteckt</a>
         </div>
         <ul class="zusagen">
+          <li>Deine Zählerstände sehen wir nie</li>
           <li>Ohne Konto</li>
           <li>Keine Werbung, keine Auswertung</li>
-          <li>Deine Zahlen bleiben bei dir</li>
         </ul>
         <!-- Bis zum 5. September erklärte dieser Absatz, warum es nichts zu
              laden gibt. Diese Frage stellt sich seit der Freigabe nicht mehr,
@@ -175,17 +174,18 @@
   <section id="funktionen">
     <div class="bahn paar">
       <div>
-        <span class="marke-klein">Überblick</span>
-        <h2>Du siehst sofort, ob mehr zusammenkommt als letztes Jahr</h2>
+        <span class="marke-klein">Verbrauch</span>
+        <h2>Du weißt jeden Monat, was du verbrauchst</h2>
         <p class="blass">
-          Jeder Zähler zeigt, was seit Jahresbeginn zusammengekommen ist, was
-          im selben Zeitraum des Vorjahres zusammenkam und was das in Euro
-          bedeutet. Ohne Scrollen, ohne Menü.
+          Nicht erst mit der Jahresabrechnung. Jeder Zähler zeigt, was seit
+          Januar zusammengekommen ist und wie das zum selben Zeitraum im
+          Vorjahr steht.
         </p>
         <ul class="liste">
+          <li><strong>Monat für Monat.</strong> Im Verlauf steht jeder Monat einzeln, als Diagramm oder als Tabelle.</li>
+          <li><strong>Der laufende Monat mit Erwartung.</strong> Was schon gemessen ist, steht neben dem, was voraussichtlich dazukommt, und dabei, auf wie vielen Tagen das beruht.</li>
           <li><strong>Vergleich auf gleicher Grundlage.</strong> Januar bis Mai gegen Januar bis Mai. Läuft der Monat noch, wird auch das Vorjahr am selben Tag abgeschnitten.</li>
-          <li><strong>Wenn Zählora einen Wert schätzt, siehst du das.</strong> Hochgerechnete Werte stehen nie unkommentiert zwischen gemessenen.</li>
-          <li><strong>Jede Zahl lässt sich antippen</strong> und zeigt, aus welchen Ablesungen sie entstanden ist.</li>
+          <li><strong>Wenn Zählora einen Wert schätzt, siehst du das.</strong> Jede Zahl lässt sich antippen und zeigt, aus welchen Ablesungen sie entstanden ist.</li>
         </ul>
       </div>
       <picture class="geraet">
@@ -193,6 +193,84 @@
         <img loading="lazy" decoding="async" src="bilder/light.jpg" width="460" height="1000"
              alt="Die Übersicht mit vier Zählern, Vorjahresvergleich und Kosten.">
       </picture>
+    </div>
+  </section>
+
+  <section id="daten" class="abschnitt-dunkel">
+    <div class="bahn">
+      <span class="marke-klein">Deine Daten</span>
+      <h2>Deine Zählerstände haben wir nicht</h2>
+      <p class="blass">
+        Nicht anonymisiert, nicht „zur Verbesserung des Angebots“ und auch
+        nicht als Kopie. Sie liegen auf deinem Telefon und, wenn du willst, in
+        deiner eigenen iCloud, auf die wir keinen Zugriff haben. Verlassen
+        können sie dein Gerät nur, wenn du sie selbst weitergibst.
+      </p>
+
+      <div class="karten">
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12.5 10 17l9-10"/>
+          </svg>
+          <h3>Kein Konto</h3>
+          <p>Keine Anmeldung, keine E-Mail-Adresse, kein Passwort. Du lädst die App und trägst die erste Zahl ein.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 3l18 18"/><path d="M12 3a9 9 0 0 1 9 9 9 9 0 0 1-1.6 5.1M6.6 6.6A9 9 0 0 0 12 21"/>
+          </svg>
+          <h3>Keine Server</h3>
+          <p>Es gibt keinen Dienst, der deine Zahlen empfangen könnte. Auch keinen von uns. Die App redet nur mit dem App Store und mit deiner eigenen iCloud.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 21s-7-4.4-7-10V6l7-3 7 3v5c0 5.6-7 10-7 10z"/>
+          </svg>
+          <h3>Nichts zählt mit</h3>
+          <p>Keine Werbung, keine Auswertung, keine Absturzberichte. Niemand erfährt, wie oft du die App öffnest.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M7 17h10a4 4 0 0 0 .6-8A6 6 0 0 0 6 8.5 4.2 4.2 0 0 0 7 17z"/>
+          </svg>
+          <h3>Deine eigene iCloud</h3>
+          <p>Wenn du den Abgleich einschaltest, liegen die Daten in deinem privaten iCloud-Bereich. Wir haben darauf keinen Zugriff.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v11m0 0-4-4m4 4 4-4"/><path d="M4 17v3h16v-3"/>
+          </svg>
+          <h3>Export, dauerhaft kostenlos</h3>
+          <p>Alle Ablesungen als Tabelle, in jedem Tabellenprogramm zu öffnen. Auch wenn du nie einen Cent ausgibst.</p>
+        </div>
+        <div class="karte">
+          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 7h11M4 12h16M4 17h8"/><path d="M18 5v6"/>
+          </svg>
+          <h3>Löschen heißt gelöscht</h3>
+          <p>Du entfernst die App, und die Daten auf dem Gerät sind weg. Nutzt du iCloud, löschst du die Kopie dort in den Einstellungen mit. Bei uns gibt es keine.</p>
+        </div>
+      </div>
+
+      <p class="blass">
+        Der freie Export ist der Kern davon. Er ist die Antwort auf die Frage,
+        die jeder zu Recht stellt: <em>Was, wenn es die App irgendwann nicht
+        mehr gibt?</em> Dann nimmst du deine Tabelle und gehst. Genau diese
+        Sorge hält viele Leute bei Excel, und Apps, die die eigenen Daten als
+        Pfand nehmen, geben ihnen recht.
+      </p>
+      <p class="notiz">
+        Dass das stimmt, prüft bei jeder Änderung ein Skript im Quelltext mit:
+        kein Netzverkehr, kein Analyse-Baustein, kein fremdes Paket, keine
+        Protokollausgabe mit Zählerständen, iCloud ausschließlich privat.
+        Schlägt eine dieser Prüfungen an, geht die Änderung nicht durch.
+        Nachzulesen in der <a href="datenschutz.html">Datenschutzerklärung</a>.
+      </p>
+      <p class="notiz">
+        Diese Seite hält sich an dieselbe Regel: keine Cookies, keine
+        Zählpixel, keine fremden Schriftarten. Deshalb hat dich hier auch kein
+        Zustimmungsfenster begrüßt.
+      </p>
     </div>
   </section>
 
@@ -329,85 +407,7 @@
     </div>
   </section>
 
-  <section>
-    <div class="bahn">
-      <span class="marke-klein">Deine Daten</span>
-      <h2>Wir sehen deine Zählerstände nicht</h2>
-      <p class="blass">
-        Auch nicht anonymisiert und auch nicht „zur Verbesserung des
-        Angebots". Deine Ablesungen verlassen dein Gerät nur, wenn du sie
-        selbst weitergibst. Der einzige andere Ort, an den sie gehen können,
-        ist deine eigene iCloud.
-      </p>
-
-      <div class="karten">
-        <div class="karte">
-          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M5 12.5 10 17l9-10"/>
-          </svg>
-          <h3>Kein Konto</h3>
-          <p>Keine Anmeldung, keine E-Mail-Adresse, kein Passwort. Du lädst die App und trägst die erste Zahl ein.</p>
-        </div>
-        <div class="karte">
-          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M3 3l18 18"/><path d="M12 3a9 9 0 0 1 9 9 9 9 0 0 1-1.6 5.1M6.6 6.6A9 9 0 0 0 12 21"/>
-          </svg>
-          <h3>Keine Server</h3>
-          <p>Es gibt keinen Dienst, der deine Zahlen empfangen könnte. Auch keinen von uns. Die App redet nur mit dem App Store und mit deiner eigenen iCloud.</p>
-        </div>
-        <div class="karte">
-          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M12 21s-7-4.4-7-10V6l7-3 7 3v5c0 5.6-7 10-7 10z"/>
-          </svg>
-          <h3>Nichts zählt mit</h3>
-          <p>Keine Werbung, keine Auswertung, keine Absturzberichte. Niemand erfährt, wie oft du die App öffnest.</p>
-        </div>
-        <div class="karte">
-          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M7 17h10a4 4 0 0 0 .6-8A6 6 0 0 0 6 8.5 4.2 4.2 0 0 0 7 17z"/>
-          </svg>
-          <h3>Deine eigene iCloud</h3>
-          <p>Wenn du den Abgleich einschaltest, liegen die Daten in deinem privaten iCloud-Bereich. Wir haben darauf keinen Zugriff.</p>
-        </div>
-        <div class="karte">
-          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M12 3v11m0 0-4-4m4 4 4-4"/><path d="M4 17v3h16v-3"/>
-          </svg>
-          <h3>Export, dauerhaft kostenlos</h3>
-          <p>Alle Ablesungen als Tabelle, in jedem Tabellenprogramm zu öffnen. Auch wenn du nie einen Cent ausgibst.</p>
-        </div>
-        <div class="karte">
-          <svg class="karte-zeichen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M4 7h11M4 12h16M4 17h8"/><path d="M18 5v6"/>
-          </svg>
-          <h3>Löschen heißt gelöscht</h3>
-          <p>Du entfernst die App, und die Daten auf dem Gerät sind weg. Nutzt du iCloud, löschst du die Kopie dort in den Einstellungen mit. Bei uns gibt es keine.</p>
-        </div>
-      </div>
-
-      <p class="blass">
-        Der freie Export ist der Kern davon. Er ist die Antwort auf die Frage,
-        die jeder zu Recht stellt: <em>Was, wenn es die App irgendwann nicht
-        mehr gibt?</em> Dann nimmst du deine Tabelle und gehst. Genau diese
-        Sorge hält viele Leute bei Excel, und Apps, die die eigenen Daten als
-        Pfand nehmen, geben ihnen recht.
-      </p>
-      <p class="notiz">
-        Dass das stimmt, prüft bei jeder Änderung ein Skript im Quelltext mit:
-        kein Netzverkehr, kein Analyse-Baustein, kein fremdes Paket, keine
-        Protokollausgabe mit Zählerständen, iCloud ausschließlich privat.
-        Schlägt eine dieser Prüfungen an, geht die Änderung nicht durch.
-        Nachzulesen in der <a href="datenschutz.html">Datenschutzerklärung</a>.
-      </p>
-      <p class="notiz">
-        Diese Seite hält sich an dieselbe Regel: keine Cookies, keine
-        Zählpixel, keine fremden Schriftarten. Deshalb hat dich hier auch kein
-        Zustimmungsfenster begrüßt.
-      </p>
-    </div>
-  </section>
-
-  <section id="ratgeber" class="abschnitt-hell">
+  <section id="ratgeber">
     <div class="bahn">
       <span class="marke-klein">Ratgeber</span>
       <h2>Nachrechnen, auch ohne die App</h2>
@@ -418,6 +418,12 @@
         eintippst, bleibt dort.
       </p>
       <div class="karten">
+        <a class="karte karte-verweis" href="verbrauch-berechnen.html">
+          <span class="art">Rechner</span>
+          <b>Was verbrauche ich eigentlich?</b>
+          <p>Zwei Zählerstände mit Datum, und du siehst deinen Verbrauch am Tag, im Monat und aufs Jahr.</p>
+          <span class="weiter">Zum Rechner ›</span>
+        </a>
         <a class="karte karte-verweis" href="abschlag-zu-hoch.html">
           <span class="art">Rechner</span>
           <b>Abschlag zu hoch?</b>
@@ -440,7 +446,7 @@
     </div>
   </section>
 
-  <section id="neu">
+  <section id="neu" class="abschnitt-hell">
     <div class="bahn">
       <span class="marke-klein">Neu in der App</span>
       <h2>Was zuletzt dazugekommen ist</h2>
@@ -523,7 +529,7 @@
     </div>
   </section>
 
-  <section id="preise" class="abschnitt-hell">
+  <section id="preise">
     <div class="bahn">
       <span class="marke-klein">Preise</span>
       <h2>Du kaufst einmal, was dir fehlt</h2>

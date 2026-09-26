@@ -355,6 +355,29 @@ a.apfel:hover { transform: translateY(-1px); }
 
 section { padding: clamp(48px, 7vw, 92px) 0; }
 .abschnitt-hell { background: var(--raised); }
+/* **Der eine dunkle Abschnitt: dass wir deine Zählerstände nicht haben.**
+   Vom Gründer am 26. September: „bringe noch stärker als Marketing raus,
+   dass wir keine Daten der Zählerstände tracken oder besitzen". Bis dahin
+   stand der Abschnitt als siebter von neun weit unten und sah aus wie die
+   anderen. Jetzt steht er an zweiter Stelle und als einziger dunkel, in
+   beiden Farbschemata. Die Farben werden hier neu gesetzt, damit alles darin
+   (Karten, Überschriften, Zeichen) von selbst stimmt. */
+.abschnitt-dunkel {
+  --ground:  #1C1812;
+  --raised:  #231E16;
+  --surface: #262017;
+  --ink:     #F5F2EC;
+  --ink-2:   #CFC8BA;
+  --ink-3:   #A39C8E;
+  --line:    #3A332A;
+  --line-2:  #4A4236;
+  --tint:    #E0A040;
+  --tint-ink: #E8C070;
+  --shadow:  0 1px 2px rgba(0, 0, 0, .4);
+  background: var(--ground);
+  color: var(--ink);
+}
+.abschnitt-dunkel a { color: var(--tint-ink); }
 
 h2 {
   margin: 0 0 14px;
@@ -800,3 +823,35 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
   .protokoll td { height: 34pt; }
   .unterschriften div { border-color: #000; color: #000; }
 }
+
+/* ------------------------------------------------------------- Kacheln
+
+   **Ein Ergebnis ist eine Zahl mit einem Namen, kein Satz.** Vom Gründer am
+   26. September: „auf einen Blick mit Daten erkennbar, was es bedeutet, mit
+   klaren Benennungen". Bis dahin stand das Ergebnis der Rechner als zwei,
+   drei Sätze da, und die Zahl, um die es ging, steckte mittendrin.
+
+   Oben der Name, darunter groß die Zahl, darunter klein, worauf sie sich
+   bezieht. Gerechnete Werte tragen ein ≈ vor der Zahl, gemessene nicht. */
+.kacheln {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+.kachel {
+  background: var(--ground);
+  border: 1px solid var(--line);
+  border-radius: var(--r-s);
+  padding: 12px 14px;
+  display: grid;
+  gap: 2px;
+  align-content: start;
+  font-variant-numeric: tabular-nums;
+}
+.kachel-name { font-size: 13px; color: var(--ink-3); font-weight: 600; }
+.kachel-wert { font-size: 24px; font-weight: 700; color: var(--ink); line-height: 1.25; letter-spacing: -0.01em; }
+.kachel-zusatz { font-size: 13px; color: var(--ink-2); }
+.kachel-haupt { border-color: color-mix(in srgb, var(--tint) 45%, var(--line)); background: color-mix(in srgb, var(--tint) 7%, var(--ground)); }
+.kachel-gut .kachel-wert { color: var(--good); }
+.kachel-achtung .kachel-wert { color: var(--tint-ink); }
+.rechner-hinweis { margin: 0; color: var(--ink-2); font-size: 15px; }
