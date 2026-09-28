@@ -777,6 +777,12 @@ final class LaunchTests: XCTestCase {
 
         XCTAssertTrue(app.staticTexts["VERBRAUCH"].waitForExistence(timeout: erscheint),
                       "Die Mengenspalte fehlt")
+        // Die Einheit steht unter dem Kopf, klein und nicht in Versalien. Bis
+        // 0.118.0 stand „290" ohne „kWh" da.
+        let einheit = app.staticTexts.matching(
+            NSPredicate(format: "label == 'in kWh' OR label == 'in m³'")).firstMatch
+        XCTAssertTrue(einheit.waitForExistence(timeout: erscheint),
+                      "Der Tabellenkopf nennt keine Einheit. Zu sehen war: " + beschriftungen(in: app))
 
         let costs = app.buttons["Kosten"]
         XCTAssertTrue(costs.waitForExistence(timeout: erscheint),

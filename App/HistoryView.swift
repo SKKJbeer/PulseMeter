@@ -374,6 +374,12 @@ struct HistoryView: View {
 
     private var tabelleGestapelt: Bool { schriftgroesse.isAccessibilitySize }
 
+    private var tabellenEinheit: some View {
+        Text("in \(unit)")
+            .textCase(nil)
+            .font(PulseText.caption)
+    }
+
     private var abschnittName: String {
         switch granularity {
         case .month: return "Monat"
@@ -391,16 +397,29 @@ struct HistoryView: View {
                 // (Lauf 455). Wenn der Wert unter dem Zeitraum steht, gibt es
                 // keine Spalten mehr, die zu benennen wären; es gibt nur noch
                 // die Frage, was die Zeilen zeigen.
+                //
+                // **Die Einheit steht darunter, nicht in Versalien.** Bis
+                // 0.118.0 stand in der Tabelle „290" ohne „kWh", in keiner
+                // Zeile und nicht im Kopf; der Entwurf sagte es in einem Satz
+                // unter der Tabelle. Im Kopf gehört sie hin, aber ohne die
+                // Großschreibung des Kopfes: Aus „kWh" würde sonst „KWH". Bei
+                // Kosten steht das Euro schon an jeder Zahl.
                 Group {
                     if tabelleGestapelt {
-                        Text("\(metric == .cost ? "Kosten" : "Verbrauch") je \(abschnittName)")
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("\(metric == .cost ? "Kosten" : "Verbrauch") je \(abschnittName)")
+                            if metric != .cost, !unit.isEmpty { tabellenEinheit }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     } else {
-                        HStack {
+                        HStack(alignment: .bottom) {
                             Text("Zeitraum")
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                            Text(metric == .cost ? "Kosten" : "Verbrauch")
-                                .frame(width: wertspalte, alignment: .trailing)
+                            VStack(alignment: .trailing, spacing: 2) {
+                                Text(metric == .cost ? "Kosten" : "Verbrauch")
+                                if metric != .cost, !unit.isEmpty { tabellenEinheit }
+                            }
+                            .frame(width: wertspalte, alignment: .trailing)
                         }
                     }
                 }

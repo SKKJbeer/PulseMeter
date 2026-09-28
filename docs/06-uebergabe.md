@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-09-28, Version 0.118.0
+Stand: 2026-09-28, Version 0.118.1
 
 ---
 
@@ -117,12 +117,11 @@ Sobald einer davon kommt: Punkt 1 → `website.yml` von Hand anstoßen und live
 Gründer „Bestätigen" sagen lassen; Punkt 6 → `APPSTORE_PT` in `website.yml`;
 Punkte 2, 4, 5 → die Berichte einmal von Hand starten und nachsehen.
 
-### Vorgeschlagen, nicht entschieden
+### Entschieden am 28. September: Einheit in der Tabelle
 
-- **Einheit in der Tabelle im Verlauf.** Dort steht „290", nicht „290 kWh",
-  in jeder Schriftgröße. Der Kopf ist in Versalien, darin würde aus „kWh"
-  ein „KWH". Vorschlag an den Gründer am 26. September: die Einheit als eigene
-  kleine Zeile unter dem Kopf, im Klick-Dummy genauso. Antwort steht aus.
+„ok mach" auf den Vorschlag vom 26. September. Seit 0.118.1 steht unter dem
+Tabellenkopf im Verlauf „in kWh" (klein, nicht in Versalien), in App und
+Klick-Dummy. Der Satz „Alle Werte in …" unter der Tabelle im Entwurf ist weg.
 
 ### Als Nächstes
 

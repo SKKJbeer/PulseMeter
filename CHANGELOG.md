@@ -9,6 +9,27 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.118.1 — 2026-09-28
+
+**Die Tabelle im Verlauf nennt ihre Einheit.**
+
+Vorgeschlagen am 26. September, vom Gründer am 28. mit „ok mach" bestätigt.
+In der Tabelle stand „290", nicht „290 kWh", in jeder Schriftgröße, und
+nirgends auf dem Schirm stand, was die Zahl misst. Der Klick-Dummy sagte es in
+einem Satz unter der Tabelle; nach `selbstsprechend` gehört es in die
+Beschriftung.
+
+- App: unter „Verbrauch" im Kopf klein „in kWh" (oder m³), ohne die
+  Versalien des Kopfes, sonst stünde dort „KWH". Gestapelt in großer Schrift
+  unter „Verbrauch je Monat". Bei Kosten nicht, dort steht das Euro an jeder
+  Zahl.
+- Klick-Dummy: dieselbe Zeile im Kopf der Monats- und Quartalstabelle, der
+  Satz darunter ist weg.
+- Prüfungen: drei im Klick-Dummy (Einheit im Kopf, nicht in Versalien, kein
+  Nachsatz), eine in `testHistoryTableSwitchesToCosts`.
+
+---
+
 ## 0.118.0 — 2026-09-28
 
 **Siri öffnet den Ziffernblock, und nach der dritten Ablesung fragt die App

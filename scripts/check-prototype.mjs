@@ -1434,6 +1434,29 @@ for (const scheme of ["light", "dark"]) {
   await page.close();
 }
 
+// --- Die Tabelle nennt ihre Einheit im Kopf
+//
+// Bis 0.118.0 stand sie nur als Satz unter der Tabelle, in der App gar nicht.
+{
+  console.log("\nEinheit in der Tabelle");
+  const page = await browser.newPage({ viewport: { width: 440, height: 1300 } });
+  await page.goto(url);
+  await page.waitForTimeout(300);
+  await page.locator('[data-pane="history"]:visible').first().click();
+  await page.waitForTimeout(200);
+  await page.locator('[data-mode="table"]').first().click();
+  await page.waitForTimeout(250);
+  const kopf = await page.evaluate(() => {
+    const e = document.querySelector("#table th small.einheit");
+    return { text: e ? e.textContent.trim() : "", gross: e ? getComputedStyle(e).textTransform : "",
+             satz: document.getElementById("tablenote").textContent };
+  });
+  note(/^in (kWh|m³)/.test(kopf.text), `Der Tabellenkopf nennt die Einheit („${kopf.text}“)`);
+  note(kopf.gross === "none", "Die Einheit steht nicht in Versalien");
+  note(!/Alle Werte in/.test(kopf.satz), "Kein Satz unter der Tabelle, der die Einheit nachreicht");
+  await page.close();
+}
+
 // --- Bewertungsfrage: einmal, nach der dritten gesicherten Ablesung
 //
 // Auf einer frischen Seite, weil der Durchlauf oben schon Ablesungen sichert
