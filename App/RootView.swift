@@ -1,4 +1,5 @@
 import SwiftUI
+import StoreKit
 import SwiftData
 import PulseCore
 import PulseData
@@ -46,6 +47,9 @@ struct RootView: View {
     /// siehe ``uebernimmWunsch()``.
     @Environment(\.scenePhase) private var phase
 
+    /// Apples Bitte um eine Bewertung. Wann, entscheidet ``Bewertungsfrage``.
+    @Environment(\.requestReview) private var bewerten
+
     /// Die drei Ziele an einer Stelle. Vorher standen Name, Symbol und Nummer
     /// dreimal im `TabView`; mit einer zweiten Navigation wären es sechs
     /// Stellen gewesen, und die laufen auseinander.
@@ -85,6 +89,25 @@ struct RootView: View {
         }
         .sheet(item: $vonAussen) { point in
             CaptureView(meteringPoint: point, onSaved: { datenstand.geaendert() })
+        }
+        // **Hier an der Wurzel, weil jede Ablesung hier vorbeikommt.** Der
+        // Ziffernblock geht an drei Stellen auf (Übersicht, Zählerliste, von
+        // außen), und alle melden die Änderung über denselben Datenstand.
+        .onChange(of: datenstand.version) { _, _ in fragNachBewertung() }
+    }
+
+    /// Bittet einmal um eine Bewertung, nach der dritten Ablesung.
+    ///
+    /// **Anderthalb Sekunden später.** In dem Moment, in dem die Änderung
+    /// ankommt, schließt sich gerade der Ziffernblock. Apples Blatt darüber
+    /// wirkte, als hätte das Sichern etwas ausgelöst, das man wegklicken muss;
+    /// danach steht man auf der Übersicht und sieht den neuen Verbrauch, und
+    /// genau das ist der Moment, in dem die Frage passt.
+    private func fragNachBewertung() {
+        guard Bewertungsfrage.jetztFragen() else { return }
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(1500))
+            bewerten()
         }
     }
 
@@ -892,6 +915,10 @@ struct OverviewView: View {
                 range: yearRange,
                 today: today,
                 caption: { result in periodText(for: result) }))
+            // Siri kennt die Zähler aus derselben Datei. Nach dem Schreiben
+            // melden, sonst hieße ein umbenannter Zähler für Siri weiter wie
+            // vorher.
+            ZaehloraKurzbefehle.aktualisieren()
 
             // Eine Ablesung verschiebt den nächsten Termin. Ohne dieses
             // Nachziehen käme die Erinnerung zu einem Zeitpunkt, an dem längst

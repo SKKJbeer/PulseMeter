@@ -19,6 +19,13 @@ final class Wegweiser {
 
     private(set) var ziel: AppAddress?
 
+    /// Der Wegweiser der laufenden App, für Siri.
+    ///
+    /// Ein Kurzbefehl entsteht außerhalb jeder Ansicht und bekommt nichts aus
+    /// der Umgebung gereicht. Gesetzt wird er einmal im Konstruktor der App,
+    /// vor jedem Kurzbefehl, denn Siri startet die App, bevor sie ihn ausführt.
+    static var aktuell: Wegweiser?
+
     func springe(zu adresse: AppAddress) {
         ziel = adresse
     }

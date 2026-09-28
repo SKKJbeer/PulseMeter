@@ -43,6 +43,11 @@ for (const scheme of ["light", "dark"]) {
   page.on("console", m => { if (m.type() === "error") jsErrors.push(m.text()); });
   await page.goto(url);
   await page.waitForTimeout(400);
+  // Wie `-pulse-reset` in der App: Prüfungen bekommen die Bewertungsfrage nie.
+  // Dieser Durchlauf sichert selbst mehr als drei Ablesungen, und der
+  // Schleier dahinter nähme jedem Klick danach das Ziel. Geprüft wird die
+  // Frage unten auf einer eigenen Seite.
+  await page.evaluate(() => { bewertungGefragt = true; });
 
   // --- Hauptflüsse erreichbar
   // `:visible`, seit der Entwurf zwei Rahmen kennt: Schmal führt die
@@ -1426,6 +1431,41 @@ for (const scheme of ["light", "dark"]) {
 
   note(jsErrors.length === 0, `Keine JS-Fehler${jsErrors.length ? ": " + jsErrors.join("; ") : ""}`);
 
+  await page.close();
+}
+
+// --- Bewertungsfrage: einmal, nach der dritten gesicherten Ablesung
+//
+// Auf einer frischen Seite, weil der Durchlauf oben schon Ablesungen sichert
+// und der Zähler dann nicht bei null stünde. Gesichert wird über denselben
+// Weg wie der Knopf, `commitReadings`, mit einem Wert knapp über dem letzten.
+{
+  console.log("\nBewertungsfrage");
+  const page = await browser.newPage({ viewport: { width: 440, height: 1300 } });
+  await page.goto(url);
+  await page.waitForTimeout(300);
+  const sichere = () => page.evaluate(() => {
+    const m = METERS.find(x => x.registers.length === 1);
+    const r = m.registers[0];
+    capMeter = m;
+    capEntered = { [r.id]: r.readings[r.readings.length - 1].value + 1 };
+    commitReadings();
+  });
+  const offen = () => page.evaluate(() => document.getElementById("bewertung").classList.contains("on"));
+  for (let i = 1; i <= 2; i++) {
+    await sichere();
+    await page.waitForTimeout(1700);
+    note(!(await offen()), `Nach der ${i}. Ablesung keine Frage`);
+  }
+  await sichere();
+  note(!(await offen()), "Nach der 3. Ablesung nicht sofort, erst wenn der Ziffernblock zu ist");
+  await page.waitForTimeout(1700);
+  note(await offen(), "Nach der 3. Ablesung fragt die App nach einer Bewertung");
+  await page.locator("#bewertung-zu").click();
+  note(!(await offen()), "„Nicht jetzt“ schließt die Frage");
+  await sichere();
+  await page.waitForTimeout(1700);
+  note(!(await offen()), "Nach der 4. Ablesung kommt sie nicht wieder");
   await page.close();
 }
 

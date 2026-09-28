@@ -9,6 +9,57 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.118.0 — 2026-09-28
+
+**Siri öffnet den Ziffernblock, und nach der dritten Ablesung fragt die App
+einmal nach einer Bewertung.** Die beiden offenen Stücke von 1.3.
+
+Der Gründer am 28. September: „mache die nächsten feature fertig".
+
+### Siri
+
+„Zählerstand in Zählora eintragen", „Zählora ablesen" oder „Strom in Zählora
+ablesen" öffnen den Ziffernblock, ohne dass jemand einen Kurzbefehl anlegt.
+Mit Zählername genau für diesen, ohne für den, der am längsten auf eine
+Ablesung wartet. Dieselben Sätze stehen in der Kurzbefehle-App.
+
+- `App/Kurzbefehle.swift`: ein App Intent `ZaehlerstandEintragen` mit
+  optionalem Zähler, die Zähler als `AppEntity` aus der Datei des Widgets, und
+  die Sätze als `AppShortcutsProvider`.
+- **Kein vierter Weg.** Siri setzt denselben Wunsch in den `Wegweiser` wie der
+  Tipp auf eine Erinnerung. Welcher Zähler, was bei einem gelöschten, wie ein
+  kalter Start behandelt wird: an einer Stelle gelöst und geprüft.
+- **Nie die Zahl selbst.** Eine gesprochene Zahl umginge die Rückfrage vor dem
+  Sichern, wie schon bei der Erinnerung.
+- Die App meldet Siri nach jedem Laden der Übersicht die Zählernamen, damit
+  ein umbenannter Zähler auch für Siri neu heißt.
+- `project.yml`: Deutsch als Entwicklungssprache. XcodeGen setzt sonst
+  Englisch, und die Sätze gälten als englische.
+
+### Bewertungsfrage
+
+Einmal, nach der dritten Ablesung, die jemand selbst im Ziffernblock
+gesichert hat, anderthalb Sekunden später, wenn der Ziffernblock zu ist und
+der neue Verbrauch dasteht. Beispieldaten, ein Zählerwechsel und das Ändern
+einer alten Ablesung zählen nicht. Wer gefragt wurde, wird nicht wieder
+gefragt. Ob das Blatt erscheint, entscheidet iOS (höchstens dreimal im Jahr);
+**in TestFlight zeigt iOS es nie**, dort ist es also nicht zu sehen.
+
+- Die Regel in `PulseCore` (`ReviewPrompt`) mit vier Prüfungen, das Zählen in
+  `App/Bewertungsfrage.swift` über `UserDefaults`, je Gerät und nicht über
+  iCloud gespiegelt. In Oberflächenprüfungen und Bildschirmfotos nie.
+- Der Klick-Dummy zeigt das Blatt nachgebaut, mit Schleier; sechs neue
+  Prüfungen in `check-prototype.mjs` (nicht nach der ersten und zweiten, erst
+  nach dem Schließen, einmal, „Nicht jetzt" schließt, nie wieder).
+
+### Übergabe
+
+`06-uebergabe.md` trägt den laufenden Stand vom 28. September, darunter die
+sechs offenen Zugänge beim Gründer und der Vorschlag zur Einheit in der
+Tabelle.
+
+---
+
 ## 0.117.8 — 2026-09-26
 
 **Die Website hält 300 % Textgröße auch in Safari, und `pruefen.sh` prüft in

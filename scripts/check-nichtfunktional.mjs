@@ -154,6 +154,8 @@ for (const scheme of ["light", "dark"]) {
   console.log(`\nErscheinungsbild: ${scheme}`);
   const page = await browser.newPage({ viewport: { width: 393, height: 852 }, colorScheme: scheme });
   await page.goto(url);
+  // Die Bewertungsfrage stünde nach drei Ablesungen im Weg, siehe check-prototype.mjs.
+  await page.evaluate(() => { bewertungGefragt = true; });
   await page.waitForTimeout(400);
 
   // --- Bedienbarkeit: Trefferflächen auf jedem Hauptschirm, auch in den Bögen
@@ -212,6 +214,8 @@ console.log("\nGeschwindigkeit");
   const page = await browser.newPage({ viewport: { width: 393, height: 852 } });
   const beginn = Date.now();
   await page.goto(url);
+  // Die Bewertungsfrage stünde nach drei Ablesungen im Weg, siehe check-prototype.mjs.
+  await page.evaluate(() => { bewertungGefragt = true; });
   await page.waitForSelector("#cards .card, #status", { timeout: 5000 });
   const start = Date.now() - beginn;
   note(start < 2500, `Erster Schirm steht nach ${start} ms (Grenze 2500)`);
@@ -245,6 +249,8 @@ console.log("\nProduktprinzipien");
 {
   const page = await browser.newPage({ viewport: { width: 393, height: 852 } });
   await page.goto(url);
+  // Die Bewertungsfrage stünde nach drei Ablesungen im Weg, siehe check-prototype.mjs.
+  await page.evaluate(() => { bewertungGefragt = true; });
   await page.waitForTimeout(400);
 
   // Prinzip 2: drei Berührungen von App-Start bis zur gesicherten Ablesung.

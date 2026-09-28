@@ -603,6 +603,31 @@ ul.includes.done li::before { content: "✓"; color: var(--tint); font-size: 12p
 .toast.on { opacity: 1; transform: translate(-50%,-50%) scale(1); }
 .toast svg { width: 34px; height: 34px; display: block; margin: 0 auto 8px; }
 
+/* Die Bewertungsfrage. In der App ist das Apples eigenes Blatt
+   (`requestReview`); hier steht es nachgebaut, damit der Moment zu sehen ist,
+   in dem es kommt: einmal, nach der dritten gesicherten Ablesung. */
+.bewertung {
+  position: absolute; left: 50%; top: 42%; z-index: 10; width: 270px;
+  transform: translate(-50%,-50%); display: none;
+  background: var(--surface-2); color: var(--ink);
+  border: 1px solid var(--hairline);
+  border-radius: 14px; text-align: center; overflow: hidden;
+  box-shadow: 0 18px 50px rgba(0,0,0,.28);
+}
+/* Der Schleier dahinter, wie iOS ihn unter jede Systemfrage legt. Ohne ihn
+   verschwamm die Frage im Dunklen mit der Karte darunter. */
+.bewertung-schleier {
+  position: absolute; inset: 0; z-index: 9; display: none;
+  background: rgba(10,9,8,.42);
+}
+.bewertung-schleier.on { display: block; }
+.bewertung.on { display: block; }
+.bewertung b { display: block; font-size: 16px; padding: 18px 16px 4px; }
+.bewertung p { font-size: 13px; color: var(--ink-2); margin: 0 16px 10px; line-height: 1.35; }
+.bewertung .sterne { display: flex; justify-content: center; gap: 6px; padding: 4px 0 14px; }
+.bewertung .sterne button { font-size: 26px; line-height: 1; color: var(--tint); background: none; border: 0; min-width: 36px; min-height: 44px; cursor: pointer; }
+.bewertung .nicht-jetzt { display: block; width: 100%; min-height: 44px; border: 0; border-top: 1px solid var(--hairline); background: none; color: var(--tint-ink); font: inherit; font-size: 16px; cursor: pointer; }
+
 /* ---------- Verlauf ---------- */
 .segmented {
   display: flex; gap: 2px; padding: 2px; border-radius: 10px;
@@ -893,7 +918,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>Zählora</h1>
-  <p>Klickbarer Entwurf · v0.117.8</p>
+  <p>Klickbarer Entwurf · v0.118.0</p>
 </div>
 
 <div class="device" id="device">
@@ -1305,6 +1330,16 @@ select.field { cursor: pointer; }
   <div class="toast" id="toast">
     <svg viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="17" cy="17" r="14.5" stroke-opacity=".3"/><path d="m10.5 17.5 4.5 4.5 9-9"/></svg>
     <div id="toast-text">Gesichert</div>
+  </div>
+
+  <div class="bewertung-schleier" id="bewertung-schleier"></div>
+  <div class="bewertung" id="bewertung" role="alertdialog" aria-modal="true" aria-labelledby="bewertung-titel">
+    <b id="bewertung-titel">Gefällt dir Zählora?</b>
+    <p>Tippe auf einen Stern, um im App Store zu bewerten.</p>
+    <div class="sterne">
+      <button type="button" aria-label="1 Stern" data-stern>★</button><button type="button" aria-label="2 Sterne" data-stern>★</button><button type="button" aria-label="3 Sterne" data-stern>★</button><button type="button" aria-label="4 Sterne" data-stern>★</button><button type="button" aria-label="5 Sterne" data-stern>★</button>
+    </div>
+    <button type="button" class="nicht-jetzt" id="bewertung-zu">Nicht jetzt</button>
   </div>
 </div>
 
@@ -4191,7 +4226,27 @@ function commitReadings() {
   closeSheets();
   melden(name + " gesichert");
   renderAll();
+  // Wie `ReviewPrompt` in PulseCore: einmal, nach der dritten selbst
+  // gesicherten Ablesung, anderthalb Sekunden nach dem Sichern. Nur hier und
+  // nicht beim Zählerwechsel, der sagt nichts darüber, ob jemand wiederkommt.
+  gesicherteAblesungen++;
+  if (!bewertungGefragt && gesicherteAblesungen >= BEWERTUNG_AB) {
+    bewertungGefragt = true;
+    setTimeout(() => {
+      document.getElementById("bewertung").classList.add("on");
+      document.getElementById("bewertung-schleier").classList.add("on");
+    }, 1500);
+  }
 }
+
+const BEWERTUNG_AB = 3;
+let gesicherteAblesungen = 0, bewertungGefragt = false;
+document.getElementById("bewertung").addEventListener("click", e => {
+  if (e.target.id === "bewertung-zu" || e.target.hasAttribute("data-stern")) {
+    document.getElementById("bewertung").classList.remove("on");
+    document.getElementById("bewertung-schleier").classList.remove("on");
+  }
+});
 
 /* ============================================================
    Erklärung — Prinzip 4: keine Sackgasse

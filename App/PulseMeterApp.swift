@@ -105,6 +105,7 @@ struct PulseMeterApp: App {
         // einsetzt, kommt zu spät, und die App öffnet auf der Übersicht.
         let wegweiser = Wegweiser()
         _wegweiser = State(initialValue: wegweiser)
+        Wegweiser.aktuell = wegweiser
         mitteilungen = MitteilungsEmpfang(wegweiser: wegweiser)
         UNUserNotificationCenter.current().delegate = mitteilungen
     }

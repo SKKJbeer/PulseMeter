@@ -481,6 +481,9 @@ struct CaptureView: View {
         }
         do {
             try PulseRepository(context: context).save(batch)
+            // Nur hier, nicht beim Zählerwechsel oben: Die Bewertungsfrage
+            // zählt, ob jemand wiederkommt und abliest.
+            Bewertungsfrage.ablesungGesichert()
             onSaved()
             dismiss()
         } catch {

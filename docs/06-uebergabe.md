@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-09-14, Version 0.113.25
+Stand: 2026-09-28, Version 0.118.0
 
 ---
 
@@ -86,367 +86,52 @@ Tabelle im Baukasten unter „Die Prüfungen".
 
 ## Wo die Arbeit steht
 
-**`main` ist der aktuelle Stand**, Version 0.113.25. Es gibt keinen offenen
-Arbeitszweig; alles ist zusammengeführt. `claude/setup-pruefung-4qyr2u` steht
-noch bei GitHub, vollständig in `main` — aus der Cloud lässt er sich nicht
-löschen (`HTTP 403`), von der Weboberfläche aus mit einem Klick.
-
-| | Stand am 10. September |
-|---|---|
-| **App Store** | **Zählora 1.1 ist freigegeben** — 10. September, die erste Fassung mit iPad. Davor 1.0.1 am 7. und 1.0 am 4. September |
-| `PulseCore` | grün |
-| Klick-Dummy | 278 Prüfungen, hell und dunkel, grün — mit breitem Rahmen fürs Tablet |
-| Website | 415 Prüfungen, grün, live auf `zaehlora.pages.dev` |
-| **Oberflächentests iPhone** | **grün** — 41 Prüfungen, Lauf 409 |
-| **Oberflächentests iPad** | **grün** — dieselben 41 Prüfungen, Lauf 409, zum ersten Mal zugleich mit dem iPhone |
-| TestFlight | **Bau 35, VALID** — der Bau, der als 1.1 im Laden steht |
-| Käufe | 6 von 6, mit der Fassung eingereicht |
-| Länder | 175, Deutschland dabei |
-
-### Entschieden und geschlossen: Das Zeichen bleibt
-
-Am 13. und 14. September sind **drei Runden Entwürfe für ein neues App-Symbol**
-entstanden und alle drei abgelehnt worden. Anlass war der Gründer: Das heutige
-Zeichen — ein offener Bogen mit einer Pulslinie darin — sehe aus wie das von
-Merach. Dazu kam, dass diese Formensprache „PulseMeter" buchstabiert und nicht
-„Zählora".
-
-**Entschieden am 14. September: Es bleibt, wie es ist.** Wörtlich: „das
-aktuelle logo sieht um welten besser aus." Drei Runden haben nichts
-hervorgebracht, das besser war als das Bestehende, und Merach verkauft
-Rudergeräte — andere Warenklasse, andere Suche im Store, keine Beschwerde.
-
-> **Diese Frage wird nicht von selbst wieder aufgemacht.** Nur auf ausdrückliche
-> Ansage des Gründers. `scripts/icon.mjs` ist unverändert; die drei Blätter
-> liegen als Historie in `docs/entwuerfe/` und sind **keine** Vorlage.
-
-Wenn er es doch wieder aufmacht, stehen drei Wege offen, und keiner heißt „drei
-neue Entwürfe auf leerem Blatt": nichts tun; eine kleine Operation am
-bestehenden Zeichen, bei der Bernstein, warmes Dunkel und der runde Körper
-bleiben und nur die Pulslinie getauscht wird — beurteilt **neben** dem Original,
-nicht gegen ein leeres Blatt; oder ein Briefing an einen Menschen.
-
-### Das iPad ist fertig — und was daran noch aussteht
-
-Seit 0.112.0 läuft die App auf beiden Familien (`TARGETED_DEVICE_FAMILY:
-"1,2"`): Seitenleiste statt Tableiste auf breiten Fenstern, Karten in einem
-mitwachsenden Raster. **Grün auf beiden zugleich waren die Prüfungen zum ersten
-Mal in Lauf 409.** Der Weg dahin steht in `docs/12-auslieferung.md`; die eine
-Lehre daraus, in `projekt-baukasten` ausführlich: *auf einem großen Bildschirm
-ist „vorne" nicht dasselbe wie „zuerst gefunden"* — der Fehler saß jedes Mal im
-Griff der Prüfung, nie in der Ansicht.
-
-**Was am iPad noch offen ist, und zwar am Produkt, nicht an den Prüfungen:**
-Auf `Verlauf` und `Zähler` steht der Inhalt im oberen Drittel, darunter bleibt
-auf einem 13-Zoll-Schirm die Hälfte leer. Es ist nicht falsch, aber es ist auch
-nicht entworfen. Ein zweispaltiger Aufbau — links die Wahl, rechts das
-Ausgewählte — wäre die naheliegende Antwort. Nicht angefangen; erst zu
-entscheiden.
-
-**Der iPad-Bildersatz ist drin und die Kennung ist geklärt.** Hier stand, ob
-Apple `APP_IPAD_PRO_3GEN_129` für die Maße des Simulators annimmt, sei
-auszuprobieren. Ist es: Die Kennung steht bei Apple für 2048 × 2732, der
-Simulator liefert 2064 × 2752, und **Apple nimmt es an** — mit 1.1 am
-10. September tatsächlich hochgeladen, fünf Bilder je Familie, zehn insgesamt.
-
-**Der Umfang von 1.0 ist vollständig, und seit 1.0.1 kommt er auch an.** Der
-iCloud-Abgleich und das Feld auf dem Sperrbildschirm waren in 1.0 eingebaut und
-beworben und erreichten niemanden; warum, steht gleich darunter.
-
-### Gelöst: Bau 32 bringt iCloud-Abgleich und Widget
-
-**Seit dem 6. September, 05:31 UTC, belegt statt vermutet:**
-
-```
-Berechtigungen gehen mit: App/PulseMeter.entitlements, Widget/PulseWidget.entitlements
-Bau 32 steht bereit, die Testhinweise sind eingetragen.
-· Bau 32: VALID — hochgeladen 2026-09-05T22:32
-```
-
-Am Code lag es nie. `PulseStore.container(cloudKit: true)` war seit Monaten die
-erste Stufe in `PulseMeterApp.init`; sie ist nur nie angesprungen, weil ohne
-Berechtigung Stufe zwei greift — derselbe Speicher ohne Abgleich, still.
-
-Gefehlt haben **fünf Handgriffe im Entwicklerportal**, nicht zwei: die App-Gruppe
-und den iCloud-Behälter anlegen, und beide dann an drei Stellen **zuordnen** —
-an der App-ID für Gruppe und Behälter, an der Widget-Kennung für die Gruppe.
-Jedes Mal gefolgt vom **Save oben rechts**; an dessen Ausbleiben ist es zweimal
-gescheitert. Die Bauten 27 bis 31 sind dabei verbraucht worden. Ausführlich in
-`docs/12-auslieferung.md`, Abschnitt 3.4.
-
-**Nachprüfbar ist es nicht, und das ist der Rest des Befunds.** `warum` gibt
-die Fähigkeiten der App-IDs jetzt roh aus — dort steht, welche eingeschaltet
-sind, aber **nicht**, welche Kennung ihnen zugeordnet ist. Am 6. September
-gegengeprüft, nachdem Bau 32 mit Berechtigungen durchgegangen war: `APP_GROUPS`
-kam weiter ohne Einstellungen zurück. Der Block trägt die Einstellungen einer
-Fähigkeit, nicht die Kennungen dahinter. Die Probe auf die Zuordnung ist und
-bleibt das Signieren.
-
-### Fassung 1.0.1 ist freigegeben — 7. September
-
-```
-Fassung 1.0.1: READY_FOR_SALE, appVersionState READY_FOR_DISTRIBUTION
-reviewSubmissions 68046b63 — submittedDate 2026-09-06T05:53:26, state COMPLETE
-```
-
-Eingereicht am 6. September um 05:53 UTC, freigegeben gut sechsundzwanzig
-Stunden später. Keine Rückfrage, kein Lösungscenter. `AFTER_APPROVAL` hat
-gehalten: Niemand musste einen Knopf drücken.
-
-Damit ist zum ersten Mal beim Käufer, was seit dem 4. September in der
-Beschreibung steht — der iCloud-Abgleich und das Feld auf dem Sperrbildschirm —
-und dazu die Kostenspalten für Monat, Quartal und Jahr samt Erklärblatt.
-
-**Apples öffentliches Verzeichnis hinkt hinterher, und das ist normal.** Zum
-Zeitpunkt der Freigabe meldete `itunes.apple.com/lookup` noch 1.0. Der Zustand
-in App Store Connect ist die Auskunft, die zählt; das Verzeichnis zieht binnen
-Stunden nach. Wer vom Verzeichnis auf „noch nicht freigegeben" schließt, liest
-einen Zwischenstand als Befund.
-
-### Aufrufe und Ladungen — `zahlen.yml`
-
-Seit 0.107.0 holt `scripts/asc-zahlen.py` die Zahlen aus App Store Connect:
-Impressions, Aufrufe der Produktseite, Ladungen insgesamt und Erstinstallationen.
-Ein Ablauf, täglich um 09:00 UTC, dazu ein Knopf.
-
-**Der Grund, warum das nicht warten durfte:** Apple sammelt diese Zahlen erst,
-wenn man sie anfordert. Ein Bericht mit `accessType: ONGOING` fängt am Tag der
-Anforderung an; was davor liegt, kennt er nicht. Und Apple **stoppt** eine
-Anforderung wieder, wenn monatelang niemand die Berichte abruft — der tägliche
-Lauf hält sie am Leben.
-
-Rückwirkend geht es über `ONE_TIME_SNAPSHOT` (bis 365 Tage), der Knopf dafür
-heißt „rueckwirkend" am Ablauf.
-
-> **Es steht noch nicht. Der Schlüssel darf nicht.** Erster Lauf am
-> 5. September, jede Analytics-Anfrage:
->
-> ```
-> 403 FORBIDDEN_ERROR — The API key in use does not allow this request
-> ```
->
-> Derselbe Schlüssel legt die App an, pflegt Käufe und reicht ein — die
-> Berichte hängen an seiner **Rolle**, nicht an der App. Zu ändern in App Store
-> Connect unter Benutzer und Zugriff › Integrationen: Rolle des vorhandenen
-> Schlüssels anheben, oder einen zweiten anlegen und als eigene drei
-> Geheimnisse hinterlegen. **Das kann nur der Gründer.** Bis dahin sammelt
-> Apple nichts, und jeder Tag Wartezeit ist ein Tag ohne Zahlen.
-
-### Im Laden seit dem 4. September, 23:00 UTC
-
-Nicht aus dem eigenen Skript gelesen, sondern von Apples öffentlichem
-Verzeichnis — der Stelle, die auch ein Käufer sieht:
-
-```
-https://itunes.apple.com/lookup?id=6802262743&country=de
-Zählora – Zähler & Verbrauch | 1.0 | 2026-09-04T23:00:15Z | Gratis
-```
-
-Die Adresse im Laden:
-`https://apps.apple.com/de/app/id6802262743`
-
-**Die Website hinkte einen halben Tag hinterher, und das war ein Fehler im
-Ablauf.** `live-schalten.yml` hat den Knopf um 00:10 UTC richtig umgelegt und
-gepusht — und ist danach rot geworden:
-
-```
-POST …/actions/workflows/website.yml/dispatches
-403 Resource not accessible by integration
-```
-
-Ein Push mit dem `GITHUB_TOKEN` löst keinen weiteren Ablauf aus; deshalb stößt
-der letzte Schritt die Veröffentlichung von Hand an — und genau dafür fehlte
-`actions: write`. Ergebnis: Der Knopf stand im Repository auf „an", im Netz
-weiter auf „Bald im App Store". Also der eine Zustand, den dieser Ablauf
-verhindern soll.
-
-Behoben in 0.106.6: die Berechtigung ergänzt, und die Veröffentlichung hängt
-jetzt am **umgelegten Knopf** statt an der Freigabe — sonst stieße der
-Stundenplan von der Freigabe an jede Stunde eine Veröffentlichung an, die nichts
-ändert.
-
-### Abgelehnt in der Nacht zum 3. September
-
-```
-Fassung 1.0: REJECTED
-Bei der Prüfung: UNRESOLVED_ISSUES
-```
-
-**Der Grund steht nicht in der Schnittstelle.** Sechs Wege abgefragt, sechs
-Absagen:
-
-| Weg | Antwort |
-|---|---|
-| `appStoreVersions/…/appStoreVersionSubmission` | 404 — „no resource of type `appStoreVersionSubmissions`" |
-| `appStoreVersions/…/resolutionCenterThreads` | 404 |
-| `apps/…/resolutionCenterThreads` | 404 |
-| `v1/resolutionCenterThreads` | 404 |
-| `v1/resolutionCenterMessages` | 404 |
-| `appStoreVersions/…/appStoreReviewAttachments` | 404 |
-
-Apples Begründung liegt im **Lösungscenter** in App Store Connect und kommt per
-E-Mail. Nur der Gründer kommt daran; eine Cloud-Sitzung sieht sie nie. Er hat
-sie am 3. September weitergereicht:
-
-> **Guideline 2.1 – Information Needed – New App Submission.** „This app has
-> been submitted by a developer account that has a limited App Review history."
-
-**Kein Mangel an der App.** Ein Konto ohne Prüfhistorie, sieben Fragen. Sechs
-davon sind Text und stehen seit 0.105.9 im Feld „Notes" (3252 Zeichen,
-englisch, vom Lauf `einreichung.yml --fuellen` eingetragen). Der Wortlaut steht
-in `docs/09-appstore.md` unter „Hinweise für die Prüfung".
-
-**Punkt 1 war eine Bildschirmaufnahme auf einem echten Gerät** — die kann kein
-Skript erzeugen. Der Gründer hat sie am 3. September um 14:51 zusammen mit dem
-Text im Lösungscenter beantwortet
-(`ScreenRecording_09-03-2026 14-44-52_1.mp4`).
-
-**Und das hat gereicht, um die Ablehnung aufzuheben.** Unmittelbar danach
-gemessen:
-
-```
-Fassung 1.0: READY_FOR_REVIEW     (vorher REJECTED)
-Bei der Prüfung: UNRESOLVED_ISSUES
-```
-
-**Hier stand, `UNRESOLVED_ISSUES` gehöre „zum alten Vorgang". Das war falsch,
-und zwar aus derselben Bequemlichkeit wie dreimal vorher: eine Zustandsänderung
-gesehen, den Rest dazuerzählt.** Vier Stunden später nachgemessen, was die
-Einreichung tatsächlich enthält:
-
-```
-6 Einträge, alle READY_FOR_REVIEW
-· … "appStoreVersion": {"data": {"id": "be468160-…"}}
-⇒ beigefügt: appStoreVersions be468160 {'versionString': '1.0'}
-```
-
-Es ist **kein** alter Vorgang. Es ist derselbe, in dem Fassung 1.0 seit dem
-2. September liegt, und ihre fünf Käufe daneben. `UNRESOLVED_ISSUES` heißt
-„Apple hat gefragt und wartet auf Antwort" — die Antwort ist seit dem
-3. September, 14:51, dort.
-
-**Es brauchte einen Anstoß.** Vierzehn Stunden lang bewegte sich nichts, und
-das war die Antwort auf die offene Frage: `UNRESOLVED_ISSUES` heißt nicht „läuft
-weiter", sondern „Apple wartet auf uns". Die Antwort im Lösungscenter allein
-schiebt die Einreichung nicht an.
-
-Behoben in 0.106.2: `UNRESOLVED_ISSUES` ist aus `UNTERWEGS` heraus — sonst
-meldet das Skript „steht schon bei der Prüfung" und tut nichts — und
-`vorbereitete()` nimmt seitdem auch diesen Zustand an. Danach `--einreichen`
-erneut angestoßen, und seitdem steht:
-
-```
-Fassung 1.0: WAITING_FOR_REVIEW
-Bei der Prüfung: WAITING_FOR_REVIEW
-```
-
-Danach ging es: Apple hat am 4. September freigegeben, keine weitere Rückfrage.
-Von der Ablehnung bis in den Laden waren es knapp zwei Tage.
-
----
-
-### Die Sperre davor ist weg — eingereicht am 2. September, 19:05
-
-```
-✓ Fassung 1.0 der Einreichung hinzugefügt
-Eingereicht. Zustand: WAITING_FOR_REVIEW
-```
-
-**Es war die Preisstufe.** Sie war nie gewählt worden. Die Oberfläche sagt es in
-einem Satz — „Wähle unter ‚Preis' eine Preisstufe aus" —, die Schnittstelle
-fasst es zu „appStoreVersions … is not in valid state" zusammen und nennt es
-nicht.
-
-Und im eigenen Protokoll stand es seit dem ersten Tag:
-
-```
-── Preisplan
-   v1/apps/6802262743/appPriceSchedule  →  200
-   {}
-```
-
-Gelesen als „vorhanden, hat eben keine Attribute". Gemeint war: **leer**. Ein
-Preisplan ohne Preise ist ein Objekt, das existiert und nichts sagt.
-
-Der Einreichlauf setzt die Stufe jetzt selbst (kostenlos, Zählora verdient über
-Einmalkäufe) und liest das Ergebnis nach, statt dem 201 zu glauben. Ein
-Nebenfehler dabei, der es fast noch einmal verdeckt hätte: `(preis or "")` —
-`0.0 or ""` ist `""`, also fiel ausgerechnet die kostenlose Stufe durch den
-eigenen Filter.
-
-Alle drei Schritte, die hier als „was jetzt noch kommt" standen, sind erledigt:
-Apple hat freigegeben, der Knopf ist umgelegt, die Seite verweist auf den Laden.
-`AFTER_APPROVAL` hat gehalten, was es verspricht — die App ging von selbst
-hinein, ohne dass jemand einen Knopf drücken musste.
-
----
-
-### Was die Sperre vier Tage lang war — und was daran zu lernen ist
-
-Die Einreichung scheiterte seit dem 29. August unverändert an:
-
-```
-appStoreVersions with id '…' is not in valid state.
-This resource cannot be reviewed, please check associated errors to see why.
-```
-
-**Der Grund steht nicht in dieser Meldung, und er stand auch nicht dort, wo
-diese Datei ihn bis zum 2. September vermutet hat.** Hier stand, es liege am
-Händlerstatus nach dem Digitale-Dienste-Gesetz. Das war eine Vermutung, die
-sich wie ein Befund las.
-
-Am 2. September wurde stattdessen gemessen, was messbar ist:
-
-| Geprüft | Ergebnis |
-|---|---|
-| Bau an der Fassung | Bau 25, `VALID` |
-| Bilder | ein Satz `APP_IPHONE_67`, 5 Bilder, alle fertig |
-| Altersfreigabe | vollständig beantwortet |
-| Texte, Datenschutz-Adresse | gesetzt |
-| `contentRightsDeclaration` | war **leer** → gesetzt |
-| `usesIdfa` | war **leer** → auf „nein" gesetzt |
-| `copyright` | war **leer** → „2026 Steffen Karjoth", vom Gründer |
-| Kategorien | `UTILITIES` und `FINANCE` — gesetzt |
-| Zielgeräte | nur iPhone (`TARGETED_DEVICE_FAMILY: "1"`), also keine iPad-Bilder nötig |
-| Händlerstatus | am 2. September vom Gründer belegt: **Aktiv** |
-| App Privacy | vom Gründer als veröffentlicht gemeldet |
-| Danach eingereicht | **derselbe 409** |
-
-Drei Pflichtangaben standen also wirklich leer — und keine davon war die
-Ursache. Warum sie niemand gesehen hat, ist die eigentliche Lehre: Die Diagnose
-blendete leere Werte aus, damit die Zeilen lesbar bleiben. Ein Pflichtfeld, das
-niemand ausgefüllt hat, **ist** ein leerer Wert.
-
-**Was die Schnittstelle nicht hergibt:**
-
-| Weg | Antwort |
-|---|---|
-| Datenschutz-Fragebogen, 5 Schreibweisen | 404 — die Ressource gibt es in dieser Fassung der Schnittstelle nicht |
-| Händlerstatus, 4 Wege | 404 |
-| `reviewSubmissions/…/appStoreVersionForReview` | **403** |
-| `reviewSubmissions/…/app` | **403** — und die App gibt es zweifelsfrei |
-
-Der letzte Punkt ist der Maßstab für die anderen: Ein 403 auf einen Pfad, an
-dem sicher etwas hängt, ist eine Auskunft über den Schlüssel, nicht über die
-Fassung.
-
-**Der Ort, der es wusste, war die Oberfläche von App Store Connect.** Dort
-stehen die „associated errors" als rote Punkte neben den Feldern — und dort
-stand der eine Satz, der vier Tage gekostet hat: „Wähle unter ‚Preis' eine
-Preisstufe aus."
-
-> **Die Lehre für das nächste Mal: Wenn die Schnittstelle einen Zustand meldet,
-> den sie nicht begründet, wird die Oberfläche einmal angesehen — nach dem
-> zweiten Fehlschlag, nicht nach dem zehnten.** Vier Tage Ermittlung gegen einen
-> Blick, den nur der Gründer tun kann und der eine halbe Minute dauert.
-
-**Nebenbefund, damit ihn niemand noch einmal sucht:** Die leere Einreichung
-`68046b63` lässt sich weder löschen (`DELETE` → 403) noch zurückziehen
-(`canceled: true` → 409, „Resource is not in cancellable state"). Sie enthält
-nichts und stört nachweislich nicht — der Einreichlauf nimmt die gefüllte
-`5e3efe16`.
-
----
+### Im Laden und in TestFlight
+
+- **1.2** im Laden seit 24. September (Bau 36).
+- **Bau 37** (0.117.8) in TestFlight, VALID: größte Schrift auf iPad und
+  iPhone SE, Randprüfung auf allen Geräten der CI.
+- **1.3** wird am **7. Oktober** eingereicht, nur mit Freigabe des Gründers
+  (Regel 4a). Darin: Erinnerung und Sperrbildschirm öffnen den Ziffernblock
+  (0.116.0), Umschalter im iPad-Hochformat, **Siri** und die
+  **Bewertungsfrage** (beide 0.118.0), dazu das neue Schlagwortfeld und die
+  Beschreibung aus `09-appstore.md`, die erst mit einer neuen Fassung gelten.
+
+### Offen beim Gründer — nicht vergessen, bei jeder Meldung erinnern
+
+Am 26. September zugesagt, am 28. mit „merk dir das" bestätigt. Alle sechs mit
+direktem Link in **`docs/13-zugaenge.md`**. Was danach von allein läuft, steht
+dort je Punkt.
+
+| # | Was | Folge, solange es fehlt |
+|---|---|---|
+| 1 | Analytics Engine bei Cloudflare einschalten | Website geht ohne Zählung online (Rückfall in `website.yml`), die Datenschutzerklärung beschreibt eine Zählung, die noch nicht läuft |
+| 2 | Cloudflare-Leseschlüssel `CLOUDFLARE_STATISTIK_TOKEN` | Wochenbericht kann nicht lesen (der Hochladeschlüssel bekommt 403, gemessen) |
+| 3 | Search Console: Bestätigungscode in den Chat | Google führt die Seite nicht offiziell, keine Suchbegriffe |
+| 4 | Google-Dienstkonto `GOOGLE_SC_SCHLUESSEL` | keine Google-Zahlen im Wochenbericht, Sitemap nicht automatisch gemeldet |
+| 5 | App-Store-Berichtsschlüssel (Rolle Admin) `ASC_BERICHT_KEY_ID`/`_P8` | `zahlen.yml` scheitert täglich mit 403 |
+| 6 | Anbieterkennung `pt` in den Chat | Laden-Knopf auf der Website ohne Kampagne |
+
+Sobald einer davon kommt: Punkt 1 → `website.yml` von Hand anstoßen und live
+`x-zaehlung` prüfen; Punkt 3 → Meta-Zeile in `index.html`, veröffentlichen,
+Gründer „Bestätigen" sagen lassen; Punkt 6 → `APPSTORE_PT` in `website.yml`;
+Punkte 2, 4, 5 → die Berichte einmal von Hand starten und nachsehen.
+
+### Vorgeschlagen, nicht entschieden
+
+- **Einheit in der Tabelle im Verlauf.** Dort steht „290", nicht „290 kWh",
+  in jeder Schriftgröße. Der Kopf ist in Versalien, darin würde aus „kWh"
+  ein „KWH". Vorschlag an den Gründer am 26. September: die Einheit als eigene
+  kleine Zeile unter dem Kopf, im Klick-Dummy genauso. Antwort steht aus.
+
+### Als Nächstes
+
+1. **1.4 Rundgang** (Einreichen 21. Oktober): nach dem Sichern „Weiter mit
+   Wasser", bis alle fälligen Zähler durch sind. Baut auf dem Weg aus
+   `AppAddress` und `Wegweiser` auf.
+2. **Neue Bilder für den Laden** zu 1.3 (`10-sichtbarkeit.md` 4.4).
+3. **Ratgeberseiten**, eine je Woche: stromverbrauch-normal, anbieterwechsel,
+   zweirichtungszaehler, zaehlerwechsel, waermepumpe.
 
 ## Was zuletzt gefunden wurde, und warum es zählt
 
