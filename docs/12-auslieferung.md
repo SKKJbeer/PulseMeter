@@ -293,6 +293,7 @@ Store Connect deshalb nie gesehen.
 | 35 | 0.113.20 | 10.09. 11:16 | ✓ | **Erster Bau mit iPad-Unterstützung, der bei Apple ankam.** `UISupportedInterfaceOrientations~ipad` mit allen vier Ausrichtungen, und der Hochladeschritt liest jetzt die Ausgabe von `altool`, statt seinem Rückgabewert zu glauben. VALID nach 93 Sekunden |
 | 36 | 0.114.1 | 22.09. 08:41 | ✓ | **Bühne und Leiste: `Verlauf` und `Zähler` stehen auf dem Tablet in zwei Spalten.** Dazu wächst das Diagramm mit der Breite, und das Querformat wird zum ersten Mal geprüft — `testTabletUsesItsWidthInLandscape` dreht und misst, wo die Leiste steht. VALID, Testhinweise eingetragen |
 | 37 | 0.117.8 | 26.09. 10:48 | ✓ | **Größte Schrift auf iPad und iPhone SE.** Zahlen brechen nicht mehr in den Ziffern um, Karten stehen oben bündig, gestapelte Zeilen ab den Schriftgrößen für Bedienungshilfen, „Verbrauch je Monat“ statt eines zerbrochenen Tabellenkopfs. Dazu `testNoTextReachesPastTheEdge` auf allen Geräten der CI. Enthält 0.117.3 bis 0.117.6. Bauten zwischen 36 und 37 stehen hier nicht, die Nummern sind dort nicht nachgetragen worden. VALID, Testhinweise eingetragen (Apple nimmt × › ≈ nicht, der Lauf entfernt sie) |
+| 38 | 0.118.1 | 29.09. 04:37 | ✓ | **Siri öffnet den Ziffernblock**, nach der dritten Ablesung fragt die App einmal nach einer Bewertung (in TestFlight zeigt iOS das Blatt nie), und die Tabelle im Verlauf nennt ihre Einheit. Enthält 0.118.0 und 0.118.1. VALID, Testhinweise eingetragen |
 
 Zeitangaben in UTC. Ein ✗ heißt: hochgeladen wurde nichts, die Nummer ist
 trotzdem verbraucht.

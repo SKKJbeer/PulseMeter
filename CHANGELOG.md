@@ -9,6 +9,28 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.118.2 — 2026-09-29
+
+**Bau 38 ist in TestFlight, und die Entwicklungsseite sagt es.**
+
+Nach der Regel „Wie eine Zeile nach außen wandert" (`05-roadmap.md`): Steht
+eine Fassung in TestFlight, bekommt `entwicklung.html` eine Zeile „Im Test".
+Sie nennt, was jemand davon merkt: Erinnerung, Feld am Sperrbildschirm und
+Siri öffnen den Ziffernblock des richtigen Zählers, und mit großer Schrift
+bleibt jede Zahl ganz. Die Bewertungsfrage steht dort nicht; sie ist keine
+Funktion, auf die jemand wartet.
+
+Bau 38 (0.118.1) im Auslieferungsprotokoll nachgetragen.
+
+Dabei gefunden: Seit 0.117.8 prüft `pruefen.sh` die Website in Chromium und
+WebKit gleichzeitig, und beide bauten die Auslieferung in denselben Ordner.
+Der eine räumte weg, was der andere gerade kopierte („cp: cannot create
+directory … File exists"). Jetzt ein Ordner je Engine.
+
+Kein App-Bau: Das ändert nur Website, Prüfskripte und Dokumente.
+
+---
+
 ## 0.118.1 — 2026-09-28
 
 **Die Tabelle im Verlauf nennt ihre Einheit.**

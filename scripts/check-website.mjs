@@ -517,7 +517,10 @@ console.log("\nSuchmaschinen");
 // Wegwerfordner, und das Ergebnis wird angesehen.
 if (dir === "docs/website") {
   console.log("\nAuslieferung");
-  const aus = "build/website-pruefung";
+  // Ein Ordner je Engine: `pruefen.sh` lässt Chromium und WebKit gleichzeitig
+  // laufen, und in einem gemeinsamen Ordner räumte der eine weg, was der
+  // andere gerade kopierte („cp: cannot create directory … File exists").
+  const aus = `build/website-pruefung-${process.env.PULSE_ENGINE === "webkit" ? "webkit" : "chromium"}`;
   execFileSync("scripts/website-fertig.sh", [aus], { stdio: "pipe" });
   const html = readdirSync(aus).filter(d => d.endsWith(".html"));
   const relativ = html.flatMap(d => [...readFileSync(`${aus}/${d}`, "utf8").matchAll(/href="([a-z0-9-]+\.html[^"]*)"/g)].map(m => `${d}: ${m[1]}`));
