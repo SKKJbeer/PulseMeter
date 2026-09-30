@@ -9,6 +9,23 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.118.4 — 2026-09-30
+
+**Der Wochenbericht liest die Zählung.**
+
+Der Gründer hat den Leseschlüssel `CLOUDFLARE_STATISTIK_TOKEN` hinterlegt.
+„Website-Zahlen" von Hand gestartet: Die Abfrage an Cloudflare geht durch,
+und die Tabellen stehen in der Zusammenfassung. In den ersten Stunden nach dem
+Einschalten: drei Aufrufe unbekannter Adressen (404), direkt, von einem
+Rechner in den USA, dazu zwei Bots. Das sind Abtaster, die nach üblichen
+Adressen suchen, und genau dafür zählt eine unbekannte Adresse als „404"
+statt mit ihrem Namen.
+
+Offen beim Gründer: Search Console, Google-Dienstkonto,
+App-Store-Berichtsschlüssel und die Anbieterkennung (`docs/13-zugaenge.md`).
+
+---
+
 ## 0.118.3 — 2026-09-30
 
 **Die Website zählt.**

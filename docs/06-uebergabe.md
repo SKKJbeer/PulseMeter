@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-09-30, Version 0.118.3
+Stand: 2026-09-30, Version 0.118.4
 
 ---
 
@@ -107,7 +107,7 @@ dort je Punkt.
 | # | Was | Folge, solange es fehlt |
 |---|---|---|
 | 1 | ~~Analytics Engine bei Cloudflare einschalten~~ | **erledigt am 30. September.** Der Gründer hat den Datensatz `zaehlora_aufrufe` mit der Bindung `ZAEHLUNG` angelegt |
-| 2 | Cloudflare-Leseschlüssel `CLOUDFLARE_STATISTIK_TOKEN` | Wochenbericht kann nicht lesen (der Hochladeschlüssel bekommt 403, gemessen) |
+| 2 | ~~Cloudflare-Leseschlüssel `CLOUDFLARE_STATISTIK_TOKEN`~~ | **erledigt am 30. September.** Erster Bericht lief: „Website-Zahlen" von Hand startbar, sonst montags |
 | 3 | Search Console: Bestätigungscode in den Chat | Google führt die Seite nicht offiziell, keine Suchbegriffe |
 | 4 | Google-Dienstkonto `GOOGLE_SC_SCHLUESSEL` | keine Google-Zahlen im Wochenbericht, Sitemap nicht automatisch gemeldet |
 | 5 | App-Store-Berichtsschlüssel (Rolle Admin) `ASC_BERICHT_KEY_ID`/`_P8` | `zahlen.yml` scheitert täglich mit 403 |

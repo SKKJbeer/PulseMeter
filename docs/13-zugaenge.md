@@ -15,7 +15,7 @@ Bestätigungscode, eine Anbieterkennung), darf in den Chat.
 | # | Was | Wer es liest | Zustand |
 |---|---|---|---|
 | 1 | Analytics Engine einschalten | die Zählung auf der Website | **erledigt am 30. September**, Datensatz `zaehlora_aufrufe`, Bindung `ZAEHLUNG` |
-| 2 | Leseschlüssel Cloudflare | Wochenbericht Website | offen, nötig: der vorhandene bekommt 403 (gemessen am 26. September) |
+| 2 | Leseschlüssel Cloudflare | Wochenbericht Website | **erledigt am 30. September**, erster Bericht gelaufen |
 | 3 | Search Console | Google-Verzeichnis | offen |
 | 4 | Google-Dienstkonto | Wochenbericht Google, Sitemap | offen |
 | 5 | Berichtsschlüssel App Store Connect | täglicher Ablauf „Zahlen" | offen, scheitert seit dem 5. September |
