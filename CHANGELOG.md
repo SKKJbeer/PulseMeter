@@ -9,6 +9,24 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.118.3 — 2026-09-30
+
+**Die Website zählt.**
+
+Der Gründer hat Analytics Engine eingeschaltet und dabei den Datensatz
+`zaehlora_aufrufe` mit der Bindung `ZAEHLUNG` angelegt, genau wie in
+`website-paket.sh`. Danach „Website veröffentlichen" von Hand angestoßen:
+mit Zählung hochgeladen, Rückfall übersprungen, und die Prüfung an der echten
+Seite meldet `x-zaehlung: ohne-personenbezug` und alle Sicherheitsangaben.
+Damit stimmt auch die Datenschutzerklärung, die die Zählung seit 0.117.5
+beschreibt.
+
+Offen für den Wochenbericht bleibt der Leseschlüssel (`docs/13-zugaenge.md`,
+Punkt 2). Gezählt wird ab jetzt trotzdem, und Cloudflare hebt die Zeilen drei
+Monate auf.
+
+---
+
 ## 0.118.2 — 2026-09-29
 
 **Bau 38 ist in TestFlight, und die Entwicklungsseite sagt es.**

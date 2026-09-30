@@ -1907,7 +1907,9 @@ Was dabei je einen Umweg kostet:
   `try`, Antwort immer zurück.
 - Lokal probieren geht ohne Zugang: `npx wrangler pages dev` im Paketordner.
 - **Analytics Engine muss im Konto einmal von Hand eingeschaltet werden**
-  (Workers & Pages → Analytics Engine → Enable). Vorher scheitert jedes
+  (Workers & Pages → Analytics Engine). Dabei fragt Cloudflare nach einem
+  Namen für den Datensatz: genau der aus `wrangler.toml`, danach zeigt es die
+  Bindung zum Abgleich. Am 30. September so erledigt. Vorher scheitert jedes
   Hochladen mit Bindung an „You need to enable Analytics Engine", und kein
   Token kann das umlegen. Deshalb ein Rückfall ohne Funktion im Ablauf: Die
   Seite darf nie an ihrer Statistik hängen bleiben.

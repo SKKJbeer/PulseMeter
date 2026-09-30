@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-09-29, Version 0.118.2
+Stand: 2026-09-30, Version 0.118.3
 
 ---
 
@@ -106,7 +106,7 @@ dort je Punkt.
 
 | # | Was | Folge, solange es fehlt |
 |---|---|---|
-| 1 | Analytics Engine bei Cloudflare einschalten | Website geht ohne Zählung online (Rückfall in `website.yml`), die Datenschutzerklärung beschreibt eine Zählung, die noch nicht läuft |
+| 1 | ~~Analytics Engine bei Cloudflare einschalten~~ | **erledigt am 30. September.** Der Gründer hat den Datensatz `zaehlora_aufrufe` mit der Bindung `ZAEHLUNG` angelegt |
 | 2 | Cloudflare-Leseschlüssel `CLOUDFLARE_STATISTIK_TOKEN` | Wochenbericht kann nicht lesen (der Hochladeschlüssel bekommt 403, gemessen) |
 | 3 | Search Console: Bestätigungscode in den Chat | Google führt die Seite nicht offiziell, keine Suchbegriffe |
 | 4 | Google-Dienstkonto `GOOGLE_SC_SCHLUESSEL` | keine Google-Zahlen im Wochenbericht, Sitemap nicht automatisch gemeldet |
