@@ -1,0 +1,44 @@
+name: Domain einrichten
+
+# **Eine eigene Domain an die Website hängen, in einem Durchgang.** Legt die
+# Zone bei Cloudflare an, setzt die DNS-Einträge, hängt die Domain an das
+# Pages-Projekt und versucht, bei netcup die Nameserver umzustellen. Jeder
+# Schritt sieht zuerst nach, ob er schon erledigt ist: Der Ablauf darf so oft
+# laufen, wie man nachsehen will.
+#
+# Was er braucht, steht in `docs/13-zugaenge.md`. Ohne `CLOUDFLARE_DOMAIN_TOKEN`
+# hält er gleich an und sagt es.
+#
+# Was er absichtlich **nicht** tut: die Adressen in den Seiten umstellen. Das
+# macht `scripts/domain-setzen.sh` in einem Commit, und zwar erst, wenn die
+# Domain wirklich antwortet. Vorher zeigte jedes `canonical` auf eine Adresse,
+# die es noch nicht gibt.
+
+on:
+  workflow_dispatch:
+    inputs:
+      domain:
+        description: "Domain"
+        default: "zaehlora.de"
+
+permissions:
+  contents: read
+
+jobs:
+  domain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Einrichten oder nachsehen
+        env:
+          CLOUDFLARE_DOMAIN_TOKEN: ${{ secrets.CLOUDFLARE_DOMAIN_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # Der Name des netcup-Geheimnisses war beim Anlegen nicht abgesprochen.
+          # Die üblichen Schreibweisen der Reihe nach; welcher greift, sagt das
+          # Skript nicht, nur ob es ging.
+          NETCUP_API_KEY: ${{ secrets.NETCUP_API_KEY || secrets.NETCUP_APIKEY || secrets.NETCUP_KEY || secrets.NETCUP_TOKEN || secrets.NETCUP_API_TOKEN || secrets.NETCUP }}
+          NETCUP_API_PASSWORT: ${{ secrets.NETCUP_API_PASSWORT || secrets.NETCUP_API_PASSWORD || secrets.NETCUP_PASSWORD }}
+          NETCUP_KUNDENNUMMER: ${{ secrets.NETCUP_KUNDENNUMMER || secrets.NETCUP_CUSTOMER_NUMBER || secrets.NETCUP_CUSTOMERNUMBER }}
+        run: python3 scripts/domain-einrichten.py "${{ inputs.domain }}"

@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-09-30, Version 0.118.4
+Stand: 2026-10-01, Version 0.118.5
 
 ---
 
@@ -112,6 +112,7 @@ dort je Punkt.
 | 4 | Google-Dienstkonto `GOOGLE_SC_SCHLUESSEL` | keine Google-Zahlen im Wochenbericht, Sitemap nicht automatisch gemeldet |
 | 5 | App-Store-Berichtsschlüssel (Rolle Admin) `ASC_BERICHT_KEY_ID`/`_P8` | `zahlen.yml` scheitert täglich mit 403 |
 | 6 | Anbieterkennung `pt` in den Chat | Laden-Knopf auf der Website ohne Kampagne |
+| 7 | Domain `zaehlora.de`: `CLOUDFLARE_DOMAIN_TOKEN`, netcup-Angaben | gekauft am 30. September, Registrierung bei netcup lief noch; danach Ablauf „Domain einrichten“, dann `domain-setzen.sh` |
 
 Sobald einer davon kommt: Punkt 1 → `website.yml` von Hand anstoßen und live
 `x-zaehlung` prüfen; Punkt 3 → Meta-Zeile in `index.html`, veröffentlichen,

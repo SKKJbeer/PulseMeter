@@ -9,6 +9,27 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.118.5 — 2026-10-01
+
+**Ein Ablauf, der `zaehlora.de` an die Website hängt.**
+
+Der Gründer hat `zaehlora.de` bei netcup gekauft und einen netcup-Schlüssel
+hinterlegt. `domain.yml` mit `scripts/domain-einrichten.py` legt die Zone bei
+Cloudflare an, setzt für die Domain und `www` je einen CNAME auf
+`zaehlora.pages.dev` (über Cloudflare geleitet; an der Wurzel löst Cloudflare
+ihn selbst auf, was netcups DNS nicht kann), entfernt Platzhalter-Einträge und
+hängt beide Namen an das Pages-Projekt. Danach versucht er bei netcup, die
+Nameserver auf Cloudflare umzustellen. Lehnt netcup ab, schreibt er die zwei
+Namen in die Zusammenfassung. Jeder Schritt sieht zuerst nach, ob er schon
+erledigt ist; der Ablauf darf also auch zum Nachsehen laufen.
+
+Die Adressen in den Seiten stellt er absichtlich nicht um. Das macht
+`domain-setzen.sh`, erst wenn die Domain antwortet.
+
+`13-zugaenge.md` Punkt 7 und `06-uebergabe.md` nennen, was dafür noch fehlt.
+
+---
+
 ## 0.118.4 — 2026-09-30
 
 **Der Wochenbericht liest die Zählung.**

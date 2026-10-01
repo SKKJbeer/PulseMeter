@@ -20,6 +20,7 @@ Bestätigungscode, eine Anbieterkennung), darf in den Chat.
 | 4 | Google-Dienstkonto | Wochenbericht Google, Sitemap | offen |
 | 5 | Berichtsschlüssel App Store Connect | täglicher Ablauf „Zahlen" | offen, scheitert seit dem 5. September |
 | 6 | Anbieterkennung `pt` | Laden-Knopf auf der Website | offen |
+| 7 | Domain `zaehlora.de` an die Website | Ablauf „Domain einrichten“ | gekauft am 30. September bei netcup, Registrierung läuft; es fehlen `CLOUDFLARE_DOMAIN_TOKEN` und die netcup-Angaben |
 
 ---
 
@@ -129,6 +130,25 @@ App Store Connect zeigt unter „Kampagnen", wie viele über die Website kamen
 und luden.
 
 ---
+
+## 7. Domain `zaehlora.de`
+
+Gekauft bei netcup. Den Rest macht der Ablauf **„Domain einrichten“**
+(`domain.yml`): Zone bei Cloudflare, DNS, Domain an die Website, und wenn
+netcup es zulässt auch die Nameserver. Er braucht:
+
+- **`CLOUDFLARE_DOMAIN_TOKEN`**: <https://dash.cloudflare.com/profile/api-tokens>
+  → Create Custom Token, Name `Zählora Domain`, Permissions **Zone · Zone ·
+  Edit**, **Zone · DNS · Edit**, **Zone · Zone Settings · Edit**, Zone
+  Resources **All zones from an account**.
+- Für den Versuch bei netcup drei Geheimnisse: `NETCUP_KUNDENNUMMER`,
+  `NETCUP_API_KEY`, `NETCUP_API_PASSWORT`. API-Key und API-Passwort stehen im
+  netcup-Kundenbereich unter **Stammdaten → API**; das Passwort zeigt netcup
+  nur beim Anlegen. Ohne die drei schreibt der Ablauf die beiden Nameserver
+  in seine Zusammenfassung, und sie werden von Hand eingetragen.
+
+Erst wenn die Domain antwortet, stellt `scripts/domain-setzen.sh` die Adressen
+in den Seiten um, und `zaehlora.pages.dev` leitet weiter.
 
 ## Was schon von selbst läuft
 
