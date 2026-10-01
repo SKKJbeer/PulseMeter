@@ -9,6 +9,19 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.118.6 — 2026-10-01
+
+**„Domain einrichten" findet den netcup-Schlüssel unter `NETCUP_API`.**
+
+Der erste Lauf hat bei Cloudflare alles eingerichtet: Zone `zaehlora.de`
+(wartet auf die Nameserver `rita.ns.cloudflare.com` und
+`rudy.ns.cloudflare.com`), beide CNAMEs, beide Namen am Pages-Projekt. Bei
+netcup fand er nichts, weil der Schlüssel unter einem Namen lag, den er nicht
+probierte. Für die Anmeldung verlangt netcup außerdem Kundennummer und
+API-Passwort; ohne die bleibt der Weg von Hand.
+
+---
+
 ## 0.118.5 — 2026-10-01
 
 **Ein Ablauf, der `zaehlora.de` an die Website hängt.**

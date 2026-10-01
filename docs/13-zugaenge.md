@@ -142,7 +142,7 @@ netcup es zulässt auch die Nameserver. Er braucht:
   Edit**, **Zone · DNS · Edit**, **Zone · Zone Settings · Edit**, Zone
   Resources **All zones from an account**.
 - Für den Versuch bei netcup drei Geheimnisse: `NETCUP_KUNDENNUMMER`,
-  `NETCUP_API_KEY`, `NETCUP_API_PASSWORT`. API-Key und API-Passwort stehen im
+  `NETCUP_API` (liegt seit 1. Oktober), `NETCUP_API_PASSWORT`. API-Key und API-Passwort stehen im
   netcup-Kundenbereich unter **Stammdaten → API**; das Passwort zeigt netcup
   nur beim Anlegen. Ohne die drei schreibt der Ablauf die beiden Nameserver
   in seine Zusammenfassung, und sie werden von Hand eingetragen.
