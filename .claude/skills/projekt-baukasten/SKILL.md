@@ -1833,6 +1833,33 @@ in der Prüfung umgeschrieben werden.** `website-fertig.sh` lief nur beim
 Veröffentlichen; dass es `index.html#preise` stehen ließ, hat keine Prüfung
 gesehen.
 
+### Eine eigene Domain bei netcup: erst das Nameserver-Set, dann die Domain
+
+Hat einen Tag gekostet. Die Zone bei Cloudflare stand nach einer Minute, aber
+bei netcup ließen sich die Cloudflare-Nameserver nicht eintragen: Unter
+„Individuelle Nameserver" erschien kein Feld, nur „Speichern". Desktop-Ansicht,
+Typ neu wählen und Neuladen haben nichts geändert.
+
+Der Grund steht in netcups eigener Hilfe, nur in zwei getrennten Artikeln.
+**Domains, die neu mit CloudDNS registriert sind, haben im Reiter
+„Nameserver" kein Eingabefeld.** Dort wählt man nur ein fertiges Set aus:
+
+1. Links im Menü **„Nameserver Set"** → **„Erstellen"**, die Nameserver
+   eintragen, speichern.
+2. **Domains** → Lupe → Reiter **„Nameserver"** → Typ **„Eigene Nameserver
+   verwenden"** → das Set wählen → **Speichern**.
+
+Der Knopf „+ weiterer Nameserver" im Reiter „DNS" gilt nur für ältere
+Domains („Bestand-Domains"). Die meisten Anleitungen im Netz beschreiben
+diesen Weg.
+
+Dazu: Ob netcups Schnittstelle (`updateDomain`) einem Endkunden die
+Nameserver ändern lässt, ist **nicht ausprobiert**. Sie gilt als den
+Wiederverkäufern vorbehalten, und sie braucht neben dem Schlüssel
+Kundennummer und API-Passwort. **Bis das jemand gemessen hat, macht diesen
+Schritt der Kontoinhaber von Hand.** Die Anleitung dafür gehört in die
+Zusammenfassung des Ablaufs, mit dem Set zuerst.
+
 ### Chromium ist nicht Safari, und das neueste Safari ist nicht das alte
 
 Jedes iPhone und jedes iPad zeigt eine Website mit WebKit, auch in Chrome. Eine

@@ -180,10 +180,21 @@ def main():
         if not umgestellt:
             melde("### Von Hand bei netcup eintragen")
             melde()
-            melde("customercontrolpanel.de → Domains → zaehlora.de → Reiter **Nameserver** → eigene Nameserver:")
+            # Erst das Set, dann die Domain: Bei Domains, die neu mit
+            # CloudDNS registriert sind, hat der Reiter „Nameserver" kein
+            # Eingabefeld, nur eine Auswahl fertiger Sets. Das hat einen Tag
+            # gekostet, weil diese Zeile vorher direkt zum Reiter schickte.
+            melde("1. customercontrolpanel.de → links **Nameserver Set** → **Erstellen**, "
+                  "Name `Cloudflare`, diese Nameserver eintragen, speichern:")
             melde()
             for n in nameserver:
-                melde(f"- `{n}`")
+                melde(f"   - `{n}`")
+            melde()
+            melde(f"2. **Domains** → Lupe bei {domain} → Reiter **Nameserver** → "
+                  "Typ **Eigene Nameserver verwenden** → Set `Cloudflare` → **Speichern**")
+            melde()
+            melde("Ältere Domains haben stattdessen im Reiter **DNS** unten den Knopf "
+                  "„+ weiterer Nameserver“.")
         melde()
         melde("Danach dauert es meist unter einer Stunde, höchstens einen Tag. "
               "Dieser Ablauf darf jederzeit wieder laufen und zeigt dann den Zustand.")

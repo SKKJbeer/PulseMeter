@@ -20,7 +20,7 @@ Bestätigungscode, eine Anbieterkennung), darf in den Chat.
 | 4 | Google-Dienstkonto | Wochenbericht Google, Sitemap | offen |
 | 5 | Berichtsschlüssel App Store Connect | täglicher Ablauf „Zahlen" | offen, scheitert seit dem 5. September |
 | 6 | Anbieterkennung `pt` | Laden-Knopf auf der Website | offen |
-| 7 | Domain `zaehlora.de` an die Website | Ablauf „Domain einrichten“ | gekauft am 30. September bei netcup, Registrierung läuft; es fehlen `CLOUDFLARE_DOMAIN_TOKEN` und die netcup-Angaben |
+| 7 | Domain `zaehlora.de` an die Website | Ablauf „Domain einrichten“ | Zone bei Cloudflare steht seit 1. Oktober; es fehlen die Nameserver bei netcup (über ein Nameserver-Set, siehe unten) |
 
 ---
 
@@ -146,6 +146,17 @@ netcup es zulässt auch die Nameserver. Er braucht:
   netcup-Kundenbereich unter **Stammdaten → API**; das Passwort zeigt netcup
   nur beim Anlegen. Ohne die drei schreibt der Ablauf die beiden Nameserver
   in seine Zusammenfassung, und sie werden von Hand eingetragen.
+
+**Von Hand bei netcup** (neu registrierte Domain, deshalb über ein Set; im
+Reiter „Nameserver“ selbst gibt es kein Eingabefeld):
+
+1. <https://www.customercontrolpanel.de> → links **Nameserver Set** →
+   **Erstellen**. Name `Cloudflare`, dann `rita.ns.cloudflare.com` und
+   `rudy.ns.cloudflare.com` eintragen, IP-Felder leer lassen, **Speichern**.
+2. **Domains** → Lupe bei `zaehlora.de` → Reiter **Nameserver** → Typ
+   **Eigene Nameserver verwenden** → Set `Cloudflare` → **Speichern**.
+
+Quelle: netcup-Hilfe, „Eigene Nameserver hinterlegen (CloudDNS)“.
 
 Erst wenn die Domain antwortet, stellt `scripts/domain-setzen.sh` die Adressen
 in den Seiten um, und `zaehlora.pages.dev` leitet weiter.

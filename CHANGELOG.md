@@ -9,6 +9,18 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.118.7 — 2026-10-02
+
+**Die Anleitung für netcup führt über ein Nameserver-Set.**
+
+Im Reiter „Nameserver" einer neu registrierten Domain gibt es bei netcup kein
+Eingabefeld, nur eine Auswahl fertiger Sets. Die Zusammenfassung von „Domain
+einrichten" schickte direkt dorthin, und der Gründer stand vor einem Formular
+ohne Felder. Jetzt steht dort zuerst „Nameserver Set erstellen", dann die
+Auswahl an der Domain; dasselbe in `docs/13-zugaenge.md` und im Baukasten.
+
+---
+
 ## 0.118.6 — 2026-10-01
 
 **„Domain einrichten" findet den netcup-Schlüssel unter `NETCUP_API`.**
