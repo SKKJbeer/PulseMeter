@@ -1860,6 +1860,15 @@ Kundennummer und API-Passwort. **Bis das jemand gemessen hat, macht diesen
 Schritt der Kontoinhaber von Hand.** Die Anleitung dafür gehört in die
 Zusammenfassung des Ablaufs, mit dem Set zuerst.
 
+### Zwei App-Einträge, sobald eine Fassung im Laden steht
+
+`GET /v1/apps/{id}/appInfos` liefert dann zwei: den der laufenden Fassung
+(`READY_FOR_DISTRIBUTION`, gesperrt) und den der nächsten (bearbeitbar). Wer
+den ersten nimmt, bekommt bei Name, Untertitel, Datenschutz-Adresse,
+Kategorien und Altersfreigabe 409 „can not be modified in the current state“,
+und das liest sich wie eine Sperre bei Apple. Den Eintrag nach `state` wählen.
+Bis 1.3 fiel es nicht auf, weil sich diese Felder nicht geändert hatten.
+
 ### Der Umzug auf eine eigene Domain, wenn die Nameserver stehen
 
 Drei Dinge, die beim Umzug auf `zaehlora.de` auffielen:

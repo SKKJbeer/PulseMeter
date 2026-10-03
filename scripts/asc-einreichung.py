@@ -129,6 +129,27 @@ def erste(apple: Apple, pfad: str, **werte):
     return stand, daten
 
 
+def app_eintrag(apple: Apple, app_id: str):
+    """Der App-Eintrag, der sich gerade ändern lässt.
+
+    **Sobald eine Fassung im Laden steht, gibt es zwei.** Der der laufenden
+    Fassung ist gesperrt, der für die nächste nicht. Bis 0.118.12 nahm dieses
+    Skript den ersten der Liste, und das war bei 1.3 der gesperrte: Apple
+    antwortete mit 409, und die Datenschutz-Adresse blieb nach dem Umzug auf
+    `zaehlora.de` auf der alten stehen. Ohne bearbeitbaren Eintrag bleibt es
+    beim ersten, damit das Nachsehen weiter etwas zeigt.
+    """
+    stand, antwort = apple.holen(f"v1/apps/{app_id}/appInfos", limit=10)
+    if stand != 200:
+        return stand, None
+    alle = antwort.json().get("data") or []
+    gesperrt = {"READY_FOR_DISTRIBUTION", "READY_FOR_SALE", "REPLACED_WITH_NEW_INFO",
+                "WAITING_FOR_REVIEW", "IN_REVIEW", "PENDING_RELEASE"}
+    offen_ = [i for i in alle
+              if (feld(i, "state") or feld(i, "appStoreState")) not in gesperrt]
+    return stand, (offen_ or alle or [None])[0]
+
+
 def feld(eintrag, name: str):
     return (eintrag or {}).get("attributes", {}).get(name)
 
@@ -276,7 +297,7 @@ def setzen(apple: Apple, pfad: str, typ: str, kennung: str,
 
 def eintrag_fuellen(apple: Apple, app_id: str) -> None:
     """Name, Untertitel, Datenschutz-URL, Kategorien, Altersfreigabe."""
-    stand, info = erste(apple, f"v1/apps/{app_id}/appInfos", **{"limit": 10})
+    stand, info = app_eintrag(apple, app_id)
     if info is None:
         offen.append(f"Der App-Eintrag ließ sich nicht lesen ({stand})")
         return
@@ -639,7 +660,7 @@ def app_finden(apple: Apple):
 
 def eintrag_pruefen(apple: Apple, app_id: str) -> None:
     """Name, Untertitel, Kategorien, Altersfreigabe, Datenschutz-URL."""
-    stand, info = erste(apple, f"v1/apps/{app_id}/appInfos", **{"limit": 10})
+    stand, info = app_eintrag(apple, app_id)
     if info is None:
         offen.append(f"Der App-Eintrag ließ sich nicht lesen ({stand})")
         return

@@ -9,6 +9,18 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.118.13 — 2026-10-03
+
+**Die Datenschutz-Adresse bei Apple zieht mit auf `zaehlora.de`.**
+
+Beim Füllen von 1.3 lehnte Apple Name, Untertitel, Datenschutz-Adresse,
+Kategorien und Altersfreigabe mit 409 ab. Der Grund: Mit einer Fassung im
+Laden hat die App zwei Einträge, den gesperrten der laufenden Fassung und
+einen offenen für die nächste. `asc-einreichung.py` nahm den ersten der Liste.
+Jetzt nimmt es den offenen.
+
+---
+
 ## 0.118.12 — 2026-10-03
 
 **Versionshinweise für 1.3, und 1.3 geht schon heute zu Apple.**
