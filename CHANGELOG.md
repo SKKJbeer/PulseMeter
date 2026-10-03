@@ -9,6 +9,20 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.119.4 — 2026-10-03
+
+**Die Roadmap bis Januar, mit dem Gründer ausgearbeitet.**
+
+Ziel bis Januar: mehr neue Nutzer. Danach 1.5 Import aus einer Tabelle
+(4. November), 1.6 und 1.7 die Kamera, die den Zählerstand vorschlägt (eigener
+Kauf 0,99 €, im Bündel enthalten), 1.8 Jahreswechsel mit In-App-Ereignis im
+App Store, 1.9 Puffer. Neben jeder Fassung: neue Bilder im Laden mit A/B-Test,
+eine Ratgeberseite je Woche, und vor 1.5 die Zahlen aus App Store Connect.
+Abrechnung prüfen, Heizperiode und gemeinsamer Haushalt stehen unter
+„Später". Wie die Kamera gebaut und geprüft wird, steht in `05-roadmap.md`.
+
+---
+
 ## 0.119.3 — 2026-10-03
 
 **Die Rechner und das Übergabeprotokoll, neu gestaltet.**

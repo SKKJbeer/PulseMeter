@@ -80,6 +80,11 @@ wiederkehrender Nutzen entsteht.
 | Bericht ohne Wasserzeichen | **1,99 €** | das Dokument zum Weitergeben |
 | **Alles freischalten** | **4,99 €** | alle fünf zusammen, 8,95 € einzeln — 44 % günstiger |
 
+**Geplant für 1.6, entschieden am 3. Oktober:** die Kamera als sechster Kauf,
+**0,99 €**, im Bündel enthalten (auch für alle, die es schon haben). Dann
+9,94 € einzeln gegen 4,99 € im Bündel. Die Tabelle oben wird erst geändert,
+wenn der Kauf im Laden steht; bis dahin verspricht sie nur, was es gibt.
+
 **Warum die Erinnerung einen Euro unter den anderen liegt, seit 0.100.0.** Sie
 war bis dahin kostenlos, und der Gründer wollte sie kostenpflichtig, damit das
 Bündel deutlicher lohnt. Beides ist eingetreten: Die Summe der Einzelkäufe

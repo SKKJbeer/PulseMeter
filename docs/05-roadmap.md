@@ -1,7 +1,7 @@
 # 05 – Roadmap und v1-Scope
 
 Status: laufend gepflegt
-Letzte Änderung: 2026-09-23
+Letzte Änderung: 2026-10-03
 
 ---
 
@@ -32,6 +32,20 @@ Im Sparring mit dem Gründer, jede Frage mit Begründung vorgelegt:
 
 ---
 
+## Entschieden am 3. Oktober
+
+Zweites Sparring mit dem Gründer, für den Winter 2026/27:
+
+| Frage | Entscheidung | Warum |
+|---|---|---|
+| Ziel bis Januar | **mehr neue Nutzer** | ohne Nutzer hilft jede Funktion wenig; wer da ist, bekommt mit dem Rundgang gerade das Ritual verbessert |
+| Große Funktion | **die Kamera liest den Zähler** | der größte Effekt am Zähler und das Bild, das im Laden auffällt. Abrechnung prüfen, Heizperiode und gemeinsamer Haushalt bleiben unter „Später" |
+| Preis der Kamera | **eigener Kauf für 0,99 €, Teil von „Alles freischalten"** | vom Gründer: „soll auch 1 € kosten und dann im Gesamtpaket integriert werden". 0,99 € wie die Erinnerungen. Das Bündel bleibt 4,99 €; wer es hat, bekommt die Kamera ohne weiteren Kauf |
+| Reihenfolge | **Import vor Kamera** | der Import ist kleiner und sicher, und die Kamera bekommt dadurch zwei Wochen mehr für eine Erkennung, die hält |
+| Testbilder | **Fotos der eigenen Zähler vom Gründer**, Zählernummer geschwärzt | das Repository ist öffentlich |
+| Jahreswechsel | **In-App-Ereignis im App Store** „Zählerstand zum Jahreswechsel" | Text und Bild von uns, Freigabe vom Gründer |
+| Takt | **bleibt bei zwei Wochen** | hat sich bewährt; große Funktionen werden in Stücke geteilt |
+
 ## Der Plan
 
 Eingereicht wird mittwochs, alle zwei Wochen. Die Daten sind **Ziele für uns**
@@ -42,8 +56,55 @@ und stehen nirgends öffentlich (siehe „Öffentlich und intern" unten).
 | **1.2** | 23.09. | Zwei Spalten auf dem iPad im Querformat · Diagramm wächst mit der Breite | **im Laden** seit 24.09., Bau 36 |
 | **1.3** | 03.10. | **Direkt zum Ziffernblock:** Erinnerung, Feld am Sperrbildschirm und Siri öffnen den Ziffernblock des richtigen Zählers · Umschalter im iPad-Hochformat kappen · Bewertungsfrage nach der dritten Ablesung · neues Schlagwortfeld und neue Bilder (`10-sichtbarkeit.md`) | **eingereicht am 03.10.** mit Bau 38, vorgezogen auf Ansage des Gründers |
 | **1.4** | 21.10. | **Rundgang:** nach dem Sichern „Weiter mit Wasser", bis alle fälligen Zähler durch sind | **in TestFlight** seit 03.10., Bau 39 (0.119.1) |
-| **1.5** | 04.11. | Import aus einer Tabelle, für Umsteiger mit Excel-Listen oder anderen Apps | mittel |
-| **1.6** | 18.11. | Puffer | — |
+| **1.5** | 04.11. | **Import aus einer Tabelle**, für Umsteiger mit Excel-Listen oder anderen Apps | als Nächstes |
+| **1.6** | 18.11. | **Kamera, Stufe 1:** Foto im Ziffernblock, die App schlägt den Stand vor, du bestätigst. Eigener Kauf 0,99 €, im Bündel enthalten | groß |
+| **1.7** | 02.12. | **Kamera, Stufe 2:** Sucher mit Rahmen, zwei Zählwerke auf einem Bild (Tag/Nacht, Bezug/Einspeisung) | groß |
+| **1.8** | 16.12. | **Jahreswechsel:** Erinnerung zum 31.12. und In-App-Ereignis „Zählerstand zum Jahreswechsel" im App Store | klein |
+| **1.9** | 13.01. | Puffer, und was die Zahlen bis dahin sagen | — |
+
+**Neben jeder Fassung, für neue Nutzer:**
+
+| Was | Wann |
+|---|---|
+| Neue Bilder im Laden: Rundgang, später Kamera. Dazu Apples A/B-Test der Produktseite mit zwei Bildsätzen | mit 1.4 und mit 1.6 |
+| Eine Ratgeberseite je Woche, nach Saison: Heizkosten im Herbst, „Zählerstand zum Jahreswechsel" im Dezember, „Nachzahlung prüfen" im Januar | laufend |
+| Messen: Berichtsschlüssel für App Store Connect und Kampagnenlink (`13-zugaenge.md`, Punkte 5 und 6) | **vor 1.5**, sonst bleibt offen, ob irgendetwas davon wirkt |
+
+### Die Kamera: wie sie gebaut wird
+
+**Nichts verlässt das Telefon.** Erkannt wird mit Apples Texterkennung auf
+dem Gerät (Vision). Kein Bild wird gesendet oder ohne Zutun gespeichert; das
+gehört zum Versprechen der App und steht so in der Datenschutzerklärung,
+bevor die Funktion erscheint.
+
+**Ein Vorschlag, keine Ablesung.** Die erkannten Ziffern landen im
+Ziffernblock, gekennzeichnet als „aus dem Foto“. Die Plausibilitätsprüfung
+bleibt, gesichert wird erst mit „Sichern“. Ist die Erkennung unsicher, schlägt
+sie **nichts** vor: Eine falsch gelesene Ziffer ist schlimmer als keine
+(Produktprinzip 7).
+
+**Woran sie scheitern kann, und wie es geprüft wird.**
+
+| Fall | Was dagegen hilft |
+|---|---|
+| Rollenzählwerk mit halb gedrehter Ziffer | Ziffer zwischen zwei Werten: nicht vorschlagen, Stelle leer lassen |
+| Rote Nachkommastellen | Zahl der Vor- und Nachkommastellen kommt aus dem Zählwerk, nicht aus dem Bild |
+| Zählernummer, Eichjahr, Typenschild im Bild | nur Zahlen mit der Stellenzahl des Zählwerks, nahe am letzten Stand |
+| Digitale Anzeige wechselt zwischen 1.8.0 und 2.8.0 | Stufe 2: Kennzahl neben dem Wert lesen und dem richtigen Zählwerk zuordnen |
+| Schlechtes Licht, Spiegelung | Taschenlampe im Sucher (Stufe 2) |
+
+Geprüft wird mit einer Sammlung echter Fotos (vom Gründer, Zählernummer
+geschwärzt) und der erwarteten Zahl je Bild. Die CI rechnet die Trefferquote
+aus, und die steht in jedem Lauf. Ziel für Stufe 1: auf keinem Bild ein
+falscher Vorschlag; lieber keiner.
+
+**Der Kauf.** Eine neue Kauf-Kennung neben den fünf vorhandenen, angelegt über
+die Schnittstelle (`asc-kaeufe.py`), 0,99 €. `Entitlement` bekommt einen
+sechsten Fall; „Alles freischalten" schließt ihn ein, auch für alle, die das
+Bündel schon gekauft haben. Die Summe der Einzelkäufe steigt auf 9,94 €, das
+Bündel bleibt bei 4,99 €. Die Kaufseite, `04-monetarisierung.md`, die Website
+und `check-versprechen.py` ziehen im selben Zug nach.
+
 
 **Am Abend des 23. September umgeschnitten.** Mittags stand 1.3 mit Siri und
 den Umschaltern im Plan und 1.4 mit „ablesen direkt aus der Erinnerung, ohne
@@ -91,7 +152,9 @@ und „Geparkt" wartet genau darauf. Zu ändern in App Store Connect unter
 
 | Was | Warum nicht jetzt |
 |---|---|
-| Kamera schlägt den Zählerstand vor (auf dem Gerät, immer zum Bestätigen) | größter Effekt, aber schwer zuverlässig. Eine falsch gelesene Ziffer ist schlimmer als keine |
+| Jahresabrechnung prüfen: die Abrechnung eintragen, eigene Zahlen daneben | stark zur Abrechnungszeit (Januar bis März); Kandidat für 2.0 |
+| Heizperiode im Blick: dieser Winter gegen den letzten | Kandidat für 2.0, zusammen mit der Abrechnung |
+| Gemeinsamer Haushalt über iCloud-Freigabe | eigener Aufwand beim Abgleich; erst, wenn jemand danach fragt |
 | Mehrere Wohnungen getrennt halten | wird zusammen mit „Vermieter" entschieden, sobald Zahlen da sind |
 
 ### Geparkt
@@ -101,7 +164,7 @@ Zuschriften etwas anderes sagen.
 
 - **Vermieter als eigene Zielgruppe** — braucht ein eigenes Preismodell, und
   die Website sagt „Ein Abo gibt es nicht".
-- Mac-App · geteilter Haushalt · CO₂ mit belastbarer Quelle · Foto-Belege ·
+- Mac-App · CO₂ mit belastbarer Quelle · Foto-Belege ·
   Steuerung im Kontrollzentrum
 
 ### Nie

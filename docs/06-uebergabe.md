@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-10-03, Version 0.119.3
+Stand: 2026-10-03, Version 0.119.4
 
 ---
 
@@ -130,8 +130,14 @@ Klick-Dummy. Der Satz „Alle Werte in …" unter der Tabelle im Entwurf ist weg
 1. **1.4 Rundgang**: in TestFlight seit 3. Oktober, **Bau 39** (0.119.1),
    auf `entwicklung.html` „Im Test“. Einreichen, sobald 1.3 im Laden steht,
    mit Freigabe des Gründers.
-2. **Neue Bilder für den Laden** zu 1.3 (`10-sichtbarkeit.md` 4.4).
-3. **Ratgeberseiten**, eine je Woche: stromverbrauch-normal, anbieterwechsel,
+2. **1.5 Import aus einer Tabelle** (4. November), danach **Kamera** in zwei
+   Stufen (1.6 und 1.7, eigener Kauf 0,99 €, im Bündel) und **Jahreswechsel**
+   mit In-App-Ereignis (1.8). Entschieden am 3. Oktober, Einzelheiten und das
+   Vorgehen bei der Kamera in `05-roadmap.md`. Der Gründer liefert Fotos
+   seiner Zähler, die Zählernummer wird vor dem Einchecken geschwärzt.
+3. **Neue Bilder für den Laden** mit Rundgang, dazu der A/B-Test der
+   Produktseite (`10-sichtbarkeit.md` 4.4).
+4. **Ratgeberseiten**, eine je Woche: stromverbrauch-normal, anbieterwechsel,
    zweirichtungszaehler, zaehlerwechsel, waermepumpe.
 
 ## Was zuletzt gefunden wurde, und warum es zählt
