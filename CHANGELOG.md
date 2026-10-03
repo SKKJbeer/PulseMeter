@@ -9,6 +9,15 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.118.14 — 2026-10-03
+
+**Fassung 1.3 ist bei Apple eingereicht, mit Bau 38.**
+
+Um 07:35 UTC, Zustand `WAITING_FOR_REVIEW`. Eingetragen in
+`12-auslieferung.md`.
+
+---
+
 ## 0.118.13 — 2026-10-03
 
 **Die Datenschutz-Adresse bei Apple zieht mit auf `zaehlora.de`.**

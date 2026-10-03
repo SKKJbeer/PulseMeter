@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-10-03, Version 0.118.13
+Stand: 2026-10-03, Version 0.118.14
 
 ---
 
@@ -92,7 +92,7 @@ Tabelle im Baukasten unter „Die Prüfungen".
 - **Bau 38** (0.118.1) in TestFlight, VALID: Siri, Bewertungsfrage, Einheit
   in der Tabelle. Davor Bau 37 (0.117.8): größte Schrift auf iPad und iPhone
   SE. Auf `entwicklung.html` steht dafür „Im Test".
-- **1.3** wird am **3. Oktober** mit Bau 38 eingereicht, vorgezogen auf
+- **1.3** ist am **3. Oktober** um 07:35 UTC mit Bau 38 eingereicht, vorgezogen auf
   Ansage des Gründers („wir können auch schon heute das nächste releasen“). Darin: Erinnerung und Sperrbildschirm öffnen den Ziffernblock
   (0.116.0), Umschalter im iPad-Hochformat, **Siri** und die
   **Bewertungsfrage** (beide 0.118.0), dazu das neue Schlagwortfeld und die

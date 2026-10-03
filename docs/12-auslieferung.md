@@ -426,6 +426,23 @@ Ablauf die Veröffentlichung ausdrücklich an — und dafür fehlte
 eigene Seite sagte „Bald im App Store". Behoben in 0.106.6, samt einer Prüfung
 am Ende des Ablaufs, die die **Seite abruft** statt den Push zu zählen.
 
+### Die fünfte, 1.3 — eingereicht am 3. Oktober
+
+**Vier Tage vor dem Termin, auf Ansage des Gründers** („wir können auch
+schon heute das nächste releasen“). Direkt zum Ziffernblock aus Erinnerung,
+Sperrbildschirm und Siri, die Einheit in der Tabelle, größte Schrift auf iPad
+und iPhone SE, dazu die Bewertungsfrage. Eingereicht um 07:35 UTC mit Bau 38
+(0.118.1), belegt aus dem Protokoll:
+
+    ✓ Bau 38 an die Fassung gehängt
+    Eingereicht. Zustand: WAITING_FOR_REVIEW
+
+`min_bau: 38`. Neue Beschreibung und Schlagwörter aus `09-appstore.md`,
+Support- und Marketing-Adresse erstmals auf `zaehlora.de`. Die
+Datenschutz-Adresse ging erst im zweiten Anlauf: Der erste nahm den
+gesperrten App-Eintrag der laufenden Fassung (behoben in 0.118.13). Die
+Bildschirmfotos übernimmt Apple aus 1.2.
+
 ### Die vierte, 1.2 — freigegeben am 24. September
 
 **Die erste Fassung im Zwei-Wochen-Takt.** Zwei Spalten auf dem iPad im
