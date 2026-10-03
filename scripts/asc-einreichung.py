@@ -195,7 +195,7 @@ FASSUNG = os.environ.get("PULSE_FASSUNG", "1.0").strip() or "1.0"
 KATEGORIE_HAUPT = "UTILITIES"
 KATEGORIE_ZWEIT = "FINANCE"
 
-WEBSITE = "https://zaehlora.pages.dev"
+WEBSITE = "https://zaehlora.de"
 DATENSCHUTZ = f"{WEBSITE}/datenschutz"
 SUPPORT = f"{WEBSITE}/hilfe"
 

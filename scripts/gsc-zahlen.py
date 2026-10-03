@@ -16,8 +16,13 @@ import os
 import sys
 import urllib.parse
 
-PROPERTY = "https://zaehlora.pages.dev/"
-SITEMAP = PROPERTY + "sitemap.xml"
+# Eine Domain-Property, keine URL-Präfix-Property: Sie umfasst `www`, `http`
+# und jede Unterseite, und sie wird über einen TXT-Eintrag im DNS bestätigt,
+# den der Ablauf „Domain einrichten“ bei Cloudflare setzen kann. Bis 0.118.9
+# stand hier `https://zaehlora.pages.dev/`.
+PROPERTY = "sc-domain:zaehlora.de"
+WEBSITE = "https://zaehlora.de/"
+SITEMAP = WEBSITE + "sitemap.xml"
 API = "https://searchconsole.googleapis.com/webmasters/v3/sites/" + urllib.parse.quote(PROPERTY, safe="")
 
 
@@ -83,7 +88,7 @@ def main():
         "",
         tabelle("Suchbegriffe", ["Suchbegriff"] + kopf[1:], [zeile(r) for r in abfrage("query")]),
         tabelle("Seiten", ["Seite"] + kopf[1:],
-                [(r["keys"][0].replace(PROPERTY, "/"),) + zeile(r)[1:] for r in abfrage("page")]),
+                [(r["keys"][0].replace(WEBSITE, "/"),) + zeile(r)[1:] for r in abfrage("page")]),
         tabelle("Geräte", ["Gerät"] + kopf[1:], [zeile(r) for r in abfrage("device", 5)]),
         f"Sitemap gemeldet: {SITEMAP}",
     ])

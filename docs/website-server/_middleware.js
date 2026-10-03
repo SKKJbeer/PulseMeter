@@ -70,7 +70,23 @@ export function quelle(url) {
   return roh.toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 30);
 }
 
+// **Eine Adresse, nicht drei.** Seit dem 3. Oktober steht die Website unter
+// `zaehlora.de`. `zaehlora.pages.dev` und `www.zaehlora.de` liefern sonst
+// dieselben Seiten noch einmal aus, und eine Suchmaschine sähe drei Kopien.
+// `canonical` sagt schon, welche gilt; die 301 sagt es auch Menschen und alten
+// Verweisen, mit dem ganzen Pfad. Vorschauadressen wie
+// `abc123.zaehlora.pages.dev` bleiben, wie sie sind: Mit ihnen prüft man einen
+// Stand, bevor er gilt.
+export const ADRESSE = "zaehlora.de";
+const UMLEITEN = new Set(["zaehlora.pages.dev", "www.zaehlora.de"]);
+
+export function umleitung(url) {
+  return UMLEITEN.has(url.hostname) ? `https://${ADRESSE}${url.pathname}${url.search}` : null;
+}
+
 export async function onRequest(context) {
+  const ziel = umleitung(new URL(context.request.url));
+  if (ziel) return Response.redirect(ziel, 301);
   const roh = await context.next();
   // Eine eigene Antwort, weil die von `next()` unveränderlich sein kann. Die
   // drei Sicherheitsangaben aus `_headers` stehen hier noch einmal: Ob

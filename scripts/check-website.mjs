@@ -975,10 +975,10 @@ console.log("\nZählung");
   const IP = "203.0.113.42", KENNUNG = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) Mobile/15E148";
   const aufruf = async ({ pfad = "/abschlag-zu-hoch", art = "text/html; charset=utf-8", status = 200,
                           verweis = "https://www.google.de/search?q=abschlag+zu+hoch", ua = KENNUNG,
-                          bindung = true, wirft = false } = {}) => {
+                          bindung = true, wirft = false, adresse = "https://zaehlora.de" } = {}) => {
     const punkte = [];
     const antwort = await z.onRequest({
-      request: new Request("https://zaehlora.pages.dev" + pfad, { headers: {
+      request: new Request(adresse + pfad, { headers: {
         "referer": verweis, "user-agent": ua, "cf-connecting-ip": IP, "x-forwarded-for": IP } }),
       env: bindung ? { ZAEHLUNG: { writeDataPoint: p => { if (wirft) throw new Error("kaputt"); punkte.push(p); } } } : {},
       next: async () => new Response("<p>Seite</p>", { status, headers: { "content-type": art } }),
@@ -1002,7 +1002,17 @@ console.log("\nZählung");
   note((await aufruf({ pfad: "/datenschutz.html" })).punkte[0].blobs[0] === "/datenschutz", "„.html“ und ohne zählen gleich");
   note((await aufruf({ pfad: "/?von=Reddit_Forum!" })).punkte[0].blobs[4] === "redditforum",
        "Eine selbst gesetzte Quelle wird auf ein Kennwort gekürzt");
-  note((await aufruf({ verweis: "https://zaehlora.pages.dev/ratgeber" })).punkte[0].blobs[1] === "intern", "Klicks innerhalb der Seite heißen „intern“");
+  note((await aufruf({ verweis: "https://zaehlora.de/ratgeber" })).punkte[0].blobs[1] === "intern", "Klicks innerhalb der Seite heißen „intern“");
+
+  // Die alte Adresse und `www` leiten weiter, mit Pfad und Zusatz, und
+  // zählen dabei nicht: Gezählt wird der Aufruf, der danach kommt.
+  for (const alt of ["https://zaehlora.pages.dev", "https://www.zaehlora.de"]) {
+    const { antwort: weiter, punkte: gezaehlt } = await aufruf({ adresse: alt, pfad: "/hilfe?von=forum" });
+    note(weiter.status === 301 && weiter.headers.get("location") === "https://zaehlora.de/hilfe?von=forum" && gezaehlt.length === 0,
+         `${alt.slice(8)} leitet mit 301 auf zaehlora.de weiter, samt Pfad (${weiter.status} ${weiter.headers.get("location")})`);
+  }
+  note((await aufruf({ adresse: "https://abc123.zaehlora.pages.dev" })).antwort.status === 200,
+       "Eine Vorschauadresse leitet nicht weiter");
   note((await aufruf({ verweis: "" })).punkte[0].blobs[1] === "direkt", "Ohne Herkunft heißt es „direkt“");
   note((await aufruf({ ua: "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" })).punkte[0].blobs[3] === "Bot: Google",
        "Googlebot wird als Bot gezählt, getrennt von Menschen");

@@ -21,7 +21,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 ALT="pulsemeter"
-NEU="https://zaehlora.pages.dev"
+NEU="https://zaehlora.de"
 ORDNER="build/umleitung"
 
 if [ "${1:-}" = "--pruefen" ]; then

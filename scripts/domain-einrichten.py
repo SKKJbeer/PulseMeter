@@ -12,6 +12,7 @@ Umgebung:
     CLOUDFLARE_API_TOKEN      Cloudflare Pages · Edit (Domain an die Website hängen)
     CLOUDFLARE_ACCOUNT_ID
     NETCUP_KUNDENNUMMER, NETCUP_API_KEY, NETCUP_API_PASSWORT   (freiwillig)
+    GOOGLE_BESTAETIGUNG       Code der Search Console für den TXT-Eintrag (freiwillig)
 
 **Warum zwei Cloudflare-Schlüssel.** Der zum Hochladen der Website darf genau
 das, und so soll es bleiben: Er läuft bei jeder Änderung. Der für Domains
@@ -103,6 +104,24 @@ def eintrag(zone_id, name, token):
     melde(f"- DNS {name} → {ZIEL} gesetzt")
 
 
+def google_bestaetigung(zone_id, domain, code, token):
+    """Der TXT-Eintrag, mit dem die Search Console die Domain bestätigt.
+
+    Der Code ist nicht geheim: Er steht danach für jeden lesbar im DNS. Er
+    kommt deshalb als Eingabe des Ablaufs, nicht als Geheimnis.
+    """
+    wert = code if code.startswith("google-site-verification=") else f"google-site-verification={code}"
+    da = anfrage("GET", f"{CF}/zones/{zone_id}/dns_records?type=TXT&name={domain}", token)
+    if any(r.get("content", "").strip('"') == wert for r in da.get("result") or []):
+        melde("- Google-Bestätigung steht schon im DNS")
+        return
+    neu = anfrage("POST", f"{CF}/zones/{zone_id}/dns_records", token,
+                  {"type": "TXT", "name": domain, "content": wert, "ttl": 1})
+    if not neu.get("success"):
+        sys.exit(f"Google-Bestätigung ließ sich nicht setzen: {fehlertext(neu)}")
+    melde("- Google-Bestätigung ins DNS geschrieben. In der Search Console jetzt **Bestätigen**")
+
+
 def pages_domain(name, token, konto):
     basis = f"{CF}/accounts/{konto}/pages/projects/{PROJEKT}/domains"
     da = anfrage("GET", basis, token)
@@ -191,6 +210,9 @@ def main():
         eintrag(z["id"], name, zone_token)
     for name in (domain, f"www.{domain}"):
         pages_domain(name, os.environ["CLOUDFLARE_API_TOKEN"], konto)
+    code = os.environ.get("GOOGLE_BESTAETIGUNG", "").strip()
+    if code:
+        google_bestaetigung(z["id"], domain, code, zone_token)
 
     if z["status"] != "active" and delegiert(domain) == sorted(nameserver):
         # Die Domain zeigt schon auf Cloudflare, nur Cloudflare weiß es noch

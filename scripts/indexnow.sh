@@ -17,7 +17,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-WEBSITE="https://zaehlora.pages.dev"
+WEBSITE="https://zaehlora.de"
 HOST="${WEBSITE#https://}"
 schluessel=$(ls docs/website | grep -E '^[0-9a-f]{32}\.txt$' | head -1 | sed 's/\.txt$//')
 [ -n "$schluessel" ] || { echo "Kein IndexNow-Schlüssel in docs/website"; exit 1; }

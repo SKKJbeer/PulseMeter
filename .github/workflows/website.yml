@@ -182,7 +182,7 @@ jobs:
 
       - name: Was jetzt dasteht
         if: steps.zugang.outputs.bereit == 'ja'
-        run: echo "::notice::Die Website steht auf https://zaehlora.pages.dev/"
+        run: echo "::notice::Die Website steht auf https://zaehlora.de/"
 
       # **Die Änderung melden, statt zu warten, bis jemand vorbeikommt.**
       # Bing, Yandex und Seznam nehmen IndexNow an; über Bing kommen auch
@@ -196,7 +196,7 @@ jobs:
       # `website` erst nach dem Hochladen.
       - name: Antwortet die Website so, wie Google es braucht?
         run: |
-          W=https://zaehlora.pages.dev
+          W=https://zaehlora.de
           schluessel=$(ls docs/website | grep -E '^[0-9a-f]{32}\.txt$' | sed 's/\.txt$//')
           for versuch in $(seq 1 12); do
             [ "$(curl -fsS "$W/$schluessel.txt" 2>/dev/null || true)" = "$schluessel" ] && break
@@ -212,6 +212,10 @@ jobs:
           pruefe "Startseite ist erreichbar" "$(curl -sS -o /dev/null -w '%{http_code}' "$W/")" 200
           if [ "${{ steps.hochladen.outcome }}" = "success" ]; then
             pruefe "Seiten laufen durch die Zählung" "$(curl -sSI "$W/" | tr -d '\r' | grep -i '^x-zaehlung:' | cut -d' ' -f2-)" "ohne-personenbezug"
+            # Die Weiterleitung lebt in derselben Funktion. Ohne sie stünde
+            # die Website wieder unter drei Adressen.
+            pruefe "zaehlora.pages.dev leitet weiter" "$(curl -sS -o /dev/null -w '%{http_code} %{redirect_url}' https://zaehlora.pages.dev/hilfe)" "301 $W/hilfe"
+            pruefe "www leitet weiter" "$(curl -sS -o /dev/null -w '%{http_code} %{redirect_url}' https://www.zaehlora.de/hilfe)" "301 $W/hilfe"
           fi
           pruefe "Seiten behalten ihre Sicherheitsangaben" "$(curl -sSI "$W/" | tr -d '\r' | grep -i '^x-content-type-options:' | cut -d' ' -f2-)" "nosniff"
           pruefe "Bilder bleiben eine Woche" "$(curl -sSI "$W/bilder/light.jpg" | tr -d '\r' | grep -i '^cache-control:' | cut -d' ' -f2-)" "public, max-age=604800, stale-while-revalidate=86400"

@@ -1860,6 +1860,24 @@ Kundennummer und API-Passwort. **Bis das jemand gemessen hat, macht diesen
 Schritt der Kontoinhaber von Hand.** Die Anleitung dafür gehört in die
 Zusammenfassung des Ablaufs, mit dem Set zuerst.
 
+### Der Umzug auf eine eigene Domain, wenn die Nameserver stehen
+
+Drei Dinge, die beim Umzug auf `zaehlora.de` auffielen:
+
+- **Cloudflare merkt die Umstellung nicht sofort.** Die DENIC nannte schon die
+  neuen Nameserver, die Zone stand trotzdem eine Dreiviertelstunde auf
+  „pending“. `PUT /zones/{id}/activation_check` stößt die Prüfung an. Der
+  Ablauf ruft sie auf, sobald die Abfrage der Nameserver (über
+  DNS-over-HTTPS) die von Cloudflare zeigt.
+- **Ein Suchen und Ersetzen nur in `canonical` und `og` reicht nicht.** Die
+  strukturierten Daten (`@id`, `logo`, `item`, `mainEntityOfPage`) nennen die
+  Adresse ebenso. Jede volle Adresse mit `https://` ersetzen; Fließtext ohne
+  Schema bleibt dabei stehen.
+- **Die alte Adresse leitet weiter, statt abgeschaltet zu werden**, und zwar
+  in der Funktion, die ohnehin jede Seite ausliefert: Host prüfen, 301 mit
+  Pfad und Zusatz. Vorschauadressen (`abc123.projekt.pages.dev`) nicht
+  umleiten, mit ihnen prüft man einen Stand, bevor er gilt.
+
 ### Ein GitHub-Geheimnis kommt nie wieder heraus, aber es lässt sich umziehen
 
 Wer einen Schlüssel einmal als Geheimnis hinterlegt hat, kann ihn auf GitHub

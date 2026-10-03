@@ -4,9 +4,11 @@
 > Im App Store steht sie als **„Zählora – Zähler & Verbrauch"** (28 von 30
 > Zeichen), auf dem Homescreen als **„Zählora"**.
 >
-> **Die Website steht auf `zaehlora.pages.dev`.** Umgezogen am 29. August auf
-> Ansage des Gründers. Sie ist das einzige am alten Namen, das ein Nutzer je zu
-> sehen bekam — deshalb ist sie mitgegangen, und alles andere nicht.
+> **Die Website steht auf `zaehlora.de`.** Seit dem 3. Oktober, gekauft bei
+> netcup, DNS bei Cloudflare. `zaehlora.pages.dev` (seit dem Umzug vom alten
+> Namen am 29. August) und `www.zaehlora.de` leiten mit 301 dorthin weiter,
+> `pulsemeter.pages.dev` ebenso. Das Cloudflare-Projekt heißt weiter
+> `zaehlora`.
 >
 > **Was den alten Namen behalten hat, und mit Absicht:** die Bundle-ID
 > `de.karjoth.pulsemeter`, die fünf Kauf-Kennungen, die Swift-Module
@@ -18,7 +20,7 @@
 > und ist unnötig aufwand."
 >
 > **Die Adresse steht an drei Orten** — in `canonical` der Seiten, als
-> `WEBSITE` in `asc-einreichung.py` und als `--project-name` in `website.yml`.
+> `WEBSITE` in `asc-einreichung.py` und als `W=` der Prüfung in `website.yml`.
 > `check-strings.py` hält sie zusammen; jede für sich wäre sonst stimmig und
 > das Ganze falsch.
 

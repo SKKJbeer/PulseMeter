@@ -20,7 +20,7 @@ Bestätigungscode, eine Anbieterkennung), darf in den Chat.
 | 4 | Google-Dienstkonto | Wochenbericht Google, Sitemap | offen |
 | 5 | Berichtsschlüssel App Store Connect | täglicher Ablauf „Zahlen" | offen, scheitert seit dem 5. September |
 | 6 | Anbieterkennung `pt` | Laden-Knopf auf der Website | offen |
-| 7 | Domain `zaehlora.de` an die Website | Ablauf „Domain einrichten“ | Zone bei Cloudflare steht seit 1. Oktober; es fehlen die Nameserver bei netcup (über ein Nameserver-Set, siehe unten) |
+| 7 | Domain `zaehlora.de` an die Website | Ablauf „Domain einrichten“ | **erledigt am 3. Oktober**, die Website steht unter `zaehlora.de`, die alten Adressen leiten weiter |
 
 ---
 
@@ -53,14 +53,14 @@ Als Geheimnis `CLOUDFLARE_STATISTIK_TOKEN`.
 
 <https://search.google.com/search-console/welcome>
 
-1. Rechts **URL-Präfix**, Adresse `https://zaehlora.pages.dev/`, **Weiter**.
-2. Unter „Andere Bestätigungsmethoden" **HTML-Tag** aufklappen.
-3. Die Zeile sieht so aus:
-   `<meta name="google-site-verification" content="AbC…xyz" />`.
-   **Den Wert in `content` in den Chat schicken** (er ist nicht geheim, er
-   steht danach ohnehin im Quelltext der Startseite).
-4. Das Fenster offen lassen. Sobald die Seite mit dem Code online ist, meldet
-   Claude sich, dann **Bestätigen** drücken.
+1. Links **Domain**, dort `zaehlora.de` eintragen, **Weiter**. (Nicht
+   „URL-Präfix“: Die Domain umfasst `www` und jede Unterseite.)
+2. Google zeigt einen TXT-Eintrag, der so aussieht:
+   `google-site-verification=AbC…xyz`. **Diese Zeile in den Chat schicken.**
+   Sie ist nicht geheim, sie steht danach für jeden lesbar im DNS.
+3. Das Fenster offen lassen. Claude schreibt den Eintrag über den Ablauf
+   „Domain einrichten“ (Eingabe „Bestätigungscode“) zu Cloudflare und meldet
+   sich, dann **Bestätigen** drücken.
 
 *Danach von allein:* Mit Punkt 4 meldet der Wochenbericht die Sitemap bei jedem
 Lauf an. Ohne Punkt 4 einmal von Hand: in der Search Console links
@@ -86,7 +86,7 @@ Einmalig rund fünf Minuten, danach nie wieder.
 6. Die Adresse des Dienstkontos (endet auf `iam.gserviceaccount.com`, steht in
    der Liste) in der Search Console eintragen:
    <https://search.google.com/search-console/users> → Property
-   `zaehlora.pages.dev` wählen → **Nutzer hinzufügen** → Adresse,
+   `zaehlora.de` wählen → **Nutzer hinzufügen** → Adresse,
    Berechtigung **Vollständig** → **Hinzufügen**.
 
 *Danach von allein:* Montags Suchbegriffe, Einblendungen, Klicks und Position
@@ -159,7 +159,9 @@ Reiter „Nameserver“ selbst gibt es kein Eingabefeld):
 Quelle: netcup-Hilfe, „Eigene Nameserver hinterlegen (CloudDNS)“.
 
 Erst wenn die Domain antwortet, stellt `scripts/domain-setzen.sh` die Adressen
-in den Seiten um, und `zaehlora.pages.dev` leitet weiter.
+in den Seiten um, und `zaehlora.pages.dev` leitet weiter. **Beides geschehen am
+3. Oktober (0.118.10).** `NETCUP_API` wird seitdem nicht mehr gebraucht und darf
+gelöscht werden, sobald kein anderes Projekt ihn über Punkt 8 übernehmen soll.
 
 ## 8. Dieselben Schlüssel in einem anderen Projekt
 

@@ -20,6 +20,9 @@ on:
       domain:
         description: "Domain"
         default: "zaehlora.de"
+      google:
+        description: "Bestätigungscode der Search Console (freiwillig)"
+        default: ""
 
 permissions:
   contents: read
@@ -35,6 +38,7 @@ jobs:
           CLOUDFLARE_DOMAIN_TOKEN: ${{ secrets.CLOUDFLARE_DOMAIN_TOKEN }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          GOOGLE_BESTAETIGUNG: ${{ inputs.google }}
           # Der API-Key liegt als `NETCUP_API` (vom Gründer am 1. Oktober so
           # angelegt). Die übrigen Schreibweisen bleiben als Ausweichweg.
           NETCUP_API_KEY: ${{ secrets.NETCUP_API || secrets.NETCUP_API_KEY || secrets.NETCUP_APIKEY || secrets.NETCUP_KEY || secrets.NETCUP_TOKEN || secrets.NETCUP_API_TOKEN || secrets.NETCUP }}

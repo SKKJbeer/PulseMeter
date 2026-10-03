@@ -9,6 +9,31 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.118.10 — 2026-10-03
+
+**Die Website steht unter `zaehlora.de`.**
+
+Cloudflare hat die Domain am Morgen freigegeben. Jede Seite nennt jetzt
+`https://zaehlora.de` als ihre Adresse: `canonical`, Vorschaubild, Sitemap,
+`robots.txt` und die strukturierten Daten für Google. `zaehlora.pages.dev` und
+`www.zaehlora.de` leiten mit 301 weiter, samt Pfad; `pulsemeter.pages.dev`
+zeigt ebenfalls direkt auf die neue Adresse.
+
+- Die Weiterleitung steckt in derselben Funktion wie die Zählung und wird in
+  `check-website.mjs` geprüft, nach dem Hochladen auch an der echten Seite.
+  Vorschauadressen leiten nicht weiter.
+- Die Einreichung trägt bei Apple `zaehlora.de/datenschutz` und
+  `zaehlora.de/hilfe` ein, IndexNow meldet die neue Adresse.
+- Die Search Console ist auf eine Domain-Property umgestellt. „Domain
+  einrichten“ nimmt den Bestätigungscode an und schreibt ihn als TXT-Eintrag
+  zu Cloudflare.
+- `domain-setzen.sh` ersetzt jetzt jede volle Adresse in den Seiten. Vorher
+  hätte es die strukturierten Daten auf der alten stehen lassen.
+- `check-strings.py` vergleicht die Adresse mit der Prüfung in `website.yml`
+  statt mit dem Projektnamen bei Cloudflare.
+
+---
+
 ## 0.118.9 — 2026-10-03
 
 **Ein Ablauf, der die Cloudflare- und netcup-Schlüssel in ein anderes eigenes

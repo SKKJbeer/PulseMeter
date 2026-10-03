@@ -58,7 +58,7 @@ grep -rn "PLATZHALTER" docs/website/
   scripts/domain-setzen.sh zaehlora.de      # stellt um
   ```
 
-  Eingetragen ist gerade **`zaehlora.pages.dev`** — die kostenlose Adresse
-  von Cloudflare Pages. Eine halb umgestellte Website ist schlimmer als eine
+  Eingetragen ist seit dem 3. Oktober **`zaehlora.de`**, vorher die kostenlose
+  Adresse `zaehlora.pages.dev`. Eine halb umgestellte Website ist schlimmer als eine
   mit der falschen Adresse: Google hält `canonical` für die Wahrheit und wirft
   die Seiten weg, die auf eine fremde Adresse zeigen. Deshalb das Skript.

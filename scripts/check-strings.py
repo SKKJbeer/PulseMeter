@@ -247,11 +247,14 @@ if seite.exists() and einreichung.exists() and ablauf.exists():
                         einreichung.read_text(encoding="utf-8"))
     if treffer:
         orte["scripts/asc-einreichung.py (WEBSITE)"] = treffer.group(1)
-    treffer = re.search(r"--project-name=([A-Za-z0-9-]+)",
-                        ablauf.read_text(encoding="utf-8"))
+    # Bis 0.118.9 stand hier `--project-name` mit `.pages.dev` dahinter. Seit
+    # die Website unter einer eigenen Domain steht, nennt der Projektname
+    # nicht mehr die Adresse, wohl aber die Prüfung nach dem Hochladen: Zeigte
+    # die auf eine andere Adresse, prüfte sie grün an der falschen Seite.
+    treffer = re.search(r"^\s*W=https://([^/\s]+)",
+                        ablauf.read_text(encoding="utf-8"), re.M)
     if treffer:
-        orte[".github/workflows/website.yml (project-name)"] = \
-            treffer.group(1) + ".pages.dev"
+        orte[".github/workflows/website.yml (W= der Prüfung)"] = treffer.group(1)
 
     if len(orte) < 3:
         problems.append("Die Adresse der Website liess sich nicht an allen drei "

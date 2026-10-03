@@ -14,10 +14,9 @@ durchlässt.
 
 ## Was du am Ende hast
 
-`https://zaehlora.pages.dev` — die Adresse, die schon in allen Seiten als
-`canonical` eingetragen ist. Eine eigene Domain (`zaehlora.de`) lässt sich
-später davorhängen; dafür gibt es `scripts/domain-setzen.sh`, und der Umzug ist
-ein Eintrag im Dashboard.
+`https://zaehlora.pages.dev`, die kostenlose Adresse des Projekts. Seit dem
+3. Oktober hängt `zaehlora.de` davor (Ablauf „Domain einrichten“), und
+`zaehlora.pages.dev` leitet dorthin weiter.
 
 ---
 

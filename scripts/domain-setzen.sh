@@ -47,15 +47,12 @@ if [ "$(jetzt | wc -l)" -gt 1 ]; then
 fi
 
 for datei in "${DATEIEN[@]}"; do
-  # Nur innerhalb der canonical- und og-Zeilen ersetzen. Ein stumpfes Suchen
-  # und Ersetzen über die ganze Datei träfe auch Fließtext, in dem die Adresse
-  # aus gutem Grund anders lauten kann.
-  sed -i.bak \
-    -e "s|\(rel=\"canonical\" href=\"https://\)$ALT|\1$NEU|" \
-    -e "s|\(property=\"og:url\" content=\"https://\)$ALT|\1$NEU|" \
-    -e "s|\(property=\"og:image\" content=\"https://\)$ALT|\1$NEU|" \
-    -e "s|\(\"url\": \"https://\)$ALT|\1$NEU|" \
-    "$datei"
+  # Jede volle Adresse mit `https://`, nicht nur `canonical` und `og`. Bis
+  # 0.118.10 waren es vier Zeilenarten, und beim echten Umzug am 3. Oktober
+  # wären `@id`, `logo`, `item` und `mainEntityOfPage` in den strukturierten
+  # Daten auf der alten Adresse stehen geblieben. Fließtext ohne `https://`
+  # bleibt unberührt.
+  sed -i.bak "s|https://$ALT|https://$NEU|g" "$datei"
   rm -f "$datei.bak"
 done
 
@@ -70,5 +67,7 @@ done
 printf "Von %s auf %s umgestellt.\n\n" "$ALT" "$NEU"
 printf "Noch zu tun:\n"
 printf "  · node scripts/check-website.mjs\n"
-printf "  · Die Adresse bei Cloudflare Pages eintragen\n"
+printf "  · WEBSITE in scripts/asc-einreichung.py, W= in website.yml, WEBSITE in scripts/indexnow.sh\n"
+printf "  · Die Weiterleitung in docs/website-server/_middleware.js\n"
+printf "  · Die Adresse bei Cloudflare Pages eintragen (Ablauf „Domain einrichten“)\n"
 printf "  · In App Store Connect die Datenschutz- und die Support-URL ändern\n"
