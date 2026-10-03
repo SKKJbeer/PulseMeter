@@ -1873,6 +1873,10 @@ Drei Dinge, die beim Umzug auf `zaehlora.de` auffielen:
   strukturierten Daten (`@id`, `logo`, `item`, `mainEntityOfPage`) nennen die
   Adresse ebenso. Jede volle Adresse mit `https://` ersetzen; Fließtext ohne
   Schema bleibt dabei stehen.
+- **Die Search Console bestätigt eine Domain bei Cloudflare von selbst.** Sie
+  erkennt den Anbieter, lässt sich bei Cloudflare anmelden und schreibt den
+  TXT-Eintrag selbst. Einen Code abzutippen und über einen Ablauf zu setzen
+  war nicht nötig; das gehört vor jede Anleitung, die ihn verlangt.
 - **Die alte Adresse leitet weiter, statt abgeschaltet zu werden**, und zwar
   in der Funktion, die ohnehin jede Seite ausliefert: Host prüfen, 301 mit
   Pfad und Zusatz. Vorschauadressen (`abc123.projekt.pages.dev`) nicht

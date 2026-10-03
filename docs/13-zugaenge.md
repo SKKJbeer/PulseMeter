@@ -16,7 +16,7 @@ Bestätigungscode, eine Anbieterkennung), darf in den Chat.
 |---|---|---|---|
 | 1 | Analytics Engine einschalten | die Zählung auf der Website | **erledigt am 30. September**, Datensatz `zaehlora_aufrufe`, Bindung `ZAEHLUNG` |
 | 2 | Leseschlüssel Cloudflare | Wochenbericht Website | **erledigt am 30. September**, erster Bericht gelaufen |
-| 3 | Search Console | Google-Verzeichnis | offen |
+| 3 | Search Console | Google-Verzeichnis | **erledigt am 3. Oktober**, Domain-Property `zaehlora.de` |
 | 4 | Google-Dienstkonto | Wochenbericht Google, Sitemap | offen |
 | 5 | Berichtsschlüssel App Store Connect | täglicher Ablauf „Zahlen" | offen, scheitert seit dem 5. September |
 | 6 | Anbieterkennung `pt` | Laden-Knopf auf der Website | offen |
@@ -50,6 +50,13 @@ einen eigenen, der nur lesen kann:
 Als Geheimnis `CLOUDFLARE_STATISTIK_TOKEN`.
 
 ## 3. Search Console (Google)
+
+**Erledigt am 3. Oktober.** Es ging einfacher als unten beschrieben: Google
+erkennt Cloudflare als Anbieter der Domain, schreibt den TXT-Eintrag nach
+einer Anmeldung bei Cloudflare selbst und bestätigt sofort („Bestätigungsmethode:
+Domainnamen-Anbieter“). Den Eintrag `google-site-verification=…` nicht aus der
+Zone löschen, sonst fällt die Bestätigung weg. Der Weg unten bleibt für eine
+Domain, deren DNS nicht bei Cloudflare liegt.
 
 <https://search.google.com/search-console/welcome>
 

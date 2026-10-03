@@ -9,6 +9,18 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.118.11 — 2026-10-03
+
+**Die Search Console kennt `zaehlora.de`.**
+
+Der Gründer hat die Domain als Property angelegt, und Google hat sie über
+Cloudflare selbst bestätigt: Der TXT-Eintrag kam ohne Umweg über den Chat in
+die Zone. `docs/13-zugaenge.md` nennt diesen kürzeren Weg und warnt davor, den
+Eintrag zu löschen. Offen bleibt das Dienstkonto, damit der Wochenbericht die
+Google-Zahlen liest.
+
+---
+
 ## 0.118.10 — 2026-10-03
 
 **Die Website steht unter `zaehlora.de`.**
