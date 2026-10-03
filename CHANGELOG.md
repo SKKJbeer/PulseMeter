@@ -9,6 +9,19 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.118.8 — 2026-10-03
+
+**„Domain einrichten" stößt die Prüfung bei Cloudflare selbst an.**
+
+Seit dem Morgen nennt die DENIC für `zaehlora.de` die Nameserver von
+Cloudflare. Cloudflare sieht aber nur in Abständen nach, die Zone blieb auf
+„pending", und die Zusammenfassung schickte den Gründer ein zweites Mal zu
+netcup. Jetzt fragt der Ablauf, welche Nameserver die Domain gerade hat. Stimmen
+sie schon, ruft er Cloudflares Aktivierungsprüfung auf und sagt, dass bei
+netcup nichts mehr zu tun ist.
+
+---
+
 ## 0.118.7 — 2026-10-02
 
 **Die Anleitung für netcup führt über ein Nameserver-Set.**

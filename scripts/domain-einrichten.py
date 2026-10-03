@@ -118,6 +118,24 @@ def pages_domain(name, token, konto):
     return neu["result"].get("status")
 
 
+def delegiert(domain):
+    """Welche Nameserver die Registrierungsstelle gerade nennt.
+
+    Über DNS-over-HTTPS, weil ein Läufer von GitHub keinen eigenen Resolver
+    befragen soll, und mit `cd=1`, damit ein Fehler in DNSSEC die Antwort nicht
+    verschluckt. Gelingt die Abfrage nicht, ist das Ergebnis leer, und es geht
+    weiter wie ohne Umstellung.
+    """
+    req = urllib.request.Request(f"https://cloudflare-dns.com/dns-query?name={domain}&type=NS&cd=1",
+                                 headers={"accept": "application/dns-json"})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as antwort:
+            daten = json.load(antwort)
+    except (urllib.error.URLError, ValueError):
+        return []
+    return sorted(a["data"].lower().rstrip(".") for a in daten.get("Answer") or [] if a.get("type") == 2)
+
+
 def netcup(domain, nameserver):
     kunde = os.environ.get("NETCUP_KUNDENNUMMER", "")
     schluessel = os.environ.get("NETCUP_API_KEY", "")
@@ -174,7 +192,20 @@ def main():
     for name in (domain, f"www.{domain}"):
         pages_domain(name, os.environ["CLOUDFLARE_API_TOKEN"], konto)
 
-    if z["status"] != "active":
+    if z["status"] != "active" and delegiert(domain) == sorted(nameserver):
+        # Die Domain zeigt schon auf Cloudflare, nur Cloudflare weiß es noch
+        # nicht: Es sieht von selbst nur in Abständen nach. Am 3. Oktober
+        # stand die Zone so eine halbe Stunde auf „pending", während die
+        # DENIC längst umgestellt hatte, und die Zusammenfassung schickte den
+        # Gründer ein zweites Mal zu netcup.
+        anfrage("PUT", f"{CF}/zones/{z['id']}/activation_check", zone_token)
+        z = anfrage("GET", f"{CF}/zones/{z['id']}", zone_token).get("result") or z
+        melde(f"- Nameserver zeigen auf Cloudflare, Prüfung angestoßen, Zustand jetzt **{z['status']}**")
+        if z["status"] != "active":
+            melde()
+            melde("Bei netcup ist nichts mehr zu tun. Cloudflare bestätigt meist innerhalb einer Stunde; "
+                  "dieser Ablauf darf jederzeit wieder laufen.")
+    elif z["status"] != "active":
         umgestellt = netcup(domain, nameserver)
         melde()
         if not umgestellt:
@@ -198,7 +229,7 @@ def main():
         melde()
         melde("Danach dauert es meist unter einer Stunde, höchstens einen Tag. "
               "Dieser Ablauf darf jederzeit wieder laufen und zeigt dann den Zustand.")
-    else:
+    if z["status"] == "active":
         melde()
         melde("**Die Domain ist bei Cloudflare aktiv.**")
 
