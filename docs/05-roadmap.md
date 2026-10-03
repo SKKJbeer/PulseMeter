@@ -41,7 +41,7 @@ und stehen nirgends öffentlich (siehe „Öffentlich und intern" unten).
 |---|---|---|---|
 | **1.2** | 23.09. | Zwei Spalten auf dem iPad im Querformat · Diagramm wächst mit der Breite | **im Laden** seit 24.09., Bau 36 |
 | **1.3** | 03.10. | **Direkt zum Ziffernblock:** Erinnerung, Feld am Sperrbildschirm und Siri öffnen den Ziffernblock des richtigen Zählers · Umschalter im iPad-Hochformat kappen · Bewertungsfrage nach der dritten Ablesung · neues Schlagwortfeld und neue Bilder (`10-sichtbarkeit.md`) | **eingereicht am 03.10.** mit Bau 38, vorgezogen auf Ansage des Gründers |
-| **1.4** | 21.10. | **Rundgang:** nach dem Sichern „Weiter mit Wasser", bis alle fälligen Zähler durch sind | gebaut in 0.119.0, in App und Entwurf; offen: TestFlight |
+| **1.4** | 21.10. | **Rundgang:** nach dem Sichern „Weiter mit Wasser", bis alle fälligen Zähler durch sind | **in TestFlight** seit 03.10., Bau 39 (0.119.1) |
 | **1.5** | 04.11. | Import aus einer Tabelle, für Umsteiger mit Excel-Listen oder anderen Apps | mittel |
 | **1.6** | 18.11. | Puffer | — |
 

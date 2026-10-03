@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-10-03, Version 0.119.1
+Stand: 2026-10-03, Version 0.119.2
 
 ---
 
@@ -127,9 +127,9 @@ Klick-Dummy. Der Satz „Alle Werte in …" unter der Tabelle im Entwurf ist weg
 
 ### Als Nächstes
 
-1. **1.4 Rundgang**: gebaut in 0.119.0 (`ReadingRound`, `App/Rundgang.swift`,
-   Klick-Dummy). Offen: grüne CI auf dem Mac, Bau in TestFlight, dann
-   „Im Test“ auf `entwicklung.html`.
+1. **1.4 Rundgang**: in TestFlight seit 3. Oktober, **Bau 39** (0.119.1),
+   auf `entwicklung.html` „Im Test“. Einreichen, sobald 1.3 im Laden steht,
+   mit Freigabe des Gründers.
 2. **Neue Bilder für den Laden** zu 1.3 (`10-sichtbarkeit.md` 4.4).
 3. **Ratgeberseiten**, eine je Woche: stromverbrauch-normal, anbieterwechsel,
    zweirichtungszaehler, zaehlerwechsel, waermepumpe.

@@ -9,6 +9,17 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.119.2 — 2026-10-03
+
+**Der Rundgang steht in TestFlight, Bau 39.**
+
+CI-Lauf 37120751434 grün auf iPhone und iPad, TestFlight-Lauf 37123997029:
+„Bau 39: VALID“, Testhinweise eingetragen. Auf `entwicklung.html` steht er als
+„Im Test“: „Einmal rum, alles abgelesen“. Eingetragen in
+`12-auslieferung.md`, `05-roadmap.md` und `06-uebergabe.md`.
+
+---
+
 ## 0.119.1 — 2026-10-03
 
 **Eine Oberflächenprüfung kennt den neuen Knopf.**
