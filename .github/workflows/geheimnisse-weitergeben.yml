@@ -1,0 +1,77 @@
+name: Geheimnisse weitergeben
+
+# **Cloudflare- und netcup-Schlüssel in ein anderes eigenes Projekt kopieren,
+# ohne dass sie jemand sieht.** GitHub gibt ein Geheimnis nie wieder heraus,
+# auch nicht dem Besitzer; nur ein Lauf kann es lesen. Dieser Lauf liest es und
+# legt es versiegelt im Ziel ab (`scripts/gh-geheimnis.py`). Der Klartext steht
+# in keinem Protokoll und in keinem Artefakt.
+#
+# Angefangen am 3. Oktober: Der Gründer brauchte dieselben Schlüssel im
+# Schwesterprojekt, kannte die Werte nicht mehr und wollte bei Cloudflare und
+# netcup keine neuen anlegen.
+#
+# **Was es braucht:** `GH_PAT` muss auch das Ziel umfassen. Ein fein
+# granuliertes Token lässt sich nachträglich um ein Repository erweitern:
+# github.com/settings/personal-access-tokens → das Token → Edit →
+# Repository access → Ziel dazunehmen. Berechtigung „Secrets: Read and write".
+#
+# Starten darf ihn nur, wer in dieses Repository schreiben darf. Das Ziel muss
+# demselben Besitzer gehören; ein Tippfehler im Namen schickt die Schlüssel
+# also nirgendwohin, wo sie nicht hingehören.
+
+on:
+  workflow_dispatch:
+    inputs:
+      ziel:
+        description: "Ziel-Repository (nur der Name, z. B. Fortress)"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  weitergeben:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Versiegelt übertragen
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          ZIEL_NAME: ${{ inputs.ziel }}
+          BESITZER: ${{ github.repository_owner }}
+          # Einzeln aufgezählt, nie `toJSON(secrets)`: Das gäbe jedes
+          # Geheimnis des Repositories in die Umgebung, auch den App-Store-Schlüssel.
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_DOMAIN_TOKEN: ${{ secrets.CLOUDFLARE_DOMAIN_TOKEN }}
+          CLOUDFLARE_STATISTIK_TOKEN: ${{ secrets.CLOUDFLARE_STATISTIK_TOKEN }}
+          NETCUP_API: ${{ secrets.NETCUP_API }}
+        run: |
+          set -euo pipefail
+          if [ -z "$GH_PAT" ]; then
+            echo "::error::GH_PAT fehlt. Anleitung oben in dieser Datei."
+            exit 1
+          fi
+          # Nur ein Name, kein Besitzer und kein Pfad: sonst ließe sich das
+          # Ziel aus dem eigenen Konto hinausschieben.
+          case "$ZIEL_NAME" in
+            ""|*/*|*" "*) echo "::error::Nur den Namen des Repositories angeben, z. B. Fortress."; exit 1 ;;
+          esac
+          if [ "$ZIEL_NAME" = "${GITHUB_REPOSITORY#*/}" ]; then
+            echo "::error::Das ist dieses Repository."
+            exit 1
+          fi
+          export GH_ZIEL="$BESITZER/$ZIEL_NAME"
+          pip3 install --quiet pynacl requests
+
+          echo "## Geheimnisse nach $GH_ZIEL" >> "$GITHUB_STEP_SUMMARY"
+          for name in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID CLOUDFLARE_DOMAIN_TOKEN \
+                      CLOUDFLARE_STATISTIK_TOKEN NETCUP_API; do
+            if [ -z "${!name}" ]; then
+              echo "- $name: liegt hier nicht, übersprungen" >> "$GITHUB_STEP_SUMMARY"
+              continue
+            fi
+            GEHEIMNIS_WERT="${!name}" python3 scripts/gh-geheimnis.py "$name"
+            echo "- $name: übertragen" >> "$GITHUB_STEP_SUMMARY"
+          done

@@ -12,8 +12,13 @@ des Repositories wird geholt, der Wert damit in eine Sealed Box gelegt, und nur
 die geht über die Leitung. Der Klartext verlässt diesen Lauf nie.
 
 Aufruf:  python3 scripts/gh-geheimnis.py NAME WERT
+         python3 scripts/gh-geheimnis.py NAME        (Wert aus GEHEIMNIS_WERT)
 Umgebung: GH_PAT (fein granuliert, nur dieses Repository, Secrets: Read and
-          write), GITHUB_REPOSITORY
+          write), GITHUB_REPOSITORY; GH_ZIEL, wenn das Geheimnis in ein
+          anderes Repository soll
+
+Der Wert über die Umgebung ist der bessere Weg: Ein Aufrufargument steht für
+die Dauer des Aufrufs in der Prozessliste, eine Umgebungsvariable nicht.
 """
 import os
 import sys
@@ -30,13 +35,17 @@ def versiegeln(oeffentlich: str, wert: str) -> str:
 
 
 def main() -> None:
-    if len(sys.argv) != 3:
-        print("::error::Aufruf: gh-geheimnis.py NAME WERT")
+    if len(sys.argv) not in (2, 3):
+        print("::error::Aufruf: gh-geheimnis.py NAME [WERT]")
         sys.exit(1)
 
-    name, wert = sys.argv[1], sys.argv[2]
+    name = sys.argv[1]
+    wert = sys.argv[2] if len(sys.argv) == 3 else os.environ.get("GEHEIMNIS_WERT", "")
+    if not wert:
+        print(f"::error::{name}: kein Wert.")
+        sys.exit(1)
     token = os.environ.get("GH_PAT", "")
-    repo = os.environ["GITHUB_REPOSITORY"]
+    repo = os.environ.get("GH_ZIEL") or os.environ["GITHUB_REPOSITORY"]
     if not token:
         print("::error::GH_PAT fehlt.")
         sys.exit(1)
@@ -51,7 +60,7 @@ def main() -> None:
         rat = ""
         if antwort.status_code in (401, 403, 404):
             rat = ("Das Token darf hier nicht schreiben. Es muss **fein "
-                   "granuliert** sein, dieses Repository umfassen und die "
+                   f"granuliert** sein, {repo} umfassen und die "
                    "Berechtigung „Secrets: Read and write\" tragen. Ein "
                    "klassisches Token mit `repo` genügt **nicht** für "
                    "Actions-Geheimnisse.")

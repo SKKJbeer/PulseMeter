@@ -161,6 +161,24 @@ Quelle: netcup-Hilfe, „Eigene Nameserver hinterlegen (CloudDNS)“.
 Erst wenn die Domain antwortet, stellt `scripts/domain-setzen.sh` die Adressen
 in den Seiten um, und `zaehlora.pages.dev` leitet weiter.
 
+## 8. Dieselben Schlüssel in einem anderen Projekt
+
+GitHub gibt ein Geheimnis nie wieder heraus, auch nicht dem Besitzer. Ein Lauf
+kann es aber lesen und versiegelt in ein anderes Repository schreiben. Das macht
+der Ablauf **„Geheimnisse weitergeben"** (`geheimnisse-weitergeben.yml`) für
+`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_DOMAIN_TOKEN`,
+`CLOUDFLARE_STATISTIK_TOKEN` und `NETCUP_API`.
+
+1. Das vorhandene Token `GH_PAT` um das Ziel erweitern, statt ein neues
+   anzulegen: <https://github.com/settings/personal-access-tokens> → das Token
+   → **Edit** → **Repository access** → das Ziel dazunehmen → **Update**. Es
+   braucht dort **Secrets: Read and write**, das hat es schon.
+2. <https://github.com/SKKJbeer/PulseMeter/actions/workflows/geheimnisse-weitergeben.yml>
+   → **Run workflow** → Name des Ziels, zum Beispiel `Fortress` → **Run**.
+
+Die Zusammenfassung des Laufs sagt je Schlüssel „übertragen" oder
+„übersprungen". Die Werte stehen nirgends.
+
 ## Was schon von selbst läuft
 
 - Website: bei jeder Änderung geprüft und veröffentlicht, IndexNow gemeldet

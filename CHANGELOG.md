@@ -9,6 +9,20 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.118.9 — 2026-10-03
+
+**Ein Ablauf, der die Cloudflare- und netcup-Schlüssel in ein anderes eigenes
+Projekt kopiert.**
+
+Der Gründer braucht dieselben Schlüssel im Schwesterprojekt, kennt die Werte
+nicht mehr und will keine neuen anlegen. GitHub zeigt ein Geheimnis nie wieder
+an, ein Lauf kann es aber lesen. „Geheimnisse weitergeben" liest fünf davon
+und legt sie versiegelt im Ziel ab. Dafür kann `gh-geheimnis.py` jetzt in ein
+anderes Repository schreiben und nimmt den Wert aus der Umgebung statt aus
+der Befehlszeile. Anleitung in `docs/13-zugaenge.md`, Punkt 8.
+
+---
+
 ## 0.118.8 — 2026-10-03
 
 **„Domain einrichten" stößt die Prüfung bei Cloudflare selbst an.**

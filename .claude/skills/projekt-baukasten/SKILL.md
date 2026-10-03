@@ -1860,6 +1860,24 @@ Kundennummer und API-Passwort. **Bis das jemand gemessen hat, macht diesen
 Schritt der Kontoinhaber von Hand.** Die Anleitung dafür gehört in die
 Zusammenfassung des Ablaufs, mit dem Set zuerst.
 
+### Ein GitHub-Geheimnis kommt nie wieder heraus, aber es lässt sich umziehen
+
+Wer einen Schlüssel einmal als Geheimnis hinterlegt hat, kann ihn auf GitHub
+nicht mehr ansehen, auch als Besitzer nicht. Braucht ein zweites Projekt
+denselben Schlüssel, sieht das nach „neu anlegen" aus. Muss es nicht: **Ein
+Lauf liest das Geheimnis und schreibt es versiegelt ins andere Repository**,
+mit demselben Weg, auf dem `gh-geheimnis.py` das Zertifikat ablegt
+(öffentlicher Schlüssel des Ziels, Sealed Box, `PUT`).
+
+Was es dafür braucht, ist ein fein granuliertes Token mit „Secrets: Read and
+write" auf dem **Ziel**. Ein vorhandenes lässt sich nachträglich um ein
+Repository erweitern; ein neues ist nicht nötig. Der Ablauf zählt die
+Geheimnisse einzeln auf und lässt nur ein Ziel beim selben Besitzer zu.
+
+Bei einem Konto ohne Organisation gibt es keine geteilten Geheimnisse über
+mehrere Repositories. Das wäre der andere Weg, und er braucht eine
+Organisation.
+
 ### Chromium ist nicht Safari, und das neueste Safari ist nicht das alte
 
 Jedes iPhone und jedes iPad zeigt eine Website mit WebKit, auch in Chrome. Eine
