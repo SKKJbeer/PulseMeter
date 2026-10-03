@@ -1813,7 +1813,10 @@ final class LaunchTests: XCTestCase {
         ).firstMatch
         XCTAssertTrue(zweit.waitForExistence(timeout: erscheint),
                       "Nach dem Tagstrom muss der Nachtstrom drankommen")
-        XCTAssertTrue(app.buttons["Sichern"].exists,
+        // Über den Anfang: Ist ein anderer Zähler fällig, heißt der Knopf seit
+        // 0.119.0 „Sichern, weiter mit Gas“ (Rundgang). Er sichert genauso.
+        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Sichern'"))
+                        .firstMatch.exists,
                       "Beim letzten Zählwerk muss „Sichern“ dastehen")
     }
 

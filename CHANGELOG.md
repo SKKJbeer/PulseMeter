@@ -9,6 +9,20 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.119.1 — 2026-10-03
+
+**Eine Oberflächenprüfung kennt den neuen Knopf.**
+
+Lauf 37108033267 auf dem Mac: App gebaut, 46 von 47 Prüfungen grün, darunter
+die neue für den Rundgang. Gefallen ist
+`testCreatingADualTariffMeterAsksForBothNumbers`: Sie legt einen Zähler neben
+die Beispieldaten, in denen Gas fällig ist, und suchte beim letzten Zählwerk
+genau „Sichern“. Dort steht jetzt „Sichern, weiter mit Gas“. Die Prüfung
+sucht den Anfang, wie die für zwei Zählwerke. Ein Prüffehler, kein
+Produktfehler.
+
+---
+
 ## 0.119.0 — 2026-10-03
 
 **Der Rundgang: Nach dem Sichern geht es mit dem nächsten fälligen Zähler
