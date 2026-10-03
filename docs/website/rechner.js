@@ -45,8 +45,11 @@
       "</div>";
   }
 
+  // Die Nebenkacheln teilen sich eine Reihe zu gleichen Teilen. Die Zahl der
+  // Spalten steht deshalb an der Liste und nicht im Stylesheet.
   function kacheln(liste) {
-    return '<div class="kacheln">' + liste.join("") + "</div>";
+    var neben = liste.filter(function (k) { return k.indexOf("kachel-haupt") < 0; }).length;
+    return '<div class="kacheln" style="--spalten:' + Math.max(1, neben) + '">' + liste.join("") + "</div>";
   }
 
   function hinweis(text) {

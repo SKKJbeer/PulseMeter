@@ -94,27 +94,27 @@
 
     <form class="rechner" id="abschlagrechner" onsubmit="return false" aria-describedby="a-ergebnis">
       <div class="rechner-felder">
-        <label>Verbrauch im Jahr in kWh
-          <input id="a-kwh" inputmode="decimal" autocomplete="off" value="2800">
+        <label>Verbrauch im Jahr
+          <span class="eingabe"><input id="a-kwh" inputmode="decimal" autocomplete="off" value="2800"><span class="einheit">kWh</span></span>
           <small>bei Gas in kWh</small>
         </label>
-        <label>Arbeitspreis in ct/kWh
-          <input id="a-ap" inputmode="decimal" autocomplete="off" value="34">
+        <label>Arbeitspreis
+          <span class="eingabe"><input id="a-ap" inputmode="decimal" autocomplete="off" value="34"><span class="einheit">ct/kWh</span></span>
           <small>brutto</small>
         </label>
-        <label>Grundpreis in €
-          <input id="a-gp" inputmode="decimal" autocomplete="off" value="140">
+        <label>Grundpreis
+          <span class="eingabe"><input id="a-gp" inputmode="decimal" autocomplete="off" value="140"><span class="einheit">€</span></span>
           <small>brutto</small>
         </label>
         <label>Der Grundpreis gilt
-          <select id="a-gpart">
+          <span class="eingabe"><select id="a-gpart">
             <option value="jahr" selected>im Jahr</option>
             <option value="monat">im Monat</option>
-          </select>
+          </select></span>
         </label>
-        <label>Dein Abschlag in €
-          <input id="a-ab" inputmode="decimal" autocomplete="off" value="130">
-          <small>im Monat, darf leer bleiben</small>
+        <label class="breit">Dein Abschlag
+          <span class="eingabe"><input id="a-ab" inputmode="decimal" autocomplete="off" value="130"><span class="einheit">€ im Monat</span></span>
+          <small>darf leer bleiben</small>
         </label>
       </div>
       <div class="rechner-ergebnis" id="a-ergebnis" aria-live="polite"></div>

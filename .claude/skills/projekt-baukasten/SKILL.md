@@ -1909,6 +1909,20 @@ Bei einem Konto ohne Organisation gibt es keine geteilten Geheimnisse über
 mehrere Repositories. Das wäre der andere Weg, und er braucht eine
 Organisation.
 
+### Formularfelder gleich hoch machen: die Hülle trägt den Rahmen
+
+Eingabe, Auswahl und Datum haben in jedem Browser eine eigene Höhe, auch mit
+derselben `min-height` (gemessen 48, 52 und 55 Pixel). Verlässlich wird es
+erst, wenn eine Hülle Rahmen, Hintergrund und feste Höhe trägt und das Feld
+darin nur `height: 100%`, ohne Rahmen und mit `appearance: none` hat. Die
+Einheit steht dann als zweites Kind in derselben Hülle, und der Fokus zeigt
+sich über `:focus-within`.
+
+Und beim Ergebnis: **Ein Raster mit `auto-fit` und einem Element, das alle
+Spalten belegt, behält leere Spalten.** Zwei Kacheln unter einer breiten
+Hauptkachel blieben deshalb links stehen, rechts eine Lücke. Die Spaltenzahl
+nach der Zahl der Kacheln setzen (`--spalten`), nicht raten lassen.
+
 ### Chromium ist nicht Safari, und das neueste Safari ist nicht das alte
 
 Jedes iPhone und jedes iPad zeigt eine Website mit WebKit, auch in Chrome. Eine

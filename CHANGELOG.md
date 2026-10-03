@@ -9,6 +9,31 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.119.3 — 2026-10-03
+
+**Die Rechner und das Übergabeprotokoll, neu gestaltet.**
+
+Der Gründer am 3. Oktober: Der Rechner „sieht in der Darstellung noch nicht
+professionell aus und hat verschiedene Größen der Boxen", das Protokoll
+„sieht nicht gut aus". Beides stimmte, gemessen an Bildern in drei Breiten:
+
+| Was | Vorher | Jetzt |
+|---|---|---|
+| Felder | Auswahl 48 px, Zahl 52 px, Datum 55 px | jedes Feld 48 px, in einer gemeinsamen Hülle |
+| Einheit | am Namen darüber („Arbeitspreis in ct/kWh“) | im Feld, rechts und leise |
+| Verbrauchsrechner | Datum in der anderen Spalte als sein Stand | „Früherer Stand“ und „Heutiger Stand“ als Gruppen, Stand und Datum nebeneinander |
+| Ergebnis | ein Absatz unter einer Linie | eigene Fläche als Fuß des Rechners |
+| Kacheln | vierte allein in einer neuen Reihe, jede so hoch wie ihr Text, „2.702 / kWh“ umgebrochen | Hauptzahl in eigener Zeile, die übrigen gleich hoch in einer Reihe, auf dem Telefon als Zeilen mit Zahl rechts |
+| Protokoll | Tabelle an der linken Kante, ohne Kopf | ein Blatt auf einer Fläche: Kopf mit Titel, Linien zum Ausfüllen, Einheiten je Zähler, Feld für Bemerkungen, Platz über den Unterschriften; gedruckt auf A4 ohne Fläche und Schatten |
+
+Neue Prüfungen in `check-website.mjs`, breit und schmal: alle Felder gleich
+hoch, Kacheln einer Reihe gleich hoch, keine Zahl bricht um, die
+Nebenkacheln teilen sich eine Reihe, und die Zählertabelle passt auf dem
+Telefon in die Breite. WebKit fand bei 300 % Textgröße noch einen Überlauf
+von 11 Pixeln im Kopf des Blatts (ein Rasterfeld ohne `minmax(0, …)`).
+
+---
+
 ## 0.119.2 — 2026-10-03
 
 **Der Rundgang steht in TestFlight, Bau 39.**

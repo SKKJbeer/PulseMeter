@@ -93,26 +93,36 @@
 
     <form class="rechner" id="verbrauchrechner" onsubmit="return false" aria-describedby="v-ergebnis">
       <div class="rechner-felder">
-        <label>Zähler
-          <select id="v-einheit">
-            <option value="kWh" selected>Strom in kWh</option>
-            <option value="m³ Gas">Gas in m³</option>
-            <option value="m³">Wasser in m³</option>
-          </select>
-        </label>
-        <label>Früherer Stand
-          <input id="v-alt" inputmode="decimal" autocomplete="off" value="12.480">
-        </label>
-        <label>abgelesen am
-          <input id="v-alt-tag" type="date" value="2026-08-01">
-        </label>
-        <label>Heutiger Stand
-          <input id="v-neu" inputmode="decimal" autocomplete="off" value="12.731">
-        </label>
-        <label>abgelesen am
-          <input id="v-neu-tag" type="date" value="2026-09-01">
+        <label class="breit">Zähler
+          <span class="eingabe"><select id="v-einheit">
+            <option value="kWh" selected>Strom</option>
+            <option value="m³ Gas">Gas</option>
+            <option value="m³">Wasser</option>
+          </select></span>
         </label>
       </div>
+      <fieldset class="rechner-gruppe">
+        <legend>Früherer Stand</legend>
+        <div class="rechner-felder">
+          <label>Stand
+            <span class="eingabe"><input id="v-alt" inputmode="decimal" autocomplete="off" value="12.480"><span class="einheit" data-einheit>kWh</span></span>
+          </label>
+          <label>abgelesen am
+            <span class="eingabe"><input id="v-alt-tag" type="date" value="2026-08-01"></span>
+          </label>
+        </div>
+      </fieldset>
+      <fieldset class="rechner-gruppe">
+        <legend>Heutiger Stand</legend>
+        <div class="rechner-felder">
+          <label>Stand
+            <span class="eingabe"><input id="v-neu" inputmode="decimal" autocomplete="off" value="12.731"><span class="einheit" data-einheit>kWh</span></span>
+          </label>
+          <label>abgelesen am
+            <span class="eingabe"><input id="v-neu-tag" type="date" value="2026-09-01"></span>
+          </label>
+        </div>
+      </fieldset>
       <div class="rechner-ergebnis" id="v-ergebnis" aria-live="polite"></div>
     </form>
     <script src="rechner.js"></script>
@@ -131,6 +141,8 @@
       function rechne() {
         var art = document.getElementById("v-einheit").value;
         var einheit = art === "kWh" ? "kWh" : "m³";
+        // Die Einheit steht im Feld und wechselt mit dem Zähler.
+        document.querySelectorAll("#verbrauchrechner [data-einheit]").forEach(function (e) { e.textContent = einheit; });
         var alt = R.zahl(document.getElementById("v-alt").value);
         var neu = R.zahl(document.getElementById("v-neu").value);
         var tage = Math.round((tag("v-neu-tag") - tag("v-alt-tag")) / 86400000);

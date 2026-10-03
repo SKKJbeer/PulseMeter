@@ -94,21 +94,21 @@
 
     <form class="rechner" id="gasrechner" onsubmit="return false" aria-describedby="gas-ergebnis">
       <div class="rechner-felder">
-        <label>Verbrauch in m³
-          <input id="g-m3" inputmode="decimal" autocomplete="off" value="250">
+        <label>Verbrauch
+          <span class="eingabe"><input id="g-m3" inputmode="decimal" autocomplete="off" value="250"><span class="einheit">m³</span></span>
           <small>neuer minus alter Stand</small>
         </label>
-        <label>Zustandszahl
-          <input id="g-z" inputmode="decimal" autocomplete="off" value="0,9650">
-          <small>steht auf der Rechnung</small>
-        </label>
-        <label>Brennwert in kWh/m³
-          <input id="g-b" inputmode="decimal" autocomplete="off" value="11,2">
-          <small>steht auf der Rechnung</small>
-        </label>
-        <label>Arbeitspreis in ct/kWh
-          <input id="g-p" inputmode="decimal" autocomplete="off" value="12">
+        <label>Arbeitspreis
+          <span class="eingabe"><input id="g-p" inputmode="decimal" autocomplete="off" value="12"><span class="einheit">ct/kWh</span></span>
           <small>brutto, darf leer bleiben</small>
+        </label>
+        <label>Zustandszahl
+          <span class="eingabe"><input id="g-z" inputmode="decimal" autocomplete="off" value="0,9650"></span>
+          <small>steht auf der Rechnung</small>
+        </label>
+        <label>Brennwert
+          <span class="eingabe"><input id="g-b" inputmode="decimal" autocomplete="off" value="11,2"><span class="einheit">kWh/m³</span></span>
+          <small>steht auf der Rechnung</small>
         </label>
       </div>
       <div class="rechner-ergebnis" id="gas-ergebnis" aria-live="polite"></div>

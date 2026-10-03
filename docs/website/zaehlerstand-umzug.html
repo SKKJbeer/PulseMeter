@@ -154,10 +154,18 @@
     <p><button type="button" class="knopf knopf-voll" onclick="window.print()">Protokoll drucken</button></p>
     </div>
 
-    <section id="protokoll" class="druckbereich" aria-labelledby="protokoll-titel">
-      <h2 id="protokoll-titel">Übergabeprotokoll Zählerstände</h2>
+    <section id="protokoll" class="druckbereich blatt-buehne" aria-labelledby="protokoll-titel">
+      <div class="blatt">
+      <header class="blatt-kopf">
+        <div>
+          <span class="blatt-marke">Übergabeprotokoll</span>
+          <h2 id="protokoll-titel">Zählerstände bei der Wohnungsübergabe</h2>
+        </div>
+        <span class="blatt-quelle">Vorlage von zaehlora.de</span>
+      </header>
+
       <div class="protokoll-rahmen">
-      <table class="protokoll">
+      <table class="protokoll protokoll-angaben">
         <tbody>
           <tr><th scope="row">Anschrift, Wohnung</th><td></td></tr>
           <tr><th scope="row">Übergabe am</th><td></td></tr>
@@ -166,26 +174,32 @@
         </tbody>
       </table>
       </div>
-      <div class="protokoll-rahmen" style="margin-top:18px">
+
+      <p class="blatt-abschnitt">Zählerstände</p>
+      <div class="protokoll-rahmen">
       <table class="protokoll protokoll-zaehler">
         <thead>
-          <tr><th scope="col">Zähler</th><th scope="col">Zählernummer</th><th scope="col">Stand</th><th scope="col">Uhrzeit</th></tr>
+          <tr><th scope="col">Zähler</th><th scope="col">Zähler&shy;nummer</th><th scope="col">Stand</th><th scope="col">Uhrzeit</th></tr>
         </thead>
         <tbody>
-          <tr><td>Strom</td><td></td><td></td><td></td></tr>
-          <tr><td>Strom, zweiter Tarif oder Einspeisung</td><td></td><td></td><td></td></tr>
-          <tr><td>Gas</td><td></td><td></td><td></td></tr>
-          <tr><td>Wasser kalt</td><td></td><td></td><td></td></tr>
-          <tr><td>Wasser warm</td><td></td><td></td><td></td></tr>
-          <tr><td>Wärme</td><td></td><td></td><td></td></tr>
+          <tr><td>Strom<small>kWh</small></td><td></td><td></td><td></td></tr>
+          <tr><td>Strom, zweiter Tarif<small>oder Einspeisung, kWh</small></td><td></td><td></td><td></td></tr>
+          <tr><td>Gas<small>m³</small></td><td></td><td></td><td></td></tr>
+          <tr><td>Wasser kalt<small>m³</small></td><td></td><td></td><td></td></tr>
+          <tr><td>Wasser warm<small>m³</small></td><td></td><td></td><td></td></tr>
+          <tr><td>Wärme<small>kWh oder MWh</small></td><td></td><td></td><td></td></tr>
           <tr><td></td><td></td><td></td><td></td></tr>
         </tbody>
       </table>
       </div>
+
+      <div class="blatt-bemerkung">Bemerkungen, Fotos, Schlüssel</div>
+
       <div class="unterschriften">
         <div>Unterschrift Auszug</div>
         <div>Unterschrift Einzug</div>
         <div>Unterschrift Vermieter</div>
+      </div>
       </div>
     </section>
 

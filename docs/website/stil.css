@@ -747,6 +747,14 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
    oben: Eine Seite, die „wir sehen nichts" sagt, schickt auch keine
    Eingaben weg.
 
+   **Jedes Feld ist gleich hoch, und die Einheit steht im Feld.** Bis 0.119.2
+   war eine Auswahl 48 Pixel hoch, ein Zahlenfeld 52 und ein Datum 55, und die
+   Einheit hing am Namen darüber („Arbeitspreis in ct/kWh"). Vom Gründer am
+   3. Oktober: „sieht in der Darstellung noch nicht professionell aus". Jetzt
+   trägt eine Hülle (`.eingabe`) Rahmen, Höhe und Einheit, und das Feld darin
+   ist nur noch die Fläche zum Tippen. So sehen Zahl, Auswahl und Datum gleich
+   aus, in jedem Browser.
+
    Die Felder sind so groß wie auf dem Telefon nötig. Wer mit der Rechnung in
    der einen Hand tippt, trifft sonst das Feld daneben. */
 
@@ -754,108 +762,257 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--r-m);
-  padding: 22px 24px 24px;
+  box-shadow: var(--shadow);
+  padding: 22px 24px 0;
   max-width: var(--w-text);
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 16px;
+  gap: 18px;
+  overflow: hidden;
 }
 .rechner-felder {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr));
-  gap: 14px 18px;
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+  gap: 16px 16px;
+}
+/* Zusammengehörige Felder: Stand und Datum einer Ablesung. Ohne die Gruppe
+   stand das Datum in der anderen Spalte als der Stand, zu dem es gehört. */
+.rechner-gruppe { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 8px; }
+.rechner-gruppe legend {
+  padding: 0; margin-bottom: 8px;
+  font-size: 12.5px; font-weight: 650; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-3);
 }
 .rechner label {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 6px;
-  font-size: 15px;
+  font-size: 14.5px;
+  font-weight: 560;
   color: var(--ink-2);
   /* Oben anfangen. Sonst verteilt das Raster die Höhe eines zweizeiligen
      Hinweises nebenan auf die Zeilen, und die Felder einer Reihe stehen
      versetzt. */
   align-content: start;
 }
-.rechner label small { color: var(--ink-3); font-size: 13.5px; }
-.rechner input, .rechner select {
-  font: inherit;
-  font-size: 18px;
-  color: var(--ink);
+.rechner label.breit { grid-column: 1 / -1; }
+.rechner label small { color: var(--ink-3); font-size: 13px; font-weight: 400; }
+.eingabe {
+  display: flex;
+  align-items: center;
+  height: 48px;
   background: var(--ground);
   border: 1px solid var(--line-2);
   border-radius: var(--r-s);
-  padding: 11px 12px;
-  min-height: 48px;
+  min-width: 0;
+  transition: border-color .15s, box-shadow .15s;
+}
+.eingabe:hover { border-color: var(--ink-3); }
+.eingabe:focus-within {
+  border-color: var(--tint);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tint) 22%, transparent);
+}
+.rechner input, .rechner select {
+  font: inherit;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-s);
+  padding: 0 12px;
+  height: 100%;
   width: 100%;
   /* Ein Feld hat von sich aus eine Breite für etwa zwanzig Zeichen und gibt
      sie ohne diese Zeile nicht her. */
   min-width: 0;
+  flex: 1 1 auto;
   font-variant-numeric: tabular-nums;
+  -webkit-appearance: none;
+  appearance: none;
 }
+.rechner input:focus, .rechner select:focus { outline: none; }
+/* Der Rand der Hülle zeigt den Fokus. Ohne Maus, also mit der Tastatur,
+   kommt der gewohnte Ring dazu. */
+.eingabe:has(:focus-visible) { outline: 2px solid var(--tint); outline-offset: 2px; }
+.rechner select {
+  cursor: pointer;
+  padding-right: 38px;
+  background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%238B8578' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 14px center;
+}
+.rechner select option { color: #17150F; background: #FFFFFF; }
 /* Safari zeichnet das Innere eines Datumsfelds mit eigener Breite und lässt es
    über das Feld hinausragen: bei 300 % Textgröße 142 Pixel Inhalt in einem
    101 Pixel breiten Feld, und die Seite lief seitlich über. Chromium schneidet
    es ab, deshalb fiel es erst in der Prüfung mit WebKit auf. */
 .rechner input[type="date"] {
   overflow: hidden;
+  text-align: left;
 }
-.rechner input:focus-visible, .rechner select:focus-visible {
-  outline: 2px solid var(--tint);
-  outline-offset: 2px;
+.rechner input[type="date"]::-webkit-date-and-time-value { text-align: left; margin: 0; }
+.rechner input[type="date"]::-webkit-calendar-picker-indicator { opacity: .55; cursor: pointer; }
+/* Die Einheit gehört zur Zahl und steht deshalb im Feld, rechts und leise. */
+.einheit {
+  flex: none;
+  padding: 0 14px 0 4px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink-3);
+  white-space: nowrap;
+  pointer-events: none;
 }
+/* **Das Ergebnis ist der Fuß des Rechners, nicht ein weiterer Absatz.** Eine
+   eigene Fläche bis an den Rand trennt, was man eintippt, von dem, was
+   herauskommt. */
 .rechner-ergebnis {
+  margin: 4px -24px 0;
+  padding: 20px 24px 24px;
+  background: var(--raised);
   border-top: 1px solid var(--line);
-  padding-top: 16px;
   font-variant-numeric: tabular-nums;
+  display: grid;
+  gap: 12px;
 }
 .rechner-ergebnis strong { font-size: 26px; color: var(--ink); display: block; line-height: 1.3; }
-.rechner-ergebnis p { margin: 6px 0 0; }
+.rechner-ergebnis p { margin: 0; }
 
-/* ----------------------------------------------------------- Protokoll */
+/* ----------------------------------------------------------- Protokoll
+
+   **Auf dem Schirm ein Blatt, auf dem Papier das Blatt.** Bis 0.119.2 stand
+   hier eine nackte Tabelle an der linken Kante, ohne Kopf und ohne Rand. Wer
+   das ausdrucken soll, will vorher sehen, was er in der Hand haben wird. Jetzt
+   liegt das Protokoll als Seite auf einer Fläche, mit Kopf, Feldern zum
+   Ausfüllen, Einheiten in der Zählertabelle und Platz zum Unterschreiben. */
+
+.blatt-buehne {
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-l);
+  padding: clamp(14px, 4vw, 40px);
+  margin-block: 8px 28px;
+}
+.blatt {
+  background: #FFFFFF;
+  color: #17150F;
+  max-width: 760px;
+  margin-inline: auto;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(23, 21, 15, .06), 0 18px 44px -20px rgba(23, 21, 15, .35);
+  padding: clamp(18px, 5vw, 48px) clamp(16px, 5vw, 52px) clamp(22px, 5vw, 44px);
+  font-size: 15px;
+  display: grid;
+  /* Ohne `minmax(0, …)` ist die Spalte so breit wie das längste Wort, und
+     bei 300 % Textgröße lief das Blatt damit seitlich über. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 22px;
+}
+.blatt-kopf > div { min-width: 0; }
+.blatt-kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid #17150F;
+}
+.blatt-kopf h2 { margin: 2px 0 0; font-size: clamp(19px, 3.4vw, 24px); line-height: 1.2; color: #17150F; text-wrap: balance; }
+.blatt-marke { font-size: 12px; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; color: #8A5A08; }
+.blatt-quelle { font-size: 12.5px; color: #8B8578; }
+.blatt-abschnitt { font-size: 12px; font-weight: 650; letter-spacing: .06em; text-transform: uppercase; color: #57524A; margin: 0 0 -12px; }
 
 .protokoll {
   width: 100%;
-  max-width: 760px;
   border-collapse: collapse;
-  background: var(--surface);
   font-size: 15px;
+  color: #17150F;
 }
-.protokoll th, .protokoll td {
-  border: 1px solid var(--line-2);
-  padding: 10px 10px;
+/* Angaben zur Übergabe: links die Beschriftung, rechts eine Linie zum
+   Schreiben. Ein Kästchen um jede Zeile sah aus wie ein Formular vom Amt. */
+.protokoll-angaben th, .protokoll-angaben td {
+  border-bottom: 1px solid #C9C3B6;
+  padding: 0 10px 0 0;
+  height: 46px;
   text-align: left;
-  vertical-align: top;
+  vertical-align: bottom;
+  padding-bottom: 6px;
 }
-.protokoll th { background: var(--raised); font-weight: 600; color: var(--ink); }
-/* Links die Beschriftung, rechts Platz zum Schreiben. Ohne feste Breite
-   nimmt sich die Beschriftung die ganze Zeile. */
-.protokoll th[scope="row"] { width: 30%; }
+/* So breit wie die längste Beschriftung, den Rest bekommt die Linie. Mit
+   festen 30 % brach „Anschrift, Wohnung" auf dem Telefon in zwei Zeilen. */
+.protokoll-angaben th { width: 1%; white-space: nowrap; padding-right: 18px; font-size: 13.5px; font-weight: 600; color: #57524A; }
+
 /* In der Zählertabelle wird in Nummer und Stand geschrieben, also bekommen
    die beiden den Platz und nicht die Beschriftung. */
+.protokoll-zaehler { border: 1px solid #C9C3B6; }
+.protokoll-zaehler th, .protokoll-zaehler td {
+  border: 1px solid #C9C3B6;
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: middle;
+}
+.protokoll-zaehler thead th {
+  background: #F3F0EA;
+  font-size: 12px; font-weight: 650; letter-spacing: .05em; text-transform: uppercase; color: #57524A;
+}
+.protokoll-zaehler td { height: 48px; }
+.protokoll-zaehler td:first-child { font-weight: 600; }
+.protokoll-zaehler td:first-child small { display: block; font-weight: 400; font-size: 12.5px; color: #8B8578; }
 .protokoll-zaehler th:nth-child(1) { width: 30%; }
-.protokoll-zaehler th:nth-child(2), .protokoll-zaehler th:nth-child(3) { width: 29%; }
-.protokoll-zaehler th:nth-child(4) { width: 12%; }
-.protokoll td { height: 44px; }
+.protokoll-zaehler th:nth-child(2), .protokoll-zaehler th:nth-child(3) { width: 28%; }
+.protokoll-zaehler th:nth-child(4) { width: 14%; }
 .protokoll-rahmen { overflow-x: auto; max-width: 100%; }
+.blatt-bemerkung {
+  border: 1px solid #C9C3B6;
+  border-radius: 4px;
+  min-height: 92px;
+  padding: 8px 10px;
+  font-size: 13.5px; font-weight: 600; color: #57524A;
+}
 .unterschriften {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
-  gap: 28px;
-  max-width: 760px;
-  margin-top: 26px;
+  grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr));
+  gap: 22px 28px;
+  margin-top: 18px;
 }
-.unterschriften div { border-top: 1px solid var(--ink-3); padding-top: 6px; font-size: 14px; color: var(--ink-3); }
+/* Eine Unterschrift braucht Höhe über der Linie, nicht nur die Linie. */
+.unterschriften div {
+  border-top: 1px solid #17150F;
+  padding-top: 6px;
+  margin-top: 34px;
+  font-size: 13px;
+  color: #57524A;
+}
+/* Auf dem Telefon passt die Zählertabelle in die Breite, statt seitlich zu
+   laufen. Gedruckt wird ohnehin auf A4, dort gilt das Blatt unten. */
+@media (max-width: 560px) {
+  .protokoll-zaehler { table-layout: fixed; font-size: 13.5px; }
+  .protokoll-zaehler th, .protokoll-zaehler td { padding: 7px 6px; -webkit-hyphens: auto; hyphens: auto; }
+  /* Klein geschrieben, damit „Uhrzeit" in die schmale Spalte passt. In
+     Versalien brach es als „UHRZE IT" um. */
+  .protokoll-zaehler thead th { font-size: 12px; letter-spacing: 0; text-transform: none; }
+  .protokoll-zaehler th:nth-child(1) { width: 30%; }
+  .protokoll-zaehler th:nth-child(2), .protokoll-zaehler th:nth-child(3) { width: 24%; }
+  .protokoll-zaehler th:nth-child(4) { width: 22%; }
+  .protokoll-zaehler td:first-child small { font-size: 12px; }
+  .unterschriften div { margin-top: 26px; }
+}
 
 /* Gedruckt wird nur das Protokoll. Kopf, Fuß, Erklärtext und Knöpfe bleiben
-   auf dem Schirm; auf dem Blatt stehen die Tabelle und die Unterschriften,
+   auf dem Schirm; auf dem Blatt stehen die Tabellen und die Unterschriften,
    schwarz auf weiß, auch wenn der Schirm gerade dunkel ist. */
 @media print {
+  @page { size: A4; margin: 16mm 15mm; }
   .kopf, .fuss, .sprung, .nicht-drucken, .pfad, .weiterlesen { display: none !important; }
-  body { background: #fff; color: #000; font-size: 12pt; }
+  body { background: #fff; color: #000; font-size: 11pt; }
   .rechtstext { padding: 0; }
   .druckbereich { display: block !important; }
-  .protokoll, .protokoll th, .protokoll td { background: #fff; color: #000; border-color: #000; }
-  .protokoll td { height: 34pt; }
+  .blatt-buehne { background: none; border: 0; padding: 0; margin: 0; }
+  .blatt { box-shadow: none; padding: 0; max-width: none; gap: 16pt; }
+  .protokoll, .protokoll th, .protokoll td { color: #000; border-color: #000; }
+  .protokoll-zaehler thead th { background: #EEE; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .protokoll-zaehler td { height: 30pt; }
+  .protokoll-angaben th, .protokoll-angaben td { height: 28pt; }
+  .blatt-bemerkung { border-color: #000; min-height: 60pt; }
   .unterschriften div { border-color: #000; color: #000; }
 }
 
@@ -867,34 +1024,62 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
    drei Sätze da, und die Zahl, um die es ging, steckte mittendrin.
 
    Oben der Name, darunter groß die Zahl, darunter klein, worauf sie sich
-   bezieht. Gerechnete Werte tragen ein ≈ vor der Zahl, gemessene nicht. */
+   bezieht. Gerechnete Werte tragen ein ≈ vor der Zahl, gemessene nicht.
+
+   **Die Hauptzahl bekommt eine eigene Zeile, die übrigen teilen sich eine.**
+   Bis 0.119.2 standen alle Kacheln im selben Raster: drei in der ersten
+   Reihe, die vierte allein in der zweiten, jede so hoch wie ihr Text, und auf
+   dem Telefon brach „2.702 kWh" mitten in der Zahl um. Jetzt steht oben die
+   eine Zahl, um die es geht, und darunter gleich hohe Kacheln. Auf dem
+   Telefon werden sie zu Zeilen: Name links, Zahl rechts. */
+/* Die Zahl der Spalten setzt `rechner.js` nach der Zahl der Nebenkacheln.
+   Mit `auto-fit` blieb neben zwei Kacheln eine leere dritte Spalte stehen,
+   weil die Hauptkachel alle Spalten belegt. */
 .kacheln {
+  --spalten: 3;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr));
+  grid-template-columns: repeat(var(--spalten), minmax(0, 1fr));
   gap: 10px;
 }
 .kachel {
-  background: var(--ground);
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--r-s);
-  padding: 12px 14px;
+  padding: 13px 15px;
   display: grid;
-  gap: 2px;
+  gap: 3px;
   align-content: start;
   font-variant-numeric: tabular-nums;
+  min-width: 0;
 }
-.kachel-name { font-size: 13px; color: var(--ink-3); font-weight: 600; }
-.kachel-wert { font-size: 24px; font-weight: 700; color: var(--ink); line-height: 1.25; letter-spacing: -0.01em; }
+.kachel-name { font-size: 12.5px; color: var(--ink-3); font-weight: 650; letter-spacing: .02em; }
+.kachel-wert { font-size: 22px; font-weight: 700; color: var(--ink); line-height: 1.2; letter-spacing: -0.01em; white-space: nowrap; }
 .kachel-zusatz { font-size: 13px; color: var(--ink-2); }
 .kachel-haupt {
+  grid-column: 1 / -1;
+  padding: 16px 18px 17px;
   border-color: var(--tint);
   border-color: color-mix(in srgb, var(--tint) 45%, var(--line));
-  background: var(--raised);
-  background: color-mix(in srgb, var(--tint) 7%, var(--ground));
+  background: var(--surface);
+  background: color-mix(in srgb, var(--tint) 8%, var(--surface));
 }
+.kachel-haupt .kachel-wert { font-size: clamp(30px, 7vw, 40px); letter-spacing: -0.02em; }
+.kachel-haupt .kachel-zusatz { font-size: 14px; }
 .kachel-gut .kachel-wert { color: var(--good); }
 .kachel-achtung .kachel-wert { color: var(--tint-ink); }
 .rechner-hinweis { margin: 0; color: var(--ink-2); font-size: 15px; }
+@media (max-width: 480px) {
+  .kacheln { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .kachel:not(.kachel-haupt) {
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 12px;
+    align-items: center;
+    padding: 11px 14px;
+  }
+  .kachel:not(.kachel-haupt) .kachel-name { grid-column: 1; grid-row: 1; }
+  .kachel:not(.kachel-haupt) .kachel-zusatz { grid-column: 1; grid-row: 2; }
+  .kachel:not(.kachel-haupt) .kachel-wert { grid-column: 2; grid-row: 1 / span 2; font-size: 19px; text-align: right; }
+}
 
 
 /* ------------------------------------------------- Kleine und alte Geräte
@@ -944,10 +1129,21 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
   .bahn { padding-inline: 12px; }
   .knopf { padding: 12px 16px; text-align: center; justify-content: center; max-width: 100%; }
   .rechner input, .rechner select { font-size: 16px; padding-inline: 8px; }
+  .einheit { padding-inline: 2px 8px; font-size: 13px; }
   .art { white-space: normal; }
-  .rechner { padding: 0; border: 0; background: none; }
+  .rechner { padding: 0; border: 0; background: none; box-shadow: none; }
+  .rechner-ergebnis { margin-inline: 0; padding-inline: 10px; border-radius: var(--r-s); }
+  .kachel:not(.kachel-haupt) { grid-template-columns: minmax(0, 1fr); }
+  .kachel:not(.kachel-haupt) .kachel-wert { grid-column: 1; grid-row: auto; text-align: left; }
+  .blatt-buehne { padding: 6px; border-radius: var(--r-s); }
+  /* Bei 300 % ist „Wohnungsübergabe" breiter als die ganze Anzeige. */
+  .blatt { padding: 12px 10px; }
+  .blatt-kopf h2, .blatt-marke, .protokoll-angaben th, .blatt-bemerkung {
+    overflow-wrap: anywhere; -webkit-hyphens: auto; hyphens: auto; white-space: normal;
+  }
+  .protokoll-angaben th { width: 40%; padding-right: 8px; }
   .kachel { padding: 8px 10px; }
-  .kachel-wert { font-size: 18px; }
+  .kachel-wert, .kachel-haupt .kachel-wert { font-size: 18px; white-space: normal; }
   .karte { padding: 16px 14px; }
-  .rechner select { padding-inline: 8px 4px; }
+  .rechner select { padding-inline: 8px 26px; background-position: right 8px center; }
 }

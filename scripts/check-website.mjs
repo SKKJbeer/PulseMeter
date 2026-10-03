@@ -763,6 +763,45 @@ console.log("\nVerhalten");
     note(versatz <= 1, `${datei}: Felder einer Reihe stehen auf einer Höhe (Versatz ${Math.round(versatz)} px)`);
   }
 
+  // **Gleich hohe Felder, gleich hohe Kacheln, Zahlen in einer Zeile.** Vom
+  // Gründer am 3. Oktober: „hat verschiedene Größen der Boxen". Bis 0.119.2
+  // war eine Auswahl 48 Pixel hoch, ein Zahlenfeld 52 und ein Datum 55, die
+  // vierte Kachel stand allein in einer neuen Reihe, und auf dem Telefon brach
+  // „2.702 kWh" mitten in der Zahl um. Gemessen breit und schmal.
+  for (const breite of [1280, 390]) {
+    await page.setViewportSize({ width: breite, height: 900 });
+    for (const datei of ["gas-in-kwh.html", "abschlag-zu-hoch.html", "verbrauch-berechnen.html"]) {
+      await page.goto(base + datei);
+      const mass = await page.evaluate(() => {
+        const hoehen = [...document.querySelectorAll(".rechner .eingabe")].map(e => Math.round(e.getBoundingClientRect().height));
+        const neben = [...document.querySelectorAll(".kachel:not(.kachel-haupt)")].map(k => k.getBoundingClientRect());
+        const reihen = {};
+        for (const r of neben) (reihen[Math.round(r.top)] ||= []).push(Math.round(r.height));
+        const ungleich = Object.values(reihen).some(r => Math.max(...r) - Math.min(...r) > 1);
+        const umgebrochen = [...document.querySelectorAll(".kachel-wert")].filter(w => {
+          const zeile = parseFloat(getComputedStyle(w).lineHeight) || parseFloat(getComputedStyle(w).fontSize) * 1.3;
+          return w.getBoundingClientRect().height > zeile * 1.5;
+        }).map(w => w.textContent);
+        return { felder: hoehen.length, hoehen: [...new Set(hoehen)], ungleich, umgebrochen,
+                 reihen: Object.keys(reihen).length, neben: neben.length };
+      });
+      note(mass.felder > 0 && mass.hoehen.length === 1, `${datei} bei ${breite} px: alle Felder gleich hoch (${mass.hoehen.join(", ")} px)`);
+      note(!mass.ungleich, `${datei} bei ${breite} px: Kacheln einer Reihe gleich hoch`);
+      note(mass.umgebrochen.length === 0, `${datei} bei ${breite} px: keine Zahl bricht um${mass.umgebrochen.length ? " (" + mass.umgebrochen.join(", ") + ")" : ""}`);
+      if (breite === 1280) note(mass.reihen <= 1, `${datei}: die Nebenkacheln teilen sich eine Reihe (${mass.neben} in ${mass.reihen})`);
+    }
+  }
+  // Das Protokoll passt auch auf dem Telefon in die Breite.
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.goto(base + "zaehlerstand-umzug.html");
+  const blatt = await page.evaluate(() => {
+    const t = document.querySelector(".protokoll-zaehler"), r = t.parentElement;
+    return { tabelle: Math.round(t.scrollWidth), platz: Math.round(r.clientWidth),
+             kopf: !!document.querySelector("#protokoll .blatt-kopf h2") };
+  });
+  note(blatt.tabelle <= blatt.platz + 1, `Protokoll bei 390 px: die Zählertabelle passt in die Breite (${blatt.tabelle} von ${blatt.platz} px)`);
+  note(blatt.kopf, "Protokoll: das Blatt hat einen Kopf mit Titel");
+
   // **Groß genug für einen Daumen.** Wer mit der Rechnung in der einen Hand
   // tippt, trifft ein kleines Feld nicht.
   await page.setViewportSize({ width: 390, height: 900 });
