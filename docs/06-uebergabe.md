@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-10-03, Version 0.118.11
+Stand: 2026-10-03, Version 0.118.12
 
 ---
 
@@ -92,8 +92,8 @@ Tabelle im Baukasten unter „Die Prüfungen".
 - **Bau 38** (0.118.1) in TestFlight, VALID: Siri, Bewertungsfrage, Einheit
   in der Tabelle. Davor Bau 37 (0.117.8): größte Schrift auf iPad und iPhone
   SE. Auf `entwicklung.html` steht dafür „Im Test".
-- **1.3** wird am **7. Oktober** eingereicht, nur mit Freigabe des Gründers
-  (Regel 4a). Darin: Erinnerung und Sperrbildschirm öffnen den Ziffernblock
+- **1.3** wird am **3. Oktober** mit Bau 38 eingereicht, vorgezogen auf
+  Ansage des Gründers („wir können auch schon heute das nächste releasen“). Darin: Erinnerung und Sperrbildschirm öffnen den Ziffernblock
   (0.116.0), Umschalter im iPad-Hochformat, **Siri** und die
   **Bewertungsfrage** (beide 0.118.0), dazu das neue Schlagwortfeld und die
   Beschreibung aus `09-appstore.md`, die erst mit einer neuen Fassung gelten.
@@ -108,7 +108,7 @@ dort je Punkt.
 |---|---|---|
 | 1 | ~~Analytics Engine bei Cloudflare einschalten~~ | **erledigt am 30. September.** Der Gründer hat den Datensatz `zaehlora_aufrufe` mit der Bindung `ZAEHLUNG` angelegt |
 | 2 | ~~Cloudflare-Leseschlüssel `CLOUDFLARE_STATISTIK_TOKEN`~~ | **erledigt am 30. September.** Erster Bericht lief: „Website-Zahlen" von Hand startbar, sonst montags |
-| 3 | Search Console: Bestätigungscode in den Chat | Google führt die Seite nicht offiziell, keine Suchbegriffe |
+| 3 | ~~Search Console~~ | **erledigt am 3. Oktober**, Domain-Property `zaehlora.de`, über Cloudflare bestätigt |
 | 4 | Google-Dienstkonto `GOOGLE_SC_SCHLUESSEL` | keine Google-Zahlen im Wochenbericht, Sitemap nicht automatisch gemeldet |
 | 5 | App-Store-Berichtsschlüssel (Rolle Admin) `ASC_BERICHT_KEY_ID`/`_P8` | `zahlen.yml` scheitert täglich mit 403 |
 | 6 | Anbieterkennung `pt` in den Chat | Laden-Knopf auf der Website ohne Kampagne |

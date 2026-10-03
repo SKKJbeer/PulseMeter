@@ -9,6 +9,20 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.118.12 — 2026-10-03
+
+**Versionshinweise für 1.3, und 1.3 geht schon heute zu Apple.**
+
+Der Gründer am 3. Oktober: „wir können auch schon heute das nächste
+releasen". Also nicht erst am Mittwoch, und mit Bau 38: Seit dessen Stand
+(0.118.1) hat sich an `App/`, `Packages/` und `Widget/` nichts geändert. Die
+Hinweise in `09-appstore.md` erzählen, was ein Nutzer merkt: Erinnerung und
+Sperrbildschirm öffnen den Ziffernblock, Siri ebenso, die Tabelle nennt ihre
+Einheit, und große Schrift passt wieder. Die Bewertungsfrage steht absichtlich
+nicht darin.
+
+---
+
 ## 0.118.11 — 2026-10-03
 
 **Die Search Console kennt `zaehlora.de`.**

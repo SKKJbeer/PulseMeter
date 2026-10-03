@@ -305,6 +305,27 @@ das Diagramm mehr als doppelt so hoch wie vorher, auf dem 11-Zoll-Gerät etwa
 anderthalbmal. Eine Zahl, die nur auf einem Gerät stimmt, ist auf dem anderen
 falsch.
 
+
+Für 1.3:
+
+```
+Tippst du auf die Erinnerung für Strom, geht der Ziffernblock für Strom auf.
+Kein Suchen mehr, während du mit einer Hand am Zähler stehst. Das Feld auf dem
+Sperrbildschirm macht dasselbe, für den Zähler, der am längsten wartet.
+
+Siri kann das auch. „Strom in Zählora ablesen“ öffnet den Ziffernblock, ohne
+dass du vorher einen Kurzbefehl anlegst.
+
+Die Tabelle im Verlauf sagt jetzt, in welcher Einheit sie rechnet. Und wer die
+Schrift ganz groß gestellt hat, sieht wieder jede Zahl vollständig, auf dem
+iPhone SE genauso wie auf dem iPad.
+```
+
+**Was absichtlich fehlt:** die Frage nach einer Bewertung. Sie ist für den
+Nutzer keine Neuerung, und wer sie angekündigt bekommt, liest sie als Bitte.
+Ebenso der schmalere Umschalter im iPad-Hochformat; man sieht ihn, aber man
+sucht ihn nicht.
+
 ---
 
 ## 2. Einordnung
