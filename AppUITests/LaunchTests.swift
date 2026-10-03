@@ -1486,7 +1486,9 @@ final class LaunchTests: XCTestCase {
         XCTAssertTrue(schritt.label.contains("Zählwerk 2 von 2"),
                       "gelesen: \(schritt.label)")
 
-        let save = app.buttons["Sichern"]
+        // Über den Anfang: Gas ist in diesen Daten fällig, und dann heißt der
+        // Knopf seit 0.119.0 „Sichern, weiter mit Gas“. Er sichert genauso.
+        let save = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Sichern'")).firstMatch
         XCTAssertTrue(save.exists, "Beim letzten Zählwerk muss „Sichern“ dastehen")
 
         // Prinzip 4 — keine Sackgasse. Vom Gründer gefunden: Wer beim zweiten
@@ -1527,6 +1529,49 @@ final class LaunchTests: XCTestCase {
         let blattZu = expectation(for: NSPredicate(format: "exists == 0"),
                                   evaluatedWith: schritt)
         wait(for: [blattZu], timeout: erscheint)
+    }
+
+    /// Der Rundgang: Nach dem Sichern bleibt das Blatt offen und zeigt den
+    /// nächsten fälligen Zähler.
+    ///
+    /// Strom mit zwei Zählwerken, Gas ist in den Beispieldaten seit drei
+    /// Monaten fällig. Erwartet wird: Der Knopf nennt Gas, nach dem Sichern
+    /// steht Gas im Kopf, darüber „Strom gesichert“, und der Ausweg heißt
+    /// „Fertig“. Gas ist der letzte, also gibt es dort kein Überspringen, und
+    /// „Fertig“ schließt das Blatt.
+    func testTheRoundContinuesWithTheNextDueMeter() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-pulse-reset", "-pulse-pro", "-pulse-capture-pv"]
+        app.launch()
+
+        let weiter = app.buttons["Weiter"]
+        XCTAssertTrue(weiter.waitForExistence(timeout: 15), "Der Ziffernblock für Strom erschien nicht")
+        app.buttons["Vom letzten Stand übernehmen"].tap()
+        weiter.tap()
+        app.buttons["Vom letzten Stand übernehmen"].tap()
+
+        let sichern = app.buttons["Sichern, weiter mit Gas"]
+        XCTAssertTrue(sichern.waitForExistence(timeout: erscheint),
+                      "Der Knopf sagt nicht, dass es mit Gas weitergeht. Zu sehen war: "
+                      + beschriftungen(in: app))
+        XCTAssertTrue(app.buttons["Überspringen"].exists,
+                      "Solange noch ein Zähler kommt, muss sich Strom überspringen lassen")
+        sichern.tap()
+
+        XCTAssertTrue(app.navigationBars["Gas"].waitForExistence(timeout: erscheint),
+                      "Nach dem Sichern kam nicht Gas. Zu sehen war: " + beschriftungen(in: app))
+        let bestaetigt = app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS 'Strom gesichert'")).firstMatch
+        XCTAssertTrue(bestaetigt.exists, "Oben steht nicht, dass Strom gesichert ist")
+        XCTAssertFalse(app.buttons["Überspringen"].exists,
+                       "Gas ist der letzte fällige Zähler, Überspringen wäre dasselbe wie Fertig")
+
+        let fertig = app.buttons["Fertig"]
+        XCTAssertTrue(fertig.exists, "Nach der ersten Ablesung heißt der Ausweg „Fertig“")
+        fertig.tap()
+        let zu = expectation(for: NSPredicate(format: "exists == 0"),
+                             evaluatedWith: app.navigationBars["Gas"])
+        wait(for: [zu], timeout: erscheint)
     }
 
     /// Die Einspeisung steht auf der Karte, und zwar über den Kosten.

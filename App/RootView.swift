@@ -88,7 +88,7 @@ struct RootView: View {
             if neu == .active { uebernimmWunsch() }
         }
         .sheet(item: $vonAussen) { point in
-            CaptureView(meteringPoint: point, onSaved: { datenstand.geaendert() })
+            Rundgang(start: point, onSaved: { datenstand.geaendert() })
         }
         // **Hier an der Wurzel, weil jede Ablesung hier vorbeikommt.** Der
         // Ziffernblock geht an drei Stellen auf (Übersicht, Zählerliste, von
@@ -104,7 +104,9 @@ struct RootView: View {
     /// danach steht man auf der Übersicht und sieht den neuen Verbrauch, und
     /// genau das ist der Moment, in dem die Frage passt.
     private func fragNachBewertung() {
-        guard Bewertungsfrage.jetztFragen() else { return }
+        // Nicht mitten im Rundgang. Gemeldet wird noch einmal, wenn das
+        // Blatt zu ist, und dann kommt die Frage (siehe ``Rundgang``).
+        guard !Rundgang.laeuft, Bewertungsfrage.jetztFragen() else { return }
         Task { @MainActor in
             try? await Task.sleep(for: .milliseconds(1500))
             bewerten()
@@ -420,7 +422,7 @@ struct OverviewView: View {
             // einer davon etwas ausrechnet, was der andere nicht kennt.
             .onChange(of: datenstand.version) { _, _ in reload() }
             .sheet(item: $capturing) { point in
-                CaptureView(meteringPoint: point, onSaved: { datenstand.geaendert() })
+                Rundgang(start: point, onSaved: { datenstand.geaendert() })
             }
             .sheet(isPresented: $addingMeter) {
                 MeterEditor(draft: MeterDraft(), readingCount: 0,

@@ -9,6 +9,44 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.119.0 — 2026-10-03
+
+**Der Rundgang: Nach dem Sichern geht es mit dem nächsten fälligen Zähler
+weiter.** Das Stück für Fassung 1.4.
+
+Der Gründer am 3. Oktober: „ja mach". Wer am Monatsanfang abliest, liest meist
+alles ab, und bis hierher hieß das je Zähler: Blatt zu, Karte suchen, „Stand
+eintragen", Blatt auf. Jetzt bleibt das Blatt offen.
+
+| Wo | Was man sieht |
+|---|---|
+| Knopf beim letzten Zählwerk | „Sichern, weiter mit Gas“, solange danach ein fälliger Zähler kommt |
+| Nach dem Sichern | derselbe Bogen mit dem nächsten Zähler, oben „Strom gesichert“ |
+| Links oben | „Fertig“ nach der ersten Ablesung, vorher „Abbrechen“ |
+| Unter dem Knopf | „Überspringen“, solange noch einer kommt |
+| Ohne weiteren fälligen Zähler | alles wie bisher: „Sichern“, und das Blatt ist zu |
+
+- **`PulseCore.ReadingRound`**: welche Zähler in welcher Reihenfolge kommen.
+  Die der Übersicht, ab dem Zähler, mit dem es anfing, im Kreis weiter, nur
+  fällige, nach derselben Regel wie Karte, Widget und Erinnerung. Festgelegt
+  beim ersten Tipp; wer unterwegs fällig wird, kommt nicht dazu. Acht neue
+  Prüfungen.
+- **`App/Rundgang.swift`**: die Hülle um den Ziffernblock, an beiden Stellen,
+  an denen er aufgeht (Übersicht und von außen, also Erinnerung, Widget,
+  Siri). Je Zähler ein frischer Ziffernblock; Erscheinen und Verschwinden
+  hängen an der Hülle, sonst meldete jeder Wechsel ein Schließen.
+- **Die Bewertungsfrage wartet, bis das Blatt zu ist.** Apples Blatt über dem
+  Ziffernblock für Wasser hielte genau den auf, der am Zähler steht.
+- **Klick-Dummy** mit derselben Regel (`rundgang()`), dazu 17 Prüfungen im
+  Abschnitt „Rundgang“: Reihenfolge, Knopf, Bestätigung, Überspringen, Ende,
+  und dass Ändern einer Ablesung keinen Rundgang startet.
+- **Oberflächenprüfung** `testTheRoundContinuesWithTheNextDueMeter`: Strom mit
+  zwei Zählwerken, dann Gas, dann „Fertig“. In den Beispieldaten ist an jedem
+  Tag des Monats nur Gas fällig, die Prüfung hängt also nicht am Datum.
+- Prinzip 2 bleibt gemessen: Folge-Ablesung in drei Berührungen gesichert.
+
+---
+
 ## 0.118.14 — 2026-10-03
 
 **Fassung 1.3 ist bei Apple eingereicht, mit Bau 38.**

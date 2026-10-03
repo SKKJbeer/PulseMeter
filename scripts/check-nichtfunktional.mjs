@@ -299,6 +299,12 @@ console.log("\nProduktprinzipien");
     `METERS.find(x => x.id === "${ziel.id}").registers[0].readings.length`);
   note(nachher === vorher + 1 && beruehrungen <= 3,
        `Folge-Ablesung in ${beruehrungen} Berührungen gesichert (Prinzip 2: höchstens 3)`);
+  // Gesichert ist nach drei Berührungen, auch im Rundgang. Danach bleibt das
+  // Blatt dort offen und zeigt den nächsten fälligen Zähler; „Fertig“ schließt.
+  if (await page.evaluate(`document.getElementById("sheet-capture").classList.contains("on")`)) {
+    await page.locator("#cap-back").dispatchEvent("click");
+    await page.waitForTimeout(300);
+  }
 
   // Prinzip 3: „Ist alles im Rahmen?" ohne Scrollen. Geprüft wird, ob die
   // erste Karte samt ihrer Zahl vollständig im ersten Bild steht.

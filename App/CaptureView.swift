@@ -19,7 +19,12 @@ import PulseUI
 struct CaptureView: View {
 
     let meteringPoint: MeteringPoint
+    /// Wo im Rundgang dieser Zähler steht. Ohne Rundgang ``RundgangSchritt/ohne``.
+    var schritt: RundgangSchritt = .ohne
     let onSaved: () -> Void
+    /// Im Rundgang: zum nächsten Zähler, statt das Blatt zu schließen. Gesetzt
+    /// nur, wenn danach noch einer kommt.
+    var onWeiter: (() -> Void)? = nil
 
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
@@ -116,6 +121,7 @@ struct CaptureView: View {
                         Spacer(minLength: 18)
                         NumberPad(onKey: handle)
                         saveButton
+                        skipButton
                         momentPicker
                     }
                     .padding(.horizontal, 16)
@@ -133,6 +139,10 @@ struct CaptureView: View {
                 ToolbarItem(placement: .cancellationAction) {
                     if index > 0 {
                         Button("Zurück", action: retreat)
+                    } else if schritt.zuletztGesichert != nil {
+                        // Im Rundgang nach der ersten gesicherten Ablesung:
+                        // Abgebrochen wird nichts mehr, das Gesicherte bleibt.
+                        Button("Fertig") { dismiss() }
                     } else {
                         Button("Abbrechen") { dismiss() }
                     }
@@ -199,6 +209,15 @@ struct CaptureView: View {
 
     private var header: some View {
         VStack(spacing: 8) {
+            // Was eben gesichert wurde. Im Rundgang bleibt das Blatt offen,
+            // und ohne diese Zeile sähe ein neuer Zähler aus, als hätte der
+            // vorige nicht geklappt.
+            if let zuletzt = schritt.zuletztGesichert {
+                Label("\(zuletzt) gesichert", systemImage: "checkmark.circle.fill")
+                    .font(.system(.footnote, weight: .semibold))
+                    .foregroundStyle(PulseColor.inkSecondary)
+                    .padding(.bottom, 2)
+            }
             // Der Name des Zählwerks steht nur da, wenn es mehr als eines
             // gibt. Bei einem einzelnen wäre „Bezug" ein Wort, das der Nutzer
             // nie gebraucht hat und nun deuten müsste.
@@ -256,7 +275,11 @@ struct CaptureView: View {
     private var saveButton: some View {
         let ready = !digits.isEmpty
         return Button(action: advance) {
-            Text(isLastRegister ? "Sichern" : "Weiter")
+            Text(saveTitle)
+                // Ein langer Zählername darf den Knopf nicht auf zwei Zeilen
+                // drücken. Lieber wird die Schrift etwas kleiner.
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
                 .font(.system(.headline, weight: .semibold))
                 .foregroundStyle(ready ? PulseColor.onAccent : PulseColor.inkTertiary)
                 .frame(maxWidth: .infinity)
@@ -272,6 +295,29 @@ struct CaptureView: View {
                            ? (isLastRegister ? "Sichert die Ablesung" : "Weiter zum nächsten Zählwerk")
                            : "Erst einen Zählerstand eintippen")
         .padding(.top, 14)
+    }
+
+    /// Im Rundgang sagt der Knopf, wohin er führt. „Sichern" allein ließe
+    /// offen, warum das Blatt danach stehen bleibt.
+    private var saveTitle: String {
+        guard isLastRegister else { return "Weiter" }
+        return schritt.naechster.map { "Sichern, weiter mit \($0)" } ?? "Sichern"
+    }
+
+    /// Am nächsten Zähler vorbei, ohne zu sichern.
+    ///
+    /// Ein Wasserzähler hinter dem Regal soll den Rest des Rundgangs nicht
+    /// aufhalten. Nur da, wenn noch einer kommt; beim letzten wäre es
+    /// dasselbe wie „Fertig".
+    @ViewBuilder
+    private var skipButton: some View {
+        if let onWeiter, schritt.naechster != nil {
+            Button("Überspringen", action: onWeiter)
+                .font(.system(.subheadline, weight: .medium))
+                .foregroundStyle(PulseColor.inkSecondary)
+                .frame(maxWidth: .infinity, minHeight: 44)
+                .padding(.top, 4)
+        }
     }
 
     /// Sagt etwas, das auf dem Schirm nicht steht.
@@ -485,7 +531,8 @@ struct CaptureView: View {
             // zählt, ob jemand wiederkommt und abliest.
             Bewertungsfrage.ablesungGesichert()
             onSaved()
-            dismiss()
+            // Im Rundgang zum nächsten Zähler, sonst zu.
+            if let onWeiter { onWeiter() } else { dismiss() }
         } catch {
             problem = error.localizedDescription
         }

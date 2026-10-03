@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-10-03, Version 0.118.14
+Stand: 2026-10-03, Version 0.119.0
 
 ---
 
@@ -127,9 +127,9 @@ Klick-Dummy. Der Satz „Alle Werte in …" unter der Tabelle im Entwurf ist weg
 
 ### Als Nächstes
 
-1. **1.4 Rundgang** (Einreichen 21. Oktober): nach dem Sichern „Weiter mit
-   Wasser", bis alle fälligen Zähler durch sind. Baut auf dem Weg aus
-   `AppAddress` und `Wegweiser` auf.
+1. **1.4 Rundgang**: gebaut in 0.119.0 (`ReadingRound`, `App/Rundgang.swift`,
+   Klick-Dummy). Offen: grüne CI auf dem Mac, Bau in TestFlight, dann
+   „Im Test“ auf `entwicklung.html`.
 2. **Neue Bilder für den Laden** zu 1.3 (`10-sichtbarkeit.md` 4.4).
 3. **Ratgeberseiten**, eine je Woche: stromverbrauch-normal, anbieterwechsel,
    zweirichtungszaehler, zaehlerwechsel, waermepumpe.

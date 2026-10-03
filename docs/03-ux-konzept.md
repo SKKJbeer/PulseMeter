@@ -72,6 +72,14 @@ Aufbau von oben nach unten:
 - Foto ist optional und einen Tipp entfernt — nie ein Pflichtschritt.
 - Datum ändern ist möglich, aber sekundär platziert.
 
+**Rundgang (seit 0.119.0, Fassung 1.4).** Sind nach dem geöffneten Zähler
+noch andere fällig, bleibt das Blatt nach dem Sichern offen und zeigt den
+nächsten, in der Reihenfolge der Übersicht. Der Knopf sagt das vorher:
+„Sichern, weiter mit Gas". Oben steht danach „Strom gesichert", der Ausweg
+heißt „Fertig", und „Überspringen" geht am Zähler vorbei, der gerade nicht
+erreichbar ist. Ist sonst nichts fällig, ändert sich nichts: drei Berührungen,
+dann ist das Blatt zu. Die Regel steht in `PulseCore.ReadingRound`.
+
 **Warum Live-Plausibilisierung das wichtigste Einzelfeature ist:** Der häufigste Datenfehler in solchen Apps ist der Tippfehler, und er wird erst Monate später bemerkt — dann, wenn ein Chart absurd aussieht und der Nutzer der App nicht mehr traut. Die Prüfung im Moment der Eingabe ist der billigste Ort, das zu verhindern.
 
 ---

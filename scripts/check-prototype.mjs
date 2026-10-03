@@ -49,6 +49,21 @@ for (const scheme of ["light", "dark"]) {
   // Frage unten auf einer eigenen Seite.
   await page.evaluate(() => { bewertungGefragt = true; });
 
+  // Sichern und, falls der Rundgang das Blatt offen hält, mit „Fertig“
+  // schließen. Die Prüfungen, die das nutzen, prüfen etwas anderes als den
+  // Rundgang; der hat unten einen eigenen Abschnitt.
+  const sichernUndFertig = async (warte = 400) => {
+    await page.locator("#save").click();
+    await page.waitForTimeout(warte);
+    const offen = await page.evaluate(() =>
+      document.getElementById("sheet-capture").classList.contains("on")
+      && document.getElementById("cap-back").textContent === "Fertig");
+    if (offen) {
+      await page.locator("#cap-back").click();
+      await page.waitForTimeout(250);
+    }
+  };
+
   // --- Hauptflüsse erreichbar
   // `:visible`, seit der Entwurf zwei Rahmen kennt: Schmal führt die
   // Tab-Leiste zum Ziel, breit die Seitenleiste, und beide tragen dieselben
@@ -214,8 +229,7 @@ for (const scheme of ["light", "dark"]) {
     const ziffern = String(Math.round((ziel.letzter + 250) * 10 ** ziel.frac));
     for (const z of ziffern) await page.locator(`#keys [data-key="${z}"]`).first().click();
     await page.waitForTimeout(150);
-    await page.locator("#save").click();
-    await page.waitForTimeout(400);
+    await sichernUndFertig();
 
     const nachher = await page.evaluate(id => ({
       anzahl: METERS.find(m => m.id === id).registers[0].readings.length,
@@ -438,8 +452,7 @@ for (const scheme of ["light", "dark"]) {
          `Ohne Vorgänger sagt die Prüfung das auch („${zustand.urteil}“)`);
 
     if (!zustand.gesperrt) {
-      await page.locator("#save").click();
-      await page.waitForTimeout(350);
+      await sichernUndFertig(350);
       const n = await page.evaluate(() =>
         METERS.find(x => x.name === "Prüfzähler").registers[0].readings.length);
       note(n === 1, "Der erste Stand ist gespeichert");
@@ -462,7 +475,9 @@ for (const scheme of ["light", "dark"]) {
     const ersteEingabe = await page.evaluate(() => digits);
     await page.locator("#save").click();
     await page.waitForTimeout(250);
-    note((await page.locator("#save").textContent()) === "Sichern",
+    // „Sichern“ am Anfang, auch im Rundgang: Dort heißt der Knopf „Sichern,
+    // weiter mit Gas“, und das sichert genauso.
+    note(/^Sichern/.test(await page.locator("#save").textContent()),
          "Beim letzten Zählwerk steht „Sichern“");
 
     // Prinzip 4 — keine Sackgasse: Wer sich beim ersten Zählwerk vertippt hat,
@@ -485,8 +500,7 @@ for (const scheme of ["light", "dark"]) {
     await page.locator("#save").click();
     await page.waitForTimeout(250);
     await page.locator("#prefill").click();
-    await page.locator("#save").click();
-    await page.waitForTimeout(400);
+    await sichernUndFertig();
     const nachher = await page.evaluate(id =>
       METERS.find(m => m.id === id).registers.map(r => r.readings.length), zweiId);
     note(nachher.every((n, i) => n === vorher[i] + 1),
@@ -702,8 +716,7 @@ for (const scheme of ["light", "dark"]) {
     await page.locator("#cap-date").fill(stand.davor);
     await page.locator("#cap-time").fill("07:00");
     await page.locator("#prefill").click();
-    await page.locator("#save").click();
-    await page.waitForTimeout(400);
+    await sichernUndFertig();
     const reihe = await page.evaluate(id => {
       const rs = METERS.find(m => m.id === id).registers[0].readings;
       const tage = rs.map(r => r.y * 10000 + r.m * 100 + r.d);
@@ -1454,6 +1467,110 @@ for (const scheme of ["light", "dark"]) {
   note(/^in (kWh|m³)/.test(kopf.text), `Der Tabellenkopf nennt die Einheit („${kopf.text}“)`);
   note(kopf.gross === "none", "Die Einheit steht nicht in Versalien");
   note(!/Alle Werte in/.test(kopf.satz), "Kein Satz unter der Tabelle, der die Einheit nachreicht");
+  await page.close();
+}
+
+// --- Rundgang: nach dem Sichern der nächste fällige Zähler
+//
+// Auf einer frischen Seite mit drei fälligen Zählern, damit der Weg durch
+// alle drei, das Überspringen und das Ende zu sehen sind. Fällig gemacht wird
+// über die Daten, nicht über einen Schalter: Der Rundgang soll dieselbe
+// Fälligkeit sehen wie die Karte.
+{
+  console.log("\nRundgang");
+  const page = await browser.newPage({ viewport: { width: 440, height: 1300 } });
+  const fehler = [];
+  page.on("pageerror", e => fehler.push(e.message));
+  await page.goto(url);
+  await page.waitForTimeout(300);
+  await page.evaluate(() => { bewertungGefragt = true; });
+  const reihe = await page.evaluate(() => {
+    // Wasser und Wallbox fällig machen: die letzte Ablesung entfernen, bis
+    // die vorletzte älter ist als der Rhythmus.
+    for (const name of ["Wasser", "Wallbox"]) {
+      const m = METERS.find(x => x.name === name);
+      for (const r of m.registers) {
+        while (r.readings.length > 1 && daysSinceReading(m) < m.interval) r.readings.pop();
+      }
+    }
+    renderAll();
+    return activeMeters().filter(isDue).map(m => m.name);
+  });
+  note(JSON.stringify(reihe) === JSON.stringify(["Wasser", "Gas", "Wallbox"]),
+       `Drei Zähler sind fällig (${reihe.join(", ")})`);
+
+  const lage = () => page.evaluate(() => ({
+    offen: document.getElementById("sheet-capture").classList.contains("on"),
+    titel: document.getElementById("cap-title").textContent,
+    knopf: document.getElementById("save").textContent,
+    zurueck: document.getElementById("cap-back").textContent,
+    skip: !document.getElementById("cap-skip").hidden,
+    kopf: document.getElementById("cap-meta").innerText
+  }));
+  const tippe = async () => {
+    await page.locator("#prefill").click();
+    await page.locator('#keys [data-key="1"]').first().click();
+    await page.waitForTimeout(120);
+  };
+
+  // Angefangen bei Wasser: danach Gas, dann Wallbox, in der Reihenfolge der
+  // Übersicht.
+  const wasser = await page.evaluate(() => METERS.find(m => m.name === "Wasser").id);
+  await page.locator(`[data-capture="${wasser}"]`).first().click();
+  await page.waitForTimeout(250);
+  let l = await lage();
+  note(l.knopf === "Sichern, weiter mit Gas", `Der Knopf sagt, wohin er führt („${l.knopf}“)`);
+  note(l.skip, "Überspringen steht da, solange noch ein Zähler kommt");
+  note(l.zurueck === "Abbrechen", "Vor der ersten Ablesung heißt der Ausweg „Abbrechen“");
+  const vorher = await page.evaluate(() => METERS.find(m => m.name === "Wasser").registers[0].readings.length);
+  await tippe();
+  await page.locator("#save").click();
+  await page.waitForTimeout(300);
+  l = await lage();
+  note(l.offen && l.titel === "Gas", `Nach dem Sichern bleibt das Blatt offen, mit Gas („${l.titel}“)`);
+  note(/Wasser gesichert/.test(l.kopf), "Oben steht, was eben gesichert wurde");
+  note(l.zurueck === "Fertig", "Danach heißt der Ausweg „Fertig“");
+  note(l.knopf === "Sichern, weiter mit Wallbox", `Und der Knopf nennt den nächsten („${l.knopf}“)`);
+  const nachher = await page.evaluate(() => METERS.find(m => m.name === "Wasser").registers[0].readings.length);
+  note(nachher === vorher + 1, "Wasser ist wirklich gesichert");
+
+  // Gas überspringen: keine Ablesung für Gas, weiter mit der Wallbox.
+  const gasVorher = await page.evaluate(() => METERS.find(m => m.name === "Gas").registers[0].readings.length);
+  await page.locator("#cap-skip").click();
+  await page.waitForTimeout(300);
+  l = await lage();
+  const gasNachher = await page.evaluate(() => METERS.find(m => m.name === "Gas").registers[0].readings.length);
+  note(l.titel === "Wallbox" && gasNachher === gasVorher, "Überspringen sichert nichts und geht zur Wallbox");
+  note(l.knopf === "Sichern" && !l.skip, "Beim letzten Zähler steht wieder „Sichern“, ohne Überspringen");
+  note(/Wasser gesichert/.test(l.kopf), "Und oben weiter das zuletzt Gesicherte, nicht das Übersprungene");
+
+  await tippe();
+  await page.locator("#save").click();
+  await page.waitForTimeout(300);
+  l = await lage();
+  note(!l.offen, "Nach dem letzten fälligen Zähler schließt das Blatt");
+
+  // Ohne weiteren fälligen Zähler verhält sich alles wie vor dem Rundgang.
+  const strom = await page.evaluate(() => METERS.find(m => m.name === "Strom").id);
+  await page.locator(`[data-capture="${strom}"]`).first().click();
+  await page.waitForTimeout(250);
+  await page.locator("#prefill").click();
+  await page.locator("#save").click();
+  await page.waitForTimeout(250);
+  l = await lage();
+  note(l.knopf === "Sichern, weiter mit Gas", `Gas ist noch fällig, also geht es von Strom zu Gas („${l.knopf}“)`);
+  await page.locator("#cap-back").click();
+  await page.waitForTimeout(150);
+  await page.locator("#cap-back").click();
+  await page.waitForTimeout(200);
+  note(!(await lage()).offen, "„Abbrechen“ vor der ersten Ablesung schließt, ohne etwas zu sichern");
+
+  // Eine Ablesung ändern ist kein Rundgang.
+  await page.evaluate(() => { histMeter = METERS.find(m => m.name === "Wasser").id; openReadingEdit(0); });
+  await page.waitForTimeout(200);
+  l = await lage();
+  note(l.knopf === "Sichern" && !l.skip, "Beim Ändern einer Ablesung gibt es keinen Rundgang");
+  note(fehler.length === 0, `Keine JS-Fehler im Rundgang (${fehler.join(" | ")})`);
   await page.close();
 }
 

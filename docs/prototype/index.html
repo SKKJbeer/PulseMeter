@@ -570,6 +570,19 @@ ul.includes.done li::before { content: "✓"; color: var(--tint); font-size: 12p
 }
 .loeschen:active { background: var(--surface-2); }
 .loeschen:focus-visible { outline: 2px solid var(--tint); outline-offset: -2px; }
+/* Der Rundgang: was eben gesichert wurde, und der Weg am nächsten Zähler
+   vorbei. Beides leise, damit der Ziffernblock der Mittelpunkt bleibt. */
+.rundgang-ok {
+  display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px;
+  font-size: var(--fs-cap); font-weight: 600; color: var(--green-ink, var(--ink-2));
+}
+.ueberspringen {
+  width: 100%; margin-top: 6px; font: inherit; font-size: 15px; font-weight: 560;
+  color: var(--ink-2); background: none; border: 0; padding: 11px;
+  min-height: 44px; cursor: pointer; border-radius: 12px;
+}
+.ueberspringen:active { background: var(--surface-2); }
+.ueberspringen:focus-visible { outline: 2px solid var(--tint); outline-offset: -2px; }
 .save-note {
   text-align: center; font-size: var(--fs-cap); color: var(--ink-3);
   margin-top: 9px;
@@ -921,7 +934,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>Zählora</h1>
-  <p>Klickbarer Entwurf · v0.118.14</p>
+  <p>Klickbarer Entwurf · v0.119.0</p>
 </div>
 
 <div class="device" id="device">
@@ -1217,6 +1230,9 @@ select.field { cursor: pointer; }
       <div class="verdict idle" id="verdict" aria-live="polite">Zählerstand eintippen</div>
       <div class="keys" id="keys"></div>
       <button type="button" class="save" id="save" disabled>Sichern</button>
+      <!-- Nur im Rundgang, wenn danach noch ein fälliger Zähler kommt. Ein
+           Wasserzähler hinter dem Regal soll den Rest nicht aufhalten. -->
+      <button type="button" class="ueberspringen" id="cap-skip" hidden>Überspringen</button>
       <!-- Datum **und** Uhrzeit, vorbelegt auf jetzt. Hier stand bis 0.63.0 ein
            Satz „Datum: heute · antippen zum Ändern" — antippen ließ sich nichts,
            und rückwirkend eintragen ging gar nicht. Mit der Uhrzeit sind zwei
@@ -3822,6 +3838,25 @@ let capMeter = null, digits = "";
    `registers[0]`, und die Einspeisung ließ sich hier gar nicht eintragen. */
 let capIndex = 0, capEntered = {};
 
+/* Der Rundgang — wie `ReadingRound` in PulseCore.
+
+   `capRunde` ist, was nach dem offenen Zähler noch kommt: die fälligen in der
+   Reihenfolge der Übersicht, ab dem Zähler, mit dem es anfing, im Kreis
+   weiter. Einmal festgelegt, beim ersten Tipp. `capGesichert` sind die Namen,
+   die in diesem Rundgang schon gesichert wurden. */
+let capRunde = [], capGesichert = [];
+
+function rundgang(startId) {
+  const order = activeMeters();
+  const i = order.findIndex(m => m.id === startId);
+  const kreis = i < 0 ? order : order.slice(i + 1).concat(order.slice(0, i));
+  return kreis.filter(m => m.id !== startId && isDue(m)).map(m => m.id);
+}
+function naechsterImRundgang() {
+  const id = capRunde[0];
+  return id ? METERS.find(m => m.id === id) : null;
+}
+
 function capRegister() { return capMeter.registers[capIndex]; }
 function capIsLast() { return capIndex >= capMeter.registers.length - 1; }
 
@@ -3842,6 +3877,8 @@ function openReadingEdit(idx) {
   capMeter = m;
   capIndex = 0;
   capEntered = {};
+  capRunde = [];
+  capGesichert = [];
   capEdit = { idx, value: r.value };
   document.getElementById("cap-date").value =
     `${r.y}-${String(r.m).padStart(2, "0")}-${String(r.d).padStart(2, "0")}`;
@@ -3895,6 +3932,14 @@ function renderSprungTasten() {
 }
 
 function openCapture(id) {
+  capRunde = rundgang(id);
+  capGesichert = [];
+  zeigeZaehler(id);
+  openSheet("sheet-capture");
+}
+
+/* Ein Zähler im offenen Blatt, ob am Anfang oder unterwegs im Rundgang. */
+function zeigeZaehler(id) {
   capMeter = METERS.find(m => m.id === id);
   capIndex = 0;
   capEntered = {};
@@ -3907,7 +3952,6 @@ function openCapture(id) {
   document.getElementById("cap-time").value =
     `${String(jetzt.getHours()).padStart(2, "0")}:${String(jetzt.getMinutes()).padStart(2, "0")}`;
   showCaptureStep();
-  openSheet("sheet-capture");
 }
 
 /* Der gewählte Zeitpunkt der Ablesung.
@@ -3934,7 +3978,7 @@ function capMoment() {
    beim ersten vertippt hat, muss zurück können. Bis 0.30.0 zählte `capIndex`
    nur hoch, und der einzige Ausweg war Abbrechen — also alles noch einmal. */
 function capBack() {
-  if (capIndex === 0) return closeSheets();
+  if (capIndex === 0) return beendeRundgang();
   capIndex -= 1;
   showCaptureStep();
 }
@@ -3954,7 +3998,9 @@ function showCaptureStep() {
   // ohne Unterschied.
   const back = document.getElementById("cap-back");
   const cancel = document.getElementById("cap-cancel");
-  back.textContent = capIndex > 0 ? "Zurück" : "Abbrechen";
+  // Nach der ersten gesicherten Ablesung im Rundgang heißt der Ausweg
+  // „Fertig": Abgebrochen wird dann nichts mehr, das Gesicherte bleibt.
+  back.textContent = capIndex > 0 ? "Zurück" : (capGesichert.length ? "Fertig" : "Abbrechen");
   cancel.style.visibility = capIndex > 0 ? "visible" : "hidden";
 
   // Der Name des Zählwerks steht nur da, wenn es mehr als eines gibt. Bei
@@ -3963,12 +4009,20 @@ function showCaptureStep() {
     ? `<span class="reg-name" style="color:${textFarbe(capMeter.color)}">${reg.label || "Bezug"}</span>
        <span class="reg-step">Zählwerk ${capIndex + 1} von ${capMeter.registers.length}</span><br>`
     : "";
-  document.getElementById("cap-meta").innerHTML = head + (last
+  const ok = capGesichert.length && !capEdit
+    ? `<span class="rundgang-ok">✓ ${capGesichert[capGesichert.length - 1]} gesichert</span><br>`
+    : "";
+  document.getElementById("cap-meta").innerHTML = ok + head + (last
     ? `Letzter Stand <strong>${nf(last.value, reg.frac)} ${reg.unit}</strong> am ${dateLabel(last)}
        <br><button type="button" class="prefill" id="prefill">Vom letzten Stand übernehmen</button>`
     : "Erste Ablesung für dieses Zählwerk");
   document.getElementById("cap-unit").textContent = reg.unit;
-  document.getElementById("save").textContent = capEdit ? "Sichern" : (capIsLast() ? "Sichern" : "Weiter");
+  // Im Rundgang sagt der Knopf, wohin er führt. „Sichern" allein ließe
+  // offen, warum das Blatt danach stehen bleibt.
+  const naechster = capEdit ? null : naechsterImRundgang();
+  document.getElementById("save").textContent = capEdit ? "Sichern"
+    : (!capIsLast() ? "Weiter" : (naechster ? `Sichern, weiter mit ${naechster.name}` : "Sichern"));
+  document.getElementById("cap-skip").hidden = !naechster;
   document.getElementById("save").style.setProperty("--c", capMeter.color);
   // Beim Ändern trägt der Kopf den Vorgang, nicht den Zähler: „Ablesung
   // ändern" sagt, was der Schirm hier tut. Und der Vorschlag „vom letzten
@@ -4227,14 +4281,41 @@ function commitReadings() {
     sortReadings(r);
   }
   const name = capMeter.name;
-  closeSheets();
-  melden(name + " gesichert");
-  renderAll();
-  // Wie `ReviewPrompt` in PulseCore: einmal, nach der dritten selbst
-  // gesicherten Ablesung, anderthalb Sekunden nach dem Sichern. Nur hier und
-  // nicht beim Zählerwechsel, der sagt nichts darüber, ob jemand wiederkommt.
   gesicherteAblesungen++;
-  if (!bewertungGefragt && gesicherteAblesungen >= BEWERTUNG_AB) {
+  capGesichert.push(name);
+  renderAll();
+  // Im Rundgang bleibt das Blatt offen und zeigt den nächsten Zähler.
+  if (weiterImRundgang()) return;
+  melden(name + " gesichert");
+  beendeRundgang();
+}
+
+/* Zum nächsten fälligen Zähler, gesichert oder übersprungen. `false`, wenn
+   keiner mehr kommt. */
+function weiterImRundgang() {
+  const id = capRunde.shift();
+  if (!id) return false;
+  zeigeZaehler(id);
+  return true;
+}
+
+function ueberspringen() {
+  if (!weiterImRundgang()) beendeRundgang();
+}
+
+/* Das Blatt schließen, und erst dann nach einer Bewertung fragen.
+
+   Wie `ReviewPrompt` in PulseCore: einmal, nach der dritten selbst
+   gesicherten Ablesung, anderthalb Sekunden nach dem Schließen. Nicht
+   mitten im Rundgang: Apples Blatt über dem Ziffernblock für Wasser hielte
+   genau den auf, der gerade am Zähler steht. Nur gesicherte Ablesungen
+   zählen, kein Zählerwechsel; der sagt nichts darüber, ob jemand wiederkommt. */
+function beendeRundgang() {
+  capRunde = [];
+  const etwasGesichert = capGesichert.length > 0;
+  capGesichert = [];
+  closeSheets();
+  if (etwasGesichert && !bewertungGefragt && gesicherteAblesungen >= BEWERTUNG_AB) {
     bewertungGefragt = true;
     setTimeout(() => {
       document.getElementById("bewertung").classList.add("on");
@@ -4593,6 +4674,7 @@ document.getElementById("print").addEventListener("click", () => window.print())
 document.getElementById("scrim").addEventListener("click", closeSheets);
 document.getElementById("save").addEventListener("click", saveReading);
 document.getElementById("cap-back").addEventListener("click", capBack);
+document.getElementById("cap-skip").addEventListener("click", ueberspringen);
 document.addEventListener("keydown", e => {
   if (e.key === "Escape") closeSheets();
   if (!document.getElementById("sheet-capture").classList.contains("on")) return;
