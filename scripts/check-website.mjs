@@ -47,7 +47,7 @@ const base = `http://127.0.0.1:${server.address().port}/`;
 // toter Verweis dorthin fällt sonst niemandem auf.
 const seiten = ["index.html", "entwicklung.html", "hilfe.html", "gas-in-kwh.html",
                 "zaehlerstand-umzug.html", "ratgeber.html",
-                "verbrauch-berechnen.html", "stromkosten-berechnen.html", "datenschutz.html", "impressum.html", "404.html"];
+                "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "datenschutz.html", "impressum.html", "404.html"];
 
 // Was nicht in den Index soll: das Impressum (erreichbar, nicht auffindbar)
 // und die Seite für unbekannte Adressen. Beide tragen `noindex`, keine steht
@@ -721,6 +721,41 @@ console.log("\nVerhalten");
   await page.fill("#v-neu-tag", "2026-09-01"); await page.selectOption("#v-einheit", "m³ Gas");
   note(await page.$('#v-ergebnis a[href="gas-in-kwh.html"]') !== null, "Verbrauchsrechner: bei Gas der Verweis aufs Umrechnen");
 
+  // **Stromverbrauch im Vergleich**, mit den Grenzen des Stromspiegels 2025.
+  // 1.900 kWh, zwei Personen, Wohnung, Warmwasser nicht über Strom: Klasse D
+  // (C endet bei 1.700, D bei 2.000). Die Grenzen selbst sind gegen die
+  // Tabelle auf derselben Seite geprüft, damit beides nicht auseinanderläuft.
+  await page.goto(base + "stromverbrauch-vergleichen.html");
+  note((await kachel("klasse")).wert === "D · mittel", `Stromvergleich: 1.900 kWh, 2 Personen, Wohnung = D · mittel (${(await kachel("klasse")).wert})`);
+  note((await kachel("naechste")).wert === "200 kWh" && (await kachel("naechste")).name === "Bis Klasse C",
+       `Stromvergleich: 200 kWh weniger bis Klasse C (${(await kachel("naechste")).wert})`);
+  await page.fill("#sv-kwh", "1700");
+  note((await kachel("klasse")).wert === "C · mittel", "Stromvergleich: „bis 1.700“ gehört noch zu C");
+  await page.fill("#sv-kwh", "3001");
+  note((await kachel("klasse")).wert === "G · sehr hoch", "Stromvergleich: über 3.000 kWh ist G");
+  await page.check('input[name="sv-gebaeude"][value="haus"]'); await page.check('input[name="sv-wasser"][value="mit"]');
+  await page.check('input[name="sv-personen"][value="5"]'); await page.fill("#sv-kwh", "10000");
+  note((await kachel("klasse")).wert === "F · hoch", "Stromvergleich: Haus, Warmwasser über Strom, 5 Personen, 10.000 kWh = F");
+  await page.fill("#sv-kwh", "500"); await page.check('input[name="sv-personen"][value="1"]');
+  note((await kachel("klasse")).wert === "A · gering" && !(await page.$('[data-kachel="naechste"]')),
+       "Stromvergleich: in Klasse A gibt es keine bessere Klasse");
+  await page.fill("#sv-kwh", "");
+  note(!(await kaputt("#sv-ergebnis")), "Stromvergleich: ein leeres Feld ergibt keine kaputte Zahl");
+  const tabelle = await page.evaluate(() => {
+    const G = window.STROMSPIEGEL, f = n => n.toLocaleString("de-DE");
+    const spalten = [["wohnung", "ohne"], ["wohnung", "mit"], ["haus", "ohne"], ["haus", "mit"]];
+    const falsch = [];
+    [...document.querySelectorAll("table.werte tbody tr")].forEach((tr, p) => {
+      [...tr.querySelectorAll("td")].forEach((td, i) => {
+        const g = G[spalten[i][0]][spalten[i][1]][p];
+        const soll = f(g[1] + 1) + " bis " + f(g[3]);
+        if (td.textContent.trim() !== soll) falsch.push(`${p + 1}/${i}: ${td.textContent.trim()} statt ${soll}`);
+      });
+    });
+    return falsch;
+  });
+  note(tabelle.length === 0, `Stromvergleich: die Tabelle „mittel“ nennt dieselben Grenzen wie der Rechner${tabelle.length ? " (" + tabelle.join("; ") + ")" : ""}`);
+
   // **Ein Rechnerabschnitt auf der Startseite, nicht zwei.** Vom Gründer am
   // 4. Oktober gefunden: 0.120.0 setzte einen zweiten neben den vorhandenen.
   await page.goto(base + "index.html");
@@ -758,7 +793,7 @@ console.log("\nVerhalten");
   // klare Benennungen. Gezählt wird, was sonst schleichend wieder wächst:
   // der Hinweis unter einem Feld, der Text im Ergebnis, und wo der Rechner
   // steht.
-  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html"]) {
+  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html"]) {
     await page.goto(base + datei);
     const blick = await page.evaluate(() => {
       const erg = document.querySelector(".rechner-ergebnis");
@@ -789,7 +824,7 @@ console.log("\nVerhalten");
   // neben einem einzeiligen hat die Felder um acht Punkte versetzt; gesehen
   // habe ich es erst auf dem Bildschirmfoto.
   await page.setViewportSize({ width: 1280, height: 900 });
-  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html"]) {
+  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html"]) {
     await page.goto(base + datei);
     const versatz = await page.evaluate(() => {
       const reihen = {};
@@ -810,7 +845,7 @@ console.log("\nVerhalten");
   // „2.702 kWh" mitten in der Zahl um. Gemessen breit und schmal.
   for (const breite of [1280, 390]) {
     await page.setViewportSize({ width: breite, height: 900 });
-    for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html"]) {
+    for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html"]) {
       await page.goto(base + datei);
       const mass = await page.evaluate(() => {
         // Nur sichtbare: Der Stromkostenrechner blendet die Felder des anderen
@@ -848,7 +883,7 @@ console.log("\nVerhalten");
   // **Groß genug für einen Daumen.** Wer mit der Rechnung in der einen Hand
   // tippt, trifft ein kleines Feld nicht.
   await page.setViewportSize({ width: 390, height: 900 });
-  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "zaehlerstand-umzug.html"]) {
+  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "zaehlerstand-umzug.html"]) {
     await page.goto(base + datei);
     const klein = await page.evaluate(() =>
       [...document.querySelectorAll(".rechner input, .rechner select, main button")]

@@ -9,6 +9,38 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.121.0 — 2026-10-04
+
+**Neue Seite: „Ist mein Stromverbrauch normal?“, mit den Klassen des
+Stromspiegels 2025.**
+
+Der Gründer am 4. Oktober: Reichweite nur über Inhalte und Google, keine
+Presse, keine Foren, keine Seite „Über Zählora“; als Nächstes diese Seite.
+Festgehalten in `05-roadmap.md`.
+
+- **Der Vergleich** nimmt Jahresverbrauch, Personenzahl (1 bis 5+), Wohnung
+  oder Haus und Warmwasser mit oder ohne Strom und nennt die Klasse A bis G
+  mit der Einordnung des Stromspiegels (gering, niedrig, mittel, hoch, sehr
+  hoch), dazu was in diesem Haushalt sparsam und was mittel wäre und wie viele
+  Kilowattstunden bis zur nächsten besseren Klasse fehlen. Eine Skala A bis G
+  zeigt die eigene Stufe.
+- **Die Grenzen sind abgeschrieben, nicht geschätzt**: aus der Tabelle des
+  Stromspiegels für Deutschland 2025 (co2online, 57.117 Verbrauchsdaten),
+  alle 120 Grenzwerte. Die Tabelle „Was mittel ist“ auf derselben Seite wird
+  in `check-website.mjs` gegen die Daten des Rechners geprüft, dazu sieben
+  Proben an Klassengrenzen („bis 1.700“ gehört noch zu C).
+- **Wann der Vergleich nicht passt**, steht auf der Seite: Wärmepumpe,
+  Stromheizung, E-Auto (laut co2online kein sinnvoller Vergleich), PV-Anlage
+  (eigener Stromspiegel seit Februar 2026), ein geändertes Jahr.
+- Der Hinweis zur App verspricht, was sie kann: denselben Monat im Vorjahr
+  danebenlegen. Einen Vergleich mit dem Stromspiegel hat die App nicht, und
+  das steht dort auch nicht.
+- Startseite: Die Karte „Ist mein Stromverbrauch normal?“ ersetzt die
+  Umzugskarte; das Protokoll steht als Verweis darunter. Ratgeber,
+  Verbrauchsrechner, Sitemap und Zählung kennen die Seite.
+
+---
+
 ## 0.120.3 — 2026-10-04
 
 **Keine doppelten Rechner mehr, und die Rechnerseiten stehen mittig.**

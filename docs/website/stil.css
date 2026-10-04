@@ -26,6 +26,7 @@
   --tint-ink: #8A5A08;
   --on-tint:  #FFFFFF;
   --good:     #2F7F52;
+  --bad:      #B5432C;
 
   --w-page:  1080px;
   --w-text:  62ch;
@@ -51,6 +52,7 @@
     --tint-ink: #E8C070;
     --on-tint:  #1B1408;
     --good:     #5CBF85;
+    --bad:      #E5806A;
 
     --shadow: 0 1px 2px rgba(0, 0, 0, .5);
     --shadow-lift: 0 30px 60px -24px rgba(0, 0, 0, .85);
@@ -934,6 +936,7 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
   border-color: var(--line-2);
   box-shadow: 0 1px 2px rgba(23, 21, 15, .08);
 }
+.umschalter-hinweis { display: block; margin-top: 6px; font-size: 13px; color: var(--ink-3); }
 .umschalter input:focus-visible + span { outline: 2px solid var(--tint); outline-offset: 2px; }
 
 /* **Der Weg vom Rechner zur App.** Kein Werbeblock, sondern der Satz, den
@@ -955,6 +958,35 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
   margin-top: 14px !important;
 }
 .app-hinweis-fuss span { font-size: 14px; color: var(--ink-3); flex: 1 1 220px; }
+
+/* Fünf Knöpfe für die Personenzahl, auf dem Telefon in einer Reihe. */
+.umschalter-fuenf { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+
+/* **Die Skala A bis G** unter der Klasse: von Grün über das Bernstein der
+   Marke bis Rot, die eigene Stufe hervorgehoben. Sie wiederholt nur, was die
+   Zahl darüber schon sagt, und ist deshalb für Vorleseprogramme verborgen. */
+.skala { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; margin-top: 10px; }
+.skala-stufe {
+  text-align: center; font-size: 12px; font-weight: 700; line-height: 22px;
+  border-radius: 5px; color: var(--surface); opacity: .5;
+}
+.skala-hier { opacity: 1; outline: 2px solid var(--ink); outline-offset: 1px; }
+.skala-0 { background: var(--good); }
+.skala-1 { background: var(--good); background: color-mix(in srgb, var(--good) 70%, var(--tint)); }
+.skala-2 { background: var(--tint); background: color-mix(in srgb, var(--good) 35%, var(--tint)); }
+.skala-3 { background: var(--tint); }
+.skala-4 { background: var(--tint); background: color-mix(in srgb, var(--tint) 60%, var(--bad)); }
+.skala-5 { background: var(--bad); background: color-mix(in srgb, var(--tint) 25%, var(--bad)); }
+.skala-6 { background: var(--bad); }
+
+/* Vergleichswerte als Tabelle. Auf dem Telefon darf sie seitlich laufen,
+   die Seite selbst nicht. */
+.werte-rahmen { overflow-x: auto; margin: 6px 0 8px; }
+.werte { width: 100%; border-collapse: collapse; font-size: 14.5px; font-variant-numeric: tabular-nums; }
+.werte th, .werte td { padding: 9px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.werte thead th { font-size: 12.5px; font-weight: 650; color: var(--ink-3); border-bottom-color: var(--line-2); }
+.werte tbody th { font-weight: 650; color: var(--ink); white-space: nowrap; }
+.werte td { color: var(--ink-2); white-space: nowrap; }
 
 /* ----------------------------------------------------------- Protokoll
 

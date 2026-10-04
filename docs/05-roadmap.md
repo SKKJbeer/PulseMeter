@@ -81,8 +81,16 @@ versprechen, was die App nicht kann.
 | Phase | Inhalt | Stand |
 |---|---|---|
 | 1 | Startseite erklärt in einer Zeile, was Zählora ist · Stromkostenkarte im vorhandenen Rechner-Abschnitt · **Stromkosten- und Abschlagsrechner** (der frühere Abschlagsrechner ist darin aufgegangen) · Hinweis zur App unter jedem Rechner · Rechnerseiten als Spalte in der Mitte | **online seit 4. Oktober** (0.120.0, bereinigt in 0.120.3) |
-| 2 | **PV-Rechner** aus gemessenen Werten: Eigenverbrauch, Autarkie, Einspeisung und Vergütung aus Erzeugung, Bezug und Einspeisung. Dazu den Verbrauchsrechner auf „Stromverbrauch berechnen" schärfen | Vorschlag |
+| 2 | **„Ist mein Stromverbrauch normal?"** mit den Klassen des Stromspiegels 2025 (co2online), danach eine Seite je Woche: PV-Rechner aus gemessenen Werten, Wärmepumpe, „Zählerstand zum Jahreswechsel" (Dezember), „Nachzahlung prüfen" (Januar) | Stromverbrauch: gebaut am 4. Oktober |
 | 3 | Wasser (Verbrauch und Kosten), Vorjahresvergleich, nach dem, was die Search Console an Suchbegriffen zeigt | später |
+
+**Entschieden am 4. Oktober, für die Reichweite:** nur Inhalte und Google.
+Keine Anschreiben an App-Blogs oder Presse, keine Beiträge in Foren, keine
+eigene Seite „Über Zählora". Damit hängt alles an den Seiten selbst: Jede
+muss eine Frage besser beantworten als das, was sonst bei Google steht, und
+jede Zahl braucht eine Quelle. Gemessen wird über die Search Console, die
+Zählung der Website (`?von=`) und, sobald der Gründer sie liefert, die
+Kampagnenkennung `pt` und den Berichtsschlüssel.
 
 Die Adressen bleiben flach (`/stromkosten-berechnen.html`) statt
 `/rechner/…`: Die vier bestehenden Seiten stehen so im Verzeichnis von
