@@ -638,6 +638,15 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
 .rechtstext li { margin-bottom: 8px; }
 .rechtstext .stand { color: var(--ink-3); font-size: 14px; }
 
+/* **Rechner und Anleitungen stehen als Spalte in der Mitte.** Bis 0.120.2
+   klebten sie links, und auf einem breiten Bildschirm blieb die rechte
+   Hälfte leer; der Gründer fand das nicht professionell. Die Spalte ist so
+   breit, dass Rechner und Protokoll Platz haben, und schmal genug, dass eine
+   Zeile Text noch gut zu lesen ist. */
+.artikel > .bahn { max-width: 760px; }
+.artikel .rechner, .artikel .app-hinweis, .artikel .weiterlesen,
+.artikel p, .artikel ul, .artikel .anschrift { max-width: none; }
+
 .anschrift {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -778,9 +787,11 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
   gap: 18px;
   overflow: hidden;
 }
+/* Höchstens zwei Felder nebeneinander. Mit drei stand bei vier Feldern eines
+   allein in der zweiten Reihe, und das sah nach Versehen aus. */
 .rechner-felder {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
   gap: 16px 16px;
 }
 /* Zusammengehörige Felder: Stand und Datum einer Ablesung. Ohne die Gruppe

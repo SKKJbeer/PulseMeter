@@ -46,7 +46,7 @@ const base = `http://127.0.0.1:${server.address().port}/`;
 // Website überhaupt findet (`docs/10-sichtbarkeit.md`, Abschnitt 7), und ein
 // toter Verweis dorthin fällt sonst niemandem auf.
 const seiten = ["index.html", "entwicklung.html", "hilfe.html", "gas-in-kwh.html",
-                "abschlag-zu-hoch.html", "zaehlerstand-umzug.html", "ratgeber.html",
+                "zaehlerstand-umzug.html", "ratgeber.html",
                 "verbrauch-berechnen.html", "stromkosten-berechnen.html", "datenschutz.html", "impressum.html", "404.html"];
 
 // Was nicht in den Index soll: das Impressum (erreichbar, nicht auffindbar)
@@ -676,20 +676,27 @@ console.log("\nVerhalten");
   await page.fill("#g-z", "abc");
   note(!(await kaputt("#gas-ergebnis")), `Gasrechner: Buchstaben ergeben keine kaputte Zahl`);
 
-  // Abschlag: Verbrauch × Arbeitspreis + Grundpreis, auf zwölf Monate.
-  await page.goto(base + "abschlag-zu-hoch.html");
-  note((await kachel("passend")).wert === "91,00 €" && (await kachel("passend")).zusatz === "im Monat",
-       `Abschlagsrechner: 2.800 kWh, 34 ct, 140 € im Jahr = 91,00 € im Monat`);
-  note((await kachel("kosten")).wert === "1.092,00 €", `Abschlagsrechner: Kosten im Jahr 1.092,00 €`);
+  // Abschlag, seit 0.120.3 im Stromkostenrechner: Verbrauch × Arbeitspreis
+  // + Grundpreis, auf zwölf Monate. Dieselben Zahlen wie vorher auf der
+  // eigenen Seite, damit der Umzug nichts an der Rechnung ändert.
+  await page.goto(base + "stromkosten-berechnen.html");
+  await page.fill("#s-gp", "140"); await page.selectOption("#s-gpart", "jahr"); await page.fill("#s-ab", "130");
+  note((await kachel("monat")).wert === "91,00 €" && (await kachel("monat")).name === "Passender Abschlag",
+       `Abschlag: 2.800 kWh, 34 ct, 140 € im Jahr = 91,00 € im Monat`);
+  note((await kachel("jahr")).wert === "1.092,00 €", `Abschlag: Kosten im Jahr 1.092,00 €`);
   const zuviel = await kachel("differenz");
   note(zuviel.name === "Zu viel im Jahr" && zuviel.wert === "468,00 €",
-       `Abschlagsrechner: 130 € statt 91 € sind 468 € im Jahr zu viel („${zuviel.name}: ${zuviel.wert}")`);
-  await page.selectOption("#a-gpart", "monat"); await page.fill("#a-gp", "11,50"); await page.fill("#a-ab", "80");
+       `Abschlag: 130 € statt 91 € sind 468 € im Jahr zu viel („${zuviel.name}: ${zuviel.wert}")`);
+  await page.selectOption("#s-gpart", "monat"); await page.fill("#s-gp", "11,50"); await page.fill("#s-ab", "80");
   const fehlt = await kachel("differenz");
-  note((await kachel("passend")).wert === "90,83 €" && fehlt.name === "Fehlt im Jahr" && fehlt.wert === "130,00 €",
-       `Abschlagsrechner: Grundpreis im Monat, zu wenig gezahlt („${fehlt.name}: ${fehlt.wert}")`);
-  await page.fill("#a-kwh", "");
-  note(!(await kaputt("#a-ergebnis")), `Abschlagsrechner: ein leeres Feld ergibt keine kaputte Zahl`);
+  note((await kachel("monat")).wert === "90,83 €" && fehlt.name === "Fehlt im Jahr" && fehlt.wert === "130,00 €",
+       `Abschlag: Grundpreis im Monat, zu wenig gezahlt („${fehlt.name}: ${fehlt.wert}")`);
+  await page.check('input[value="staende"]');
+  const geschaetzt = await kachel("differenz");
+  note(/^≈ /.test(geschaetzt.wert), `Abschlag aus zwei Ständen beruht auf der Hochrechnung und trägt ein ≈ (${geschaetzt.wert})`);
+  await page.check('input[value="jahr"]');
+  await page.fill("#s-kwh", "");
+  note(!(await kaputt("#s-ergebnis")), `Abschlag: ein leeres Feld ergibt keine kaputte Zahl`);
 
   // **Verbrauch aus zwei Ständen.** 12.480 am 1. August, 12.731 am
   // 1. September: 251 kWh in 31 Tagen, 8,1 am Tag, aufs Jahr gerechnet
@@ -713,6 +720,15 @@ console.log("\nVerhalten");
   note((await text("#v-ergebnis")).includes("Datum"), "Verbrauchsrechner: ein Datum vor dem früheren ergibt einen Hinweis");
   await page.fill("#v-neu-tag", "2026-09-01"); await page.selectOption("#v-einheit", "m³ Gas");
   note(await page.$('#v-ergebnis a[href="gas-in-kwh.html"]') !== null, "Verbrauchsrechner: bei Gas der Verweis aufs Umrechnen");
+
+  // **Ein Rechnerabschnitt auf der Startseite, nicht zwei.** Vom Gründer am
+  // 4. Oktober gefunden: 0.120.0 setzte einen zweiten neben den vorhandenen.
+  await page.goto(base + "index.html");
+  const doppelt = await page.evaluate(() => {
+    const ziele = [...document.querySelectorAll("main a.karte-verweis")].map(a => a.getAttribute("href"));
+    return ziele.filter((z, i) => ziele.indexOf(z) !== i);
+  });
+  note(doppelt.length === 0, `Startseite: jeder Rechner hat genau eine Karte${doppelt.length ? " (doppelt: " + doppelt.join(", ") + ")" : ""}`);
 
   // **Stromkosten**, beide Wege. Nachgerechnet von Hand: 2.800 kWh × 0,34 €
   // = 952 €, dazu 12 € × 12 = 144 € Grundpreis, zusammen 1.096 €. Mit zwei
@@ -742,7 +758,7 @@ console.log("\nVerhalten");
   // klare Benennungen. Gezählt wird, was sonst schleichend wieder wächst:
   // der Hinweis unter einem Feld, der Text im Ergebnis, und wo der Rechner
   // steht.
-  for (const datei of ["gas-in-kwh.html", "abschlag-zu-hoch.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html"]) {
+  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html"]) {
     await page.goto(base + datei);
     const blick = await page.evaluate(() => {
       const erg = document.querySelector(".rechner-ergebnis");
@@ -773,7 +789,7 @@ console.log("\nVerhalten");
   // neben einem einzeiligen hat die Felder um acht Punkte versetzt; gesehen
   // habe ich es erst auf dem Bildschirmfoto.
   await page.setViewportSize({ width: 1280, height: 900 });
-  for (const datei of ["gas-in-kwh.html", "abschlag-zu-hoch.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html"]) {
+  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html"]) {
     await page.goto(base + datei);
     const versatz = await page.evaluate(() => {
       const reihen = {};
@@ -794,7 +810,7 @@ console.log("\nVerhalten");
   // „2.702 kWh" mitten in der Zahl um. Gemessen breit und schmal.
   for (const breite of [1280, 390]) {
     await page.setViewportSize({ width: breite, height: 900 });
-    for (const datei of ["gas-in-kwh.html", "abschlag-zu-hoch.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html"]) {
+    for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html"]) {
       await page.goto(base + datei);
       const mass = await page.evaluate(() => {
         // Nur sichtbare: Der Stromkostenrechner blendet die Felder des anderen
@@ -832,7 +848,7 @@ console.log("\nVerhalten");
   // **Groß genug für einen Daumen.** Wer mit der Rechnung in der einen Hand
   // tippt, trifft ein kleines Feld nicht.
   await page.setViewportSize({ width: 390, height: 900 });
-  for (const datei of ["gas-in-kwh.html", "abschlag-zu-hoch.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "zaehlerstand-umzug.html"]) {
+  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "zaehlerstand-umzug.html"]) {
     await page.goto(base + datei);
     const klein = await page.evaluate(() =>
       [...document.querySelectorAll(".rechner input, .rechner select, main button")]
@@ -1012,7 +1028,7 @@ console.log("\nGeräte");
       .replace(/[a-z-]+:[^;{}]*color-mix\([^;{}]*;/g, "");
     await route.fulfill({ status: 200, contentType: "text/css", body: css });
   });
-  await alt.goto(base + "abschlag-zu-hoch.html");
+  await alt.goto(base + "stromkosten-berechnen.html");
   const altBild = await alt.evaluate(() => {
     const k = document.querySelector(".kopf"), h = document.querySelector(".kachel-haupt");
     const hg = getComputedStyle(k).backgroundColor;
@@ -1040,7 +1056,7 @@ console.log("\nZählung");
 {
   const z = await import(new URL("../docs/website-server/_middleware.js", import.meta.url));
   const IP = "203.0.113.42", KENNUNG = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) Mobile/15E148";
-  const aufruf = async ({ pfad = "/abschlag-zu-hoch", art = "text/html; charset=utf-8", status = 200,
+  const aufruf = async ({ pfad = "/stromkosten-berechnen", art = "text/html; charset=utf-8", status = 200,
                           verweis = "https://www.google.de/search?q=abschlag+zu+hoch", ua = KENNUNG,
                           bindung = true, wirft = false, adresse = "https://zaehlora.de" } = {}) => {
     const punkte = [];
@@ -1055,7 +1071,7 @@ console.log("\nZählung");
 
   const { antwort, punkte } = await aufruf();
   const zeile = JSON.stringify(punkte);
-  note(punkte.length === 1 && JSON.stringify(punkte[0].blobs) === JSON.stringify(["/abschlag-zu-hoch", "google", "", "Telefon", ""]),
+  note(punkte.length === 1 && JSON.stringify(punkte[0].blobs) === JSON.stringify(["/stromkosten-berechnen", "google", "", "Telefon", ""]),
        `Ein Seitenaufruf ergibt eine Zeile: ${JSON.stringify(punkte[0] && punkte[0].blobs)}`);
   note(!zeile.includes(IP) && !zeile.includes("Mozilla") && !zeile.includes("search?q"),
        "Keine IP-Adresse, keine Browserkennung, keine Suchanfrage in der Zeile");
@@ -1080,6 +1096,13 @@ console.log("\nZählung");
   }
   note((await aufruf({ adresse: "https://abc123.zaehlora.pages.dev" })).antwort.status === 200,
        "Eine Vorschauadresse leitet nicht weiter");
+  // Der frühere Abschlagsrechner zeigt auf seinen Nachfolger, auf jeder Adresse.
+  for (const [adresse, pfad] of [["https://zaehlora.de", "/abschlag-zu-hoch"], ["https://zaehlora.de", "/abschlag-zu-hoch.html"],
+                                 ["https://zaehlora.pages.dev", "/abschlag-zu-hoch.html"]]) {
+    const { antwort: weiter } = await aufruf({ adresse, pfad });
+    note(weiter.status === 301 && weiter.headers.get("location") === "https://zaehlora.de/stromkosten-berechnen#abschlag",
+         `${adresse.slice(8)}${pfad} leitet auf den Stromkostenrechner (${weiter.status} ${weiter.headers.get("location")})`);
+  }
   note((await aufruf({ verweis: "" })).punkte[0].blobs[1] === "direkt", "Ohne Herkunft heißt es „direkt“");
   note((await aufruf({ ua: "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" })).punkte[0].blobs[3] === "Bot: Google",
        "Googlebot wird als Bot gezählt, getrennt von Menschen");

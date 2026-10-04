@@ -29,7 +29,7 @@ const seiten = [
   ["index.html", "v-start"],
   ["hilfe.html", "v-hilfe"],
   ["gas-in-kwh.html", "v-gas"],
-  ["abschlag-zu-hoch.html", "v-abschlag"],
+  ["stromkosten-berechnen.html", "v-stromkosten"],
   ["datenschutz.html", "v-datenschutz"],
   ["impressum.html", "v-impressum"],
 ];

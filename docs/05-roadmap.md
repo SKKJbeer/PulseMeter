@@ -80,7 +80,7 @@ versprechen, was die App nicht kann.
 
 | Phase | Inhalt | Stand |
 |---|---|---|
-| 1 | Startseite erklärt in einer Zeile, was Zählora ist · Rechner-Abschnitt auf der Startseite · **Stromkosten-Rechner** · Hinweis zur App unter jedem Rechner | **online seit 4. Oktober** (0.120.0) |
+| 1 | Startseite erklärt in einer Zeile, was Zählora ist · Stromkostenkarte im vorhandenen Rechner-Abschnitt · **Stromkosten- und Abschlagsrechner** (der frühere Abschlagsrechner ist darin aufgegangen) · Hinweis zur App unter jedem Rechner · Rechnerseiten als Spalte in der Mitte | **online seit 4. Oktober** (0.120.0, bereinigt in 0.120.3) |
 | 2 | **PV-Rechner** aus gemessenen Werten: Eigenverbrauch, Autarkie, Einspeisung und Vergütung aus Erzeugung, Bezug und Einspeisung. Dazu den Verbrauchsrechner auf „Stromverbrauch berechnen" schärfen | Vorschlag |
 | 3 | Wasser (Verbrauch und Kosten), Vorjahresvergleich, nach dem, was die Search Console an Suchbegriffen zeigt | später |
 

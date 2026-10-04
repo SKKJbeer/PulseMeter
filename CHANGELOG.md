@@ -9,6 +9,37 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.120.3 — 2026-10-04
+
+**Keine doppelten Rechner mehr, und die Rechnerseiten stehen mittig.**
+
+Der Gründer am 4. Oktober: „das sieht nicht professionell aus und es sind
+doppelte Rechner jetzt da". Beides stimmte, und beides kam aus 0.120.0:
+
+- **Die Startseite hatte zwei Rechnerabschnitte.** „Nachrechnen, auch ohne
+  die App“ gab es schon; 0.120.0 setzte „Erst mal nachrechnen, ohne App“
+  daneben, statt den vorhandenen zu erweitern. Der zweite ist wieder weg, der
+  erste trägt jetzt die Stromkostenkarte, vier Karten in einer Reihe. Eine
+  Prüfung zählt jetzt, ob ein Rechner auf der Startseite mehr als eine Karte
+  hat.
+- **Stromkosten und Abschlag rechneten dasselbe.** Beide nahmen Verbrauch,
+  Arbeitspreis und Grundpreis und gaben die Kosten im Jahr aus. Jetzt ist es
+  ein Rechner, „Stromkosten und Abschlag berechnen“, mit dem Abschlag als
+  freiwilligem Feld. Die Abschnitte der alten Seite („Warum der Abschlag oft
+  zu hoch angesetzt ist“, „Was du brauchst, um es zu belegen“) sind
+  mitgezogen. `abschlag-zu-hoch.html` leitet mit 301 auf den Abschnitt
+  `#abschlag`, auf jeder Adresse. Die Abschlagsproben von vorher rechnen
+  unverändert, jetzt im neuen Rechner.
+- **Der Hinweis zur App stand zweimal.** Unter dem Rechner und weiter unten
+  als Absatz, fast gleich formuliert. Die Absätze auf der Verbrauchs- und
+  der Gasseite sind weg; der Kasten trägt ihren Inhalt.
+- **Die Rechnerseiten klebten links**, auf einem breiten Bildschirm blieb die
+  rechte Hälfte leer. Rechner, Gas, Verbrauch und Umzug stehen jetzt in einer
+  Spalte von 760 Punkten in der Mitte, und Felder stehen höchstens zu zweit
+  nebeneinander.
+
+---
+
 ## 0.120.2 — 2026-10-04
 
 **Fassung 1.4 ist bei Apple eingereicht, mit Bau 39.** Um 14:30 UTC,

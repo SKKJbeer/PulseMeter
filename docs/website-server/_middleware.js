@@ -20,7 +20,7 @@
 // Tausch.
 
 const SEITEN = new Set([
-  "/", "/ratgeber", "/verbrauch-berechnen", "/abschlag-zu-hoch", "/gas-in-kwh",
+  "/", "/ratgeber", "/verbrauch-berechnen", "/stromkosten-berechnen", "/gas-in-kwh",
   "/zaehlerstand-umzug", "/entwicklung", "/hilfe", "/datenschutz", "/impressum",
 ]);
 
@@ -80,8 +80,22 @@ export function quelle(url) {
 export const ADRESSE = "zaehlora.de";
 const UMLEITEN = new Set(["zaehlora.pages.dev", "www.zaehlora.de"]);
 
+// **Seiten, die es nicht mehr gibt, zeigen auf ihren Nachfolger.** Der
+// Abschlagsrechner ist am 4. Oktober im Stromkostenrechner aufgegangen; zwei
+// fast gleiche Rechner nebeneinander hat der Gründer zu Recht „doppelt"
+// genannt. Wer einem alten Verweis folgt, landet beim Abschnitt zum Abschlag.
+const UMGEZOGEN = {
+  "/abschlag-zu-hoch": "/stromkosten-berechnen#abschlag",
+  "/abschlag-zu-hoch.html": "/stromkosten-berechnen#abschlag",
+};
+
 export function umleitung(url) {
-  return UMLEITEN.has(url.hostname) ? `https://${ADRESSE}${url.pathname}${url.search}` : null;
+  if (UMLEITEN.has(url.hostname)) {
+    const pfad = UMGEZOGEN[url.pathname] || url.pathname;
+    return `https://${ADRESSE}${pfad}${pfad.includes("#") ? "" : url.search}`;
+  }
+  const neu = UMGEZOGEN[url.pathname];
+  return neu ? `${url.origin}${neu}` : null;
 }
 
 export async function onRequest(context) {

@@ -1909,6 +1909,23 @@ Bei einem Konto ohne Organisation gibt es keine geteilten Geheimnisse über
 mehrere Repositories. Das wäre der andere Weg, und er braucht eine
 Organisation.
 
+### Vor einem neuen Abschnitt nach dem vorhandenen suchen
+
+Am 4. Oktober bekam die Startseite einen Abschnitt mit Rechnern, und einen
+solchen gab es schon, zwanzig Zeilen weiter oben, unter einer anderen
+Überschrift. Die Analyse vorher hatte nur die Überschriften der Abschnitte
+gelesen und ihn übersehen. Dazu ein neuer Rechner, der zu neun Zehnteln
+dasselbe rechnete wie ein vorhandener. Der Gründer: „es sind doppelte
+Rechner jetzt da".
+
+> **Bevor etwas Neues auf eine Seite kommt: nach den Verweisen suchen, die
+> es schon gibt (`grep -o 'href="…"' | sort | uniq -c`), und für ein neues
+> Werkzeug die Eingaben und Ergebnisse der vorhandenen danebenlegen.**
+> Überschneidet es sich zum größten Teil, wird es erweitert, nicht verdoppelt.
+
+Eine Prüfung hält es seitdem fest: Auf der Startseite hat jedes Ziel genau
+eine Karte.
+
 ### Formularfelder gleich hoch machen: die Hülle trägt den Rahmen
 
 Eingabe, Auswahl und Datum haben in jedem Browser eine eigene Höhe, auch mit
