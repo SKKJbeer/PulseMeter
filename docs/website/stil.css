@@ -221,6 +221,9 @@ h1 {
   font-weight: 640;
   text-wrap: balance;
 }
+/* Die Zeile über der Überschrift sagt, was Zählora ist. Leise, damit der
+   Satz darunter die Seite trägt. */
+.anfang-art { margin-bottom: 14px; }
 .vorspann {
   margin: 0 0 30px;
   font-size: clamp(18px, 2.2vw, 21px);
@@ -437,6 +440,11 @@ p { margin: 0 0 16px; max-width: var(--w-text); text-wrap: pretty; }
 /* Text unter einem Kartenraster braucht Luft. Ohne den Abstand klebte der
    Absatz unter „Deine Daten" an der letzten Kartenreihe. */
 .karten + p, .karten + .blass { margin-top: 34px; }
+/* Vier Karten: eine Reihe, zwei mal zwei oder untereinander. Mit dem
+   allgemeinen Raster stand die vierte allein in der zweiten Reihe. */
+.karten-vier { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 980px) { .karten-vier { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .karten-vier { grid-template-columns: minmax(0, 1fr); } }
 
 /* Eine Karte, die woanders hinführt, ist als Ganzes der Verweis. Nur die
    Überschrift anklickbar zu machen heißt, auf dem Telefon eine Zeile zu
@@ -876,6 +884,67 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
 .rechner-ergebnis strong { font-size: 26px; color: var(--ink); display: block; line-height: 1.3; }
 .rechner-ergebnis p { margin: 0; }
 
+/* Was gerade nicht gefragt ist, ist weg. Ohne diese Zeile gewinnt
+   `display: grid` der Gruppe gegen das `hidden` im Markup. */
+.rechner [hidden] { display: none !important; }
+
+/* **Zwei Wege zur selben Rechnung, als Umschalter.** Wer seinen
+   Jahresverbrauch von der Rechnung kennt, soll keine Zählerstände suchen
+   müssen, und umgekehrt. Zwei Knöpfe nebeneinander, einer gedrückt; darunter
+   die Optionsfelder, damit Tastatur und VoiceOver sie als Auswahl kennen. */
+.umschalter { border: 0; margin: 0; padding: 0; min-width: 0; }
+.umschalter legend {
+  padding: 0; margin-bottom: 8px;
+  font-size: 12.5px; font-weight: 650; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-3);
+}
+.umschalter-wahl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding: 4px;
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: calc(var(--r-s) + 4px);
+}
+.rechner .umschalter label { display: block; position: relative; gap: 0; }
+.umschalter input {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  margin: 0; opacity: 0; cursor: pointer;
+}
+.umschalter span {
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  min-height: 44px; padding: 6px 12px;
+  border: 1px solid transparent; border-radius: var(--r-s);
+  font-size: 15px; font-weight: 600; color: var(--ink-2);
+}
+.umschalter input:checked + span {
+  background: var(--surface); color: var(--ink);
+  border-color: var(--line-2);
+  box-shadow: 0 1px 2px rgba(23, 21, 15, .08);
+}
+.umschalter input:focus-visible + span { outline: 2px solid var(--tint); outline-offset: 2px; }
+
+/* **Der Weg vom Rechner zur App.** Kein Werbeblock, sondern der Satz, den
+   man nach dem Rechnen ohnehin denkt: Das will ich nicht jedes Mal tippen.
+   Steht direkt unter dem Ergebnis, mit dem Preis, damit nach dem Laden keine
+   Überraschung kommt. */
+.app-hinweis {
+  max-width: var(--w-text);
+  margin-top: 18px;
+  padding: 20px 22px;
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+}
+.app-hinweis h2 { margin: 0 0 6px; font-size: 19px; }
+.app-hinweis p { margin: 0; color: var(--ink-2); }
+.app-hinweis-fuss {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px;
+  margin-top: 14px !important;
+}
+.app-hinweis-fuss span { font-size: 14px; color: var(--ink-3); flex: 1 1 220px; }
+
 /* ----------------------------------------------------------- Protokoll
 
    **Auf dem Schirm ein Blatt, auf dem Papier das Blatt.** Bis 0.119.2 stand
@@ -1136,6 +1205,8 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
   .kachel:not(.kachel-haupt) { grid-template-columns: minmax(0, 1fr); }
   .kachel:not(.kachel-haupt) .kachel-wert { grid-column: 1; grid-row: auto; text-align: left; }
   .blatt-buehne { padding: 6px; border-radius: var(--r-s); }
+  .umschalter-wahl { grid-template-columns: minmax(0, 1fr); }
+  .umschalter span { font-size: 14px; padding-inline: 6px; }
   /* Bei 300 % ist „Wohnungsübergabe" breiter als die ganze Anzeige. */
   .blatt { padding: 12px 10px; }
   .blatt-kopf h2, .blatt-marke, .protokoll-angaben th, .blatt-bemerkung {

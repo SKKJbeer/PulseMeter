@@ -70,6 +70,24 @@ und stehen nirgends öffentlich (siehe „Öffentlich und intern" unten).
 | Eine Ratgeberseite je Woche, nach Saison: Heizkosten im Herbst, „Zählerstand zum Jahreswechsel" im Dezember, „Nachzahlung prüfen" im Januar | laufend |
 | Messen: Berichtsschlüssel für App Store Connect und Kampagnenlink (`13-zugaenge.md`, Punkte 5 und 6) | **vor 1.5**, sonst bleibt offen, ob irgendetwas davon wirkt |
 
+### Die Website als Wachstumskanal: Rechner
+
+Vom Gründer am 4. Oktober beauftragt: Menschen erreichen, die bei Google ein
+konkretes Problem suchen („Stromkosten berechnen", „Gas m³ in kWh",
+„Zählerstand beim Umzug"), mit echten kleinen Rechnern, und von dort zur App.
+Grundsatz: lieber ein guter Rechner als fünf halbe, kein Massentext, nichts
+versprechen, was die App nicht kann.
+
+| Phase | Inhalt | Stand |
+|---|---|---|
+| 1 | Startseite erklärt in einer Zeile, was Zählora ist · Rechner-Abschnitt auf der Startseite · **Stromkosten-Rechner** · Hinweis zur App unter jedem Rechner | **online seit 4. Oktober** (0.120.0) |
+| 2 | **PV-Rechner** aus gemessenen Werten: Eigenverbrauch, Autarkie, Einspeisung und Vergütung aus Erzeugung, Bezug und Einspeisung. Dazu den Verbrauchsrechner auf „Stromverbrauch berechnen" schärfen | Vorschlag |
+| 3 | Wasser (Verbrauch und Kosten), Vorjahresvergleich, nach dem, was die Search Console an Suchbegriffen zeigt | später |
+
+Die Adressen bleiben flach (`/stromkosten-berechnen.html`) statt
+`/rechner/…`: Die vier bestehenden Seiten stehen so im Verzeichnis von
+Google, und ein Umzug kostete Weiterleitungen ohne Gewinn.
+
 ### Die Kamera: wie sie gebaut wird
 
 **Nichts verlässt das Telefon.** Erkannt wird mit Apples Texterkennung auf

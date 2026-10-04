@@ -9,6 +9,47 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.120.0 — 2026-10-04
+
+**Website, Phase 1: Startseite besser erklärt, Rechner als Weg zur App, und
+ein neuer Rechner für Stromkosten.**
+
+Auftrag des Gründers vom 4. Oktober: Zählora für neue Besucher in fünf
+Sekunden verständlich machen und über kostenlose Rechner bei Google
+auffindbar werden, ohne die Seite neu zu erfinden. Farben, Logo, Aufbau,
+Bilder, Ton und alle bisherigen Texte bleiben.
+
+**Startseite**
+- Über der Überschrift steht jetzt, was Zählora ist: „Die Zählerstand-App für
+  iPhone und iPad“. Der Satz „Einmal im Monat ablesen. Den Rest des Jahres
+  Bescheid wissen.“ bleibt die Überschrift.
+- Bei den Zusagen unter dem Knopf steht zusätzlich „Kein Abo“.
+- Neuer Abschnitt „Erst mal nachrechnen, ohne App“ mit den vier Rechnern und
+  dem Übergabeprotokoll, vor „Was zuletzt dazugekommen ist“.
+- Beschreibung für Suchmaschinen: App, Wärme, Kosten und „ohne Abo“ ergänzt.
+
+**Neuer Rechner `stromkosten-berechnen.html`**
+- Zwei Wege per Umschalter: Jahresverbrauch oder zwei Zählerstände mit Datum.
+- Ergebnis: Kosten im Jahr oder im Zeitraum, im Monat oder am Tag, Preis je
+  kWh mit Grundpreis, Anteil des Grundpreises.
+- Grundpreis taggenau wie in der App (`CostEngine`: Monatspreis × 12 durch
+  die Tage des Jahres). Hochgerechnetes trägt ein ≈. Was der Rechner nicht
+  weiß (Winter, Boni, Preisänderungen, zwei Tarife), steht auf der Seite.
+- Acht Rechenproben in `check-website.mjs`, von Hand nachgerechnet.
+
+**Weg vom Rechner zur App**
+- Unter allen vier Rechnern ein Hinweis „Nicht jedes Mal neu rechnen“ mit
+  Knopf in den App Store und dem Preis dessen, was die App dafür braucht
+  (Kosten und Gasumrechnung: „Kosten und Preise“, 1,99 €).
+- Verbrauchs- und Abschlagsrechner verweisen auf den Stromkostenrechner und
+  umgekehrt. Ratgeber und Sitemap kennen die neue Seite.
+
+**Prüfungen**: Die Höhenprüfungen zählen nur sichtbare Felder, die
+Seitenliste kennt die neue Seite, und der Umschalter nutzt kein `inset`
+(Safari vor iOS 14.5).
+
+---
+
 ## 0.119.5 — 2026-10-04
 
 **Fassung 1.3 ist im App Store**, seit 3. Oktober 19:06 UTC, mit Bau 38.

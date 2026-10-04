@@ -47,7 +47,7 @@ const base = `http://127.0.0.1:${server.address().port}/`;
 // toter Verweis dorthin fällt sonst niemandem auf.
 const seiten = ["index.html", "entwicklung.html", "hilfe.html", "gas-in-kwh.html",
                 "abschlag-zu-hoch.html", "zaehlerstand-umzug.html", "ratgeber.html",
-                "verbrauch-berechnen.html", "datenschutz.html", "impressum.html", "404.html"];
+                "verbrauch-berechnen.html", "stromkosten-berechnen.html", "datenschutz.html", "impressum.html", "404.html"];
 
 // Was nicht in den Index soll: das Impressum (erreichbar, nicht auffindbar)
 // und die Seite für unbekannte Adressen. Beide tragen `noindex`, keine steht
@@ -714,11 +714,35 @@ console.log("\nVerhalten");
   await page.fill("#v-neu-tag", "2026-09-01"); await page.selectOption("#v-einheit", "m³ Gas");
   note(await page.$('#v-ergebnis a[href="gas-in-kwh.html"]') !== null, "Verbrauchsrechner: bei Gas der Verweis aufs Umrechnen");
 
+  // **Stromkosten**, beide Wege. Nachgerechnet von Hand: 2.800 kWh × 0,34 €
+  // = 952 €, dazu 12 € × 12 = 144 € Grundpreis, zusammen 1.096 €. Mit zwei
+  // Ständen: 251 kWh × 0,34 € = 85,34 €, dazu 12 € × 12 ÷ 365 × 31 Tage =
+  // 12,23 € Grundpreis, zusammen 97,57 € (taggenau wie CostEngine).
+  await page.goto(base + "stromkosten-berechnen.html");
+  note((await kachel("jahr")).wert === "1.096,00 €" && (await kachel("monat")).wert === "91,33 €",
+       `Stromkostenrechner: 2.800 kWh, 34 ct, 12 € im Monat = 1.096,00 € im Jahr, 91,33 € im Monat (${(await kachel("jahr")).wert})`);
+  note((await kachel("kwh")).wert === "39,1 ct" && (await kachel("grund")).wert === "144,00 €",
+       `Stromkostenrechner: 39,1 ct je kWh mit Grundpreis, davon 144,00 € Grundpreis`);
+  await page.selectOption("#s-gpart", "jahr");
+  note((await kachel("jahr")).wert === "964,00 €", `Stromkostenrechner: 12 € Grundpreis im Jahr ergibt 964,00 € (${(await kachel("jahr")).wert})`);
+  await page.selectOption("#s-gpart", "monat");
+  await page.check('input[value="staende"]');
+  note(await page.isHidden("#s-kwh") && await page.isVisible("#s-alt"), "Stromkostenrechner: der Umschalter zeigt die Felder für zwei Stände");
+  const sz = await kachel("zeitraum");
+  note(sz.wert === "97,57 €" && sz.zusatz === "251 kWh in 31 Tagen",
+       `Stromkostenrechner: 251 kWh in 31 Tagen kosten 97,57 € mit taggenauem Grundpreis (${sz.wert}, ${sz.zusatz})`);
+  note((await kachel("jahr")).wert === "≈ 1.148,81 €" && (await kachel("tag")).wert === "3,15 €",
+       `Stromkostenrechner: hochgerechnet mit ≈, am Tag ohne (${(await kachel("jahr")).wert}, ${(await kachel("tag")).wert})`);
+  await page.fill("#s-neu", "12.000");
+  note((await text("#s-ergebnis")).includes("getauscht"), "Stromkostenrechner: ein kleinerer neuer Stand ergibt einen Hinweis");
+  await page.fill("#s-neu", "12.731"); await page.fill("#s-ap", "");
+  note(!(await kaputt("#s-ergebnis")), "Stromkostenrechner: ohne Arbeitspreis keine kaputte Zahl");
+
   // **Auf einen Blick.** Vom Gründer am 26. September: nicht zu viel Text,
   // klare Benennungen. Gezählt wird, was sonst schleichend wieder wächst:
   // der Hinweis unter einem Feld, der Text im Ergebnis, und wo der Rechner
   // steht.
-  for (const datei of ["gas-in-kwh.html", "abschlag-zu-hoch.html", "verbrauch-berechnen.html"]) {
+  for (const datei of ["gas-in-kwh.html", "abschlag-zu-hoch.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html"]) {
     await page.goto(base + datei);
     const blick = await page.evaluate(() => {
       const erg = document.querySelector(".rechner-ergebnis");
@@ -749,7 +773,7 @@ console.log("\nVerhalten");
   // neben einem einzeiligen hat die Felder um acht Punkte versetzt; gesehen
   // habe ich es erst auf dem Bildschirmfoto.
   await page.setViewportSize({ width: 1280, height: 900 });
-  for (const datei of ["gas-in-kwh.html", "abschlag-zu-hoch.html", "verbrauch-berechnen.html"]) {
+  for (const datei of ["gas-in-kwh.html", "abschlag-zu-hoch.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html"]) {
     await page.goto(base + datei);
     const versatz = await page.evaluate(() => {
       const reihen = {};
@@ -770,10 +794,13 @@ console.log("\nVerhalten");
   // „2.702 kWh" mitten in der Zahl um. Gemessen breit und schmal.
   for (const breite of [1280, 390]) {
     await page.setViewportSize({ width: breite, height: 900 });
-    for (const datei of ["gas-in-kwh.html", "abschlag-zu-hoch.html", "verbrauch-berechnen.html"]) {
+    for (const datei of ["gas-in-kwh.html", "abschlag-zu-hoch.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html"]) {
       await page.goto(base + datei);
       const mass = await page.evaluate(() => {
-        const hoehen = [...document.querySelectorAll(".rechner .eingabe")].map(e => Math.round(e.getBoundingClientRect().height));
+        // Nur sichtbare: Der Stromkostenrechner blendet die Felder des anderen
+        // Wegs aus, und die haben die Höhe null.
+        const hoehen = [...document.querySelectorAll(".rechner .eingabe")].filter(e => e.offsetParent !== null)
+          .map(e => Math.round(e.getBoundingClientRect().height));
         const neben = [...document.querySelectorAll(".kachel:not(.kachel-haupt)")].map(k => k.getBoundingClientRect());
         const reihen = {};
         for (const r of neben) (reihen[Math.round(r.top)] ||= []).push(Math.round(r.height));
@@ -805,10 +832,11 @@ console.log("\nVerhalten");
   // **Groß genug für einen Daumen.** Wer mit der Rechnung in der einen Hand
   // tippt, trifft ein kleines Feld nicht.
   await page.setViewportSize({ width: 390, height: 900 });
-  for (const datei of ["gas-in-kwh.html", "abschlag-zu-hoch.html", "verbrauch-berechnen.html", "zaehlerstand-umzug.html"]) {
+  for (const datei of ["gas-in-kwh.html", "abschlag-zu-hoch.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "zaehlerstand-umzug.html"]) {
     await page.goto(base + datei);
     const klein = await page.evaluate(() =>
       [...document.querySelectorAll(".rechner input, .rechner select, main button")]
+        .filter(e => e.offsetParent !== null || e.type === "radio")
         .filter(e => e.getBoundingClientRect().height < 44).map(e => e.id || e.textContent.trim()));
     note(klein.length === 0, `${datei}: jedes Feld und jeder Knopf mindestens 44 Punkte hoch${klein.length ? " (zu klein: " + klein.join(", ") + ")" : ""}`);
   }
