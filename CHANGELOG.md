@@ -9,6 +9,13 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.120.2 — 2026-10-04
+
+**Fassung 1.4 ist bei Apple eingereicht, mit Bau 39.** Um 14:30 UTC,
+Zustand `WAITING_FOR_REVIEW`. Eingetragen in `12-auslieferung.md`.
+
+---
+
 ## 0.120.1 — 2026-10-04
 
 **Versionshinweise für 1.4, und 1.4 geht zu Apple, mit Bau 39.**

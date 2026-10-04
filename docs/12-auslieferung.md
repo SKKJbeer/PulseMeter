@@ -427,6 +427,16 @@ Ablauf die Veröffentlichung ausdrücklich an — und dafür fehlte
 eigene Seite sagte „Bald im App Store". Behoben in 0.106.6, samt einer Prüfung
 am Ende des Ablaufs, die die **Seite abruft** statt den Push zu zählen.
 
+### Die sechste, 1.4 — eingereicht am 4. Oktober
+
+**Der Rundgang**, einen Tag nach 1.3, auf Ansage des Gründers („ok ja“).
+Eingereicht um 14:30 UTC mit Bau 39 (0.119.1), belegt aus dem Protokoll:
+
+    ✓ Bau 39 an die Fassung gehängt
+    Eingereicht. Zustand: WAITING_FOR_REVIEW
+
+`min_bau: 39`, Füllen ohne Fehlschlag (21 von 21), Bildschirmfotos aus 1.3.
+
 ### Die fünfte, 1.3 — freigegeben am 3. Oktober
 
 **Vier Tage vor dem Termin, auf Ansage des Gründers** („wir können auch
