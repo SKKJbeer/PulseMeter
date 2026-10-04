@@ -9,6 +9,16 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.120.1 — 2026-10-04
+
+**Versionshinweise für 1.4, und 1.4 geht zu Apple, mit Bau 39.**
+
+Der Gründer am 4. Oktober: „ok ja“. Fassung 1.4 bringt den Rundgang. Seit
+Bau 39 (0.119.1) hat sich an `App/`, `Packages/` und `Widget/` nichts
+geändert. Die Hinweise in `09-appstore.md` erzählen, was man am Zähler merkt.
+
+---
+
 ## 0.120.0 — 2026-10-04
 
 **Website, Phase 1: Startseite besser erklärt, Rechner als Weg zur App, und

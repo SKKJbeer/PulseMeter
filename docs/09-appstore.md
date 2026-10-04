@@ -326,6 +326,19 @@ Nutzer keine Neuerung, und wer sie angekündigt bekommt, liest sie als Bitte.
 Ebenso der schmalere Umschalter im iPad-Hochformat; man sieht ihn, aber man
 sucht ihn nicht.
 
+
+Für 1.4:
+
+```
+Einmal rum, alles abgelesen. Hast du Strom gesichert und ist auch Wasser
+fällig, bleibt der Ziffernblock offen und zeigt gleich Wasser. Der Knopf sagt
+es vorher: „Sichern, weiter mit Wasser“.
+
+Kommst du an einen Zähler gerade nicht ran, überspringst du ihn. Mit „Fertig“
+hörst du auf, alles Gesicherte bleibt. Ist sonst nichts fällig, ändert sich
+nichts: eintippen, sichern, fertig.
+```
+
 ---
 
 ## 2. Einordnung
