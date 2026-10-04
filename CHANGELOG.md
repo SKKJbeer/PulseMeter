@@ -9,6 +9,16 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.119.5 — 2026-10-04
+
+**Fassung 1.3 ist im App Store**, seit 3. Oktober 19:06 UTC, mit Bau 38.
+
+Startseite: neuer Eintrag unter „Was zuletzt dazugekommen ist“.
+`entwicklung.html`: „Direkt zum Ziffernblock“ von „Im Test“ zu „Fassung 1.3“.
+Nachgetragen in `12-auslieferung.md`, `05-roadmap.md` und `06-uebergabe.md`.
+
+---
+
 ## 0.119.4 — 2026-10-03
 
 **Die Roadmap bis Januar, mit dem Gründer ausgearbeitet.**

@@ -427,7 +427,7 @@ Ablauf die Veröffentlichung ausdrücklich an — und dafür fehlte
 eigene Seite sagte „Bald im App Store". Behoben in 0.106.6, samt einer Prüfung
 am Ende des Ablaufs, die die **Seite abruft** statt den Push zu zählen.
 
-### Die fünfte, 1.3 — eingereicht am 3. Oktober
+### Die fünfte, 1.3 — freigegeben am 3. Oktober
 
 **Vier Tage vor dem Termin, auf Ansage des Gründers** („wir können auch
 schon heute das nächste releasen“). Direkt zum Ziffernblock aus Erinnerung,
@@ -443,6 +443,11 @@ Support- und Marketing-Adresse erstmals auf `zaehlora.de`. Die
 Datenschutz-Adresse ging erst im zweiten Anlauf: Der erste nahm den
 gesperrten App-Eintrag der laufenden Fassung (behoben in 0.118.13). Die
 Bildschirmfotos übernimmt Apple aus 1.2.
+
+**Im Laden um 19:06 UTC**, belegt an der Produktseite
+(`itunes.apple.com/lookup`: `1.3 | 2026-10-03T19:06:14Z`). Rund elfeinhalb
+Stunden von der Einreichung bis in den Laden, an einem Samstag. Um 16:41 UTC
+stand die Fassung noch auf `WAITING_FOR_REVIEW`.
 
 ### Die vierte, 1.2 — freigegeben am 24. September
 
