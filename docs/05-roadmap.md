@@ -55,7 +55,7 @@ und stehen nirgends öffentlich (siehe „Öffentlich und intern" unten).
 |---|---|---|---|
 | **1.2** | 23.09. | Zwei Spalten auf dem iPad im Querformat · Diagramm wächst mit der Breite | **im Laden** seit 24.09., Bau 36 |
 | **1.3** | 03.10. | **Direkt zum Ziffernblock:** Erinnerung, Feld am Sperrbildschirm und Siri öffnen den Ziffernblock des richtigen Zählers · Umschalter im iPad-Hochformat kappen · Bewertungsfrage nach der dritten Ablesung · neues Schlagwortfeld und neue Bilder (`10-sichtbarkeit.md`) | **im Laden** seit 03.10., Bau 38 |
-| **1.4** | 21.10. | **Rundgang:** nach dem Sichern „Weiter mit Wasser", bis alle fälligen Zähler durch sind | **eingereicht am 04.10.** mit Bau 39, vorgezogen auf Ansage des Gründers |
+| **1.4** | 21.10. | **Rundgang:** nach dem Sichern „Weiter mit Wasser", bis alle fälligen Zähler durch sind | **im Laden** seit 05.10., Bau 39 |
 | **1.5** | 04.11. | **Import aus einer Tabelle**, für Umsteiger mit Excel-Listen oder anderen Apps | als Nächstes |
 | **1.6** | 18.11. | **Kamera, Stufe 1:** Foto im Ziffernblock, die App schlägt den Stand vor, du bestätigst. Eigener Kauf 0,99 €, im Bündel enthalten | groß |
 | **1.7** | 02.12. | **Kamera, Stufe 2:** Sucher mit Rahmen, zwei Zählwerke auf einem Bild (Tag/Nacht, Bezug/Einspeisung) | groß |

@@ -9,6 +9,19 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.121.1 — 2026-10-06
+
+**Fassung 1.4 ist im App Store**, seit 5. Oktober 16:42 UTC, mit Bau 39. Auf
+der Website steht sie seit heute früh: Der Eintrag „Fassung 1.4“ auf der
+Startseite und in `entwicklung.html`.
+
+Der Eintrag kam 14 Stunden zu spät. Die Nachschau war als Aufgabe dieser
+Sitzung geplant, nicht als dauerhafte Erinnerung, und lief deshalb nie.
+Belegt ist die Freigabe jetzt an der Produktseite. Vermerkt in
+`12-auslieferung.md`.
+
+---
+
 ## 0.121.0 — 2026-10-04
 
 **Neue Seite: „Ist mein Stromverbrauch normal?“, mit den Klassen des

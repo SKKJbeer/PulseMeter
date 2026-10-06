@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-10-04, Version 0.121.0
+Stand: 2026-10-06, Version 0.121.1
 
 ---
 
@@ -127,9 +127,8 @@ Klick-Dummy. Der Satz „Alle Werte in …" unter der Tabelle im Entwurf ist weg
 
 ### Als Nächstes
 
-1. **1.4 Rundgang**: eingereicht am 4. Oktober, 14:30 UTC, mit **Bau 39**
-   (0.119.1). Im Laden → `entwicklung.html` „Fassung 1.4“, Eintrag auf der
-   Startseite.
+1. **1.4 Rundgang**: **im Laden** seit 5. Oktober, 16:42 UTC (Bau 39). Auf
+   Website und Entwicklungsseite eingetragen.
 2. **1.5 Import aus einer Tabelle** (4. November), danach **Kamera** in zwei
    Stufen (1.6 und 1.7, eigener Kauf 0,99 €, im Bündel) und **Jahreswechsel**
    mit In-App-Ereignis (1.8). Entschieden am 3. Oktober, Einzelheiten und das

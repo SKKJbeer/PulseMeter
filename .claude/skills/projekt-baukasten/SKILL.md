@@ -1909,6 +1909,16 @@ Bei einem Konto ohne Organisation gibt es keine geteilten Geheimnisse über
 mehrere Repositories. Das wäre der andere Weg, und er braucht eine
 Organisation.
 
+### Eine Nachschau, die nach außen wirkt, gehört nicht in die Sitzung
+
+`CronCreate` lebt nur, solange die Sitzung läuft, und feuert nur, wenn sie
+ruhig ist. Die Nachschau auf die Freigabe von 1.4 war so geplant und lief nie:
+Die Fassung stand 14 Stunden im Laden, bevor die Website es wusste. `send_later`
+bleibt, wo es eine Freigabe braucht, die Antwort. Bei einer Aufgabe, die etwas
+Öffentliches auslöst, dann **im selben Zug um die Freigabe bitten**, statt auf
+den Ausweichweg zu gehen, und die Zeile in der Antwort nennen, damit der
+Gründer sieht, worauf sich verlassen wird.
+
 ### Vor einem neuen Abschnitt nach dem vorhandenen suchen
 
 Am 4. Oktober bekam die Startseite einen Abschnitt mit Rechnern, und einen

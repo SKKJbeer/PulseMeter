@@ -427,7 +427,7 @@ Ablauf die Veröffentlichung ausdrücklich an — und dafür fehlte
 eigene Seite sagte „Bald im App Store". Behoben in 0.106.6, samt einer Prüfung
 am Ende des Ablaufs, die die **Seite abruft** statt den Push zu zählen.
 
-### Die sechste, 1.4 — eingereicht am 4. Oktober
+### Die sechste, 1.4 — freigegeben am 5. Oktober
 
 **Der Rundgang**, einen Tag nach 1.3, auf Ansage des Gründers („ok ja“).
 Eingereicht um 14:30 UTC mit Bau 39 (0.119.1), belegt aus dem Protokoll:
@@ -436,6 +436,15 @@ Eingereicht um 14:30 UTC mit Bau 39 (0.119.1), belegt aus dem Protokoll:
     Eingereicht. Zustand: WAITING_FOR_REVIEW
 
 `min_bau: 39`, Füllen ohne Fehlschlag (21 von 21), Bildschirmfotos aus 1.3.
+
+**Im Laden um 16:42 UTC am 5. Oktober**, belegt an der Produktseite
+(`itunes.apple.com/lookup`: `1.4 | 2026-10-05T16:42:11Z`). Rund
+sechsundzwanzig Stunden von der Einreichung, ein Sonntag dazwischen und damit
+die längste Wartezeit bisher. Die Nachschau um 00:37 UTC lief nicht: Sie hing
+an der Sitzung (`CronCreate`), und die war ruhig. Aufgefallen ist es erst am
+nächsten Morgen, als der Gründer nach dem Stand fragte; die Website kannte
+1.4 bis dahin nicht. Eine Nachschau für etwas, das öffentlich sichtbar wird,
+gehört in `send_later`, nicht in die Sitzung.
 
 ### Die fünfte, 1.3 — freigegeben am 3. Oktober
 
