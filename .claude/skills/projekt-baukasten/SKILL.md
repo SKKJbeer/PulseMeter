@@ -1959,6 +1959,57 @@ Spalten belegt, behält leere Spalten.** Zwei Kacheln unter einer breiten
 Hauptkachel blieben deshalb links stehen, rechts eine Lücke. Die Spaltenzahl
 nach der Zahl der Kacheln setzen (`--spalten`), nicht raten lassen.
 
+### Apple-Zugänge in ein weiteres Projekt bringen: der Ablauf, die Namen, was nicht mitgeht
+
+Beim zweiten Vorhaben (CardBeacon, `SKKJbeer/NewIdea`) am 7. Oktober so
+gelöst, und so geht es beim dritten wieder:
+
+**1. Erst lesen, was das Ziel erwartet.** Nicht raten: In den Abläufen des
+Ziels nach `secrets.` suchen (`grep -rhoE "secrets\.[A-Za-z0-9_]+" .github |
+sort | uniq -c`). Die Namen unterscheiden sich von Projekt zu Projekt, bei
+Zählora `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_P8`, `ASC_TEAM_ID`, bei
+CardBeacon `APP_STORE_CONNECT_KEY_ID`, `…_ISSUER_ID`, `…_KEY_P8` und
+`APPLE_TEAM_ID`. Ein schreibgeschütztes Klonen genügt dafür
+(`add_repo` mit `access: "read"`, bei öffentlichen Repositories).
+
+**2. Es kommt auf die Art der Signatur an, wie viel mitgehen muss.**
+- **Signatur in der Cloud** (`xcodebuild -allowProvisioningUpdates` mit
+  `-authenticationKeyPath`, wie bei CardBeacon): vier Werte, sonst nichts.
+  Der Schlüssel braucht dafür die Rolle **Admin**.
+- **Eigene Signatur** (Zertifikat und Profile aus der Schnittstelle, wie bei
+  Zählora): zusätzlich `DIST_P12_BASE64` und `DIST_P12_PASSWORD`. Das
+  Verteilzertifikat gehört dem Team, nicht dem Projekt, und lässt sich
+  mitbenutzen. Profile entstehen bei jedem Bau neu und sind kein Geheimnis.
+- **Nicht mit, solange das Ziel sie nicht liest:** die Kontaktdaten für die
+  Prüfung (`ASC_KONTAKT_TELEFON`, `ASC_KONTAKT_MAIL`). Das sind persönliche
+  Angaben, und was niemand liest, wandert nicht in ein weiteres Repository.
+
+**3. Übertragen wird mit einem Lauf, nie von Hand und nie über den Chat.**
+`apple-zugaenge-weitergeben.yml` liest die Geheimnisse der Quelle, legt sie
+versiegelt im Ziel ab (`scripts/gh-geheimnis.py`, Sealed Box) und fragt das
+Ziel danach, ob der Name dort steht. Mitnehmen in ein anderes Quellprojekt:
+beide Abläufe (`apple-zugaenge-weitergeben.yml`,
+`geheimnisse-weitergeben.yml`) und die zwei Skripte `gh-geheimnis.py` und
+`asc-rolle-pruefen.py`. Das neue Zielprojekt braucht davon nichts.
+
+**4. `GH_PAT` muss das Ziel umfassen.** Ein fein granuliertes Token mit
+„Secrets: Read and write" lässt sich um ein Repository erweitern, ein neues
+Token ist nicht nötig.
+
+**5. Die Rolle des Schlüssels messen, nicht annehmen.** `GET /v1/users` darf
+nur Admin lesen (siehe oben). Der Ablauf überträgt nur einen Schlüssel, der
+200 bekommt, und sagt sonst, dass nichts übertragen wurde.
+
+**6. Nur Namen ausgeben.** Die Läufe in einem öffentlichen Repository sind
+öffentlich: Werte laufen als Umgebung, nie als Argument oder Protokollzeile,
+und die Rollenprüfung gibt nur den Statuscode aus, weil die Antwort Namen und
+Adressen des Teams enthält. Die Zusammenfassung nennt die Namen der Geheimnisse
+im Ziel, gelesen von GitHub selbst.
+
+**Und in jedem Zielprojekt einmal:** die App muss in App Store Connect
+angelegt sein, ein Eintrag lässt sich über die Schnittstelle nicht erzeugen
+(`docs/12-auslieferung.md`). Die Bundle-ID dagegen legt der Ablauf selbst an.
+
 ### Chromium ist nicht Safari, und das neueste Safari ist nicht das alte
 
 Jedes iPhone und jedes iPad zeigt eine Website mit WebKit, auch in Chrome. Eine

@@ -9,6 +9,31 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.121.4 — 2026-10-07
+
+**Das Vorgehen für Apple-Zugänge in weiteren Projekten steht im Baukasten, und
+der Ablauf nennt jetzt, was im Ziel liegt.**
+
+Der Gründer am 7. Oktober: Es solle geprüft sein, dass alles für Entwicklung
+und Veröffentlichung bei Apple in `NewIdea` liegt, und im Skill festgehalten
+werden, weil das bei seinen Projekten öfter vorkommt.
+
+- **Geprüft:** NewIdea (CardBeacon) liest in `ios.yml` genau vier Apple-Namen
+  und signiert in der Cloud mit dem Schlüssel; Zertifikat und Profile gibt es
+  dort nicht. Die vier liegen dort, vom Ziel selbst bestätigt. Der
+  Admin-Schlüssel hat die Rollenprüfung bestanden. Nicht übertragen: die
+  Kontaktdaten für die Prüfung, die NewIdea nicht liest.
+- **Der Ablauf** schreibt am Ende die Namen aller Geheimnisse im Ziel in die
+  Zusammenfassung, gelesen von GitHub. Im Ziel stehen jetzt außer den vier
+  Apple-Namen die Cloudflare-Schlüssel und `NETCUP_API` aus dem ersten
+  Transfer sowie `STUDIO_PASSWORD` und `VERCEL_TOKEN`.
+- **Baukasten:** Abschnitt „Apple-Zugänge in ein weiteres Projekt bringen“:
+  erst lesen, was das Ziel erwartet; wie viel bei Cloud-Signatur und wie viel
+  bei eigener Signatur mitgeht; welche Dateien in ein anderes Quellprojekt
+  mitgenommen werden; die Rolle messen; nur Namen ausgeben.
+
+---
+
 ## 0.121.3 — 2026-10-07
 
 **Die Apple-Zugänge sind in `SKKJbeer/NewIdea`, und eine Annahme ist
