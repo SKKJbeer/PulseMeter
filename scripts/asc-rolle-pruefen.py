@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Sagt, ob ein App-Store-Connect-Schlüssel die Rolle Admin hat. Nur das.
 
-Apple nennt die Rolle eines Schlüssels nirgends. Es gibt aber eine Anfrage,
-die nur Admin (und der Kontoinhaber) stellen darf: die Liste der Nutzer des
-Teams. Antwortet Apple darauf mit 200, ist der Schlüssel ein Admin; mit 403
-nicht. Mehr als diese Antwort wird nicht gelesen.
+Apple nennt die Rolle eines Schlüssels nirgends. Es gibt aber Anfragen, die
+nur Admin (und der Kontoinhaber) stellen dürfen: die Liste der Nutzer des Teams
+und die der offenen Einladungen. **Beide** müssen mit 200 antworten, sonst gilt
+der Schlüssel nicht als Admin. Mit der Nutzerliste allein war der Beweis am
+7. Oktober zu schwach; die Einladungen sind es, die ihn tragen. Mehr als die
+Statuscodes wird nicht gelesen.
 
 **Ausgegeben wird nur der Statuscode und ein Wort.** Die Antwort enthält die
 Namen und Mailadressen des Teams, und dieser Lauf steht in einem öffentlichen
@@ -40,18 +42,21 @@ def main() -> int:
         # ausgeben: Er kann Teile des Schlüssels enthalten.
         print("Schlüssel nicht lesbar")
         return 1
-    antwort = requests.get("https://api.appstoreconnect.apple.com/v1/users",
-                           params={"limit": 1},
-                           headers={"Authorization": f"Bearer {token}"}, timeout=30)
-    if antwort.status_code == 200:
-        print("Admin (200)")
+    codes = []
+    for pfad in ("/v1/users", "/v1/userInvitations"):
+        antwort = requests.get("https://api.appstoreconnect.apple.com" + pfad,
+                               params={"limit": 1},
+                               headers={"Authorization": f"Bearer {token}"}, timeout=30)
+        codes.append(antwort.status_code)
+    if codes == [200, 200]:
+        print("Admin (200, 200)")
         return 0
-    if antwort.status_code == 403:
-        print("kein Admin (403)")
-    elif antwort.status_code == 401:
+    if 403 in codes:
+        print(f"kein Admin ({codes[0]}, {codes[1]})")
+    elif 401 in codes:
         print("von Apple nicht angenommen (401)")
     else:
-        print(f"nicht prüfbar ({antwort.status_code})")
+        print(f"nicht prüfbar ({codes[0]}, {codes[1]})")
     return 1
 
 

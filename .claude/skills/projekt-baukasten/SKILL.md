@@ -1921,12 +1921,30 @@ Gründer sieht, worauf sich verlassen wird.
 
 ### Die Rolle eines App-Store-Connect-Schlüssels lässt sich messen
 
-Apple nennt sie nirgends. `GET /v1/users` darf aber nur Admin (und der
-Kontoinhaber) lesen: 200 heißt Admin, 403 nicht. Mehr als den Statuscode
-gehört nicht ins Protokoll, die Antwort enthält Namen und Adressen des Teams.
-Der Schlüssel, der in diesem Projekt einreicht, gilt seit Wochen als „zu
-schwach für Berichte“; gemessen ist er Admin. Eine Annahme über Rechte, die
-sich mit einer Anfrage prüfen lässt, wird nicht weitergetragen.
+Apple nennt sie nirgends. Nur Admin (und der Kontoinhaber) darf
+`GET /v1/userInvitations` und `GET /v1/users` lesen; **beide** mit 200 heißt
+Admin. Die Teamliste allein war zu wenig: Derselbe Schlüssel bekam dort 200 und
+auf die Analytics-Berichte 403, und erst die Einladungen und eine Tabelle
+breiterer Anfragen (`asc-rechte.yml`) haben gezeigt, dass an der Rolle nichts
+fehlt. Mehr als den Statuscode gehört nicht ins Protokoll, die Antworten
+enthalten Namen und Adressen des Teams.
+
+**Der Analytics-403 liegt nicht an der Rolle.** Auch Admin-Schlüssel bekommen
+`analyticsReportRequests` mit 403 beantwortet; Apples Foren kennen das für
+Verkaufsberichte genauso. Einen zweiten Schlüssel anzulegen kostet dann nur
+eine Stunde. Messen geht über die Bildschirmansicht „Analyse › Übersicht“ in
+App Store Connect, alle zwei Wochen als Bildschirmfoto an die Sitzung.
+
+### Die Suche im App Store lässt sich ohne Konto messen — mit curl, nicht mit Python
+
+`https://itunes.apple.com/search?term=…&country=de&entity=software&limit=50`
+liefert die Trefferliste; der Rang der eigenen App ist die Stelle ihrer
+`trackId`. **Am 7. Oktober antwortete der Proxy auf `urllib` mit 403, auf `curl`
+mit 200** — die Vermutung „Apple sperrt die Cloud" war falsch, es war der
+Kennsatz des Programms. Dazu gibt Apple nach etwa zehn Anfragen hintereinander
+403 zurück: vier Sekunden Pause je Begriff, sonst fehlt die Hälfte der Zeilen.
+Eine Zeile „FEHLER" ist keine Messung; der Begriff wird wiederholt, nicht
+ausgelassen.
 
 ### Vor einem neuen Abschnitt nach dem vorhandenen suchen
 

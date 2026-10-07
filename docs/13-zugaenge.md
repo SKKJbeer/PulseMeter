@@ -102,12 +102,14 @@ je Seite im Lauf „Website-Zahlen", und die Sitemap bei jedem Lauf gemeldet.
 ## 5. Berichtsschlüssel App Store Connect
 
 Der vorhandene Schlüssel darf einreichen, aber keine Berichte lesen; Apple
-antwortet 403. **Stand 7. Oktober, gemessen:** `asc-rolle-pruefen.py` meldet
-denselben Schlüssel als Admin (die Teamliste antwortet mit 200). Dass die
-Rolle zu schwach sei, war also vermutlich nicht der Grund für den 403; die
-wahre Ursache ist offen. Bevor ein zweiter Schlüssel angelegt wird, lohnt ein
-Blick in das Protokoll von „Zahlen" (`zahlen.yml`). Falls es doch an der Rolle
-läge, die sich nachträglich nicht ändern lässt, ein zweiter:
+antwortet 403. **Stand 7. Oktober, gemessen (`asc-rechte.yml`):** Derselbe Schlüssel liest
+Apps, Bundle-IDs, Zertifikate, Teamnutzer, **Einladungen** (nur Admin) und
+Beta-Tester, jeweils mit 200, bekommt aber auf die Analytics-Berichte 403. Er
+ist also Admin, und die Rolle ist **nicht** die Ursache. Auch in Apples Foren
+berichten Entwickler denselben 403 mit Admin-Schlüsseln; ein zweiter
+Schlüssel hilft deshalb vermutlich nicht. Die Berichte gehen damit vorerst
+nicht über die Schnittstelle. Der Ausweg ist unten bei „Ohne Schlüssel". Wer
+es dennoch versuchen will:
 
 <https://appstoreconnect.apple.com/access/integrations/api> → Reiter
 **Team-Schlüssel** → **+**
@@ -128,6 +130,12 @@ Die Aussteller-ID ist dieselbe wie beim vorhandenen Schlüssel.
 *Danach von allein:* Der tägliche Lauf „Zahlen" fordert die Berichte an,
 **auch rückwirkend bis zum Start im Laden**, und zeigt ab dem Folgetag
 Einblendungen, Seitenaufrufe und Ladungen.
+
+**Ohne Schlüssel:** In App Store Connect unter **Analyse › Übersicht** den
+Zeitraum seit dem Start wählen und einen Bildschirmfoto-Ausschnitt mit
+Impressionen, Produktseitenaufrufen, Erstmaligen Downloads und der Tabelle
+„Quellen" in den Chat legen. Das genügt für alle zwei Wochen, und ich lese die
+Zahlen daraus ab.
 
 ## 6. Anbieterkennung für den Laden-Knopf
 

@@ -9,6 +9,22 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.121.5 — 2026-10-07
+
+**Die Rollenprüfung für Apple-Schlüssel verlangt jetzt zwei Antworten statt
+einer, und die Anleitung sagt, was Admin nicht aufmacht.**
+
+Die Nutzerliste allein war ein zu schwacher Beweis; eine Admin-Antwort gilt
+erst, wenn auch die offenen Einladungen mit 200 antworten. Die Berichte zur
+App-Analyse bleiben davon unberührt: Sie antworten mit 403, auch für Admin
+(`asc-rechte.yml` zeigt die Tabelle). Dafür bleibt der Screenshot der Analyse
+alle zwei Wochen der Weg.
+
+Geändert: `scripts/asc-rolle-pruefen.py`, `docs/13-zugaenge.md`, Baukasten.
+Kein App-Bau betroffen, endet in `main`.
+
+---
+
 ## 0.121.4 — 2026-10-07
 
 **Das Vorgehen für Apple-Zugänge in weiteren Projekten steht im Baukasten, und
