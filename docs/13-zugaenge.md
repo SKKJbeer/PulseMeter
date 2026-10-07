@@ -102,8 +102,12 @@ je Seite im Lauf „Website-Zahlen", und die Sitemap bei jedem Lauf gemeldet.
 ## 5. Berichtsschlüssel App Store Connect
 
 Der vorhandene Schlüssel darf einreichen, aber keine Berichte lesen; Apple
-antwortet 403. Die Rolle eines Schlüssels lässt sich nachträglich nicht ändern,
-also ein zweiter:
+antwortet 403. **Stand 7. Oktober, gemessen:** `asc-rolle-pruefen.py` meldet
+denselben Schlüssel als Admin (die Teamliste antwortet mit 200). Dass die
+Rolle zu schwach sei, war also vermutlich nicht der Grund für den 403; die
+wahre Ursache ist offen. Bevor ein zweiter Schlüssel angelegt wird, lohnt ein
+Blick in das Protokoll von „Zahlen" (`zahlen.yml`). Falls es doch an der Rolle
+läge, die sich nachträglich nicht ändern lässt, ein zweiter:
 
 <https://appstoreconnect.apple.com/access/integrations/api> → Reiter
 **Team-Schlüssel** → **+**

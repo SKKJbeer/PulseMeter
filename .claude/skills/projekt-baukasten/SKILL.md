@@ -1919,6 +1919,15 @@ bleibt, wo es eine Freigabe braucht, die Antwort. Bei einer Aufgabe, die etwas
 den Ausweichweg zu gehen, und die Zeile in der Antwort nennen, damit der
 Gründer sieht, worauf sich verlassen wird.
 
+### Die Rolle eines App-Store-Connect-Schlüssels lässt sich messen
+
+Apple nennt sie nirgends. `GET /v1/users` darf aber nur Admin (und der
+Kontoinhaber) lesen: 200 heißt Admin, 403 nicht. Mehr als den Statuscode
+gehört nicht ins Protokoll, die Antwort enthält Namen und Adressen des Teams.
+Der Schlüssel, der in diesem Projekt einreicht, gilt seit Wochen als „zu
+schwach für Berichte“; gemessen ist er Admin. Eine Annahme über Rechte, die
+sich mit einer Anfrage prüfen lässt, wird nicht weitergetragen.
+
 ### Vor einem neuen Abschnitt nach dem vorhandenen suchen
 
 Am 4. Oktober bekam die Startseite einen Abschnitt mit Rechnern, und einen

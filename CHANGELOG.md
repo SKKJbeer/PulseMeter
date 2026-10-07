@@ -9,6 +9,21 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.121.3 — 2026-10-07
+
+**Die Apple-Zugänge sind in `SKKJbeer/NewIdea`, und eine Annahme ist
+widerlegt.**
+
+Lauf 112646615925: `APPLE_TEAM_ID`, `APP_STORE_CONNECT_KEY_ID`,
+`APP_STORE_CONNECT_ISSUER_ID` und `APP_STORE_CONNECT_KEY_P8` stehen dort, vom
+Ziel selbst bestätigt (je Antwort 200). Hinüber ging der Schlüssel, mit dem
+hier eingereicht wird: Der Berichtsschlüssel existiert nicht, und der
+vorhandene meldet sich bei der Rollenprüfung als **Admin**. Damit ist die
+Erklärung „zu schwach für Berichte“ aus `13-zugaenge.md` Punkt 5 vermutlich
+falsch. Dort vermerkt, die Ursache des 403 bleibt offen.
+
+---
+
 ## 0.121.2 — 2026-10-07
 
 **Ein Ablauf, der die Apple-Zugänge versiegelt in ein anderes eigenes Projekt
