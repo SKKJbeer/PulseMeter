@@ -1,6 +1,6 @@
 # 09 – Material für den App Store
 
-Stand: 2026-10-07, Version 0.122.0
+Stand: 2026-10-07, Version 0.122.1
 
 Alles, was App Store Connect zur Einreichung verlangt, fertig zum Einfügen.
 Was hier steht, ist geprüft gegen das, was die App **heute** kann — nicht
@@ -386,6 +386,21 @@ Kommst du an einen Zähler gerade nicht ran, überspringst du ihn. Mit „Fertig
 hörst du auf, alles Gesicherte bleibt. Ist sonst nichts fällig, ändert sich
 nichts: eintippen, sichern, fertig.
 ```
+
+
+Für 1.4.1:
+
+```
+An der App ändert sich diesmal nichts. Im App Store heißt sie jetzt
+„Zählora – Zählerstand ablesen“, damit sie auch findet, wer nach
+„Zählerstand“ sucht.
+```
+
+**Warum eine Fassung ohne Änderung an der App:** Name, Untertitel und
+Schlagworte lassen sich nur mit einer neuen Fassung ändern. Vom Gründer am
+7. Oktober freigegeben („du kannst jetzt schon ja“), zwei Wochen vor dem
+geplanten Termin. Nichts anderes fährt mit, damit sich eine Bewegung im Rang
+den neuen Wörtern zuordnen lässt.
 
 ---
 

@@ -9,6 +9,18 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.122.1 — 2026-10-07
+
+**Versionshinweis für 1.4.1, die Fassung mit den neuen Suchbegriffen.**
+
+Der Gründer am 7. Oktober: „du kannst jetzt schon ja". 1.4.1 geht also nicht am
+21. Oktober, sondern sofort, mit einem neuen Bau aus unverändertem App-Code
+(seit Bau 39 hat sich unter `App/`, `Packages/` und `Widget/` nichts geändert).
+Der Versionshinweis sagt das so: An der App ändert sich nichts, im Laden heißt
+sie jetzt „Zählora – Zählerstand ablesen".
+
+---
+
 ## 0.122.0 — 2026-10-07
 
 **`Zählerstand` kommt in den Namen im App Store: „Zählora – Zählerstand
