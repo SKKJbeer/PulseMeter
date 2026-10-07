@@ -104,6 +104,13 @@ jobs:
             && setze APP_STORE_CONNECT_KEY_ID "$kennung" \
             && setze APP_STORE_CONNECT_KEY_P8 "$p8" || { echo "::error::Eine Übertragung ist gescheitert."; exit 1; }
 
+          # Was im Ziel jetzt steht, von GitHub selbst gelesen (nur Namen, nie
+          # Werte; die gibt GitHub nicht heraus). So sieht man auch, was dort
+          # schon vorher lag und was noch fehlt.
+          namen=$(curl -sS -H "Authorization: Bearer $GH_PAT" -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$GH_ZIEL/actions/secrets?per_page=100" \
+            | python3 -c 'import json,sys; print("\n".join(sorted(s["name"] for s in json.load(sys.stdin).get("secrets", []))))')
+
           {
             echo "## Apple-Zugänge nach $GH_ZIEL"
             echo
@@ -113,4 +120,9 @@ jobs:
             echo "- APP_STORE_CONNECT_KEY_ID"
             echo "- APP_STORE_CONNECT_ISSUER_ID"
             echo "- APP_STORE_CONNECT_KEY_P8"
+            echo
+            echo "Alle Geheimnisse in $GH_ZIEL (Namen):"
+            echo
+            echo "$namen" | sed 's/^/- /'
           } >> "$GITHUB_STEP_SUMMARY"
+          echo "::notice::In $GH_ZIEL stehen: $(echo "$namen" | paste -sd ' ' -)"
