@@ -206,7 +206,7 @@ Lernen. Die Begründungen stehen unter „v1.0 – Nicht enthalten".
 |---|---|
 | eine Fassung in TestFlight steht | Zeile „Im Test" auf `entwicklung.html` |
 | sie im App Store steht | Zeile „Fassung x.y" mit Datum auf `entwicklung.html` **und** Eintrag unter „Was zuletzt dazugekommen ist" auf der Startseite · Versionshinweise aus `09-appstore.md` |
-| sie nur geplant ist | nichts. Öffentlich steht „Demnächst" |
+| sie nur geplant ist | **grob**, ohne Termin und ohne Preis, als „Als Nächstes", „Danach" oder „Später, vielleicht" im Weg auf `entwicklung.html`. Seit 7. Oktober, auf Ansage des Gründers; davor stand nur „Demnächst" |
 
 > **Geld und Freischaltungen stehen nicht hier.** Die eine Quelle dafür ist
 > `Entitlement.swift`, und `check-versprechen.py` hält die Website daran fest.
@@ -339,11 +339,12 @@ Seit dem 23. September getrennt, auf Ansage des Gründers:
 |---|---|---|
 | Was schon im App Store ist | ja, je Fassung mit Datum | ja |
 | Was gerade im Test ist | ja, eine Zeile „Im Test" | ja, mit Bau-Nummer |
-| Was geplant ist | **nein**, nur eine Zeile „Demnächst" ohne Einzelheiten | ja, mit Begründung und Reihenfolge |
+| Was geplant ist | **grob**: ein Satz je Schritt, ohne Termin, ohne Preis, ohne Fassungsnummer (seit 7. Oktober, vom Gründer verlangt) | ja, mit Begründung und Reihenfolge |
 | Termine | nie | nur, wo sie feststehen |
 
-> **Eine Zeile wandert erst auf die Website, wenn sie im Test ist.** Nicht wenn
-> sie geplant ist, nicht wenn jemand daran arbeitet. Was im Test ist, kommt mit
+> **Eine Fassung mit Nummer und Datum wandert erst auf die Website, wenn sie im
+> Laden ist.** Geplantes steht seit dem 7. Oktober grob darüber, aber nie mit
+> Termin, und es heißt „Danach" oder „vielleicht", nicht „kommt am". Was im Test ist, kommt mit
 > hoher Wahrscheinlichkeit; was geplant ist, kann sich ändern, und dann stünde
 > öffentlich etwas, das nie kam.
 

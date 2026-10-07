@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-10-07, Version 0.122.1
+Stand: 2026-10-07, Version 0.123.0
 
 ---
 

@@ -253,6 +253,21 @@ for (const datei of seiten) {
          : `Das Abzeichen führt in den Laden, im Text steht aber: „${widerspruch.join("\", \"")}"`);
 }
 
+// **Der Weg auf `entwicklung.html` zählt sich selbst nach.** Oben steht „6
+// Fassungen im App Store", darunter je Fassung ein Eintrag. Kommt eine dazu
+// und nur der Eintrag wird gepflegt, stimmt die große Zahl nicht mehr. Und
+// was nur geplant ist, trägt kein Datum: Termine stehen öffentlich nie
+// (`05-roadmap.md`, „Öffentlich und intern").
+{
+  const roh = readFileSync(`${dir}/entwicklung.html`, "utf8").replace(/<!--[\s\S]*?-->/g, " ");
+  const zahl = Number((roh.match(/data-zahl="fassungen">(\d+)</) || [])[1]);
+  const eintraege = (roh.match(/<li class="weg-laden">/g) || []).length;
+  note(zahl === eintraege, `entwicklung.html: ${zahl} Fassungen oben, ${eintraege} Einträge im Weg`);
+  const geplant = [...roh.matchAll(/<li class="weg-(?:spaeter|danach|naechstes)">([\s\S]*?)<\/li>\s*(?=<li class="weg-)/g)].map(m => m[1]);
+  note(geplant.length === 3 && geplant.every(g => !/<time/.test(g)),
+       `entwicklung.html: ${geplant.length} geplante Schritte, keiner mit Datum`);
+}
+
 // **Kein Verweis auf ein Arbeitsmittel.**
 //
 // Auf der Startseite führte „Jetzt ausprobieren" auf den Klick-Dummy bei

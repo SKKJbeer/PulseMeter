@@ -256,8 +256,10 @@ eingereicht mittwochs.** Was an dem Tag nicht grün in TestFlight steht, fährt
 mit der nächsten. Der Plan, die Reihenfolge und die Begründung stehen in
 `docs/05-roadmap.md` unter „Der Plan".
 
-**Öffentlich steht nur, was im Test oder im Laden ist.** Geplantes erscheint
-auf `entwicklung.html` als „Demnächst", ohne Einzelheiten und ohne Termin.
+**Öffentlich steht mit Nummer und Datum nur, was im Laden ist.** Geplantes
+steht auf `entwicklung.html` grob im Weg („Als Nächstes", „Danach", „Später,
+vielleicht"), ohne Termin und ohne Preis. So vom Gründer am 7. Oktober
+verlangt; davor stand dort nur „Demnächst".
 Welche Zeile wann wohin wandert, steht in `05-roadmap.md` unter „Wie eine
 Zeile nach außen wandert".
 

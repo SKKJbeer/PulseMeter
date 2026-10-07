@@ -678,49 +678,194 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
 .fuss a { color: var(--ink-2); text-decoration: none; }
 .fuss a:hover { color: var(--ink); text-decoration: underline; }
 
-/* ------------------------------------------------------- Stand-Tabelle */
+/* ------------------------------------------------------------ Der Weg */
 
-/* Eine Tabelle und keine Kartenreihe: Die Zeilen sind gleichartig, und das
-   Auge soll die Spalte „Stand" hinunterlaufen können. Oben die Zukunft, unten
-   der Anfang, damit die Richtung der Arbeit sichtbar ist. */
-.stand-tabelle {
-  width: 100%;
+/* **Ein Zeitstrahl statt einer Tabelle.** Vom Gründer am 7. Oktober: die
+   Entwicklung „cooler und visuell ansprechender", und dazu grob, was noch
+   kommt. Oben steht die Zukunft, unten der Anfang; die Linie ist gestrichelt,
+   solange etwas nur geplant ist, und durchgezogen, sobald es im App Store
+   steht. So sieht man ohne Legende, was fest ist und was nicht. */
+.takt {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
   margin-top: 30px;
-  border-collapse: collapse;
+}
+.takt div {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--r-m);
-  overflow: hidden;
+  padding: 16px 18px;
   box-shadow: var(--shadow);
-  font-size: 15.5px;
 }
-.stand-tabelle th {
-  text-align: left;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  color: var(--ink-2);
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--line);
-}
-.stand-tabelle td {
-  padding: 18px 20px;
-  vertical-align: top;
-  border-top: 1px solid var(--line);
-}
-.stand-tabelle tbody tr:first-child td { border-top: 0; }
-.stand-tabelle td:first-child { width: 150px; white-space: nowrap; }
-.stand-tabelle td:last-child {
-  width: 110px;
-  text-align: right;
-  color: var(--ink-2);
+.takt b {
+  display: block;
+  font-size: clamp(26px, 4vw, 34px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-weight: 650;
+  color: var(--tint-ink);
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
 }
-.stand-tabelle td b { display: block; color: var(--ink); font-weight: 600; margin-bottom: 3px; }
-.stand-tabelle td span:not(.stand) { color: var(--ink-2); }
-.stand-demnaechst td { background: var(--raised); }
+.takt span { display: block; margin-top: 4px; color: var(--ink-2); font-size: 14.5px; line-height: 1.35; }
+@media (max-width: 560px) { .takt { grid-template-columns: minmax(0, 1fr); } }
+
+/* Die Spalte steht in der Mitte. Links angeschlagen blieb auf einem breiten
+   Bildschirm die rechte Hälfte leer, und das hatte der Gründer bei den
+   Rechnern schon einmal unprofessionell genannt. */
+.weg-spalte { max-width: 820px; margin: 0 auto; }
+.weg {
+  list-style: none;
+  margin: 34px 0 0;
+  padding: 0;
+}
+.weg > li {
+  position: relative;
+  padding: 0 0 22px 46px;
+}
+/* Die Linie: ein Stück je Eintrag, damit jedes seine eigene Art hat. */
+.weg > li::before {
+  content: "";
+  position: absolute;
+  left: 15px;
+  top: 0;
+  bottom: 0;
+  border-left: 2px solid var(--line-2);
+}
+.weg > li:first-child::before { top: 22px; }
+.weg > li:last-child::before { bottom: auto; height: 22px; }
+.weg-spaeter::before, .weg-danach::before, .weg-naechstes::before { border-left-style: dashed !important; }
+/* Der Punkt. */
+.weg-punkt {
+  position: absolute;
+  left: 6px;
+  top: 14px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--ground);
+  border: 2px solid var(--line-2);
+  box-shadow: 0 0 0 5px var(--ground);
+}
+.abschnitt-hell .weg-punkt { background: var(--raised); box-shadow: 0 0 0 5px var(--raised); }
+.weg-spaeter .weg-punkt { border-style: dashed; }
+.weg-danach .weg-punkt { border-color: var(--tint); }
+.weg-naechstes .weg-punkt { border-color: var(--tint); background: var(--tint); }
+.weg-naechstes .weg-punkt::after {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: -8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--tint);
+  opacity: .35;
+  animation: weg-puls 2.4s ease-out infinite;
+}
+@keyframes weg-puls {
+  0%   { transform: scale(.7); opacity: .5; }
+  100% { transform: scale(1.35); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .weg-naechstes .weg-punkt::after { animation: none; } }
+.weg-laden .weg-punkt { border-color: var(--good); background: var(--good); }
+.weg-laden .weg-punkt svg { display: block; width: 12px; height: 12px; margin: 2px; color: var(--on-tint); }
+
+.weg-karte {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+  padding: 18px 20px;
+  box-shadow: var(--shadow);
+}
+.weg-spaeter .weg-karte { background: transparent; border-style: dashed; box-shadow: none; }
+.weg-naechstes .weg-karte { border-color: var(--tint); box-shadow: var(--shadow-lift); }
+.weg-kopf {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  margin-bottom: 8px;
+}
+.weg-kopf time { color: var(--ink-3); font-size: 14px; font-variant-numeric: tabular-nums; }
+.weg-karte h3 { display: flex; align-items: center; gap: 10px; margin: 0 0 6px; font-size: 18px; }
+.weg-karte p { margin: 0; color: var(--ink-2); font-size: 15.5px; }
+.zeichen {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: inline-grid;
+  place-items: center;
+  background: var(--raised);
+  color: var(--tint-ink);
+}
+.zeichen svg { width: 20px; height: 20px; }
+.weg-naechstes .zeichen { background: var(--tint); color: var(--on-tint); }
+.weg-ideen {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.weg-ideen li {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border-radius: var(--r-s);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--ink-2);
+  font-size: 14.5px;
+  line-height: 1.45;
+}
+.weg-ideen b { color: var(--ink); font-size: 15.5px; }
+@media (max-width: 700px) { .weg-ideen { grid-template-columns: minmax(0, 1fr); } }
+/* Die Grenze zwischen geplant und fertig. */
+.weg-heute {
+  padding-top: 6px !important;
+  padding-bottom: 28px !important;
+}
+.weg-heute span {
+  display: inline-block;
+  font-size: 12.5px;
+  font-weight: 650;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--good);
+}
+.weg-heute::before { border-left-style: dashed !important; }
+@media (max-width: 560px) {
+  .weg > li { padding-left: 38px; }
+  .weg > li::before { left: 11px; }
+  .weg-punkt { left: 2px; }
+  .weg-karte { padding: 16px; }
+}
+
+/* Ganz schmal, oder mit Schrift auf 200 bis 300 Prozent: Das Zeichen steht
+   über dem Titel statt daneben, sonst bleibt für „Zählerstände" kein Platz,
+   und die Linie rückt an den Rand. */
+@media (max-width: 360px) {
+  .weg > li { padding-left: 26px; }
+  .weg > li::before { left: 7px; }
+  .weg-punkt { left: 0; top: 16px; width: 16px; height: 16px; box-shadow: 0 0 0 3px var(--ground); }
+  .abschnitt-hell .weg-punkt { box-shadow: 0 0 0 3px var(--raised); }
+  .weg-laden .weg-punkt svg { width: 10px; height: 10px; margin: 1px; }
+  .weg-naechstes .weg-punkt::after { left: -6px; top: -6px; width: 24px; height: 24px; }
+  .weg-karte { padding: 12px; }
+  .weg-karte h3 { display: block; }
+  .weg-karte h3 .zeichen { display: grid; margin-bottom: 8px; }
+  .weg-ideen li { padding: 10px; }
+  .takt div { padding: 12px; }
+  .weg-kopf .stand { max-width: 100%; padding: 2px 7px; letter-spacing: 0; }
+}
+
+/* Die Karten „Das kann Zählora jetzt" tragen ein Zeichen vor dem Titel. */
+.karte .karte-titel { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 17px; }
 
 .stand {
   display: inline-block;
@@ -734,30 +879,9 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
   background: var(--surface);
 }
 .stand-test  { color: var(--tint-ink); border-color: var(--tint); }
-.stand-laden { color: var(--good); border-color: var(--good); border-color: color-mix(in srgb, var(--good) 45%, transparent); }
+.stand-laden { color: var(--good); border-color: var(--good); }
 .stand-bald  { color: var(--ink-2); border-style: dashed; }
-
-/* Schmal steht jede Zeile als Block: Stand und Datum oben, Text darunter.
-   Drei Spalten auf 320 Punkten lassen dem Text eine Handbreit. */
-@media (max-width: 620px) {
-  .stand-tabelle thead { display: none; }
-  /* Als Tabelle bliebe sie so breit wie ihr Inhalt, auch wenn die Zeilen
-     Raster sind. */
-  .stand-tabelle, .stand-tabelle tbody { display: block; }
-  .stand-tabelle td:first-child { white-space: normal; }
-  .stand-tabelle tr {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 8px 12px;
-    padding: 16px 18px;
-    border-top: 1px solid var(--line);
-  }
-  .stand-tabelle tbody tr:first-child { border-top: 0; }
-  .stand-tabelle td { padding: 0; border: 0; width: auto !important; }
-  .stand-tabelle td:nth-child(2) { grid-column: 1 / -1; grid-row: 2; }
-  .stand-demnaechst { background: var(--raised); }
-  .stand-demnaechst td { background: none; }
-}
+.stand-naechstes { color: var(--on-tint); background: var(--tint); border-color: var(--tint); }
 
 /* -------------------------------------------------------------- Rechner
 

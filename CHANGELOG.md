@@ -9,6 +9,35 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.123.0 — 2026-10-07
+
+**Die Seite „Entwicklung" ist ein Zeitstrahl, und sie sagt jetzt grob, was
+kommt.**
+
+Vom Gründer am 7. Oktober: die Roadmap „cooler und visuell ansprechender",
+und dazu, was noch grob in die Weiterentwicklung kommt.
+
+- **Der Weg** ersetzt die Tabelle: eine Linie von oben nach unten, gestrichelt
+  für Geplantes, durchgezogen für das, was im App Store steht. Oben „Später,
+  vielleicht" (Jahresabrechnung prüfen, dieser Winter gegen den letzten, ein
+  Haushalt mit zwei Telefonen), dann „Danach" (die Kamera liest den Zähler),
+  dann „Als Nächstes" mit pulsierendem Punkt (Zählerstände aus einer Tabelle
+  übernehmen), darunter die sechs Fassungen mit Datum und grünem Haken.
+- **Oben drei Kacheln:** 6 Fassungen im App Store, der 4.9. als erster Tag,
+  ein Entwickler, der die Mail selbst liest.
+- **Zeichen** vor jedem Titel, auch auf den Karten „Das kann Zählora jetzt".
+- **Ohne Termin, ohne Preis, ohne Fassungsnummer** für alles Geplante. Die
+  Regel in `CLAUDE.md` und `05-roadmap.md` ist entsprechend geändert: vorher
+  stand öffentlich nur „Demnächst".
+- **Neue Prüfung:** Die Zahl oben muss der Zahl der Fassungen im Weg
+  entsprechen, und kein geplanter Schritt trägt ein Datum.
+- Der Weg steht als Spalte in der Mitte, damit auf einem breiten Bildschirm
+  keine leere Hälfte bleibt.
+
+Nur die Website, kein App-Bau. Endet in `main`.
+
+---
+
 ## 0.122.1 — 2026-10-07
 
 **Versionshinweis für 1.4.1, die Fassung mit den neuen Suchbegriffen.**
