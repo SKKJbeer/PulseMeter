@@ -1,6 +1,6 @@
 # 09 – Material für den App Store
 
-Stand: 2026-08-30, Version 0.105.2
+Stand: 2026-10-07, Version 0.122.0
 
 Alles, was App Store Connect zur Einreichung verlangt, fertig zum Einfügen.
 Was hier steht, ist geprüft gegen das, was die App **heute** kann — nicht
@@ -19,24 +19,46 @@ gegen die Roadmap.
 ### Name (max. 30 Zeichen)
 
 ```
-Zählora – Zähler & Verbrauch
+Zählora – Zählerstand ablesen
 ```
 
-28 Zeichen von 30. Vom Gründer am 28. August gewählt. Der Zusatz trägt die
-beiden Wörter, nach denen jemand sucht: „Zählora" allein sucht niemand, weil es
-das Wort vorher nicht gab. Geprüft am selben Tag über die Suche des App Store —
-in Deutschland gibt es keine App dieses Namens.
+29 Zeichen von 30. **Seit 0.122.0, vom Gründer am 7. Oktober beauftragt:**
+„baue die Suchbegriffe besser um mit Zählerstand". Wirksam mit der nächsten
+Fassung, denn Name, Untertitel und Schlagworte lassen sich nur mit einer neuen
+Version ändern. Bis dahin steht im Laden „Zählora – Zähler & Verbrauch".
+
+**Warum `Zählerstand` in den Namen muss, gemessen am 7. Oktober** über die Suche
+des App Store (Deutschland). Das Wort stand seit 1.3 im Schlagwortfeld, und
+Zählora kam unter „zählerstand" trotzdem nicht unter die ersten 50. Wer es im
+**Namen** trägt, steht vorn, auch ohne Bewertungen:
+
+| Suche „zählerstand" | Rang | Bewertungen |
+|---|---|---|
+| Zählerstand: Strom Gas Wasser | 3 | 3 |
+| iMeter Reader: Zählerstand | 4 | 2 |
+| Zählerstände: Ablesen & Kosten | 10 | 47 |
+| Zählora (Wort nur im Schlagwortfeld) | über 50 | 1 |
+
+Der Name wiegt bei Apple also deutlich mehr als das Schlagwortfeld. `ablesen`
+bleibt im Namen, weil Zählora damit schon heute vorn steht: Rang 3 bei
+„stromzähler ablesen", 6 bei „gas ablesen", 8 bei „strom ablesen" und „zähler
+ablesen". „Zählora" allein sucht niemand, aber auf dem Homescreen bleibt es
+das einzige Wort.
+
+Vorher stand hier vom 28. August an „Zählora – Zähler & Verbrauch". `Zähler`
+wandert ins Schlagwortfeld, `Verbrauch` in den Untertitel.
 
 ### Untertitel (max. 30 Zeichen)
 
 ```
-Strom, Gas und Wasser ablesen
+Verbrauch: Strom, Gas, Wasser
 ```
 
-29 Zeichen. **Geändert mit dem Namen:** Vorher stand hier „Zähler ablesen,
-Kosten sehen", und beide Wörter stehen seit der Umbenennung schon im Namen.
-Apple wertet jedes Feld einmal; dasselbe Wort zweimal ist ein verschenktes Feld.
-Die drei Energiearten sind das, was jemand tatsächlich eintippt.
+29 Zeichen. Trägt `Verbrauch`, das aus dem Namen herausgefallen ist, und die
+drei Energiearten. Apple setzt Wörter aus Name, Untertitel und Schlagworten zu
+Suchen aus mehreren Wörtern zusammen. „strom ablesen" trifft also weiter, weil
+`strom` hier steht und `ablesen` im Namen. Das `und` aus der alten Fassung
+„Strom, Gas und Wasser ablesen" war ein verschenktes Wort.
 
 ### Werbetext (max. 170 Zeichen, jederzeit ohne neue Version änderbar)
 
@@ -61,12 +83,34 @@ Es gehört deshalb dem jeweils Neuesten, nicht der Dauerbeschreibung.
 ### Schlagworte (max. 100 Zeichen, komma-getrennt, ohne Leerzeichen)
 
 ```
-zählerstand,stromzähler,gaszähler,wasserzähler,nebenkosten,abrechnung,abschlag,photovoltaik
+zählerstände,zähler,stromzähler,gaszähler,wasserzähler,stromverbrauch,gasverbrauch,nebenkosten
 ```
 
-91 Zeichen, 95 Byte. Beides unter 100, also gleich, wie Apple zählt.
+94 Zeichen, 100 Byte. Beides höchstens 100. **Neu geschrieben in 0.122.0**,
+gegen den neuen Namen und Untertitel:
 
-**Seit 0.116.4 steht `zählerstand` wieder vorn, und das war ein echtes Loch.**
+| Wort | Warum |
+|---|---|
+| `zählerstände` | **Apple behandelt Einzahl und Mehrzahl hier als zwei Wörter.** Gemessen: Unter „zählerstände" steht „Zählwerk: Zählerstände" mit einer Bewertung auf Rang 3, unter „zählerstand" taucht es gar nicht auf. Der Umlaut macht aus der Mehrzahl ein anderes Wort |
+| `zähler` | stand bisher im Namen und trägt heute Rang 8 bei „zähler ablesen" |
+| `stromzähler`, `gaszähler`, `wasserzähler` | zusammengesetzt, also eigene Wörter; „stromzähler" Rang 38, „stromzähler ablesen" Rang 3 |
+| `stromverbrauch`, `gasverbrauch` | neu. `Verbrauch` im Untertitel trifft „stromverbrauch" nicht, Apple zerlegt nicht |
+| `nebenkosten` | wer die Abrechnung in der Hand hat |
+
+**Gestrichen**, mit Grund:
+
+| Wort | Warum heraus |
+|---|---|
+| `zählerstand` | steht jetzt im Namen |
+| `abschlag` | Die ersten Plätze gehören E.ON, Vattenfall und Yello mit Hunderttausenden Bewertungen. Dazu wollte der Gründer am 26. September weg vom Abschlag als Hauptthema |
+| `abrechnung` | zu allgemein, trifft Banking und Spesen |
+| `photovoltaik` | Wer das sucht, will eine Anlage überwachen (Wechselrichter, Speicher). Zählora erfasst Bezug und Einspeisung am Zähler, und `einspeisung` steht schon im Anzeigenamen eines Kaufs |
+
+Noch nicht gemessen, weil Apple nach etwa zehn Suchen hintereinander kurz
+sperrt: „gaszähler", „wasser ablesen", „zählerstand erfassen". Nachgemessen
+wird eine Woche nach dem Erscheinen der Fassung mit `scripts/store-rang.py`.
+
+**Vorgeschichte: Seit 0.116.4 stand `zählerstand` im Schlagwortfeld, und das war ein echtes Loch.**
 Mit der Umbenennung am 28. August wurde aus „Zählora – Zählerstände" der Name
 „Zählora – Zähler & Verbrauch". Damit stand das Wort, das in dieser Kategorie
 am häufigsten getippt wird, **in keinem durchsuchten Feld mehr**: nicht im
@@ -83,10 +127,14 @@ Kaufs „Nachtstrom & Einspeisung erfassen" und wird dort durchsucht) und
 
 **Die Regel dazu:** Ändert sich Name oder Untertitel, wird diese Liste im
 selben Zug neu geprüft, denn sie ist gegen beide geschrieben. Regeln, gegen die das geprüft ist: keine Wörter aus Name und
-Untertitel wiederholen (Apple wertet sie ohnehin), keine Mehrzahl **und**
-Einzahl desselben Worts, keine Wortpaare — die bildet Apple selbst —, keine
+Untertitel wiederholen (Apple wertet sie ohnehin), keine Wortpaare — die bildet Apple selbst —, keine
 fremden Markennamen. Der letzte Punkt ist ein Ablehnungsgrund und kein
 Kavaliersdelikt.
+
+**Hier stand auch „keine Mehrzahl und Einzahl desselben Worts". Für deutsche
+Wörter mit Umlaut in der Mehrzahl ist das am 7. Oktober widerlegt** (siehe
+`zählerstände` oben). Für Wörter, deren Mehrzahl nur ein `-n` oder `-s`
+anhängt, ist es nicht gemessen.
 
 **Bis 0.43.1 stand hier eine andere Liste**, die mit `zählerstand`,
 `stromzähler`, `ablesen` und `verbrauch` begann. Alle vier standen damals

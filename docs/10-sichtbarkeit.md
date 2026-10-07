@@ -360,14 +360,33 @@ nicht**, sondern Name, Untertitel, Schlagwortfeld und die Anzeigenamen der
 fünf Käufe. In der Liste sieht man Symbol, Name, Untertitel, Sterne und die
 ersten Bilder.
 
-### 4.1 Die Wörter — erledigt in 0.116.4
+### 4.1 Die Wörter — neu in 0.122.0, wirksam mit der nächsten Fassung
 
 ```
-zählerstand,stromzähler,gaszähler,wasserzähler,nebenkosten,abrechnung,abschlag,photovoltaik
+Name        Zählora – Zählerstand ablesen
+Untertitel  Verbrauch: Strom, Gas, Wasser
+Schlagworte zählerstände,zähler,stromzähler,gaszähler,wasserzähler,stromverbrauch,gasverbrauch,nebenkosten
 ```
 
-Begründung und Zählung in `09-appstore.md`, wirksam mit 1.3. Ändert sich Name
-oder Untertitel, wird diese Liste im selben Zug neu geprüft.
+Begründung und Zählung in `09-appstore.md`. **Was die Messung vom 7. Oktober
+gezeigt hat:** `zählerstand` im Schlagwortfeld (seit 1.3) brachte keinen Platz
+unter den ersten 50. Apps mit dem Wort im **Namen** stehen auf 3 und 4, mit
+zwei oder drei Bewertungen. Mit dem Wort im Namen ist ein Platz unter den
+ersten zehn die Wette; gemessen wird sie eine Woche nach dem Erscheinen mit
+`scripts/store-rang.py`.
+
+Ausgangsmessung am 7. Oktober, mit „Zählora – Zähler & Verbrauch":
+
+| Suche | Rang |
+|---|---|
+| stromzähler ablesen | 3 |
+| gas ablesen | 6 |
+| zähler ablesen, strom ablesen | 8 |
+| stromzähler | 38 |
+| zählerstand, zählerstand app, stromverbrauch, energieverbrauch, nebenkosten, stromkosten, wasserverbrauch, verbrauch | über 50 |
+
+Ändert sich Name oder Untertitel, wird das Schlagwortfeld im selben Zug neu
+geprüft.
 
 ### 4.2 Bewertungen
 
@@ -399,8 +418,10 @@ misst er nur Zufall.
 ### 4.5 Ereignisse und eigene Produktseiten
 
 **In-App-Ereignisse** (Karte in Suche und Produktseite, kostenlos) nur für
-Dinge, die in der App tatsächlich passieren. Ein Kandidat: „Zum Jahreswechsel
-ablesen", Ende Dezember. Nicht mehr als das.
+Dinge, die in der App tatsächlich passieren. Der Kandidat „Zum Jahreswechsel
+ablesen" ist am 7. Oktober gestrichen. Der Gründer: Der Jahreswechsel
+interessiert kaum noch jemanden, weil man den Anbieter jederzeit wechseln kann.
+Ein Kandidat mit echtem Anlass wäre die Kamera (1.6).
 
 **Eigene Produktseiten** mit eigenen Bildern für Photovoltaik und Wärmepumpe,
 verlinkt aus den passenden Seiten der Website. Erst, wenn die Seiten stehen.

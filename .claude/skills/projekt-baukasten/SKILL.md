@@ -1946,6 +1946,15 @@ Kennsatz des Programms. Dazu gibt Apple nach etwa zehn Anfragen hintereinander
 Eine Zeile „FEHLER" ist keine Messung; der Begriff wird wiederholt, nicht
 ausgelassen.
 
+**Was die Messung über die Felder gezeigt hat:** Ein Wort im **Namen** wiegt
+viel mehr als dasselbe Wort im Schlagwortfeld. `zählerstand` stand vier Tage
+im Schlagwortfeld, ohne Platz unter den ersten 50; zwei Apps mit dem Wort im
+Namen und zwei bis drei Bewertungen standen auf 3 und 4. Das Wort, nach dem in
+der Kategorie am meisten gesucht wird, gehört deshalb in den Namen, auch wenn
+die Marke dafür kürzer tritt. Und **deutsche Mehrzahl mit Umlaut ist für Apple
+ein eigenes Wort** („zählerstand" und „zählerstände" geben verschiedene
+Listen). Die verbreitete Regel „nie Einzahl und Mehrzahl" gilt dafür nicht.
+
 ### Vor einem neuen Abschnitt nach dem vorhandenen suchen
 
 Am 4. Oktober bekam die Startseite einen Abschnitt mit Rechnern, und einen

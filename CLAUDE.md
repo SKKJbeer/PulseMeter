@@ -2,7 +2,9 @@
 
 > **Die App heißt „Zählora".** Umbenannt am 28. August, vorher „PulseMeter".
 > Im App Store steht sie als **„Zählora – Zähler & Verbrauch"** (28 von 30
-> Zeichen), auf dem Homescreen als **„Zählora"**.
+> Zeichen), auf dem Homescreen als **„Zählora"**. Mit der nächsten Fassung
+> wird daraus **„Zählora – Zählerstand ablesen"** (beschlossen am 7. Oktober,
+> `docs/09-appstore.md`); diese Zeile ändert sich, wenn sie im Laden steht.
 >
 > **Die Website steht auf `zaehlora.de`.** Seit dem 3. Oktober, gekauft bei
 > netcup, DNS bei Cloudflare. `zaehlora.pages.dev` (seit dem Umzug vom alten

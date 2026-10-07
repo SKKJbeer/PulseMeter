@@ -9,6 +9,45 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.122.0 — 2026-10-07
+
+**`Zählerstand` kommt in den Namen im App Store: „Zählora – Zählerstand
+ablesen", Untertitel „Verbrauch: Strom, Gas, Wasser", neues Schlagwortfeld.**
+
+Vom Gründer am 7. Oktober beauftragt: „baue die Suchbegriffe besser um mit
+Zählerstand", mit Optimierung genau auf die Suche. Der Anlass ist eine Messung
+vom selben Tag über Apples öffentliche Suche: `zählerstand` stand seit 1.3 im
+Schlagwortfeld und brachte keinen Platz unter den ersten 50. Apps, die das Wort
+im **Namen** tragen, stehen auf 3 und 4, mit zwei oder drei Bewertungen.
+
+- **Name** „Zählora – Zählerstand ablesen" (29 Zeichen). `ablesen` bleibt, weil
+  Zählora damit schon vorn steht (3 bei „stromzähler ablesen", 6 bei „gas
+  ablesen", 8 bei „strom ablesen").
+- **Untertitel** „Verbrauch: Strom, Gas, Wasser" (29). Nimmt `Verbrauch` aus
+  dem alten Namen auf, das `und` ist weg.
+- **Schlagworte** `zählerstände,zähler,stromzähler,gaszähler,wasserzähler,
+  stromverbrauch,gasverbrauch,nebenkosten` (94 Zeichen, 100 Byte). Heraus:
+  `zählerstand` (jetzt im Namen), `abschlag` (gehört E.ON und Vattenfall),
+  `abrechnung`, `photovoltaik`.
+- **Widerlegt und geändert:** die Regel „keine Mehrzahl und Einzahl desselben
+  Worts". Unter „zählerstände" und „zählerstand" zeigt Apple verschiedene
+  Listen; der Umlaut macht ein anderes Wort daraus.
+- **Neu: `scripts/store-rang.py`** misst den Rang über curl, mit Pause und
+  Wiederholung, und sagt „nicht gemessen" statt „nicht gefunden", wenn Apple
+  sperrt. Die Ausgangsmessung steht in `10-sichtbarkeit.md` 4.1.
+- **Jahreswechsel gestrichen**, vom Gründer: Er interessiert kaum noch jemanden,
+  weil man den Anbieter jederzeit wechseln kann. Aus 1.8, aus den
+  In-App-Ereignissen und aus den Ratgeberseiten. An seine Stelle bei den Seiten
+  tritt „Zählerstand ablesen".
+- **Plan:** 1.4.1 am 21. Oktober nur mit den neuen Suchbegriffen, damit eine
+  Bewegung im Rang ihnen zuzuordnen ist. Einreichen mit Freigabe des Gründers.
+
+Im Laden steht bis dahin weiter „Zählora – Zähler & Verbrauch"; README,
+CLAUDE.md und das JSON-LD der Startseite ziehen nach, wenn die Fassung
+erschienen ist. Kein App-Bau betroffen, endet in `main`.
+
+---
+
 ## 0.121.5 — 2026-10-07
 
 **Die Rollenprüfung für Apple-Schlüssel verlangt jetzt zwei Antworten statt

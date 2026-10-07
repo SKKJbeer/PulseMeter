@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-10-07, Version 0.121.5
+Stand: 2026-10-07, Version 0.122.0
 
 ---
 
@@ -130,8 +130,12 @@ Klick-Dummy. Der Satz „Alle Werte in …" unter der Tabelle im Entwurf ist weg
 1. **1.4 Rundgang**: **im Laden** seit 5. Oktober, 16:42 UTC (Bau 39). Auf
    Website und Entwicklungsseite eingetragen.
 2. **1.5 Import aus einer Tabelle** (4. November), danach **Kamera** in zwei
-   Stufen (1.6 und 1.7, eigener Kauf 0,99 €, im Bündel) und **Jahreswechsel**
-   mit In-App-Ereignis (1.8). Entschieden am 3. Oktober, Einzelheiten und das
+   Stufen (1.6 und 1.7, eigener Kauf 0,99 €, im Bündel). Der Jahreswechsel
+   (1.8) ist am 7. Oktober gestrichen. Davor **1.4.1 am 21. Oktober** mit den
+   neuen Suchbegriffen („Zählora – Zählerstand ablesen"), Einreichen mit
+   Freigabe des Gründers. Wenn sie im Laden steht: Name in README, CLAUDE.md
+   und im JSON-LD von `docs/website/index.html` nachziehen, eine Woche später
+   `scripts/store-rang.py` gegen die Ausgangsmessung in `10-sichtbarkeit.md` 4.1. Entschieden am 3. Oktober, Einzelheiten und das
    Vorgehen bei der Kamera in `05-roadmap.md`. Der Gründer liefert Fotos
    seiner Zähler, die Zählernummer wird vor dem Einchecken geschwärzt.
 3. **Neue Bilder für den Laden** mit Rundgang, dazu der A/B-Test der
