@@ -1,0 +1,116 @@
+name: Apple-Zugänge weitergeben
+
+# **Die Zugänge zu App Store Connect in ein anderes eigenes Projekt kopieren,
+# unter den Namen, die dieses Projekt dort erwartet, ohne dass jemand den Wert
+# sieht.** Wie `geheimnisse-weitergeben.yml`, aber mit anderen Namen auf der
+# Zielseite und mit einer Prüfung davor.
+#
+#   hier                              dort
+#   ASC_TEAM_ID                  →    APPLE_TEAM_ID
+#   ASC_ISSUER_ID                →    APP_STORE_CONNECT_ISSUER_ID
+#   Admin-Schlüssel, Kennung     →    APP_STORE_CONNECT_KEY_ID
+#   Admin-Schlüssel, .p8-Inhalt  →    APP_STORE_CONNECT_KEY_P8
+#
+# **Es geht nur ein Schlüssel mit der Rolle Admin hinüber.** Welche Rolle ein
+# Schlüssel hat, sagt Apple nirgends; `scripts/asc-rolle-pruefen.py` fragt
+# deshalb nach der Liste der Teamnutzer, die nur Admin lesen darf. Geprüft
+# wird zuerst der Berichtsschlüssel (`ASC_BERICHT_KEY_ID`/`_P8`, dafür extra
+# als Admin angelegt, `docs/13-zugaenge.md` Punkt 5), dann der Schlüssel, mit
+# dem hier eingereicht wird. Wer von beiden zuerst Admin ist, geht hinüber.
+# Ist keiner Admin, geht **nichts** hinüber, und der Lauf sagt es. Ein
+# Schlüssel mit weniger Rechten unter dem Namen eines Admin-Schlüssels wäre
+# die stillere und schlechtere Antwort.
+#
+# **Nichts davon wird ausgegeben.** Die Werte laufen als Umgebung durch, nie
+# durch eine Befehlszeile, ein Protokoll oder die Zusammenfassung; dieses
+# Repository ist öffentlich. Ausgegeben werden Namen und Statuscodes. Einzeln
+# aufgezählt statt `toJSON(secrets)`: Das gäbe jedes Geheimnis dieses Projekts
+# an jeden Schritt.
+#
+# `GH_PAT` muss das Ziel umfassen (Secrets: Read and write), wie bei
+# `geheimnisse-weitergeben.yml`.
+
+on:
+  workflow_dispatch:
+    inputs:
+      ziel:
+        description: "Ziel-Repository (nur der Name, z. B. NewIdea)"
+        required: true
+        default: "NewIdea"
+
+permissions:
+  contents: read
+
+jobs:
+  weitergeben:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rolle prüfen und versiegelt übertragen
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          ZIEL_NAME: ${{ inputs.ziel }}
+          BESITZER: ${{ github.repository_owner }}
+          TEAM: ${{ secrets.ASC_TEAM_ID }}
+          AUSSTELLER: ${{ secrets.ASC_ISSUER_ID }}
+          BERICHT_ID: ${{ secrets.ASC_BERICHT_KEY_ID }}
+          BERICHT_P8: ${{ secrets.ASC_BERICHT_KEY_P8 }}
+          EINREICH_ID: ${{ secrets.ASC_KEY_ID }}
+          EINREICH_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          set -uo pipefail
+          if [ -z "$GH_PAT" ]; then echo "::error::GH_PAT fehlt."; exit 1; fi
+          case "$ZIEL_NAME" in
+            ""|*/*|*" "*) echo "::error::Nur den Namen des Repositories angeben, z. B. NewIdea."; exit 1 ;;
+          esac
+          if [ "$ZIEL_NAME" = "${GITHUB_REPOSITORY#*/}" ]; then echo "::error::Das ist dieses Repository."; exit 1; fi
+          for n in TEAM AUSSTELLER; do
+            if [ -z "${!n}" ]; then echo "::error::Auf dieser Seite fehlt ein Wert ($n). Nichts übertragen."; exit 1; fi
+          done
+          pip3 install --quiet pynacl requests "pyjwt[crypto]"
+
+          # Erst der Berichtsschlüssel, dann der zum Einreichen.
+          kennung=""; p8=""; quelle=""
+          for kandidat in BERICHT EINREICH; do
+            idn="${kandidat}_ID"; pn="${kandidat}_P8"
+            if [ -z "${!idn}" ] || [ -z "${!pn}" ]; then
+              echo "::notice::Schlüssel $kandidat: nicht vorhanden"
+              continue
+            fi
+            urteil=$(ASC_KEY_ID="${!idn}" ASC_ISSUER_ID="$AUSSTELLER" ASC_KEY_P8="${!pn}" python3 scripts/asc-rolle-pruefen.py)
+            echo "::notice::Schlüssel $kandidat: $urteil"
+            case "$urteil" in
+              Admin*) kennung="${!idn}"; p8="${!pn}"; quelle="$kandidat"; break ;;
+            esac
+          done
+          if [ -z "$quelle" ]; then
+            echo "::error::Kein Schlüssel mit der Rolle Admin gefunden. Es wurde nichts übertragen. Anleitung: docs/13-zugaenge.md, Punkt 5."
+            exit 1
+          fi
+
+          export GH_ZIEL="$BESITZER/$ZIEL_NAME"
+          setze() {
+            GEHEIMNIS_WERT="$2" python3 scripts/gh-geheimnis.py "$1" || return 1
+            # Nachgelesen, nicht geglaubt: Das Ziel muss den Namen jetzt kennen.
+            code=$(curl -sS -o /dev/null -w '%{http_code}' \
+              -H "Authorization: Bearer $GH_PAT" -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/$GH_ZIEL/actions/secrets/$1")
+            echo "::notice::$1 steht in $GH_ZIEL (Antwort $code)"
+            [ "$code" = "200" ]
+          }
+          setze APPLE_TEAM_ID "$TEAM" \
+            && setze APP_STORE_CONNECT_ISSUER_ID "$AUSSTELLER" \
+            && setze APP_STORE_CONNECT_KEY_ID "$kennung" \
+            && setze APP_STORE_CONNECT_KEY_P8 "$p8" || { echo "::error::Eine Übertragung ist gescheitert."; exit 1; }
+
+          {
+            echo "## Apple-Zugänge nach $GH_ZIEL"
+            echo
+            echo "Schlüssel mit Rolle Admin: $quelle"
+            echo
+            echo "- APPLE_TEAM_ID"
+            echo "- APP_STORE_CONNECT_KEY_ID"
+            echo "- APP_STORE_CONNECT_ISSUER_ID"
+            echo "- APP_STORE_CONNECT_KEY_P8"
+          } >> "$GITHUB_STEP_SUMMARY"

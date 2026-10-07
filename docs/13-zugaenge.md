@@ -188,6 +188,12 @@ der Ablauf **„Geheimnisse weitergeben"** (`geheimnisse-weitergeben.yml`) für
 Die Zusammenfassung des Laufs sagt je Schlüssel „übertragen" oder
 „übersprungen". Die Werte stehen nirgends.
 
+**Apple-Zugänge** (Team, Aussteller, Schlüssel-ID, `.p8`) gehen mit dem Ablauf
+**„Apple-Zugänge weitergeben"** (`apple-zugaenge-weitergeben.yml`) unter den
+Namen `APPLE_TEAM_ID`, `APP_STORE_CONNECT_KEY_ID`,
+`APP_STORE_CONNECT_ISSUER_ID` und `APP_STORE_CONNECT_KEY_P8` ins Ziel, aber
+nur, wenn der Schlüssel die Rolle Admin hat (Punkt 5, `ASC_BERICHT_KEY_*`).
+
 ## Was schon von selbst läuft
 
 - Website: bei jeder Änderung geprüft und veröffentlicht, IndexNow gemeldet

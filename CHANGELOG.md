@@ -9,6 +9,23 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.121.2 — 2026-10-07
+
+**Ein Ablauf, der die Apple-Zugänge versiegelt in ein anderes eigenes Projekt
+kopiert.**
+
+Auf Wunsch des Gründers nach `SKKJbeer/NewIdea`, unter den Namen, die dort
+erwartet werden: `APPLE_TEAM_ID`, `APP_STORE_CONNECT_KEY_ID`,
+`APP_STORE_CONNECT_ISSUER_ID`, `APP_STORE_CONNECT_KEY_P8`. Nur ein Schlüssel
+mit der Rolle Admin geht hinüber. Welche Rolle ein Schlüssel hat, sagt Apple
+nirgends; `scripts/asc-rolle-pruefen.py` fragt nach der Liste der Teamnutzer,
+die nur Admin lesen darf, und gibt dabei nur den Statuscode aus, nie den
+Antworttext (Namen und Adressen des Teams, in einem öffentlichen Lauf). Ist
+keiner der beiden Schlüssel Admin, geht nichts hinüber und der Lauf sagt es.
+Nach jedem Schreiben fragt der Ablauf das Ziel, ob der Name dort steht.
+
+---
+
 ## 0.121.1 — 2026-10-06
 
 **Fassung 1.4 ist im App Store**, seit 5. Oktober 16:42 UTC, mit Bau 39. Auf
