@@ -295,6 +295,7 @@ Store Connect deshalb nie gesehen.
 | 37 | 0.117.8 | 26.09. 10:48 | ✓ | **Größte Schrift auf iPad und iPhone SE.** Zahlen brechen nicht mehr in den Ziffern um, Karten stehen oben bündig, gestapelte Zeilen ab den Schriftgrößen für Bedienungshilfen, „Verbrauch je Monat“ statt eines zerbrochenen Tabellenkopfs. Dazu `testNoTextReachesPastTheEdge` auf allen Geräten der CI. Enthält 0.117.3 bis 0.117.6. Bauten zwischen 36 und 37 stehen hier nicht, die Nummern sind dort nicht nachgetragen worden. VALID, Testhinweise eingetragen (Apple nimmt × › ≈ nicht, der Lauf entfernt sie) |
 | 38 | 0.118.1 | 29.09. 04:37 | ✓ | **Siri öffnet den Ziffernblock**, nach der dritten Ablesung fragt die App einmal nach einer Bewertung (in TestFlight zeigt iOS das Blatt nie), und die Tabelle im Verlauf nennt ihre Einheit. Enthält 0.118.0 und 0.118.1. VALID, Testhinweise eingetragen |
 | 39 | 0.119.1 | 03.10. 12:53 | ✓ | **Der Rundgang.** Nach dem Sichern geht es mit dem nächsten fälligen Zähler weiter, „Überspringen“ und „Fertig“ als Auswege, die Bewertungsfrage erst nach dem Schließen. Enthält 0.119.0 und 0.119.1; der erste CI-Lauf fiel an einer Prüfung, die genau „Sichern“ suchte. VALID, Testhinweise eingetragen |
+| 40 | 0.122.1 | 07.10. 11:05 | ✓ | **Für 1.4.1, am App-Code nichts geändert.** Die Fassung trägt nur die neuen Suchbegriffe im Laden („Zählora – Zählerstand ablesen“). VALID, Testhinweise eingetragen |
 
 Zeitangaben in UTC. Ein ✗ heißt: hochgeladen wurde nichts, die Nummer ist
 trotzdem verbraucht.
@@ -426,6 +427,20 @@ Ablauf die Veröffentlichung ausdrücklich an — und dafür fehlte
 `permissions: actions: write`. Fünf Stunden lang stand die App im Laden und die
 eigene Seite sagte „Bald im App Store". Behoben in 0.106.6, samt einer Prüfung
 am Ende des Ablaufs, die die **Seite abruft** statt den Push zu zählen.
+
+### Die siebte, 1.4.1 — eingereicht am 7. Oktober
+
+**Nur die Suchbegriffe**, auf Ansage des Gründers („du kannst jetzt schon
+ja“). Name „Zählora – Zählerstand ablesen“, Untertitel „Verbrauch: Strom,
+Gas, Wasser“, neues Schlagwortfeld (`09-appstore.md`). Bau 40 aus
+unverändertem App-Code, hochgeladen 11:05 UTC, VALID um 11:07. Gefüllt 21 von
+21, eingereicht um 11:08 UTC, belegt aus dem Protokoll:
+
+    ✓ Bau 40 an die Fassung gehängt
+    Eingereicht. Zustand: WAITING_FOR_REVIEW
+
+Im Laden: noch offen. Wenn sie erscheint, ziehen README, CLAUDE.md und das
+JSON-LD der Startseite den neuen Namen nach (`06-uebergabe.md`).
 
 ### Die sechste, 1.4 — freigegeben am 5. Oktober
 

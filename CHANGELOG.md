@@ -19,6 +19,9 @@ Der Gründer am 7. Oktober: „du kannst jetzt schon ja". 1.4.1 geht also nicht 
 Der Versionshinweis sagt das so: An der App ändert sich nichts, im Laden heißt
 sie jetzt „Zählora – Zählerstand ablesen".
 
+Bau 40 ist VALID, 1.4.1 ist um 11:08 UTC eingereicht
+(`WAITING_FOR_REVIEW`).
+
 ---
 
 ## 0.122.0 — 2026-10-07
