@@ -1,0 +1,26 @@
+name: App-Store-Connect-Rechte prüfen
+
+# **Was darf der Schlüssel wirklich?** Eine Tabelle aus Anfragen und
+# Statuscodes, nur Zahlen, nie ein Antworttext. Gelesen wird der Berichts-
+# schlüssel, falls es ihn gibt, sonst der zum Einreichen.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rechte:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Anfragen stellen
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_BERICHT_KEY_ID || secrets.ASC_KEY_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_BERICHT_KEY_P8 || secrets.ASC_KEY_P8 }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          pip3 install --quiet "pyjwt[crypto]" requests
+          python3 scripts/asc-rechte-pruefen.py | while IFS= read -r z; do echo "::notice::$z"; done
