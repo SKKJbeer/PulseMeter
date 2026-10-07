@@ -9,6 +9,16 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.123.1 — 2026-10-07
+
+**Chromium wird mit Zeitgrenze geholt.** Die erste Veröffentlichung von 0.123.0
+hing fünfzehn Minuten am Ubuntu-Paketspiegel und wurde abgebrochen; an der
+Seite war nichts falsch. `scripts/chromium-holen.sh` versucht es jetzt zweimal
+drei Minuten mit Systempaketen und holt danach nur den Browser. Eintrag im
+Baukasten.
+
+---
+
 ## 0.123.0 — 2026-10-07
 
 **Die Seite „Entwicklung" ist ein Zeitstrahl, und sie sagt jetzt grob, was

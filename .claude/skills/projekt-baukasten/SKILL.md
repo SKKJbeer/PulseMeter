@@ -1955,6 +1955,17 @@ die Marke dafür kürzer tritt. Und **deutsche Mehrzahl mit Umlaut ist für Appl
 ein eigenes Wort** („zählerstand" und „zählerstände" geben verschiedene
 Listen). Die verbreitete Regel „nie Einzahl und Mehrzahl" gilt dafür nicht.
 
+### Jeder Schritt, der etwas aus dem Netz holt, braucht eine eigene Zeitgrenze
+
+Am 7. Oktober hing `playwright install --with-deps` an einem Ubuntu-Spiegel,
+fünfzehn Minuten ohne Ausgabe, bis die Zeitgrenze des **ganzen** Auftrags
+griff. Ergebnis: „cancelled", keine Website, und von außen sah es aus wie ein
+Fehler in der Prüfung. Ein Schritt, der lädt, bekommt eine eigene Zeitgrenze (`timeout 180`), kürzer als die des Auftrags, und einen
+zweiten Anlauf, und es gibt einen Rückweg ohne den hängenden Teil
+(`scripts/chromium-holen.sh`). Ein abgebrochener Lauf wird zuerst am
+Protokoll gelesen, dann neu gestartet: Die letzte Zeile vor dem Abbruch sagt,
+wer hing.
+
 ### Vor einem neuen Abschnitt nach dem vorhandenen suchen
 
 Am 4. Oktober bekam die Startseite einen Abschnitt mit Rechnern, und einen

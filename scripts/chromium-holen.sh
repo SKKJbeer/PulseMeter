@@ -31,5 +31,16 @@ fi
 if [ -n "${PULSE_CHROMIUM:-}" ]; then
   echo "Chromium steht unter $PULSE_CHROMIUM — nichts zu holen."
 else
-  npx playwright install --with-deps chromium
+  # **Mit Zeitgrenze und zweitem Anlauf.** Am 7. Oktober hing der
+  # Ubuntu-Paketspiegel bei `--with-deps` fünfzehn Minuten ohne eine Zeile,
+  # bis der Lauf abgebrochen wurde; die Website ging an dem Abend nicht raus,
+  # und an der Seite war nichts falsch. Die Pakete, die Chromium braucht, hat
+  # das Ubuntu-Bild von GitHub fast alle schon. Deshalb: zweimal drei Minuten (der ganze Auftrag hat fünfzehn)
+  # mit Paketen, und reicht das nicht, nur den Browser.
+  for versuch in 1 2; do
+    if timeout 180 npx playwright install --with-deps chromium; then exit 0; fi
+    echo "::warning::Chromium mit Paketen, Anlauf $versuch: keine Antwort in drei Minuten."
+  done
+  echo "::warning::Hole Chromium ohne Systempakete."
+  npx playwright install chromium
 fi
