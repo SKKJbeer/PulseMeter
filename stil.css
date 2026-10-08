@@ -1,0 +1,1524 @@
+/* Zählora — Website
+ *
+ * Eine Datei, kein Aufbauschritt, keine externe Ressource. Keine Schrift von
+ * einem fremden Server, kein Analysewerkzeug, kein eingebettetes Video.
+ *
+ * **Das ist die Pointe und keine Sparsamkeit.** Ohne fremde Anfragen entstehen
+ * keine Cookies und keine Übertragung an Dritte — und damit braucht diese
+ * Seite kein Zustimmungsfenster. Die App verspricht „Keine Daten erfasst";
+ * eine Website, die als Erstes ein Cookie-Fenster aufklappt, widerlegt dieses
+ * Versprechen auf dem ersten Bildschirm.
+ *
+ * Die Farben sind dieselben wie in der App: Bernstein auf warmem Grund. Die
+ * Kategorie ist blau und grau; ein warmer Ton fällt darin auf.
+ */
+
+:root {
+  --ground:   #FBFAF8;
+  --raised:   #F3F0EA;
+  --surface:  #FFFFFF;
+  --ink:      #17150F;
+  --ink-2:    #57524A;
+  --ink-3:    #8B8578;
+  --line:     #E7E3DA;
+  --line-2:   #D8D3C7;
+  --tint:     #B06E08;
+  --tint-ink: #8A5A08;
+  --on-tint:  #FFFFFF;
+  --good:     #2F7F52;
+  --bad:      #B5432C;
+  /* Reihen in Diagrammen: Deutschland in der Farbe der Marke, die EU in
+     Blau. Beide Paare sind mit dem Palettenprüfer gemessen, hell gegen
+     Weiß und dunkel gegen den dunklen Grund. */
+  --serie-de: #B06E08;
+  --serie-eu: #3F6EA6;
+
+  --w-page:  1080px;
+  --w-text:  62ch;
+  --r-s:     10px;
+  --r-m:     16px;
+  --r-l:     26px;
+
+  --shadow: 0 1px 2px rgba(23, 21, 15, .04), 0 10px 30px -12px rgba(23, 21, 15, .14);
+  --shadow-lift: 0 2px 4px rgba(23, 21, 15, .05), 0 30px 60px -24px rgba(23, 21, 15, .30);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground:   #0F0E0C;
+    --raised:   #171512;
+    --surface:  #1B1917;
+    --ink:      #F5F2EC;
+    --ink-2:    #B3ADA1;
+    --ink-3:    #837D71;
+    --line:     #2B2822;
+    --line-2:   #3A362E;
+    --tint:     #E0A040;
+    --tint-ink: #E8C070;
+    --on-tint:  #1B1408;
+    --good:     #5CBF85;
+    --bad:      #E5806A;
+    --serie-de: #C4821F;
+    --serie-eu: #4C82C8;
+
+    --shadow: 0 1px 2px rgba(0, 0, 0, .5);
+    --shadow-lift: 0 30px 60px -24px rgba(0, 0, 0, .85);
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  /* Deutsch besteht aus langen zusammengesetzten Wörtern. Ohne diese zwei
+     Zeilen steht „Datenschutz-Grundverordnung" auf einem schmalen Telefon
+     über den Rand hinaus — sichtbar erst dort, wo es niemand ausprobiert. */
+  overflow-wrap: break-word;
+  /* Mit Präfix: Safari trennt vor iOS 17 nur mit `-webkit-hyphens`. Ohne
+     die Zeile blieb „Zählerstandsübermittlung" auf einem älteren iPhone
+     ungetrennt und wurde nur hart umbrochen. */
+  -webkit-hyphens: auto;
+  hyphens: auto;
+}
+
+img { max-width: 100%; height: auto; display: block; }
+
+a { color: var(--tint-ink); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { text-decoration-thickness: 2px; }
+
+:focus-visible {
+  outline: 2px solid var(--tint);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Für Tastatur und Vorlesehilfen: der erste Halt auf jeder Seite.
+ *
+ * **Nach oben aus dem Bild, nicht nach links.** Das übliche `left: -9999px`
+ * macht das Dokument um 9999 px breit; der Browser klammert das zwar weg,
+ * aber jede Messung des horizontalen Überlaufs schlägt danach an — und genau
+ * das ist beim ersten Lauf dieser Prüfung passiert. Oben liegt er ebenso
+ * unsichtbar und kostet keine Breite. */
+.sprung {
+  position: absolute;
+  left: 12px;
+  top: 0;
+  /* Um die eigene Höhe nach oben, nicht um feste 70 Pixel: Bei großer
+     Textgröße bricht der Verweis in zwei Zeilen, wird 78 Pixel hoch und
+     schaute unten als weißer Streifen über die Kopfleiste. */
+  transform: translateY(calc(-100% - 8px));
+  background: var(--surface);
+  color: var(--ink);
+  padding: 12px 18px;
+  border-radius: var(--r-s);
+  box-shadow: var(--shadow);
+  z-index: 10;
+}
+.sprung:focus { top: 12px; transform: none; }
+
+.bahn {
+  width: 100%;
+  max-width: var(--w-page);
+  margin-inline: auto;
+  padding-inline: 22px;
+}
+
+/* ---------------------------------------------------------------- Kopf */
+
+.kopf {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  /* Deckend zuerst: `color-mix()` kennt Safari erst ab iOS 16.2. Ohne diese
+     Zeile war die Leiste auf einem iPhone 7 oder 8 durchsichtig, und der
+     Text lief sichtbar darunter durch. */
+  background: var(--ground);
+  background: color-mix(in srgb, var(--ground) 88%, transparent);
+  backdrop-filter: saturate(1.6) blur(14px);
+  -webkit-backdrop-filter: saturate(1.6) blur(14px);
+  border-bottom: 1px solid transparent;
+}
+.kopf-innen {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 58px;
+}
+.marke {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 16px;
+}
+.marke svg { width: 22px; height: 22px; display: block; }
+.kopf nav { display: flex; flex-wrap: wrap; gap: 4px 20px; font-size: 15px; }
+.kopf nav a { color: var(--ink-2); text-decoration: none; padding-block: 6px; }
+.kopf nav a:hover { color: var(--ink); }
+/* Wo man ist, steht in der Leiste. Ohne das sieht jede Unterseite gleich aus. */
+.kopf nav a[aria-current="page"] { color: var(--ink); font-weight: 600; }
+
+/* Auf einem schmalen Telefon rutscht die Navigation in die zweite Zeile,
+   statt aus dem Bild zu laufen. Sie zu verstecken wäre der bequemere Weg —
+   aber auf den Rechtsseiten ist sie der einzige Weg zurück. */
+@media (max-width: 560px) {
+  .kopf-innen {
+    flex-wrap: wrap;
+    height: auto;
+    padding-block: 10px 11px;
+    gap: 6px 16px;
+  }
+  .kopf nav { gap: 0 18px; font-size: 14.5px; width: 100%; }
+}
+
+/* -------------------------------------------------------------- Anfang */
+
+.anfang {
+  padding: clamp(48px, 9vw, 104px) 0 clamp(36px, 6vw, 72px);
+  position: relative;
+  /* Der Schein unten ist breiter als die Seite. `clip` schneidet ihn ab,
+     ohne einen Bildlaufbereich zu erzeugen — sonst wächst das Dokument nach
+     rechts, und zwar unsichtbar: Kein einziges Element steht über, nur das
+     erzeugte Pseudo-Element. Genau daran hat die Suche zuerst vorbeigemessen. */
+  overflow: clip;
+}
+/* Ein warmer Schein hinter dem Kopf statt eines Farbblocks: Er gibt der
+   Seite Tiefe, ohne dass irgendwo eine Kante entsteht, die man später bei
+   jedem Abschnitt wiederholen müsste. */
+.anfang::before {
+  content: "";
+  position: absolute;
+  /* Einzeln statt `inset`: Das kürzere Wort kennt Safari erst ab iOS 14.5. */
+  top: -20%; right: 0; bottom: auto; left: 50%;
+  translate: -50% 0;
+  width: min(900px, 120%);
+  aspect-ratio: 1;
+  background: radial-gradient(closest-side, rgba(176, 110, 8, .13), transparent 70%);
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--tint) 13%, transparent), transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.anfang-gitter {
+  display: grid;
+  gap: clamp(36px, 5vw, 56px);
+  align-items: center;
+}
+@media (min-width: 860px) {
+  .anfang-gitter { grid-template-columns: 1.05fr 0.95fr; }
+}
+
+h1 {
+  margin: 0 0 18px;
+  font-size: clamp(38px, 6.2vw, 62px);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  font-weight: 640;
+  text-wrap: balance;
+}
+/* Die Zeile über der Überschrift sagt, was Zählora ist. Leise, damit der
+   Satz darunter die Seite trägt. */
+.anfang-art { margin-bottom: 14px; }
+.vorspann {
+  margin: 0 0 30px;
+  font-size: clamp(18px, 2.2vw, 21px);
+  line-height: 1.5;
+  color: var(--ink-2);
+  max-width: 34ch;
+  text-wrap: pretty;
+}
+
+.knoepfe { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+
+.knopf {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 24px;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 560;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: transform .15s ease, background-color .15s ease;
+}
+.knopf:hover { transform: translateY(-1px); }
+@media (prefers-reduced-motion: reduce) { .knopf:hover { transform: none; } }
+
+.knopf-voll { background: var(--tint); color: var(--on-tint); }
+.knopf-voll:hover { background: var(--tint-ink); background: color-mix(in srgb, var(--tint) 88%, var(--ink)); }
+.knopf-rand { border-color: var(--line-2); color: var(--ink); background: var(--surface); }
+.knopf-rand:hover { border-color: var(--ink-3); }
+
+/* --------------------------------------------------- Abzeichen App Store
+   Die Form, die jeder kennt: schwarz, abgerundet, Apfel links, zwei Zeilen
+   rechts. Sie ist hier nachgebaut und nicht von Apple geladen — die Seite
+   holt grundsätzlich nichts von fremden Servern, und das gilt auch für ein
+   Bild, das bequem wäre. Vor der Veröffentlichung im Store gehört an diese
+   Stelle das offizielle Abzeichen aus Apples Marketing-Werkzeugen. */
+.apfel {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 17px 9px 14px;
+  border-radius: 11px;
+  background: #000;
+  color: #fff;
+  border: 1px solid #000;
+  text-decoration: none;
+  line-height: 1.05;
+  transition: transform .12s ease, opacity .12s ease;
+}
+.apfel svg { width: 25px; height: 25px; fill: currentColor; flex: none; }
+.apfel-text { display: flex; flex-direction: column; }
+.apfel small { font-size: 12px; letter-spacing: .01em; opacity: .92; }
+.apfel b { font-size: 19px; font-weight: 550; letter-spacing: -0.01em; }
+a.apfel:hover { transform: translateY(-1px); }
+
+/* Wartezustand: dieselbe Form, aber ruhiger — eine Karte, kein schwarzes
+   Abzeichen. Sie soll lesbar sein und nicht nach kaputt aussehen.
+
+   **Hier stand `var(--bg)`, und die Variable gibt es nicht.** Die Datei kennt
+   `--ground`, `--raised` und `--surface`. Ein `var()` auf einen unbekannten
+   Namen ist keine Fehlermeldung, sondern ein Rückfall auf den geerbten Wert —
+   im Dunkeln war das fast dasselbe Weiß wie der Grund. Ergebnis auf dem
+   Telefon des Gründers: ein leerer grauer Kasten, kein Text, kein Apfel.
+
+   Deshalb jetzt nur Variablen, die es gibt, und keine Deckkraft: Die dämpft
+   auch die Schrift. */
+.apfel-wartet {
+  background: var(--surface);
+  color: var(--ink-2);
+  border-color: var(--line-2);
+  cursor: default;
+}
+
+@media (prefers-color-scheme: dark) {
+  .apfel { background: #fff; color: #000; border-color: #fff; }
+}
+
+.notiz {
+  margin: 18px 0 0;
+  font-size: 14px;
+  color: var(--ink-3);
+}
+
+/* Die drei Zusagen direkt unter den Knöpfen. Sie stehen dort, weil sie für
+   viele der eigentliche Grund sind, diese App und nicht eine andere zu
+   nehmen — weiter unten liest sie nur, wer ohnehin schon überzeugt ist. */
+.zusagen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14.5px;
+  font-weight: 520;
+  color: var(--ink-2);
+}
+.zusagen li { display: flex; align-items: center; gap: 7px; }
+.zusagen li::before {
+  content: "";
+  width: 15px;
+  height: 15px;
+  flex: none;
+  background: var(--tint);
+  /* Häkchen als Maske statt als Zeichen: Ein „✓" aus der Schrift sitzt je
+     nach Gerät anders auf der Grundlinie. */
+  -webkit-mask: no-repeat center/15px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12.5 9.5 18 20 6'/%3E%3C/svg%3E");
+          mask: no-repeat center/15px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12.5 9.5 18 20 6'/%3E%3C/svg%3E");
+}
+
+/* -------------------------------------------------------------- Geräte */
+
+/* **Das Bild füllt den Rahmen, und der Rahmen ist ein Block.** `<picture>` ist
+   von sich aus ein Inline-Element, und das Bild trägt `width="460"`. War die
+   Spalte breiter als 460, blieb rechts ein weißer Streifen im Rahmen stehen,
+   auf jedem Telefon der Seite. */
+.geraet {
+  display: block;
+  border-radius: 34px;
+  box-shadow: var(--shadow-lift);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  background: var(--surface);
+}
+.geraet img { width: 100%; }
+/* Neben einem Text ein Telefon in Telefongröße, nicht über die halbe Seite.
+   In voller Spaltenbreite war es auf dem Desktop über tausend Punkte hoch;
+   der Text daneben stand verloren in der Mitte, und die Seite war zehn
+   Bildschirme lang. */
+.paar > .geraet { max-width: 340px; width: 100%; justify-self: center; }
+.geraet-reihe {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(14px, 2.4vw, 26px);
+  align-items: start;
+}
+.geraet-reihe .geraet:nth-child(2) { transform: translateY(-14px); }
+@media (max-width: 700px) {
+  .geraet-reihe { grid-template-columns: 1fr 1fr; }
+  .geraet-reihe > *:nth-child(3) { display: none; }
+  .geraet-reihe .geraet:nth-child(2) { transform: none; }
+}
+
+/* ------------------------------------------------------------ Abschnitt */
+
+section { padding: clamp(48px, 7vw, 92px) 0; }
+.abschnitt-hell { background: var(--raised); }
+/* **Der eine dunkle Abschnitt: dass wir deine Zählerstände nicht haben.**
+   Vom Gründer am 26. September: „bringe noch stärker als Marketing raus,
+   dass wir keine Daten der Zählerstände tracken oder besitzen". Bis dahin
+   stand der Abschnitt als siebter von neun weit unten und sah aus wie die
+   anderen. Jetzt steht er an zweiter Stelle und als einziger dunkel, in
+   beiden Farbschemata. Die Farben werden hier neu gesetzt, damit alles darin
+   (Karten, Überschriften, Zeichen) von selbst stimmt. */
+.abschnitt-dunkel {
+  --ground:  #1C1812;
+  --raised:  #231E16;
+  --surface: #262017;
+  --ink:     #F5F2EC;
+  --ink-2:   #CFC8BA;
+  --ink-3:   #A39C8E;
+  --line:    #3A332A;
+  --line-2:  #4A4236;
+  --tint:    #E0A040;
+  --tint-ink: #E8C070;
+  --shadow:  0 1px 2px rgba(0, 0, 0, .4);
+  background: var(--ground);
+  color: var(--ink);
+}
+.abschnitt-dunkel a { color: var(--tint-ink); }
+
+h2 {
+  margin: 0 0 14px;
+  font-size: clamp(27px, 3.6vw, 38px);
+  line-height: 1.14;
+  letter-spacing: -0.025em;
+  font-weight: 620;
+  text-wrap: balance;
+}
+h3 {
+  margin: 0 0 8px;
+  font-size: 19px;
+  letter-spacing: -0.012em;
+  font-weight: 600;
+}
+p { margin: 0 0 16px; max-width: var(--w-text); text-wrap: pretty; }
+.blass { color: var(--ink-2); }
+
+.marke-klein {
+  display: block;
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--tint-ink);
+}
+
+.karten {
+  display: grid;
+  gap: 18px;
+  margin-top: 34px;
+  grid-template-columns: repeat(auto-fit, minmax(min(248px, 100%), 1fr));
+}
+.karte {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+.karte p { margin: 0; color: var(--ink-2); font-size: 15.5px; }
+/* Text unter einem Kartenraster braucht Luft. Ohne den Abstand klebte der
+   Absatz unter „Deine Daten" an der letzten Kartenreihe. */
+.karten + p, .karten + .blass { margin-top: 34px; }
+/* Vier Karten: eine Reihe, zwei mal zwei oder untereinander. Mit dem
+   allgemeinen Raster stand die vierte allein in der zweiten Reihe. */
+.karten-vier { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 980px) { .karten-vier { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .karten-vier { grid-template-columns: minmax(0, 1fr); } }
+/* Sechs Karten: drei mal zwei, zwei mal drei oder untereinander, nie eine
+   allein in der letzten Reihe. */
+.karten-sechs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 980px) { .karten-sechs { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .karten-sechs { grid-template-columns: minmax(0, 1fr); } }
+
+/* Eine Karte, die woanders hinführt, ist als Ganzes der Verweis. Nur die
+   Überschrift anklickbar zu machen heißt, auf dem Telefon eine Zeile zu
+   treffen statt einer Fläche. */
+a.karte-verweis {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: inherit;
+  text-decoration: none;
+  transition: border-color .15s ease, transform .15s ease;
+}
+a.karte-verweis:hover { border-color: var(--line-2); transform: translateY(-2px); }
+a.karte-verweis:focus-visible { outline: 2px solid var(--tint); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { a.karte-verweis:hover { transform: none; } }
+a.karte-verweis b { font-size: 17px; color: var(--ink); }
+a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-ink); font-weight: 600; font-size: 15px; }
+.art {
+  align-self: flex-start;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--tint-ink);
+  background: var(--raised);
+  background: color-mix(in srgb, var(--tint) 12%, transparent);
+  border-radius: 999px;
+  padding: 3px 9px;
+}
+
+/* Der Pfad über einer Ratgeberseite. Google zeigt ihn in der Trefferliste,
+   wenn er auf der Seite steht und im Markup dasselbe sagt; beides prüft
+   `check-website.mjs`. */
+.pfad { font-size: 14px; color: var(--ink-3); margin: 0 0 18px; }
+.pfad ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 8px; }
+.pfad li + li::before { content: "›"; margin-right: 8px; color: var(--ink-3); }
+.pfad a { color: var(--ink-2); text-decoration: none; }
+.pfad a:hover { color: var(--ink); text-decoration: underline; }
+
+.weiterlesen { margin-top: 48px; padding-top: 26px; border-top: 1px solid var(--line); max-width: var(--w-text); }
+.weiterlesen h2 { margin-top: 0; }
+.weiterlesen .karten { margin-top: 16px; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); }
+.karte-zeichen {
+  width: 34px; height: 34px;
+  margin-bottom: 14px;
+  color: var(--tint);
+}
+
+/* -------------------------------------------------------- Was neu ist */
+
+/* Eine Zeitleiste, keine Liste: Der senkrechte Strich mit den Punkten daran
+   zeigt auf einen Blick, dass hier regelmäßig etwas dazukommt. Das Datum
+   steht deshalb vor der Überschrift und nicht klein darunter. */
+.neuerungen {
+  list-style: none;
+  margin: 34px 0 0;
+  padding: 0 0 0 26px;
+  border-left: 2px solid var(--line);
+}
+.neuerungen > li {
+  position: relative;
+  padding-bottom: 34px;
+}
+.neuerungen > li:last-child { padding-bottom: 0; }
+
+/* Der Punkt sitzt auf dem Strich, nicht daneben: halbe Punktbreite nach
+   links, plus die halbe Strichstärke. */
+.neuerungen > li::before {
+  content: "";
+  position: absolute;
+  left: -33px;
+  top: 5px;
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: var(--tint);
+  border: 3px solid var(--ground);
+}
+/* Der oberste Eintrag ist der neueste und bekommt einen Ring, damit das Auge
+   dort anfängt. */
+.neuerungen > li:first-child::before {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--tint) 22%, transparent);
+}
+
+.neuerung-kopf {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.neuerung-kopf time {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tint-ink);
+}
+.fassung {
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  color: var(--ink-2);
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+.neuerungen p { margin: 0 0 10px; color: var(--ink-2); font-size: 15.5px; }
+.neuerungen p:last-child { margin-bottom: 0; }
+
+.neuerungen-fuss { margin-top: 30px; font-size: 15.5px; }
+
+.paar {
+  display: grid;
+  /* `minmax(0, 1fr)` statt der stillen Spalte `auto`: Die wird mindestens so
+     breit wie ihr breitestes Wort. Mit der Textgröße 200 % in Safari lief die
+     Startseite dadurch 27 Pixel über den Rand. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(30px, 5vw, 60px);
+  align-items: center;
+}
+@media (min-width: 820px) {
+  .paar { grid-template-columns: 1fr 1fr; }
+  .paar-gedreht > *:first-child { order: 2; }
+}
+
+.liste { margin: 0; padding: 0; list-style: none; }
+.liste li {
+  position: relative;
+  padding-left: 26px;
+  margin-bottom: 11px;
+  color: var(--ink-2);
+  max-width: var(--w-text);
+}
+.liste li::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: .62em;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--tint);
+}
+
+/* --------------------------------------------------------------- Preis */
+
+.preis-tafel {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(215px, 100%), 1fr));
+  margin-top: 30px;
+}
+.preis {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+  padding: 22px;
+}
+.preis-frei { border-color: var(--tint); }
+/* Das Bündel ist der Kauf, der sich lohnt — sechs gleich aussehende Karten
+   überlassen dem Leser die Rechnerei. Ein Rand statt einer Farbfläche: Es
+   soll auffallen, nicht schreien. */
+.preis-bundle { border-color: var(--tint); border-width: 2px; padding: 21px; }
+.preis b { display: block; font-size: 15px; margin-bottom: 3px; }
+.preis .betrag {
+  font-size: 25px;
+  font-weight: 640;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 12px;
+  display: block;
+}
+.preis p { font-size: 14.5px; color: var(--ink-2); margin: 0; }
+
+/* --------------------------------------------------------------- Fragen */
+
+.frage {
+  border-top: 1px solid var(--line);
+  padding: 24px 0;
+  max-width: var(--w-text);
+}
+.frage:last-of-type { border-bottom: 1px solid var(--line); }
+.frage h3 { margin-bottom: 6px; }
+.frage p { margin: 0; color: var(--ink-2); }
+
+/* -------------------------------------------------------------- Rechtes */
+
+.rechtstext { padding: clamp(40px, 6vw, 72px) 0 clamp(56px, 8vw, 96px); }
+.rechtstext h1 { font-size: clamp(31px, 4.4vw, 42px); margin-bottom: 26px; }
+.rechtstext h2 { font-size: 21px; margin: 40px 0 10px; letter-spacing: -0.012em; }
+.rechtstext p, .rechtstext li { color: var(--ink-2); }
+.rechtstext ul { padding-left: 20px; max-width: var(--w-text); }
+.rechtstext li { margin-bottom: 8px; }
+.rechtstext .stand { color: var(--ink-3); font-size: 14px; }
+
+/* **Rechner und Anleitungen stehen als Spalte in der Mitte.** Bis 0.120.2
+   klebten sie links, und auf einem breiten Bildschirm blieb die rechte
+   Hälfte leer; der Gründer fand das nicht professionell. Die Spalte ist so
+   breit, dass Rechner und Protokoll Platz haben, und schmal genug, dass eine
+   Zeile Text noch gut zu lesen ist. */
+.artikel > .bahn { max-width: 760px; }
+.artikel .rechner, .artikel .app-hinweis, .artikel .weiterlesen,
+.artikel p, .artikel ul, .artikel .anschrift { max-width: none; }
+
+.anschrift {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+  padding: 22px 24px;
+  max-width: var(--w-text);
+  font-style: normal;
+  line-height: 1.75;
+}
+
+/* ----------------------------------------------------------------- Fuß */
+
+.fuss {
+  border-top: 1px solid var(--line);
+  padding: 40px 0 56px;
+  color: var(--ink-3);
+  font-size: 14.5px;
+}
+.fuss-innen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 26px;
+  align-items: center;
+  justify-content: space-between;
+}
+.fuss nav { display: flex; flex-wrap: wrap; gap: 20px; }
+.fuss a { color: var(--ink-2); text-decoration: none; }
+.fuss a:hover { color: var(--ink); text-decoration: underline; }
+
+/* ------------------------------------------------------------ Der Weg */
+
+/* **Ein Zeitstrahl statt einer Tabelle.** Vom Gründer am 7. Oktober: die
+   Entwicklung „cooler und visuell ansprechender", und dazu grob, was noch
+   kommt. Oben steht die Zukunft, unten der Anfang; die Linie ist gestrichelt,
+   solange etwas nur geplant ist, und durchgezogen, sobald es im App Store
+   steht. So sieht man ohne Legende, was fest ist und was nicht. */
+.takt {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 30px;
+}
+.takt div {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+  padding: 16px 18px;
+  box-shadow: var(--shadow);
+}
+.takt b {
+  display: block;
+  font-size: clamp(26px, 4vw, 34px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-weight: 650;
+  color: var(--tint-ink);
+  font-variant-numeric: tabular-nums;
+}
+.takt span { display: block; margin-top: 4px; color: var(--ink-2); font-size: 14.5px; line-height: 1.35; }
+@media (max-width: 560px) { .takt { grid-template-columns: minmax(0, 1fr); } }
+
+/* Die Spalte steht in der Mitte. Links angeschlagen blieb auf einem breiten
+   Bildschirm die rechte Hälfte leer, und das hatte der Gründer bei den
+   Rechnern schon einmal unprofessionell genannt. */
+.weg-spalte { max-width: 820px; margin: 0 auto; }
+.weg {
+  list-style: none;
+  margin: 34px 0 0;
+  padding: 0;
+}
+.weg > li {
+  position: relative;
+  padding: 0 0 22px 46px;
+}
+/* Die Linie: ein Stück je Eintrag, damit jedes seine eigene Art hat. */
+.weg > li::before {
+  content: "";
+  position: absolute;
+  left: 15px;
+  top: 0;
+  bottom: 0;
+  border-left: 2px solid var(--line-2);
+}
+.weg > li:first-child::before { top: 22px; }
+.weg > li:last-child::before { bottom: auto; height: 22px; }
+.weg-spaeter::before, .weg-danach::before, .weg-naechstes::before { border-left-style: dashed !important; }
+/* Der Punkt. */
+.weg-punkt {
+  position: absolute;
+  left: 6px;
+  top: 14px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--ground);
+  border: 2px solid var(--line-2);
+  box-shadow: 0 0 0 5px var(--ground);
+}
+.abschnitt-hell .weg-punkt { background: var(--raised); box-shadow: 0 0 0 5px var(--raised); }
+.weg-spaeter .weg-punkt { border-style: dashed; }
+.weg-danach .weg-punkt { border-color: var(--tint); }
+.weg-naechstes .weg-punkt { border-color: var(--tint); background: var(--tint); }
+.weg-naechstes .weg-punkt::after {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: -8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--tint);
+  opacity: .35;
+  animation: weg-puls 2.4s ease-out infinite;
+}
+@keyframes weg-puls {
+  0%   { transform: scale(.7); opacity: .5; }
+  100% { transform: scale(1.35); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .weg-naechstes .weg-punkt::after { animation: none; } }
+.weg-laden .weg-punkt { border-color: var(--good); background: var(--good); }
+.weg-laden .weg-punkt svg { display: block; width: 12px; height: 12px; margin: 2px; color: var(--on-tint); }
+
+.weg-karte {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+  padding: 18px 20px;
+  box-shadow: var(--shadow);
+}
+.weg-spaeter .weg-karte { background: transparent; border-style: dashed; box-shadow: none; }
+.weg-naechstes .weg-karte { border-color: var(--tint); box-shadow: var(--shadow-lift); }
+.weg-kopf {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  margin-bottom: 8px;
+}
+.weg-kopf time { color: var(--ink-3); font-size: 14px; font-variant-numeric: tabular-nums; }
+.weg-karte h3 { display: flex; align-items: center; gap: 10px; margin: 0 0 6px; font-size: 18px; }
+.weg-karte p { margin: 0; color: var(--ink-2); font-size: 15.5px; }
+.zeichen {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: inline-grid;
+  place-items: center;
+  background: var(--raised);
+  color: var(--tint-ink);
+}
+.zeichen svg { width: 20px; height: 20px; }
+.weg-naechstes .zeichen { background: var(--tint); color: var(--on-tint); }
+.weg-ideen {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.weg-ideen li {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border-radius: var(--r-s);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--ink-2);
+  font-size: 14.5px;
+  line-height: 1.45;
+}
+.weg-ideen b { color: var(--ink); font-size: 15.5px; }
+@media (max-width: 700px) { .weg-ideen { grid-template-columns: minmax(0, 1fr); } }
+/* Die Grenze zwischen geplant und fertig. */
+.weg-heute {
+  padding-top: 6px !important;
+  padding-bottom: 28px !important;
+}
+.weg-heute span {
+  display: inline-block;
+  font-size: 12.5px;
+  font-weight: 650;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--good);
+}
+.weg-heute::before { border-left-style: dashed !important; }
+@media (max-width: 560px) {
+  .weg > li { padding-left: 38px; }
+  .weg > li::before { left: 11px; }
+  .weg-punkt { left: 2px; }
+  .weg-karte { padding: 16px; }
+}
+
+/* Ganz schmal, oder mit Schrift auf 200 bis 300 Prozent: Das Zeichen steht
+   über dem Titel statt daneben, sonst bleibt für „Zählerstände" kein Platz,
+   und die Linie rückt an den Rand. */
+@media (max-width: 360px) {
+  .weg > li { padding-left: 26px; }
+  .weg > li::before { left: 7px; }
+  .weg-punkt { left: 0; top: 16px; width: 16px; height: 16px; box-shadow: 0 0 0 3px var(--ground); }
+  .abschnitt-hell .weg-punkt { box-shadow: 0 0 0 3px var(--raised); }
+  .weg-laden .weg-punkt svg { width: 10px; height: 10px; margin: 1px; }
+  .weg-naechstes .weg-punkt::after { left: -6px; top: -6px; width: 24px; height: 24px; }
+  .weg-karte { padding: 12px; }
+  .weg-karte h3 { display: block; }
+  .weg-karte h3 .zeichen { display: grid; margin-bottom: 8px; }
+  .weg-ideen li { padding: 10px; }
+  .takt div { padding: 12px; }
+  .weg-kopf .stand { max-width: 100%; padding: 2px 7px; letter-spacing: 0; }
+}
+
+/* Die Karten „Das kann Zählora jetzt" tragen ein Zeichen vor dem Titel. */
+.karte .karte-titel { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 17px; }
+
+.stand {
+  display: inline-block;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  border-radius: 999px;
+  padding: 3px 10px;
+  border: 1px solid var(--line);
+  color: var(--ink-2);
+  background: var(--surface);
+}
+.stand-test  { color: var(--tint-ink); border-color: var(--tint); }
+.stand-laden { color: var(--good); border-color: var(--good); }
+.stand-bald  { color: var(--ink-2); border-style: dashed; }
+.stand-naechstes { color: var(--on-tint); background: var(--tint); border-color: var(--tint); }
+
+/* -------------------------------------------------------------- Rechner
+
+   **Die Rechner rechnen im Browser, und nichts verlässt ihn.** Kein
+   Formular wird abgeschickt, nichts gespeichert. Das ist dieselbe Pointe wie
+   oben: Eine Seite, die „wir sehen nichts" sagt, schickt auch keine
+   Eingaben weg.
+
+   **Jedes Feld ist gleich hoch, und die Einheit steht im Feld.** Bis 0.119.2
+   war eine Auswahl 48 Pixel hoch, ein Zahlenfeld 52 und ein Datum 55, und die
+   Einheit hing am Namen darüber („Arbeitspreis in ct/kWh"). Vom Gründer am
+   3. Oktober: „sieht in der Darstellung noch nicht professionell aus". Jetzt
+   trägt eine Hülle (`.eingabe`) Rahmen, Höhe und Einheit, und das Feld darin
+   ist nur noch die Fläche zum Tippen. So sehen Zahl, Auswahl und Datum gleich
+   aus, in jedem Browser.
+
+   Die Felder sind so groß wie auf dem Telefon nötig. Wer mit der Rechnung in
+   der einen Hand tippt, trifft sonst das Feld daneben. */
+
+.rechner {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+  box-shadow: var(--shadow);
+  padding: 22px 24px 0;
+  max-width: var(--w-text);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  overflow: hidden;
+}
+/* Höchstens zwei Felder nebeneinander. Mit drei stand bei vier Feldern eines
+   allein in der zweiten Reihe, und das sah nach Versehen aus. */
+.rechner-felder {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+  gap: 16px 16px;
+}
+/* Zusammengehörige Felder: Stand und Datum einer Ablesung. Ohne die Gruppe
+   stand das Datum in der anderen Spalte als der Stand, zu dem es gehört. */
+.rechner-gruppe { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 8px; }
+.rechner-gruppe legend {
+  padding: 0; margin-bottom: 8px;
+  font-size: 12.5px; font-weight: 650; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-3);
+}
+.rechner label {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+  font-size: 14.5px;
+  font-weight: 560;
+  color: var(--ink-2);
+  /* Oben anfangen. Sonst verteilt das Raster die Höhe eines zweizeiligen
+     Hinweises nebenan auf die Zeilen, und die Felder einer Reihe stehen
+     versetzt. */
+  align-content: start;
+}
+.rechner label.breit { grid-column: 1 / -1; }
+.rechner label small { color: var(--ink-3); font-size: 13px; font-weight: 400; }
+.eingabe {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  background: var(--ground);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-s);
+  min-width: 0;
+  transition: border-color .15s, box-shadow .15s;
+}
+.eingabe:hover { border-color: var(--ink-3); }
+.eingabe:focus-within {
+  border-color: var(--tint);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tint) 22%, transparent);
+}
+.rechner input, .rechner select {
+  font: inherit;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-s);
+  padding: 0 12px;
+  height: 100%;
+  width: 100%;
+  /* Ein Feld hat von sich aus eine Breite für etwa zwanzig Zeichen und gibt
+     sie ohne diese Zeile nicht her. */
+  min-width: 0;
+  flex: 1 1 auto;
+  font-variant-numeric: tabular-nums;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.rechner input:focus, .rechner select:focus { outline: none; }
+/* Der Rand der Hülle zeigt den Fokus. Ohne Maus, also mit der Tastatur,
+   kommt der gewohnte Ring dazu. */
+.eingabe:has(:focus-visible) { outline: 2px solid var(--tint); outline-offset: 2px; }
+.rechner select {
+  cursor: pointer;
+  padding-right: 38px;
+  background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%238B8578' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 14px center;
+}
+.rechner select option { color: #17150F; background: #FFFFFF; }
+/* Safari zeichnet das Innere eines Datumsfelds mit eigener Breite und lässt es
+   über das Feld hinausragen: bei 300 % Textgröße 142 Pixel Inhalt in einem
+   101 Pixel breiten Feld, und die Seite lief seitlich über. Chromium schneidet
+   es ab, deshalb fiel es erst in der Prüfung mit WebKit auf. */
+.rechner input[type="date"] {
+  overflow: hidden;
+  text-align: left;
+}
+.rechner input[type="date"]::-webkit-date-and-time-value { text-align: left; margin: 0; }
+.rechner input[type="date"]::-webkit-calendar-picker-indicator { opacity: .55; cursor: pointer; }
+/* Die Einheit gehört zur Zahl und steht deshalb im Feld, rechts und leise. */
+.einheit {
+  flex: none;
+  padding: 0 14px 0 4px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink-3);
+  white-space: nowrap;
+  pointer-events: none;
+}
+/* **Das Ergebnis ist der Fuß des Rechners, nicht ein weiterer Absatz.** Eine
+   eigene Fläche bis an den Rand trennt, was man eintippt, von dem, was
+   herauskommt. */
+.rechner-ergebnis {
+  margin: 4px -24px 0;
+  padding: 20px 24px 24px;
+  background: var(--raised);
+  border-top: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
+  display: grid;
+  gap: 12px;
+}
+.rechner-ergebnis strong { font-size: 26px; color: var(--ink); display: block; line-height: 1.3; }
+.rechner-ergebnis p { margin: 0; }
+
+/* Was gerade nicht gefragt ist, ist weg. Ohne diese Zeile gewinnt
+   `display: grid` der Gruppe gegen das `hidden` im Markup. */
+.rechner [hidden] { display: none !important; }
+
+/* **Zwei Wege zur selben Rechnung, als Umschalter.** Wer seinen
+   Jahresverbrauch von der Rechnung kennt, soll keine Zählerstände suchen
+   müssen, und umgekehrt. Zwei Knöpfe nebeneinander, einer gedrückt; darunter
+   die Optionsfelder, damit Tastatur und VoiceOver sie als Auswahl kennen. */
+.umschalter { border: 0; margin: 0; padding: 0; min-width: 0; }
+.umschalter legend {
+  padding: 0; margin-bottom: 8px;
+  font-size: 12.5px; font-weight: 650; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-3);
+}
+.umschalter-wahl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding: 4px;
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: calc(var(--r-s) + 4px);
+}
+.rechner .umschalter label, .ablesen .umschalter label { display: block; position: relative; gap: 0; }
+.umschalter input {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  margin: 0; opacity: 0; cursor: pointer;
+}
+.umschalter span {
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  min-height: 44px; padding: 6px 12px;
+  border: 1px solid transparent; border-radius: var(--r-s);
+  font-size: 15px; font-weight: 600; color: var(--ink-2);
+}
+.umschalter input:checked + span {
+  background: var(--surface); color: var(--ink);
+  border-color: var(--line-2);
+  box-shadow: 0 1px 2px rgba(23, 21, 15, .08);
+}
+.umschalter-hinweis { display: block; margin-top: 6px; font-size: 13px; color: var(--ink-3); }
+.umschalter input:focus-visible + span { outline: 2px solid var(--tint); outline-offset: 2px; }
+
+/* **Der Weg vom Rechner zur App.** Kein Werbeblock, sondern der Satz, den
+   man nach dem Rechnen ohnehin denkt: Das will ich nicht jedes Mal tippen.
+   Steht direkt unter dem Ergebnis, mit dem Preis, damit nach dem Laden keine
+   Überraschung kommt. */
+.app-hinweis {
+  max-width: var(--w-text);
+  margin-top: 18px;
+  padding: 20px 22px;
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+}
+.app-hinweis h2 { margin: 0 0 6px; font-size: 19px; }
+.app-hinweis p { margin: 0; color: var(--ink-2); }
+.app-hinweis-fuss {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px;
+  margin-top: 14px !important;
+}
+.app-hinweis-fuss span { font-size: 14px; color: var(--ink-3); flex: 1 1 220px; }
+
+/* Fünf Knöpfe für die Personenzahl, auf dem Telefon in einer Reihe. */
+.umschalter-fuenf { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+
+/* **Die Skala A bis G** unter der Klasse: von Grün über das Bernstein der
+   Marke bis Rot, die eigene Stufe hervorgehoben. Sie wiederholt nur, was die
+   Zahl darüber schon sagt, und ist deshalb für Vorleseprogramme verborgen. */
+.skala { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; margin-top: 10px; }
+.skala-stufe {
+  text-align: center; font-size: 12px; font-weight: 700; line-height: 22px;
+  border-radius: 5px; color: var(--surface); opacity: .5;
+}
+.skala-hier { opacity: 1; outline: 2px solid var(--ink); outline-offset: 1px; }
+.skala-0 { background: var(--good); }
+.skala-1 { background: var(--good); background: color-mix(in srgb, var(--good) 70%, var(--tint)); }
+.skala-2 { background: var(--tint); background: color-mix(in srgb, var(--good) 35%, var(--tint)); }
+.skala-3 { background: var(--tint); }
+.skala-4 { background: var(--tint); background: color-mix(in srgb, var(--tint) 60%, var(--bad)); }
+.skala-5 { background: var(--bad); background: color-mix(in srgb, var(--tint) 25%, var(--bad)); }
+.skala-6 { background: var(--bad); }
+
+/* **Lange Wörter dürfen zur Not mitten im Wort umbrechen.** Bei 300 Prozent
+   Schrift in Safari ist der Bildschirm effektiv 125 Punkte breit, und
+   „Jahresarbeitszahl“ allein ist breiter. Safari trennt es nicht von selbst,
+   also lief der Pfad und die Hauptkachel 9 Punkte über den Rand. */
+.pfad li, .kachel-name, .kachel-zusatz, .leiste-legende { word-break: break-word; overflow-wrap: anywhere; }
+
+/* **Die Ablesehilfe.** Ein Zähler als Bild aus Schrift statt als Foto: Die
+   Ziffern, die man aufschreibt, sind umrandet, die roten bleiben rot. So
+   sieht man auf einen Blick, wo das Komma sitzt, ohne dass ein Bild geladen
+   werden muss. */
+.umschalter-vier { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 620px) { .umschalter-vier { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.ablesen {
+  margin: 22px 0 8px; padding: 20px; border: 1px solid var(--line);
+  border-radius: var(--r-l); background: var(--surface); box-shadow: var(--shadow);
+}
+.ablese-fall { padding: 0; margin-top: 18px; }
+.ablese-titel { font-size: 19px; margin: 0 0 12px; }
+.ablese-bild {
+  margin: 0 0 14px; padding: 22px 16px 16px; border-radius: var(--r-m);
+  background: var(--raised); display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+.ablese-bild figcaption { color: var(--ink-2); font-size: 15px; text-align: center; }
+.ablese-bild figcaption b { color: var(--ink); font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+.anzeige {
+  display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px;
+  max-width: 100%; padding: 10px 12px; border-radius: 10px;
+  background: #1C1A16; color: #F5F2EC; box-shadow: inset 0 0 0 2px #3A362E;
+}
+.rollen { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 3px; max-width: 100%; }
+.rolle {
+  display: inline-block; min-width: 1.35em; padding: 4px 2px; text-align: center;
+  font: 600 22px/1.1 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  background: #0F0E0C; color: #F5F2EC; border-radius: 4px;
+}
+.rolle-zaehlt { box-shadow: 0 0 0 2px #E0A040; }
+.rolle-rot { background: #B5432C; color: #FFFFFF; }
+.anzeige-einheit { font-size: 14px; color: #CFC8BA; font-weight: 600; }
+.anzeige-display { background: #A9B39A; color: #17150F; box-shadow: inset 0 0 0 2px #7D876F; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.display-kennzahl { font-size: 14px; font-weight: 700; padding: 2px 6px; border: 1.5px solid #17150F; border-radius: 4px; }
+.display-wert { font-size: 26px; font-weight: 700; letter-spacing: .06em; padding: 0 4px; border-radius: 4px; box-shadow: 0 0 0 2px #8A5A08; }
+.anzeige-display .anzeige-einheit { color: #17150F; }
+.anzeige-wasser { border-radius: 999px; padding: 14px 22px; }
+.zeiger { display: inline-flex; gap: 5px; }
+.zeiger i {
+  display: inline-block; width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid #E5806A; position: relative;
+}
+.zeiger i::after {
+  content: ""; position: absolute; left: 50%; top: 2px; width: 2px; height: 6px;
+  margin-left: -1px; background: #E5806A; border-radius: 1px;
+}
+
+/* **Die Grafik zum Strompreis.** Gezeichnet im Browser aus den Zahlen von
+   Eurostat, ohne Bibliothek. Raster als Haarlinie, Linien 2 Punkte, Punkte
+   mit einem Ring in der Farbe des Grunds; Text in Textfarbe, die Farbe der
+   Reihe trägt nur das Zeichen daneben. */
+.preis-grafik {
+  margin: 22px 0 18px; padding: 18px 18px 14px; border: 1px solid var(--line);
+  border-radius: var(--r-l); background: var(--surface); box-shadow: var(--shadow);
+}
+.preis-kopf { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 16px; margin-bottom: 10px; }
+.preis-titel { font-weight: 650; font-size: 15.5px; color: var(--ink); }
+.preis-legende { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13.5px; color: var(--ink-2); }
+.preis-legende span, .preis-tipp span { display: inline-flex; align-items: center; gap: 6px; min-width: 0; overflow-wrap: anywhere; }
+/* Bei 300 Prozent Schrift ist „Durchschnitt EU“ breiter als der Rahmen.
+   Ohne Polster an der Seite passt es in Safari wieder hinein. */
+@media (max-width: 360px) { .preis-grafik { padding-left: 12px; padding-right: 12px; } .preis-schluessel { flex: none; } }
+.preis-schluessel { display: inline-block; width: 14px; height: 3px; border-radius: 2px; }
+.preis-schluessel.preis-de { background: var(--serie-de); }
+.preis-schluessel.preis-eu { background: var(--serie-eu); }
+.preis-flaeche { position: relative; width: 100%; touch-action: pan-y; }
+.preis-flaeche svg { display: block; width: 100%; height: auto; }
+.preis-flaeche .raster { stroke: var(--line); stroke-width: 1; }
+.preis-flaeche .achse { stroke: var(--line-2); stroke-width: 1; }
+.preis-flaeche .achsen-text { fill: var(--ink-3); font-size: 12px; font-variant-numeric: tabular-nums; }
+.preis-flaeche .linie { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.preis-flaeche .linie-de { stroke: var(--serie-de); }
+.preis-flaeche .linie-eu { stroke: var(--serie-eu); }
+.preis-flaeche .flaeche-de { fill: var(--serie-de); opacity: .1; }
+.preis-flaeche .punkt-de { fill: var(--serie-de); stroke: var(--surface); stroke-width: 2; }
+.preis-flaeche .punkt-eu { fill: var(--serie-eu); stroke: var(--surface); stroke-width: 2; }
+.preis-flaeche .kreuz { stroke: var(--ink-3); stroke-width: 1; }
+.preis-flaeche .ende-text, .preis-flaeche .marke-text { fill: var(--ink); font-size: 12.5px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.preis-tipp {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; min-height: 30px;
+  margin: 0 0 6px; font-size: 13.5px; color: var(--ink-2); font-variant-numeric: tabular-nums;
+}
+.preis-tipp b { color: var(--ink); font-size: 13px; }
+.preis-quelle { margin: 8px 0 0; font-size: 12.5px; color: var(--ink-3); }
+.preis-fakten { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0 0 18px; }
+.preis-fakten div { padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r-m); background: var(--surface); }
+.preis-fakten b { display: block; font-size: 24px; font-weight: 650; color: var(--ink); }
+.preis-fakten span { display: block; margin-top: 2px; font-size: 14px; color: var(--ink-2); line-height: 1.35; }
+@media (max-width: 560px) { .preis-fakten { grid-template-columns: minmax(0, 1fr); } }
+.preis-tabelle { margin: 4px 0 8px; }
+.preis-tabelle summary { cursor: pointer; font-weight: 600; color: var(--tint-ink); min-height: 44px; display: flex; align-items: center; }
+
+/* **Der Balken im Photovoltaik-Rechner**: links, was vom Solarstrom im Haus
+   blieb, rechts, was eingespeist wurde. Die Farbe der Marke für das Dach,
+   die neutrale Linie für den Rest. */
+.fluss { display: flex; height: 12px; margin-top: 14px; border-radius: 999px; overflow: hidden; background: var(--line); }
+.fluss-teil { display: block; height: 100%; }
+.fluss-dach { background: var(--tint); }
+.fluss-rest { background: var(--line-2); }
+
+/* **Die Leiste unter der Jahresarbeitszahl.** Der helle Abschnitt ist die
+   Spanne im Feldtest, der Strich der Schnitt, der Punkt die eigene Anlage.
+   Wie die Skala A bis G wiederholt sie nur die Zahl darüber und ist für
+   Vorleseprogramme verborgen. */
+.leiste {
+  position: relative; display: block; height: 10px; margin-top: 14px;
+  border-radius: 999px; background: var(--line);
+}
+.leiste-spanne { position: absolute; top: 0; bottom: 0; border-radius: 999px; background: var(--line-2); }
+.leiste-schnitt { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: var(--ink-2); }
+.leiste-du {
+  position: absolute; top: 50%; width: 16px; height: 16px; margin: -8px 0 0 -8px;
+  border-radius: 50%; background: var(--tint); box-shadow: 0 0 0 3px var(--surface);
+}
+.leiste-legende {
+  display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 12px;
+  margin-top: 8px; font-size: 12.5px; color: var(--ink-3);
+}
+
+/* Vergleichswerte als Tabelle. Auf dem Telefon darf sie seitlich laufen,
+   die Seite selbst nicht. */
+.werte-rahmen { overflow-x: auto; margin: 6px 0 8px; }
+.werte { width: 100%; border-collapse: collapse; font-size: 14.5px; font-variant-numeric: tabular-nums; }
+.werte th, .werte td { padding: 9px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.werte thead th { font-size: 12.5px; font-weight: 650; color: var(--ink-3); border-bottom-color: var(--line-2); }
+.werte tbody th { font-weight: 650; color: var(--ink); white-space: nowrap; }
+.werte td { color: var(--ink-2); white-space: nowrap; }
+
+/* ----------------------------------------------------------- Protokoll
+
+   **Auf dem Schirm ein Blatt, auf dem Papier das Blatt.** Bis 0.119.2 stand
+   hier eine nackte Tabelle an der linken Kante, ohne Kopf und ohne Rand. Wer
+   das ausdrucken soll, will vorher sehen, was er in der Hand haben wird. Jetzt
+   liegt das Protokoll als Seite auf einer Fläche, mit Kopf, Feldern zum
+   Ausfüllen, Einheiten in der Zählertabelle und Platz zum Unterschreiben. */
+
+.blatt-buehne {
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-l);
+  padding: clamp(14px, 4vw, 40px);
+  margin-block: 8px 28px;
+}
+.blatt {
+  background: #FFFFFF;
+  color: #17150F;
+  max-width: 760px;
+  margin-inline: auto;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(23, 21, 15, .06), 0 18px 44px -20px rgba(23, 21, 15, .35);
+  padding: clamp(18px, 5vw, 48px) clamp(16px, 5vw, 52px) clamp(22px, 5vw, 44px);
+  font-size: 15px;
+  display: grid;
+  /* Ohne `minmax(0, …)` ist die Spalte so breit wie das längste Wort, und
+     bei 300 % Textgröße lief das Blatt damit seitlich über. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 22px;
+}
+.blatt-kopf > div { min-width: 0; }
+.blatt-kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid #17150F;
+}
+.blatt-kopf h2 { margin: 2px 0 0; font-size: clamp(19px, 3.4vw, 24px); line-height: 1.2; color: #17150F; text-wrap: balance; }
+.blatt-marke { font-size: 12px; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; color: #8A5A08; }
+.blatt-quelle { font-size: 12.5px; color: #8B8578; }
+.blatt-abschnitt { font-size: 12px; font-weight: 650; letter-spacing: .06em; text-transform: uppercase; color: #57524A; margin: 0 0 -12px; }
+
+.protokoll {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+  color: #17150F;
+}
+/* Angaben zur Übergabe: links die Beschriftung, rechts eine Linie zum
+   Schreiben. Ein Kästchen um jede Zeile sah aus wie ein Formular vom Amt. */
+.protokoll-angaben th, .protokoll-angaben td {
+  border-bottom: 1px solid #C9C3B6;
+  padding: 0 10px 0 0;
+  height: 46px;
+  text-align: left;
+  vertical-align: bottom;
+  padding-bottom: 6px;
+}
+/* So breit wie die längste Beschriftung, den Rest bekommt die Linie. Mit
+   festen 30 % brach „Anschrift, Wohnung" auf dem Telefon in zwei Zeilen. */
+.protokoll-angaben th { width: 1%; white-space: nowrap; padding-right: 18px; font-size: 13.5px; font-weight: 600; color: #57524A; }
+
+/* In der Zählertabelle wird in Nummer und Stand geschrieben, also bekommen
+   die beiden den Platz und nicht die Beschriftung. */
+.protokoll-zaehler { border: 1px solid #C9C3B6; }
+.protokoll-zaehler th, .protokoll-zaehler td {
+  border: 1px solid #C9C3B6;
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: middle;
+}
+.protokoll-zaehler thead th {
+  background: #F3F0EA;
+  font-size: 12px; font-weight: 650; letter-spacing: .05em; text-transform: uppercase; color: #57524A;
+}
+.protokoll-zaehler td { height: 48px; }
+.protokoll-zaehler td:first-child { font-weight: 600; }
+.protokoll-zaehler td:first-child small { display: block; font-weight: 400; font-size: 12.5px; color: #8B8578; }
+.protokoll-zaehler th:nth-child(1) { width: 30%; }
+.protokoll-zaehler th:nth-child(2), .protokoll-zaehler th:nth-child(3) { width: 28%; }
+.protokoll-zaehler th:nth-child(4) { width: 14%; }
+.protokoll-rahmen { overflow-x: auto; max-width: 100%; }
+.blatt-bemerkung {
+  border: 1px solid #C9C3B6;
+  border-radius: 4px;
+  min-height: 92px;
+  padding: 8px 10px;
+  font-size: 13.5px; font-weight: 600; color: #57524A;
+}
+.unterschriften {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr));
+  gap: 22px 28px;
+  margin-top: 18px;
+}
+/* Eine Unterschrift braucht Höhe über der Linie, nicht nur die Linie. */
+.unterschriften div {
+  border-top: 1px solid #17150F;
+  padding-top: 6px;
+  margin-top: 34px;
+  font-size: 13px;
+  color: #57524A;
+}
+/* Auf dem Telefon passt die Zählertabelle in die Breite, statt seitlich zu
+   laufen. Gedruckt wird ohnehin auf A4, dort gilt das Blatt unten. */
+@media (max-width: 560px) {
+  .protokoll-zaehler { table-layout: fixed; font-size: 13.5px; }
+  .protokoll-zaehler th, .protokoll-zaehler td { padding: 7px 6px; -webkit-hyphens: auto; hyphens: auto; }
+  /* Klein geschrieben, damit „Uhrzeit" in die schmale Spalte passt. In
+     Versalien brach es als „UHRZE IT" um. */
+  .protokoll-zaehler thead th { font-size: 12px; letter-spacing: 0; text-transform: none; }
+  .protokoll-zaehler th:nth-child(1) { width: 30%; }
+  .protokoll-zaehler th:nth-child(2), .protokoll-zaehler th:nth-child(3) { width: 24%; }
+  .protokoll-zaehler th:nth-child(4) { width: 22%; }
+  .protokoll-zaehler td:first-child small { font-size: 12px; }
+  .unterschriften div { margin-top: 26px; }
+}
+
+/* Gedruckt wird nur das Protokoll. Kopf, Fuß, Erklärtext und Knöpfe bleiben
+   auf dem Schirm; auf dem Blatt stehen die Tabellen und die Unterschriften,
+   schwarz auf weiß, auch wenn der Schirm gerade dunkel ist. */
+@media print {
+  @page { size: A4; margin: 16mm 15mm; }
+  .kopf, .fuss, .sprung, .nicht-drucken, .pfad, .weiterlesen { display: none !important; }
+  body { background: #fff; color: #000; font-size: 11pt; }
+  .rechtstext { padding: 0; }
+  .druckbereich { display: block !important; }
+  .blatt-buehne { background: none; border: 0; padding: 0; margin: 0; }
+  .blatt { box-shadow: none; padding: 0; max-width: none; gap: 16pt; }
+  .protokoll, .protokoll th, .protokoll td { color: #000; border-color: #000; }
+  .protokoll-zaehler thead th { background: #EEE; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .protokoll-zaehler td { height: 30pt; }
+  .protokoll-angaben th, .protokoll-angaben td { height: 28pt; }
+  .blatt-bemerkung { border-color: #000; min-height: 60pt; }
+  .unterschriften div { border-color: #000; color: #000; }
+}
+
+/* ------------------------------------------------------------- Kacheln
+
+   **Ein Ergebnis ist eine Zahl mit einem Namen, kein Satz.** Vom Gründer am
+   26. September: „auf einen Blick mit Daten erkennbar, was es bedeutet, mit
+   klaren Benennungen". Bis dahin stand das Ergebnis der Rechner als zwei,
+   drei Sätze da, und die Zahl, um die es ging, steckte mittendrin.
+
+   Oben der Name, darunter groß die Zahl, darunter klein, worauf sie sich
+   bezieht. Gerechnete Werte tragen ein ≈ vor der Zahl, gemessene nicht.
+
+   **Die Hauptzahl bekommt eine eigene Zeile, die übrigen teilen sich eine.**
+   Bis 0.119.2 standen alle Kacheln im selben Raster: drei in der ersten
+   Reihe, die vierte allein in der zweiten, jede so hoch wie ihr Text, und auf
+   dem Telefon brach „2.702 kWh" mitten in der Zahl um. Jetzt steht oben die
+   eine Zahl, um die es geht, und darunter gleich hohe Kacheln. Auf dem
+   Telefon werden sie zu Zeilen: Name links, Zahl rechts. */
+/* Die Zahl der Spalten setzt `rechner.js` nach der Zahl der Nebenkacheln.
+   Mit `auto-fit` blieb neben zwei Kacheln eine leere dritte Spalte stehen,
+   weil die Hauptkachel alle Spalten belegt. */
+.kacheln {
+  --spalten: 3;
+  display: grid;
+  grid-template-columns: repeat(var(--spalten), minmax(0, 1fr));
+  gap: 10px;
+}
+.kachel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-s);
+  padding: 13px 15px;
+  display: grid;
+  gap: 3px;
+  align-content: start;
+  font-variant-numeric: tabular-nums;
+  min-width: 0;
+}
+.kachel-name { font-size: 12.5px; color: var(--ink-3); font-weight: 650; letter-spacing: .02em; }
+.kachel-wert { font-size: 22px; font-weight: 700; color: var(--ink); line-height: 1.2; letter-spacing: -0.01em; white-space: nowrap; }
+.kachel-zusatz { font-size: 13px; color: var(--ink-2); }
+.kachel-haupt {
+  grid-column: 1 / -1;
+  padding: 16px 18px 17px;
+  border-color: var(--tint);
+  border-color: color-mix(in srgb, var(--tint) 45%, var(--line));
+  background: var(--surface);
+  background: color-mix(in srgb, var(--tint) 8%, var(--surface));
+}
+.kachel-haupt .kachel-wert { font-size: clamp(30px, 7vw, 40px); letter-spacing: -0.02em; }
+.kachel-haupt .kachel-zusatz { font-size: 14px; }
+.kachel-gut .kachel-wert { color: var(--good); }
+.kachel-achtung .kachel-wert { color: var(--tint-ink); }
+.rechner-hinweis { margin: 0; color: var(--ink-2); font-size: 15px; }
+@media (max-width: 480px) {
+  .kacheln { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .kachel:not(.kachel-haupt) {
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 12px;
+    align-items: center;
+    padding: 11px 14px;
+  }
+  .kachel:not(.kachel-haupt) .kachel-name { grid-column: 1; grid-row: 1; }
+  .kachel:not(.kachel-haupt) .kachel-zusatz { grid-column: 1; grid-row: 2; }
+  .kachel:not(.kachel-haupt) .kachel-wert { grid-column: 2; grid-row: 1 / span 2; font-size: 19px; text-align: right; }
+}
+
+
+/* ------------------------------------------------- Kleine und alte Geräte
+
+   Gemessen am 26. September über 16 Gerätegrößen, vom iPhone SE der ersten
+   Generation (320 × 568) bis zum iPad Pro quer (1366 × 1024):
+
+   - **Die Kopfleiste stand auf schmalen iPhones 124 Punkte hoch**, weil die
+     fünf Einträge in zwei Zeilen umbrechen, und blieb beim Scrollen stehen.
+     Auf einem iPhone SE ist das ein Fünftel des Bildschirms. Dort scrollt sie
+     jetzt mit weg; oben auf jeder Seite steht sie trotzdem.
+   - **Verweise im Fuß waren 23 Punkte hoch**, die Mailadresse 19. Apple
+     empfiehlt für einen Finger 44. Auf Geräten mit Fingerbedienung bekommen
+     sie die Höhe; mit Maus bleibt das Bild, wie es war. */
+@media (max-width: 560px) {
+  .kopf { position: static; }
+}
+@media (pointer: coarse) {
+  .kopf nav a, .fuss nav a, .pfad a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+  .kopf nav a { padding-block: 0; }
+  /* Auch der letzte Eintrag im Pfad, der kein Verweis ist, bekommt die Höhe.
+     Sonst stand er im Querformat eine halbe Zeile über den anderen. */
+  .pfad ol { align-items: center; }
+  .pfad li { display: inline-flex; align-items: center; min-height: 44px; }
+  a[href^="mailto:"] {
+    display: inline-block;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    padding-block: 12px;
+    margin-block: -12px;
+  }
+}
+
+/* -------------------------------------------------- Sehr schmale Anzeige
+
+   **Textgröße 300 % in Safari.** Über „aA" lässt sich jede Seite bis auf das
+   Dreifache vergrößern, und Safari bricht sie dann um, als wäre der
+   Bildschirm ein Drittel so breit: auf einem iPhone SE 125 Pixel. Wer das
+   einstellt, braucht es. Dann gehen die Abstände zurück, Knöpfe und Schilder
+   dürfen umbrechen, und der Rechner verliert seinen Rahmen, damit die Zahlen
+   in die Kacheln passen. Eine Zahl bricht auch hier nicht um. */
+@media (max-width: 260px) {
+  .bahn { padding-inline: 12px; }
+  .knopf { padding: 12px 16px; text-align: center; justify-content: center; max-width: 100%; }
+  .rechner input, .rechner select { font-size: 16px; padding-inline: 8px; }
+  .einheit { padding-inline: 2px 8px; font-size: 13px; }
+  .art { white-space: normal; }
+  .rechner { padding: 0; border: 0; background: none; box-shadow: none; }
+  .rechner-ergebnis { margin-inline: 0; padding-inline: 10px; border-radius: var(--r-s); }
+  .kachel:not(.kachel-haupt) { grid-template-columns: minmax(0, 1fr); }
+  .kachel:not(.kachel-haupt) .kachel-wert { grid-column: 1; grid-row: auto; text-align: left; }
+  .blatt-buehne { padding: 6px; border-radius: var(--r-s); }
+  .umschalter-wahl { grid-template-columns: minmax(0, 1fr); }
+  .umschalter span { font-size: 14px; padding-inline: 6px; }
+  /* Bei 300 % ist „Wohnungsübergabe" breiter als die ganze Anzeige. */
+  .blatt { padding: 12px 10px; }
+  .blatt-kopf h2, .blatt-marke, .protokoll-angaben th, .blatt-bemerkung {
+    overflow-wrap: anywhere; -webkit-hyphens: auto; hyphens: auto; white-space: normal;
+  }
+  .protokoll-angaben th { width: 40%; padding-right: 8px; }
+  .kachel { padding: 8px 10px; }
+  .kachel-wert, .kachel-haupt .kachel-wert { font-size: 18px; white-space: normal; }
+  .karte { padding: 16px 14px; }
+  .rechner select { padding-inline: 8px 26px; background-position: right 8px center; }
+}
