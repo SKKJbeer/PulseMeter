@@ -117,6 +117,10 @@
           <span class="eingabe"><input id="jaz-preis" inputmode="decimal" autocomplete="off" value="28"><span class="einheit">ct/kWh</span></span>
           <small>steht auf der Rechnung</small>
         </label>
+        <label>Beheizte Fläche
+          <span class="eingabe"><input id="jaz-flaeche" inputmode="decimal" autocomplete="off" value="140"><span class="einheit">m²</span></span>
+          <small>kann leer bleiben</small>
+        </label>
       </div>
 
       <div class="rechner-ergebnis" id="jaz-ergebnis" aria-live="polite"></div>
@@ -130,6 +134,10 @@
     // Wärmepumpe und Strom samt Heizstab und Ventilator oder Solepumpe.
     (function () {
       var R = window.Rechner;
+      // Wärme für Heizung und Warmwasser je Quadratmeter beheizter Fläche,
+      // 68 Häuser, 2024 (Abschlussbericht S. 36, Abbildung 13).
+      var WAERME_JE_M2 = { median: 97, von: 32, bis: 200, haeuser: 68 };
+      window.WAERME_JE_M2 = WAERME_JE_M2;
       var FELDTEST = {
         luft: { schnitt: 3.4, von: 2.6, bis: 4.9, anlagen: 61, eine: "Luft-Wärmepumpe", name: "Luft-Wärmepumpen im Feldtest" },
         erde: { schnitt: 4.3, von: 3.6, bis: 5.4, anlagen: 16, eine: "Erdreich-Wärmepumpe", name: "Erdreich-Wärmepumpen im Feldtest" }
@@ -156,6 +164,7 @@
         var strom = R.zahl(document.getElementById("jaz-strom").value);
         var waerme = R.zahl(document.getElementById("jaz-waerme").value);
         var preis = R.zahl(document.getElementById("jaz-preis").value);
+        var flaeche = R.zahl(document.getElementById("jaz-flaeche").value);
         if (!(strom > 0) || !(waerme > 0)) { aus.innerHTML = R.hinweis("Trag Strom und Wärme fürs selbe Jahr ein."); return; }
         var jaz = waerme / strom;
         // Unter 1 gäbe die Wärmepumpe weniger Wärme ab, als sie Strom zieht:
@@ -185,6 +194,10 @@
           var zusatz = (mehr ? "mehr" : "weniger") + " Strom als mit " + z1(f.schnitt);
           if (hatPreis) zusatz += ", " + R.format(Math.abs(unterschied) * preis / 100, 0) + " €";
           liste.push(R.kachel("vergleich", "Im Jahr", R.format(Math.abs(unterschied), 0) + " kWh", zusatz, mehr ? "achtung" : "gut"));
+        }
+        if (flaeche > 0) {
+          var jeM2 = waerme / flaeche;
+          liste.push(R.kachel("flaeche", "Wärme je m²", R.format(jeM2, 0) + " kWh", "im Feldtest Median " + WAERME_JE_M2.median));
         }
         aus.innerHTML = R.kacheln(liste);
       }
@@ -230,6 +243,13 @@
     </table>
     </div>
     <p>
+      Wie viel Wärme die Häuser brauchten, hat Fraunhofer ebenfalls gemessen:
+      Für Heizung und Warmwasser waren es in 68 Häusern zwischen
+      <span id="m2-spanne">32 und 200</span> Kilowattstunden je Quadratmeter
+      beheizter Fläche, in der Mitte <span id="m2-median">97</span>. Die
+      Hälfte der Häuser lag also darunter, die Hälfte darüber.
+    </p>
+    <p>
       Mit dem Baujahr des Hauses hing die Jahresarbeitszahl nicht zusammen.
       Einen Zusammenhang fand Fraunhofer nur mit der Temperatur im Heizkreis.
       Und Heizkörper, die groß genug sind, liefen im Mittel mit ähnlich
@@ -261,12 +281,12 @@
         anders ermittelt sein und davon abweichen.</li>
     </ul>
 
-    <h2>Und der Verbrauch je Quadratmeter?</h2>
+    <h2>Und der Strom je Quadratmeter?</h2>
     <p>
-      Wie viel Strom eine Wärmepumpe je Quadratmeter Wohnfläche üblicherweise
-      braucht, zeigt der <a href="https://www.co2online.de/energie-sparen/heizspiegel/heizspiegel-nach-gebaeudebaujahr/" rel="noopener">Heizspiegel von co2online</a>,
-      getrennt nach Größe und Baujahr des Gebäudes. Was dein Strom insgesamt
-      kostet, rechnet der <a href="stromkosten-berechnen.html">Stromkostenrechner</a>.
+      Vergleichswerte dafür, getrennt nach Größe und Baujahr des Gebäudes,
+      stehen im <a href="https://www.co2online.de/energie-sparen/heizspiegel/heizspiegel-nach-gebaeudebaujahr/" rel="noopener">Heizspiegel von co2online</a>.
+      Was dein Strom insgesamt kostet, rechnet der
+      <a href="stromkosten-berechnen.html">Stromkostenrechner</a>.
     </p>
 
     <aside class="weiterlesen nicht-drucken" aria-labelledby="weiterlesen-titel">

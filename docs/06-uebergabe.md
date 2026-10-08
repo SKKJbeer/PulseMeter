@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-10-08, Version 0.124.0
+Stand: 2026-10-08, Version 0.124.1
 
 ---
 
@@ -152,6 +152,10 @@ Klick-Dummy. Der Satz „Alle Werte in …" unter der Tabelle im Entwurf ist weg
    der seit 4. Oktober die Klassen des Stromspiegels nachrechnet, fehlt diese
    Genehmigung ebenfalls. Erst nachträglich gelesen, am 8. Oktober. Antwortet
    co2online mit Nein, kommt der Stromvergleich vom Netz.
+   Der Wärmepumpenrechner braucht den Heizspiegel nicht mehr: Er vergleicht
+   seit 0.124.1 auch je Quadratmeter mit Fraunhofer. Ersatz für den
+   Stromspiegel wäre Destatis (frei mit Quellenangabe), aber gröber: drei
+   Haushaltsgrößen, nur Mittelwerte, Stand 2021.
 
 ## Was zuletzt gefunden wurde, und warum es zählt
 

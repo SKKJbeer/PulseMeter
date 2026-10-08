@@ -9,6 +9,25 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.124.1 — 2026-10-08
+
+**Der Wärmepumpenrechner vergleicht jetzt auch je Quadratmeter, mit Werten
+von Fraunhofer statt aus dem Heizspiegel.**
+
+Der Gründer fragte nach einer anderen Quelle. Der Abschlussbericht von
+„WP-QS im Bestand“ misst auch die Wärme für Heizung und Warmwasser je
+Quadratmeter beheizter Fläche: 68 Häuser, 2024, 32 bis 200 kWh, Median 97
+(S. 36, Abbildung 13). Neues Feld „Beheizte Fläche“ (darf leer bleiben), neue
+Kachel „Wärme je m²“, drei neue Prüfungen. Gleicht man Wärme je m² gegen
+Wärme je m², braucht es keine Umrechnung und keine eigene Annahme.
+
+Für den Stromvergleich mit dem Stromspiegel ist die Frage offen
+(`06-uebergabe.md`, Punkt 5). Frei nutzbar wäre Destatis („Vervielfältigung
+und Verbreitung, auch auszugsweise, mit Quellennachweis gestattet“), aber nur
+mit drei Haushaltsgrößen, als Mittelwert und mit Daten von 2021.
+
+---
+
 ## 0.124.0 — 2026-10-08
 
 **Neuer Rechner: Wie gut arbeitet meine Wärmepumpe?** (`jahresarbeitszahl-berechnen.html`)

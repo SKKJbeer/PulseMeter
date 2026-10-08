@@ -807,6 +807,13 @@ console.log("\nVerhalten");
     }).length;
   });
   note(feldtest === 0, "Wärmepumpe: die Tabelle nennt dieselben Werte wie der Rechner");
+  await page.fill("#jaz-strom", "4.000");
+  note((await kachel("flaeche")).wert === "94 kWh" && (await kachel("flaeche")).zusatz === "im Feldtest Median 97",
+       `Wärmepumpe: 13.200 kWh auf 140 m² sind 94 kWh je m² (${(await kachel("flaeche")).wert})`);
+  await page.fill("#jaz-flaeche", "");
+  note(!(await page.$('[data-kachel="flaeche"]')), "Wärmepumpe: ohne Fläche keine Kachel je m²");
+  const m2 = await page.evaluate(() => ({ s: document.getElementById("m2-spanne").textContent, m: document.getElementById("m2-median").textContent, W: window.WAERME_JE_M2 }));
+  note(m2.s === `${m2.W.von} und ${m2.W.bis}` && m2.m === String(m2.W.median), "Wärmepumpe: der Text nennt dieselben Werte je m² wie der Rechner");
 
   // **Ein Rechnerabschnitt auf der Startseite, nicht zwei.** Vom Gründer am
   // 4. Oktober gefunden: 0.120.0 setzte einen zweiten neben den vorhandenen.
