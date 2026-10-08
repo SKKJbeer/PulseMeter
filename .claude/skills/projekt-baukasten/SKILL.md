@@ -1983,6 +1983,20 @@ oft nicht. Ist es unklar, wird verlinkt statt nachgerechnet, und die Anfrage
 geht an den Herausgeber. „Nur Fakten, mit Quelle“ heißt auch: die Quelle darf
 genutzt werden.
 
+### Ein Baustein außerhalb seines gewohnten Rahmens: erst klicken, dann glauben
+
+Der Umschalter der Website (Knöpfe nebeneinander, das Feld unsichtbar
+darüber) stand am 8. Oktober zum ersten Mal außerhalb eines Rechners. Die
+Regel, die jedem Knopf `position: relative` gibt, hieß aber
+`.rechner .umschalter label`. Ohne sie lagen alle vier unsichtbaren Felder
+übereinander, und **jeder Tipp traf den letzten Knopf**. Im Bild sah alles
+richtig aus. Gefunden hat es nur die Prüfung, die wirklich klickt
+(`page.check`), mit „subtree intercepts pointer events“.
+
+Wer einen Baustein an neuer Stelle einsetzt, sucht deshalb nach Regeln, die
+ihn an einen Elternteil binden (`grep "\.rechner \.umschalter"`), und prüft
+ihn mit einem Klick, nicht mit einem Bildschirmfoto.
+
 ### Vor einem neuen Abschnitt nach dem vorhandenen suchen
 
 Am 4. Oktober bekam die Startseite einen Abschnitt mit Rechnern, und einen

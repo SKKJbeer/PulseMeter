@@ -47,7 +47,7 @@ const base = `http://127.0.0.1:${server.address().port}/`;
 // toter Verweis dorthin fällt sonst niemandem auf.
 const seiten = ["index.html", "entwicklung.html", "hilfe.html", "gas-in-kwh.html",
                 "zaehlerstand-umzug.html", "ratgeber.html",
-                "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "datenschutz.html", "impressum.html", "404.html"];
+                "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "zaehlerstand-ablesen.html", "datenschutz.html", "impressum.html", "404.html"];
 
 // Was nicht in den Index soll: das Impressum (erreichbar, nicht auffindbar)
 // und die Seite für unbekannte Adressen. Beide tragen `noindex`, keine steht
@@ -814,6 +814,21 @@ console.log("\nVerhalten");
   note(!(await page.$('[data-kachel="flaeche"]')), "Wärmepumpe: ohne Fläche keine Kachel je m²");
   const m2 = await page.evaluate(() => ({ s: document.getElementById("m2-spanne").textContent, m: document.getElementById("m2-median").textContent, W: window.WAERME_JE_M2 }));
   note(m2.s === `${m2.W.von} und ${m2.W.bis}` && m2.m === String(m2.W.median), "Wärmepumpe: der Text nennt dieselben Werte je m² wie der Rechner");
+
+  // **Die Ablesehilfe zeigt immer genau einen Zähler**, und bei jedem passt
+  // die Zahl unter dem Bild zu den umrandeten Ziffern im Bild.
+  await page.goto(base + "zaehlerstand-ablesen.html");
+  for (const fall of ["strom-alt", "strom-digital", "gas", "wasser"]) {
+    await page.check(`input[name="zaehler"][value="${fall}"]`);
+    const r = await page.evaluate(f => {
+      const sichtbar = [...document.querySelectorAll(".ablese-fall")].filter(e => !e.hidden).map(e => e.dataset.fall);
+      const el = document.querySelector(`.ablese-fall[data-fall="${f}"]`);
+      const zaehlt = [...el.querySelectorAll(".rolle-zaehlt, .display-wert")].map(e => e.textContent).join("");
+      return { sichtbar, zaehlt, steht: el.querySelector("figcaption b").textContent };
+    }, fall);
+    note(r.sichtbar.length === 1 && r.sichtbar[0] === fall && r.zaehlt === r.steht,
+         `Ablesehilfe ${fall}: allein sichtbar, „${r.steht}“ steht im Bild`);
+  }
 
   // **Ein Rechnerabschnitt auf der Startseite, nicht zwei.** Vom Gründer am
   // 4. Oktober gefunden: 0.120.0 setzte einen zweiten neben den vorhandenen.

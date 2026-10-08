@@ -9,6 +9,34 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.126.0 — 2026-10-08
+
+**Neue Seite: Zählerstand ablesen, mit Ablesehilfe für vier Zähler.**
+(`zaehlerstand-ablesen.html`)
+
+Punkt 4 aus dem Reichweitenplan vom 8. Oktober: die Suche, auf die auch der
+neue Name im App Store zielt, jetzt bei Google.
+
+- **Ablesehilfe:** Strom mit Scheibe, Strom digital, Gas, Wasser. Jeder Zähler
+  als Bild aus Schrift, die Ziffern zum Aufschreiben umrandet, die roten rot,
+  darunter „Du schreibst auf: …“.
+- **Was drinsteht, mit Quelle:** bis zum Komma ablesen, rote Stellen weg
+  (Stadtwerke Witten); 1.8.0, 2.8.0, 1.8.1 und 1.8.2, Stand ohne PIN
+  (Stromnetz Berlin); Nullen am Anfang beim Gas mitangeben, Datum mitmelden
+  (Vattenfall); Wärmemengenzähler mit Nachkommastellen (Witten). Dass 1.8.1
+  nicht überall der Hochtarif ist, steht so da.
+- **Verweise:** im Ratgeber an erster Stelle, auf der Startseite unter den
+  Karten, aus dem Umzugsprotokoll beim Gas. Sitemap und Zählung ergänzt.
+- **Ein Fehler, den die Prüfung fand:** Die Knöpfe der Auswahl lagen
+  übereinander, weil eine Stilregel nur innerhalb von Rechnern griff. Jeder
+  Tipp hätte „Wasser“ gewählt. Behoben, Eintrag im Baukasten.
+- **Prüfungen:** je Zähler, dass nur er sichtbar ist und die Zahl unter dem
+  Bild den umrandeten Ziffern entspricht.
+
+Nur die Website, kein App-Bau. Endet in `main`.
+
+---
+
 ## 0.125.0 — 2026-10-08
 
 **1.4.1 steht im Laden, und der neue Name steht jetzt überall.**

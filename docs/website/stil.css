@@ -1049,7 +1049,7 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
   border: 1px solid var(--line);
   border-radius: calc(var(--r-s) + 4px);
 }
-.rechner .umschalter label { display: block; position: relative; gap: 0; }
+.rechner .umschalter label, .ablesen .umschalter label { display: block; position: relative; gap: 0; }
 .umschalter input {
   position: absolute; top: 0; left: 0; width: 100%; height: 100%;
   margin: 0; opacity: 0; cursor: pointer;
@@ -1113,6 +1113,53 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
    „Jahresarbeitszahl“ allein ist breiter. Safari trennt es nicht von selbst,
    also lief der Pfad und die Hauptkachel 9 Punkte über den Rand. */
 .pfad li, .kachel-name, .kachel-zusatz, .leiste-legende { word-break: break-word; overflow-wrap: anywhere; }
+
+/* **Die Ablesehilfe.** Ein Zähler als Bild aus Schrift statt als Foto: Die
+   Ziffern, die man aufschreibt, sind umrandet, die roten bleiben rot. So
+   sieht man auf einen Blick, wo das Komma sitzt, ohne dass ein Bild geladen
+   werden muss. */
+.umschalter-vier { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 620px) { .umschalter-vier { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.ablesen {
+  margin: 22px 0 8px; padding: 20px; border: 1px solid var(--line);
+  border-radius: var(--r-l); background: var(--surface); box-shadow: var(--shadow);
+}
+.ablese-fall { padding: 0; margin-top: 18px; }
+.ablese-titel { font-size: 19px; margin: 0 0 12px; }
+.ablese-bild {
+  margin: 0 0 14px; padding: 22px 16px 16px; border-radius: var(--r-m);
+  background: var(--raised); display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+.ablese-bild figcaption { color: var(--ink-2); font-size: 15px; text-align: center; }
+.ablese-bild figcaption b { color: var(--ink); font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+.anzeige {
+  display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px;
+  max-width: 100%; padding: 10px 12px; border-radius: 10px;
+  background: #1C1A16; color: #F5F2EC; box-shadow: inset 0 0 0 2px #3A362E;
+}
+.rollen { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 3px; max-width: 100%; }
+.rolle {
+  display: inline-block; min-width: 1.35em; padding: 4px 2px; text-align: center;
+  font: 600 22px/1.1 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  background: #0F0E0C; color: #F5F2EC; border-radius: 4px;
+}
+.rolle-zaehlt { box-shadow: 0 0 0 2px #E0A040; }
+.rolle-rot { background: #B5432C; color: #FFFFFF; }
+.anzeige-einheit { font-size: 14px; color: #CFC8BA; font-weight: 600; }
+.anzeige-display { background: #A9B39A; color: #17150F; box-shadow: inset 0 0 0 2px #7D876F; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.display-kennzahl { font-size: 14px; font-weight: 700; padding: 2px 6px; border: 1.5px solid #17150F; border-radius: 4px; }
+.display-wert { font-size: 26px; font-weight: 700; letter-spacing: .06em; padding: 0 4px; border-radius: 4px; box-shadow: 0 0 0 2px #8A5A08; }
+.anzeige-display .anzeige-einheit { color: #17150F; }
+.anzeige-wasser { border-radius: 999px; padding: 14px 22px; }
+.zeiger { display: inline-flex; gap: 5px; }
+.zeiger i {
+  display: inline-block; width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid #E5806A; position: relative;
+}
+.zeiger i::after {
+  content: ""; position: absolute; left: 50%; top: 2px; width: 2px; height: 6px;
+  margin-left: -1px; background: #E5806A; border-radius: 1px;
+}
 
 /* **Die Leiste unter der Jahresarbeitszahl.** Der helle Abschnitt ist die
    Spanne im Feldtest, der Strich der Schnitt, der Punkt die eigene Anlage.

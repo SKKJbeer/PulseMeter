@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-10-08, Version 0.125.0
+Stand: 2026-10-08, Version 0.126.0
 
 ---
 
@@ -140,8 +140,8 @@ Klick-Dummy. Der Satz „Alle Werte in …" unter der Tabelle im Entwurf ist weg
 3. **Neue Bilder für den Laden** mit Rundgang, dazu der A/B-Test der
    Produktseite (`10-sichtbarkeit.md` 4.4).
 4. **Ratgeberseiten**, eine je Woche. Gebaut: Stromverbrauch vergleichen
-   (4.10.), Jahresarbeitszahl der Wärmepumpe (8.10.). Als Nächstes:
-   Zählerstand ablesen, dann PV, Nachzahlung prüfen.
+   (4.10.), Jahresarbeitszahl der Wärmepumpe (8.10.), Zählerstand ablesen
+   (8.10.). Als Nächstes: PV, Nachzahlung prüfen.
 5. **Genehmigung bei co2online: angefragt am 8. Oktober** (Mail aus
    `bierfinanzen@gmail.com` an `kontakt@co2online.de`, Betreff „Anfrage: Nutzung
    von Stromspiegel und Heizspiegel auf zaehlora.de“). Antwort im Postfach
