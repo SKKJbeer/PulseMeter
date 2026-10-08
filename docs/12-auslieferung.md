@@ -439,8 +439,17 @@ unverändertem App-Code, hochgeladen 11:05 UTC, VALID um 11:07. Gefüllt 21 von
     ✓ Bau 40 an die Fassung gehängt
     Eingereicht. Zustand: WAITING_FOR_REVIEW
 
-Im Laden: noch offen. Wenn sie erscheint, ziehen README, CLAUDE.md und das
-JSON-LD der Startseite den neuen Namen nach (`06-uebergabe.md`).
+**Im Laden um 13:16 UTC am 7. Oktober**, belegt an der Produktseite
+(`itunes.apple.com/lookup`: `1.4.1 | Zählora – Zählerstand ablesen |
+2026-10-07T13:16:44Z`). Gut zwei Stunden nach dem Einreichen, die kürzeste
+Prüfung bisher. Aufgefallen erst am 8. Oktober: Die Nachschau hing wieder an
+der Sitzung, und die Sitzung war neu gestartet. README, CLAUDE.md und das
+JSON-LD der Startseite tragen den Namen seit 0.125.0.
+
+Erste Messung mit `scripts/store-rang.py` am 8. Oktober, einen Tag danach:
+„zählerstand ablesen", „gas ablesen" und „wasser ablesen" auf **1**,
+„stromzähler ablesen" auf 2, „zählerstände" von über 50 auf 26. Nur
+„zählerstand" allein blieb über 50.
 
 ### Die sechste, 1.4 — freigegeben am 5. Oktober
 

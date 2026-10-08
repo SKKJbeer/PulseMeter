@@ -9,6 +9,22 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.125.0 — 2026-10-08
+
+**1.4.1 steht im Laden, und der neue Name steht jetzt überall.**
+
+Seit 7. Oktober, 13:16 UTC heißt die App im App Store „Zählora –
+Zählerstand ablesen". README, CLAUDE.md, das JSON-LD der Startseite und
+`12-auslieferung.md` ziehen nach; auf `entwicklung.html` steht 1.4.1 im Weg
+(7 Fassungen). Die Nachschau dafür war mit dem Neustart der Sitzung
+verschwunden, aufgefallen ist es einen Tag später.
+
+Erste Messung (`scripts/store-rang.py`): „zählerstand ablesen", „gas
+ablesen", „wasser ablesen" auf Platz 1, „stromzähler ablesen" auf 2,
+„zählerstände" von über 50 auf 26. „zählerstand" allein bleibt über 50.
+
+---
+
 ## 0.124.3 — 2026-10-08
 
 **Die Anfrage an co2online ist raus.** Auf Ansage des Gründers aus seinem
