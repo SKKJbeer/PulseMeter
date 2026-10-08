@@ -47,7 +47,7 @@ const base = `http://127.0.0.1:${server.address().port}/`;
 // toter Verweis dorthin fällt sonst niemandem auf.
 const seiten = ["index.html", "entwicklung.html", "hilfe.html", "gas-in-kwh.html",
                 "zaehlerstand-umzug.html", "ratgeber.html",
-                "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "datenschutz.html", "impressum.html", "404.html"];
+                "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "datenschutz.html", "impressum.html", "404.html"];
 
 // Was nicht in den Index soll: das Impressum (erreichbar, nicht auffindbar)
 // und die Seite für unbekannte Adressen. Beide tragen `noindex`, keine steht
@@ -771,6 +771,43 @@ console.log("\nVerhalten");
   });
   note(tabelle.length === 0, `Stromvergleich: die Tabelle „mittel“ nennt dieselben Grenzen wie der Rechner${tabelle.length ? " (" + tabelle.join("; ") + ")" : ""}`);
 
+  // **Die Jahresarbeitszahl.** 13.200 kWh Wärme aus 4.000 kWh Strom sind 3,3.
+  // Gegen den Schnitt von 3,4 im Feldtest von Fraunhofer ISE wären es
+  // 3.882 kWh Strom gewesen, also 118 kWh mehr, bei 28 ct rund 33 €.
+  await page.goto(base + "jahresarbeitszahl-berechnen.html");
+  const jaz = await kachel("jaz");
+  note(jaz.wert === "3,3" && jaz.zusatz === "unter dem Schnitt von 3,4",
+       `Wärmepumpe: 13.200 kWh Wärme aus 4.000 kWh Strom = 3,3, unter dem Schnitt (${jaz.wert}, ${jaz.zusatz})`);
+  note((await kachel("wkosten")).wert === "8,5 ct", `Wärmepumpe: eine kWh Wärme kostet 28 ct / 3,3 = 8,5 ct (${(await kachel("wkosten")).wert})`);
+  const jv = await kachel("vergleich");
+  note(jv.wert === "118 kWh" && jv.zusatz === "mehr Strom als mit 3,4, 33 €",
+       `Wärmepumpe: 118 kWh mehr als mit 3,4, das sind 33 € (${jv.wert}, ${jv.zusatz})`);
+  await page.check('input[name="jaz-art"][value="erde"]');
+  note((await kachel("schnitt")).wert === "4,3" && (await kachel("vergleich")).wert === "930 kWh",
+       `Wärmepumpe: Erdreich vergleicht mit 4,3, das sind 930 kWh (${(await kachel("vergleich")).wert})`);
+  await page.check('input[name="jaz-art"][value="luft"]');
+  await page.fill("#jaz-waerme", "13.600");
+  note((await kachel("jaz")).zusatz === "genau der Schnitt im Feldtest" && !(await page.$('[data-kachel="vergleich"]')),
+       "Wärmepumpe: genau 3,4 ist der Schnitt, und es gibt nichts zu vergleichen");
+  await page.fill("#jaz-waerme", "20.000");
+  note((await kachel("jaz")).zusatz === "höher als jede Luft-Wärmepumpe im Feldtest",
+       "Wärmepumpe: 5,0 liegt über der Spanne bis 4,9");
+  await page.fill("#jaz-strom", "13.200"); await page.fill("#jaz-waerme", "4.000");
+  note((await text("#jaz-ergebnis")).includes("vertauscht"), "Wärmepumpe: Wärme kleiner als Strom ergibt einen Hinweis");
+  await page.fill("#jaz-strom", "4.000"); await page.fill("#jaz-waerme", "13.200"); await page.fill("#jaz-preis", "");
+  note(!(await page.$('[data-kachel="wkosten"]')) && (await kachel("vergleich")).zusatz === "mehr Strom als mit 3,4",
+       "Wärmepumpe: ohne Strompreis keine Kosten, aber der Vergleich in kWh");
+  await page.fill("#jaz-strom", "");
+  note(!(await kaputt("#jaz-ergebnis")), "Wärmepumpe: ein leeres Feld ergibt keine kaputte Zahl");
+  const feldtest = await page.evaluate(() => {
+    const F = window.FELDTEST, f = n => n.toLocaleString("de-DE", { minimumFractionDigits: 1 });
+    return [...document.querySelectorAll("#feldtest tbody tr")].filter(tr => {
+      const g = F[tr.dataset.art], td = [...tr.querySelectorAll("td")].map(t => t.textContent.trim());
+      return td[0] !== String(g.anlagen) || td[1] !== f(g.schnitt) || td[2] !== f(g.von) + " bis " + f(g.bis);
+    }).length;
+  });
+  note(feldtest === 0, "Wärmepumpe: die Tabelle nennt dieselben Werte wie der Rechner");
+
   // **Ein Rechnerabschnitt auf der Startseite, nicht zwei.** Vom Gründer am
   // 4. Oktober gefunden: 0.120.0 setzte einen zweiten neben den vorhandenen.
   await page.goto(base + "index.html");
@@ -808,7 +845,7 @@ console.log("\nVerhalten");
   // klare Benennungen. Gezählt wird, was sonst schleichend wieder wächst:
   // der Hinweis unter einem Feld, der Text im Ergebnis, und wo der Rechner
   // steht.
-  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html"]) {
+  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html"]) {
     await page.goto(base + datei);
     const blick = await page.evaluate(() => {
       const erg = document.querySelector(".rechner-ergebnis");
@@ -839,7 +876,7 @@ console.log("\nVerhalten");
   // neben einem einzeiligen hat die Felder um acht Punkte versetzt; gesehen
   // habe ich es erst auf dem Bildschirmfoto.
   await page.setViewportSize({ width: 1280, height: 900 });
-  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html"]) {
+  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html"]) {
     await page.goto(base + datei);
     const versatz = await page.evaluate(() => {
       const reihen = {};
@@ -860,7 +897,7 @@ console.log("\nVerhalten");
   // „2.702 kWh" mitten in der Zahl um. Gemessen breit und schmal.
   for (const breite of [1280, 390]) {
     await page.setViewportSize({ width: breite, height: 900 });
-    for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html"]) {
+    for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html"]) {
       await page.goto(base + datei);
       const mass = await page.evaluate(() => {
         // Nur sichtbare: Der Stromkostenrechner blendet die Felder des anderen
@@ -898,7 +935,7 @@ console.log("\nVerhalten");
   // **Groß genug für einen Daumen.** Wer mit der Rechnung in der einen Hand
   // tippt, trifft ein kleines Feld nicht.
   await page.setViewportSize({ width: 390, height: 900 });
-  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "zaehlerstand-umzug.html"]) {
+  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "zaehlerstand-umzug.html"]) {
     await page.goto(base + datei);
     const klein = await page.evaluate(() =>
       [...document.querySelectorAll(".rechner input, .rechner select, main button")]

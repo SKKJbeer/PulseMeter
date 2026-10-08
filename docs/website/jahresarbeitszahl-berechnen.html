@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wärmepumpe: Jahresarbeitszahl berechnen und vergleichen — Zählora</title>
+<meta name="robots" content="max-image-preview:large">
+<meta name="description" content="Wie viel Wärme deine Wärmepumpe aus einer Kilowattstunde Strom macht, und wie das gegen 77 Anlagen steht, die Fraunhofer ISE vier Jahre lang gemessen hat.">
+<meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F0E0C" media="(prefers-color-scheme: dark)">
+<!-- Safari auf dem iPhone blendet darüber eine Leiste mit „Öffnen" oder
+     „Laden" ein. Wer über eine Antwortseite kommt, steht damit einen Tipp
+     vor der App statt einen Umweg über den Store. -->
+<meta name="apple-itunes-app" content="app-id=6802262743">
+<link rel="canonical" href="https://zaehlora.de/jahresarbeitszahl-berechnen.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Zählora">
+<meta property="og:locale" content="de_DE">
+<meta property="og:title" content="Wie gut arbeitet meine Wärmepumpe? — Zählora">
+<meta property="og:description" content="Jahresarbeitszahl aus Strom und Wärme ausrechnen, im Vergleich mit dem Feldtest von Fraunhofer ISE.">
+<meta property="og:url" content="https://zaehlora.de/jahresarbeitszahl-berechnen.html">
+<meta property="og:image" content="https://zaehlora.de/bilder/teilen.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Zählora: Jeden Monat wissen, was du verbrauchst. Daneben die Übersicht der App auf einem iPhone.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="stylesheet" href="stil.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "Wie gut arbeitet meine Wärmepumpe?",
+      "description": "Jahresarbeitszahl einer Wärmepumpe aus Strom und Wärme, im Vergleich mit den Messwerten des Feldtests WP-QS im Bestand von Fraunhofer ISE.",
+      "inLanguage": "de",
+      "dateModified": "2026-10-08",
+      "author": {"@type": "Organization", "name": "Zählora", "url": "https://zaehlora.de/"},
+      "publisher": {"@type": "Organization", "name": "Zählora", "url": "https://zaehlora.de/"},
+      "mainEntityOfPage": "https://zaehlora.de/jahresarbeitszahl-berechnen.html",
+      "citation": "https://www.ise.fraunhofer.de/de/forschungsprojekte/wp-qs-im-bestand.html"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Zählora", "item": "https://zaehlora.de/"},
+        {"@type": "ListItem", "position": 2, "name": "Ratgeber", "item": "https://zaehlora.de/ratgeber.html"},
+        {"@type": "ListItem", "position": 3, "name": "Jahresarbeitszahl berechnen"}
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<a class="sprung" href="#inhalt">Zum Inhalt springen</a>
+
+<header class="kopf">
+  <div class="bahn kopf-innen">
+    <a class="marke" href="index.html">
+      <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <path d="M4 23a12 12 0 0 1 24 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".28"/>
+        <path d="M7 23h4.5l2.5-6.5L18 27l2.5-4H25" fill="none" stroke="#C77A0E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Zählora
+    </a>
+    <nav aria-label="Bereiche">
+      <a href="index.html#funktionen">Funktionen</a>
+      <a href="ratgeber.html">Ratgeber</a>
+      <a href="index.html#preise">Preise</a>
+      <a href="entwicklung.html">Entwicklung</a>
+      <a href="hilfe.html">Hilfe</a>
+    </nav>
+  </div>
+</header>
+
+<main id="inhalt" class="rechtstext artikel">
+  <div class="bahn">
+    <nav class="pfad" aria-label="Pfad">
+      <ol>
+        <li><a href="index.html">Zählora</a></li>
+        <li><a href="ratgeber.html">Ratgeber</a></li>
+        <li aria-current="page">Jahresarbeitszahl berechnen</li>
+      </ol>
+    </nav>
+    <h1 id="rechner">Wie gut arbeitet meine Wärmepumpe?</h1>
+    <p class="blass">
+      Die Jahresarbeitszahl sagt, wie viel Wärme aus einer Kilowattstunde Strom
+      wird. Du brauchst zwei Zahlen fürs selbe Jahr: den Strom, den die
+      Wärmepumpe gezogen hat, und die Wärme, die sie abgegeben hat.
+    </p>
+
+    <form class="rechner" id="jaz-rechner" onsubmit="return false" aria-describedby="jaz-ergebnis">
+      <fieldset class="umschalter">
+        <legend>Meine Wärmepumpe holt die Wärme aus</legend>
+        <div class="umschalter-wahl">
+          <label><input type="radio" name="jaz-art" value="luft" checked><span>der Luft</span></label>
+          <label><input type="radio" name="jaz-art" value="erde"><span>dem Erdreich</span></label>
+        </div>
+        <small class="umschalter-hinweis">Erdreich: Sonde oder Kollektor</small>
+      </fieldset>
+
+      <div class="rechner-felder">
+        <label>Strom im Jahr
+          <span class="eingabe"><input id="jaz-strom" inputmode="decimal" autocomplete="off" value="4.000"><span class="einheit">kWh</span></span>
+          <small>Zähler der Wärmepumpe</small>
+        </label>
+        <label>Wärme im Jahr
+          <span class="eingabe"><input id="jaz-waerme" inputmode="decimal" autocomplete="off" value="13.200"><span class="einheit">kWh</span></span>
+          <small>Wärmemengenzähler oder Anzeige</small>
+        </label>
+        <label>Strompreis
+          <span class="eingabe"><input id="jaz-preis" inputmode="decimal" autocomplete="off" value="28"><span class="einheit">ct/kWh</span></span>
+          <small>steht auf der Rechnung</small>
+        </label>
+      </div>
+
+      <div class="rechner-ergebnis" id="jaz-ergebnis" aria-live="polite"></div>
+    </form>
+    <script src="rechner.js"></script>
+    <script>
+    // Die Vergleichswerte aus dem Feldtest „WP-QS im Bestand“ von Fraunhofer
+    // ISE (Presseinformation vom 3. November 2025, Abschlussbericht S. 7):
+    // 77 Anlagen in Ein- bis Dreifamilienhäusern, Hauptauswertung 2024.
+    // Jahresarbeitszahl nach Bilanzgrenze 3, also Wärme direkt nach der
+    // Wärmepumpe und Strom samt Heizstab und Ventilator oder Solepumpe.
+    (function () {
+      var R = window.Rechner;
+      var FELDTEST = {
+        luft: { schnitt: 3.4, von: 2.6, bis: 4.9, anlagen: 61, eine: "Luft-Wärmepumpe", name: "Luft-Wärmepumpen im Feldtest" },
+        erde: { schnitt: 4.3, von: 3.6, bis: 5.4, anlagen: 16, eine: "Erdreich-Wärmepumpe", name: "Erdreich-Wärmepumpen im Feldtest" }
+      };
+      // Für die Prüfung: Die Tabelle auf der Seite muss dieselben Werte nennen.
+      window.FELDTEST = FELDTEST;
+      // Die Achse der Leiste: so breit, dass beide Spannen und ein Ausreißer
+      // nach unten oder oben noch darauf passen.
+      var ACHSE_VON = 1.5, ACHSE_BIS = 6;
+      var form = document.getElementById("jaz-rechner");
+      function art() { return form.querySelector('input[name="jaz-art"]:checked').value; }
+      function z1(n) { return R.format(n, 1); }
+      function lage(x) { return Math.max(0, Math.min(100, (x - ACHSE_VON) / (ACHSE_BIS - ACHSE_VON) * 100)); }
+      function leiste(jaz, f) {
+        return '<span class="leiste" aria-hidden="true">' +
+          '<span class="leiste-spanne" style="left:' + lage(f.von) + '%;width:' + (lage(f.bis) - lage(f.von)) + '%"></span>' +
+          '<span class="leiste-schnitt" style="left:' + lage(f.schnitt) + '%"></span>' +
+          '<span class="leiste-du" style="left:' + lage(jaz) + '%"></span>' +
+          '</span>' +
+          '<span class="leiste-legende" aria-hidden="true"><span>Feldtest ' + z1(f.von) + ' bis ' + z1(f.bis) + '</span><span>Strich: Schnitt ' + z1(f.schnitt) + '</span></span>';
+      }
+      function rechne() {
+        var aus = document.getElementById("jaz-ergebnis");
+        var strom = R.zahl(document.getElementById("jaz-strom").value);
+        var waerme = R.zahl(document.getElementById("jaz-waerme").value);
+        var preis = R.zahl(document.getElementById("jaz-preis").value);
+        if (!(strom > 0) || !(waerme > 0)) { aus.innerHTML = R.hinweis("Trag Strom und Wärme fürs selbe Jahr ein."); return; }
+        var jaz = waerme / strom;
+        // Unter 1 gäbe die Wärmepumpe weniger Wärme ab, als sie Strom zieht:
+        // fast immer sind die Felder vertauscht. Über 7 kam im Feldtest keine
+        // Anlage auch nur in die Nähe.
+        if (jaz < 1) { aus.innerHTML = R.hinweis("Die Wärme muss größer sein als der Strom. Sind die Felder vertauscht?"); return; }
+        if (jaz > 7) { aus.innerHTML = R.hinweis("Das wäre mehr als 7, und so viel schafft keine Wärmepumpe. Stimmen beide Zahlen fürs selbe Jahr?"); return; }
+        var f = FELDTEST[art()];
+        var gerundet = Math.round(jaz * 10) / 10;
+        var satz;
+        if (gerundet < f.von) satz = "niedriger als jede " + f.eine + " im Feldtest";
+        else if (gerundet > f.bis) satz = "höher als jede " + f.eine + " im Feldtest";
+        else if (gerundet === f.schnitt) satz = "genau der Schnitt im Feldtest";
+        else if (gerundet < f.schnitt) satz = "unter dem Schnitt von " + z1(f.schnitt);
+        else satz = "über dem Schnitt von " + z1(f.schnitt);
+        var haupt = R.kachel("jaz", "Deine Jahresarbeitszahl", z1(jaz), satz, "haupt");
+        haupt = haupt.replace(/<\/div>$/, leiste(jaz, f) + "</div>");
+        var liste = [haupt, R.kachel("schnitt", "Schnitt im Feldtest", z1(f.schnitt), f.name)];
+        var mitSchnitt = waerme / f.schnitt;
+        var unterschied = strom - mitSchnitt;
+        var hatPreis = preis > 0;
+        if (hatPreis) {
+          liste.push(R.kachel("wkosten", "Eine kWh Wärme", R.format(preis / jaz, 1) + " ct", "bei " + R.format(preis, 0) + " ct je kWh Strom"));
+        }
+        if (Math.round(unterschied) !== 0) {
+          var mehr = unterschied > 0;
+          var zusatz = (mehr ? "mehr" : "weniger") + " Strom als mit " + z1(f.schnitt);
+          if (hatPreis) zusatz += ", " + R.format(Math.abs(unterschied) * preis / 100, 0) + " €";
+          liste.push(R.kachel("vergleich", "Im Jahr", R.format(Math.abs(unterschied), 0) + " kWh", zusatz, mehr ? "achtung" : "gut"));
+        }
+        aus.innerHTML = R.kacheln(liste);
+      }
+      form.addEventListener("input", rechne);
+      form.addEventListener("change", rechne);
+      rechne();
+    })();
+    </script>
+
+    <aside class="app-hinweis nicht-drucken" aria-labelledby="app-hinweis-titel">
+      <h2 id="app-hinweis-titel">Jeden Monat sehen, was sie zieht</h2>
+      <p>
+        Den Zähler der Wärmepumpe trägst du in Zählora wie jeden Stromzähler
+        ein. Dann siehst du im Januar, ob sie mehr braucht als im Januar davor,
+        und nicht erst mit der Jahresrechnung.
+      </p>
+      <p class="app-hinweis-fuss">
+        <a class="knopf knopf-voll" href="https://apps.apple.com/de/app/id6802262743">Zählora im App Store</a>
+        <span>Laden kostet nichts. Zwei Zähler mit ihrer ganzen Geschichte sind dauerhaft frei, kein Abo.</span>
+      </p>
+    </aside>
+
+    <h2>Woher die Vergleichswerte kommen</h2>
+    <p>
+      Aus dem Feldtest <a href="https://www.ise.fraunhofer.de/de/forschungsprojekte/wp-qs-im-bestand.html" rel="noopener">„WP-QS im Bestand“</a>
+      des Fraunhofer-Instituts für Solare Energiesysteme ISE. Vier Jahre lang
+      haben die Forschenden 77 Wärmepumpen in Ein- bis Dreifamilienhäusern
+      gemessen, gebaut zwischen 1826 und 2001, mit 90 bis 370 Quadratmetern
+      beheizter Fläche. Ausgewertet ist vor allem das Jahr 2024, abgeschlossen
+      wurde das Projekt im November 2025
+      (<a href="https://www.ise.fraunhofer.de/content/dam/ise/de/documents/presseinformationen/2025/3025_ISE_PI_Waermepumpen-heizen-auch-im-Altbau-klimafreundlich.pdf" rel="noopener">Presseinformation</a>,
+      <a href="https://www.ise.fraunhofer.de/content/dam/ise/de/documents/projekte/WP-QS_Schlussbericht.pdf" rel="noopener">Abschlussbericht</a>).
+    </p>
+    <div class="werte-rahmen">
+    <table class="werte" id="feldtest">
+      <thead>
+        <tr><th scope="col">Wärmequelle</th><th scope="col">Anlagen im Feldtest</th><th scope="col">Schnitt</th><th scope="col">Spanne</th></tr>
+      </thead>
+      <tbody>
+        <tr data-art="luft"><th scope="row">Außenluft</th><td>61</td><td>3,4</td><td>2,6 bis 4,9</td></tr>
+        <tr data-art="erde"><th scope="row">Erdreich</th><td>16</td><td>4,3</td><td>3,6 bis 5,4</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>
+      Mit dem Baujahr des Hauses hing die Jahresarbeitszahl nicht zusammen.
+      Einen Zusammenhang fand Fraunhofer nur mit der Temperatur im Heizkreis.
+      Und Heizkörper, die groß genug sind, liefen im Mittel mit ähnlich
+      niedrigen Temperaturen wie eine Fußbodenheizung.
+    </p>
+
+    <h2>Was in die beiden Zahlen gehört</h2>
+    <ul>
+      <li><strong>Wärme:</strong> alles, was die Wärmepumpe abgegeben hat, für
+        die Heizung und fürs Warmwasser. Im Feldtest entfielen etwa
+        81 Prozent auf die Heizung und 19 Prozent aufs Warmwasser.</li>
+      <li><strong>Strom:</strong> alles, was die Wärmepumpe selbst gezogen hat,
+        samt Heizstab und Ventilator oder Solepumpe. Umwälzpumpen hat
+        Fraunhofer nicht mitgezählt. Hängen sie bei dir am Zähler der
+        Wärmepumpe, fällt deine Zahl etwas niedriger aus.</li>
+      <li><strong>Dasselbe Jahr:</strong> Lies beide Zähler am selben Tag ab,
+        und ein Jahr später wieder. Ein Sommer allein sagt wenig, weil die
+        Wärmepumpe dann fast nur Warmwasser macht.</li>
+    </ul>
+
+    <h2>Wann der Vergleich hinkt</h2>
+    <ul>
+      <li><strong>Nach einem kalten Winter.</strong> Die Messjahre waren eher
+        mild, Temperaturen unter minus fünf Grad kamen selten vor. Je kälter
+        die Luft, desto mehr Strom braucht eine Luft-Wärmepumpe für dieselbe
+        Wärme.</li>
+      <li><strong>Wenn die Wärme aus der Anzeige kommt.</strong> Fraunhofer hat
+        mit Wärmemengenzählern gemessen. Was die Wärmepumpe selbst anzeigt, kann
+        anders ermittelt sein und davon abweichen.</li>
+    </ul>
+
+    <h2>Und der Verbrauch je Quadratmeter?</h2>
+    <p>
+      Wie viel Strom eine Wärmepumpe je Quadratmeter Wohnfläche üblicherweise
+      braucht, zeigt der <a href="https://www.co2online.de/energie-sparen/heizspiegel/heizspiegel-nach-gebaeudebaujahr/" rel="noopener">Heizspiegel von co2online</a>,
+      getrennt nach Größe und Baujahr des Gebäudes. Was dein Strom insgesamt
+      kostet, rechnet der <a href="stromkosten-berechnen.html">Stromkostenrechner</a>.
+    </p>
+
+    <aside class="weiterlesen nicht-drucken" aria-labelledby="weiterlesen-titel">
+      <h2 id="weiterlesen-titel">Weiterlesen</h2>
+      <div class="karten">
+      <a class="karte karte-verweis" href="verbrauch-berechnen.html">
+        <span class="art">Rechner</span>
+        <b>Was verbrauche ich eigentlich?</b>
+        <p>Zwei Zählerstände mit Datum, und du siehst deinen Verbrauch am Tag, im Monat und aufs Jahr.</p>
+        <span class="weiter">Zum Rechner ›</span>
+      </a>
+      <a class="karte karte-verweis" href="stromkosten-berechnen.html">
+        <span class="art">Rechner</span>
+        <b>Stromkosten und Abschlag</b>
+        <p>Was dein Strom im Jahr, im Monat und je Kilowattstunde kostet, und ob dein Abschlag dazu passt.</p>
+        <span class="weiter">Zum Rechner ›</span>
+      </a>
+      <a class="karte karte-verweis" href="stromverbrauch-vergleichen.html">
+        <span class="art">Vergleich</span>
+        <b>Ist mein Stromverbrauch normal?</b>
+        <p>Dein Jahresverbrauch neben Haushalten derselben Größe, mit den Klassen des Stromspiegels.</p>
+        <span class="weiter">Zum Vergleich ›</span>
+      </a>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="fuss">
+  <div class="bahn fuss-innen">
+    <span>Zählora — gebaut in Deutschland, von einem Menschen.</span>
+    <nav aria-label="Rechtliches">
+      <a href="index.html">Start</a>
+      <a href="ratgeber.html">Ratgeber</a>
+      <a href="entwicklung.html">Entwicklung</a>
+      <a href="hilfe.html">Hilfe &amp; Kontakt</a>
+      <a href="datenschutz.html">Datenschutz</a>
+      <a href="impressum.html">Impressum</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>

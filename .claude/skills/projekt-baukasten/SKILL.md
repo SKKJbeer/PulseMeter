@@ -1966,6 +1966,23 @@ zweiten Anlauf, und es gibt einen Rückweg ohne den hängenden Teil
 Protokoll gelesen, dann neu gestartet: Die letzte Zeile vor dem Abbruch sagt,
 wer hing.
 
+### Bei einer fremden Datenquelle zuerst die Nutzungsbedingungen lesen
+
+Am 8. Oktober, beim Wärmepumpenrechner, stand auf der Seite des Heizspiegels:
+„Im nicht-kommerziellen Bereich kann der Heizspiegel kostenlos genutzt werden.
+Die Verarbeitung der Daten für kommerzielle Zwecke bedarf der ausdrücklichen
+Genehmigung.“ Die Website einer App mit Käufen ist kommerziell. Und der
+Stromvergleich vom 4. Oktober rechnete da schon seit vier Tagen die Klassen
+des Stromspiegels desselben Herausgebers nach, ohne dass jemand die Bedingungen
+gelesen hatte.
+
+Die Reihenfolge ist deshalb: **Quelle finden, Bedingungen lesen, dann erst
+Zahlen übernehmen.** Pressemitteilungen und Forschungsberichte (hier
+Fraunhofer ISE) sind zum Zitieren gemacht; Tabellen eines Vergleichsportals
+oft nicht. Ist es unklar, wird verlinkt statt nachgerechnet, und die Anfrage
+geht an den Herausgeber. „Nur Fakten, mit Quelle“ heißt auch: die Quelle darf
+genutzt werden.
+
 ### Vor einem neuen Abschnitt nach dem vorhandenen suchen
 
 Am 4. Oktober bekam die Startseite einen Abschnitt mit Rechnern, und einen

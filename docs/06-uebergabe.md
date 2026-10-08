@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-10-07, Version 0.123.1
+Stand: 2026-10-08, Version 0.124.0
 
 ---
 
@@ -139,8 +139,19 @@ Klick-Dummy. Der Satz „Alle Werte in …" unter der Tabelle im Entwurf ist weg
    seiner Zähler, die Zählernummer wird vor dem Einchecken geschwärzt.
 3. **Neue Bilder für den Laden** mit Rundgang, dazu der A/B-Test der
    Produktseite (`10-sichtbarkeit.md` 4.4).
-4. **Ratgeberseiten**, eine je Woche: stromverbrauch-normal, anbieterwechsel,
-   zweirichtungszaehler, zaehlerwechsel, waermepumpe.
+4. **Ratgeberseiten**, eine je Woche. Gebaut: Stromverbrauch vergleichen
+   (4.10.), Jahresarbeitszahl der Wärmepumpe (8.10.). Als Nächstes:
+   Zählerstand ablesen, dann PV, Nachzahlung prüfen.
+5. **Genehmigung bei co2online, offen beim Gründer.** Auf der Seite zum
+   Heizspiegel steht: „Im nicht-kommerziellen Bereich kann der Heizspiegel
+   kostenlos genutzt werden. Die Verarbeitung der Daten für kommerzielle Zwecke
+   bedarf der ausdrücklichen Genehmigung der co2online gGmbH.“ Im Impressum von
+   stromspiegel.de: „Nachdruck, auch auszugsweise, nur mit schriftlicher
+   Genehmigung.“ Zählora ist eine App mit Käufen. Deshalb steht der Heizspiegel
+   **nicht** im Wärmepumpenrechner (nur verlinkt), und für den Stromvergleich,
+   der seit 4. Oktober die Klassen des Stromspiegels nachrechnet, fehlt diese
+   Genehmigung ebenfalls. Erst nachträglich gelesen, am 8. Oktober. Antwortet
+   co2online mit Nein, kommt der Stromvergleich vom Netz.
 
 ## Was zuletzt gefunden wurde, und warum es zählt
 

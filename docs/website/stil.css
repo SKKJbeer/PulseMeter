@@ -447,6 +447,11 @@ p { margin: 0 0 16px; max-width: var(--w-text); text-wrap: pretty; }
 .karten-vier { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 @media (max-width: 980px) { .karten-vier { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px) { .karten-vier { grid-template-columns: minmax(0, 1fr); } }
+/* Sechs Karten: drei mal zwei, zwei mal drei oder untereinander, nie eine
+   allein in der letzten Reihe. */
+.karten-sechs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 980px) { .karten-sechs { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .karten-sechs { grid-template-columns: minmax(0, 1fr); } }
 
 /* Eine Karte, die woanders hinführt, ist als Ganzes der Verweis. Nur die
    Überschrift anklickbar zu machen heißt, auf dem Telefon eine Zeile zu
@@ -1102,6 +1107,31 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
 .skala-4 { background: var(--tint); background: color-mix(in srgb, var(--tint) 60%, var(--bad)); }
 .skala-5 { background: var(--bad); background: color-mix(in srgb, var(--tint) 25%, var(--bad)); }
 .skala-6 { background: var(--bad); }
+
+/* **Lange Wörter dürfen zur Not mitten im Wort umbrechen.** Bei 300 Prozent
+   Schrift in Safari ist der Bildschirm effektiv 125 Punkte breit, und
+   „Jahresarbeitszahl“ allein ist breiter. Safari trennt es nicht von selbst,
+   also lief der Pfad und die Hauptkachel 9 Punkte über den Rand. */
+.pfad li, .kachel-name, .kachel-zusatz, .leiste-legende { word-break: break-word; overflow-wrap: anywhere; }
+
+/* **Die Leiste unter der Jahresarbeitszahl.** Der helle Abschnitt ist die
+   Spanne im Feldtest, der Strich der Schnitt, der Punkt die eigene Anlage.
+   Wie die Skala A bis G wiederholt sie nur die Zahl darüber und ist für
+   Vorleseprogramme verborgen. */
+.leiste {
+  position: relative; display: block; height: 10px; margin-top: 14px;
+  border-radius: 999px; background: var(--line);
+}
+.leiste-spanne { position: absolute; top: 0; bottom: 0; border-radius: 999px; background: var(--line-2); }
+.leiste-schnitt { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: var(--ink-2); }
+.leiste-du {
+  position: absolute; top: 50%; width: 16px; height: 16px; margin: -8px 0 0 -8px;
+  border-radius: 50%; background: var(--tint); box-shadow: 0 0 0 3px var(--surface);
+}
+.leiste-legende {
+  display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 12px;
+  margin-top: 8px; font-size: 12.5px; color: var(--ink-3);
+}
 
 /* Vergleichswerte als Tabelle. Auf dem Telefon darf sie seitlich laufen,
    die Seite selbst nicht. */

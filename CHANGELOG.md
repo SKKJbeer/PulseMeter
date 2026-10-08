@@ -9,6 +9,36 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.124.0 — 2026-10-08
+
+**Neuer Rechner: Wie gut arbeitet meine Wärmepumpe?** (`jahresarbeitszahl-berechnen.html`)
+
+Vom Gründer am 8. Oktober: ein Rechner mit Vergleichswerten zur Wärmepumpe,
+mit richtigen Quellen, nichts erfunden.
+
+- **Rechnet** die Jahresarbeitszahl aus Strom und Wärme eines Jahres, dazu
+  was eine kWh Wärme kostet und wie viel Strom die Anlage mehr oder weniger
+  zieht als eine im Schnitt.
+- **Vergleicht** mit dem Feldtest „WP-QS im Bestand“ von Fraunhofer ISE
+  (Presseinformation 3. November 2025, Abschlussbericht): Luft 3,4 (2,6 bis
+  4,9), Erdreich 4,3 (3,6 bis 5,4), 61 und 16 Anlagen. Jede Zahl auf der
+  Seite ist im Bericht nachgelesen, auch was in Strom und Wärme gehört
+  (Bilanzgrenze 3) und dass die Messjahre eher mild waren.
+- **Eine Leiste** im Ergebnis zeigt Spanne, Schnitt und die eigene Anlage.
+- **Auf der Startseite** stehen die Ratgeber jetzt als sechs Karten in drei
+  Spalten, mit dem neuen Rechner und dem Umzugsprotokoll.
+- **Prüfungen:** 10 neue für den Rechner (Werte, Erdreich, genau der Schnitt,
+  über der Spanne, vertauschte Felder, ohne Preis, leer, Tabelle gleich
+  Rechner), dazu Schrift, Höhe, Ziele und Überlauf wie bei den anderen.
+- **Nicht drin: der Heizspiegel.** co2online erlaubt die Nutzung nur
+  nicht-kommerziell, sonst mit ausdrücklicher Genehmigung. Er ist verlinkt,
+  nicht nachgerechnet. Dieselbe Frage stellt sich für den Stromvergleich vom
+  4. Oktober; offen beim Gründer (`06-uebergabe.md`, Punkt 5).
+
+Nur die Website, kein App-Bau. Endet in `main`.
+
+---
+
 ## 0.123.1 — 2026-10-07
 
 **Chromium wird mit Zeitgrenze geholt.** Die erste Veröffentlichung von 0.123.0
