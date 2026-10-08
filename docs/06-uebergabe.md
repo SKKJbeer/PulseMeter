@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-10-08, Version 0.124.2
+Stand: 2026-10-08, Version 0.124.3
 
 ---
 
@@ -142,7 +142,11 @@ Klick-Dummy. Der Satz „Alle Werte in …" unter der Tabelle im Entwurf ist weg
 4. **Ratgeberseiten**, eine je Woche. Gebaut: Stromverbrauch vergleichen
    (4.10.), Jahresarbeitszahl der Wärmepumpe (8.10.). Als Nächstes:
    Zählerstand ablesen, dann PV, Nachzahlung prüfen.
-5. **Genehmigung bei co2online, offen beim Gründer.** Auf der Seite zum
+5. **Genehmigung bei co2online: angefragt am 8. Oktober** (Mail aus
+   `bierfinanzen@gmail.com` an `kontakt@co2online.de`, Betreff „Anfrage: Nutzung
+   von Stromspiegel und Heizspiegel auf zaehlora.de“). Antwort im Postfach
+   suchen (`from:co2online.de`). Kommt bis 22. Oktober nichts, wird der
+   Stromvergleich auf Destatis umgestellt. Auf der Seite zum
    Heizspiegel steht: „Im nicht-kommerziellen Bereich kann der Heizspiegel
    kostenlos genutzt werden. Die Verarbeitung der Daten für kommerzielle Zwecke
    bedarf der ausdrücklichen Genehmigung der co2online gGmbH.“ Im Impressum von

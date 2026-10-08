@@ -9,6 +9,16 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.124.3 — 2026-10-08
+
+**Die Anfrage an co2online ist raus.** Auf Ansage des Gründers aus seinem
+Postfach gesendet: Erlaubnis für die Klassen des Stromspiegels und die
+Wärmepumpenwerte des Heizspiegels, mit dem offenen Hinweis, dass der
+Stromvergleich schon online ist und bei einem Nein vom Netz geht. Frist und
+nächster Schritt in `06-uebergabe.md`, Punkt 5.
+
+---
+
 ## 0.124.2 — 2026-10-08
 
 **Neue Kontaktadresse auf der Website: `bierfinanzen@gmail.com`.**
