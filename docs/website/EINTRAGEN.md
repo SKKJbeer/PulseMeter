@@ -11,12 +11,12 @@ grep -rn "PLATZHALTER" docs/website/
 
 ## Erledigt
 
-- **Die Kontaktadresse.** `geschult-atome.6r@icloud.com` aus Apples
-  „E-Mail-Adresse verbergen", eingetragen auf der Hilfeseite, im Impressum und
-  in der Datenschutzerklärung. Sie leitet weiter und lässt sich abschalten,
-  falls Werbung darüber kommt — die private Adresse erfährt dabei niemand.
-  Später mit eigener Domain wird daraus `hallo@…` über Cloudflare Email
-  Routing; es sind dieselben drei Stellen.
+- **Die Kontaktadresse.** `bierfinanzen@gmail.com`, seit 8. Oktober auf Ansage
+  des Gründers („passe die neue Adresse bierfinanzen auch an auf der
+  Homepage"), auf der Hilfeseite, im Impressum und in der Datenschutzerklärung.
+  Vorher stand dort `geschult-atome.6r@icloud.com` aus Apples „E-Mail-Adresse
+  verbergen". Das Postfach ist mit Claude verbunden, damit Anfragen und
+  Antworten (etwa von co2online) dort gelesen werden können.
 - **Die Anschrift.** Steffen Karjoth, Corelliweg 28, 70195 Stuttgart — im
   Impressum und in der Datenschutzerklärung, dort **wortgleich**. Dieselben
   Angaben gehören später in App Store Connect.

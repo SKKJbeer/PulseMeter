@@ -9,6 +9,17 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.124.2 — 2026-10-08
+
+**Neue Kontaktadresse auf der Website: `bierfinanzen@gmail.com`.**
+
+Auf Ansage des Gründers. Ersetzt `geschult-atome.6r@icloud.com` auf der
+Hilfeseite, im Impressum und in der Datenschutzerklärung, dazu der Eintrag in
+`docs/website/EINTRAGEN.md`. Das Impressum ist zugleich die Quelle für den
+Kontakt, den `asc-einreichung.py` bei der nächsten Fassung an Apple gibt.
+
+---
+
 ## 0.124.1 — 2026-10-08
 
 **Der Wärmepumpenrechner vergleicht jetzt auch je Quadratmeter, mit Werten
