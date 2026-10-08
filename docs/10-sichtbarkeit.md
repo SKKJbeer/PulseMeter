@@ -398,20 +398,23 @@ bei Google neben der Produktseite.
 
 ### 4.3 Der Werbetext — sofort änderbar
 
-Seit 26. September eingetragen, 131 Zeichen:
+Seit 8. Oktober eingetragen, 166 Zeichen:
 
 ```
-Du siehst jeden Monat, was du an Strom, Gas und Wasser verbrauchst. Deine
-Zählerstände bleiben auf deinem Gerät, wir sehen sie nie.
+Zählerstand eintippen, fertig. Zählora zeigt, was du an Strom, Gas und
+Wasser verbrauchst, jeden Monat neben dem Vorjahr. Deine Zählerstände bleiben
+auf deinem Gerät.
 ```
 
-Botschaft 1 und 2 aus Abschnitt 0. Die Fassung vom 25. September sprach vom
-Abschlag, die davor „schon im Oktober" und hing an der falschen Saison-These.
+Er nimmt den neuen Namen „Zählerstand ablesen" auf und nennt nur, was
+kostenlos ist. Die Fassung vom 26. September stellte Verbrauch und Datenschutz
+nach vorn; beides steht weiter drin.
 
 ### 4.4 Die Bilder
 
-Mit 1.3 neu: zuerst die Übersicht mit der Abschlagsvorschau, dann der
-Ziffernblock, dann der Bericht; im iPad-Satz das Querformat mit zwei Spalten
+Seit 8. Oktober (wirksam mit 1.5): zuerst der Ziffernblock, passend zum
+Namen, dann die Übersicht, dann der Bericht. Mit 1.3 stand die Übersicht mit
+der Abschlagsvorschau vorn; im iPad-Satz das Querformat mit zwei Spalten
 vorn. Den Produktseiten-Test erst, wenn es genug Aufrufe gibt. Bei 50 im Monat
 misst er nur Zufall.
 

@@ -363,11 +363,16 @@ def eintrag_fuellen(apple: Apple, app_id: str) -> None:
 # Tippfehler hält und sie ändert, verliert den Satz.
 BILDSCHIRM = "APP_IPHONE_67"
 
-# Die Reihenfolge ist die Reihenfolge auf der Store-Seite. Erst das, was die
-# App tut, dann wofür sie es tut.
+# Die Reihenfolge ist die Reihenfolge auf der Store-Seite.
+#
+# **Seit 8. Oktober steht das Ablesen vorn.** Die App heißt im Laden seit 1.4.1
+# „Zählora – Zählerstand ablesen", und das erste Bild sieht man schon in der
+# Suchliste. Es soll zeigen, was der Name verspricht: den Ziffernblock am
+# Zähler. Vorher stand die Übersicht vorn. Vom Gründer freigegeben („mache
+# deine Empfehlungen und setze um").
 BILDER = [
-    ("screenshot-light.jpg", "Übersicht"),
     ("screenshot-capture-light.jpg", "Ablesen"),
+    ("screenshot-light.jpg", "Übersicht"),
     ("screenshot-verlauf-light.jpg", "Verlauf"),
     ("screenshot-bericht-light.jpg", "Bericht"),
     ("screenshot-zaehler-light.jpg", "Zähler"),
@@ -388,8 +393,8 @@ BILDER = [
 BILDSCHIRME = [
     (BILDSCHIRM, BILDER),
     ("APP_IPAD_PRO_3GEN_129", [
-        ("ipad-screenshot-light.jpg", "Übersicht"),
         ("ipad-screenshot-capture-light.jpg", "Ablesen"),
+        ("ipad-screenshot-light.jpg", "Übersicht"),
         ("ipad-screenshot-verlauf-light.jpg", "Verlauf"),
         ("ipad-screenshot-bericht-light.jpg", "Bericht"),
         ("ipad-screenshot-zaehler-light.jpg", "Zähler"),
@@ -486,6 +491,39 @@ def bilder_fuellen(apple: Apple, ort_id: str) -> None:
                 offen.append(f"{kennung} Bild {nummer} ({was}): {fehler}")
             else:
                 getan.append(f"{kennung} Bild {nummer} ({was}): hochgeladen")
+
+        bilder_ordnen(apple, satz["id"], kennung, bilder)
+
+
+def bilder_ordnen(apple: Apple, satz_id: str, kennung: str, bilder) -> None:
+    """Setzt die Reihenfolge im Satz auf die Reihenfolge der Liste.
+
+    **Warum ein eigener Schritt.** Eine neue Fassung übernimmt die Bilder der
+    vorigen samt Reihenfolge, und bereits vorhandene Dateien werden oben nicht
+    noch einmal hochgeladen. Eine umgestellte Liste allein ändert bei Apple also
+    nichts. Erst das Ersetzen der Beziehung `appScreenshots` mit den Kennungen in
+    der gewünschten Folge stellt die Bilder um. Bilder, die nicht in der Liste
+    stehen, bleiben dabei hinten erhalten.
+    """
+    stand, antwort = apple.holen(f"v1/appScreenshotSets/{satz_id}/appScreenshots",
+                                 **{"limit": 20})
+    if stand != 200:
+        offen.append(f"{kennung} Reihenfolge: Bilder nicht lesbar ({stand})")
+        return
+    da = antwort.json().get("data", [])
+    nach_name = {e["attributes"].get("fileName"): e["id"] for e in da}
+    soll = [nach_name[datei] for datei, _ in bilder if datei in nach_name]
+    soll += [e["id"] for e in da if e["id"] not in soll]
+    if soll == [e["id"] for e in da]:
+        getan.append(f"{kennung} Reihenfolge: stimmt schon")
+        return
+    stand, antwort = apple.aendern(
+        f"v1/appScreenshotSets/{satz_id}/relationships/appScreenshots",
+        {"data": [{"type": "appScreenshots", "id": i} for i in soll]})
+    if stand in (200, 204):
+        getan.append(f"{kennung} Reihenfolge: " + ", ".join(w for _, w in bilder))
+    else:
+        offen.append(f"{kennung} Reihenfolge ließ sich nicht setzen ({stand}) — {kurz(antwort)}")
 
 
 def fassung_fuellen(apple: Apple, app_id: str) -> None:

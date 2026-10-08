@@ -1,6 +1,6 @@
 # 09 – Material für den App Store
 
-Stand: 2026-10-07, Version 0.122.1
+Stand: 2026-10-08, Version 0.127.0
 
 Alles, was App Store Connect zur Einreichung verlangt, fertig zum Einfügen.
 Was hier steht, ist geprüft gegen das, was die App **heute** kann — nicht
@@ -63,19 +63,23 @@ Suchen aus mehreren Wörtern zusammen. „strom ablesen" trifft also weiter, wei
 ### Werbetext (max. 170 Zeichen, jederzeit ohne neue Version änderbar)
 
 ```
-Du siehst jeden Monat, was du an Strom, Gas und Wasser verbrauchst. Deine Zählerstände bleiben auf deinem Gerät, wir sehen sie nie.
+Zählerstand eintippen, fertig. Zählora zeigt, was du an Strom, Gas und Wasser verbrauchst, jeden Monat neben dem Vorjahr. Deine Zählerstände bleiben auf deinem Gerät.
 ```
 
-131 Zeichen. **Seit 26. September:** Verbrauch und Datenschutz statt
-Abschlag. Vom Gründer verlangt: „nicht nur Fokus auf Abschlag und Kosten,
-sondern auch Transparenz über den tatsächlichen Verbrauch", und „stärker als
-Marketing raus, dass wir keine Daten der Zählerstände tracken oder besitzen".
-Die Fassung vom 25. September sprach vom Abschlag. Davor stand hier seit dem
-Start „Neu: Du kaufst nur, was dir fehlt", und das war drei Fassungen später
-nicht mehr neu. Der Satz nimmt auf, was vor dem Tipp auf die App sonst niemand
-sieht: kein Abo und keine Daten, während der größte Mitbewerber beides hat
-(`10-sichtbarkeit.md`). Eingetragen wird er mit `einreichung.yml`, Schalter
-`werbetext`, auch an der Fassung, die im Laden steht.
+166 Zeichen. **Seit 8. Oktober**, vom Gründer freigegeben („mache deine
+Empfehlungen und setze um"). Er nimmt den neuen Namen auf: Wer nach
+„Zählerstand ablesen" sucht und die Seite öffnet, liest zuerst, dass genau das
+in Sekunden geht. **Nur kostenlose Funktionen:** Verbrauch, Verlauf und
+Vorjahresvergleich (`Entitlement.alwaysFree`). Der Abschlagsvergleich stand im
+ersten Entwurf und ist ein Kauf, deshalb ist er draußen.
+
+Vorher, seit 26. September: „Du siehst jeden Monat, was du an Strom, Gas und
+Wasser verbrauchst. Deine Zählerstände bleiben auf deinem Gerät, wir sehen sie
+nie." Vom Gründer damals verlangt: Verbrauch statt Abschlag, Datenschutz nach
+vorn. Beides steht weiter drin. Davor sprach die Fassung vom 25. September
+vom Abschlag, und seit dem Start stand hier „Neu: Du kaufst nur, was dir
+fehlt". Eingetragen wird er mit `einreichung.yml`, Schalter `werbetext`, auch
+an der Fassung, die im Laden steht.
 
 Dieses Feld ist der einzige Text, der sich **ohne** neue Version ändern lässt.
 Es gehört deshalb dem jeweils Neuesten, nicht der Dauerbeschreibung.
@@ -487,19 +491,21 @@ Ergebnis: `build/appstore/*.png` in **1320 × 2868** — das Maß für 6,9 Zoll 
 seit 2024 das einzige Pflichtmaß fürs iPhone. Apple rechnet die kleineren
 Geräte selbst herunter.
 
-Die Reihenfolge ist die Verkaufsreihenfolge und in `store-shots.mjs`
-begründet. Nur die **ersten beiden** erscheinen in der Suchliste; sie müssen
-allein tragen.
+**Die Reihenfolge, die bei Apple ankommt, steht in `BILDER` in
+`scripts/asc-einreichung.py`**, und `bilder_ordnen()` setzt sie bei jedem
+Füllen durch. Seit 8. Oktober steht **Ablesen** vorn, dann Übersicht, Verlauf,
+Bericht, Zähler: Der Name verspricht „Zählerstand ablesen", und die ersten
+Bilder erscheinen schon in der Suchliste. Wirksam mit 1.5; an einer Fassung im
+Laden lassen sich die Bilder nicht ändern.
 
 > ⚠️ **Nach dem Einbau von StoreKit neu erzeugen.** Das sechste Bild zeigt die
 > Kaufseite, und dort steht heute „Der Kauf steht bereit, sobald Zählora im
 > App Store ist". Im Store selbst wäre dieser Satz absurd — und er stünde
 > ausgerechnet auf dem Bild, das verkaufen soll.
 
-**iPad-Bilder sind nicht nötig.** Seit 0.37.0 ist die App auf iPhone
-beschränkt (`TARGETED_DEVICE_FAMILY: "1"`). Vorher stand dort „1,2", also
-universal — Apple hätte iPad-Bilder verlangt und die App auf einem iPad
-geprüft, für das sie nicht gebaut ist. iPad steht in `07-v1-plan.md` für 1.1.
+**iPad-Bilder sind seit 1.1 Pflicht**, weil die App seitdem auch auf dem iPad
+läuft. Hier stand bis 8. Oktober noch „iPad-Bilder sind nicht nötig" aus der
+Zeit vor 1.1. Der iPad-Satz hat dieselbe Reihenfolge wie der fürs iPhone.
 
 ### App-Vorschau (Video)
 
@@ -507,6 +513,37 @@ Optional und für 1.0 **gestrichen**. Ein schlechtes Video schadet mehr als
 kein Video, und gute Bilder tragen diese App.
 
 ---
+
+## 4a. Aufnahme-Anfrage bei Apple (Featuring Nomination)
+
+**Entwurf für 1.5, Stand 8. Oktober. Gilt nur, wenn 1.5 den Import aus einer
+Tabelle wirklich so bringt.** Eingereicht wird in App Store Connect unter
+*App › Aufnahme-Anfragen* (englisch *Featuring Nominations*), nur über die
+Oberfläche und nur vom Gründer oder einer Rolle mit Marketing-Rechten. Apple
+empfiehlt, mindestens drei Wochen vor dem Erscheinen zu nominieren; für 1.5
+(Einreichen 4. November) also **bis 14. Oktober**. Ob Apple die App
+vorstellt, entscheidet Apple; eine Antwort gibt es nur, wenn ja.
+
+Art: *App Enhancements*. Länder: Deutschland, Österreich, Schweiz.
+
+Name der Anfrage:
+
+```
+Zählora 1.5: bring your meter history along
+```
+
+Beschreibung (englisch, weil die Redaktion international sitzt):
+
+```
+Zählora is a German meter-reading app for electricity, gas and water: you type the number from the meter, Zählora shows what you used, month by month next to last year. Version 1.5 lets people who kept their readings in a spreadsheet or another app import them, so their history starts years back on day one. Everything stays on the device; there is no account and no subscription. Made by one developer in Stuttgart.
+```
+
+Was ein Nein vermeidet: keine Funktion nennen, die 1.5 nicht hat, und keine
+Zahlen über Nutzer, die wir nicht haben.
+
+> **Die Frist ist eine Wette und als solche markiert.** „Drei Wochen vorher"
+> steht so in Apples Hinweisen zu Aufnahme-Anfragen, wie wir sie kennen; vor dem
+> Absenden in App Store Connect nachsehen, was dort aktuell verlangt wird.
 
 ## 5. Hinweise für die Prüfung
 

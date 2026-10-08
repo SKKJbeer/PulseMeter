@@ -9,6 +9,28 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.127.0 — 2026-10-08
+
+**Werbetext zum neuen Namen, Ablesen als erstes Store-Bild, Text für Apples
+Aufnahme-Anfrage.** Vom Gründer freigegeben: „mache deine Empfehlungen und
+setze um".
+
+- **Werbetext** (166 Zeichen): „Zählerstand eintippen, fertig. Zählora zeigt,
+  was du an Strom, Gas und Wasser verbrauchst, jeden Monat neben dem Vorjahr.
+  Deine Zählerstände bleiben auf deinem Gerät." Nur kostenlose Funktionen; der
+  Abschlagsvergleich aus dem ersten Entwurf ist ein Kauf und flog raus.
+  Eingetragen an 1.4.1 im Laden.
+- **Bilder:** Ablesen steht vorn, für iPhone und iPad. Neu `bilder_ordnen()`
+  in `asc-einreichung.py`: Eine neue Fassung übernimmt die alte Reihenfolge,
+  und vorhandene Bilder werden nicht neu hochgeladen; erst das Ersetzen der
+  Beziehung `appScreenshots` stellt um. Wirksam mit 1.5.
+- **Aufnahme-Anfrage für 1.5** als Entwurf in `09-appstore.md`, Abschnitt 4a,
+  mit Frist 14. Oktober (als Wette markiert).
+- **Korrigiert:** In `09-appstore.md` stand noch „iPad-Bilder sind nicht
+  nötig" aus der Zeit vor 1.1.
+
+---
+
 ## 0.126.0 — 2026-10-08
 
 **Neue Seite: Zählerstand ablesen, mit Ablesehilfe für vier Zähler.**
