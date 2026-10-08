@@ -20,7 +20,7 @@
 // Tausch.
 
 const SEITEN = new Set([
-  "/", "/ratgeber", "/verbrauch-berechnen", "/stromkosten-berechnen", "/stromverbrauch-vergleichen", "/jahresarbeitszahl-berechnen", "/zaehlerstand-ablesen", "/gas-in-kwh",
+  "/", "/ratgeber", "/verbrauch-berechnen", "/stromkosten-berechnen", "/stromverbrauch-vergleichen", "/jahresarbeitszahl-berechnen", "/zaehlerstand-ablesen", "/photovoltaik-eigenverbrauch", "/gas-in-kwh",
   "/zaehlerstand-umzug", "/entwicklung", "/hilfe", "/datenschutz", "/impressum",
 ]);
 

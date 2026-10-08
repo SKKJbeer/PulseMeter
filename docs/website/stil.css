@@ -1161,6 +1161,14 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
   margin-left: -1px; background: #E5806A; border-radius: 1px;
 }
 
+/* **Der Balken im Photovoltaik-Rechner**: links, was vom Solarstrom im Haus
+   blieb, rechts, was eingespeist wurde. Die Farbe der Marke für das Dach,
+   die neutrale Linie für den Rest. */
+.fluss { display: flex; height: 12px; margin-top: 14px; border-radius: 999px; overflow: hidden; background: var(--line); }
+.fluss-teil { display: block; height: 100%; }
+.fluss-dach { background: var(--tint); }
+.fluss-rest { background: var(--line-2); }
+
 /* **Die Leiste unter der Jahresarbeitszahl.** Der helle Abschnitt ist die
    Spanne im Feldtest, der Strich der Schnitt, der Punkt die eigene Anlage.
    Wie die Skala A bis G wiederholt sie nur die Zahl darüber und ist für

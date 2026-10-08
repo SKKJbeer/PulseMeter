@@ -9,6 +9,32 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.128.0 — 2026-10-08
+
+**Neuer Rechner: Wie viel vom Solarstrom nutze ich selbst?**
+(`photovoltaik-eigenverbrauch.html`)
+
+Aus Erzeugung, Einspeisung (2.8.0) und Bezug (1.8.0) im selben Zeitraum:
+selbst verbraucht und als Anteil des Solarstroms (Eigenverbrauchsquote), vom
+Dach gedeckt (Autarkiegrad), was man nicht kaufen musste, und auf Wunsch die
+Einspeisevergütung. **Nur Rechnung, keine fremden Vergleichswerte**, damit
+auch keine Lizenzfrage. Die Vergütung hat absichtlich keinen Vorgabewert: Eine
+Zahl dort sähe aus wie der aktuelle Satz, und den kennt nur der Bescheid.
+
+- Ein Balken zeigt, wie sich der Solarstrom aufteilt.
+- Der Hinweis auf die App nennt den Preis: Einspeisung neben dem Bezug ist
+  ein Kauf für 1,99 €.
+- Verlinkt im Ratgeber, auf der Startseite, aus „Zählerstand ablesen".
+- 7 neue Prüfungen: Werte, Vergütung, mehr eingespeist als erzeugt, alles
+  eingespeist, leeres Feld.
+
+Und an 1.4.1 im Laden steht seit heute der Werbetext aus 0.127.0
+(„✓ Werbetext an 1.4.1").
+
+Nur die Website, kein App-Bau. Endet in `main`.
+
+---
+
 ## 0.127.0 — 2026-10-08
 
 **Werbetext zum neuen Namen, Ablesen als erstes Store-Bild, Text für Apples

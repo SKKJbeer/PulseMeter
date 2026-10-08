@@ -47,7 +47,7 @@ const base = `http://127.0.0.1:${server.address().port}/`;
 // toter Verweis dorthin fällt sonst niemandem auf.
 const seiten = ["index.html", "entwicklung.html", "hilfe.html", "gas-in-kwh.html",
                 "zaehlerstand-umzug.html", "ratgeber.html",
-                "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "zaehlerstand-ablesen.html", "datenschutz.html", "impressum.html", "404.html"];
+                "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "zaehlerstand-ablesen.html", "photovoltaik-eigenverbrauch.html", "datenschutz.html", "impressum.html", "404.html"];
 
 // Was nicht in den Index soll: das Impressum (erreichbar, nicht auffindbar)
 // und die Seite für unbekannte Adressen. Beide tragen `noindex`, keine steht
@@ -815,6 +815,27 @@ console.log("\nVerhalten");
   const m2 = await page.evaluate(() => ({ s: document.getElementById("m2-spanne").textContent, m: document.getElementById("m2-median").textContent, W: window.WAERME_JE_M2 }));
   note(m2.s === `${m2.W.von} und ${m2.W.bis}` && m2.m === String(m2.W.median), "Wärmepumpe: der Text nennt dieselben Werte je m² wie der Rechner");
 
+  // **Photovoltaik.** 8.000 kWh erzeugt, 5.200 eingespeist: 2.800 selbst
+  // verbraucht, 35 % des Solarstroms. Mit 2.900 kWh Bezug sind es 5.700 kWh
+  // Verbrauch, davon 49 % vom Dach. Bei 28 ct nicht gekauft: 784 €.
+  await page.goto(base + "photovoltaik-eigenverbrauch.html");
+  const pvs = await kachel("selbst");
+  note(pvs.wert === "2.800 kWh" && pvs.zusatz === "35 % deines Solarstroms",
+       `Photovoltaik: 2.800 kWh selbst verbraucht, 35 % (${pvs.wert}, ${pvs.zusatz})`);
+  const pva = await kachel("autarkie");
+  note(pva.wert === "49 %" && pva.zusatz === "von 5.700 kWh Verbrauch", `Photovoltaik: 49 % vom Dach gedeckt (${pva.wert}, ${pva.zusatz})`);
+  note((await kachel("gespart")).wert === "784 €" && !(await page.$('[data-kachel="verguetung"]')),
+       "Photovoltaik: 784 € nicht gekauft, ohne Vergütung keine Kachel dafür");
+  await page.fill("#pv-verguetung", "8");
+  note((await kachel("verguetung")).wert === "416 €", `Photovoltaik: 5.200 kWh zu 8 ct sind 416 € (${(await kachel("verguetung")).wert})`);
+  await page.fill("#pv-einspeisung", "9.000");
+  note((await text("#pv-ergebnis")).includes("nicht mehr sein als erzeugt"), "Photovoltaik: mehr eingespeist als erzeugt ergibt einen Hinweis");
+  await page.fill("#pv-einspeisung", "8.000"); await page.fill("#pv-bezug", "0");
+  note((await kachel("autarkie")).wert === "0 %" && !(await kaputt("#pv-ergebnis")),
+       "Photovoltaik: alles eingespeist und nichts bezogen ergibt 0 % ohne kaputte Zahl");
+  await page.fill("#pv-erzeugt", "");
+  note(!(await kaputt("#pv-ergebnis")), "Photovoltaik: ein leeres Feld ergibt keine kaputte Zahl");
+
   // **Die Ablesehilfe zeigt immer genau einen Zähler**, und bei jedem passt
   // die Zahl unter dem Bild zu den umrandeten Ziffern im Bild.
   await page.goto(base + "zaehlerstand-ablesen.html");
@@ -867,7 +888,7 @@ console.log("\nVerhalten");
   // klare Benennungen. Gezählt wird, was sonst schleichend wieder wächst:
   // der Hinweis unter einem Feld, der Text im Ergebnis, und wo der Rechner
   // steht.
-  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html"]) {
+  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "photovoltaik-eigenverbrauch.html"]) {
     await page.goto(base + datei);
     const blick = await page.evaluate(() => {
       const erg = document.querySelector(".rechner-ergebnis");
@@ -898,7 +919,7 @@ console.log("\nVerhalten");
   // neben einem einzeiligen hat die Felder um acht Punkte versetzt; gesehen
   // habe ich es erst auf dem Bildschirmfoto.
   await page.setViewportSize({ width: 1280, height: 900 });
-  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html"]) {
+  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "photovoltaik-eigenverbrauch.html"]) {
     await page.goto(base + datei);
     const versatz = await page.evaluate(() => {
       const reihen = {};
@@ -919,7 +940,7 @@ console.log("\nVerhalten");
   // „2.702 kWh" mitten in der Zahl um. Gemessen breit und schmal.
   for (const breite of [1280, 390]) {
     await page.setViewportSize({ width: breite, height: 900 });
-    for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html"]) {
+    for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "photovoltaik-eigenverbrauch.html"]) {
       await page.goto(base + datei);
       const mass = await page.evaluate(() => {
         // Nur sichtbare: Der Stromkostenrechner blendet die Felder des anderen
@@ -957,7 +978,7 @@ console.log("\nVerhalten");
   // **Groß genug für einen Daumen.** Wer mit der Rechnung in der einen Hand
   // tippt, trifft ein kleines Feld nicht.
   await page.setViewportSize({ width: 390, height: 900 });
-  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "zaehlerstand-umzug.html"]) {
+  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "photovoltaik-eigenverbrauch.html", "zaehlerstand-umzug.html"]) {
     await page.goto(base + datei);
     const klein = await page.evaluate(() =>
       [...document.querySelectorAll(".rechner input, .rechner select, main button")]
