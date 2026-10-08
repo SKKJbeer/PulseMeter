@@ -27,6 +27,11 @@
   --on-tint:  #FFFFFF;
   --good:     #2F7F52;
   --bad:      #B5432C;
+  /* Reihen in Diagrammen: Deutschland in der Farbe der Marke, die EU in
+     Blau. Beide Paare sind mit dem Palettenprüfer gemessen, hell gegen
+     Weiß und dunkel gegen den dunklen Grund. */
+  --serie-de: #B06E08;
+  --serie-eu: #3F6EA6;
 
   --w-page:  1080px;
   --w-text:  62ch;
@@ -53,6 +58,8 @@
     --on-tint:  #1B1408;
     --good:     #5CBF85;
     --bad:      #E5806A;
+    --serie-de: #C4821F;
+    --serie-eu: #4C82C8;
 
     --shadow: 0 1px 2px rgba(0, 0, 0, .5);
     --shadow-lift: 0 30px 60px -24px rgba(0, 0, 0, .85);
@@ -1160,6 +1167,51 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
   content: ""; position: absolute; left: 50%; top: 2px; width: 2px; height: 6px;
   margin-left: -1px; background: #E5806A; border-radius: 1px;
 }
+
+/* **Die Grafik zum Strompreis.** Gezeichnet im Browser aus den Zahlen von
+   Eurostat, ohne Bibliothek. Raster als Haarlinie, Linien 2 Punkte, Punkte
+   mit einem Ring in der Farbe des Grunds; Text in Textfarbe, die Farbe der
+   Reihe trägt nur das Zeichen daneben. */
+.preis-grafik {
+  margin: 22px 0 18px; padding: 18px 18px 14px; border: 1px solid var(--line);
+  border-radius: var(--r-l); background: var(--surface); box-shadow: var(--shadow);
+}
+.preis-kopf { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 16px; margin-bottom: 10px; }
+.preis-titel { font-weight: 650; font-size: 15.5px; color: var(--ink); }
+.preis-legende { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13.5px; color: var(--ink-2); }
+.preis-legende span, .preis-tipp span { display: inline-flex; align-items: center; gap: 6px; min-width: 0; overflow-wrap: anywhere; }
+/* Bei 300 Prozent Schrift ist „Durchschnitt EU“ breiter als der Rahmen.
+   Ohne Polster an der Seite passt es in Safari wieder hinein. */
+@media (max-width: 360px) { .preis-grafik { padding-left: 12px; padding-right: 12px; } .preis-schluessel { flex: none; } }
+.preis-schluessel { display: inline-block; width: 14px; height: 3px; border-radius: 2px; }
+.preis-schluessel.preis-de { background: var(--serie-de); }
+.preis-schluessel.preis-eu { background: var(--serie-eu); }
+.preis-flaeche { position: relative; width: 100%; touch-action: pan-y; }
+.preis-flaeche svg { display: block; width: 100%; height: auto; }
+.preis-flaeche .raster { stroke: var(--line); stroke-width: 1; }
+.preis-flaeche .achse { stroke: var(--line-2); stroke-width: 1; }
+.preis-flaeche .achsen-text { fill: var(--ink-3); font-size: 12px; font-variant-numeric: tabular-nums; }
+.preis-flaeche .linie { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.preis-flaeche .linie-de { stroke: var(--serie-de); }
+.preis-flaeche .linie-eu { stroke: var(--serie-eu); }
+.preis-flaeche .flaeche-de { fill: var(--serie-de); opacity: .1; }
+.preis-flaeche .punkt-de { fill: var(--serie-de); stroke: var(--surface); stroke-width: 2; }
+.preis-flaeche .punkt-eu { fill: var(--serie-eu); stroke: var(--surface); stroke-width: 2; }
+.preis-flaeche .kreuz { stroke: var(--ink-3); stroke-width: 1; }
+.preis-flaeche .ende-text, .preis-flaeche .marke-text { fill: var(--ink); font-size: 12.5px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.preis-tipp {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; min-height: 30px;
+  margin: 0 0 6px; font-size: 13.5px; color: var(--ink-2); font-variant-numeric: tabular-nums;
+}
+.preis-tipp b { color: var(--ink); font-size: 13px; }
+.preis-quelle { margin: 8px 0 0; font-size: 12.5px; color: var(--ink-3); }
+.preis-fakten { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0 0 18px; }
+.preis-fakten div { padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r-m); background: var(--surface); }
+.preis-fakten b { display: block; font-size: 24px; font-weight: 650; color: var(--ink); }
+.preis-fakten span { display: block; margin-top: 2px; font-size: 14px; color: var(--ink-2); line-height: 1.35; }
+@media (max-width: 560px) { .preis-fakten { grid-template-columns: minmax(0, 1fr); } }
+.preis-tabelle { margin: 4px 0 8px; }
+.preis-tabelle summary { cursor: pointer; font-weight: 600; color: var(--tint-ink); min-height: 44px; display: flex; align-items: center; }
 
 /* **Der Balken im Photovoltaik-Rechner**: links, was vom Solarstrom im Haus
    blieb, rechts, was eingespeist wurde. Die Farbe der Marke für das Dach,

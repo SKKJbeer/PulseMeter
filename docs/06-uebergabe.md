@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-10-08, Version 0.128.0
+Stand: 2026-10-08, Version 0.129.0
 
 ---
 
@@ -141,8 +141,12 @@ Klick-Dummy. Der Satz „Alle Werte in …" unter der Tabelle im Entwurf ist weg
    Produktseite (`10-sichtbarkeit.md` 4.4).
 4. **Ratgeberseiten**, eine je Woche. Gebaut: Stromverbrauch vergleichen
    (4.10.), Jahresarbeitszahl der Wärmepumpe (8.10.), Zählerstand ablesen
-   (8.10.), Photovoltaik-Eigenverbrauch (8.10.). Als Nächstes: Nachzahlung
-   prüfen (Januar).
+   (8.10.), Photovoltaik-Eigenverbrauch (8.10.), Grafik zur Strompreis-Entwicklung
+   (8.10.). Als Nächstes: Nachzahlung prüfen (Januar).
+   **Die Strompreis-Grafik braucht Pflege:** Eurostat ergänzt zweimal im Jahr
+   ein Halbjahr. Dann `scripts/strompreis-holen.py` laufen lassen; schlägt
+   danach `check-website.mjs` an, die Sätze und Kacheln auf
+   `strompreis-entwicklung.html` an die neuen Zahlen anpassen.
 6. **Aufnahme-Anfrage bei Apple für 1.5**: Text in `09-appstore.md` 4a, vom
    Gründer in App Store Connect abzuschicken, wenn 1.5 den Import bringt. Frist
    als Wette: 14. Oktober.

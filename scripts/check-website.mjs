@@ -47,7 +47,7 @@ const base = `http://127.0.0.1:${server.address().port}/`;
 // toter Verweis dorthin fällt sonst niemandem auf.
 const seiten = ["index.html", "entwicklung.html", "hilfe.html", "gas-in-kwh.html",
                 "zaehlerstand-umzug.html", "ratgeber.html",
-                "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "zaehlerstand-ablesen.html", "photovoltaik-eigenverbrauch.html", "datenschutz.html", "impressum.html", "404.html"];
+                "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "zaehlerstand-ablesen.html", "photovoltaik-eigenverbrauch.html", "strompreis-entwicklung.html", "datenschutz.html", "impressum.html", "404.html"];
 
 // Was nicht in den Index soll: das Impressum (erreichbar, nicht auffindbar)
 // und die Seite für unbekannte Adressen. Beide tragen `noindex`, keine steht
@@ -835,6 +835,32 @@ console.log("\nVerhalten");
        "Photovoltaik: alles eingespeist und nichts bezogen ergibt 0 % ohne kaputte Zahl");
   await page.fill("#pv-erzeugt", "");
   note(!(await kaputt("#pv-ergebnis")), "Photovoltaik: ein leeres Feld ergibt keine kaputte Zahl");
+
+  // **Die Grafik zum Strompreis.** Die Sätze und Kacheln stehen als Text in
+  // der Seite, damit Google sie liest; die Zahlen dahinter kommen aus
+  // `strompreis-holen.py`. Holt das Skript neue Werte, muss der Text folgen,
+  // sonst stimmt die Seite nicht mehr mit ihrer eigenen Grafik überein.
+  await page.goto(base + "strompreis-entwicklung.html");
+  const sp = await page.evaluate(() => {
+    const P = window.STROMPREISE, f = x => x.toLocaleString("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    const t = id => document.getElementById(id).textContent.trim();
+    const iMax = P.reduce((m, p, i) => p[1] > P[m][1] ? i : m, 0);
+    const mitEu = P.filter(p => p[2] != null);
+    const abstand = mitEu.reduce((m, p) => Math.max(m, p[1] - p[2]), 0);
+    const falsch = [];
+    if (t("fakt-anfang") !== f(P[0][1]) + " ct") falsch.push("Anfang");
+    if (t("fakt-spitze") !== f(P[iMax][1]) + " ct") falsch.push("Spitze");
+    if (t("fakt-zuletzt") !== f(P[P.length - 1][1]) + " ct") falsch.push("zuletzt");
+    if (t("fakt-plus") !== String(Math.round((P[P.length - 1][1] / P[0][1] - 1) * 100))) falsch.push("Plus");
+    if (t("fakt-runter") !== f(P[iMax][1] - P[P.length - 1][1])) falsch.push("runter");
+    if (t("fakt-abstand") !== f(abstand)) falsch.push("Abstand");
+    if (!mitEu.every(p => p[1] > p[2])) falsch.push("„in jedem Halbjahr teurer“");
+    if (document.querySelectorAll("#preis-werte tbody tr").length !== P.length) falsch.push("Tabelle");
+    if (!document.querySelector("#preis-flaeche svg path.linie-de")) falsch.push("Linie");
+    return { n: P.length, falsch };
+  });
+  note(sp.n >= 30 && sp.falsch.length === 0,
+       `Strompreis: ${sp.n} Halbjahre, Text und Grafik stimmen überein${sp.falsch.length ? " (falsch: " + sp.falsch.join(", ") + ")" : ""}`);
 
   // **Die Ablesehilfe zeigt immer genau einen Zähler**, und bei jedem passt
   // die Zahl unter dem Bild zu den umrandeten Ziffern im Bild.

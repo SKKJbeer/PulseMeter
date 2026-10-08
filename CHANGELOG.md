@@ -9,6 +9,37 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.129.0 — 2026-10-08
+
+**Neue Seite: Wie sich der Strompreis entwickelt hat** (`strompreis-entwicklung.html`)
+
+Vom Gründer verlangt: eine Grafik zur Strompreis-Entwicklung, mit offiziellen
+Quellen, schön dargestellt.
+
+- **Quelle: Eurostat**, Datensatz `nrg_pc_204` (DOI 10.2908/NRG_PC_204),
+  Haushalte mit 2.500 bis 5.000 kWh, alle Steuern und Abgaben, je Halbjahr,
+  2007 bis Anfang 2026. Deutschland neben dem EU-Durchschnitt. **Die Lizenz
+  ist vorher gelesen:** kommerzielle Nutzung erlaubt mit Quellenangabe; die
+  Umrechnung in Cent und die Übersetzung sind auf der Seite genannt, ebenso,
+  dass Eurostat für die Darstellung nicht verantwortlich ist.
+- **Die Grafik** zeichnet der Browser selbst, ohne Bibliothek: Achse ab null,
+  Haarlinien, Linien 2 Punkte, der Höchststand markiert, die Werte am Ende der
+  Linien. Eine Zeile darüber zeigt den neuesten Wert und beim Darüberfahren
+  oder Antippen das gewählte Halbjahr. Die Farben sind mit dem Palettenprüfer
+  gemessen, hell und dunkel getrennt (`--serie-de`, `--serie-eu`).
+- **Als Text:** drei Kacheln (20,3 ct 2007, 41,3 ct Höchststand 2023, 36,2 ct
+  Anfang 2026), ein Absatz (79 % teurer seit 2007, 5,1 ct unter dem
+  Höchststand, in jedem Halbjahr über dem EU-Schnitt, am weitesten 2023 mit
+  12,4 ct) und alle Werte als aufklappbare Tabelle.
+- **`scripts/strompreis-holen.py`** holt die Zahlen bei Eurostat und schreibt
+  sie in die Seite. Eine neue Prüfung hält Kacheln und Sätze an diesen Zahlen
+  fest, damit der Text nach dem nächsten Abruf nicht stehen bleibt.
+- Verlinkt im Ratgeber an erster Stelle und auf der Startseite.
+
+Nur die Website, kein App-Bau. Endet in `main`.
+
+---
+
 ## 0.128.0 — 2026-10-08
 
 **Neuer Rechner: Wie viel vom Solarstrom nutze ich selbst?**

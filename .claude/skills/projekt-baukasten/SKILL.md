@@ -1980,7 +1980,16 @@ Die Reihenfolge ist deshalb: **Quelle finden, Bedingungen lesen, dann erst
 Zahlen übernehmen.** Pressemitteilungen und Forschungsberichte (hier
 Fraunhofer ISE) sind zum Zitieren gemacht; Tabellen eines Vergleichsportals
 oft nicht. Ist es unklar, wird verlinkt statt nachgerechnet, und die Anfrage
-geht an den Herausgeber. „Nur Fakten, mit Quelle“ heißt auch: die Quelle darf
+geht an den Herausgeber.
+
+**Quellen, die kommerziell nutzbar sind, mit Quellenangabe:** Eurostat
+(„Reuse ... for commercial or non-commercial purposes is authorised provided
+the source is acknowledged"; Änderungen wie Umrechnen und Übersetzen sind zu
+nennen, dazu der Satz, dass Eurostat für die Darstellung nicht verantwortlich
+ist) und Destatis („Vervielfältigung und Verbreitung, auch auszugsweise, mit
+Quellennachweis gestattet"). Die Daten von Eurostat kommen als JSON über eine
+offene Schnittstelle; ein Skript, das sie holt, ist besser als eine
+abgeschriebene Tabelle (`scripts/strompreis-holen.py`). „Nur Fakten, mit Quelle“ heißt auch: die Quelle darf
 genutzt werden.
 
 ### Ein Baustein außerhalb seines gewohnten Rahmens: erst klicken, dann glauben
