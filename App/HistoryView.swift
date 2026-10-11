@@ -750,26 +750,55 @@ struct HistoryView: View {
     @ViewBuilder
     private var forecastLine: some View {
         if let vorschau, vorschau.daysRemaining > 0 {
-            let gemessen = "\(number(vorschau.actual.quantity.value, digits: 0)) \(unit)"
             let erwartet = "≈ \(number(vorschau.projected.value, digits: 0)) \(unit)"
-            let tage = "\(vorschau.daysElapsed) von "
-                + "\(vorschau.daysElapsed + vorschau.daysRemaining) Tagen"
-            ForecastStrip(
-                measured: "\(gemessen) gemessen",
-                expected: "\(erwartet) erwartet",
-                // Anteil des Gemessenen an der Erwartung. Beides kommt aus
-                // derselben Rechnung, und die Prognose liegt nie unter dem Ist —
-                // die Leiste kann also nicht über ihr Ende hinauslaufen.
-                share: vorschau.projected.value > 0
-                    ? double(vorschau.actual.quantity.value) / double(vorschau.projected.value)
-                    : 0,
-                caption: "\(laufenderAbschnittName) · \(tage) · \(vorschau.method.explanation)",
-                accent: accent,
-                accentInk: accentInk,
-                spoken: "Bisher \(gemessen) gemessen, voraussichtlich \(erwartet) "
-                    + "bis Ende \(laufenderAbschnittName) — \(vorschau.method.explanation), "
-                    + "gerechnet aus \(tage)."
-            )
+            if let zuletzt = vorschau.lastReadingDay {
+                // **Noch keine Ablesung im laufenden Abschnitt.** Die Leiste ist
+                // dann ganz schraffiert: Gemessen ist darin nichts, die Zahl
+                // rechts stammt aus dem Verbrauch davor — und die Zeile darunter
+                // sagt, bis wann. Bis 0.129.0 stand hier gar nichts.
+                let bis = "aus deinem Verbrauch bis \(germanDate(zuletzt))"
+                ForecastStrip(
+                    measured: "\(laufenderAbschnittName) noch nicht abgelesen",
+                    expected: "\(erwartet) erwartet",
+                    share: 0,
+                    caption: "\(bis) · \(vorschau.method.explanation)",
+                    accent: accent,
+                    accentInk: accentInk,
+                    spoken: "\(laufenderAbschnittName) noch nicht abgelesen, voraussichtlich \(erwartet) "
+                        + "bis Ende \(laufenderAbschnittName), \(bis), \(vorschau.method.explanation)."
+                )
+            } else {
+                let gemessen = "\(number(vorschau.actual.quantity.value, digits: 0)) \(unit)"
+                let tage = "\(vorschau.daysElapsed) von "
+                    + "\(vorschau.daysElapsed + vorschau.daysRemaining) Tagen"
+                ForecastStrip(
+                    measured: "\(gemessen) gemessen",
+                    expected: "\(erwartet) erwartet",
+                    // Anteil des Gemessenen an der Erwartung. Beides kommt aus
+                    // derselben Rechnung, und die Prognose liegt nie unter dem Ist —
+                    // die Leiste kann also nicht über ihr Ende hinauslaufen.
+                    share: vorschau.projected.value > 0
+                        ? double(vorschau.actual.quantity.value) / double(vorschau.projected.value)
+                        : 0,
+                    caption: "\(laufenderAbschnittName) · \(tage) · \(vorschau.method.explanation)",
+                    accent: accent,
+                    accentInk: accentInk,
+                    spoken: "Bisher \(gemessen) gemessen, voraussichtlich \(erwartet) "
+                        + "bis Ende \(laufenderAbschnittName) — \(vorschau.method.explanation), "
+                        + "gerechnet aus \(tage)."
+                )
+            }
+        } else if vorschau == nil, readings.count < 2, !laufenderAbschnittName.isEmpty {
+            // **Auch ohne Zahl ein Ausblick: was noch fehlt.** Mit einer
+            // einzigen Ablesung gibt es keinen Verbrauch und damit nichts
+            // hochzurechnen. Statt einer leeren Stelle steht dort der nächste
+            // Schritt.
+            Text("Ab der zweiten Ablesung steht hier, was bis Ende \(laufenderAbschnittName) zu erwarten ist.")
+                .font(PulseText.caption)
+                .foregroundStyle(PulseColor.inkTertiary)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityIdentifier("prognose-hinweis")
         }
     }
 

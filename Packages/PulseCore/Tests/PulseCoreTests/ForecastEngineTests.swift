@@ -102,6 +102,126 @@ final class ForecastEngineTests: XCTestCase {
             register: register, readings: [], period: year2026, today: day(2026, 4, 1)))
     }
 
+    // MARK: - Ohne Ablesung im Zeitraum
+
+    // Vom Gründer am 11. Oktober gemeldet: „ich bekomme keinen wirklichen
+    // Forecast in der App zum Verbrauch." Wer am 28. September abgelesen hat,
+    // sah im ganzen Oktober keinen Ausblick — der Rechenkern gab `nil`.
+    private let october2026 = span(day(2026, 10, 1), day(2026, 11, 1))
+
+    /// Wasser hat kein Jahresprofil: gleichmäßig aus dem Verbrauch davor.
+    func testMonthWithoutReadingProjectsFromEarlierReadings() {
+        let register = Fixture.gasRegister()
+        let point = Fixture.meteringPoint(registers: [register], kind: .water)
+        let readings = [
+            Fixture.reading(register, day(2026, 9, 1), 0),
+            Fixture.reading(register, day(2026, 9, 28), dec("2.7"))   // 27 Tage, 0,1 m³ je Tag
+        ]
+
+        let forecast = ForecastEngine.forecast(meteringPoint: point, readings: readings,
+                                               period: october2026, today: day(2026, 10, 11))
+
+        XCTAssertNotNil(forecast, "Ohne Ablesung im Oktober muss es trotzdem einen Ausblick geben")
+        XCTAssertEqual(forecast?.method, .linear)
+        XCTAssertEqual(forecast?.lastReadingDay, day(2026, 9, 28))
+        XCTAssertEqual(forecast?.restsOnEarlierReadings, true)
+        XCTAssertEqual(forecast?.daysElapsed, 0, "Im Oktober ist noch nichts gemessen")
+        XCTAssertEqual(forecast?.daysRemaining, 31)
+        assertClose(forecast?.projected.value ?? 0, 3.1, accuracy: 0.0001)   // 31 × 0,1 m³
+        XCTAssertEqual(forecast?.confidence, .estimated)
+    }
+
+    /// Gas folgt der Heizperiode. Ein Fenster von Januar bis September darf
+    /// nicht ungewichtet auf den Oktober übertragen werden.
+    func testGasWithoutReadingUsesReferenceShape() {
+        let register = Fixture.gasRegister()
+        let point = Fixture.meteringPoint(registers: [register], kind: .gas)
+        let readings = [
+            Fixture.reading(register, day(2026, 1, 1), 0),
+            Fixture.reading(register, day(2026, 9, 28), 900)
+        ]
+
+        let forecast = ForecastEngine.forecast(meteringPoint: point, readings: readings,
+                                               period: october2026, today: day(2026, 10, 11))
+
+        let profil = SeasonalProfile.reference(for: .gas)!
+        let erwartet = Decimal(900) * profil.share(of: october2026)
+            / profil.share(of: span(day(2026, 1, 1), day(2026, 9, 28)))
+        XCTAssertEqual(forecast?.method, .reference)
+        assertClose(forecast?.projected.value ?? 0, approx(erwartet), accuracy: 0.0001)
+        XCTAssertGreaterThan(approx(forecast?.projected.value ?? 0), 900.0 / 270 * 31,
+                             "Im Oktober wird mehr geheizt als im Schnitt von Januar bis September")
+    }
+
+    /// Mit einem vollständigen Vorjahr zählt dessen Form: Wie groß war der
+    /// Oktober im Verhältnis zum Jahr davor?
+    func testWithoutReadingUsesPreviousYearShape() {
+        let register = Fixture.electricityRegister()
+        let point = Fixture.meteringPoint(registers: [register])
+        let readings = [
+            Fixture.reading(register, day(2024, 9, 28), 0),
+            Fixture.reading(register, day(2025, 9, 28), 3650),
+            Fixture.reading(register, day(2025, 10, 1), 3680),
+            Fixture.reading(register, day(2025, 11, 1), 4300),   // Oktober 2025: 620 kWh
+            Fixture.reading(register, day(2026, 9, 28), 7300)    // letztes Jahr: 3.650 kWh
+        ]
+
+        let forecast = ForecastEngine.forecast(meteringPoint: point, readings: readings,
+                                               period: october2026, today: day(2026, 10, 11))
+
+        XCTAssertEqual(forecast?.method, .previousYear)
+        // 3.650 kWh × 620 / 3.650 — derselbe Oktober wie im Vorjahr.
+        assertClose(forecast?.projected.value ?? 0, 620, accuracy: 0.01)
+    }
+
+    /// Am ersten Tag des Monats ist der verstrichene Teil null Tage lang. Auch
+    /// dann gehört ein Ausblick auf den Schirm.
+    func testFirstDayOfPeriodStillHasOutlook() {
+        let register = Fixture.gasRegister()
+        let point = Fixture.meteringPoint(registers: [register], kind: .water)
+        let readings = [
+            Fixture.reading(register, day(2026, 9, 1), 0),
+            Fixture.reading(register, day(2026, 9, 28), dec("2.7"))
+        ]
+
+        let forecast = ForecastEngine.forecast(meteringPoint: point, readings: readings,
+                                               period: october2026, today: day(2026, 10, 1))
+
+        XCTAssertNotNil(forecast)
+        assertClose(forecast?.projected.value ?? 0, 3.1, accuracy: 0.0001)
+    }
+
+    /// Mit einer einzigen Ablesung gibt es keinen Verbrauch — und damit auch
+    /// nichts, woraus sich etwas hochrechnen ließe. Hier bleibt es bei `nil`;
+    /// die Ansicht sagt dann, dass die zweite Ablesung fehlt.
+    func testSingleReadingHasNoOutlook() {
+        let register = Fixture.electricityRegister()
+        let point = Fixture.meteringPoint(registers: [register])
+        let readings = [Fixture.reading(register, day(2026, 9, 28), 1000)]
+
+        XCTAssertNil(ForecastEngine.forecast(meteringPoint: point, readings: readings,
+                                             period: october2026, today: day(2026, 10, 11)))
+    }
+
+    /// Liegt im Zeitraum eine Ablesung, rechnet die App wie bisher aus dem
+    /// Gemessenen. Der neue Weg ist ein Rückfall, kein Ersatz.
+    func testReadingInsidePeriodStillWins() {
+        let register = Fixture.gasRegister()
+        let point = Fixture.meteringPoint(registers: [register], kind: .water)
+        let readings = [
+            Fixture.reading(register, day(2026, 9, 1), 0),
+            Fixture.reading(register, day(2026, 9, 28), dec("2.7")),
+            Fixture.reading(register, day(2026, 10, 8), dec("4.7"))   // 10 Tage, 0,2 m³ je Tag
+        ]
+
+        let forecast = ForecastEngine.forecast(meteringPoint: point, readings: readings,
+                                               period: october2026, today: day(2026, 10, 11))
+
+        XCTAssertNil(forecast?.lastReadingDay, "Im Oktober wurde gemessen")
+        XCTAssertEqual(forecast?.daysElapsed, 7)
+        assertClose(forecast?.projected.value ?? 0, 6.2, accuracy: 0.0001)   // 31 × 0,2 m³
+    }
+
     // MARK: - Abschlagsvergleich
 
     /// Die Aussage, für die das Produkt existiert.

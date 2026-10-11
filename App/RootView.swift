@@ -315,6 +315,14 @@ struct MeterRow: Identifiable {
     /// Vorschau auf das Ende des Abrechnungszeitraums, wenn ein Abschlag
     /// hinterlegt ist.
     let outlook: ForecastEngine.PrepaymentOutlook?
+    /// Was im laufenden Kalenderjahr voraussichtlich zusammenkommt.
+    ///
+    /// **Ohne Kauf und ohne Abschlag.** Bis 0.129.0 gab es auf der Übersicht
+    /// einen Ausblick nur als Guthaben oder Nachzahlung, also nur mit Preisen
+    /// und Abschlag. Wer einfach Zählerstände einträgt, sah keinen. Vom
+    /// Gründer am 11. Oktober gemeldet: „ich bekomme keinen wirklichen
+    /// Forecast in der App zum Verbrauch."
+    let yearOutlook: ForecastEngine.Forecast?
     /// Eingespeiste Menge und Vergütung — nur bei einem Zweirichtungszähler.
     ///
     /// Getrennt von ``cost``, weil der Betrag dort bereits **netto** ist: Der
@@ -503,6 +511,7 @@ struct OverviewView: View {
                     // meistens stimmt, ist keine.
                     .accessibilityIdentifier("kartenstand-\(row.name)")
                 }
+                jahresausblick(for: row)
                 // Vor den Kosten, nicht danach: Der Betrag darunter ist
                 // bereits netto — die Vergütung ist abgezogen. Stünde sie
                 // hinterher, zöge sie jeder Leser ein zweites Mal ab.
@@ -588,7 +597,9 @@ struct OverviewView: View {
                     //
                     // Der Klick-Dummy konnte das längst; die App nicht. Eine
                     // Abweichung zwischen beiden ist ein Fehler (Regel 2).
-                    Text("Hochgerechnet \(outlook.method.explanation)")
+                    Text(teilenGrundlage(row)
+                         ? "Beides hochgerechnet \(outlook.method.explanation)"
+                         : "Hochgerechnet \(outlook.method.explanation)")
                         .font(PulseText.caption)
                         .foregroundStyle(PulseColor.inkTertiary)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -637,6 +648,73 @@ struct OverviewView: View {
     /// untereinander, die verschiedene Ausschnitte des Jahres meinen und
     /// dieselbe Form haben — der Vergleich, zu dem die Karte einlädt, ist
     /// dann falsch, und niemand kann es sehen.
+    /// **Der Ausblick aufs Jahr, auf jeder Karte.**
+    ///
+    /// Links „Erwartet für 2026", rechts die Zahl mit ≈, darunter worauf sie
+    /// beruht. Steht ein Abschlag-Ausblick darunter und ist er gleich gerechnet,
+    /// sagt die Zeile unter ihm die Grundlage für beide — zweimal derselbe Satz
+    /// untereinander läse niemand. Mit einer einzigen Ablesung steht statt der
+    /// Zahl, was noch fehlt.
+    @ViewBuilder
+    private func jahresausblick(for row: MeterRow) -> some View {
+        let titel = "Erwartet für \(today.year)"
+        if let ausblick = row.yearOutlook, ausblick.daysRemaining > 0 {
+            CardFooterRow(titel) {
+                Button {
+                    oeffneVerlauf?(row.id)
+                } label: {
+                    HStack(spacing: 3) {
+                        Text("≈ \(number(ausblick.projected.value, digits: 0)) \(row.unit)")
+                        if oeffneVerlauf != nil {
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 11, weight: .semibold))
+                                .accessibilityHidden(true)
+                        }
+                    }
+                    .font(.system(.subheadline, weight: .semibold))
+                    .foregroundStyle(PulseColor.ink)
+                }
+                .buttonStyle(.plain)
+                .disabled(oeffneVerlauf == nil)
+                .accessibilityHint("Öffnet den Verlauf")
+                .accessibilityIdentifier("jahresausblick-\(row.name)")
+            }
+            if !teilenGrundlage(row) {
+                Text(ausblickGrundlage(ausblick))
+                    .font(PulseText.caption)
+                    .foregroundStyle(PulseColor.inkTertiary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 15)
+                    .padding(.bottom, 10)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        } else if row.readingCount == 1 {
+            CardFooterRow(titel) {
+                Text("ab der zweiten Ablesung")
+                    .font(PulseText.detail)
+                    .foregroundStyle(PulseColor.inkTertiary)
+            }
+            .accessibilityIdentifier("jahresausblick-\(row.name)")
+        }
+    }
+
+    /// Ob Jahresausblick und Abschlag-Ausblick dieselbe Grundlage haben und
+    /// ein Satz für beide reicht. Stammt der Jahresausblick aus Ablesungen vor
+    /// dem Jahr, braucht er seinen eigenen Satz, denn der nennt den Zeitraum.
+    private func teilenGrundlage(_ row: MeterRow) -> Bool {
+        guard let jahr = row.yearOutlook, let abschlag = row.outlook else { return false }
+        return jahr.method == abschlag.method && !jahr.restsOnEarlierReadings
+    }
+
+    /// Worauf der Ausblick beruht, in einem Satz. Ohne Ablesung im laufenden
+    /// Jahr sagt er, aus welchem Zeitraum die Zahl stammt.
+    private func ausblickGrundlage(_ ausblick: ForecastEngine.Forecast) -> String {
+        if let zuletzt = ausblick.lastReadingDay {
+            return "Hochgerechnet aus deinem Verbrauch bis \(germanDate(zuletzt)), \(ausblick.method.explanation)"
+        }
+        return "Hochgerechnet \(ausblick.method.explanation)"
+    }
+
     private func periodCaption(for row: MeterRow) -> String {
         guard let result = row.yearToDate else { return "Noch keine Ablesung" }
         if case .none = result.coverage {
@@ -827,7 +905,7 @@ struct OverviewView: View {
                                     daysSinceReading: nil, isDue: false,
                                     cost: nil, costIsApproximate: false,
                                     costProblem: nil, costSpans: [],
-                                    outlook: nil, feedIn: nil)
+                                    outlook: nil, yearOutlook: nil, feedIn: nil)
                 }
                 // **Zwei Listen, und die Namen sagen welche.**
                 //
@@ -901,6 +979,11 @@ struct OverviewView: View {
                                          today: today),
                     outlook: outlook(point: point, readings: everything,
                                      tariffs: tariffs, periods: periods),
+                    yearOutlook: PeriodEngine.range(year: today.year, slot: 1, granularity: .year)
+                        .flatMap { jahr in
+                            ForecastEngine.forecast(meteringPoint: point, readings: everything,
+                                                    period: jahr, today: today)
+                        },
                     feedIn: feedIn(point: point, readings: everything,
                                    tariffs: tariffs, in: yearRange)
                 )

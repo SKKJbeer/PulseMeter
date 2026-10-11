@@ -1008,6 +1008,25 @@ final class LaunchTests: XCTestCase {
     /// dieselbe Fehlerklasse wie zwei verschiedene Zeiträume: Beide Seiten
     /// müssen dasselbe beschreiben. Gas hat ein Zählwerk, damit fällt der Fall
     /// weg.
+    /// **Der Ausblick aufs Jahr steht auf der Karte, auch ohne Kauf.**
+    ///
+    /// Vom Gründer am 11. Oktober gemeldet: „ich bekomme keinen wirklichen
+    /// Forecast in der App zum Verbrauch." Bis 0.130.0 gab es auf der
+    /// Übersicht einen Ausblick nur als Guthaben oder Nachzahlung, also nur
+    /// mit Preisen und Abschlag. Der neue Ausblick fragt keinen Kauf ab; mit
+    /// den vollen Beispieldaten ist Gas sicher auf dem Schirm.
+    func testOverviewShowsYearOutlook() {
+        let app = launchWithData()
+
+        let ausblick = app.descendants(matching: .any)
+            .matching(identifier: "jahresausblick-Gas").firstMatch
+        XCTAssertTrue(ausblick.waitForExistence(timeout: erscheint),
+                      "Auf der Gas-Karte steht kein Ausblick aufs Jahr. Zu sehen war: "
+                      + beschriftungen(in: app))
+        XCTAssertTrue(ausblick.label.contains("≈"),
+                      "Der Ausblick ist gerechnet, nicht gemessen, und braucht sein ≈: \(ausblick.label)")
+    }
+
     func testDeletingAReadingReachesTheOtherTabs() {
         let app = launchWithData()
 

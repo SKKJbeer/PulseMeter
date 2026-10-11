@@ -302,6 +302,8 @@ ul.includes.done li::before { content: "✓"; color: var(--tint); font-size: 12p
 .card-extra > span:first-child { min-width: 0; }
 .card-extra > :last-child { white-space: nowrap; flex: none; }
 .card-extra strong { color: var(--ink); font-weight: 600; }
+/* Worauf eine Hochrechnung beruht, direkt unter ihr. */
+.card-basis { padding: 0 15px 10px; margin-top: -4px; font-size: var(--fs-cap, 12px); color: var(--ink-3); }
 /* Drei Beträge nebeneinander — Monat, Quartal, Jahr. Untereinander hätten sie
    die Karte über die Bildschirmhöhe geschoben, und Produktprinzip 3 verlangt
    den Überblick ohne Scrollen. */
@@ -934,7 +936,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>Zählora</h1>
-  <p>Klickbarer Entwurf · v0.129.0</p>
+  <p>Klickbarer Entwurf · v0.130.0</p>
 </div>
 
 <div class="device" id="device">
@@ -1859,11 +1861,57 @@ function profileShare(profile, from, to) {
 
    Über den ganzen Zähler, nicht über ein Zählwerk: Der Balken daneben ist die
    Summe. */
+/* **Ohne Ablesung im Zeitraum: aus dem Verbrauch davor.** Wie
+   `ForecastEngine.forecastFromEarlierReadings`. Höchstens das letzte Jahr bis
+   zur letzten Ablesung, übertragen nach dem eigenen Vorjahr, sonst nach dem
+   typischen Jahresverlauf, sonst gleichmäßig nach Tagen. Bis 0.129.0 stand
+   dann gar nichts da — im Entwurf genau beim Gas, das seit dem 28. Mai nicht
+   abgelesen ist. */
+const RANG = { linear: 0, reference: 1, previousYear: 2, ownHistory: 3 };
+function plusTage(t, n) {
+  const d = new Date(Date.UTC(t.y, t.m - 1, t.d + n));
+  return { y: d.getUTCFullYear(), m: d.getUTCMonth() + 1, d: d.getUTCDate() };
+}
+function earlierForecast(meter, from, to) {
+  let value = 0, method = null, last = null;
+  for (const reg of meter.registers.filter(r => !r.feedIn)) {
+    const rs = reg.readings;
+    if (rs.length < 2) continue;
+    const l = rs[rs.length - 1], f = rs[0];
+    if (serial(l.y, l.m, l.d) > serial(from.y, from.m, from.d)) continue;
+    let ws = plusTage(l, -365);
+    if (serial(ws.y, ws.m, ws.d) < serial(f.y, f.m, f.d)) ws = { y: f.y, m: f.m, d: f.d };
+    const obs = consumption(reg, ws, l);
+    if (!obs || obs.value <= 0) continue;
+    let factor = null, m = "linear";
+    const pw = consumption(reg, shiftYear(ws, -1), shiftYear(l, -1));
+    const pp = consumption(reg, shiftYear(from, -1), shiftYear(to, -1));
+    if (pw && pp && pw.complete && pp.complete && pw.value > 0 && pp.value > 0) {
+      factor = pp.value / pw.value; m = "previousYear";
+    }
+    if (factor === null) {
+      const prof = referenceProfile(meter, reg);
+      if (prof) {
+        const w = profileShare(prof, ws, l), p = profileShare(prof, from, to);
+        if (w > 0 && p > 0) { factor = p / w; m = "reference"; }
+      }
+    }
+    if (factor === null) { factor = between(from, to) / between(ws, l); m = "linear"; }
+    value += obs.value * factor;
+    if (method === null || RANG[m] < RANG[method]) method = m;
+    if (!last || serial(l.y, l.m, l.d) > serial(last.y, last.m, last.d)) last = l;
+  }
+  if (method === null || value <= 0) return null;
+  return { value, gemessen: 0, method, tage: 0, tageGesamt: between(from, to), lastDay: last };
+}
+
 function monthForecast(meter, y, mo) {
   if (y !== TODAY.y || mo !== TODAY.m) return null;
   const monatsende = { y: mo === 12 ? y + 1 : y, m: mo === 12 ? 1 : mo + 1, d: 1 };
   const bisher = meterConsumption(meter, { y, m: mo, d: 1 }, TODAY);
-  if (!bisher || bisher.value <= 0 || !bisher.days) return null;
+  if (!bisher || bisher.value <= 0 || !bisher.days) {
+    return earlierForecast(meter, { y, m: mo, d: 1 }, monatsende);
+  }
 
   const vollerMonat = between({ y, m: mo, d: 1 }, monatsende);
   const vorjahrTeil = meterConsumption(meter, { y: y - 1, m: mo, d: 1 },
@@ -1903,6 +1951,25 @@ function forecast(reg, meter) {
   const perDay = now.value / now.days;
   const remaining = between(now.cto, { y: 2026, m: 12, d: 31 });
   return { value: now.value + perDay * remaining, method: "linear", now: now };
+}
+
+/* **Was im Jahr voraussichtlich zusammenkommt — für den ganzen Zähler.**
+   Wie `ForecastEngine.forecast(meteringPoint:)` mit dem Kalenderjahr: die
+   Summe der Bezugs-Zählwerke, als Grundlage die schwächste. Ohne Ablesung im
+   Jahr aus dem Verbrauch davor. */
+function meterYearForecast(m) {
+  const jahr = { y: TODAY.y, m: 1, d: 1 }, ende = { y: TODAY.y + 1, m: 1, d: 1 };
+  const ist = meterYearToDate(m);
+  if (!ist) return earlierForecast(m, jahr, ende);
+  let value = 0, method = null;
+  for (const reg of m.registers.filter(r => !r.feedIn)) {
+    const f = forecast(reg, m);
+    if (!f) continue;
+    value += f.value;
+    if (method === null || RANG[f.method] < RANG[method]) method = f.method;
+  }
+  if (method === null) return null;
+  return { value: Math.max(value, ist.value), method, lastDay: null };
 }
 
 /* Worauf die Zahl beruht, in einem Satzteil. Wortgleich mit
@@ -2117,6 +2184,25 @@ function renderCards() {
       extra += `<div class="card-extra"><span>Stand <strong>${nf(lastR.value, m.frac)} ${m.unit}</strong></span>
         <span>${dateMedium(lastR)}</span></div>`;
     }
+    // **Der Ausblick aufs Jahr, auf jeder Karte und ohne Kauf.** Bis 0.129.0
+    // gab es ihn nur als Guthaben oder Nachzahlung. Mit einer Ablesung steht
+    // statt der Zahl, was noch fehlt.
+    const ja = meterYearForecast(m);
+    const abschlagFc = m.prepay && fc ? fc : null;
+    const geteilt = ja && abschlagFc && !ja.lastDay && ja.method === abschlagFc.method && darfKosten();
+    if (ja) {
+      extra += `<div class="card-extra"><span>Erwartet für ${TODAY.y}</span>
+        <button class="explain" data-ausblick="${m.id}" aria-label="Erwartet für ${TODAY.y}: ungefähr ${nf(ja.value, m.frac >= 3 ? 1 : 0)} ${m.unit}, öffnet den Verlauf">≈ ${nf(ja.value, m.frac >= 3 ? 1 : 0)} ${m.unit}
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button></div>`;
+      if (!geteilt) {
+        extra += `<div class="card-basis">${ja.lastDay
+          ? `Hochgerechnet aus deinem Verbrauch bis ${dateMedium(ja.lastDay)}, ${FORECAST_BASIS[ja.method]}`
+          : `Hochgerechnet ${FORECAST_BASIS[ja.method]}`}</div>`;
+      }
+    } else if (lastR && m.registers.every(r => r.readings.length < 2)) {
+      extra += `<div class="card-extra" data-ausblick="${m.id}"><span>Erwartet für ${TODAY.y}</span>
+        <span style="color:var(--ink-3)">ab der zweiten Ablesung</span></div>`;
+    }
     // Einspeisung **vor** den Kosten, nicht danach: Der Betrag ist bereits
     // netto — die Vergütung ist abgezogen. Stünde sie darunter, zöge sie jeder
     // Leser ein zweites Mal ab. So liest sich die Karte als Rechnung von oben
@@ -2157,6 +2243,7 @@ function renderCards() {
       extra += `<div class="card-extra"><span>Abschlag ${moneyRound(m.prepay)} monatlich</span>
         <button class="explain" data-explain="${m.id}">${bal >= 0 ? "≈ " + moneyRound(bal) + " Guthaben" : "≈ " + moneyRound(-bal) + " Nachzahlung"}
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button></div>`;
+      extra += `<div class="card-basis">${geteilt ? "Beides hochgerechnet" : "Hochgerechnet"} ${FORECAST_BASIS[fc.method]}</div>`;
     }
 
     // Ein „≈" vor der Zahl, sobald sie nicht ausschließlich auf gemessenen
@@ -2624,22 +2711,29 @@ function renderChart() {
       // rechts, was erwartet wird; die Leiste dazwischen zeigt, wie weit der
       // Monat ist. Dieselbe Bildsprache wie im Diagramm: voll heißt gemessen,
       // schraffiert heißt erwartet.
-      const bisher = meterConsumption(m, { y: TODAY.y, m: TODAY.m, d: 1 }, TODAY);
+      const bisher = mf.lastDay ? null : meterConsumption(m, { y: TODAY.y, m: TODAY.m, d: 1 }, TODAY);
       const ist = bisher ? bisher.value : 0;
       const anteil = mf.value > 0 ? Math.min(100, (ist / mf.value) * 100) : 0;
+      // Ohne Ablesung im Monat ist die Leiste ganz schraffiert, und die Zeile
+      // darunter sagt, bis wann die Zahl gemessen ist.
+      const istText = mf.lastDay ? `${MONTHS_LONG[laufend]} noch nicht abgelesen` : `${nf(ist, dp)} ${m.unit} gemessen`;
+      const unten = mf.lastDay
+        ? `aus deinem Verbrauch bis ${dateMedium(mf.lastDay)} · ${FORECAST_BASIS[mf.method]}`
+        : `${MONTHS_LONG[laufend]} · ${mf.tage} von ${mf.tageGesamt} Tagen · ${FORECAST_BASIS[mf.method]}`;
       fz.innerHTML = `
         <div class="fc-oben">
-          <span class="fc-ist">${nf(ist, dp)} ${m.unit} gemessen</span>
+          <span class="fc-ist">${istText}</span>
           <span class="fc-soll" style="color:${textFarbe(m.color)}">≈ ${nf(mf.value, dp)} ${m.unit} erwartet</span>
         </div>
         <div class="fc-spur">
           <div class="fc-voll" style="width:${anteil}%;background:${m.color}"></div>
           <div class="fc-rest" style="background-color:color-mix(in srgb, ${m.color} 14%, transparent);background-image:repeating-linear-gradient(45deg, color-mix(in srgb, ${m.color} 62%, transparent) 0 1px, transparent 1px 4px)"></div>
         </div>
-        <div class="fc-unten">${MONTHS_LONG[laufend]} · ${mf.tage} von ${mf.tageGesamt} Tagen ·
-          ${mf.method === "previousYear"
-            ? "nach dem Verlauf deines Vorjahres"
-            : "gleichmäßig aus dem bisherigen Tagesschnitt"}</div>`;
+        <div class="fc-unten">${unten}</div>`;
+      fz.style.display = "";
+    } else if (m.registers.every(r => r.readings.length < 2)) {
+      // Auch ohne Zahl ein Ausblick: was noch fehlt.
+      fz.innerHTML = `<div class="fc-unten" data-prognose-hinweis>Ab der zweiten Ablesung steht hier, was bis Ende ${MONTHS_LONG[laufend]} zu erwarten ist.</div>`;
       fz.style.display = "";
     } else {
       fz.style.display = "none";
@@ -3009,7 +3103,7 @@ function renderTable() {
       YEARS.map(y => `<th>${y}</th>`).join("") + `<th>Δ</th></tr></thead><tbody>` +
       rows.map(r => `<tr class="${r.cells[0].est ? "est" : ""}"><td>${r.label}</td>` +
         r.cells.map((c, k) => k === 0 && r.laufend && mfTab
-          ? `<td class="now">${fmtCell(target, mfTab.gemessen)}<small class="erw">≈ ${fmtCell(target, mfTab.value)} erwartet</small></td>`
+          ? `<td class="now">${mfTab.lastDay ? "–" : fmtCell(target, mfTab.gemessen)}<small class="erw">≈ ${fmtCell(target, mfTab.value)} erwartet</small></td>`
           : c.v === null
           ? '<td class="na">—</td>'
           : `<td class="${k === 0 ? "now" : ""}">${fmtCell(target, c.v)}</td>`).join("") +
@@ -4556,7 +4650,7 @@ function refreshAfterMeterChange() {
 
 /* Ereignisse */
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-capture],[data-reading],#cap-delete,[data-history],[data-meterchange],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export],[data-month],[data-open],[data-kaufen],[data-scope],[data-period],[data-meter],[data-pro],[data-springe],[data-unlock],#add-meter,#first-meter,#ed-save,#ed-archive,#ed-delete");
+  const t = e.target.closest("[data-capture],[data-reading],#cap-delete,[data-history],button[data-ausblick],[data-meterchange],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export],[data-month],[data-open],[data-kaufen],[data-scope],[data-period],[data-meter],[data-pro],[data-springe],[data-unlock],#add-meter,#first-meter,#ed-save,#ed-archive,#ed-delete");
   if (!t) return;
 
   if (t.dataset.springe !== undefined) return springe(t.dataset.springe || null);
@@ -4585,8 +4679,9 @@ document.addEventListener("click", e => {
   // Der ausgewählte Monat fällt dabei weg: Er gehörte zum vorigen Zähler, und
   // ein Balken, der beim Wechsel stehen bleibt, zeigt den Ausschnitt eines
   // anderen — die wiederkehrende Fehlerklasse dieses Projekts.
-  if (t.dataset.history) {
-    histMeter = t.dataset.history;
+  // Der Ausblick auf der Karte führt in denselben Verlauf wie der Kartenkopf.
+  if (t.dataset.history || (t.tagName === "BUTTON" && t.dataset.ausblick)) {
+    histMeter = t.dataset.history || t.dataset.ausblick;
     selMonth = null;
     renderPicker();
     renderHistory();

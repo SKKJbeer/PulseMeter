@@ -19,7 +19,11 @@ cd "$(dirname "$0")/.."
 VERSION="1.62.1"
 
 # Auf einem Rechner, der es schon hat, kostet das zwei Sekunden statt zwanzig.
-if node -e "require.resolve('playwright')" 2>/dev/null; then
+# **Als ES-Modul aus diesem Ordner, nicht als `require`.** `require.resolve`
+# fand am 11. Oktober ein global installiertes Playwright und meldete „liegt
+# schon da", während `import "playwright"` in den Prüfskripten scheiterte: Ein
+# ES-Modul sucht nur im `node_modules` des Projekts.
+if node --input-type=module -e "await import('playwright')" 2>/dev/null; then
   echo "Playwright liegt schon da."
 else
   npm install --no-save "playwright@${VERSION}"

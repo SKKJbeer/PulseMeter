@@ -84,6 +84,20 @@ public enum ForecastEngine {
         /// Immer ``Confidence/estimated`` — eine Hochrechnung ist nie gemessen.
         public let confidence: Confidence = .estimated
 
+        /// Der Tag der letzten Ablesung, wenn im Zeitraum selbst noch keine
+        /// liegt und die Hochrechnung deshalb aus dem Verbrauch davor stammt.
+        /// `nil`, wenn im Zeitraum schon gemessen wurde.
+        ///
+        /// **Warum es das gibt.** Bis 0.129.0 gab es dann gar keine
+        /// Hochrechnung. Wer am 28. September abgelesen hatte, sah im ganzen
+        /// Oktober keinen Ausblick, bis er wieder ablas; wer am Monatsende
+        /// abliest, also fast nie. Vom Gründer am 11. Oktober gemeldet: „ich
+        /// bekomme keinen wirklichen Forecast in der App zum Verbrauch."
+        public var lastReadingDay: CalendarDay? = nil
+
+        /// Ob die Zahl ohne eine Ablesung im Zeitraum entstanden ist.
+        public var restsOnEarlierReadings: Bool { lastReadingDay != nil }
+
         public var progress: Decimal {
             let total = daysElapsed + daysRemaining
             guard total > 0 else { return 0 }
@@ -121,14 +135,20 @@ public enum ForecastEngine {
         let draws = meteringPoint.registers.filter { $0.direction == .consumption }
         guard !draws.isEmpty else { return nil }
 
+        // Am ersten Tag des Zeitraums ist der verstrichene Teil null Tage lang.
+        // Auch dann gibt es einen Ausblick — aus dem Verbrauch davor.
         let elapsedEnd = Swift.min(today, period.end)
         guard let elapsedRange = DayRange(start: period.start, end: elapsedEnd),
-              elapsedRange.spanInDays > 0 else { return nil }
+              today < period.end else { return nil }
 
         let actual = ConsumptionEngine.consumption(meteringPoint: meteringPoint,
                                                    readings: readings, in: elapsedRange)
         guard actual.hasData, let covered = actual.coveredRange, covered.spanInDays > 0 else {
-            return nil
+            // Im Zeitraum liegt noch keine Ablesung. Statt nichts zu sagen,
+            // aus dem Verbrauch davor hochrechnen — gekennzeichnet.
+            return forecastFromEarlierReadings(meteringPoint: meteringPoint,
+                                               registers: draws, readings: readings,
+                                               period: period, actual: actual)
         }
 
         let daysElapsed = covered.spanInDays
@@ -161,6 +181,94 @@ public enum ForecastEngine {
             method: weakest,
             daysElapsed: daysElapsed,
             daysRemaining: daysRemaining
+        )
+    }
+
+    /// Wie weit zurück der Verbrauch vor dem Zeitraum herangezogen wird.
+    ///
+    /// Ein Jahr: lang genug, dass ein einzelner kalter Monat das Ergebnis nicht
+    /// trägt, kurz genug, dass eine neue Heizung von vor drei Jahren nicht mehr
+    /// mitzählt. Wer weniger Geschichte hat, bekommt, was da ist.
+    private static let earlierWindowDays = 365
+
+    /// **Hochrechnung ohne Ablesung im Zeitraum.**
+    ///
+    /// Gerechnet wird aus dem Verbrauch vor dem Zeitraum: höchstens das letzte
+    /// Jahr bis zur letzten Ablesung. Übertragen wird er mit derselben
+    /// Rangfolge wie sonst auch, nur auf zwei Fenster statt auf eines:
+    ///
+    /// - **Eigenes Vorjahr:** Wie verhielt sich derselbe Zeitraum ein Jahr
+    ///   früher zum Fenster ein Jahr früher? Beide müssen vollständig
+    ///   gemessen sein.
+    /// - **Typischer Jahresverlauf** der Zählerart, wenn das nicht geht.
+    /// - **Gleichmäßig** nach Tagen, wenn es auch kein Profil gibt.
+    ///
+    /// Beide Seiten beschreiben dabei denselben Ausschnitt des Jahres — die
+    /// wiederkehrende Fehlerklasse aus CLAUDE.md: Ein Sommerfenster darf nicht
+    /// ungewichtet auf einen Wintermonat übertragen werden.
+    private static func forecastFromEarlierReadings(
+        meteringPoint: MeteringPoint,
+        registers: [Register],
+        readings: [Reading],
+        period: DayRange,
+        actual: ConsumptionResult
+    ) -> Forecast? {
+        var projected = Decimal(0)
+        var weakest: Method = .ownHistory
+        var sawOne = false
+        var lastDay: CalendarDay?
+
+        for register in registers {
+            guard let series = ConsumptionSeries.build(register: register, readings: readings),
+                  let first = series.firstDay, let last = series.lastDay,
+                  last <= period.start,
+                  let window = DayRange(start: Swift.max(first, last.adding(days: -earlierWindowDays)),
+                                        end: last),
+                  window.spanInDays > 0
+            else { continue }
+
+            let observed = ConsumptionEngine.consumption(series: series, in: window)
+            guard observed.hasData, observed.quantity.value > 0 else { continue }
+
+            var factor: Decimal?
+            var method: Method = .linear
+
+            if let priorWindow = DayRange(start: window.start.oneYearEarlier, end: window.end.oneYearEarlier),
+               let priorPeriod = DayRange(start: period.start.oneYearEarlier, end: period.end.oneYearEarlier) {
+                let a = ConsumptionEngine.consumption(series: series, in: priorWindow)
+                let b = ConsumptionEngine.consumption(series: series, in: priorPeriod)
+                if a.isComplete, b.isComplete, a.quantity.value > 0, b.quantity.value > 0 {
+                    factor = b.quantity.value / a.quantity.value
+                    method = .previousYear
+                }
+            }
+            if factor == nil,
+               let profile = SeasonalProfile.reference(for: meteringPoint.kind, direction: register.direction) {
+                let w = profile.share(of: window), p = profile.share(of: period)
+                if w > 0, p > 0 {
+                    factor = p / w
+                    method = .reference
+                }
+            }
+            if factor == nil {
+                factor = Decimal(period.spanInDays) / Decimal(window.spanInDays)
+                method = .linear
+            }
+
+            sawOne = true
+            projected += observed.quantity.value * (factor ?? 0)
+            if method.rank < weakest.rank { weakest = method }
+            lastDay = Swift.max(lastDay ?? last, last)
+        }
+
+        guard sawOne, projected > 0, let lastDay else { return nil }
+        return Forecast(
+            actual: actual,
+            projected: Quantity(projected, actual.quantity.unit),
+            method: weakest,
+            daysElapsed: 0,
+            daysRemaining: period.spanInDays,
+            lastReadingDay: lastDay
         )
     }
 

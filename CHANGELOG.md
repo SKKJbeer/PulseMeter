@@ -9,6 +9,45 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.130.0 — 2026-10-11
+
+**Immer ein Ausblick auf den Verbrauch**
+
+Vom Gründer gemeldet: „irgendwie bekomme ich keinen wirklichen Forecast in der
+App zum Verbrauch." Der Review fand drei Lücken:
+
+1. **Auf der Übersicht gab es den Ausblick nur als Abschlag.** Wer keinen
+   Abschlag eingetragen oder keine Preise gekauft hatte, sah keine
+   Hochrechnung. Jetzt steht auf jeder Karte unter dem Stand
+   **„Erwartet für 2026 ≈ 2.787 kWh"** (Strom im Klick-Dummy), kostenlos und ohne Abschlag. Antippen
+   öffnet den Verlauf. Darunter steht, woraus die Zahl stammt.
+2. **Im Verlauf verschwand der Monatsausblick, solange im Monat noch nicht
+   abgelesen war.** Wer am 28. September abliest, sah den ganzen Oktober
+   nichts. `ForecastEngine` rechnet jetzt aus dem Verbrauch der letzten zwölf
+   Monate bis zur letzten Ablesung weiter: nach dem eigenen Vorjahr, sonst
+   nach dem typischen Jahresverlauf (Heizung, Haushaltsstrom, Solar), sonst
+   gleichmäßig nach Tagen. Der Streifen sagt dann „Oktober noch nicht
+   abgelesen · ≈ 3,1 m³ erwartet" und nennt das Datum der letzten Ablesung.
+3. **Am ersten Tag eines Zeitraums gab es gar keine Zahl.** Jetzt greift
+   derselbe Rückfall.
+
+Mit nur einer Ablesung steht da, ab wann es eine Zahl gibt („ab der zweiten
+Ablesung"), statt einer leeren Stelle.
+
+Geschätzt bleibt gekennzeichnet (≈ und die Grundlage darunter, Prinzip 7).
+
+- `Forecast.lastReadingDay` und `restsOnEarlierReadings`, sechs neue Tests
+  (263 grün), darunter erster Tag, nur eine Ablesung, Vorjahresform, Profil
+  beim Gas und „Ablesung im Zeitraum gewinnt".
+- Oberflächentest `testOverviewShowsYearOutlook`.
+- Klick-Dummy rechnet dasselbe: Gas im August (letzte Ablesung 28. Mai) zeigt
+  jetzt einen Ausblick, jede Karte „Erwartet für 2026".
+- Website: Das Datum auf der Entwicklungsseite darf bei 300 % Textgröße
+  umbrechen (lief 6 px über den Rand).
+- `chromium-holen.sh` prüft Playwright so, wie es geladen wird (`import`).
+
+---
+
 ## 0.129.0 — 2026-10-08
 
 **Neue Seite: Wie sich der Strompreis entwickelt hat** (`strompreis-entwicklung.html`)

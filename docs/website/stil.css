@@ -800,7 +800,9 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
   gap: 6px 12px;
   margin-bottom: 8px;
 }
-.weg-kopf time { color: var(--ink-3); font-size: 14px; font-variant-numeric: tabular-nums; }
+/* Bei 300 % Textgröße ist die Spalte schmaler als ein Datum; ohne Umbruch
+   stand es 6 px über den Rand. */
+.weg-kopf time { min-width: 0; overflow-wrap: anywhere; color: var(--ink-3); font-size: 14px; font-variant-numeric: tabular-nums; }
 .weg-karte h3 { display: flex; align-items: center; gap: 10px; margin: 0 0 6px; font-size: 18px; }
 .weg-karte p { margin: 0; color: var(--ink-2); font-size: 15.5px; }
 .zeichen {

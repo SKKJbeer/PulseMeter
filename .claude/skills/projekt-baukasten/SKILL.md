@@ -1194,6 +1194,44 @@ Der Zwilling davon in der Oberfläche: **zwei verschiedene Register unter einer
 Beschriftung.** Ein Oberflächentest fiel, weil der neueste Wert die Einspeisung
 war und die Karte zu Recht unverändert blieb.
 
+### Eine Rechnung, die `nil` zurückgibt, ist eine leere Stelle, die niemand meldet
+
+Die Verbrauchsprognose gab `nil` zurück, sobald im laufenden Zeitraum noch
+keine Ablesung lag — also bei jedem, der am Monatsende abliest, fast den ganzen
+Monat. Die Oberfläche blendete die Zeile dann aus. Kein Test fiel, keine
+Prüfung schlug an, und monatelang sah der Gründer „keinen wirklichen Forecast".
+Dazu kam, dass die Übersicht die Hochrechnung nur als Abschlagsausblick zeigte,
+also nur mit Abschlag **und** gekauften Preisen.
+
+**Die Regel:** Für jede Rechnung, die „keine Antwort" kennt, aufschreiben,
+**wann** sie das tut, und für jeden dieser Fälle entscheiden: Rückfall mit
+Kennzeichnung (hier: aus dem Verbrauch bis zur letzten Ablesung, mit Datum),
+oder ein sichtbarer Satz, was fehlt („ab der zweiten Ablesung"). Ein stilles
+Ausblenden ist keine der beiden Möglichkeiten. Und für jeden Fall einen Test,
+der den Rückfall verlangt — der fehlende Test war hier „erster Tag des Monats".
+
+### Eine frische Cloud-Sitzung hat nicht, was die letzte hatte
+
+Am 11. Oktober fehlten im neuen Container die Swift-Toolchain, `pyflakes` und
+ein Playwright, das sich per `import` laden ließ. Drei Dinge, drei Umwege:
+
+- **Swift**: Tarball von `download.swift.org` für die passende Ubuntu-Fassung,
+  **Signatur prüfen** (`gpg --verify` gegen Apples Release-Schlüssel), nach
+  `/opt/swift` entpacken. Dauert zwei Minuten.
+- **`pyflakes`**: `pip3 install` landete bei einem anderen Python als dem, das
+  `python3` aufruft (`/usr/local/bin` vor `/usr/bin`). Immer
+  `python3 -m pip install` — dann stimmt das Ziel.
+- **Playwright**: Nur global installiert, findet ein ES-Modul es nicht.
+  `npm install --no-save playwright@<Fassung>` im Projekt. Eine Prüfung mit
+  `require.resolve` meldet es trotzdem als vorhanden; geprüft wird mit
+  `node --input-type=module -e "await import('playwright')"`, so wie es benutzt
+  wird.
+
+Und eine Prüfung, die vorher grün war, kann im neuen Container fallen, ohne dass
+sich etwas geändert hat (hier: 6 px Überlauf bei 300 % Text, andere Schrift im
+System). Erst auf dem committeten Stand nachmessen, dann beheben — nicht als
+Folge der eigenen Änderung suchen.
+
 ### Zwei Zustände für eine Sache geraten aus dem Takt
 
 Ein Blatt in SwiftUI stand über einem Schalter „ist es offen?" und daneben lag

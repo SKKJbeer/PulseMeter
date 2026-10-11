@@ -577,6 +577,45 @@ for (const scheme of ["light", "dark"]) {
        `Der volle Teil der Leiste passt zum Verhältnis der Zahlen `
        + `(${(prognose.anteil * 100).toFixed(0)} % zu ${(sollAnteil * 100).toFixed(0)} %)`);
 
+  // **Immer ein Ausblick, auch ohne Ablesung im Monat.** Bis 0.129.0 fehlte
+  // er dann, und beim Gas (zuletzt am 28. Mai abgelesen) stand im August gar
+  // nichts. Geprüft wird: jede Karte nennt „Erwartet für <Jahr>" mit ≈, und
+  // der Gas-Verlauf zeigt die Erwartung samt dem Tag, aus dem sie stammt.
+  await page.locator('[data-pane="home"]:visible').first().click();
+  await page.waitForTimeout(200);
+  const ausblick = await page.evaluate(`(() => ({
+    // Der Lauf hat oben selbst einen Zähler angelegt; ohne zweite Ablesung
+    // gibt es für ihn zu Recht noch keine Zahl, nur den Hinweis.
+    zaehler: METERS.filter(m => m.registers.some(r => r.readings.length >= 2)).length,
+    einzeln: METERS.filter(m => m.registers.some(r => r.readings.length === 1)
+                             && m.registers.every(r => r.readings.length < 2)).length,
+    hinweise: [...document.querySelectorAll("div[data-ausblick]")]
+      .filter(d => /ab der zweiten Ablesung/.test(d.textContent)).length,
+    jahr: TODAY.y,
+    karten: [...document.querySelectorAll("button[data-ausblick]")].map(b => b.textContent.trim()),
+    zeile: (document.querySelector("button[data-ausblick]")?.parentElement?.innerText || ""),
+    gas: (METERS.find(m => m.name === "Gas") || {}).id
+  }))()`);
+  note(ausblick.karten.length === ausblick.zaehler && ausblick.karten.every(t => /≈\s*[\d.,]+/.test(t)),
+       `Jede Karte nennt einen Jahresausblick mit ≈ (${ausblick.karten.length} von ${ausblick.zaehler})`);
+  note(ausblick.hinweise === ausblick.einzeln,
+       `Mit nur einer Ablesung steht, ab wann es eine Zahl gibt (${ausblick.hinweise} von ${ausblick.einzeln})`);
+  note(ausblick.zeile.includes(`Erwartet für ${ausblick.jahr}`),
+       `Die Zeile heißt „Erwartet für ${ausblick.jahr}"`);
+  if (ausblick.gas) {
+    await page.locator(`[data-history="${ausblick.gas}"]`).first().click();
+    await page.waitForTimeout(350);
+    await page.locator('[data-mode="chart"]').first().click();
+    await page.waitForTimeout(200);
+    const gasLeiste = await page.evaluate(`document.getElementById("chart-forecast").innerText.trim()`);
+    note(/noch nicht abgelesen/.test(gasLeiste) && /≈/.test(gasLeiste) && /28\. Mai/.test(gasLeiste),
+         `Gas ohne Ablesung im Monat zeigt trotzdem die Erwartung und woher („${gasLeiste.replace(/\s+/g, " ").slice(0, 90)}")`);
+  } else {
+    note(false, "Kein Gaszähler im Entwurf für die Ausblicksprüfung");
+  }
+  await page.locator('[data-pane="history"]:visible').first().click();
+  await page.waitForTimeout(200);
+
   // **Im Diagramm selbst steht keine Ziffer.** Drei Anläufe, die Zahl an den
   // Balken zu hängen, sind an der Breite gescheitert: Ein Monatsbalken ist elf
   // Punkte breit, die Zahl dreißig. Sie hat dort nichts verloren.
