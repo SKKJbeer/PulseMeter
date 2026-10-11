@@ -9,6 +9,42 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.131.0 — 2026-10-11
+
+**Das Jahresende steht überall, auch mit nur einem Monat Daten**
+
+Vom Gründer: „wenn man auch nur einen Monat hat, ist quasi keine Vorhersage.
+ich finde es wichtig, dass wir immer eine Vorhersage machen, wo man ungefähr
+landet zum Jahresende."
+
+Der Review hat gezeigt: Am Rechnen lag es nicht. Mit zwei Ablesungen im
+Abstand von einem Monat rechnet der Rechenkern ein Jahr hoch (Strom ≈ 3.232
+kWh, Gas ≈ 783 m³, Wasser ≈ 110 m³). Es stand nur nicht da, wo man hinschaut.
+
+- **Im Verlauf steht das Jahresende jetzt auch bei Monat und Quartal.** Unter
+  der Leiste des laufenden Monats steht „Erwartet für 2026 ≈ …“. Antippen
+  stellt auf das Jahr um. Bis jetzt stand dort nur das Monatsende.
+- **Die Grundlage nennt die Tage.** „Aus 30 Tagen hochgerechnet, nach einem
+  typischen Jahresverlauf“, auf der Karte und im Verlauf. Eine Zahl aus einem
+  Monat soll man als solche erkennen.
+- **Keine leere Stelle mehr bei zwei Ablesungen am selben Tag.** Dann steht
+  „ab der nächsten Ablesung“ da.
+- **Entwurf und App rechnen wieder gleich (Regel 2).** Beim Nachrechnen fiel
+  auf: Der Entwurf schrieb gleichmäßig nur vom letzten Ablesetag bis
+  Silvester fort, die App aufs ganze Jahr. Bei einem Wasserzähler, der seit
+  Juli abgelesen wird, waren das 54 statt 110 m³. Außerdem fehlte dem
+  Monatsausblick im Entwurf der typische Jahresverlauf.
+- Drei neue Tests im Rechenkern (ein Monat Wasser, ein Monat Gas, zwei
+  Ablesungen an einem Tag), ein Oberflächentest für die Jahreszeile im
+  Verlauf, drei neue Prüfungen im Entwurf.
+
+**Was weiter offen ist:** Mit einer einzigen Ablesung gibt es keinen
+Verbrauch und damit keine ehrliche Zahl. Eine Lösung wäre ein Feld
+„Verbrauch laut letzter Jahresabrechnung“; das braucht eine Änderung am
+Speicher und ist eine Entscheidung des Gründers.
+
+---
+
 ## 0.130.1 — 2026-10-11
 
 **VoiceOver liest den Jahresausblick mit Zahl vor**

@@ -793,6 +793,12 @@ table.data tr.est td:first-child::after {
 .fc-voll { border-radius: 8px 0 0 8px; }
 .fc-rest { flex: 1; }
 .fc-unten { font-size: var(--fs-cap); color: var(--ink-3); }
+.fc-jahr { display: flex; flex-direction: column; gap: 2px; width: 100%; min-height: 44px;
+  margin-top: 6px; padding: 8px 0 0; border: 0; border-top: 1px solid var(--hairline);
+  background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.fc-jahr-zeile { display: flex; justify-content: space-between; gap: 10px;
+  font-size: var(--fs-cap); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.fc-jahr-zeile strong { color: var(--ink); font-weight: 650; }
 .chart-hint { text-align: center; font-size: var(--fs-cap); color: var(--ink-3); margin-top: 10px; }
 #chart rect[data-month] { cursor: pointer; }
 
@@ -936,7 +942,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>Zählora</h1>
-  <p>Klickbarer Entwurf · v0.130.1</p>
+  <p>Klickbarer Entwurf · v0.131.0</p>
 </div>
 
 <div class="device" id="device">
@@ -1926,6 +1932,21 @@ function monthForecast(meter, y, mo) {
                tage: bisher.days, tageGesamt: vollerMonat };
     }
   }
+  // Ohne Vorjahr der typische Jahresverlauf, wie `forecast(register:)` im
+  // Rechenkern: Bis 0.130.1 sprang der Entwurf hier gleich auf den
+  // Tagesschnitt, die App nicht. Gerechnet über das Zählwerk mit dem Profil,
+  // gemessen über den ganzen Zähler; bei einem Zählwerk ist das dasselbe.
+  const bezug = meter.registers.filter(r => !r.feedIn);
+  const prof = bezug.length ? referenceProfile(meter, bezug[0]) : null;
+  if (prof && bisher.cfrom && bisher.cto) {
+    const teil = profileShare(prof, bisher.cfrom, bisher.cto);
+    const ganz = profileShare(prof, { y, m: mo, d: 1 }, monatsende);
+    if (teil > 0 && ganz > 0 && teil <= ganz) {
+      return { value: Math.max(bisher.value * ganz / teil, bisher.value),
+               gemessen: bisher.value, method: "reference",
+               tage: bisher.days, tageGesamt: vollerMonat };
+    }
+  }
   return { value: bisher.value / bisher.days * vollerMonat,
            gemessen: bisher.value, method: "linear",
            tage: bisher.days, tageGesamt: vollerMonat };
@@ -1948,8 +1969,15 @@ function forecast(reg, meter) {
       return { value: now.value / anteil, method: "reference", now: now };
     }
   }
+  // **Aufs ganze Jahr, wie der Rechenkern.** Bis 0.130.1 stand hier „vom
+  // letzten Ablesetag bis 31. Dezember". Das gab bei einem Zähler, der erst
+  // seit Juli abgelesen wird, die Hälfte dessen, was die App zeigt (Wasser:
+  // 54 statt 110 m³), widersprach dem Profilweg zwei Zeilen darüber, der aufs
+  // ganze Jahr rechnet, und ließ obendrein Silvester weg. Gefunden beim
+  // Nachrechnen „nur ein Monat Daten" am 11. Oktober.
   const perDay = now.value / now.days;
-  const remaining = between(now.cto, { y: 2026, m: 12, d: 31 });
+  const jahrTage = between({ y: 2026, m: 1, d: 1 }, { y: 2027, m: 1, d: 1 });
+  const remaining = Math.max(0, jahrTage - now.days);
   return { value: now.value + perDay * remaining, method: "linear", now: now };
 }
 
@@ -1969,9 +1997,17 @@ function meterYearForecast(m) {
     if (method === null || RANG[f.method] < RANG[method]) method = f.method;
   }
   if (method === null) return null;
-  return { value: Math.max(value, ist.value), method, lastDay: null };
+  return { value: Math.max(value, ist.value), method, lastDay: null, tage: ist.days };
 }
 
+/* Worauf eine Jahreszahl beruht, mit der Zahl der Tage dahinter. Aus 30
+   Tagen hochgerechnet ist eine andere Aussage als aus 280 — wie
+   `ausblickGrundlage` in der App. */
+function jahresGrundlage(ja) {
+  return ja.lastDay
+    ? `Aus deinem Verbrauch bis ${dateMedium(ja.lastDay)}, ${FORECAST_BASIS[ja.method]}`
+    : `Aus ${ja.tage === 1 ? "1 Tag" : ja.tage + " Tagen"} hochgerechnet, ${FORECAST_BASIS[ja.method]}`;
+}
 /* Worauf die Zahl beruht, in einem Satzteil. Wortgleich mit
    `ForecastEngine.Method.explanation`. */
 const FORECAST_BASIS = {
@@ -2195,13 +2231,13 @@ function renderCards() {
         <button class="explain" data-ausblick="${m.id}" aria-label="Erwartet für ${TODAY.y}: ungefähr ${nf(ja.value, m.frac >= 3 ? 1 : 0)} ${m.unit}, öffnet den Verlauf">≈ ${nf(ja.value, m.frac >= 3 ? 1 : 0)} ${m.unit}
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button></div>`;
       if (!geteilt) {
-        extra += `<div class="card-basis">${ja.lastDay
-          ? `Hochgerechnet aus deinem Verbrauch bis ${dateMedium(ja.lastDay)}, ${FORECAST_BASIS[ja.method]}`
-          : `Hochgerechnet ${FORECAST_BASIS[ja.method]}`}</div>`;
+        extra += `<div class="card-basis">${jahresGrundlage(ja)}</div>`;
       }
-    } else if (lastR && m.registers.every(r => r.readings.length < 2)) {
+    } else if (lastR) {
+      // Auch zwei Ablesungen am selben Tag ergeben noch keinen Verbrauch.
+      const ersteNur = m.registers.every(r => r.readings.length < 2);
       extra += `<div class="card-extra" data-ausblick="${m.id}"><span>Erwartet für ${TODAY.y}</span>
-        <span style="color:var(--ink-3)">ab der zweiten Ablesung</span></div>`;
+        <span style="color:var(--ink-3)">${ersteNur ? "ab der zweiten Ablesung" : "ab der nächsten Ablesung"}</span></div>`;
     }
     // Einspeisung **vor** den Kosten, nicht danach: Der Betrag ist bereits
     // netto — die Vergütung ist abgezogen. Stünde sie darunter, zöge sie jeder
@@ -2731,12 +2767,29 @@ function renderChart() {
         </div>
         <div class="fc-unten">${unten}</div>`;
       fz.style.display = "";
-    } else if (m.registers.every(r => r.readings.length < 2)) {
+    } else if (m.registers.some(r => r.readings.length > 0)) {
       // Auch ohne Zahl ein Ausblick: was noch fehlt.
-      fz.innerHTML = `<div class="fc-unten" data-prognose-hinweis>Ab der zweiten Ablesung steht hier, was bis Ende ${MONTHS_LONG[laufend]} zu erwarten ist.</div>`;
+      const wann = m.registers.every(r => r.readings.length < 2) ? "Ab der zweiten" : "Mit der nächsten";
+      fz.innerHTML = `<div class="fc-unten" data-prognose-hinweis>${wann} Ablesung steht hier, was bis Ende ${MONTHS_LONG[laufend]} zu erwarten ist.</div>`;
       fz.style.display = "";
     } else {
+      fz.innerHTML = "";
       fz.style.display = "none";
+    }
+    // **Das Jahresende auch im Monatsbild.** Vom Gründer am 11. Oktober:
+    // „wichtig, dass wir immer eine Vorhersage machen, wo man ungefähr landet
+    // zum Jahresende." Wie `jahresLine` im Verlauf der App; Antippen stellt
+    // auf das Jahr um.
+    const jaV = meterYearForecast(m);
+    if (jaV) {
+      const zahl = `${nf(jaV.value, dp)} ${m.unit}`;
+      fz.insertAdjacentHTML("beforeend", `
+        <button type="button" class="fc-jahr" data-scale="year" data-verlauf-jahr
+                aria-label="Erwartet für ${TODAY.y}: ungefähr ${zahl}. ${jahresGrundlage(jaV)}. Zeigt das ganze Jahr">
+          <span class="fc-jahr-zeile"><span>Erwartet für ${TODAY.y}</span><strong>≈ ${zahl} ›</strong></span>
+          <span class="fc-unten">${jahresGrundlage(jaV)}</span>
+        </button>`);
+      fz.style.display = "";
     }
 
   } else {
@@ -4724,8 +4777,10 @@ document.addEventListener("click", e => {
   }
   if (t.dataset.scale) {
     histScale = t.dataset.scale;
+    // Nach dem Zustand, nicht nach dem geklickten Knopf: Auch die Jahreszeile
+    // unter dem Monatsbild stellt um, und sie liegt nicht im Umschalter.
     document.querySelectorAll("#scale button").forEach(b =>
-      b.setAttribute("aria-selected", String(b === t)));
+      b.setAttribute("aria-selected", String(b.dataset.scale === histScale)));
     return renderChart();
   }
   if (t.dataset.mode) {

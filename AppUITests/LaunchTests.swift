@@ -832,6 +832,34 @@ final class LaunchTests: XCTestCase {
     /// und an einem überfälligen Zähler gibt es nichts hochzurechnen. Das ist
     /// kein Umweg um den Fehler herum, sondern der Unterschied zwischen „keine
     /// Prognose" und „keine Daten".
+    /// **Das Jahresende steht auch beim Monat.** Vom Gründer am 11. Oktober:
+    /// „wichtig, dass wir immer eine Vorhersage machen, wo man ungefähr landet
+    /// zum Jahresende." Bis 0.130.1 zeigte der Verlauf beim Monat nur das
+    /// Monatsende. Geprüft wird die Zeile, dass sie sagt, aus wie vielen Tagen
+    /// sie kommt, und dass Antippen auf das Jahr umstellt.
+    func testTheMonthViewAlsoShowsTheYearEnd() {
+        let app = launchWithData()
+        wechsel(zu: "Verlauf", in: app)
+        XCTAssertTrue(app.buttons["Monat"].waitForExistence(timeout: erscheint))
+
+        let jahr = app.descendants(matching: .any)["verlauf-jahresausblick"].firstMatch
+        XCTAssertTrue(jahr.waitForExistence(timeout: erscheint),
+                      "Beim Monat fehlt, wo das Jahr voraussichtlich endet. Zu sehen war: "
+                      + beschriftungen(in: app))
+        XCTAssertTrue(jahr.label.contains("ungefähr")
+                      && jahr.label.rangeOfCharacter(from: .decimalDigits) != nil,
+                      "Die Zeile nennt keine geschätzte Zahl: \(jahr.label)")
+        XCTAssertTrue(jahr.label.contains("Tag") || jahr.label.contains("Verbrauch bis"),
+                      "Die Zeile sagt nicht, worauf sie beruht: \(jahr.label)")
+
+        jahr.tap()
+        let weg = expectation(for: NSPredicate(format: "exists == 0"), evaluatedWith: jahr)
+        wait(for: [weg], timeout: erscheint)
+        XCTAssertTrue(app.descendants(matching: .any)["forecast-strip"].firstMatch
+                        .waitForExistence(timeout: erscheint),
+                      "Nach dem Antippen steht das Jahr nicht mit seiner Leiste da")
+    }
+
     func testTheRunningMonthNamesItsExpectedTotal() {
         let app = launchWithData()
         wechsel(zu: "Verlauf", in: app)

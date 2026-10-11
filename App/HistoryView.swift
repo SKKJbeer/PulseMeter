@@ -85,6 +85,10 @@ struct HistoryView: View {
     /// der Abschnitt abgeschlossen ist oder nichts vorliegt, worauf sich eine
     /// Hochrechnung stützen ließe.
     @State private var vorschau: ForecastEngine.Forecast?
+    /// Was im ganzen Jahr voraussichtlich zusammenkommt, auch wenn Monat oder
+    /// Quartal eingestellt ist. Beim Jahr ist es dieselbe Zahl wie
+    /// ``vorschau`` und wird deshalb nicht noch einmal gezeigt.
+    @State private var jahresvorschau: ForecastEngine.Forecast?
 
     /// Menge oder Geld.
     ///
@@ -719,6 +723,7 @@ struct HistoryView: View {
                 .accessibilityLabel(legendDescription)
 
                 forecastLine
+                jahresLine
 
                 Text(selectedSlot == nil
                      ? "Tippe einen Abschnitt an, um ihn mit den Vorjahren zu vergleichen"
@@ -788,18 +793,72 @@ struct HistoryView: View {
                         + "gerechnet aus \(tage)."
                 )
             }
-        } else if vorschau == nil, readings.count < 2, !laufenderAbschnittName.isEmpty {
+        } else if vorschau == nil, !readings.isEmpty, !laufenderAbschnittName.isEmpty {
             // **Auch ohne Zahl ein Ausblick: was noch fehlt.** Mit einer
             // einzigen Ablesung gibt es keinen Verbrauch und damit nichts
             // hochzurechnen. Statt einer leeren Stelle steht dort der nächste
             // Schritt.
-            Text("Ab der zweiten Ablesung steht hier, was bis Ende \(laufenderAbschnittName) zu erwarten ist.")
+            Text("\(readings.count < 2 ? "Ab der zweiten" : "Mit der nächsten") Ablesung steht hier, "
+                 + "was bis Ende \(laufenderAbschnittName) zu erwarten ist.")
                 .font(PulseText.caption)
                 .foregroundStyle(PulseColor.inkTertiary)
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityIdentifier("prognose-hinweis")
         }
+    }
+
+    /// Wo das Jahr voraussichtlich endet, unter der Leiste des laufenden
+    /// Monats oder Quartals. Antippen stellt auf das Jahr um, dort steht die
+    /// Zahl mit gemessenem Teil und Grundlage.
+    @ViewBuilder
+    private var jahresLine: some View {
+        if let jahr = jahresvorschau, jahr.daysRemaining > 0 {
+            let zahl = "\(number(jahr.projected.value, digits: 0)) \(unit)"
+            Button {
+                granularity = .year
+            } label: {
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack {
+                        Text("Erwartet für \(today.year)")
+                            .foregroundStyle(PulseColor.inkSecondary)
+                        Spacer(minLength: 10)
+                        HStack(spacing: 3) {
+                            Text("≈ \(zahl)")
+                                .font(.system(.subheadline, weight: .semibold))
+                                .foregroundStyle(PulseColor.ink)
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundStyle(PulseColor.inkTertiary)
+                        }
+                    }
+                    .font(PulseText.detail)
+                    Text(grundlage(jahr))
+                        .font(PulseText.caption)
+                        .foregroundStyle(PulseColor.inkTertiary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Erwartet für \(today.year): ungefähr \(zahl). \(grundlage(jahr))")
+            .accessibilityHint("Zeigt das ganze Jahr")
+            .accessibilityAddTraits(.isButton)
+            .accessibilityIdentifier("verlauf-jahresausblick")
+        }
+    }
+
+    /// Worauf eine Jahreszahl beruht, mit der Zahl der Tage, aus denen sie
+    /// kommt. Eine Hochrechnung aus 30 Tagen ist eine andere Aussage als eine
+    /// aus 280, und das soll man der Zeile ansehen (Produktprinzip 7).
+    private func grundlage(_ f: ForecastEngine.Forecast) -> String {
+        if let zuletzt = f.lastReadingDay {
+            return "Aus deinem Verbrauch bis \(germanDate(zuletzt)), \(f.method.explanation)"
+        }
+        let tage = f.daysElapsed == 1 ? "1 Tag" : "\(f.daysElapsed) Tagen"
+        return "Aus \(tage) hochgerechnet, \(f.method.explanation)"
     }
 
     /// „August" oder „3. Quartal" — der Abschnitt, in dem heute liegt.
@@ -1120,10 +1179,21 @@ struct HistoryView: View {
     private func recomputeForecast(meter: MeteringPoint) {
         guard let laufend = buckets.first(where: { $0.range.contains(today) }) else {
             vorschau = nil
+            jahresvorschau = nil
             return
         }
         vorschau = ForecastEngine.forecast(meteringPoint: meter, readings: readings,
                                            period: laufend.range, today: today)
+        // **Das Jahresende in jeder Ansicht.** Vom Gründer am 11. Oktober:
+        // „wenn man auch nur einen Monat hat, ist quasi keine Vorhersage …
+        // wichtig, dass wir immer eine Vorhersage machen, wo man ungefähr
+        // landet zum Jahresende." Der Rechenkern hatte die Zahl; der Verlauf
+        // zeigte beim Monat aber nur das Monatsende.
+        jahresvorschau = granularity == .year ? nil
+            : PeriodEngine.range(year: today.year, slot: 1, granularity: .year).flatMap {
+                ForecastEngine.forecast(meteringPoint: meter, readings: readings,
+                                        period: $0, today: today)
+            }
     }
 
     /// Stellt den Bericht zusammen, den das Herunterladen-Menü ausgibt.

@@ -610,6 +610,30 @@ for (const scheme of ["light", "dark"]) {
     const gasLeiste = await page.evaluate(`document.getElementById("chart-forecast").innerText.trim()`);
     note(/noch nicht abgelesen/.test(gasLeiste) && /≈/.test(gasLeiste) && /28\. Mai/.test(gasLeiste),
          `Gas ohne Ablesung im Monat zeigt trotzdem die Erwartung und woher („${gasLeiste.replace(/\s+/g, " ").slice(0, 90)}")`);
+    // **Das Jahresende auch im Monatsbild** (0.131.0), mit der Zahl der
+    // Tage oder dem Tag der letzten Ablesung als Grundlage. Antippen stellt
+    // auf das Jahr um.
+    const jahrZeile = await page.evaluate(`(() => {
+      const b = document.querySelector("#chart-forecast [data-verlauf-jahr]");
+      return b ? { text: b.innerText.replace(/\\s+/g, " ").trim(), label: b.getAttribute("aria-label") } : null;
+    })()`);
+    note(!!jahrZeile && new RegExp(`Erwartet für ${ausblick.jahr} ≈ [\\d.,]+`).test(jahrZeile.text),
+         `Im Monatsbild steht, wo das Jahr endet („${jahrZeile ? jahrZeile.text.slice(0, 70) : "fehlt"}")`);
+    note(!!jahrZeile && /Tag|Verbrauch bis/.test(jahrZeile.text) && /ungefähr/.test(jahrZeile.label),
+         "Die Jahreszeile nennt ihre Grundlage und sagt ihre Zahl als „ungefähr“ an");
+    if (jahrZeile) {
+      await page.locator("#chart-forecast [data-verlauf-jahr]").click();
+      await page.waitForTimeout(250);
+      const umgestellt = await page.evaluate(`({
+        skala: histScale,
+        gewaehlt: document.querySelector('#scale button[aria-selected="true"]')?.dataset.scale,
+        zeile: !!document.querySelector("#chart-forecast [data-verlauf-jahr]")
+      })`);
+      note(umgestellt.skala === "year" && umgestellt.gewaehlt === "year" && !umgestellt.zeile,
+           "Antippen der Jahreszeile stellt auf das Jahr um, und der Umschalter zeigt es");
+      await page.locator('[data-scale="month"]').first().click();
+      await page.waitForTimeout(200);
+    }
   } else {
     note(false, "Kein Gaszähler im Entwurf für die Ausblicksprüfung");
   }

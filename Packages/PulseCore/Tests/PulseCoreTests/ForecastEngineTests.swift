@@ -110,6 +110,62 @@ final class ForecastEngineTests: XCTestCase {
     private let october2026 = span(day(2026, 10, 1), day(2026, 11, 1))
 
     /// Wasser hat kein Jahresprofil: gleichmäßig aus dem Verbrauch davor.
+    /// **Ein Monat Daten reicht für das Jahresende.** Vom Gründer am
+    /// 11. Oktober: „wenn man auch nur einen Monat hat, ist quasi keine
+    /// Vorhersage." Wer im September anfängt, bekommt eine Jahreszahl — beim
+    /// Wasser gleichmäßig aufs ganze Jahr, nicht nur bis Silvester ab heute.
+    /// Genau das hatte der Entwurf anders gerechnet (54 statt 109,5 m³).
+    func testOneMonthOfWaterProjectsTheWholeYear() {
+        let register = Fixture.gasRegister()
+        let point = Fixture.meteringPoint(registers: [register], kind: .water)
+        let readings = [
+            Fixture.reading(register, day(2026, 9, 10), 10),
+            Fixture.reading(register, day(2026, 10, 10), 19)     // 30 Tage, 0,3 m³ je Tag
+        ]
+
+        let forecast = ForecastEngine.forecast(meteringPoint: point, readings: readings,
+                                               period: year2026, today: day(2026, 10, 11))
+
+        XCTAssertEqual(forecast?.method, .linear)
+        XCTAssertEqual(forecast?.daysElapsed, 30, "Die Grundlage sind die 30 gemessenen Tage")
+        XCTAssertNil(forecast?.lastReadingDay)
+        assertClose(forecast?.projected.value ?? 0, 109.5, accuracy: 0.0001)   // 365 × 0,3 m³
+    }
+
+    /// Strom und Gas aus einem Monat: nach dem typischen Jahresverlauf, damit
+    /// ein Septembermonat nicht wie ein Januar zählt. Gas im September liegt
+    /// unter dem Jahresmittel, also muss die Jahreszahl über der gleichmäßigen
+    /// liegen.
+    func testOneMonthOfGasProjectsTheYearByItsShape() {
+        let register = Fixture.gasRegister()
+        let point = Fixture.meteringPoint(registers: [register], kind: .gas)
+        let readings = [
+            Fixture.reading(register, day(2026, 9, 10), 100),
+            Fixture.reading(register, day(2026, 10, 10), 140)
+        ]
+
+        let forecast = ForecastEngine.forecast(meteringPoint: point, readings: readings,
+                                               period: year2026, today: day(2026, 10, 11))
+
+        XCTAssertEqual(forecast?.method, .reference)
+        let gleichmaessig = 40.0 / 30.0 * 365.0
+        XCTAssertGreaterThan(approx(forecast?.projected.value ?? 0), gleichmaessig,
+                             "Ein Septembermonat steht für weniger als ein Zwölftel des Gasjahres")
+    }
+
+    /// Zwei Ablesungen am selben Tag sind noch kein Verbrauch. Dann gibt es
+    /// keine Zahl, und die Oberfläche sagt, dass die nächste Ablesung fehlt.
+    func testTwoReadingsOnOneDayHaveNoOutlookYet() {
+        let register = Fixture.electricityRegister()
+        let point = Fixture.meteringPoint(registers: [register], kind: .electricity)
+        let readings = [
+            Fixture.reading(register, day(2026, 10, 10), 1000),
+            Fixture.reading(register, day(2026, 10, 10), 1001)
+        ]
+        XCTAssertNil(ForecastEngine.forecast(meteringPoint: point, readings: readings,
+                                             period: year2026, today: day(2026, 10, 11)))
+    }
+
     func testMonthWithoutReadingProjectsFromEarlierReadings() {
         let register = Fixture.gasRegister()
         let point = Fixture.meteringPoint(registers: [register], kind: .water)

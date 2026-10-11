@@ -1210,6 +1210,20 @@ oder ein sichtbarer Satz, was fehlt („ab der zweiten Ablesung"). Ein stilles
 Ausblenden ist keine der beiden Möglichkeiten. Und für jeden Fall einen Test,
 der den Rückfall verlangt — der fehlende Test war hier „erster Tag des Monats".
 
+### „Es gibt keine Vorhersage" heißt oft: Sie steht woanders
+
+Zweimal am selben Tag meldete der Gründer, die App sage nichts übers Jahr.
+Beim zweiten Mal rechnete der Rechenkern längst; die Zahl stand auf der
+Karte, im Verlauf aber nur, wenn „Jahr" eingestellt war. Wer beim Monat
+schaut, sieht das Jahr nicht.
+
+**Erst nachrechnen, dann umbauen.** Eine Probe mit den gemeldeten Daten (hier:
+zwei Ablesungen, ein Monat auseinander, je Zählerart) zeigt in zwei Minuten,
+ob die Rechnung fehlt oder die Anzeige. Dieselbe Probe im Entwurf fand dabei
+nebenbei eine Abweichung zwischen App und Entwurf (54 statt 110 m³). Beide
+Seiten mit denselben Eingaben durchzurechnen ist billiger als jede
+Vermutung.
+
 ### Ein Knopf in einer zusammengefassten Zeile verliert seine Ansage
 
 SwiftUI: Eine Zeile mit `.accessibilityElement(children: .combine)` und einem

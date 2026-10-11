@@ -697,9 +697,11 @@ struct OverviewView: View {
                     .padding(.bottom, 10)
                     .fixedSize(horizontal: false, vertical: true)
             }
-        } else if row.readingCount == 1 {
+        } else if row.yearOutlook == nil, row.readingCount >= 1 {
+            // Auch zwei Ablesungen am selben Tag ergeben noch keinen
+            // Verbrauch. Dann stand hier bis 0.130.1 gar nichts.
             CardFooterRow(titel) {
-                Text("ab der zweiten Ablesung")
+                Text(row.readingCount == 1 ? "ab der zweiten Ablesung" : "ab der nächsten Ablesung")
                     .font(PulseText.detail)
                     .foregroundStyle(PulseColor.inkTertiary)
             }
@@ -719,9 +721,13 @@ struct OverviewView: View {
     /// Jahr sagt er, aus welchem Zeitraum die Zahl stammt.
     private func ausblickGrundlage(_ ausblick: ForecastEngine.Forecast) -> String {
         if let zuletzt = ausblick.lastReadingDay {
-            return "Hochgerechnet aus deinem Verbrauch bis \(germanDate(zuletzt)), \(ausblick.method.explanation)"
+            return "Aus deinem Verbrauch bis \(germanDate(zuletzt)), \(ausblick.method.explanation)"
         }
-        return "Hochgerechnet \(ausblick.method.explanation)"
+        // Die Zahl der Tage gehört dazu: Aus 30 Tagen hochgerechnet ist eine
+        // andere Aussage als aus 280, und mit einem Monat Daten soll man das
+        // sehen, statt der Zahl mehr zu glauben, als sie trägt.
+        let tage = ausblick.daysElapsed == 1 ? "1 Tag" : "\(ausblick.daysElapsed) Tagen"
+        return "Aus \(tage) hochgerechnet, \(ausblick.method.explanation)"
     }
 
     private func periodCaption(for row: MeterRow) -> String {
