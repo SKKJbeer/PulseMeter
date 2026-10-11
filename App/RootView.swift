@@ -659,26 +659,35 @@ struct OverviewView: View {
     private func jahresausblick(for row: MeterRow) -> some View {
         let titel = "Erwartet für \(today.year)"
         if let ausblick = row.yearOutlook, ausblick.daysRemaining > 0 {
-            CardFooterRow(titel) {
-                Button {
-                    oeffneVerlauf?(row.id)
-                } label: {
+            let zahl = "\(number(ausblick.projected.value, digits: 0)) \(row.unit)"
+            // **Die ganze Zeile ist der Knopf, nicht nur die Zahl.**
+            // `CardFooterRow` fasst seine Teile für VoiceOver zu einem Element
+            // zusammen, und ein Knopf darin fiel dabei heraus: Vorgelesen
+            // wurde „Erwartet für 2026" ohne Zahl. Der Oberflächentest hat es
+            // im ersten Lauf gefunden.
+            Button {
+                oeffneVerlauf?(row.id)
+            } label: {
+                CardFooterRow(titel) {
                     HStack(spacing: 3) {
-                        Text("≈ \(number(ausblick.projected.value, digits: 0)) \(row.unit)")
+                        Text("≈ \(zahl)")
                         if oeffneVerlauf != nil {
                             Image(systemName: "chevron.right")
                                 .font(.system(size: 11, weight: .semibold))
-                                .accessibilityHidden(true)
                         }
                     }
                     .font(.system(.subheadline, weight: .semibold))
                     .foregroundStyle(PulseColor.ink)
                 }
-                .buttonStyle(.plain)
-                .disabled(oeffneVerlauf == nil)
-                .accessibilityHint("Öffnet den Verlauf")
-                .accessibilityIdentifier("jahresausblick-\(row.name)")
+                .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
+            .disabled(oeffneVerlauf == nil)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("\(titel): ungefähr \(zahl)")
+            .accessibilityHint(oeffneVerlauf == nil ? "" : "Öffnet den Verlauf")
+            .accessibilityAddTraits(.isButton)
+            .accessibilityIdentifier("jahresausblick-\(row.name)")
             if !teilenGrundlage(row) {
                 Text(ausblickGrundlage(ausblick))
                     .font(PulseText.caption)

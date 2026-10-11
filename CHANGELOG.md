@@ -9,6 +9,26 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.130.1 — 2026-10-11
+
+**VoiceOver liest den Jahresausblick mit Zahl vor**
+
+Der erste CI-Lauf von 0.130.0 fand es: Die Zeile „Erwartet für 2026“ fasst
+ihre Teile für VoiceOver zu einem Element zusammen, und der Knopf mit der Zahl
+fiel dabei heraus. Vorgelesen wurde „Erwartet für 2026“, ohne Zahl. Bau 41
+hat den Fehler noch.
+
+- Die ganze Zeile ist jetzt der Knopf. VoiceOver sagt „Erwartet für 2026:
+  ungefähr 2.809 kWh“ und dass er den Verlauf öffnet. Das ganze Feld ist
+  antippbar, nicht nur die Zahl.
+- `testOverviewShowsYearOutlook` prüft, was vorgelesen wird: „ungefähr“ und
+  eine Zahl.
+- `testTheRoundContinuesWithTheNextDueMeter` fiel auf dem iPad: Das Übernehmen
+  des letzten Stands fiel in die Einblendung des Blatts, „Weiter“ blieb
+  gesperrt. Der Test wartet jetzt, bis der Knopf freigeschaltet ist.
+
+---
+
 ## 0.130.0 — 2026-10-11
 
 **Immer ein Ausblick auf den Verbrauch**

@@ -1210,6 +1210,23 @@ oder ein sichtbarer Satz, was fehlt („ab der zweiten Ablesung"). Ein stilles
 Ausblenden ist keine der beiden Möglichkeiten. Und für jeden Fall einen Test,
 der den Rückfall verlangt — der fehlende Test war hier „erster Tag des Monats".
 
+### Ein Knopf in einer zusammengefassten Zeile verliert seine Ansage
+
+SwiftUI: Eine Zeile mit `.accessibilityElement(children: .combine)` und einem
+`Button` darin liest VoiceOver nur mit dem Text vor, der **kein** Knopf ist.
+Auf der Karte stand „Erwartet für 2026 ≈ 2.809 kWh“, vorgelesen wurde
+„Erwartet für 2026“. Die Kennung wanderte dabei mit auf das zusammengefasste
+Element, also las auch der Oberflächentest die falsche Beschriftung, und nur
+deshalb fiel es auf.
+
+**So geht es:** Die ganze Zeile in den `Button` legen und ihm selbst die
+Ansage geben (`.accessibilityElement(children: .ignore)` plus
+`.accessibilityLabel`). Das ≈ wird dabei als „ungefähr“ ausgeschrieben.
+
+**Und die Reihenfolge war falsch:** Der TestFlight-Lauf war angestoßen, bevor
+die CI durch war. Der Bau kam durch und hatte den Fehler. Erst grün, dann bauen.
+Das steht in Regel 4 und gilt auch dann, wenn es eilt.
+
 ### Eine frische Cloud-Sitzung hat nicht, was die letzte hatte
 
 Am 11. Oktober fehlten im neuen Container die Swift-Toolchain, `pyflakes` und

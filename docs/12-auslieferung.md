@@ -296,6 +296,7 @@ Store Connect deshalb nie gesehen.
 | 38 | 0.118.1 | 29.09. 04:37 | ✓ | **Siri öffnet den Ziffernblock**, nach der dritten Ablesung fragt die App einmal nach einer Bewertung (in TestFlight zeigt iOS das Blatt nie), und die Tabelle im Verlauf nennt ihre Einheit. Enthält 0.118.0 und 0.118.1. VALID, Testhinweise eingetragen |
 | 39 | 0.119.1 | 03.10. 12:53 | ✓ | **Der Rundgang.** Nach dem Sichern geht es mit dem nächsten fälligen Zähler weiter, „Überspringen“ und „Fertig“ als Auswege, die Bewertungsfrage erst nach dem Schließen. Enthält 0.119.0 und 0.119.1; der erste CI-Lauf fiel an einer Prüfung, die genau „Sichern“ suchte. VALID, Testhinweise eingetragen |
 | 40 | 0.122.1 | 07.10. 11:05 | ✓ | **Für 1.4.1, am App-Code nichts geändert.** Die Fassung trägt nur die neuen Suchbegriffe im Laden („Zählora – Zählerstand ablesen“). VALID, Testhinweise eingetragen |
+| 41 | 0.130.0 | 11.10. 12:23 | ✓ | **Immer ein Ausblick.** „Erwartet für 2026“ auf jeder Karte, Monatsausblick auch ohne Ablesung im Monat. Angestoßen vor dem Ende der CI; die fand danach, dass VoiceOver auf der Karte nur „Erwartet für 2026“ ohne Zahl vorlas (behoben in 0.130.1, Bau 42). VALID, Testhinweise eingetragen |
 
 Zeitangaben in UTC. Ein ✗ heißt: hochgeladen wurde nichts, die Nummer ist
 trotzdem verbraucht.

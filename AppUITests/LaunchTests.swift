@@ -1011,7 +1011,7 @@ final class LaunchTests: XCTestCase {
     /// **Der Ausblick aufs Jahr steht auf der Karte, auch ohne Kauf.**
     ///
     /// Vom Gründer am 11. Oktober gemeldet: „ich bekomme keinen wirklichen
-    /// Forecast in der App zum Verbrauch." Bis 0.130.0 gab es auf der
+    /// Forecast in der App zum Verbrauch." Bis 0.129.0 gab es auf der
     /// Übersicht einen Ausblick nur als Guthaben oder Nachzahlung, also nur
     /// mit Preisen und Abschlag. Der neue Ausblick fragt keinen Kauf ab; mit
     /// den vollen Beispieldaten ist Gas sicher auf dem Schirm.
@@ -1023,8 +1023,11 @@ final class LaunchTests: XCTestCase {
         XCTAssertTrue(ausblick.waitForExistence(timeout: erscheint),
                       "Auf der Gas-Karte steht kein Ausblick aufs Jahr. Zu sehen war: "
                       + beschriftungen(in: app))
-        XCTAssertTrue(ausblick.label.contains("≈"),
-                      "Der Ausblick ist gerechnet, nicht gemessen, und braucht sein ≈: \(ausblick.label)")
+        // Gelesen wird, was VoiceOver ansagt. Im ersten Lauf war das nur
+        // „Erwartet für 2026" — die Zahl fiel beim Zusammenfassen heraus.
+        XCTAssertTrue(ausblick.label.contains("ungefähr")
+                      && ausblick.label.rangeOfCharacter(from: .decimalDigits) != nil,
+                      "Der Ausblick nennt seine Zahl und dass sie geschätzt ist: \(ausblick.label)")
     }
 
     func testDeletingAReadingReachesTheOtherTabs() {
@@ -1565,7 +1568,16 @@ final class LaunchTests: XCTestCase {
 
         let weiter = app.buttons["Weiter"]
         XCTAssertTrue(weiter.waitForExistence(timeout: 15), "Der Ziffernblock für Strom erschien nicht")
+        // **Erst tippen, wenn der Knopf freigeschaltet ist.** Am 11. Oktober
+        // stand der Ziffernblock auf dem iPad nach beiden Taps noch beim
+        // ersten Zählwerk: Das Übernehmen fiel in die Einblendung des Blatts,
+        // „Weiter" blieb gesperrt, und der Tap darauf ging ins Leere.
+        let freigeschaltet = NSPredicate(format: "isEnabled == 1")
         app.buttons["Vom letzten Stand übernehmen"].tap()
+        if !weiter.isEnabled {
+            app.buttons["Vom letzten Stand übernehmen"].tap()
+        }
+        wait(for: [expectation(for: freigeschaltet, evaluatedWith: weiter)], timeout: erscheint)
         weiter.tap()
         app.buttons["Vom letzten Stand übernehmen"].tap()
 
