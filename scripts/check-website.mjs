@@ -547,6 +547,19 @@ if (dir === "docs/website") {
   note(readdirSync(aus).every(d => !d.endsWith(".md")), "Keine Markdown-Datei im Auslieferordner");
   const sm = readFileSync(`${aus}/sitemap.xml`, "utf8");
   note(!/\.html</.test(sm), "Die ausgelieferte Sitemap nennt die Adressen ohne .html");
+  // **Die E-Mail-Adresse bleibt eine E-Mail-Adresse.** Cloudflare schreibt
+  // Adressen sonst in einen Verweis auf `/cdn-cgi/l/email-protection` um, der
+  // erst mit JavaScript wieder zur Adresse wird. Für Google ist das ein
+  // Verweis auf eine 404, und ohne JavaScript ist das Impressum ohne
+  // erreichbare Adresse. Am 12. Oktober beim Durchgehen der Search Console
+  // gefunden. `<!--email_off-->` nimmt die Stelle von der Umschreibung aus.
+  const ungeschuetzt = html.flatMap(d => [...readFileSync(`${aus}/${d}`, "utf8")
+    .matchAll(/(.{0,16})<a href="mailto:[^"]+">[^<]*<\/a>(.{0,18})/g)]
+    .filter(m => !m[1].endsWith("<!--email_off-->") || !m[2].startsWith("<!--/email_off-->"))
+    .map(() => d));
+  note(ungeschuetzt.length === 0, ungeschuetzt.length
+    ? `E-Mail-Verweis ohne <!--email_off-->: ${ungeschuetzt.join(", ")}`
+    : "Jede E-Mail-Adresse ist von Cloudflares Umschreibung ausgenommen");
 }
 
 

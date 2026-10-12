@@ -1224,6 +1224,24 @@ nebenbei eine Abweichung zwischen App und Entwurf (54 statt 110 m³). Beide
 Seiten mit denselben Eingaben durchzurechnen ist billiger als jede
 Vermutung.
 
+### Eine Mail der Search Console ist meistens kein Fehler — aber nachmessen
+
+„Seite mit Weiterleitung" und „noindex" klingen nach Problemen und sind es
+fast nie: Google listet dort Umleitungen (`www.`, `http://`, alte Endungen)
+und bewusst ausgeschlossene Seiten (Impressum, 404). Die erste Vermutung am
+12. Oktober war trotzdem falsch: `.html` in Sitemap und `canonical` im
+Repository. Ausgeliefert wurde längst ohne, weil `website-fertig.sh` umschreibt.
+**Gemessen wird an der echten Seite**, mit einem kleinen Durchlauf über die
+Sitemap: Status jeder Adresse, `canonical` gleich der eigenen, kein `noindex`
+in der Sitemap, jeder interne Verweis 200.
+
+Gefunden hat der Durchlauf dabei etwas anderes: **Cloudflares „Email
+Obfuscation"** macht aus jedem `mailto:` einen Verweis auf
+`/cdn-cgi/l/email-protection`, der für Crawler eine 404 ist und ohne
+JavaScript keine Adresse zeigt. Im Impressum ist das mehr als ein
+Schönheitsfehler. `<!--email_off-->…<!--/email_off-->` um die Adresse nimmt sie
+aus.
+
 ### Grüne Tests, falsches Bild: das Bildschirmfoto ansehen
 
 0.131.0 lief in der CI vollständig grün, und auf dem ersten Bildschirmfoto

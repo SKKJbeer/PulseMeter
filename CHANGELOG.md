@@ -9,6 +9,31 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.131.2 — 2026-10-12
+
+**Search Console: Was Google meldet, nachgemessen**
+
+Google hat per Mail drei Gründe gemeldet, warum Seiten nicht im Index sind.
+Geprüft an der echten Website, alle 14 Adressen der Sitemap und jeder interne
+Verweis:
+
+- **„noindex“**: Impressum und 404-Seite. Gewollt.
+- **„Seite mit Weiterleitung“**: alte und Nebenadressen (`.html`, `http://`,
+  `www.`, beide `pages.dev`). Alle landen nach höchstens zwei Sprüngen auf der
+  richtigen Seite. Sitemap und `canonical` nennen schon die endgültigen
+  Adressen. Gewollt.
+- **„Gecrawlt – zurzeit nicht indexiert“**: Googles Entscheidung, bei neuen
+  Seiten üblich.
+
+**Ein echter Fehler war dabei:** Cloudflare schrieb die E-Mail-Adresse auf
+Impressum, Datenschutz und Hilfe in einen Verweis auf
+`/cdn-cgi/l/email-protection` um. Für Google ist das eine 404, und ohne
+JavaScript fehlte im Impressum die Adresse. Die Stellen sind jetzt mit
+`<!--email_off-->` ausgenommen; `check-website.mjs` und die Prüfung nach dem
+Veröffentlichen achten darauf.
+
+---
+
 ## 0.131.1 — 2026-10-12
 
 **Zwei Fehler, gefunden auf dem Bildschirmfoto aus der CI**

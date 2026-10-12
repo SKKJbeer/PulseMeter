@@ -348,8 +348,28 @@ Anmelden geht nur mit dem Google-Konto des Gründers.**
 Danach **Bing Webmaster Tools** (https://www.bing.com/webmasters): Dort gibt
 es „Aus Google Search Console importieren", ein Klick.
 
-Stand: offen, beim Gründer. Sobald der Wert aus Schritt 2 da ist, steht er
-eine Minute später auf der Seite.
+Stand: erledigt am 3. Oktober, als Domain-Property `zaehlora.de` über
+Cloudflare bestätigt (die Schritte oben galten noch für `pages.dev`).
+
+#### Was die Gründe unter „Warum Seiten nicht indexiert werden" bedeuten
+
+Am 12. Oktober kam die erste Mail dazu. Nachgemessen an der echten Seite,
+alle 14 Adressen der Sitemap und jeder interne Verweis:
+
+| Grund | Was dahintersteht | Zu tun |
+|---|---|---|
+| Durch „noindex" ausgeschlossen | Impressum und 404-Seite | **Nichts.** Gewollt: erreichbar, nicht auffindbar |
+| Seite mit Weiterleitung | Alte und Nebenadressen: `…/hilfe.html`, `http://`, `www.`, `zaehlora.pages.dev`, `pulsemeter.pages.dev`. Alle landen nach höchstens zwei Sprüngen auf der richtigen Seite | **Nichts.** Google führt die Zieladresse, nicht die Umleitung |
+| Gecrawlt – zurzeit nicht indexiert | Googles eigene Wahl, bei neuen Seiten üblich | Abwarten, Verweise von außen helfen; „Indexierung beantragen" für die Seite, die Google nennt |
+
+Gefunden und behoben (0.131.2): Cloudflare schrieb die E-Mail-Adresse auf
+Impressum, Datenschutz und Hilfe in einen Verweis auf
+`/cdn-cgi/l/email-protection` um. Für Google ist das ein Verweis auf eine 404,
+und ohne JavaScript stand im Impressum keine erreichbare Adresse.
+
+Welche Adresse unter welchem Grund steht, zeigt die Search Console beim
+Antippen der Zeile. Automatisch nachsehen ginge mit dem Dienstkonto
+`GOOGLE_SC_SCHLUESSEL` (`13-zugaenge.md`, Punkt 4), das fehlt noch.
 
 ---
 

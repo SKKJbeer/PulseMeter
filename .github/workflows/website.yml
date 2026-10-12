@@ -210,6 +210,9 @@ jobs:
           pruefe "Symbol ist ein Bild" "$(curl -sS -o /dev/null -w '%{content_type}' "$W/favicon.ico" | cut -d'/' -f1)" image
           pruefe "Sitemap ist erreichbar" "$(curl -sS -o /dev/null -w '%{http_code}' "$W/sitemap.xml")" 200
           pruefe "Startseite ist erreichbar" "$(curl -sS -o /dev/null -w '%{http_code}' "$W/")" 200
+          # Cloudflare schreibt E-Mail-Adressen sonst auf einen Verweis um, der
+          # für Google eine 404 ist (`/cdn-cgi/l/email-protection`).
+          pruefe "E-Mail-Adresse bleibt lesbar" "$(curl -sS "$W/impressum" | grep -c 'cdn-cgi/l/email-protection' || true)" 0
           if [ "${{ steps.hochladen.outcome }}" = "success" ]; then
             pruefe "Seiten laufen durch die Zählung" "$(curl -sSI "$W/" | tr -d '\r' | grep -i '^x-zaehlung:' | cut -d' ' -f2-)" "ohne-personenbezug"
             # Die Weiterleitung lebt in derselben Funktion. Ohne sie stünde
