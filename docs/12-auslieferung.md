@@ -298,6 +298,7 @@ Store Connect deshalb nie gesehen.
 | 40 | 0.122.1 | 07.10. 11:05 | ✓ | **Für 1.4.1, am App-Code nichts geändert.** Die Fassung trägt nur die neuen Suchbegriffe im Laden („Zählora – Zählerstand ablesen“). VALID, Testhinweise eingetragen |
 | 41 | 0.130.0 | 11.10. 12:23 | ✓ | **Immer ein Ausblick.** „Erwartet für 2026“ auf jeder Karte, Monatsausblick auch ohne Ablesung im Monat. Angestoßen vor dem Ende der CI; die fand danach, dass VoiceOver auf der Karte nur „Erwartet für 2026“ ohne Zahl vorlas (behoben in 0.130.1, Bau 42). VALID, Testhinweise eingetragen |
 | 42 | 0.131.0 | 12.10. 05:27 | ✓ | **Das Jahresende überall.** Enthält 0.130.1 (VoiceOver liest die Jahreszahl) und 0.131.0 (Jahreszeile im Verlauf bei Monat und Quartal, Tage als Grundlage). Erst nach grüner CI angestoßen. Das Bildschirmfoto derselben CI zeigte danach „Erwartet für 2,026“ im Verlauf, behoben in 0.131.1. VALID, Testhinweise eingetragen |
+| 43 | 0.131.2 | 12.10. 06:50 | ✓ | **Korrektur zu Bau 42.** „Erwartet für 2026“ ohne Tausenderzeichen, und ohne Ablesung im Monat nennt die Leiste das eigene Vorjahr, wenn es eins gibt (0.131.1). 0.131.2 betrifft nur die Website. Vor dem Bau am Bildschirmfoto der CI nachgesehen. VALID, Testhinweise eingetragen |
 
 Zeitangaben in UTC. Ein ✗ heißt: hochgeladen wurde nichts, die Nummer ist
 trotzdem verbraucht.
