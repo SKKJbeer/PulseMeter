@@ -232,13 +232,29 @@ public enum ForecastEngine {
 
             var factor: Decimal?
             var method: Method = .linear
+            var basis = observed.quantity.value
 
-            if let priorWindow = DayRange(start: window.start.oneYearEarlier, end: window.end.oneYearEarlier),
+            // **Das eigene Vorjahr mit einem eigenen Fenster.** Bis 0.131.0
+            // wurde das Jahresfenster einfach ein Jahr zurückgeschoben. Liegen
+            // die Daten erst seit Januar 2025 vor, reicht ein Fenster von Juli
+            // 2025 bis Juli 2026 ein Jahr früher vor den Anfang. Dann griff
+            // das Profil, und der Verlauf schrieb beim Gas „weil noch kein
+            // eigenes Jahr vorliegt" über eine Jahreszeile, die „nach dem
+            // Verlauf deines Vorjahres" sagte. Auf dem Bildschirmfoto der CI
+            // vom 11. Oktober gesehen. Jetzt beginnt das Fenster frühestens ein
+            // Jahr nach der ersten Ablesung, damit es ein Jahr früher ganz
+            // gemessen ist. Unter vier Wochen trägt es kein Verhältnis.
+            if let eigenes = DayRange(start: Swift.max(window.start, first.oneYearLater), end: last),
+               eigenes.spanInDays >= 28,
+               let priorWindow = DayRange(start: eigenes.start.oneYearEarlier, end: eigenes.end.oneYearEarlier),
                let priorPeriod = DayRange(start: period.start.oneYearEarlier, end: period.end.oneYearEarlier) {
+                let jetzt = ConsumptionEngine.consumption(series: series, in: eigenes)
                 let a = ConsumptionEngine.consumption(series: series, in: priorWindow)
                 let b = ConsumptionEngine.consumption(series: series, in: priorPeriod)
-                if a.isComplete, b.isComplete, a.quantity.value > 0, b.quantity.value > 0 {
+                if jetzt.isComplete, a.isComplete, b.isComplete,
+                   jetzt.quantity.value > 0, a.quantity.value > 0, b.quantity.value > 0 {
                     factor = b.quantity.value / a.quantity.value
+                    basis = jetzt.quantity.value
                     method = .previousYear
                 }
             }
@@ -256,7 +272,7 @@ public enum ForecastEngine {
             }
 
             sawOne = true
-            projected += observed.quantity.value * (factor ?? 0)
+            projected += basis * (factor ?? 0)
             if method.rank < weakest.rank { weakest = method }
             lastDay = Swift.max(lastDay ?? last, last)
         }

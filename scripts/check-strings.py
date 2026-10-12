@@ -25,6 +25,11 @@ GERMAN_CLOSE = "“"
 
 problems: list[str] = []
 
+import re as _re
+# `Text("… \(today.year)")`, `Text("\(jahr)")`, `.accessibilityLabel("… \(bucket.year)")`
+JAHR_IM_TEXT = _re.compile(r'(?:\bText|accessibilityLabel|accessibilityValue)\(\s*"[^"]*\\\(\s*[\w.]*(?:year|jahr)\s*\)',
+                           _re.IGNORECASE)
+
 
 def check(line: str) -> str | None:
     """Gibt die Beanstandung zurück, oder `None`, wenn die Zeile in Ordnung ist."""
@@ -70,6 +75,15 @@ for path in sorted(pathlib.Path(".").rglob("*.swift")):
 
         if problem := check(line):
             problems.append(f"{path}:{number}: {problem}\n    {line.strip()}")
+
+        # **Eine Jahreszahl als Platzhalter in `Text("…")`.** SwiftUI liest
+        # das Literal als übersetzbaren Schlüssel und setzt eine Ganzzahl mit
+        # Tausenderzeichen: „Erwartet für 2,026" stand am 11. Oktober im
+        # Verlauf. Richtig ist `Text(verbatim:)` oder ein fertiger String.
+        code = line.split("//", 1)[0]
+        if JAHR_IM_TEXT.search(code):
+            problems.append(f"{path}:{number}: Jahreszahl in Text(\"…\") wird mit Tausenderzeichen gesetzt — "
+                            f"Text(verbatim:) oder String(jahr) verwenden\n    {line.strip()}")
 
 # **Was in Python, Shell und YAML wirklich bricht.**
 #

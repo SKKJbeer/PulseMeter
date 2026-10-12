@@ -942,7 +942,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>Zählora</h1>
-  <p>Klickbarer Entwurf · v0.131.0</p>
+  <p>Klickbarer Entwurf · v0.131.1</p>
 </div>
 
 <div class="device" id="device">
@@ -1889,11 +1889,20 @@ function earlierForecast(meter, from, to) {
     if (serial(ws.y, ws.m, ws.d) < serial(f.y, f.m, f.d)) ws = { y: f.y, m: f.m, d: f.d };
     const obs = consumption(reg, ws, l);
     if (!obs || obs.value <= 0) continue;
-    let factor = null, m = "linear";
-    const pw = consumption(reg, shiftYear(ws, -1), shiftYear(l, -1));
-    const pp = consumption(reg, shiftYear(from, -1), shiftYear(to, -1));
-    if (pw && pp && pw.complete && pp.complete && pw.value > 0 && pp.value > 0) {
-      factor = pp.value / pw.value; m = "previousYear";
+    let factor = null, m = "linear", basis = obs.value;
+    // Das eigene Vorjahr mit eigenem Fenster, frühestens ein Jahr nach der
+    // ersten Ablesung — sonst liegt es ein Jahr früher vor dem Anfang der
+    // Daten. Wie im Rechenkern seit 0.131.1; unter vier Wochen trägt es nicht.
+    let es = shiftYear(f, 1);
+    if (serial(es.y, es.m, es.d) < serial(ws.y, ws.m, ws.d)) es = ws;
+    if (between(es, l) >= 28) {
+      const jetzt = consumption(reg, es, l);
+      const pw = consumption(reg, shiftYear(es, -1), shiftYear(l, -1));
+      const pp = consumption(reg, shiftYear(from, -1), shiftYear(to, -1));
+      if (jetzt && pw && pp && jetzt.complete && pw.complete && pp.complete
+          && jetzt.value > 0 && pw.value > 0 && pp.value > 0) {
+        factor = pp.value / pw.value; m = "previousYear"; basis = jetzt.value;
+      }
     }
     if (factor === null) {
       const prof = referenceProfile(meter, reg);
@@ -1903,7 +1912,7 @@ function earlierForecast(meter, from, to) {
       }
     }
     if (factor === null) { factor = between(from, to) / between(ws, l); m = "linear"; }
-    value += obs.value * factor;
+    value += basis * factor;
     if (method === null || RANG[m] < RANG[method]) method = m;
     if (!last || serial(l.y, l.m, l.d) > serial(last.y, last.m, last.d)) last = l;
   }

@@ -166,6 +166,33 @@ final class ForecastEngineTests: XCTestCase {
                                              period: year2026, today: day(2026, 10, 11)))
     }
 
+    /// **Das Vorjahr greift auch, wenn die Daten erst seit gut einem Jahr
+    /// laufen.** Gas seit 1. Januar 2025, zuletzt am 1. Juli 2026 abgelesen,
+    /// heute Oktober. Bis 0.131.0 lag das Vergleichsfenster ein Jahr früher
+    /// vor dem Anfang der Daten, und der Ausblick nannte das Profil, obwohl
+    /// das eigene Vorjahr da war.
+    func testWithoutReadingFindsThePreviousYearWhenDataStartedLastYear() {
+        let register = Fixture.gasRegister()
+        let point = Fixture.meteringPoint(registers: [register], kind: .gas)
+        let readings = [
+            Fixture.reading(register, day(2025, 1, 1), 0),
+            Fixture.reading(register, day(2025, 7, 1), 700),      // Jan–Jun 2025: 700
+            Fixture.reading(register, day(2025, 10, 1), 800),
+            Fixture.reading(register, day(2025, 11, 1), 900),     // Oktober 2025: 100
+            Fixture.reading(register, day(2026, 1, 1), 1200),
+            Fixture.reading(register, day(2026, 7, 1), 1830)      // Jan–Jun 2026: 630
+        ]
+
+        let forecast = ForecastEngine.forecast(meteringPoint: point, readings: readings,
+                                               period: october2026, today: day(2026, 10, 11))
+
+        XCTAssertEqual(forecast?.method, .previousYear,
+                       "Das eigene Vorjahr liegt vor und muss vor dem Profil greifen")
+        XCTAssertEqual(forecast?.lastReadingDay, day(2026, 7, 1))
+        // 630 × 100 / 700 = 90 m³
+        assertClose(forecast?.projected.value ?? 0, 90, accuracy: 0.0001)
+    }
+
     func testMonthWithoutReadingProjectsFromEarlierReadings() {
         let register = Fixture.gasRegister()
         let point = Fixture.meteringPoint(registers: [register], kind: .water)

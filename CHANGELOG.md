@@ -9,6 +9,26 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.131.1 — 2026-10-12
+
+**Zwei Fehler, gefunden auf dem Bildschirmfoto aus der CI**
+
+Beim Nachsehen, ob der Verlauf das Jahresende wirklich zeigt:
+
+- **„Erwartet für 2,026“.** Die neue Zeile im Verlauf setzte die Jahreszahl
+  mit Tausenderzeichen. SwiftUI liest `Text("… \(jahr)")` als übersetzbaren
+  Schlüssel und formatiert die Ganzzahl. Jetzt steht dort ein fertiger Text.
+  `check-strings.py` schlägt bei diesem Muster künftig an.
+- **Gas: zwei Grundlagen, die sich widersprachen.** Ohne Ablesung im Monat
+  sagte die Leiste „nach einem typischen Jahresverlauf, weil noch kein eigenes
+  Jahr vorliegt“. Die Jahreszeile darunter sagte „nach dem Verlauf deines
+  Vorjahres“. Der Rückfall schob sein Vergleichsfenster ein Jahr zurück und
+  landete dabei vor der ersten Ablesung. Jetzt beginnt das Fenster frühestens
+  ein Jahr nach der ersten Ablesung, und das eigene Vorjahr greift. Neuer Test
+  im Rechenkern (267 grün), im Entwurf nachgezogen.
+
+---
+
 ## 0.131.0 — 2026-10-11
 
 **Das Jahresende steht überall, auch mit nur einem Monat Daten**

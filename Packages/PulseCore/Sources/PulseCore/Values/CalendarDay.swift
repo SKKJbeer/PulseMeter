@@ -121,6 +121,14 @@ public struct CalendarDay: Hashable, Comparable, Codable, Sendable, CustomString
         return CalendarDay(year: year - 1, month: month, day: day)!
     }
 
+    /// Derselbe Tag ein Jahr später; der 29. Februar wird zum 28.
+    public var oneYearLater: CalendarDay {
+        if month == 2 && day == 29 {
+            return CalendarDay(year: year + 1, month: 2, day: 28)!
+        }
+        return CalendarDay(year: year + 1, month: month, day: day)!
+    }
+
     // MARK: - Protokolle
 
     public static func < (lhs: CalendarDay, rhs: CalendarDay) -> Bool {

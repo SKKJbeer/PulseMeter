@@ -815,12 +815,18 @@ struct HistoryView: View {
     private var jahresLine: some View {
         if let jahr = jahresvorschau, jahr.daysRemaining > 0 {
             let zahl = "\(number(jahr.projected.value, digits: 0)) \(unit)"
+            // **Als fertiger Text, nicht als Text mit Platzhalter.**
+            // `Text("… \(today.year)")` liest SwiftUI als übersetzbaren
+            // Schlüssel und setzt die Zahl mit Tausenderzeichen: „Erwartet für
+            // 2,026" stand so im Bildschirmfoto der CI vom 11. Oktober.
+            let titel = "Erwartet für " + String(today.year)
+            let ansage = "\(titel): ungefähr \(zahl). \(grundlage(jahr))"
             Button {
                 granularity = .year
             } label: {
                 VStack(alignment: .leading, spacing: 2) {
                     HStack {
-                        Text("Erwartet für \(today.year)")
+                        Text(verbatim: titel)
                             .foregroundStyle(PulseColor.inkSecondary)
                         Spacer(minLength: 10)
                         HStack(spacing: 3) {
@@ -843,7 +849,7 @@ struct HistoryView: View {
             }
             .buttonStyle(.plain)
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel("Erwartet für \(today.year): ungefähr \(zahl). \(grundlage(jahr))")
+            .accessibilityLabel(Text(verbatim: ansage))
             .accessibilityHint("Zeigt das ganze Jahr")
             .accessibilityAddTraits(.isButton)
             .accessibilityIdentifier("verlauf-jahresausblick")

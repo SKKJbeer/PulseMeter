@@ -1224,6 +1224,21 @@ nebenbei eine Abweichung zwischen App und Entwurf (54 statt 110 m³). Beide
 Seiten mit denselben Eingaben durchzurechnen ist billiger als jede
 Vermutung.
 
+### Grüne Tests, falsches Bild: das Bildschirmfoto ansehen
+
+0.131.0 lief in der CI vollständig grün, und auf dem ersten Bildschirmfoto
+standen trotzdem zwei Fehler: „Erwartet für 2,026" und zwei Grundlagen
+übereinander, die sich widersprachen. Kein Test prüfte die Jahreszahl als
+Text, und keiner hielt zwei Zeilen gegeneinander.
+
+- **SwiftUI formatiert Ganzzahlen in `Text("… \(jahr)")`** mit
+  Tausenderzeichen, weil das Literal ein übersetzbarer Schlüssel ist. Jahre
+  gehören als `String(jahr)` oder per `Text(verbatim:)` hinein.
+  `check-strings.py` sucht das Muster jetzt.
+- **Nach jedem Lauf, der an der Oberfläche etwas ändert, das Bild aus dem
+  Zweig `screenshots` öffnen** und lesen wie ein Nutzer. Das kostet eine
+  Minute und findet, was keine Zusicherung abdeckt.
+
 ### Ein Knopf in einer zusammengefassten Zeile verliert seine Ansage
 
 SwiftUI: Eine Zeile mit `.accessibilityElement(children: .combine)` und einem
