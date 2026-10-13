@@ -385,6 +385,45 @@ for (const scheme of ["light", "dark"]) {
   note(kopfLeer.zahl === "—" && /keine Ablesung$/.test(kopfLeer.marke),
        `Ein Monat ohne Ablesung zeigt keine Null („${kopfLeer.zahl}“)`);
 
+  // --- Ein abgeschlossener Monat sagt, woher seine Zahl kommt
+  //
+  // Vom Gründer am 13. Oktober gemeldet: Über dem September stand „aus 21 von
+  // 30 Tagen", als wäre der Monat noch offen, und die Vergleichskarte hieß
+  // „10.–1. September". Wer nicht am Ersten abliest, bekommt den Monatsrand
+  // anteilig aus der nächsten Ablesung — das muss dastehen, mit Datum.
+  const abgeschlossen = await page.evaluate(() => {
+    const m = METERS.find(x => x.id === histMeter);
+    const reg = m.registers[0];
+    const sicherung = reg.readings;
+    reg.readings = [
+      { y: 2026, m: 6, d: 10, value: 100, origin: "manual" },
+      { y: 2026, m: 7, d: 12, value: 132, origin: "manual" },
+      { y: 2026, m: 8, d: 3, value: 150, origin: "manual" }
+    ];
+    const lies = i => { selMonth = i; renderChart(); renderCompare(m, reg, i);
+      return { zahl: document.getElementById("chart-total").textContent,
+               marke: document.getElementById("chart-label").textContent,
+               titel: document.querySelector("#compare .cmp-title").textContent }; };
+    const juni = lies(5), juli = lies(6);
+    reg.readings = sicherung;
+    const gas = METERS.find(x => x.id === "gas");
+    histMeter = "gas"; selMonth = 4; renderChart();
+    const mai = document.getElementById("chart-label").textContent;
+    histMeter = m.id; selMonth = null; renderChart();
+    return { juni, juli, mai, gasDa: !!gas };
+  });
+  note(abgeschlossen.juni.marke === "Juni 2026 · erst ab 10. Juni abgelesen · Monatsende anteilig aus der Ablesung am 12. Juli",
+       `Ein spät begonnener Monat nennt Anfang und anteiliges Ende („${abgeschlossen.juni.marke}“)`);
+  note(abgeschlossen.juni.zahl.startsWith("≈ ") && !/von \d+ Tagen/.test(abgeschlossen.juni.marke),
+       "Er ist als gerechnet gekennzeichnet, aber nicht als angebrochen");
+  note(abgeschlossen.juni.titel === "10.–30. Juni",
+       `Die Vergleichskarte endet am Monatsletzten, nicht am Ersten danach („${abgeschlossen.juni.titel}“)`);
+  note(abgeschlossen.juli.marke === "Juli 2026 · Monatsanfang und -ende anteilig aus den Ablesungen am 10. Juni und 3. August",
+       `Beide Ränder anteilig stehen in einer Zeile („${abgeschlossen.juli.marke}“)`);
+  note(!abgeschlossen.gasDa
+       || abgeschlossen.mai === "Mai 2026 · nur bis 28. Mai abgelesen, der Rest kommt mit der nächsten Ablesung",
+       `Fehlt die Ablesung nach dem Monat, steht das da („${abgeschlossen.mai}“)`);
+
   await page.evaluate(() => { selMonth = null; renderChart(); });
   await page.waitForTimeout(150);
 
@@ -536,7 +575,10 @@ for (const scheme of ["light", "dark"]) {
     };
   })()`);
   note(prognose.sichtbar, `Der laufende Monat sagt, was voraussichtlich zusammenkommt`);
-  note(/gemessen/.test(prognose.links) && /erwartet/.test(prognose.rechts),
+  // „gemessen", oder „bisher, anteilig", wenn der Monatserste zwischen zwei
+  // Ablesungen liegt (seit 0.133.1) — dann trägt die Zahl auch ein ≈.
+  note((/gemessen/.test(prognose.links) || /^≈ .* bisher, anteilig$/.test(prognose.links.trim()))
+       && /erwartet/.test(prognose.rechts),
        `Beide Zahlen sind benannt („${prognose.links.trim()}" / „${prognose.rechts.trim()}")`);
   note(/≈/.test(prognose.rechts),
        `Die erwartete Zahl trägt ein ≈ — sie ist gerechnet, nicht gemessen`);

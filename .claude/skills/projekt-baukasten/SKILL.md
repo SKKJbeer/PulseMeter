@@ -1224,6 +1224,26 @@ nebenbei eine Abweichung zwischen App und Entwurf (54 statt 110 m³). Beide
 Seiten mit denselben Eingaben durchzurechnen ist billiger als jede
 Vermutung.
 
+### Eine Zahl, die stimmt, unter einer Beschriftung, die einen Zustand behauptet
+
+Über einem vergangenen Monat stand „≈ 9 m³ · aus 21 von 30 Tagen". Der
+Gründer las das als Schätzung für einen offenen Monat und meldete es als
+Fehler mit Vorrang. Die Rechnung war richtig: Wer erst am 10. abliest und dann
+am 12. des Folgemonats, bekommt den Monatsrand zeitanteilig, wie bei jedem
+Versorger. Die Tageszahl hatte aber zwei verschiedene Dinge zusammengefasst
+(„noch offen" und „Rand anteilig"), und für den Leser sahen beide gleich aus.
+Im selben Bildschirmfoto stand „10.–1. September", weil ein halboffener
+Zeitraum am Ersten des Folgemonats endet und dieser Tag als letzter gedruckt
+wurde.
+
+**Die Regel:** Eine Beschriftung neben einer Zahl nennt den **Grund**, nicht
+eine Kennzahl, aus der man den Grund erraten muss. Laufend, spät begonnen,
+Rand anteilig und Rand fehlt noch sind vier Fälle mit vier Sätzen. Und jedes
+Datum, das aus einem halboffenen Bereich kommt, vor dem Drucken fragen: Ist
+das der letzte Tag, oder der erste danach? Geprüft wird beides im Entwurf mit
+genau den Daten vom Bildschirmfoto, nicht mit den Beispieldaten, die immer
+am Ersten ablesen.
+
 ### Eine Mail der Search Console ist meistens kein Fehler — aber nachmessen
 
 „Seite mit Weiterleitung" und „noindex" klingen nach Problemen und sind es

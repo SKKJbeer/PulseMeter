@@ -9,6 +9,41 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.133.1 — 2026-10-13
+
+**Ein abgeschlossener Monat sagt, woher seine Zahl kommt**
+
+Vom Gründer mit einem Bildschirmfoto gemeldet: Über dem September stand
+„≈ 9 m³ · aus 21 von 30 Tagen", als wäre der Monat noch offen. „Leute werden
+nicht immer pünktlich zum 1. eines Monats neue Daten liefern. Das müssen wir
+alles korrekt darstellen, aber es soll sich zeigen, was in einem geschlossenen
+Monat verbraucht wurde."
+
+Die Zahl stimmte. Der Monatsrand wird zeitanteilig aus der nächsten Ablesung
+gerechnet, so wie ein Versorger abgrenzt. Falsch war die Beschriftung.
+
+- **Abgeschlossene Monate, Quartale und Jahre nennen den Grund mit Datum**
+  statt einer Tageszahl: „erst ab 10. September abgelesen · Monatsende
+  anteilig aus der Ablesung am 12. Oktober". Liegen beide Ränder zwischen zwei
+  Ablesungen, steht das in einer Zeile: „Monatsanfang und -ende anteilig aus
+  den Ablesungen am 3. Februar und 2. April". Fehlt die Ablesung nach dem
+  Monat noch: „nur bis 28. Mai abgelesen, der Rest kommt mit der nächsten
+  Ablesung". Das ≈ bleibt. Der laufende Abschnitt sagt weiter „aus 2 von 31
+  Tagen".
+- **Die Vergleichskarte endet am Monatsletzten.** Dort stand „10.–1.
+  September", weil ein Verbrauch am Ersten des Folgemonats endet. Jetzt
+  „10.–30. September".
+- **„Gemessen" nur, wenn es gemessen ist.** Liegt der Monatserste zwischen
+  zwei Ablesungen, ist auch der bisherige Teil des laufenden Monats anteilig
+  gerechnet: „≈ 4 m³ bisher, anteilig". Vorher stand dort „gemessen", und
+  daneben im Vormonat „≈" für die andere Hälfte derselben Ablesung.
+
+Geprüft: `check-prototype.mjs` mit dem Fall vom Bildschirmfoto (Ablesung ab
+dem 10., nächste im Folgemonat), beiden anteiligen Rändern und dem Gas ohne
+Ablesung nach dem 28. Mai. Die App spiegelt dieselben Sätze in `HistoryView`.
+
+---
+
 ## 0.133.0 — 2026-10-13
 
 **Stände aus einer Tabelle einlesen** (für 1.5)

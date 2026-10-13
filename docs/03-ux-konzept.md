@@ -99,6 +99,22 @@ Ein Zähler, ein Zeitraum, ein Chart. Nicht alle Zähler übereinander.
   demselben Schirm, auf dem erfasst wird — dieselbe Zählwerk-Optik, derselbe
   Ziffernblock. Gelöscht wird nur nach Rückfrage, und die Rückfrage nennt die
   Folge: Der Verbrauch davor und danach wird neu gerechnet
+- **Die Zeile unter der großen Zahl nennt, woher sie kommt** (seit 0.133.1).
+  Kaum jemand liest am Ersten ab, also ist ein Monatsrand meistens zeitanteilig
+  aus der Ablesung davor oder danach gerechnet. Der laufende Abschnitt sagt
+  „aus 2 von 31 Tagen". Ein abgeschlossener nennt den Grund mit Datum:
+
+  | Fall | Zeile |
+  |---|---|
+  | Erst im Monat angefangen | „erst ab 10. September abgelesen" |
+  | Ein Rand zwischen zwei Ablesungen | „Monatsende anteilig aus der Ablesung am 12. Oktober" |
+  | Beide Ränder | „Monatsanfang und -ende anteilig aus den Ablesungen am 3. Februar und 2. April" |
+  | Nach dem Monat noch keine Ablesung | „nur bis 28. Mai abgelesen, der Rest kommt mit der nächsten Ablesung" |
+
+  Beim Quartal und beim Jahr dieselben Sätze mit „Quartalsende" und
+  „Jahresende". Die Zahl trägt das ≈ wie bisher. Bis 0.133.0 stand dort für
+  alle vier Fälle „aus 21 von 30 Tagen", und das las sich wie ein offener
+  Monat.
 
 ---
 

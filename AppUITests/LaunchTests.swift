@@ -887,7 +887,9 @@ final class LaunchTests: XCTestCase {
         let text = vorschau.label
         XCTAssertTrue(text.contains("≈"),
                       "Der hochgerechneten Zahl fehlt das Ungefähr-Zeichen: \(text)")
-        XCTAssertTrue(text.contains("gemessen"),
+        // „gemessen", oder „anteilig", wenn der Monatsanfang zwischen zwei
+        // Ablesungen liegt (seit 0.133.1).
+        XCTAssertTrue(text.contains("gemessen") || text.contains("anteilig"),
                       "Das schon Gemessene ist nicht als solches benannt: \(text)")
         XCTAssertTrue(text.contains(" von ") && text.contains("Tagen"),
                       "Die Prognose nennt ihre Tagesgrundlage nicht: \(text)")

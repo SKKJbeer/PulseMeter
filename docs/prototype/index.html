@@ -969,7 +969,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>Zählora</h1>
-  <p>Klickbarer Entwurf · v0.133.0</p>
+  <p>Klickbarer Entwurf · v0.133.1</p>
 </div>
 
 <div class="device" id="device">
@@ -1733,6 +1733,37 @@ function coverage(res) {
   return { kind: "partial", from: res.cfrom, to: res.cto };
 }
 const shiftYear = (d, n) => ({ y: d.y + n, m: d.m, d: d.m === 2 && d.d === 29 ? 28 : d.d });
+
+/* **Woher die Zahl eines abgeschlossenen Abschnitts kommt.**
+
+   Spiegelt `HistoryView.abgrenzung`. Vom Gründer am 13. Oktober gemeldet:
+   Leute lesen nicht pünktlich am Ersten ab, und über einem vergangenen Monat
+   stand „aus 21 von 30 Tagen", als wäre er noch offen. Die Zahl stimmte, der
+   Monatsrand ist zeitanteilig aus der nächsten Ablesung gerechnet. Die
+   Beschriftung nennt jetzt den Grund mit Datum (Produktprinzip 7). */
+function abgrenzung(reg, c, wort) {
+  const s = d => serial(d.y, d.m, d.d);
+  const tage = reg.readings.map(r => ({ y: r.y, m: r.m, d: r.d }));
+  const hat = d => tage.some(t => s(t) === s(d));
+  const anfang = `${wort === "Jahr" ? "Jahres" : wort + "s"}anfang`;
+  const ende = `${wort === "Jahr" ? "Jahres" : wort + "s"}ende`;
+  const datum = d => d.y === c.rfrom.y ? `${d.d}. ${MONTHS_LONG[d.m - 1]}` : `${d.d}. ${MONTHS_LONG[d.m - 1]} ${d.y}`;
+  const spaeter = s(c.cfrom) > s(c.rfrom);
+  const davor = tage.filter(t => s(t) < s(c.rfrom)).sort((a, b) => s(b) - s(a))[0];
+  const vorher = spaeter || hat(c.rfrom) ? null : davor || null;
+  const offen = s(c.cto) < s(c.rto);
+  const danach = tage.filter(t => s(t) > s(c.rto)).sort((a, b) => s(a) - s(b))[0];
+  const nachher = offen || hat(c.rto) ? null : danach || null;
+  if (vorher && nachher) {
+    return [`${anfang} und -ende anteilig aus den Ablesungen am ${datum(vorher)} und ${datum(nachher)}`];
+  }
+  const gruende = [];
+  if (spaeter) gruende.push(`erst ab ${datum(c.cfrom)} abgelesen`);
+  else if (vorher) gruende.push(`${anfang} anteilig aus der Ablesung am ${datum(vorher)}`);
+  if (offen) gruende.push(`nur bis ${datum(c.cto)} abgelesen, der Rest kommt mit der nächsten Ablesung`);
+  else if (nachher) gruende.push(`${ende} anteilig aus der Ablesung am ${datum(nachher)}`);
+  return gruende;
+}
 
 function monthConsumption(reg, y, m) {
   const nm = m === 12 ? 1 : m + 1, ny = m === 12 ? y + 1 : y;
@@ -2548,8 +2579,14 @@ function renderCompare(m, reg, idx) {
   // 11 kWh als Augustverbrauch und hielt sie für falsch. Sie war richtig, nur
   // falsch beschriftet. Ein Satz weiter unten hat das erklärt; eine Zahl, die
   // eine Erklärung braucht, ist die falsche Beschriftung.
+  // Ein Ausschnitt, der am Ersten des Folgemonats endet, endet am Letzten
+  // davor. Hier stand „10.–1. September" (Bildschirmfoto vom 13. Oktober).
+  // Spiegelt `HistoryView.letzterTag`.
+  const bisTag = fenster && fenster.to.d === 1 && fenster.to.m !== fenster.from.m
+    ? new Date(Date.UTC(fenster.to.y, fenster.to.m - 1, 0)).getUTCDate()
+    : fenster && fenster.to.d;
   const titel = (partial && fenster)
-    ? `${fenster.from.d}.–${fenster.to.d}. ${MONTHS_LONG[idx]}`
+    ? `${fenster.from.d}.–${bisTag}. ${MONTHS_LONG[idx]}`
     : MONTHS_LONG[idx];
 
   document.getElementById("compare").innerHTML =
@@ -2780,7 +2817,14 @@ function renderChart() {
         kopfZahl.textContent = (c.exact ? "" : "≈ ") + nf(c.value, dp) + " " + m.unit;
         // Und die Beschriftung sagt, aus wie vielen Tagen die Zahl stammt —
         // dieselbe Wendung wie in den Vergleichszeilen.
-        kopfMarke.textContent = c.complete ? name : `${name} · aus ${c.days} von ${tage} Tagen`;
+        // Das gilt nur für den laufenden Monat. Ein abgeschlossener sagt, woher
+        // seine Zahl kommt (`abgrenzung`), statt „aus 21 von 30 Tagen", was sich
+        // las wie eine Schätzung für einen Monat, der vorbei ist.
+        if (selMonth === TODAY.m - 1) {
+          kopfMarke.textContent = c.complete ? name : `${name} · aus ${c.days} von ${tage} Tagen`;
+        } else {
+          kopfMarke.textContent = [name, ...abgrenzung(reg, c, "Monat")].join(" · ");
+        }
       }
     } else {
       kopfZahl.textContent = (ytd.exact ? "" : "≈ ") + nf(ytd.value, dp) + " " + m.unit;
@@ -2804,7 +2848,14 @@ function renderChart() {
       const anteil = mf.value > 0 ? Math.min(100, (ist / mf.value) * 100) : 0;
       // Ohne Ablesung im Monat ist die Leiste ganz schraffiert, und die Zeile
       // darunter sagt, bis wann die Zahl gemessen ist.
-      const istText = mf.lastDay ? `${MONTHS_LONG[laufend]} noch nicht abgelesen` : `${nf(ist, dp)} ${m.unit} gemessen`;
+      // **„Gemessen" nur, wenn es gemessen ist.** Liegt der Monatserste
+      // zwischen zwei Ablesungen, ist auch dieser Teil anteilig, genau wie das
+      // Ende des Vormonats aus derselben Spanne. Wie `HistoryView.forecastLine`.
+      const anteilig = bisher && m.registers.filter(r => !r.feedIn)
+        .some(r => { const a = cumulativeAt(r, bisher.cfrom), b = cumulativeAt(r, bisher.cto);
+                     return !(a && a.exact && b && b.exact); });
+      const istText = mf.lastDay ? `${MONTHS_LONG[laufend]} noch nicht abgelesen`
+        : anteilig ? `≈ ${nf(ist, dp)} ${m.unit} bisher, anteilig` : `${nf(ist, dp)} ${m.unit} gemessen`;
       const unten = mf.lastDay
         ? `aus deinem Verbrauch bis ${dateMedium(mf.lastDay)} · ${FORECAST_BASIS[mf.method]}`
         : `${MONTHS_LONG[laufend]} · ${mf.tage} von ${mf.tageGesamt} Tagen · ${FORECAST_BASIS[mf.method]}`;

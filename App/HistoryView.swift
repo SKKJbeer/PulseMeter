@@ -776,8 +776,14 @@ struct HistoryView: View {
                 let gemessen = "\(number(vorschau.actual.quantity.value, digits: 0)) \(unit)"
                 let tage = "\(vorschau.daysElapsed) von "
                     + "\(vorschau.daysElapsed + vorschau.daysRemaining) Tagen"
+                // **„Gemessen" nur, wenn es gemessen ist.** Liegt der
+                // Monatsanfang zwischen zwei Ablesungen, ist auch der bisherige
+                // Teil anteilig gerechnet, genau wie das Ende des Vormonats aus
+                // derselben Spanne. Dort stand „≈“, hier „gemessen“, für zwei
+                // Hälften derselben Ablesung.
+                let istGemessen = vorschau.actual.confidence == .measured
                 ForecastStrip(
-                    measured: "\(gemessen) gemessen",
+                    measured: istGemessen ? "\(gemessen) gemessen" : "≈ \(gemessen) bisher, anteilig",
                     expected: "\(erwartet) erwartet",
                     // Anteil des Gemessenen an der Erwartung. Beides kommt aus
                     // derselben Rechnung, und die Prognose liegt nie unter dem Ist —
@@ -788,7 +794,8 @@ struct HistoryView: View {
                     caption: "\(laufenderAbschnittName) · \(tage) · \(vorschau.method.explanation)",
                     accent: accent,
                     accentInk: accentInk,
-                    spoken: "Bisher \(gemessen) gemessen, voraussichtlich \(erwartet) "
+                    spoken: (istGemessen ? "Bisher \(gemessen) gemessen" : "Bisher ungefähr \(gemessen), anteilig")
+                        + ", voraussichtlich \(erwartet) "
                         + "bis Ende \(laufenderAbschnittName) — \(vorschau.method.explanation), "
                         + "gerechnet aus \(tage)."
                 )
@@ -1543,8 +1550,76 @@ struct HistoryView: View {
         }
         let name = granularity == .year ? "\(bucket.year)" : "\(slotName(bucket)) \(bucket.year)"
         guard bucket.hasData else { return "\(name) · keine Ablesung" }
-        guard !bucket.isComplete else { return name }
-        return "\(name) · aus \(bucket.result.coveredDays) von \(bucket.range.spanInDays) Tagen"
+        // Der laufende Abschnitt sagt, aus wie vielen Tagen er bisher besteht.
+        if bucket.range.contains(today) {
+            guard !bucket.isComplete else { return name }
+            return "\(name) · aus \(bucket.result.coveredDays) von \(bucket.range.spanInDays) Tagen"
+        }
+        let gruende = abgrenzung(bucket)
+        return gruende.isEmpty ? name : ([name] + gruende).joined(separator: " · ")
+    }
+
+    /// **Woher die Zahl eines abgeschlossenen Abschnitts kommt.**
+    ///
+    /// Vom Gründer am 13. Oktober gemeldet: Über dem September stand
+    /// „≈ 9 m³ · aus 21 von 30 Tagen", und das las sich wie eine Schätzung für
+    /// einen Monat, der vorbei ist. „Leute werden nicht immer pünktlich zum 1.
+    /// eines Monats neue Daten liefern … es soll sich zeigen, was in einem
+    /// geschlossenen Monat verbraucht wurde."
+    ///
+    /// Die Zahl war richtig: Der Zähler wurde erst ab dem 10. abgelesen, und
+    /// das Monatsende ist zeitanteilig aus der nächsten Ablesung im Oktober
+    /// gerechnet, so wie es auch ein Versorger abgrenzt. Falsch war die
+    /// Beschriftung, die beides in „21 von 30 Tagen" zusammenfasste. Jetzt
+    /// nennt sie die Gründe einzeln, mit Datum (Produktprinzip 7):
+    ///
+    /// - Beginn später: „erst ab 10. September abgelesen"
+    /// - Ende anteilig: „Monatsende anteilig aus der Ablesung am 12. Oktober"
+    /// - Ende fehlt noch: „nur bis 28. September abgelesen, der Rest kommt mit
+    ///   der nächsten Ablesung"
+    ///
+    /// Wer jeden Monat um den 3. abliest, hat an **beiden** Grenzen einen
+    /// anteiligen Tag. Zwei lange Gründe hintereinander stünden dann über fast
+    /// jedem Monat; deshalb wird das zu einer Zeile.
+    private func abgrenzung(_ bucket: PeriodEngine.Bucket) -> [String] {
+        guard let covered = bucket.result.coveredRange else { return [] }
+        // Ausgeschrieben statt zusammengesetzt: „Jahr" + „sanfang" ergäbe
+        // „Jahrsanfang".
+        let anfang: String
+        let ende: String
+        switch bucket.granularity {
+        case .month: anfang = "Monatsanfang"; ende = "Monatsende"
+        case .quarter: anfang = "Quartalsanfang"; ende = "Quartalsende"
+        case .year: anfang = "Jahresanfang"; ende = "Jahresende"
+        }
+        // Die Ablesung nach dem Dezember liegt im Januar des Folgejahrs; ohne
+        // Jahreszahl hieße das Datum den Januar davor.
+        func datum(_ day: CalendarDay) -> String {
+            day.year == bucket.year ? germanDate(day) : "\(germanDate(day)) \(String(day.year))"
+        }
+        let tage = Set(readings.map(\.day))
+        let spaeter = covered.start > bucket.range.start
+        let vorher = spaeter || tage.contains(bucket.range.start)
+            ? nil : tage.filter({ $0 < bucket.range.start }).max()
+        let offen = covered.end < bucket.range.end
+        let nachher = offen || tage.contains(bucket.range.end)
+            ? nil : tage.filter({ $0 > bucket.range.end }).min()
+
+        if let vorher, let nachher {
+            return ["\(anfang) und -ende anteilig aus den Ablesungen am \(datum(vorher)) und \(datum(nachher))"]
+        }
+        var gruende: [String] = []
+        if spaeter {
+            gruende.append("erst ab \(datum(covered.start)) abgelesen")
+        } else if let vorher {
+            gruende.append("\(anfang) anteilig aus der Ablesung am \(datum(vorher))")
+        }
+        if offen {
+            gruende.append("nur bis \(datum(covered.end)) abgelesen, der Rest kommt mit der nächsten Ablesung")
+        } else if let nachher {
+            gruende.append("\(ende) anteilig aus der Ablesung am \(datum(nachher))")
+        }
+        return gruende
     }
 
     private var headlineHasValue: Bool {
@@ -1654,7 +1729,20 @@ struct HistoryView: View {
             return fensterText(comparison.window)
         }
         guard comparison.isPartial else { return voll }
-        return "\(comparison.window.start.day).–\(comparison.window.end.day). \(voll)"
+        return "\(comparison.window.start.day).–\(letzterTag(comparison.window).day). \(voll)"
+    }
+
+    /// Der letzte Tag, der zum Ausschnitt gehört.
+    ///
+    /// Ein Verbrauch reicht von Ablesung zu Ablesung; endet er an einer
+    /// Monatsgrenze, ist sein Ende der Erste des Folgemonats. Angezeigt stand
+    /// dann „10.–1. September", gemeint war der 10. bis 30. Gefunden am
+    /// 13. Oktober auf einem Bildschirmfoto des Gründers.
+    private func letzterTag(_ window: DayRange) -> CalendarDay {
+        guard window.end.day == 1, window.end > window.start,
+              window.end.month != window.start.month || window.end.year != window.start.year
+        else { return window.end }
+        return window.end.adding(days: -1)
     }
 
     /// Ein Ausschnitt in Worten, ohne Jahreszahl — die steht in den Zeilen.
@@ -1663,11 +1751,12 @@ struct HistoryView: View {
     /// beide Enden ausgeschrieben. `end` ist einschließlich (`DayRange`), der
     /// genannte Tag gehört also dazu.
     private func fensterText(_ window: DayRange) -> String {
-        if window.start.month == window.end.month, window.start.year == window.end.year {
+        let ende = letzterTag(window)
+        if window.start.month == ende.month, window.start.year == ende.year {
             let name = Self.monthsLong[safe: window.start.month - 1] ?? "\(window.start.month)"
-            return "\(window.start.day).–\(window.end.day). \(name)"
+            return "\(window.start.day).–\(ende.day). \(name)"
         }
-        return "\(germanDate(window.start)) bis \(germanDate(window.end))"
+        return "\(germanDate(window.start)) bis \(germanDate(ende))"
     }
 
     private func percentText(_ change: Decimal) -> String {
