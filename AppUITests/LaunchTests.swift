@@ -913,6 +913,60 @@ final class LaunchTests: XCTestCase {
     /// Ein Zähler lässt sich anlegen, ohne dass vorher Beispieldaten nötig
     /// wären. Erst damit ist die App für einen echten Nutzer brauchbar —
     /// vorher kam man nur über „Beispieldaten anlegen" zu einem Zähler.
+    /// **Einlesen aus einer Tabelle** (0.133.0). Das Beispiel hat drei Zähler
+    /// in Spalten, deutsch geschrieben. Erwartet wird: Die Vorschau nennt drei
+    /// Zähler und fünfzehn Stände, Einlesen legt sie an, und danach stehen sie
+    /// in der Liste. Rückgängig nimmt alles wieder heraus.
+    func testImportingATableCreatesMetersAndCanBeUndone() {
+        let app = XCUIApplication()
+        // Leer, damit die Liste danach genau die eingelesenen Zähler zeigt.
+        app.launchArguments = ["-pulse-empty", "-pulse-pro", "-pulse-import"]
+        app.launch()
+
+        let summe = app.descendants(matching: .any)["import-summe"].firstMatch
+        XCTAssertTrue(summe.waitForExistence(timeout: 15),
+                      "Das Blatt zum Einlesen zeigte keine Vorschau. Zu sehen war: " + beschriftungen(in: app))
+        XCTAssertEqual(summe.label, "3 Zähler · 15 Stände · 03.01.2025 bis 03.05.2025")
+
+        let einlesen = app.buttons["import-einlesen"]
+        XCTAssertTrue(einlesen.label.hasPrefix("15 Stände"), "Der Knopf nennt die Zahl: \(einlesen.label)")
+        einlesen.tap()
+
+        let fertig = app.descendants(matching: .any)["import-fertig"].firstMatch
+        XCTAssertTrue(fertig.waitForExistence(timeout: erscheint),
+                      "Nach dem Einlesen kam keine Bestätigung. Zu sehen war: " + beschriftungen(in: app))
+        XCTAssertEqual(fertig.label, "15 Stände eingelesen")
+
+        app.buttons["import-rueckgaengig"].tap()
+        XCTAssertTrue(app.buttons["import-einlesen"].waitForExistence(timeout: erscheint),
+                      "Nach Rückgängig steht die Vorschau wieder da")
+        app.buttons["import-einlesen"].tap()
+        XCTAssertTrue(fertig.waitForExistence(timeout: erscheint))
+        app.navigationBars.buttons["Fertig"].tap()
+
+        for name in ["Strom", "Gas", "Wasser"] {
+            let zeile = app.descendants(matching: .any).containing(
+                NSPredicate(format: "label BEGINSWITH %@", name)).firstMatch
+            XCTAssertTrue(zeile.waitForExistence(timeout: erscheint),
+                          "\(name) fehlt nach dem Einlesen in der Liste. Zu sehen war: " + beschriftungen(in: app))
+        }
+    }
+
+    /// Ohne Kauf legt der Import nicht mehr Zähler an, als kostenlos sind, und
+    /// sagt das, statt still Daten wegzulassen.
+    func testImportStaysWithinTheFreeMeterLimit() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-pulse-empty", "-pulse-frei", "-pulse-import"]
+        app.launch()
+        let einlesen = app.buttons["import-einlesen"]
+        XCTAssertTrue(einlesen.waitForExistence(timeout: 15),
+                      "Das Blatt zum Einlesen kam nicht. Zu sehen war: " + beschriftungen(in: app))
+        XCTAssertTrue(einlesen.label.hasPrefix("10 Stände"),
+                      "Zwei Zähler sind frei, also zweimal fünf Stände: \(einlesen.label)")
+        XCTAssertTrue(app.buttons["Mehr Zähler freischalten"].exists,
+                      "Der Weg zur Freischaltung fehlt. Zu sehen war: " + beschriftungen(in: app))
+    }
+
     func testAddingAMeterFromTheMetersTab() {
         let app = launchWithData()
         wechsel(zu: "Zähler", in: app)

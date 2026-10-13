@@ -98,6 +98,9 @@ shoot light screenshot-leer-light -pulse-empty
 shoot dark  screenshot-leer-dark  -pulse-empty
 shoot light screenshot-zaehler-light -pulse-zaehler
 shoot dark  screenshot-zaehler-dark  -pulse-zaehler
+# Einlesen aus einer Tabelle, mit dem Beispiel und ohne Zähler vorher.
+shoot light screenshot-import-light -pulse-empty -pulse-import
+shoot dark  screenshot-import-dark  -pulse-empty -pulse-import
 
 # Der Zustand vor dem Kauf.
 #

@@ -1310,6 +1310,94 @@ for (const scheme of ["light", "dark"]) {
   await page.locator("#cap-back").click();
   await page.waitForTimeout(250);
 
+  // --- Import aus einer Tabelle (0.133.0)
+  //
+  // Dieselben Tabellen wie in `TableImportTests`: Was der Rechenkern daraus
+  // macht, muss der Entwurf auch daraus machen (Regel 2).
+  const ti = await page.evaluate(`(() => {
+    const r = t => { const d = TI.analyse(t); return d ? TI.series(d) : null; };
+    const breit = r("Datum;Strom;Gas;Wasser\\n01.01.2025;12.345,6;4.567,890;123,456\\n01.02.2025;12.601,2;4.689,120;126,001\\n03.03.2025;12.850,0;4.790,005;129,370\\n");
+    const tab = r("Datum\\tZählerstand\\n3.1.25\\t1234,5\\n2.2.25\\t1301\\n");
+    const en = r("Date,Electricity (kWh)\\n2025-01-03,1234.5\\n2025-02-03,\\"1,301.25\\"\\n");
+    const ht = r("Datum;Strom HT;Strom NT\\n01.01.2025;1000;500\\n01.02.2025;1100;560\\n");
+    const rollen = TI.analyse("Datum;Zählerstand;Verbrauch;Kosten in €\\n01.01.2025;1000;;\\n01.02.2025;1120;120;38,40\\n").columns.map(c => c.role).join(",");
+    const rueck = r("Datum;Strom\\n01.01.2025;1000\\n01.02.2025;1100\\n01.03.2025;110\\n01.04.2025;1290\\n").series[0];
+    const n = x => (TI.parseNumber(x, true) || {}).value;
+    const reg = { readings: [{ y: 2025, m: 1, d: 1, value: 49000 }, { y: 2025, m: 6, d: 1, value: 50000 }] };
+    const passt = TI.merge(r("Datum;Strom\\n01.03.2025;12000\\n01.04.2025;49500\\n01.08.2025;50300\\n").series[0], reg);
+    return {
+      breit: breit.series.map(s => s.meterName + "/" + s.kind + "/" + s.unit).join(" "),
+      breitWerte: breit.series[0].entries.map(e => e.value).join(","),
+      tab: tab.series[0].entries.map(e => e.d + "." + e.m + "." + e.y + "=" + e.value).join(" "),
+      en: en.series[0].entries.map(e => e.value).join(","),
+      ht: ht.series.map(s => s.meterName + "/" + s.registerLabel).join(" "),
+      rollen,
+      rueck: rueck.entries.map(e => e.value).join(",") + "|" + rueck.issues.map(i => i.kind).join(","),
+      zahlen: ["12.345,6", "12.345", "12,345", "1234.5", "1.234,5 m³"].map(n).join(" "),
+      passt: passt.neu.map(x => x.value).join(",") + "|" + passt.unpassend
+    };
+  })()`);
+  note(ti.breit === "Strom/electricity/kWh Gas/gas/m³ Wasser/water/m³" && ti.breitWerte === "12345.6,12601.2,12850",
+       `Import: eine Spalte je Zähler, deutsch geschrieben (${ti.breit})`);
+  note(ti.tab === "3.1.2025=1234.5 2.2.2025=1301", `Import: aus Numbers kopierte Zellen mit Tabulator (${ti.tab})`);
+  note(ti.en === "1234.5,1301.25", "Import: englische CSV mit Komma als Trennzeichen");
+  note(ti.ht === "Strom/HT Strom/NT", "Import: HT und NT werden zwei Zählwerke eines Zählers");
+  note(ti.rollen === "date,reading,ignored,ignored", `Import: Verbrauch und Kosten werden nicht als Stand gelesen (${ti.rollen})`);
+  note(ti.rueck === "1000,1100,1290|decreasing", `Import: ein Stand, der zurückgeht, bleibt draußen, ohne Fehlalarm (${ti.rueck})`);
+  note(ti.zahlen === "12345.6 12345 12.345 1234.5 1234.5", `Import: Zahlen deutsch und englisch (${ti.zahlen})`);
+  note(ti.passt === "49500,50300|1", `Import: Ein Stand, der nicht zwischen die vorhandenen passt, wird nicht übernommen (${ti.passt})`);
+
+  await page.locator('[data-pane="meters"]:visible').first().click();
+  await page.waitForTimeout(200);
+  const zaehlerVorher = await page.evaluate(() => METERS.length);
+  const hatteKauf = await page.evaluate(() => OWNED.has("additionalMeters"));
+  // Erst ohne den Kauf „Mehr Zähler“: Dann legt der Import keine Zähler über
+  // die Grenze an, sagt das aber und führt zur Freischaltung.
+  await page.evaluate(() => { OWNED.delete("additionalMeters"); OWNED.delete("everything"); });
+  await page.locator("#imp-open").click();
+  await page.waitForTimeout(350);
+  note(await page.evaluate(() => document.getElementById("sheet-import").classList.contains("on")),
+       "Import: Der Zähler-Tab öffnet das Blatt zum Einlesen");
+  await page.locator("[data-imp-beispiel]").click();
+  await page.waitForTimeout(350);
+  const impGrenze = await page.evaluate(() => ({
+    ziele: [...document.querySelectorAll(".imp-ziel")].map(x => x.value),
+    hinweis: !!document.querySelector("[data-imp-paywall]")
+  }));
+  note(impGrenze.ziele.every(z => z === "skip") && impGrenze.hinweis,
+       `Import: Über der Zählergrenze wird nichts still angelegt, und der Weg zur Freischaltung steht da (${impGrenze.ziele.join(",")})`);
+  await page.evaluate(() => { OWNED.add("additionalMeters"); IMP.targets = {}; impRechne(); });
+  await page.waitForTimeout(200);
+  const vorschau = await page.evaluate(() => ({
+    summe: document.querySelector("[data-imp-summe]")?.textContent.trim() || "",
+    knopf: document.getElementById("imp-go")?.textContent.trim() || "",
+    ziele: [...document.querySelectorAll(".imp-ziel")].map(x => x.value),
+    ueber: (() => { const b = document.querySelector("#sheet-import .sheet-body"); return b.scrollWidth - b.clientWidth; })()
+  }));
+  note(/^3 Zähler · 15 Stände · 03\.01\.2025 bis 03\.05\.2025$/.test(vorschau.summe),
+       `Import: Die Vorschau sagt, was erkannt ist („${vorschau.summe}“)`);
+  note(vorschau.ziele.length === 3 && vorschau.ziele.every(z => z === "new"),
+       "Import: Gleicher Name, aber unpassende Stände: Es wird ein neuer Zähler, nicht der vorhandene");
+  note(vorschau.knopf === "15 Stände einlesen", `Import: Der Knopf nennt die Zahl („${vorschau.knopf}“)`);
+  note(vorschau.ueber <= 1, `Import: Das Blatt läuft nicht seitlich über (${vorschau.ueber} px)`);
+  await page.locator("#imp-go").click();
+  await page.waitForTimeout(300);
+  const nachher = await page.evaluate(() => ({
+    zaehler: METERS.length,
+    fertig: document.querySelector("[data-imp-fertig]")?.textContent.replace(/\s+/g, " ").trim() || "",
+    herkunft: METERS[METERS.length - 1].registers[0].readings.every(r => r.origin === "imported")
+  }));
+  note(nachher.zaehler === zaehlerVorher + 3 && /15 Stände eingelesen/.test(nachher.fertig) && nachher.herkunft,
+       `Import: Drei neue Zähler, jeder Stand als „eingelesen“ vermerkt („${nachher.fertig}“)`);
+  await page.locator("[data-imp-undo]").click();
+  await page.waitForTimeout(300);
+  note(await page.evaluate(() => METERS.length) === zaehlerVorher, "Import: Rückgängig nimmt die neuen Zähler wieder heraus");
+  if (!hatteKauf) await page.evaluate(() => OWNED.delete("additionalMeters"));
+  await page.locator("#sheet-import [data-close]").first().click();
+  await page.waitForTimeout(250);
+  await page.locator('[data-pane="home"]:visible').first().click();
+  await page.waitForTimeout(200);
+
   // --- Darstellung
   const overflow = await page.evaluate(() =>
     document.documentElement.scrollWidth > document.documentElement.clientWidth);

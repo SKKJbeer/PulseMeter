@@ -291,7 +291,7 @@ Diese Tabelle ist gleichzeitig die Testspezifikation für `PulseCore`.
 - Schema-Version explizit im Store; jede Änderung erhält eine benannte Migrationsstufe.
 - **Vor jeder Migration** automatischer vollständiger JSON-Snapshot im App-Container, die letzten drei werden vorgehalten.
 - Export enthält *alle* Entitäten, nicht nur Ablesungen — ein Export muss ein vollständiger Wiederherstellungspunkt sein.
-- Import ist idempotent über die `UUID`s. Ein zweimal importierter Export erzeugt keine Dubletten.
+- Import ist idempotent über **Tag und Stand**, nicht über `UUID`s: Eine Tabelle trägt keine Kennungen. Ein Stand, den es am selben Tag schon gibt, wird übersprungen; ein anderer Stand am selben Tag oder einer, der nicht zwischen die vorhandenen passt, bleibt draußen und wird genannt (`TableImport.readings(from:)`, seit 0.133.0). Ein zweimal eingelesener Export erzeugt deshalb keine Dubletten.
 
 ---
 

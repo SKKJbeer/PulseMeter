@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-10-13, Version 0.132.0
+Stand: 2026-10-13, Version 0.133.0
 
 ---
 
@@ -129,7 +129,7 @@ Klick-Dummy. Der Satz „Alle Werte in …" unter der Tabelle im Entwurf ist weg
 
 1. **1.4 Rundgang**: **im Laden** seit 5. Oktober, 16:42 UTC (Bau 39). Auf
    Website und Entwicklungsseite eingetragen.
-2. **1.5 Import aus einer Tabelle** (4. November), danach **Kamera** in zwei
+2. **1.5 Import aus einer Tabelle** (4. November). **Gebaut in 0.133.0**: Blatt „Einlesen“ im Zähler-Tab und auf der leeren Übersicht, Erkennung in `TableImport`, Konzept in `03-ux-konzept.md` 5a. Kostenlos wie der Export. Offen: in TestFlight mit einer echten Liste ausprobieren; xlsx direkt lesen kann er nicht, nur CSV, Text und Eingefügtes, danach **Kamera** in zwei
    Stufen (1.6 und 1.7, eigener Kauf 0,99 €, im Bündel). Der Jahreswechsel
    (1.8) ist am 7. Oktober gestrichen. Davor **1.4.1, vorgezogen auf den 7. Oktober,** mit den
    neuen Suchbegriffen („Zählora – Zählerstand ablesen"), Freigegeben vom Gründer. Wenn sie im Laden steht: Name in README, CLAUDE.md

@@ -9,6 +9,43 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.133.0 — 2026-10-13
+
+**Stände aus einer Tabelle einlesen** (für 1.5)
+
+Vom Gründer: „mache es dynamisch und so benutzerfreundlich wie möglich." Er
+selbst führt keine Liste. Deshalb ist der Import auf Listen gebaut, wie sie
+Menschen wirklich führen, und kommt ohne eine einzige Einstellung aus.
+
+- **Ein Blatt, kein Assistent.** Zellen in Excel oder Numbers kopieren und
+  „Einfügen" tippen, oder eine Datei wählen. Darunter steht sofort: „3 Zähler ·
+  15 Stände · 03.01.2025 bis 03.05.2025", je Zähler das Ziel (neuer oder
+  vorhandener Zähler), Hinweise mit Zeilennummer, und der Knopf „15 Stände
+  einlesen". Danach „Rückgängig machen".
+- **Erkannt wird alles aus dem Inhalt** (`TableImport` im Rechenkern):
+  Tabulator, Semikolon oder Komma; Windows-Zeichensatz aus Excel; mit oder
+  ohne Kopfzeile; deutsche und englische Zahlen; `03.04.2025`, `3.4.25`,
+  `2025-04-03`, `3. April 2025`, mit Uhrzeit; eine Spalte je Zähler oder eine
+  Spalte, die den Zähler nennt; „Strom HT" und „Strom NT" werden ein Zähler mit
+  zwei Zählwerken, „Einspeisung" ein Zählwerk mit Einspeisung; die Einheit aus
+  Kopf oder Zelle. Unser eigener Export liest sich wieder ein.
+- **Was nicht passt, bleibt draußen und wird genannt:** Verbrauchs- und
+  Kostenspalten, Stände, die zurückgehen, doppelte Zeilen, unlesbare Daten. Und
+  ein Stand, der nicht zwischen die vorhandenen eines Zählers passt. Das hat
+  der Klick-Dummy gefunden: Das Beispiel wäre wegen des Namens „Strom" in einem
+  Zähler gelandet, dessen Stände viermal so hoch waren.
+- **Zählergrenze:** Ohne Kauf legt der Import nur so viele Zähler an, wie
+  kostenlos sind, und sagt das. **Der Import selbst ist kostenlos**, wie der
+  Export.
+- **Einstiege:** im Zähler-Tab unter „Zähler hinzufügen" und auf der leeren
+  Übersicht („Oder Stände aus einer Tabelle einlesen").
+- **Tests:** 27 im Rechenkern (darunter zehn Jahre täglicher Stände in unter
+  einer Sekunde und tausend gegen tausend beim Abgleich), 18 Prüfungen im
+  Klick-Dummy mit denselben Tabellen wie in Swift, zwei Oberflächentests
+  (Einlesen mit Rückgängig, Zählergrenze), zwei neue Bildschirmfotos.
+
+---
+
 ## 0.132.0 — 2026-10-13
 
 **co2online sagt ja, und der Wärmepumpenrechner nutzt jetzt den Heizspiegel**

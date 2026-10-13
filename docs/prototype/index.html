@@ -589,6 +589,33 @@ ul.includes.done li::before { content: "✓"; color: var(--tint); font-size: 12p
   text-align: center; font-size: var(--fs-cap); color: var(--ink-3);
   margin-top: 9px;
 }
+
+/* ---------- Import aus einer Tabelle ---------- */
+.imp-intro { font-size: 15px; line-height: 1.5; color: var(--ink-2); margin: 2px 2px 12px; }
+.imp-feld textarea {
+  width: 100%; box-sizing: border-box; min-height: 128px; resize: vertical;
+  font: 14px/1.45 ui-monospace, "SF Mono", Menlo, monospace; color: var(--ink);
+  white-space: pre; overflow-x: auto;
+  background: var(--surface); border: 1px solid var(--hairline); border-radius: 14px; padding: 12px 13px;
+}
+.imp-feld textarea:focus-visible { outline: 2px solid var(--tint); outline-offset: 2px; }
+.imp-quellen { margin-top: 12px; }
+.imp-quellen label.rowbtn { cursor: pointer; }
+.imp-summe { margin: 20px 2px 0; font-size: 17px; font-weight: 660; letter-spacing: -0.01em; color: var(--ink); }
+.imp-reihe, .imp-spalte { align-items: flex-start; }
+.imp-reihe .rl, .imp-spalte .rl { font-weight: 600; }
+.imp-reihe select.field, .imp-spalte select.field { width: auto; max-width: 46%; text-align: right; color: var(--tint-ink); font-weight: 560; }
+.imp-reihe .imp-art { display: block; width: auto; max-width: 100%; margin: 6px 0 0; padding: 0; text-align: left; text-align-last: left; font-size: var(--fs-cap); color: var(--tint-ink); font-weight: 560; }
+.imp-hinweise { margin: 0; padding: 0 0 0 18px; font-size: 13.5px; line-height: 1.5; color: var(--ink-2); }
+.imp-hinweise li { margin: 0 0 6px; }
+.imp-link { font: inherit; font-size: 14px; font-weight: 600; color: var(--tint-ink); background: none; border: 0; padding: 10px 0; min-height: 44px; cursor: pointer; }
+.imp-zurueck { display: block; margin: 6px auto 0; }
+.imp-spalten { margin-top: 18px; }
+.imp-spalten summary { font-size: 14px; font-weight: 600; color: var(--tint-ink); cursor: pointer; min-height: 44px; display: flex; align-items: center; }
+.imp-fertig { text-align: center; padding: 22px 8px 6px; }
+.imp-fertig-zahl { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); }
+.imp-fertig-text { font-size: 15px; color: var(--ink-2); margin-top: 6px; line-height: 1.45; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 /* Datum und Uhrzeit der Ablesung. Eine Zeile, kein Formular — am Zähler tippt
    niemand ein Datum ein, er tippt eine Zahl und drückt Sichern. */
 .momentrow {
@@ -942,7 +969,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>Zählora</h1>
-  <p>Klickbarer Entwurf · v0.132.0</p>
+  <p>Klickbarer Entwurf · v0.133.0</p>
 </div>
 
 <div class="device" id="device">
@@ -1126,6 +1153,10 @@ select.field { cursor: pointer; }
         Zähler hinzufügen
       </button>
       <div class="note" id="limit-note" style="text-align:center"></div>
+      <div class="list">
+        <button type="button" class="rowbtn" id="imp-open"><span class="rl">Aus einer Tabelle einlesen<small>Stände aus Excel, Numbers oder einer Datei</small></span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button>
+      </div>
       </div><!-- /buehne -->
 
       <div class="leiste">
@@ -1267,6 +1298,17 @@ select.field { cursor: pointer; }
       <button type="button" class="sheet-close" style="visibility:hidden">Abbrechen</button>
     </div>
     <div class="sheet-body" id="editor-body"></div>
+  </div>
+
+  <!-- Aus einer Tabelle einlesen. Wie `ImportView` in der App. -->
+  <div class="sheet" id="sheet-import" role="dialog" aria-modal="true" aria-label="Aus einer Tabelle einlesen">
+    <div class="grabber"></div>
+    <div class="sheet-head">
+      <button type="button" class="sheet-close" data-close>Abbrechen</button>
+      <div class="sheet-title">Einlesen</div>
+      <button type="button" class="sheet-close" style="visibility:hidden">Abbrechen</button>
+    </div>
+    <div class="sheet-body" id="import-body"></div>
   </div>
 
   <!-- Bericht einrichten -->
@@ -2206,6 +2248,7 @@ function renderCards() {
         Leg deinen ersten Zähler an — Name und Art genügen. Danach trägst du den
         Stand ein, und der Rest ergibt sich.</div>
       <button type="button" class="save" id="first-meter" style="--c:var(--tint);--c-ink:var(--tint-ink)">Ersten Zähler anlegen</button>
+      <button type="button" class="imp-link" id="imp-open-leer">Oder Stände aus einer Tabelle einlesen</button>
     </div></article>`;
     return;
   }
@@ -4863,4 +4906,645 @@ document.getElementById("familie").addEventListener("click", (e) => {
 document.getElementById("reset").addEventListener("click", () => location.reload());
 
 renderAll();
+/* ============================================================
+   Import aus einer Tabelle — wie `TableImport` in PulseCore
+   ============================================================
+   Vom Gründer am 13. Oktober: „mache es dynamisch und so benutzerfreundlich
+   wie möglich." Erkannt wird alles aus dem Inhalt: Trennzeichen, Kopfzeile,
+   Datums- und Zahlenformat, welche Spalte was ist, und ob die Tabelle lang
+   (eine Spalte nennt den Zähler) oder breit ist (eine Spalte je Zähler).
+   Dieselben Regeln wie im Rechenkern; weichen sie ab, ist das ein Fehler
+   (Regel 2). Verbräuche werden nicht eingelesen, Zählora rechnet sie selbst. */
+const TI = (() => {
+  const MONATE = { jan: 1, januar: 1, "jänner": 1, feb: 2, februar: 2, "mär": 3, "märz": 3, mrz: 3, maerz: 3,
+    mar: 3, march: 3, apr: 4, april: 4, mai: 5, may: 5, jun: 6, juni: 6, june: 6, jul: 7, juli: 7, july: 7,
+    aug: 8, august: 8, sep: 9, sept: 9, september: 9, okt: 10, oktober: 10, oct: 10, october: 10,
+    nov: 11, november: 11, dez: 12, dezember: 12, dec: 12, december: 12 };
+  const istZiffer = c => c >= "0" && c <= "9";
+  const hat = (s, liste) => liste.some(w => s.includes(w));
+
+  function gueltig(y, m, d) {
+    if (y < 1990 || y > 2100 || m < 1 || m > 12 || d < 1) return null;
+    return d <= new Date(y, m, 0).getDate() ? { y, m, d } : null;
+  }
+  function parseTime(raw) {
+    const s = raw.replace("Uhr", "").trim(), t = s.split(":");
+    if (t.length < 2 || t.length > 3 || t[0].length > 2 || t[1].length !== 2) return null;
+    const h = Number(t[0]), m = Number(t[1]);
+    return Number.isInteger(h) && Number.isInteger(m) && h < 24 && m < 60 ? h * 60 + m : null;
+  }
+  function parseDate(raw, order) {
+    let s = raw.trim(), t = null;
+    if (s.length < 6 || s.length > 30) return null;
+    if (s.includes(":")) {
+      if (s.endsWith("Uhr")) s = s.slice(0, -3).trim();
+      const i = Math.max(s.lastIndexOf(" "), s.lastIndexOf("T"), s.lastIndexOf(","));
+      if (i < 0) return null;
+      t = parseTime(s.slice(i + 1));
+      if (t === null) return null;
+      s = s.slice(0, i).replace(/[ ,]+$/, "");
+    }
+    const jahr = (y, text) => text.length <= 2 ? (y < 70 ? 2000 + y : 1900 + y) : y;
+    const teile = s.split(/[.\-/]/).map(x => x.trim());
+    if (teile.length === 3 && teile.every(x => x && [...x].every(istZiffer))) {
+      const [a, b, c] = teile.map(Number);
+      if (teile[0].length === 4) { const r = gueltig(a, b, c); return r && { ...r, t }; }
+      if (teile[2].length !== 2 && teile[2].length !== 4) return null;
+      const y = jahr(c, teile[2]);
+      const r = s.includes(".") || order === "dayFirst" ? gueltig(y, b, a) : gueltig(y, a, b);
+      return r && { ...r, t };
+    }
+    const w = s.replace(/\./g, " ").split(" ").filter(Boolean);
+    if (w.length === 3 && /^\d+$/.test(w[0]) && MONATE[w[1].toLowerCase()] && /^\d+$/.test(w[2])) {
+      const r = gueltig(jahr(Number(w[2]), w[2]), MONATE[w[1].toLowerCase()], Number(w[0]));
+      return r && { ...r, t };
+    }
+    return null;
+  }
+  function unitFrom(text) {
+    if (!text) return null;
+    const t = text.toLowerCase();
+    if (t.includes("mwh")) return "MWh";
+    if (t.includes("kwh")) return "kWh";
+    if (t.includes("m³") || t.includes("m3") || t.includes("kubik") || t.includes("cbm")) return "m³";
+    if (t === "l" || t.includes("liter") || t.includes("(l)")) return "l";
+    return null;
+  }
+  function tausender(s, sep) {
+    const g = s.split(sep);
+    return g.length >= 2 && g[0].length >= 1 && g[0].length <= 3 && g.slice(1).every(x => x.length === 3);
+  }
+  function parseNumber(raw, decimalComma) {
+    let s = raw.trim(), unit = null;
+    let last = -1;
+    for (let i = s.length - 1; i >= 0; i--) if (istZiffer(s[i])) { last = i; break; }
+    if (last >= 0 && last < s.length - 1) {
+      const rest = s.slice(last + 1).trim();
+      if (!unitFrom(rest)) return null;
+      unit = rest; s = s.slice(0, last + 1);
+    }
+    s = s.replace(/[ ']/g, "");
+    if (!s || ![...s].some(istZiffer) || ![...s].every((c, i) => istZiffer(c) || c === "." || c === "," || (c === "-" && i === 0))) return null;
+    const neg = s.startsWith("-"); if (neg) s = s.slice(1);
+    const k = s.lastIndexOf(","), p = s.lastIndexOf(".");
+    let dez = null;
+    if (k >= 0 && p >= 0) dez = k > p ? "," : ".";
+    else if (k >= 0) dez = decimalComma || !tausender(s, ",") ? "," : null;
+    else if (p >= 0) dez = !decimalComma || !tausender(s, ".") ? "." : null;
+    let ganz = s, nach = "";
+    if (dez) { const i = s.lastIndexOf(dez); ganz = s.slice(0, i); nach = s.slice(i + 1); }
+    ganz = [...ganz].filter(istZiffer).join("");
+    if ((!ganz && !nach) || ![...nach].every(istZiffer)) return null;
+    const value = Number((ganz || "0") + (nach ? "." + nach : ""));
+    return Number.isFinite(value) ? { value: neg ? -value : value, decimals: nach.length, unit } : null;
+  }
+  function split(text, sep) {
+    const rows = []; let row = [], field = "", quoted = false;
+    if (!text.endsWith("\n")) text += "\n";
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (quoted) {
+        if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else quoted = false; }
+        else field += c;
+      } else if (c === '"' && !field.trim()) { field = ""; quoted = true; }
+      else if (c === sep) { row.push(field); field = ""; }
+      else if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
+      else field += c;
+    }
+    return rows;
+  }
+  function mostCommon(values) {
+    const n = {}; values.forEach(v => n[v] = (n[v] || 0) + 1);
+    let best = null;
+    for (const k of Object.keys(n).map(Number)) if (best === null || n[k] > n[best] || (n[k] === n[best] && k > best)) best = k;
+    return best;
+  }
+  function bestGrid(text) {
+    const probe = text.split("\n").slice(0, 50).join("\n");
+    let best = null;
+    for (const c of ["\t", ";", ",", "|"]) {
+      const counts = split(probe, c).filter(r => r.some(x => x.trim())).map(r => r.length);
+      const mode = mostCommon(counts);
+      if (mode === null || mode <= 1) continue;
+      const score = counts.filter(x => x === mode).length * 10 + mode;
+      if (!best || score > best.score) best = { c, score };
+    }
+    if (best) return { sep: best.c, grid: split(text, best.c) };
+    const spaced = text.split("\n").map(l => l.split(" ").filter(Boolean));
+    return mostCommon(spaced.filter(r => r.length).map(r => r.length)) === 2 ? { sep: " ", grid: spaced } : null;
+  }
+  const clean = c => { let s = c.replace(/[  ]/g, " ").trim(); if (s.startsWith("'")) s = s.slice(1); return s; };
+
+  function looksLikeHeader(cells, next) {
+    const filled = cells.filter(Boolean);
+    if (!filled.length) return false;
+    const dz = filled.filter(x => parseDate(x, "dayFirst") || parseNumber(x, true));
+    if (!dz.length) return true;
+    return !!(next && next.some(x => parseDate(x, "dayFirst")) && !cells.some(x => parseDate(x, "dayFirst")));
+  }
+  function decideDecimalComma(cells) {
+    let k = 0, p = 0;
+    for (const raw of cells.slice(0, 4000)) {
+      if (raw.length > 20 || ![...raw].some(istZiffer)) continue;
+      const z = [...raw].filter(c => istZiffer(c) || c === "," || c === ".").join("");
+      if (!z.includes(",") && !z.includes(".")) continue;
+      if (![...raw].every(c => istZiffer(c) || ",.- ".includes(c) || /\p{L}/u.test(c) || c === "³")) continue;
+      if ((z.match(/\./g) || []).length >= 2 && parseDate(raw, "dayFirst")) continue;
+      const ik = z.lastIndexOf(","), ip = z.lastIndexOf(".");
+      if (ik >= 0 && ip >= 0) { if (ik > ip) k++; else p++; continue; }
+      if (ik >= 0 && !tausender(z, ",")) k++;
+      if (ip >= 0 && !tausender(z, ".")) p++;
+    }
+    return k >= p;
+  }
+  function decideDateOrder(cells) {
+    for (const raw of cells) {
+      if (!raw.includes("/")) continue;
+      const t = raw.split(" ")[0].split("/");
+      if (t.length !== 3) continue;
+      if (Number(t[0]) > 12) return "dayFirst";
+      if (Number(t[1]) > 12) return "monthFirst";
+    }
+    return "dayFirst";
+  }
+  function classify(header, valuesAll, dc, order) {
+    const values = valuesAll.slice(0, 200);
+    const h = (header || "").toLowerCase();
+    const woerter = new Set(h.split(/[^\p{L}\p{N}]+/u).filter(Boolean));
+    const wort = liste => liste.some(w => woerter.has(w));
+    if (!values.length) return { role: "ignored", reason: header ? "leer" : null };
+    const share = f => values.filter(f).length / values.length;
+    const dates = share(v => parseDate(v, order)), times = share(v => parseTime(v) !== null),
+          nums = share(v => parseNumber(v, dc));
+    if (dates >= 0.6) return { role: "date" };
+    if ((times >= 0.8 && hat(h, ["zeit", "uhr", "time"])) || times >= 0.95) return { role: "time" };
+    if (nums >= 0.6) {
+      if (hat(h, ["verbrauch", "differenz", "diff", "consumption", "usage", "delta"]))
+        return { role: "ignored", reason: "Verbrauch, kein Zählerstand. Zählora rechnet ihn selbst." };
+      if (hat(h, ["kosten", "preis", "betrag", "€", "abschlag", "cost", "price"]) || wort(["eur", "euro"]))
+        return { role: "ignored", reason: "Geldbetrag, kein Zählerstand" };
+      if (hat(h, ["nummer", "zählernr", "kunden"]) || wort(["nr", "id", "jahr", "monat", "woche", "kw"]))
+        return { role: "ignored", reason: "Nummer, kein Zählerstand" };
+      return { role: "reading" };
+    }
+    if (hat(h, ["einheit"]) || wort(["unit"])) return { role: "unit" };
+    if (hat(h, ["bezeichnung", "zählwerk", "tarif", "register", "obis"])) return { role: "register" };
+    if (hat(h, ["notiz", "bemerkung", "kommentar", "comment", "hinweis"]) || wort(["note"])) return { role: "note" };
+    if (wort(["art", "quelle", "typ", "type", "status", "herkunft"])) return { role: "ignored" };
+    if (hat(h, ["zähler", "zaehler", "meter", "name", "medium", "sparte", "energie"])) return { role: "meter" };
+    const distinct = new Set(values);
+    if (distinct.size <= 12 && distinct.size < values.length)
+      return { role: [...distinct].every(unitFrom) ? "unit" : "meter" };
+    return { role: "note" };
+  }
+  function analyse(text) {
+    const norm = text.replace(/\r\n?/g, "\n");
+    const g = bestGrid(norm);
+    if (!g) return null;
+    const numbered = g.grid.map((cells, i) => ({ line: i + 1, cells: cells.map(clean) }))
+      .filter(r => r.cells.some(Boolean));
+    if (!numbered.length) return null;
+    const width = Math.max(...numbered.map(r => r.cells.length));
+    const padded = numbered.map(r => ({ line: r.line, cells: r.cells.concat(Array(width - r.cells.length).fill("")) }));
+    const hasHeader = looksLikeHeader(padded[0].cells, padded[1] && padded[1].cells);
+    const headers = hasHeader ? padded[0].cells : null;
+    const rows = hasHeader ? padded.slice(1) : padded;
+    if (!rows.length) return null;
+    const all = rows.flatMap(r => r.cells);
+    const decimalComma = decideDecimalComma(all), dateOrder = decideDateOrder(all);
+    const columns = [];
+    for (let i = 0; i < width; i++) {
+      const values = rows.map(r => r.cells[i]).filter(Boolean);
+      const header = headers ? headers[i] || null : null;
+      const c = classify(header, values, decimalComma, dateOrder);
+      columns.push({ index: i, header, role: c.role, reason: c.reason || null, samples: values.slice(0, 3) });
+    }
+    const firstDate = columns.findIndex(c => c.role === "date");
+    columns.forEach((c, i) => { if (c.role === "date" && i !== firstDate) c.role = "ignored"; });
+    return { columns, rows, hasHeader, sep: g.sep, decimalComma, dateOrder };
+  }
+
+  const GENERISCH = ["stand", "zählerstand", "zaehlerstand", "wert", "value", "reading", "ablesung", "messwert", "kwh", "m³", "m3", ""];
+  function stripUnit(text) {
+    let s = text;
+    for (const p of ["(kWh)", "[kWh]", "(m³)", "[m³]", "(m3)", "in kWh", "in m³", "in m3", " kWh", " m³", " m3", "(l)", "(Liter)"]) {
+      const i = s.toLowerCase().lastIndexOf(p.toLowerCase());
+      if (i >= 0) s = s.slice(0, i) + s.slice(i + p.length);
+    }
+    return s.trim();
+  }
+  const generisch = h => GENERISCH.includes(stripUnit(h).toLowerCase());
+  function splitTariff(name) {
+    const w = name.split(" ").filter(Boolean);
+    if (w.length < 2) return null;
+    const last = w[w.length - 1].replace(/[()]/g, "");
+    return ["ht", "nt", "hochtarif", "niedertarif", "tag", "nacht", "bezug", "einspeisung", "rückspeisung",
+            "1.8.0", "2.8.0", "1.8.1", "1.8.2"].includes(last.toLowerCase())
+      ? [w.slice(0, -1).join(" "), last] : null;
+  }
+  function seriesName(meterCell, registerCell, header, several) {
+    const reg = registerCell || null;
+    if (meterCell) {
+      let label = reg;
+      if (!label && several && header && !generisch(header)) label = header;
+      if (!label) { const t = splitTariff(meterCell); if (t) return t; }
+      return [meterCell, label];
+    }
+    if (header && !generisch(header)) {
+      const ohne = stripUnit(header), t = splitTariff(ohne);
+      return t ? [t[0], reg || t[1]] : [ohne, reg];
+    }
+    return ["Zähler", reg];
+  }
+  function kindFrom(text, unit) {
+    const t = text.toLowerCase();
+    if (hat(t, ["warmwasser", "hot water"])) return "hotWater";
+    if (hat(t, ["wasser", "water"])) return "water";
+    if (hat(t, ["gas"])) return "gas";
+    if (hat(t, ["heizöl", "öl ", "oil"])) return "heatingOil";
+    if (hat(t, ["fernwärme", "wärmemenge", "heizung"])) return "districtHeating";
+    if (hat(t, ["wallbox", "e-auto", "auto", "laden"])) return "wallbox";
+    if (hat(t, ["pv", "photovoltaik", "solar", "erzeugung"])) return "solarProduction";
+    if (hat(t, ["strom", "wärmepumpe", "wp", "power", "electric", "haushalt", "einspeisung"])) return "electricity";
+    return unit === "m³" ? "water" : unit === "l" ? "heatingOil" : "electricity";
+  }
+  const directionFrom = t => hat(t.toLowerCase(), ["einspeisung", "rückspeisung", "2.8.0", "lieferung"]) ? "feedIn"
+    : hat(t.toLowerCase(), ["erzeugung", "ertrag"]) ? "production" : "consumption";
+  const deutsch = d => `${String(d.d).padStart(2, "0")}.${String(d.m).padStart(2, "0")}.${d.y}`;
+  const zahl = v => v.toLocaleString("de-DE", { maximumFractionDigits: 6 });
+  const tagNr = d => serial(d.y, d.m, d.d);
+
+  function tidy(raw) {
+    const sorted = raw.map((e, i) => ({ e, i })).sort((a, b) => {
+      const x = tagNr(a.e) - tagNr(b.e);
+      if (x) return x;
+      if (a.e.t != null && b.e.t != null && a.e.t !== b.e.t) return a.e.t - b.e.t;
+      return a.i - b.i;
+    }).map(x => x.e);
+    const out = [], issues = []; let sinks = 0;
+    for (const e of sorted) {
+      const prev = out[out.length - 1];
+      if (prev && tagNr(prev) === tagNr(e) && prev.t === e.t) {
+        issues.push(prev.value === e.value
+          ? { kind: "duplicate", line: e.line, text: `Zeile ${e.line}: steht doppelt drin, einmal übernommen` }
+          : { kind: "sameDayDifferent", line: e.line, text: `Zeile ${e.line}: Am ${deutsch(e)} stehen zwei Stände. Übernommen ist ${zahl(prev.value)} aus Zeile ${prev.line}.` });
+        continue;
+      }
+      if (prev && e.value < prev.value) {
+        sinks++;
+        issues.push({ kind: "decreasing", line: e.line, text: `Zeile ${e.line}: ${zahl(e.value)} am ${deutsch(e)} ist kleiner als der Stand davor (${zahl(prev.value)}). Nicht übernommen. War es ein Zählerwechsel, trag ihn in der App ein.` });
+        continue;
+      }
+      out.push(e);
+    }
+    if (sorted.length >= 4 && sinks >= 2 && sinks / (sorted.length - 1) >= 0.25)
+      issues.unshift({ kind: "looksLikeConsumption", line: null, text: "Die Zahlen gehen oft zurück. Das sieht nach Verbrauch je Zeitraum aus und nicht nach Zählerständen." });
+    return { entries: out, issues };
+  }
+
+  const KIND_FRAC = { electricity: 2, solarProduction: 2, wallbox: 2, districtHeating: 2, water: 3, hotWater: 3, rainwater: 3, gas: 3, heatingOil: 0 };
+  const KIND_UNIT = { electricity: "kWh", solarProduction: "kWh", wallbox: "kWh", districtHeating: "kWh", water: "m³", hotWater: "m³", rainwater: "m³", gas: "m³", heatingOil: "l" };
+
+  function series(draft) {
+    const general = [];
+    for (const c of draft.columns) if (c.role === "ignored" && c.reason)
+      general.push({ kind: "ignoredColumn", line: null, text: `Spalte „${c.header || c.index + 1}“: ${c.reason}` });
+    const col = r => draft.columns.find(c => c.role === r);
+    const dc = col("date");
+    if (!dc) return { series: [], issues: general };
+    const tc = col("time"), mc = col("meter"), rc = col("register"), uc = col("unit"), nc = col("note");
+    const readingCols = draft.columns.filter(c => c.role === "reading");
+    const order = [], got = {};
+    for (const row of draft.rows) {
+      const rawDate = row.cells[dc.index];
+      const d = parseDate(rawDate, draft.dateOrder);
+      if (!d) {
+        if (rawDate || readingCols.some(c => row.cells[c.index]))
+          general.push({ kind: "unreadableDate", line: row.line, text: rawDate ? `Zeile ${row.line}: „${rawDate}“ ist kein Datum` : `Zeile ${row.line}: kein Datum` });
+        continue;
+      }
+      const t = (tc && parseTime(row.cells[tc.index])) ?? d.t;
+      const note = nc ? row.cells[nc.index] || null : null;
+      for (const c of readingCols) {
+        const raw = row.cells[c.index];
+        if (!raw) continue;
+        const n = parseNumber(raw, draft.decimalComma);
+        if (!n) { general.push({ kind: "unreadableNumber", line: row.line, text: `Zeile ${row.line}: „${raw}“ ist keine Zahl` }); continue; }
+        if (n.value < 0) { general.push({ kind: "negative", line: row.line, text: `Zeile ${row.line}: Ein Zählerstand ist nie negativ (${raw})` }); continue; }
+        const [name, label] = seriesName(mc ? row.cells[mc.index] : null, rc ? row.cells[rc.index] : null, c.header, readingCols.length > 1);
+        const key = name + "\u001F" + (label || "");
+        if (!got[key]) { order.push(key); got[key] = { name, label, unitHint: null, entries: [], decimals: 0, max: 0 }; }
+        const s = got[key];
+        s.entries.push({ line: row.line, y: d.y, m: d.m, d: d.d, t: t ?? null, value: n.value, note });
+        s.decimals = Math.max(s.decimals, n.decimals); s.max = Math.max(s.max, n.value);
+        if (!s.unitHint) s.unitHint = (uc && row.cells[uc.index]) || n.unit || c.header;
+      }
+    }
+    const out = order.map(key => {
+      const s = got[key];
+      const hint = [s.name, s.label || "", s.unitHint || ""].join(" ");
+      const unit = unitFrom(s.unitHint) || unitFrom(s.name);
+      const kind = kindFrom(hint, unit);
+      const { entries, issues } = tidy(s.entries);
+      return { key, meterName: s.name, registerLabel: s.label, kind, direction: directionFrom(hint),
+               unit: unit || KIND_UNIT[kind] || "kWh", entries, issues,
+               frac: Math.max(KIND_FRAC[kind] ?? 2, s.decimals),
+               int: Math.max(6, String(Math.floor(s.max)).length) };
+    }).filter(s => s.entries.length);
+    return { series: out, issues: general };
+  }
+
+  /* Wie `TableImport.readings(from:)`: Was es am Zählwerk schon gibt, bleibt. */
+  function merge(s, reg) {
+    const neu = [], konflikte = []; let gleich = 0, unpassend = 0;
+    for (const e of s.entries) {
+      const amTag = reg.readings.filter(r => serial(r.y, r.m, r.d) === tagNr(e) && (e.t == null || r.t == null || r.t === e.t));
+      if (amTag.some(r => r.value === e.value)) { gleich++; continue; }
+      if (amTag.length) { konflikte.push({ kind: "conflict", line: e.line, text: `Zeile ${e.line}: Am ${deutsch(e)} steht schon ${zahl(amTag[0].value)}, eingelesen wäre ${zahl(e.value)}. Der vorhandene bleibt.` }); continue; }
+      // Er muss zwischen die vorhandenen Stände passen, wie im Rechenkern.
+      const vor = reg.readings.filter(r => serial(r.y, r.m, r.d) < tagNr(e)).map(r => r.value);
+      const nach = reg.readings.filter(r => serial(r.y, r.m, r.d) > tagNr(e)).map(r => r.value);
+      if (vor.length && e.value < Math.max(...vor)) { unpassend++; konflikte.push({ kind: "doesNotFit", line: e.line, text: `Zeile ${e.line}: ${zahl(e.value)} liegt unter dem vorhandenen Stand ${zahl(Math.max(...vor))} von vorher. Nicht übernommen.` }); continue; }
+      if (nach.length && e.value > Math.min(...nach)) { unpassend++; konflikte.push({ kind: "doesNotFit", line: e.line, text: `Zeile ${e.line}: ${zahl(e.value)} liegt über dem vorhandenen Stand ${zahl(Math.min(...nach))} von danach. Nicht übernommen.` }); continue; }
+      neu.push({ y: e.y, m: e.m, d: e.d, t: e.t, value: e.value, origin: "imported", note: e.note || undefined });
+    }
+    return { neu, gleich, konflikte, unpassend };
+  }
+
+  /* Excel unter Windows schreibt Windows-1252. Zuerst UTF-8 streng, dann das. */
+  function decode(buffer) {
+    const b = new Uint8Array(buffer);
+    try { return new TextDecoder("utf-8", { fatal: true }).decode(b).replace(/^﻿/, ""); }
+    catch (_) { return new TextDecoder("windows-1252").decode(b); }
+  }
+
+  return { analyse, series, merge, decode, parseDate, parseNumber, deutsch };
+})();
+window.TI = TI;
+
+/* ---------- Der Ablauf ----------
+   Ein Blatt, kein Assistent mit fünf Schritten: Oben kommt die Tabelle
+   hinein, darunter steht sofort, was daraus wird. Wer etwas anders will,
+   stellt es dort um, wo es steht. */
+const IMP = { text: "", draft: null, result: null, targets: {}, kinds: {}, last: null, alle: false };
+const IMP_ROLLEN = [["date", "Datum"], ["time", "Uhrzeit"], ["reading", "Zählerstand"], ["meter", "Zähler"],
+                    ["register", "Zählwerk"], ["unit", "Einheit"], ["note", "Notiz"], ["ignored", "Nicht einlesen"]];
+const IMP_BEISPIEL = "Datum;Strom;Gas;Wasser\n03.01.2025;12.345,6;4.567,890;123,456\n02.02.2025;12.601,2;4.689,120;126,001\n" +
+  "01.03.2025;12.850,0;4.790,005;129,370\n05.04.2025;13.071,4;4.851,330;132,904\n03.05.2025;13.262,9;4.880,412;136,210\n";
+
+function openImport() {
+  IMP.last = null; IMP.alle = false;
+  const body = document.getElementById("import-body");
+  body.innerHTML = `
+    <p class="imp-intro">In Excel oder Numbers die Zellen markieren, kopieren und hier einfügen. Eine Datei geht auch.</p>
+    <label class="imp-feld"><span class="sr">Tabelle</span>
+      <textarea id="imp-text" rows="6" spellcheck="false" autocomplete="off" wrap="off"
+        placeholder="Datum      Strom       Gas&#10;03.01.2025  12.345,6   4.567,890&#10;02.02.2025  12.601,2   4.689,120"></textarea></label>
+    <div class="list imp-quellen">
+      <label class="rowbtn" for="imp-file"><span class="rl">Datei wählen<small>CSV oder Text, auch aus Excel</small></span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></label>
+      <input type="file" id="imp-file" accept=".csv,.tsv,.txt,text/csv,text/plain" hidden>
+      <button type="button" class="rowbtn" data-imp-beispiel><span class="rl">Beispiel einfügen<small>So sieht eine Liste aus, die passt</small></span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button>
+    </div>
+    <div id="imp-vorschau" aria-live="polite"></div>`;
+  document.getElementById("imp-text").value = IMP.text;
+  impAnalyse();
+  openSheet("sheet-import");
+}
+
+function impAnalyse() {
+  IMP.draft = IMP.text.trim() ? TI.analyse(IMP.text) : null;
+  IMP.targets = {}; IMP.kinds = {};
+  impRechne();
+}
+
+function impRechne() {
+  IMP.result = IMP.draft && IMP.draft.columns.some(c => c.role === "date") ? TI.series(IMP.draft) : null;
+  if (IMP.result) impZieleVorbelegen();
+  impZeichne();
+}
+
+/* Vorhandene Zählwerke mit derselben Einheit, als Ziel wählbar. */
+function impZiele(s) {
+  const out = [];
+  for (const m of activeMeters()) for (const r of m.registers) {
+    if ((r.unit || m.unit) !== s.unit) continue;
+    out.push({ id: m.id + "|" + r.id, name: m.name + (m.registers.length > 1 ? " · " + (r.label || "Zählwerk") : "") , m, r });
+  }
+  return out;
+}
+
+/* Neue Zähler nach Namen gruppiert: „Strom HT“ und „Strom NT“ werden ein
+   Zähler mit zwei Zählwerken, nicht zwei Zähler. */
+function impNeueGruppen() {
+  const namen = [];
+  for (const s of IMP.result.series) if (IMP.targets[s.key] === "new" && !namen.includes(s.meterName)) namen.push(s.meterName);
+  return namen;
+}
+
+function impZieleVorbelegen() {
+  let frei = owns("additionalMeters") ? Infinity : Math.max(0, FREE_METER_LIMIT - meterCount());
+  const neu = [];
+  for (const s of IMP.result.series) {
+    if (IMP.targets[s.key]) continue;
+    // Gleicher Name allein reicht nicht: Die Reihe muss auch zwischen die
+    // vorhandenen Stände passen, sonst gehört sie zu einem anderen Zähler.
+    const passend = impZiele(s).find(z => z.m.name.toLowerCase() === s.meterName.toLowerCase()
+      && (!s.registerLabel || (z.r.label || "").toLowerCase() === s.registerLabel.toLowerCase())
+      && TI.merge(s, z.r).unpassend === 0);
+    if (passend) { IMP.targets[s.key] = passend.id; continue; }
+    if (neu.includes(s.meterName) || frei > 0) {
+      if (!neu.includes(s.meterName)) { neu.push(s.meterName); frei--; }
+      IMP.targets[s.key] = "new";
+    } else IMP.targets[s.key] = "skip";
+    IMP.kinds[s.key] = IMP.kinds[s.key] || s.kind;
+  }
+}
+
+function impPlan() {
+  const plan = [];
+  for (const s of IMP.result.series) {
+    const ziel = IMP.targets[s.key];
+    if (!ziel || ziel === "skip") continue;
+    if (ziel === "new") { plan.push({ s, neu: true, merge: TI.merge(s, { readings: [] }) }); continue; }
+    const [mid, rid] = ziel.split("|");
+    const m = METERS.find(x => x.id === mid), r = m && m.registers.find(x => x.id === rid);
+    if (r) plan.push({ s, m, r, merge: TI.merge(s, r) });
+  }
+  return plan;
+}
+
+const impEsc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const impSpanne = s => s.entries.length === 1 ? TI.deutsch(s.entries[0])
+  : `${TI.deutsch(s.entries[0])} bis ${TI.deutsch(s.entries[s.entries.length - 1])}`;
+
+function impZeichne() {
+  const host = document.getElementById("imp-vorschau");
+  if (!host) return;
+  if (IMP.last) return impZeichneFertig(host);
+  if (!IMP.text.trim()) { host.innerHTML = ""; return; }
+  const d = IMP.draft;
+  if (!d) {
+    host.innerHTML = `<div class="note" data-imp-leer>Darin steht keine Tabelle. Gebraucht wird eine Spalte mit dem Datum und eine mit dem Zählerstand, getrennt durch Tabulator, Semikolon oder Komma.</div>`;
+    return;
+  }
+  const spalten = `<div class="section-label">Spalten</div><div class="list">` + d.columns.map(c => `
+    <div class="row imp-spalte"><span class="rl">${impEsc(c.header || "Spalte " + (c.index + 1))}<small>${impEsc(c.samples.join(" · ") || "leer")}</small></span>
+      <select class="field imp-rolle" data-imp-col="${c.index}" aria-label="Spalte ${impEsc(c.header || c.index + 1)} ist">
+        ${IMP_ROLLEN.map(([v, n]) => `<option value="${v}"${v === c.role ? " selected" : ""}>${n}</option>`).join("")}
+      </select></div>`).join("") + `</div>`;
+  const fehlt = !d.columns.some(c => c.role === "date") ? "eine Spalte mit dem Datum"
+    : !d.columns.some(c => c.role === "reading") ? "eine Spalte mit dem Zählerstand" : null;
+  if (fehlt || !IMP.result || !IMP.result.series.length) {
+    host.innerHTML = `<div class="note" data-imp-fehlt>Es fehlt ${fehlt || "ein lesbarer Zählerstand"}. Stell unten ein, welche Spalte was ist.</div>` + spalten
+      + impHinweise(IMP.result ? IMP.result.issues : []);
+    return;
+  }
+
+  const plan = impPlan();
+  const anzahl = plan.reduce((n, p) => n + p.merge.neu.length, 0);
+  const gleich = plan.reduce((n, p) => n + p.merge.gleich, 0);
+  const alle = IMP.result.series.flatMap(s => s.entries);
+  const zaehler = new Set(IMP.result.series.map(s => s.meterName)).size;
+  const kopf = `<div class="imp-summe" data-imp-summe>${zaehler === 1 ? "1 Zähler" : zaehler + " Zähler"} · ${alle.length} ${alle.length === 1 ? "Stand" : "Stände"}`
+    + ` · ${TI.deutsch(alle.reduce((a, b) => serial(a.y, a.m, a.d) <= serial(b.y, b.m, b.d) ? a : b))} bis ${TI.deutsch(alle.reduce((a, b) => serial(a.y, a.m, a.d) >= serial(b.y, b.m, b.d) ? a : b))}</div>`;
+
+  const freiNeu = owns("additionalMeters") ? Infinity : Math.max(0, FREE_METER_LIMIT - meterCount());
+  const neueGruppen = impNeueGruppen();
+  const reihen = `<div class="section-label">Wohin</div><div class="list">` + IMP.result.series.map(s => {
+    const ziel = IMP.targets[s.key] || "skip";
+    const darfNeu = neueGruppen.includes(s.meterName) || neueGruppen.length < freiNeu;
+    const opts = [`<option value="new"${ziel === "new" ? " selected" : ""}${darfNeu ? "" : " disabled"}>Neuer Zähler${darfNeu ? "" : " (Zählergrenze)"}</option>`]
+      .concat(impZiele(s).map(z => `<option value="${z.id}"${ziel === z.id ? " selected" : ""}>in „${impEsc(z.name)}“</option>`))
+      .concat([`<option value="skip"${ziel === "skip" ? " selected" : ""}>Nicht einlesen</option>`]);
+    const art = ziel === "new" ? `<select class="field imp-art" data-imp-kind="${impEsc(s.key)}" aria-label="Art für ${impEsc(s.meterName)}">
+        ${KINDS.map(k => `<option value="${k.id}"${k.id === (IMP.kinds[s.key] || s.kind) ? " selected" : ""}>Art: ${k.name}</option>`).join("")}</select>` : "";
+    const p = plan.find(x => x.s === s);
+    const zusatz = p && p.merge.gleich ? ` · ${p.merge.gleich} schon da` : "";
+    return `<div class="row imp-reihe" data-imp-reihe="${impEsc(s.key)}">
+      <span class="rl">${impEsc(s.meterName)}${s.registerLabel ? " · " + impEsc(s.registerLabel) : ""}
+        <small>${s.entries.length} ${s.entries.length === 1 ? "Stand" : "Stände"} · ${impSpanne(s)} · ${impEsc(s.unit)}${zusatz}</small>${art}</span>
+      <select class="field imp-ziel" data-imp-target="${impEsc(s.key)}" aria-label="Wohin mit ${impEsc(s.meterName)}">${opts.join("")}</select></div>`;
+  }).join("") + `</div>`;
+
+  // Der Hinweis steht, sobald eine Reihe nicht als neuer Zähler kommen darf
+  // und darum draußen bleibt. Vorher hing er daran, dass es keinen Zähler
+  // derselben Einheit gab, und fehlte damit fast immer.
+  const gesperrt = !owns("additionalMeters") && IMP.result.series.some(s => IMP.targets[s.key] === "skip"
+      && !neueGruppen.includes(s.meterName) && neueGruppen.length >= freiNeu)
+    ? `<div class="note">Kostenlos sind ${FREE_METER_LIMIT} Zähler. Für mehr: <button type="button" class="imp-link" data-imp-paywall>Mehr Zähler freischalten</button></div>` : "";
+  const hinweise = impHinweise(IMP.result.issues.concat(IMP.result.series.flatMap(s => s.issues), plan.flatMap(p => p.merge.konflikte)));
+  host.innerHTML = kopf + reihen + gesperrt + `
+    <button type="button" class="save" id="imp-go" style="--c:var(--tint);--c-ink:var(--tint-ink);margin-top:18px"${anzahl ? "" : " disabled"}>
+      ${anzahl ? (anzahl === 1 ? "1 Stand einlesen" : anzahl.toLocaleString("de-DE") + " Stände einlesen") : (gleich ? "Alles schon da" : "Nichts einzulesen")}</button>
+    <div class="save-note">Eingelesene Stände tragen den Vermerk „eingelesen“. Was schon da ist, bleibt, wie es ist.</div>`
+    + hinweise + `<details class="imp-spalten"${d.columns.some(c => c.role === "ignored" && c.samples.length) ? "" : ""}><summary>Spalten anders zuordnen</summary>${spalten}</details>`;
+}
+
+function impHinweise(liste) {
+  if (!liste.length) return "";
+  const zeigen = IMP.alle ? liste : liste.slice(0, 4);
+  return `<div class="section-label">${liste.length === 1 ? "1 Hinweis" : liste.length + " Hinweise"}</div>
+    <ul class="imp-hinweise" data-imp-hinweise>${zeigen.map(i => `<li>${impEsc(i.text)}</li>`).join("")}</ul>`
+    + (liste.length > zeigen.length ? `<button type="button" class="imp-link" data-imp-alle>Alle ${liste.length} zeigen</button>` : "");
+}
+
+function impEinlesen() {
+  const plan = impPlan();
+  const last = { added: [], meters: [] };
+  const neuNachName = {};
+  for (const p of plan) {
+    if (!p.merge.neu.length) continue;
+    let r = p.r;
+    if (p.neu) {
+      let m = neuNachName[p.s.meterName];
+      if (!m) {
+        const kind = KINDS.find(k => k.id === (IMP.kinds[p.s.key] || p.s.kind)) || KINDS[0];
+        const name = p.s.meterName === "Zähler" ? kind.name : p.s.meterName;
+        m = { id: "m" + Date.now() + Math.random().toString(36).slice(2, 6), name, kind: kind.id, unit: p.s.unit,
+              frac: p.s.frac, int: p.s.int, color: kind.color, serial: "—", interval: 3650, price: 0, base: 0, prepay: 0, registers: [] };
+        METERS.push(m); neuNachName[p.s.meterName] = m; last.meters.push(m);
+      }
+      r = { id: "r" + Date.now() + Math.random().toString(36).slice(2, 6), label: p.s.registerLabel,
+            unit: p.s.unit, int: p.s.int, frac: p.s.frac, readings: [],
+            feedIn: p.s.direction === "feedIn" || undefined };
+      m.registers.push(r);
+    }
+    for (const x of p.merge.neu) r.readings.push(x);
+    sortReadings(r);
+    last.added.push({ r, items: p.merge.neu });
+  }
+  last.count = last.added.reduce((n, a) => n + a.items.length, 0);
+  last.names = [...new Set(plan.filter(p => p.merge.neu.length).map(p => p.neu ? (neuNachName[p.s.meterName] || {}).name : p.m.name))];
+  IMP.last = last;
+  renderAll();
+  impZeichne();
+}
+
+function impRueckgaengig() {
+  const last = IMP.last;
+  if (!last) return;
+  for (const a of last.added) a.r.readings = a.r.readings.filter(x => !a.items.includes(x));
+  for (const m of last.meters) { const i = METERS.indexOf(m); if (i >= 0) METERS.splice(i, 1); }
+  if (!METERS.some(m => m.id === histMeter)) histMeter = METERS[0] ? METERS[0].id : null;
+  IMP.last = null;
+  renderAll();
+  impRechne();
+}
+
+function impZeichneFertig(host) {
+  const l = IMP.last;
+  host.innerHTML = `<div class="imp-fertig" data-imp-fertig>
+      <div class="imp-fertig-zahl">${l.count.toLocaleString("de-DE")} ${l.count === 1 ? "Stand" : "Stände"} eingelesen</div>
+      <div class="imp-fertig-text">in ${l.names.map(impEsc).join(", ")}${l.meters.length ? ` · ${l.meters.length === 1 ? "1 Zähler" : l.meters.length + " Zähler"} neu angelegt` : ""}</div>
+    </div>
+    <button type="button" class="save" data-close style="--c:var(--tint);--c-ink:var(--tint-ink);margin-top:16px">Fertig</button>
+    <button type="button" class="imp-link imp-zurueck" data-imp-undo>Rückgängig machen</button>`;
+}
+
+document.addEventListener("input", e => {
+  if (e.target.id !== "imp-text") return;
+  IMP.text = e.target.value; IMP.last = null;
+  clearTimeout(IMP.warte);
+  IMP.warte = setTimeout(impAnalyse, 200);
+});
+document.addEventListener("change", e => {
+  const t = e.target;
+  if (t.id === "imp-file" && t.files && t.files[0]) {
+    t.files[0].arrayBuffer().then(buf => {
+      IMP.text = TI.decode(buf); IMP.last = null;
+      document.getElementById("imp-text").value = IMP.text;
+      impAnalyse();
+    });
+    return;
+  }
+  if (t.dataset.impCol !== undefined && IMP.draft) {
+    const c = IMP.draft.columns[Number(t.dataset.impCol)];
+    // Ein Datum und eine Uhrzeit gibt es nur einmal: Wer eine andere Spalte
+    // dazu macht, nimmt der bisherigen die Rolle.
+    if (["date", "time", "meter", "register", "unit", "note"].includes(t.value))
+      IMP.draft.columns.forEach(x => { if (x !== c && x.role === t.value) x.role = "ignored"; });
+    c.role = t.value;
+    IMP.targets = {};
+    return impRechne();
+  }
+  if (t.dataset.impTarget !== undefined) { IMP.targets[t.dataset.impTarget] = t.value; return impZeichne(); }
+  if (t.dataset.impKind !== undefined) { IMP.kinds[t.dataset.impKind] = t.value; return impZeichne(); }
+});
+document.addEventListener("click", e => {
+  const t = e.target.closest("#imp-open,#imp-open-leer,[data-imp-beispiel],#imp-go,[data-imp-undo],[data-imp-alle],[data-imp-paywall]");
+  if (!t) return;
+  if (t.id === "imp-open" || t.id === "imp-open-leer") return openImport();
+  if (t.dataset.impBeispiel !== undefined) {
+    IMP.text = IMP_BEISPIEL; IMP.last = null;
+    document.getElementById("imp-text").value = IMP.text;
+    return impAnalyse();
+  }
+  if (t.id === "imp-go") return impEinlesen();
+  if (t.dataset.impUndo !== undefined) return impRueckgaengig();
+  if (t.dataset.impAlle !== undefined) { IMP.alle = true; return impZeichne(); }
+  if (t.dataset.impPaywall !== undefined) return openPaywall("additionalMeters");
+});
+
 </script>

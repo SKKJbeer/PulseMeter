@@ -116,6 +116,45 @@ Kein Konto. Keine Berechtigungsanfrage vor dem ersten Erfolgserlebnis. Die Nachf
 
 ---
 
+## 5a. Einlesen aus einer Tabelle (seit 0.133.0)
+
+Für alle, die schon eine Liste führen, in Excel, Numbers, auf Papier
+abgetippt oder in einer anderen App. Vom Gründer verlangt: „dynamisch und so
+benutzerfreundlich wie möglich".
+
+**Ein Blatt, kein Assistent.** Oben kommt die Tabelle hinein: Zellen
+markieren, kopieren, „Einfügen" tippen. Oder eine Datei wählen. Darunter
+steht sofort, was daraus wird:
+
+1. **Was erkannt ist**, in einer Zeile: „3 Zähler · 15 Stände · 03.01.2025 bis 03.05.2025".
+2. **Wohin**, je Zähler: „Neuer Zähler" (mit Art), ein vorhandener Zähler derselben Einheit, oder „Nicht einlesen".
+3. **Der Knopf** nennt die Zahl: „15 Stände einlesen".
+4. **Hinweise** mit Zeilennummer, nur wenn es welche gibt.
+5. **„Spalten anders zuordnen"**, eingeklappt: Für den Fall, dass die Erkennung danebenliegt.
+
+Danach „15 Stände eingelesen · 3 Zähler neu angelegt" und **„Rückgängig machen"**.
+
+**Was die App selbst erkennt** (`TableImport` im Rechenkern, dieselben Regeln
+im Klick-Dummy): Trennzeichen (Tabulator aus der Zwischenablage, Semikolon aus
+deutschem Excel, Komma), Zeichensatz (Windows-1252 aus Excel unter Windows),
+Kopfzeile oder keine, deutsche und englische Zahlen, Daten wie `03.04.2025`,
+`3.4.25`, `2025-04-03`, `3. April 2025`, mit Uhrzeit oder ohne, lange Tabellen
+(eine Spalte nennt den Zähler) und breite (eine Spalte je Zähler), HT/NT und
+Einspeisung als Zählwerke eines Zählers, die Einheit aus Kopf oder Zelle.
+
+**Was sie bewusst nicht tut:**
+
+- **Verbräuche einlesen.** Eine Spalte „Verbrauch" oder „Kosten" bleibt draußen, mit Begründung. Zählora rechnet den Verbrauch aus den Ständen.
+- **Einen Monat ohne Tag als Datum nehmen.** „April 2025" sagt nicht, wann abgelesen wurde.
+- **Rückwärts laufende Stände übernehmen.** Die Zeile bleibt draußen und wird genannt; ein Zählerwechsel gehört in die App.
+- **Nach Namen allein zuordnen.** Eine Reihe kommt nur dann automatisch in einen vorhandenen Zähler, wenn sie zwischen dessen Stände passt. Sonst wird es ein neuer Zähler.
+- **Über die Zählergrenze hinaus anlegen.** Ohne Kauf bleiben weitere Zähler draußen, und der Weg zur Freischaltung steht daneben.
+
+**Kostenlos.** Wie der Export (Produktprinzip 5): Wer zu Zählora wechselt,
+soll seine Geschichte mitnehmen können, ohne erst zu bezahlen.
+
+---
+
 ## 6. Design-System
 
 **Farbe.** Eine ruhige neutrale Grundfläche. Farbe ist ausschließlich funktional: jede Zählerart hat eine Signalfarbe (Strom bernstein, Wasser blau, Gas orange, Wärme rot, Solar grün). Diese Farbe erscheint auf Karten, in Charts und Symbolen konsistent und macht die App ohne Text lesbar. Keine Verläufe als Dekoration, keine Markenfarbe, die mit den Datenfarben konkurriert.

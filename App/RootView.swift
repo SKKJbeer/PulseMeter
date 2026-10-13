@@ -15,7 +15,7 @@ struct RootView: View {
     /// zuletzt drei Fehler im Erfassungsschirm monatelang vorbeigelaufen.
     @State private var tab: Int = {
         if Startschalter.einerVon("-pulse-verlauf", "-pulse-bericht") { return 1 }
-        if Startschalter.einerVon("-pulse-zaehler", "-pulse-kaufen") { return 2 }
+        if Startschalter.einerVon("-pulse-zaehler", "-pulse-kaufen", "-pulse-import") { return 2 }
         return 0
     }()
 
@@ -368,6 +368,7 @@ struct OverviewView: View {
     @State private var points: [MeteringPoint] = []
     @State private var capturing: MeteringPoint?
     @State private var addingMeter = false
+    @State private var importing = false
     @State private var problem: String?
     /// Welche Zahl gerade erklärt wird — `nil`, solange kein Blatt offen ist.
     @State private var erklaerung: ErklaerungsAnlass?
@@ -436,6 +437,9 @@ struct OverviewView: View {
                 MeterEditor(draft: MeterDraft(), readingCount: 0,
                             onDone: { datenstand.geaendert() })
             }
+            .sheet(isPresented: $importing) {
+                ImportView(onDone: { datenstand.geaendert() })
+            }
             .sheet(item: $erklaerung) { anlass in
                 ExplainView(name: anlass.name, outlook: anlass.outlook,
                             unit: anlass.unit)
@@ -472,6 +476,12 @@ struct OverviewView: View {
                         .padding(.vertical, 13)
                         .background(PulseColor.tint, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
                 }
+                // Wer schon eine Liste führt, fängt nicht von vorn an.
+                Button("Oder Stände aus einer Tabelle einlesen") { importing = true }
+                    .font(.system(.subheadline, weight: .semibold))
+                    .tint(PulseColor.tintInk)
+                    .frame(minHeight: 44)
+                    .accessibilityIdentifier("import-leer")
                 Button("Stattdessen Beispieldaten anlegen", action: seed)
                     .font(PulseText.caption)
                     .foregroundStyle(PulseColor.inkTertiary)

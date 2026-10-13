@@ -1242,6 +1242,30 @@ JavaScript keine Adresse zeigt. Im Impressum ist das mehr als ein
 Schönheitsfehler. `<!--email_off-->…<!--/email_off-->` um die Adresse nimmt sie
 aus.
 
+### Ein Import ohne Einstellungen: was die Erkennung wirklich braucht
+
+Gebaut für 1.5 („so benutzerfreundlich wie möglich"), mit Listen, wie sie
+Menschen führen, nicht wie sie sein sollten. Was dabei teuer war:
+
+- **Schwellen nicht zu streng.** Achtzig Prozent erkannte Werte je Spalte
+  klang vorsichtig; eine einzige Zeile „im Urlaub" unter fünf reichte, damit
+  gar nichts eingelesen wurde. Sechzig Prozent, und der Rest wird je Zeile
+  gemeldet.
+- **Gleicher Name ist kein Beweis.** Automatisch zugeordnet wird nur, was
+  zwischen die vorhandenen Stände passt. Sonst landet eine Liste wegen „Strom"
+  in einem Zähler mit viermal so hohen Ständen und macht dessen Reihe kaputt.
+  Gefunden hat das der Klick-Dummy, nicht ein Test.
+- **Regex je Zelle ist teuer.** `range(of:options:.regularExpression)`
+  übersetzt den Ausdruck jedes Mal neu. Zehn Jahre täglicher Stände brauchten
+  damit zwei Sekunden, mit Zeichenprüfungen 0,8 im Debug-Bau.
+- **Foundation ist nicht überall gleich.** `String.Encoding.windowsCP1252` gibt
+  es auf dem iPhone, unter Linux nicht. Selbst übersetzt (32 Zeichen Tabelle),
+  prüft die Testreihe dasselbe, was das Telefon tut. Und `"³".isNumber` ist
+  wahr: Für Ziffern nur ASCII nehmen.
+- **Dieselben Tabellen in beiden Fassungen prüfen.** Der Klick-Dummy rechnet
+  die Fälle aus `TableImportTests` noch einmal (Regel 2). Weicht eine Zahl ab,
+  fällt es sofort auf.
+
 ### Grüne Tests, falsches Bild: das Bildschirmfoto ansehen
 
 0.131.0 lief in der CI vollständig grün, und auf dem ersten Bildschirmfoto

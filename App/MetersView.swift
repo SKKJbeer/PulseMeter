@@ -28,6 +28,7 @@ struct MetersView: View {
     @State private var reminderNote: String?
     @State private var paywallErinnerung = false
     @State private var problem: String?
+    @State private var importing = false
 
     var body: some View {
         NavigationStack {
@@ -72,6 +73,10 @@ struct MetersView: View {
                     if Startschalter.gesetzt("-pulse-kaufen") {
                         showingPaywall = true
                     }
+                    // Für Prüfung und Bildschirmfoto: das Blatt mit dem Beispiel.
+                    if Startschalter.gesetzt("-pulse-import") {
+                        importing = true
+                    }
                 }
                 // Ein gelöschter oder umbenannter Zähler ändert die Übersicht
                 // mit; ein hier eingetragener Stand ändert diese Liste.
@@ -89,6 +94,10 @@ struct MetersView: View {
                 }
                 .sheet(isPresented: $showingStore) {
                     StoreView()
+                }
+                .sheet(isPresented: $importing) {
+                    ImportView(startText: Startschalter.gesetzt("-pulse-import") ? ImportView.beispiel : "",
+                               onDone: { datenstand.geaendert() })
                 }
             }
         }
@@ -145,6 +154,40 @@ struct MetersView: View {
                 .font(PulseText.caption)
                 .foregroundStyle(PulseColor.inkTertiary)
                 .frame(maxWidth: .infinity, alignment: .center)
+        }
+
+        // **Einlesen steht neben dem Anlegen, nicht in den Einstellungen.**
+        // Wer eine Liste hat, sucht den Weg genau hier: dort, wo Zähler
+        // dazukommen. Der Import legt die Zähler gleich mit an.
+        PulseCard {
+            Button { importing = true } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "tablecells")
+                        .accessibilityHidden(true)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(PulseColor.tintInk)
+                        .frame(width: 30, height: 30)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Aus einer Tabelle einlesen")
+                            .font(.system(.body, weight: .medium))
+                            .foregroundStyle(PulseColor.ink)
+                        Text("Stände aus Excel, Numbers oder einer Datei")
+                            .font(PulseText.caption)
+                            .foregroundStyle(PulseColor.inkTertiary)
+                    }
+                    Spacer(minLength: 8)
+                    Image(systemName: "chevron.right")
+                        .accessibilityHidden(true)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(PulseColor.inkTertiary)
+                }
+                .padding(.horizontal, 15)
+                .padding(.vertical, 12)
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("import-oeffnen")
         }
     }
 
@@ -625,7 +668,7 @@ struct MeterEditor: View {
     /// Die Arten, die zur Auswahl stehen. `custom` fehlt bewusst: Ein eigener
     /// Zähler braucht eine Einheit, und die Auswahl einer Einheit ist ein
     /// eigener Schritt, der hier alles andere überlagern würde.
-    private static let kinds: [ResourceKind] = [
+    static let kinds: [ResourceKind] = [
         .electricity, .water, .hotWater, .gas, .districtHeating, .heatingOil,
         .solarProduction, .wallbox, .batteryStorage, .rainwater, .operatingHours
     ]
