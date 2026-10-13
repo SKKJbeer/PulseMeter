@@ -2094,6 +2094,15 @@ offene Schnittstelle; ein Skript, das sie holt, ist besser als eine
 abgeschriebene Tabelle (`scripts/strompreis-holen.py`). „Nur Fakten, mit Quelle“ heißt auch: die Quelle darf
 genutzt werden.
 
+**Fragen lohnt sich.** Die Anfrage an co2online war kurz, ehrlich (die Werte
+standen schon auf der Seite) und nannte genau, was genutzt werden soll. Nach
+fünf Tagen kam ein Ja, mit einer Bedingung: die Quelle ausdrücklich nennen.
+Eine solche Bedingung gehört **in eine Prüfung**, nicht nur in den Text,
+sonst verschwindet sie beim nächsten Umformulieren
+(`check-website.mjs` sucht „co2online gGmbH“ auf beiden Seiten). Werte aus
+einem PDF werden aus dem Textauszug übernommen **und** am Seitenbild
+gegengelesen; im Textauszug standen die Größenangaben zwischen den Zeilen.
+
 ### Ein Baustein außerhalb seines gewohnten Rahmens: erst klicken, dann glauben
 
 Der Umschalter der Website (Knöpfe nebeneinander, das Feld unsichtbar

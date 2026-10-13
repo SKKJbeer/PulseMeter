@@ -749,6 +749,10 @@ console.log("\nVerhalten");
   await page.fill("#v-neu-tag", "2026-09-01"); await page.selectOption("#v-einheit", "m³ Gas");
   note(await page.$('#v-ergebnis a[href="gas-in-kwh.html"]') !== null, "Verbrauchsrechner: bei Gas der Verweis aufs Umrechnen");
 
+  // Die Erlaubnis der co2online gGmbH vom 13. Oktober verlangt, sie als
+  // Quelle zu nennen. Ohne diesen Satz wäre die Nutzung nicht gedeckt.
+  note(/co2online gGmbH/.test(readFileSync(`${dir}/stromverbrauch-vergleichen.html`, "utf8").replace(/<[^>]+>/g, " ")),
+       "Stromvergleich: die co2online gGmbH ist als Quelle genannt, wie in der Erlaubnis verlangt");
   // **Stromverbrauch im Vergleich**, mit den Grenzen des Stromspiegels 2025.
   // 1.900 kWh, zwei Personen, Wohnung, Warmwasser nicht über Strom: Klasse D
   // (C endet bei 1.700, D bei 2.000). Die Grenzen selbst sind gegen die
@@ -823,8 +827,34 @@ console.log("\nVerhalten");
   await page.fill("#jaz-strom", "4.000");
   note((await kachel("flaeche")).wert === "94 kWh" && (await kachel("flaeche")).zusatz === "im Feldtest Median 97",
        `Wärmepumpe: 13.200 kWh auf 140 m² sind 94 kWh je m² (${(await kachel("flaeche")).wert})`);
+  // **Heizspiegel 2026 der co2online gGmbH** (Erlaubnis vom 13. Oktober):
+  // 4.000 kWh auf 140 m² sind 29 kWh je m², bei 80 bis 150 m² „mittel“
+  // (bis 36). 6.000 kWh auf 140 m² sind 43, „erhöht“. Unter 80 m² gibt es
+  // für Wärmepumpen keinen Wert, und das muss die Kachel sagen.
+  const hs1 = await kachel("heizspiegel");
+  note(hs1.wert === "29 kWh" && hs1.zusatz === "Heizspiegel: mittel",
+       `Wärmepumpe: 4.000 kWh auf 140 m² sind 29 kWh je m², Heizspiegel mittel (${hs1.wert}, ${hs1.zusatz})`);
+  await page.fill("#jaz-strom", "6.000"); await page.fill("#jaz-waerme", "19.800");
+  const hs2 = await kachel("heizspiegel");
+  note(hs2.wert === "43 kWh" && hs2.zusatz === "Heizspiegel: erhöht",
+       `Wärmepumpe: 6.000 kWh auf 140 m² sind „erhöht“ (${hs2.wert}, ${hs2.zusatz})`);
+  await page.fill("#jaz-flaeche", "60");
+  note((await kachel("heizspiegel")).zusatz === "Heizspiegel nur für 80 bis 500 m²",
+       "Wärmepumpe: unter 80 m² sagt die Kachel, dass der Heizspiegel dafür nichts nennt");
+  await page.fill("#jaz-strom", "4.000"); await page.fill("#jaz-waerme", "13.200"); await page.fill("#jaz-flaeche", "140");
+  const hsTabelle = await page.evaluate(() => {
+    const H = window.HEIZSPIEGEL_WP;
+    return [...document.querySelectorAll("#heizspiegel tbody tr")].filter(tr => {
+      const z = H[Number(tr.dataset.zeile)], td = [...tr.querySelectorAll("td")].map(t => t.textContent.trim());
+      return !z || td.join("|") !== `bis ${z.grenzen[0]}|bis ${z.grenzen[1]}|bis ${z.grenzen[2]}|ab ${z.grenzen[2] + 1}`;
+    }).length + (document.querySelectorAll("#heizspiegel tbody tr").length === H.length ? 0 : 1);
+  });
+  note(hsTabelle === 0, "Wärmepumpe: die Heizspiegel-Tabelle nennt dieselben Grenzen wie der Rechner");
+  const quelle = await page.evaluate(() => document.body.innerText.includes("Quelle: co2online gGmbH"));
+  note(quelle, "Wärmepumpe: die co2online gGmbH ist als Quelle genannt, wie in der Erlaubnis verlangt");
   await page.fill("#jaz-flaeche", "");
-  note(!(await page.$('[data-kachel="flaeche"]')), "Wärmepumpe: ohne Fläche keine Kachel je m²");
+  note(!(await page.$('[data-kachel="flaeche"]')) && !(await page.$('[data-kachel="heizspiegel"]')),
+       "Wärmepumpe: ohne Fläche keine Kachel je m²");
   const m2 = await page.evaluate(() => ({ s: document.getElementById("m2-spanne").textContent, m: document.getElementById("m2-median").textContent, W: window.WAERME_JE_M2 }));
   note(m2.s === `${m2.W.von} und ${m2.W.bis}` && m2.m === String(m2.W.median), "Wärmepumpe: der Text nennt dieselben Werte je m² wie der Rechner");
 

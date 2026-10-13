@@ -144,6 +144,31 @@
       };
       // Für die Prüfung: Die Tabelle auf der Seite muss dieselben Werte nennen.
       window.FELDTEST = FELDTEST;
+      // Heizspiegel für Deutschland 2026 der co2online gGmbH, Abrechnungsjahr
+      // 2025: Strom einer Wärmepumpe für Raumwärme und Warmwasser in kWh je m²
+      // Wohnfläche des ganzen Gebäudes. Obergrenzen von niedrig, mittel und
+      // erhöht; darüber ist es „zu hoch“. Abgeschrieben aus der Tabelle im
+      // Faltblatt (HeizspiegelFlyer_2026_web.pdf, Seite 4). Für Gebäude unter
+      // 80 und über 500 m² nennt der Heizspiegel keine Werte für Wärmepumpen.
+      // Genutzt mit Erlaubnis der co2online gGmbH vom 13. Oktober 2026.
+      var HEIZSPIEGEL = [
+        { von: 80, bis: 150, grenzen: [19, 36, 77] },
+        { von: 150, bis: 250, grenzen: [18, 33, 67] },
+        { von: 250, bis: 500, grenzen: [17, 31, 67] }
+      ];
+      window.HEIZSPIEGEL_WP = HEIZSPIEGEL;
+      var STUFEN = ["niedrig", "mittel", "erhöht", "zu hoch"];
+      // 150 m² steht in beiden Zeilen der Tabelle; hier gilt die kleinere.
+      function heizspiegel(jeM2, flaeche) {
+        var zeile = null;
+        for (var i = 0; i < HEIZSPIEGEL.length && !zeile; i++) {
+          if (flaeche >= HEIZSPIEGEL[i].von && flaeche <= HEIZSPIEGEL[i].bis) zeile = HEIZSPIEGEL[i];
+        }
+        if (!zeile) return null;
+        var wert = Math.round(jeM2), stufe = 0;
+        while (stufe < 3 && wert > zeile.grenzen[stufe]) stufe++;
+        return { stufe: stufe, name: STUFEN[stufe] };
+      }
       // Die Achse der Leiste: so breit, dass beide Spannen und ein Ausreißer
       // nach unten oder oben noch darauf passen.
       var ACHSE_VON = 1.5, ACHSE_BIS = 6;
@@ -198,6 +223,12 @@
         if (flaeche > 0) {
           var jeM2 = waerme / flaeche;
           liste.push(R.kachel("flaeche", "Wärme je m²", R.format(jeM2, 0) + " kWh", "im Feldtest Median " + WAERME_JE_M2.median));
+          var stromJeM2 = strom / flaeche;
+          var hs = heizspiegel(stromJeM2, flaeche);
+          liste.push(R.kachel("heizspiegel", "Strom je m²", R.format(stromJeM2, 0) + " kWh",
+            hs ? "Heizspiegel: " + hs.name
+               : "Heizspiegel nur für 80 bis 500 m²",
+            hs ? (hs.stufe < 2 ? "gut" : "achtung") : ""));
         }
         aus.innerHTML = R.kacheln(liste);
       }
@@ -283,9 +314,33 @@
 
     <h2>Und der Strom je Quadratmeter?</h2>
     <p>
-      Vergleichswerte dafür, getrennt nach Größe und Baujahr des Gebäudes,
-      stehen im <a href="https://www.co2online.de/energie-sparen/heizspiegel/heizspiegel-nach-gebaeudebaujahr/" rel="noopener">Heizspiegel von co2online</a>.
-      Was dein Strom insgesamt kostet, rechnet der
+      Den ordnet der Heizspiegel ein. Er nennt für Wärmepumpen, wie viel Strom
+      ein Gebäude je Quadratmeter und Jahr für Heizung und Warmwasser braucht,
+      gestaffelt nach der Größe. Gemeint ist die Wohnfläche des ganzen
+      Gebäudes, beim Einfamilienhaus also deine. Die Werte gelten für das Jahr
+      2025, in Kilowattstunden je Quadratmeter.
+    </p>
+    <div class="werte-rahmen">
+    <table class="werte" id="heizspiegel">
+      <thead>
+        <tr><th scope="col">m²</th><th scope="col">niedrig</th><th scope="col">mittel</th><th scope="col">erhöht</th><th scope="col">zu hoch</th></tr>
+      </thead>
+      <tbody>
+        <tr data-zeile="0"><th scope="row">80–150</th><td>bis 19</td><td>bis 36</td><td>bis 77</td><td>ab 78</td></tr>
+        <tr data-zeile="1"><th scope="row">150–250</th><td>bis 18</td><td>bis 33</td><td>bis 67</td><td>ab 68</td></tr>
+        <tr data-zeile="2"><th scope="row">250–500</th><td>bis 17</td><td>bis 31</td><td>bis 67</td><td>ab 68</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="quelle">
+      Quelle: co2online gGmbH,
+      <a href="https://www.co2online.de/energie-sparen/heizspiegel/" rel="noopener">Heizspiegel für Deutschland 2026</a>,
+      Abrechnungsjahr 2025. Verwendet mit Erlaubnis der co2online gGmbH.
+    </p>
+    <p>
+      Macht bei dir ein Durchlauferhitzer das Warmwasser und nicht die
+      Wärmepumpe, zählt der Heizspiegel 9,6 kWh je Quadratmeter dazu. Was dein
+      Strom insgesamt kostet, rechnet der
       <a href="stromkosten-berechnen.html">Stromkostenrechner</a>.
     </p>
 

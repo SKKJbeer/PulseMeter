@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-10-12, Version 0.131.2
+Stand: 2026-10-13, Version 0.132.0
 
 ---
 
@@ -150,24 +150,17 @@ Klick-Dummy. Der Satz „Alle Werte in …" unter der Tabelle im Entwurf ist weg
 6. **Aufnahme-Anfrage bei Apple für 1.5**: Text in `09-appstore.md` 4a, vom
    Gründer in App Store Connect abzuschicken, wenn 1.5 den Import bringt. Frist
    als Wette: 14. Oktober.
-5. **Genehmigung bei co2online: angefragt am 8. Oktober** (Mail aus
-   `bierfinanzen@gmail.com` an `kontakt@co2online.de`, Betreff „Anfrage: Nutzung
-   von Stromspiegel und Heizspiegel auf zaehlora.de“). Antwort im Postfach
-   suchen (`from:co2online.de`). Kommt bis 22. Oktober nichts, wird der
-   Stromvergleich auf Destatis umgestellt. Auf der Seite zum
-   Heizspiegel steht: „Im nicht-kommerziellen Bereich kann der Heizspiegel
-   kostenlos genutzt werden. Die Verarbeitung der Daten für kommerzielle Zwecke
-   bedarf der ausdrücklichen Genehmigung der co2online gGmbH.“ Im Impressum von
-   stromspiegel.de: „Nachdruck, auch auszugsweise, nur mit schriftlicher
-   Genehmigung.“ Zählora ist eine App mit Käufen. Deshalb steht der Heizspiegel
-   **nicht** im Wärmepumpenrechner (nur verlinkt), und für den Stromvergleich,
-   der seit 4. Oktober die Klassen des Stromspiegels nachrechnet, fehlt diese
-   Genehmigung ebenfalls. Erst nachträglich gelesen, am 8. Oktober. Antwortet
-   co2online mit Nein, kommt der Stromvergleich vom Netz.
-   Der Wärmepumpenrechner braucht den Heizspiegel nicht mehr: Er vergleicht
-   seit 0.124.1 auch je Quadratmeter mit Fraunhofer. Ersatz für den
-   Stromspiegel wäre Destatis (frei mit Quellenangabe), aber gröber: drei
-   Haushaltsgrößen, nur Mittelwerte, Stand 2021.
+5. **Erlaubnis von co2online: erteilt am 13. Oktober** (Ticket #109369, Mail
+   an `bierfinanzen@gmail.com`). Wortlaut: „Du kannst die Vergleichswerte von
+   Strom- und Heizspiegel gerne nutzen, wenn du darauf aufmerksam machst, dass
+   die co2online gGmbH die Quelle ist." **Bedingung ist also die
+   Quellenangabe „co2online gGmbH"**, und `check-website.mjs` hält sie auf der
+   Wärmepumpenseite fest. Seit 0.132.0 steht sie auf beiden Seiten, und der
+   Wärmepumpenrechner ordnet den Strom je m² nach dem **Heizspiegel 2026**
+   (Abrechnungsjahr 2025) ein. Der Heizspiegel erscheint jährlich Ende
+   September, der Stromspiegel alle zwei Jahre (zuletzt 2025): Dann die Werte
+   aus dem neuen Faltblatt übernehmen. Ein Dank an co2online ist nicht
+   verschickt, das geht nur mit Freigabe des Gründers.
 
 ## Was zuletzt gefunden wurde, und warum es zählt
 

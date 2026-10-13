@@ -1206,7 +1206,7 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
   margin: 0 0 6px; font-size: 13.5px; color: var(--ink-2); font-variant-numeric: tabular-nums;
 }
 .preis-tipp b { color: var(--ink); font-size: 13px; }
-.preis-quelle { margin: 8px 0 0; font-size: 12.5px; color: var(--ink-3); }
+.preis-quelle, .quelle { margin: 8px 0 0; font-size: 12.5px; color: var(--ink-3); }
 .preis-fakten { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0 0 18px; }
 .preis-fakten div { padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r-m); background: var(--surface); }
 .preis-fakten b { display: block; font-size: 24px; font-weight: 650; color: var(--ink); }

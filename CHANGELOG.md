@@ -9,6 +9,29 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.132.0 — 2026-10-13
+
+**co2online sagt ja, und der Wärmepumpenrechner nutzt jetzt den Heizspiegel**
+
+Am 13. Oktober hat die co2online gGmbH die Nutzung von Strom- und Heizspiegel
+erlaubt (Ticket #109369), mit einer Bedingung: Die co2online gGmbH wird als
+Quelle genannt.
+
+- **Wärmepumpenrechner:** Mit der Fläche steht jetzt eine Kachel „Strom je
+  m²“ mit der Einstufung des **Heizspiegels für Deutschland 2026**
+  (Abrechnungsjahr 2025): niedrig, mittel, erhöht oder zu hoch, je nach Größe
+  des Gebäudes. 4.000 kWh auf 140 m² sind 29 kWh je m², „mittel“. Unter 80
+  und über 500 m² nennt der Heizspiegel für Wärmepumpen nichts, und das sagt
+  die Kachel auch. Darunter die Tabelle mit den Grenzen und der Quelle,
+  abgeschrieben aus dem Faltblatt und auf dem Seitenbild gegengelesen.
+- **Stromvergleich:** Die Quelle heißt jetzt „co2online gGmbH, verwendet mit
+  ihrer Erlaubnis“.
+- `check-website.mjs` prüft die Einstufung an drei Beispielen, dass Tabelle
+  und Rechner dieselben Grenzen haben, und dass die Quelle auf beiden Seiten
+  steht. Die geplante Umstellung auf Destatis entfällt.
+
+---
+
 ## 0.131.2 — 2026-10-12
 
 **Search Console: Was Google meldet, nachgemessen**
