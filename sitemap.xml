@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Ohne das Impressum: Es trägt `noindex` und soll erreichbar sein, nicht
+     auffindbar. Eine Adresse, die man anmeldet und dann vom Index ausschließt,
+     ist ein widersprüchliches Signal. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://zaehlora.de/</loc><lastmod>2026-10-04</lastmod></url>
+  <url><loc>https://zaehlora.de/entwicklung</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://zaehlora.de/hilfe</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://zaehlora.de/gas-in-kwh</loc><lastmod>2026-10-04</lastmod></url>
+  <url><loc>https://zaehlora.de/verbrauch-berechnen</loc><lastmod>2026-10-04</lastmod></url>
+  <url><loc>https://zaehlora.de/stromverbrauch-vergleichen</loc><lastmod>2026-10-04</lastmod></url>
+  <url><loc>https://zaehlora.de/jahresarbeitszahl-berechnen</loc><lastmod>2026-10-08</lastmod></url>
+  <url><loc>https://zaehlora.de/zaehlerstand-ablesen</loc><lastmod>2026-10-08</lastmod></url>
+  <url><loc>https://zaehlora.de/photovoltaik-eigenverbrauch</loc><lastmod>2026-10-08</lastmod></url>
+  <url><loc>https://zaehlora.de/strompreis-entwicklung</loc><lastmod>2026-10-08</lastmod></url>
+  <url><loc>https://zaehlora.de/stromkosten-berechnen</loc><lastmod>2026-10-04</lastmod></url>
+  <url><loc>https://zaehlora.de/zaehlerstand-umzug</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://zaehlora.de/ratgeber</loc><lastmod>2026-10-04</lastmod></url>
+  <url><loc>https://zaehlora.de/datenschutz</loc><lastmod>2026-09-25</lastmod></url>
+</urlset>
