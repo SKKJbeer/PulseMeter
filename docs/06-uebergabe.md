@@ -159,8 +159,9 @@ Klick-Dummy. Der Satz „Alle Werte in …" unter der Tabelle im Entwurf ist weg
    Wärmepumpenrechner ordnet den Strom je m² nach dem **Heizspiegel 2026**
    (Abrechnungsjahr 2025) ein. Der Heizspiegel erscheint jährlich Ende
    September, der Stromspiegel alle zwei Jahre (zuletzt 2025): Dann die Werte
-   aus dem neuen Faltblatt übernehmen. Ein Dank an co2online ist nicht
-   verschickt, das geht nur mit Freigabe des Gründers.
+   aus dem neuen Faltblatt übernehmen. Dank mit beiden Links am 13. Oktober
+   verschickt, vom Gründer freigegeben. Darin auf den Scherz zu iOS hin:
+   „Android steht auf der Liste." Geplant ist Android damit nicht.
 
 ## Was zuletzt gefunden wurde, und warum es zählt
 
