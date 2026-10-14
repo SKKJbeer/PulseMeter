@@ -406,6 +406,30 @@ Schlagworte lassen sich nur mit einer neuen Fassung ändern. Vom Gründer am
 geplanten Termin. Nichts anderes fährt mit, damit sich eine Bewegung im Rang
 den neuen Wörtern zuordnen lässt.
 
+
+Für 1.5:
+
+```
+Führst du deine Zählerstände bisher in Excel oder Numbers? Markier die Zellen,
+kopier sie und füg sie in Zählora ein. Datum, Zähler und Einheit erkennt
+Zählora selbst und zeigt dir vorher, was es einliest. Eine CSV-Datei geht
+auch. Hat etwas nicht gepasst, machst du es mit einem Tipp rückgängig.
+
+Jede Karte sagt jetzt, wo du am Jahresende ungefähr landest, sobald zwei
+Ablesungen da sind. Im Verlauf steht das bei Monat, Quartal und Jahr, und der
+laufende Monat zeigt eine Erwartung, auch wenn du diesen Monat noch nicht
+abgelesen hast.
+
+Liest du nicht genau am Ersten ab, rechnet Zählora den Rand des Monats
+anteilig aus der nächsten Ablesung. Unter der Zahl steht jetzt, woher sie
+kommt, etwa „erst ab 10. September abgelesen“.
+```
+
+**Vom Gründer am 14. Oktober freigegeben** („freigegeben“), drei Wochen vor dem
+geplanten 4. November, mit Bau 44. Der Import steht vorn, weil er die Lage
+eines Umsteigers beschreibt; der Ausblick ist für jeden neu, der ihn bisher
+nicht hatte.
+
 ---
 
 ## 2. Einordnung
@@ -714,6 +738,17 @@ Skript und läuft überall, wo der Schlüssel liegt.
       information on your App Store product page when your app is distributed
       in any of the 27 territories of the EU." Anschrift und E-Mail stehen
       ohnehin schon im Impressum; **die Telefonnummer wäre neu öffentlich.**
+
+      **Und so kam es.** Am 14. Oktober wollte der Gründer seine Handynummer
+      aus den Angaben im App Store haben. Sie steht auf der Produktseite unter
+      den Händlerangaben, nachgesehen auf `apps.apple.com/de/app/id6802262743`.
+      Streichen lässt sie sich nicht: Ein Händler muss nach Artikel 30 des
+      Gesetzes über digitale Dienste eine Telefonnummer angeben, und Apple
+      zeigt sie an. Austauschen geht, gegen eine Nummer, die nicht privat ist.
+      Das ist eine Änderung im Portal, kein Skript kommt daran, und sie geht
+      wieder durch Apples Prüfung. **Deshalb erst einreichen, dann tauschen:**
+      Steht der Händlerstatus „In Prüfung“, scheitert jede Einreichung (siehe
+      unten).
 
       Ob der Gründer Händler ist, entscheidet er, nicht dieses Dokument. Apple
       nennt als Merkmal, ob mit der App Einnahmen erzielt werden — Käufe in der

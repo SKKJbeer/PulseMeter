@@ -9,6 +9,26 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.133.2 — 2026-10-14
+
+**Versionshinweise für 1.5, und 1.5 geht zu Apple, mit Bau 44.**
+
+Vom Gründer freigegeben („freigegeben“), drei Wochen vor dem geplanten
+4. November. 1.5 bringt den Import aus einer Tabelle (0.133.0), den Ausblick
+aufs Jahresende auf jeder Karte und in jeder Ansicht des Verlaufs (0.130.0 bis
+0.131.1) und die Beschriftung abgeschlossener Monate (0.133.1). Der Text steht
+in `09-appstore.md` unter „Für 1.5:“ und besteht `check-store-texte.py`.
+
+**Die Handynummer im App Store.** Der Gründer möchte sie dort nicht mehr
+haben. Sie steht öffentlich auf der Produktseite in der EU, unter den
+Händlerangaben nach dem Gesetz über digitale Dienste. Ein Händler muss dort
+eine Telefonnummer angeben; streichen geht nicht, austauschen gegen eine nicht
+private Nummer schon. Das geht nur im Portal und löst eine neue Prüfung durch
+Apple aus, während der jede Einreichung scheitert. Deshalb erst einreichen,
+dann tauschen. Festgehalten in `09-appstore.md`, Abschnitt 6.
+
+---
+
 ## 0.133.1 — 2026-10-13
 
 **Ein abgeschlossener Monat sagt, woher seine Zahl kommt**
