@@ -432,6 +432,19 @@ Ablauf die Veröffentlichung ausdrücklich an — und dafür fehlte
 eigene Seite sagte „Bald im App Store". Behoben in 0.106.6, samt einer Prüfung
 am Ende des Ablaufs, die die **Seite abruft** statt den Push zu zählen.
 
+### Die achte, 1.5 — eingereicht am 14. Oktober
+
+**Import aus einer Tabelle, Ausblick aufs Jahresende, abgeschlossene Monate
+beschriftet**, vom Gründer freigegeben („freigegeben“), drei Wochen vor dem
+geplanten 4. November. Bau 44 (0.133.1), VALID seit 13. Oktober 17:13 UTC.
+Gefüllt 21 von 21 um 04:29 UTC, eingereicht um 04:29 UTC, belegt aus dem
+Protokoll:
+
+    ✓ Bau 44 an die Fassung gehängt
+    Eingereicht. Zustand: WAITING_FOR_REVIEW
+
+Im Laden: noch offen, wird an `itunes.apple.com/lookup` nachgesehen.
+
 ### Die siebte, 1.4.1 — eingereicht am 7. Oktober
 
 **Nur die Suchbegriffe**, auf Ansage des Gründers („du kannst jetzt schon
