@@ -9,6 +9,17 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.133.3 — 2026-10-14
+
+**Der Zwei-Wochen-Takt ist eine Untergrenze.** Vom Gründer: „wir müssen uns
+nicht hart an unseren 2 wochen rhythmus halten. vor allem wenn auch kleine
+anpassungen gemacht werden müssen." Spätestens alle zwei Wochen geht eine
+Fassung in den Laden; eine Korrektur oder eine fertige Funktion darf früher
+gehen, sobald sie grün in TestFlight steht. Das Einreichen gibt weiter der
+Gründer frei. Geändert in `CLAUDE.md` (Regel 4a) und `05-roadmap.md`.
+
+---
+
 ## 0.133.2 — 2026-10-14
 
 **Versionshinweise für 1.5, und 1.5 geht zu Apple, mit Bau 44.**

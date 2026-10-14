@@ -7,9 +7,17 @@ Letzte Änderung: 2026-10-03
 
 ## Leitsatz
 
-**Alle zwei Wochen eine Fassung im App Store.** Der Zug fährt, auch wenn ein
-Wagen fehlt: Was am Einreichungstag nicht grün in TestFlight steht, fährt mit
-dem nächsten.
+**Spätestens alle zwei Wochen eine Fassung im App Store.** Der Zug fährt, auch
+wenn ein Wagen fehlt: Was am Einreichungstag nicht grün in TestFlight steht,
+fährt mit dem nächsten.
+
+**Die zwei Wochen sind eine Untergrenze, kein fester Termin.** Vom Gründer am
+14. Oktober: „wir müssen uns nicht hart an unseren 2 wochen rhythmus halten.
+vor allem wenn auch kleine anpassungen gemacht werden müssen." Eine Korrektur
+oder eine fertige Funktion darf also früher gehen, sobald sie grün in
+TestFlight steht. 1.3, 1.4, 1.4.1 und 1.5 sind alle vor ihrem Termin
+gegangen. Was bleibt: Das Einreichen gibt der Gründer frei, eine Zeile vorher
+reicht.
 
 Der Leitsatz davor lautete, der Umfang von 1.0 sei „bewusst schmerzhaft
 klein". Er hat seinen Zweck erfüllt: 1.0 stand am 4. September im Laden. Jetzt
@@ -25,7 +33,7 @@ Im Sparring mit dem Gründer, jede Frage mit Begründung vorgelegt:
 
 | Frage | Entscheidung | Warum |
 |---|---|---|
-| Takt | **alle zwei Wochen**, eingereicht mittwochs | Der Takt zeigt Weiterentwicklung, nicht die Größe einer Fassung |
+| Takt | **alle zwei Wochen**, eingereicht mittwochs. Seit 14. Oktober **spätestens** alle zwei Wochen, früher, wenn etwas fertig ist | Der Takt zeigt Weiterentwicklung, nicht die Größe einer Fassung |
 | Schwerpunkt | **schneller ablesen** | hält die, die schon da sind; das Monatsritual ist das Produkt |
 | Vermieter | **geparkt, bis Zahlen da sind** | widerspricht sonst „Ein Abo gibt es nicht" auf der Website |
 | Ablage dieser Datei | **im Repository** | jede Sitzung liest sie mit; die Offenheit ist in `CLAUDE.md` in Kauf genommen |

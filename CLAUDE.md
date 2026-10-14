@@ -253,7 +253,13 @@ zehn Bauten lang stand dort nichts, und niemandem ist es aufgefallen.
 
 Vom Gründer am 23. September entschieden: **alle zwei Wochen eine Fassung,
 eingereicht mittwochs.** Was an dem Tag nicht grün in TestFlight steht, fährt
-mit der nächsten. Der Plan, die Reihenfolge und die Begründung stehen in
+mit der nächsten.
+
+**Am 14. Oktober gelockert: spätestens alle zwei Wochen, nicht genau.** „Wir
+müssen uns nicht hart an unseren 2 wochen rhythmus halten. vor allem wenn auch
+kleine anpassungen gemacht werden müssen." Steht eine Korrektur oder eine
+fertige Funktion grün in TestFlight, wird sie dem Gründer zum Einreichen
+vorgeschlagen, statt auf den Mittwoch zu warten. Der Plan, die Reihenfolge und die Begründung stehen in
 `docs/05-roadmap.md` unter „Der Plan".
 
 **Öffentlich steht mit Nummer und Datum nur, was im Laden ist.** Geplantes
