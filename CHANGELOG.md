@@ -9,6 +9,22 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.133.4 — 2026-10-19
+
+**1.5 steht im App Store**, seit 14. Oktober 22:44 UTC, mit Bau 44. Die
+Website zieht nach: `entwicklung.html` führt „Fassung 1.5“ mit Datum, die
+Kamera rückt auf „Als Nächstes“, und unter „Danach“ steht Tag- und Nachtstrom
+mit einem Foto (Stufe 2 aus `05-roadmap.md`). Die Startseite nennt 1.5 unter
+„Was zuletzt dazugekommen ist“.
+
+**Reichweite, gemessen am 14. Oktober** (`10-sichtbarkeit.md`, 4.1): Platz 1
+für „zählerstand ablesen“, „strom ablesen“, „gas ablesen“, „wasser ablesen“
+und „stromzähler ablesen“, Platz 2 für „zähler ablesen“, Platz 21 für
+„zählerstand“ (vorher über 50). „Stromzähler“ allein ist von 38 auf über 50
+gerutscht.
+
+---
+
 ## 0.133.3 — 2026-10-14
 
 **Der Zwei-Wochen-Takt ist eine Untergrenze.** Vom Gründer: „wir müssen uns

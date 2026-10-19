@@ -405,6 +405,29 @@ Ausgangsmessung am 7. Oktober, mit „Zählora – Zähler & Verbrauch":
 | stromzähler | 38 |
 | zählerstand, zählerstand app, stromverbrauch, energieverbrauch, nebenkosten, stromkosten, wasserverbrauch, verbrauch | über 50 |
 
+Eine Woche danach, am 14. Oktober, mit „Zählora – Zählerstand ablesen" (seit
+7. Oktober im Laden):
+
+| Suche | 7. Okt. | 14. Okt. |
+|---|---|---|
+| zählerstand ablesen | — | **1** |
+| strom ablesen | 8 | **1** |
+| gas ablesen | 6 | **1** |
+| wasser ablesen | — | **1** |
+| stromzähler ablesen | 3 | **1** |
+| zähler ablesen | 8 | **2** |
+| zählerstand | über 50 | **21** |
+| zählerstand app | über 50 | über 50 |
+| stromzähler | 38 | über 50 |
+| wasserzähler | — | über 50 |
+| zählerstände, gaszähler | — | nicht gemessen, Apple hat gesperrt |
+
+Die Wette ist für die Suchen mit „ablesen" aufgegangen, für das einzelne Wort
+„zählerstand" zur Hälfte: 21 statt über 50, nicht unter den ersten zehn. Davor
+stehen Apps mit Hunderten bis Tausenden Bewertungen; Zählora hat sechs. Das
+nächste Mittel dort sind Bewertungen, nicht Wörter. „Stromzähler" allein ist
+abgerutscht, seit das Wort nicht mehr im Untertitel steht.
+
 Ändert sich Name oder Untertitel, wird das Schlagwortfeld im selben Zug neu
 geprüft.
 

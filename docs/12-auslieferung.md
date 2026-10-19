@@ -443,7 +443,13 @@ Protokoll:
     ✓ Bau 44 an die Fassung gehängt
     Eingereicht. Zustand: WAITING_FOR_REVIEW
 
-Im Laden: noch offen, wird an `itunes.apple.com/lookup` nachgesehen.
+**Im Laden seit 14. Oktober, 22:44 UTC**, belegt an der Produktseite
+(`itunes.apple.com/lookup`: `1.5 | 2026-10-14T22:44:49Z`). Gut achtzehn
+Stunden nach dem Einreichen. Nachgesehen erst am 19. Oktober: Die Nachschau
+war für 07:32 UTC am 14. geplant und kam erst fünf Tage später an, weil die
+Sitzung bis dahin ruhte. `entwicklung.html` und die Startseite trugen bis
+dahin noch 1.4.1 als neueste Fassung und den Import als „Als Nächstes“;
+nachgezogen in 0.133.4.
 
 ### Die siebte, 1.4.1 — eingereicht am 7. Oktober
 
