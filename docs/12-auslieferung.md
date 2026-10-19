@@ -433,6 +433,26 @@ Ablauf die Veröffentlichung ausdrücklich an — und dafür fehlte
 eigene Seite sagte „Bald im App Store". Behoben in 0.106.6, samt einer Prüfung
 am Ende des Ablaufs, die die **Seite abruft** statt den Push zu zählen.
 
+### Die neunte, 1.5.1 — eingereicht am 19. Oktober
+
+**Neue Bilder im Laden**, gesetzt mit Überschrift aus dem Schaufenster-Haushalt
+(0.134.0), dazu „Schritt 1 von 2" statt „Zählwerk" und „in einem Tag". Vom
+Gründer freigegeben („ja kannst einreichen"), nachdem er die zwölf Bilder
+gesehen hatte. Bau 45, VALID seit 07:20 UTC.
+
+Gefüllt 21 von 21 um 08:40 UTC; dabei die zehn alten Bilder entfernt und
+zwölf neue hochgeladen. **Der erste Versuch zum Absenden scheiterte** eine
+Minute nach dem Hochladen mit `500 An unexpected error occurred`. Der zweite
+zwei Minuten später nahm die schon vorbereitete Einreichung wieder auf und
+ging durch:
+
+    ✓ Vorbereitete Einreichung gefunden (ddb7d387)
+    · Die Fassung liegt bereits darin — es wird nur abgeschickt.
+    Eingereicht. Zustand: WAITING_FOR_REVIEW
+
+Im Laden: noch offen. Bei der Freigabe trägt `website-fassung.yml` sie aus
+`docs/fassungen/1.5.1.json` auf der Website ein.
+
 ### Die achte, 1.5 — eingereicht am 14. Oktober
 
 **Import aus einer Tabelle, Ausblick aufs Jahresende, abgeschlossene Monate

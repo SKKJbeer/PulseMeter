@@ -1403,6 +1403,19 @@ Zwei Befunde an einem Nachmittag, beide beim Ansehen der Store-Bilder:
   zählt.** Zwanzig Zeilen, die jede Zeichenkette außerhalb von Kommentaren und
   Einfügungen gegen die Liste halten.
 
+### Ein 500 beim Absenden direkt nach dem Hochladen: noch einmal, dieselbe Einreichung
+
+Am 19. Oktober kamen zwölf neue Bildschirmfotos hoch, eine Minute später
+antwortete Apple auf das Absenden mit `500 An unexpected error occurred`.
+Zwei Minuten danach ging derselbe Aufruf durch. Wahrscheinlich verarbeitete
+Apple die Bilder noch; belegt ist das nicht, Apple sagt es nicht.
+
+**Die Regel:** Ein 500 an dieser Stelle ist kein Grund zum Umbauen, sondern zum
+zweiten Versuch nach ein, zwei Minuten. Entscheidend ist, dass der zweite
+Versuch **dieselbe** Einreichung nimmt (`vorbereitete()` in
+`asc-einreichen.py`): Eine zweite neben der ersten hätte die Fassung doppelt
+vergeben und mit einem 409 geendet, der nach etwas ganz anderem aussieht.
+
 ### Was ein Mensch „danach noch tut", tut am Ende niemand
 
 1.5 ging am 14. Oktober in den Laden, und die Website nannte fünf Tage lang
