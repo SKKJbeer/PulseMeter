@@ -449,7 +449,10 @@ Stunden nach dem Einreichen. Nachgesehen erst am 19. Oktober: Die Nachschau
 war für 07:32 UTC am 14. geplant und kam erst fünf Tage später an, weil die
 Sitzung bis dahin ruhte. `entwicklung.html` und die Startseite trugen bis
 dahin noch 1.4.1 als neueste Fassung und den Import als „Als Nächstes“;
-nachgezogen in 0.133.4.
+nachgezogen in 0.133.4. Daraus ist ein Ablauf geworden, kein Handgriff mehr:
+`website-fassung.yml` trägt eine freigegebene Fassung selbst ein (0.133.5),
+`einreichen.yml` lässt nicht einreichen, solange `docs/fassungen/<fassung>.json`
+fehlt.
 
 ### Die siebte, 1.4.1 — eingereicht am 7. Oktober
 

@@ -213,7 +213,7 @@ Lernen. Die Begründungen stehen unter „v1.0 – Nicht enthalten".
 | Wenn | Dann |
 |---|---|
 | eine Fassung in TestFlight steht | Zeile „Im Test" auf `entwicklung.html` |
-| sie im App Store steht | Zeile „Fassung x.y" mit Datum auf `entwicklung.html` **und** Eintrag unter „Was zuletzt dazugekommen ist" auf der Startseite · Versionshinweise aus `09-appstore.md` |
+| sie im App Store steht | Zeile „Fassung x.y" mit Datum auf `entwicklung.html` **und** Eintrag unter „Was zuletzt dazugekommen ist" auf der Startseite. **Beides trägt `website-fassung.yml` bei der Freigabe von selbst ein**, aus `docs/fassungen/<fassung>.json`, die vor dem Einreichen im Repository liegen muss. Die Versionshinweise stehen in `09-appstore.md` |
 | sie nur geplant ist | **grob**, ohne Termin und ohne Preis, als „Als Nächstes", „Danach" oder „Später, vielleicht" im Weg auf `entwicklung.html`. Seit 7. Oktober, auf Ansage des Gründers; davor stand nur „Demnächst" |
 
 > **Geld und Freischaltungen stehen nicht hier.** Die eine Quelle dafür ist

@@ -273,6 +273,14 @@ Das Einreichen selbst bleibt eine Freigabe des Gründers: vorher eine Zeile an
 ihn, welche Fassung mit welchem Bau. Regel 4 endet in TestFlight, nicht im
 Laden.
 
+**Die Website nennt immer die Fassung, die im Laden steht.** Vom Gründer am
+19. Oktober, nachdem 1.5 fünf Tage lang nur im Laden stand. Dazu liegt vor dem
+Einreichen `docs/fassungen/<fassung>.json` im Repository (Vorlage
+`1.5.json`; `einreichen.yml` bricht sonst ab), und bei der Freigabe trägt
+`website-fassung.yml` sie von selbst ein. Nach jeder Freigabe einmal von Hand
+auslösen und `scripts/website-fassung.py` ansehen. Alles Weitere steht in
+`.claude/skills/release-discipline/SKILL.md`, Abschnitt 4a.
+
 ### Pushen während eines laufenden Prüflaufs ist erlaubt
 
 **Diese Regel stand hier umgekehrt und war überholt.** Sie lautete „nie pushen,

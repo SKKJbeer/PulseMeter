@@ -139,6 +139,11 @@ if [ "$SCOPE" != "bilder" ]; then
   # in zwei Minuten geändert; was im App Store steht, braucht eine neue Fassung
   # und eine Prüfung durch Apple. Geprüft wurde bis 0.111.0 nur die Website.
   run "Klang der Store-Texte" python3 scripts/check-store-texte.py || true
+  # **Die Website nennt die Fassungen so, wie der Erzeuger sie schreibt.** Der
+  # Eintrag für eine neue Fassung entsteht beim Freigeben von selbst
+  # (`website-fassung.yml`); weicht das Markup vorher still ab, sieht er anders
+  # aus als alle davor. Offline, ohne den Laden zu fragen.
+  run "Fassungen auf der Website" python3 scripts/website-fassung.py --selbsttest || true
   # Reines Parsen, ohne SDK und ohne Typprüfung — und deshalb auch unter Linux.
   #
   # Es findet nicht alles, aber eine ganze Fehlerklasse: einen Block, der in der

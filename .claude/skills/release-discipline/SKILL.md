@@ -175,6 +175,50 @@ Mal geschickt, und Build 11 war ein Doppel, das abgebrochen werden musste.
 
 ---
 
+## 4a. Wenn eine Fassung in den Laden geht, zieht die Website mit
+
+TestFlight-Bauten sind kein Thema der Website. **Eine Fassung im App Store ist
+es**: Öffentlich steht mit Nummer und Datum nur, was im Laden steht, und es
+muss dort stehen, sobald es im Laden steht. Am 14. Oktober ging 1.5 live, und
+`entwicklung.html` nannte fünf Tage lang 1.4.1 als neueste Fassung. Vom
+Gründer am 19. Oktober: „dass wenn neue versionen deployed und live gehen auch
+die webseite immer das aktuelle darstellt."
+
+**Der Ablauf ist auf zwei Schritte gebaut, die niemand vergessen kann:**
+
+1. **Vor dem Einreichen** entsteht neben den Versionshinweisen in
+   `docs/09-appstore.md` die Datei `docs/fassungen/<fassung>.json`: Titel und
+   Text für den Weg auf `entwicklung.html`, Titel und Absätze für „Was zuletzt
+   dazugekommen ist" auf der Startseite (`"start": null`, wenn die Fassung für
+   Nutzer nichts Neues bringt, wie 1.4.1). Vorlage: `docs/fassungen/1.5.json`.
+   `einreichen.yml` bricht ab, wenn die Datei fehlt.
+2. **Bei der Freigabe** trägt `website-fassung.yml` sie von selbst ein, mit
+   dem Datum aus dem Laden, zählt „Fassungen im App Store" hoch, stößt die
+   Veröffentlichung an und sieht auf der **veröffentlichten** Seite nach. Der
+   Zeitplan ist kein Versprechen (alle drei Stunden, wenn GitHub daran denkt),
+   deshalb **nach jeder Freigabe einmal von Hand auslösen** und
+   `scripts/website-fassung.py` ansehen: Es zeigt Laden, Repository und Startseite
+   nebeneinander.
+
+**Was der Ablauf nicht kann, und was beim Freigeben deshalb noch zu tun ist:**
+
+- Die Zeile in `docs/05-roadmap.md` auf „im Laden seit …" setzen und
+  `docs/12-auslieferung.md` ergänzen.
+- **Wer eine Fähigkeit baut, schreibt sie auch auf die Seiten, die sie
+  beschreiben**: Hilfe (sichtbar **und** im JSON-LD, beide gleich), die
+  Funktionslisten der Startseite, `entwicklung.html` unter „Als Nächstes" und
+  „Danach". Ein Eintrag im Weg ersetzt das nicht: Er sagt, **dass** es die
+  Fassung gibt, nicht, **wie** man es benutzt.
+- Der App-Store-Text (Beschreibung) lässt sich nur mit einer neuen Fassung
+  ändern; nennt er etwas Neues nicht, steht das in `06-uebergabe.md` unter
+  den offenen Punkten.
+
+Geprüft wird beides: `website-fassung.py --selbsttest` (offline, in
+`pruefen.sh` und CI) erzeugt jeden Eintrag neu und vergleicht ihn mit der
+Seite, damit das Markup nicht still vom Erzeuger abweicht.
+
+---
+
 ## 5. Ablauf
 
 Für jede Änderung, in dieser Reihenfolge:
@@ -195,6 +239,9 @@ Für jede Änderung, in dieser Reihenfolge:
    beheben und wieder von vorn. Der Dauerauftrag dazu steht in `CLAUDE.md`,
    Regel 4; eine Version, die nur Dokumente oder Prüfskripte anfasst, endet in
    `main`.
+10. **Geht eine Fassung in den Laden:** Abschnitt 4a. Der Text für die Website
+    liegt vor dem Einreichen im Repository, und nach der Freigabe wird
+    nachgesehen, dass die Seite sie nennt.
 
 ### Wenn etwas nicht geprüft werden kann
 

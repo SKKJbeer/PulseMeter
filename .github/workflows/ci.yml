@@ -210,6 +210,8 @@ jobs:
       # 0.111.0 nur die Website.
       - name: Klang der Store-Texte
         run: python3 scripts/check-store-texte.py
+      - name: Fassungen auf der Website
+        run: python3 scripts/website-fassung.py --selbsttest
 
 
       # Reines Parsen der iOS-Quellen, ohne SDK. Kostet Sekunden und fängt

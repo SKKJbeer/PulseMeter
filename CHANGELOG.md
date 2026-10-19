@@ -9,6 +9,39 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.133.5 — 2026-10-19
+
+**Die Website nennt immer die Fassung, die im App Store steht**
+
+Vom Gründer: „dass wenn neue versionen deployed und live gehen auch die
+webseite immer das aktuelle darstellt. aktuell laufen die auseinander." 1.5
+stand seit dem 14. Oktober im Laden, die Seite nannte fünf Tage lang 1.4.1.
+
+- **`website-fassung.yml`** fragt alle drei Stunden den Laden
+  (`itunes.apple.com/lookup`, ohne Schlüssel). Steht dort eine Fassung, die
+  auf `entwicklung.html` fehlt, trägt der Ablauf sie mit dem Datum der
+  Freigabe ein (auch auf der Startseite), zählt „Fassungen im App Store" hoch,
+  stößt die Veröffentlichung an und sieht danach auf der veröffentlichten Seite
+  nach. Fehlt der Text, wird der Lauf rot.
+- **Der Text entsteht vor dem Einreichen** als `docs/fassungen/<fassung>.json`
+  (Vorlage `1.5.json`). **`einreichen.yml` bricht ab**, wenn die Datei fehlt.
+- **`scripts/website-fassung.py`** zeigt Laden, Repository und Startseite
+  nebeneinander. `--selbsttest` erzeugt jeden vorhandenen Eintrag neu und
+  vergleicht ihn mit der Seite; er läuft in `pruefen.sh` und in der CI.
+- **Nachgezogen, was 1.5 mitgebracht hat:** Zwei neue Fragen auf der
+  Hilfeseite (Excel-Liste übernehmen, nicht am Ersten ablesen), sichtbar und im
+  JSON-LD gleich; zwei Zeilen in der Funktionsliste der Startseite; die
+  Seitenbeschreibung von „Entwicklung" nennt keinen Einzelpunkt mehr, der
+  überholt werden kann.
+- **Skill und `CLAUDE.md`:** `release-discipline` Abschnitt 4a, Regel 4a, und
+  eine Lehre im Baukasten („Was ein Mensch ‚danach noch tut', tut am Ende
+  niemand").
+
+_Prüfung: `website-fassung.py --selbsttest`, `check-website.mjs`,
+`check-versprechen.py`, `pruefen.sh schnell`._
+
+---
+
 ## 0.133.4 — 2026-10-19
 
 **1.5 steht im App Store**, seit 14. Oktober 22:44 UTC, mit Bau 44. Die

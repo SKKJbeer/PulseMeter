@@ -73,6 +73,15 @@ jobs:
       - name: Unbekannte Namen
         run: python3 scripts/check-namen.py
 
+      # **Der Text für die Website gehört vor das Einreichen.** Am 14. Oktober
+      # ging 1.5 in den Laden, und die Website nannte fünf Tage lang 1.4.1 als
+      # neueste Fassung. Jetzt trägt `website-fassung.yml` sie bei der Freigabe
+      # von selbst ein, aber nur, wenn `docs/fassungen/<fassung>.json` da ist.
+      # Fehlt die Datei, wird hier gar nicht erst eingereicht.
+      - name: Liegt der Text für die Website bereit?
+        if: inputs.bestaetigung == 'einreichen' && inputs.fassung != ''
+        run: python3 scripts/website-fassung.py --vorbereitet "${{ inputs.fassung }}"
+
       - name: Einreichen oder nachsehen
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}

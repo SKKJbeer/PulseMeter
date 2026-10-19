@@ -1383,6 +1383,27 @@ sie ist billig. Zwanzig Zeilen, die die Beträge aus einer Datei ziehen und im
 sichtbaren Text der Seiten suchen, hätten diesen Fall am Tag seiner Entstehung
 gemeldet.
 
+### Was ein Mensch „danach noch tut", tut am Ende niemand
+
+1.5 ging am 14. Oktober in den Laden, und die Website nannte fünf Tage lang
+1.4.1 als neueste Fassung. Das Nachziehen stand als letzter Handgriff in einer
+Nachschau, die für drei Stunden später geplant war und erst kam, als die
+Sitzung wieder aufwachte. Niemand hatte es vergessen; es war schlicht kein
+Schritt, der von selbst losging.
+
+**Die Regel:** Was nach einem Ereignis stimmen muss (Fassung im Laden, Seite
+nennt sie), gehört in einen Ablauf, der das Ereignis abfragt, und nicht in
+eine Erinnerung. Zwei Hälften: **Der Inhalt entsteht vorher**, wenn jemand Zeit
+und Kopf dafür hat (hier als Datei neben den Versionshinweisen), **das
+Eintragen passiert beim Ereignis** und fragt den öffentlichen Stand (hier
+`itunes.apple.com/lookup`, ohne Schlüssel). Und die Sperre sitzt an der Stelle
+davor: Wer einreicht, ohne dass der Text bereitliegt, kommt nicht weit. Zuletzt
+sieht der Ablauf auf der **veröffentlichten** Seite nach, nicht im Push.
+
+Zum Selbsttest gehört, dass der Erzeuger den bestehenden Eintrag Zeichen für
+Zeichen nachbaut. Sonst weicht sein Markup beim nächsten Umbau der Seite still
+ab, und der automatische Eintrag sieht anders aus als alle davor.
+
 ### Die Verkaufsseite ist eine Behauptung über den Code, und niemand prüft sie
 
 Vor dem Launch wurde die Website Satz für Satz gegen den Quelltext gehalten.

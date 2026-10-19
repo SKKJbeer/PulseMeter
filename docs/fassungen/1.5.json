@@ -1,0 +1,14 @@
+{
+  "fassung": "1.5",
+  "weg": {
+    "titel": "Zählerstände aus einer Tabelle, und immer ein Ausblick",
+    "text": "Wer seine Stände in Excel oder Numbers führt, kopiert die Zellen und fügt sie ein. Zählora erkennt Datum, Zähler und Einheit selbst. Jede Karte sagt, wo du am Jahresende ungefähr landest, und ein vergangener Monat zeigt, woher seine Zahl kommt, auch wenn du nicht am Ersten abliest."
+  },
+  "start": {
+    "titel": "Zählerstände aus einer Tabelle",
+    "absaetze": [
+      "Führst du deine Stände bisher in Excel oder Numbers? Markier die Zellen, kopier sie und füg sie in Zählora ein. Datum, Zähler und Einheit erkennt Zählora selbst und zeigt vorher, was es einliest.",
+      "Jede Karte sagt jetzt, wo du am Jahresende ungefähr landest. Und liest du nicht genau am Ersten ab, steht unter einem vergangenen Monat, woher seine Zahl kommt."
+    ]
+  }
+}

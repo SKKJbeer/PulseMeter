@@ -1,0 +1,81 @@
+name: Website nachziehen
+
+# **Die Website nennt die Fassung, die im Laden steht, und zwar von selbst.**
+#
+# Vom Gründer am 19. Oktober: „dass wenn neue versionen deployed und live gehen
+# auch die webseite immer das aktuelle darstellt. aktuell laufen die
+# auseinander." Gemessen: 1.5 stand seit dem 14. Oktober, 22:44 UTC im Laden,
+# und `entwicklung.html` nannte fünf Tage lang 1.4.1. Das Nachziehen war ein
+# Handgriff der Nachschau, und die Nachschau kam erst, als die Sitzung wieder
+# aufwachte.
+#
+# Dieser Ablauf fragt den Laden (`itunes.apple.com/lookup`, öffentlich, ohne
+# Schlüssel), trägt die Fassung aus `docs/fassungen/<fassung>.json` mit dem
+# Datum der Freigabe ein, zählt hoch, stößt die Veröffentlichung an und sieht
+# danach auf der **veröffentlichten** Seite nach (wie `live-schalten.yml`: der
+# Push allein beweist nichts).
+#
+# **Fehlt der Text, wird der Lauf rot** und GitHub schreibt dem Gründer. Das
+# ist der Fall, den es zu verhindern galt; `einreichen.yml` lässt deshalb gar
+# nicht erst einreichen, wenn die Datei fehlt. Der Zeitplan ist wie überall
+# hier kein Versprechen (siehe `live-schalten.yml`), deshalb nach jeder
+# Freigabe einmal von Hand auslösen.
+
+on:
+  schedule:
+    - cron: "17 */3 * * *"
+  workflow_dispatch:
+
+# `actions: write`, weil ein Push mit dem `GITHUB_TOKEN` keinen weiteren Ablauf
+# auslöst; die Veröffentlichung wird ausdrücklich angestoßen.
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: website-fassung
+  cancel-in-progress: false
+
+jobs:
+  nachziehen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Laden, Repository und Website nebeneinander
+        run: python3 scripts/website-fassung.py || true
+
+      - name: Fassung eintragen
+        id: eintrag
+        run: python3 scripts/website-fassung.py --nachziehen
+
+      - name: Festhalten und veröffentlichen
+        if: steps.eintrag.outputs.geaendert == 'ja'
+        run: |
+          git config user.name  "Zaehlora"
+          git config user.email "noreply@zaehlora.app"
+          git add docs/website/entwicklung.html docs/website/index.html
+          git commit -m "Website nennt Fassung ${{ steps.eintrag.outputs.fassung }}" \
+                     -m "Eingetragen, sobald die Fassung im App Store stand, aus docs/fassungen/."
+          git push
+
+      - name: Website veröffentlichen
+        if: steps.eintrag.outputs.geaendert == 'ja'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'website.yml',
+              ref: 'main',
+            });
+            core.notice('Website-Lauf angestoßen.');
+
+      # Bedingung ist nicht „eben geändert", sondern immer: So fällt auch auf,
+      # wenn eine frühere Veröffentlichung danebengegangen ist.
+      - name: Steht sie wirklich im Netz?
+        run: python3 scripts/website-fassung.py --netz
