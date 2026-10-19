@@ -41,7 +41,9 @@ permissions:
 jobs:
   nachsehen:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # Zwanzig statt zehn: Chromium für die Bilder braucht im schlechten Fall
+    # sechs Minuten (`chromium-holen.sh`).
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -64,6 +66,18 @@ jobs:
           anzahl=$(find build/store -name "*.jpg" 2>/dev/null | wc -l | tr -d " ")
           echo "::notice::$anzahl Bilder in voller Größe aus dem Zweig screenshots."
           [ "$anzahl" -gt 0 ] || echo "::warning::Keine Bilder — der nächste Mac-Lauf legt sie an."
+
+      # **Gesetzt wird hier, direkt vor dem Hochladen.** Seit 0.134.0 gehen die
+      # Bilder mit Überschrift in den Laden (`store-shots.mjs`, Texte und
+      # Reihenfolge in `docs/09-appstore.md`). Fehlt eine Quelle oder lädt die
+      # Schrift nicht, wird der Lauf rot, statt einen halben Satz hochzuladen.
+      - name: Chromium für die Bilder
+        if: inputs.fuellen
+        run: scripts/chromium-holen.sh
+
+      - name: Bilder setzen
+        if: inputs.fuellen
+        run: node scripts/store-shots.mjs build/store build/store-gesetzt
 
       - name: Nachsehen
         env:

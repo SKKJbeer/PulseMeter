@@ -969,7 +969,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>Zählora</h1>
-  <p>Klickbarer Entwurf · v0.133.5</p>
+  <p>Klickbarer Entwurf · v0.134.0</p>
 </div>
 
 <div class="device" id="device">
@@ -4257,7 +4257,7 @@ function showCaptureStep() {
   // einem einzelnen wäre „Bezug" ein Wort, das der Nutzer nie gebraucht hat.
   const head = many
     ? `<span class="reg-name" style="color:${textFarbe(capMeter.color)}">${reg.label || "Bezug"}</span>
-       <span class="reg-step">Zählwerk ${capIndex + 1} von ${capMeter.registers.length}</span><br>`
+       <span class="reg-step">Schritt ${capIndex + 1} von ${capMeter.registers.length}</span><br>`
     : "";
   const ok = capGesichert.length && !capEdit
     ? `<span class="rundgang-ok">✓ ${capGesichert[capGesichert.length - 1]} gesichert</span><br>`
@@ -4392,11 +4392,11 @@ function judge() {
 
   if (factor >= 4 || factor <= 0.25) {
     el.className = "verdict warn";
-    el.innerHTML = `${bang}<div>Das wären <b>${nf(delta, capRegister().frac >= 3 ? 1 : 0)} ${capRegister().unit}</b> in ${days} Tagen —
+    el.innerHTML = `${bang}<div>Das wären <b>${nf(delta, capRegister().frac >= 3 ? 1 : 0)} ${capRegister().unit}</b> in ${days === 1 ? "einem Tag" : days + " Tagen"} —
       rund ${nf(factor, 1).replace(",0", "")}× dein üblicher Verbrauch. Stimmt die Zahl?</div>`;
   } else {
     el.className = "verdict";
-    el.innerHTML = `${check}<div>Entspricht <b>${nf(delta, capRegister().frac >= 3 ? 1 : 0)} ${capRegister().unit}</b> in ${days} Tagen
+    el.innerHTML = `${check}<div>Entspricht <b>${nf(delta, capRegister().frac >= 3 ? 1 : 0)} ${capRegister().unit}</b> in ${days === 1 ? "einem Tag" : days + " Tagen"}
       — normal für dich.</div>`;
   }
   save.disabled = false;
@@ -5339,7 +5339,7 @@ window.TI = TI;
    stellt es dort um, wo es steht. */
 const IMP = { text: "", draft: null, result: null, targets: {}, kinds: {}, last: null, alle: false };
 const IMP_ROLLEN = [["date", "Datum"], ["time", "Uhrzeit"], ["reading", "Zählerstand"], ["meter", "Zähler"],
-                    ["register", "Zählwerk"], ["unit", "Einheit"], ["note", "Notiz"], ["ignored", "Nicht einlesen"]];
+                    ["register", "Zahl am Zähler"], ["unit", "Einheit"], ["note", "Notiz"], ["ignored", "Nicht einlesen"]];
 const IMP_BEISPIEL = "Datum;Strom;Gas;Wasser\n03.01.2025;12.345,6;4.567,890;123,456\n02.02.2025;12.601,2;4.689,120;126,001\n" +
   "01.03.2025;12.850,0;4.790,005;129,370\n05.04.2025;13.071,4;4.851,330;132,904\n03.05.2025;13.262,9;4.880,412;136,210\n";
 
@@ -5381,7 +5381,7 @@ function impZiele(s) {
   const out = [];
   for (const m of activeMeters()) for (const r of m.registers) {
     if ((r.unit || m.unit) !== s.unit) continue;
-    out.push({ id: m.id + "|" + r.id, name: m.name + (m.registers.length > 1 ? " · " + (r.label || "Zählwerk") : "") , m, r });
+    out.push({ id: m.id + "|" + r.id, name: m.name + (m.registers.length > 1 ? " · " + (r.label || "Zahl") : "") , m, r });
   }
   return out;
 }

@@ -156,6 +156,7 @@ struct CaptureView: View {
             .onAppear {
                 applyScreenshotFixture()
                 loadPrevious()
+                applyShowcaseDigits()
             }
             .sheet(isPresented: $changingMeter) {
                 MeterChangeView(meteringPoint: meteringPoint) {
@@ -222,7 +223,7 @@ struct CaptureView: View {
             // gibt. Bei einem einzelnen wäre „Bezug" ein Wort, das der Nutzer
             // nie gebraucht hat und nun deuten müsste.
             if registers.count > 1, let label = register?.label {
-                // Als ein Satz: „Einspeisung, Zählwerk 2 von 2". Getrennt
+                // Als ein Satz: „Einspeisung, Schritt 2 von 2". Getrennt
                 // vorgelesen käme der Fortschritt als eigener Brocken nach dem
                 // Namen — und wer nicht sieht, wie die beiden zusammenhängen,
                 // hört zwei Angaben statt einer Ortsbestimmung.
@@ -230,7 +231,11 @@ struct CaptureView: View {
                     Text(label)
                         .font(.system(.subheadline, weight: .semibold))
                         .foregroundStyle(accent)
-                    Text("Zählwerk \(index + 1) von \(registers.count)")
+                    // „Schritt", nicht „Zählwerk": Das Wort steht auf der Liste
+                    // der verbotenen Wörter in `CLAUDE.md` und stand trotzdem
+                    // hier, auf dem Bild, das im App Store an zweiter Stelle
+                    // kam. Seit 0.134.0 sucht `check-strings.py` danach.
+                    Text("Schritt \(index + 1) von \(registers.count)")
                         .font(PulseText.caption)
                         .foregroundStyle(PulseColor.inkTertiary)
                 }
@@ -292,7 +297,7 @@ struct CaptureView: View {
         // steht zwar im Hinweisfeld darüber, aber wer den Knopf gerade
         // angesteuert hat, hat ihn hinter sich — und tippt ins Ungewisse.
         .accessibilityHint(ready
-                           ? (isLastRegister ? "Sichert die Ablesung" : "Weiter zum nächsten Zählwerk")
+                           ? (isLastRegister ? "Sichert die Ablesung" : "Weiter zur nächsten Zahl")
                            : "Erst einen Zählerstand eintippen")
         .padding(.top, 14)
     }
@@ -345,7 +350,7 @@ struct CaptureView: View {
                 // sie nicht sieht, hört beim Tippen nur den Namen der Taste —
                 // „7" — und hält den Wert für angekommen. Eine stille Grenze
                 // ist für ihn eine falsche Zahl.
-                announce("Das Zählwerk hat nur \(limit) Stellen. Weitere Ziffern werden nicht übernommen.")
+                announce("Hier passen nur \(limit) Stellen. Weitere Ziffern werden nicht übernommen.")
             }
         case .delete:
             if !digits.isEmpty { digits.removeLast() }
@@ -392,6 +397,11 @@ struct CaptureView: View {
         }
     }
 
+    /// „in 1 Tagen" stand da, sobald die letzte Ablesung von gestern war.
+    private static func spanne(_ days: Int) -> String {
+        days == 1 ? "einem Tag" : "\(days) Tagen"
+    }
+
     private var verdictMessage: AttributedString {
         guard let register else { return AttributedString("") }
         switch verdict {
@@ -405,7 +415,7 @@ struct CaptureView: View {
             var value = AttributedString("\(number(consumption.value, digits: 0)) \(register.unit.symbol)")
             value.font = .system(.subheadline, weight: .semibold)
             text.append(value)
-            text.append(AttributedString(" in \(days) Tagen — normal für dich."))
+            text.append(AttributedString(" in \(Self.spanne(days)) — normal für dich."))
             return text
 
         case .unusual(let consumption, let days, let factor):
@@ -414,7 +424,7 @@ struct CaptureView: View {
             value.font = .system(.subheadline, weight: .semibold)
             text.append(value)
             let times = number(factor, digits: factor < 10 ? 1 : 0)
-            text.append(AttributedString(" in \(days) Tagen — rund \(times)× dein üblicher Verbrauch. Stimmt die Zahl?"))
+            text.append(AttributedString(" in \(Self.spanne(days)) — rund \(times)× dein üblicher Verbrauch. Stimmt die Zahl?"))
             return text
 
         case .belowPrevious(let value):
@@ -457,6 +467,26 @@ struct CaptureView: View {
             entered[first.id] = last.value
         }
         index = 1
+    }
+
+    /// Tippt für die Bilder im App Store einen passenden Stand ein.
+    ///
+    /// Nur mit `-pulse-schaufenster`. Bis 0.134.0 war das erste Bild im Store
+    /// ein leerer Ziffernblock: „00.000,000" und ein grauer Knopf. Was die App
+    /// am Zähler tut, sieht man erst mit einer Zahl darin: Sie rechnet sofort
+    /// nach, ob der Stand zu deinem Verbrauch passt. Der Stand ist der
+    /// bisherige Tagesverbrauch, fortgeschrieben bis heute, also genau der
+    /// Fall, den die Prüfung „normal für dich" nennt.
+    private func applyShowcaseDigits() {
+        guard Startschalter.gesetzt("-pulse-schaufenster"), digits.isEmpty,
+              let register, let last = previous else { return }
+        let sortiert = (history[register.id] ?? []).sorted { $0.day < $1.day }
+        guard sortiert.count >= 2 else { return }
+        let davor = sortiert[sortiert.count - 2]
+        let strecke = max(1, last.day.days(since: davor.day))
+        let proTag = (last.value - davor.value) / Decimal(strecke)
+        let seither = max(1, today.days(since: last.day))
+        adopt(last.value + proTag * Decimal(seither), register: register)
     }
 
     /// Merkt sich den Wert und geht weiter — oder sichert, wenn es das letzte

@@ -1,169 +1,133 @@
 #!/usr/bin/env node
-/* Baut aus den Simulator-Bildern die Bilder für den App Store.
+/* Setzt die Bilder für den App Store: Überschrift oben, das echte
+ * Bildschirmfoto darunter.
  *
- * **Warum gesetzt und nicht roh eingereicht.** Ein nacktes Bildschirmfoto
- * beantwortet die Frage nicht, die jemand im Store stellt: Was habe ich davon?
- * Die Überschrift beantwortet sie, das Bild belegt sie. Nackt eingereichte
- * Bilder sind das häufigste Kennzeichen einer Ein-Personen-App — und der
- * Grund, warum sie übersehen wird.
+ * **Warum gesetzt und nicht roh.** Bis 1.5 gingen die Simulator-Bilder roh in
+ * den Store, und das erste war ein leerer Ziffernblock: „00.000,000", ein
+ * grauer Knopf, kein Wort dazu. Das zweite zeigte „Gas ist seit 105 Tagen
+ * nicht abgelesen". Vom Gründer am 19. Oktober: Das erste Bild muss Interesse
+ * wecken und einen vollen Haushalt zeigen. In der Suchliste sieht man die
+ * ersten drei Bilder, ohne Text daneben; ein nacktes Bildschirmfoto beantwortet
+ * dort nicht, was man davon hat.
  *
- * **Warum ein Skript.** Die Bilder ändern sich bei jeder Oberflächenänderung.
- * Von Hand gesetzte müsste man jedes Mal neu setzen, also setzt man sie
- * irgendwann nicht mehr neu — und im Store steht eine App, die es so nicht
- * mehr gibt.
+ * **Die Texte stehen nicht hier**, sondern in `docs/09-appstore.md` unter
+ * „Überschriften der Bildschirmfotos". Dort prüft `check-store-texte.py` sie
+ * wie jeden anderen Store-Text, und wer den Laden ändern will, findet sie
+ * neben Beschreibung und Versionshinweisen.
  *
- * Aufruf (auf einem Mac, nach `scripts/run.sh`):
- *     node scripts/store-shots.mjs
- * Ergebnis: build/appstore/*.png in der von Apple verlangten Größe.
+ * **Die Bilder sind echt.** Gesetzt wird nur, was die App zeigt; Zahlen,
+ * Karten und Knöpfe kommen aus dem Simulator (`run.sh`, `-pulse-schaufenster`).
+ * Dazugesetzt werden nur Überschrift, Unterzeile und auf dem ersten Bild die
+ * Namen der Zähler, die auf dem kleinen Schirm nicht alle Platz haben.
  *
- * Quelle sind die **PNG**-Dateien aus `build/`, nicht die verkleinerten JPEGs
- * aus dem Zweig `screenshots`. Der Store nimmt exakte Pixelmaße; ein
- * hochskaliertes Bild sieht man sofort.
+ * Aufruf:
+ *     node scripts/store-shots.mjs [eingang] [ausgang]
+ * Vorgabe: build/store → build/store-gesetzt. Eingang sind die Bilder in
+ * voller Größe aus dem Zweig `screenshots` (`git archive origin/screenshots
+ * store`). Jedes Bild behält genau sein Maß, sonst nimmt Apple es nicht.
  */
 import { chromium } from "playwright";
-import { existsSync, mkdirSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 
-const IN = process.argv[2] || "build";
-const OUT = "build/appstore";
+const IN = process.argv[2] || "build/store";
+const OUT = process.argv[3] || "build/store-gesetzt";
 
-/* 6,9 Zoll ist seit 2024 das einzige Pflichtmaß fürs iPhone; Apple rechnet
- * die kleineren Geräte selbst herunter. Ein zweites Maß mitzuliefern hieße,
- * jede Änderung doppelt zu pflegen. */
-const CANVAS = { width: 1320, height: 2868 };
-
-/* Die Reihenfolge ist die Verkaufsreihenfolge.
+/* Die Überschriften aus dem Store-Dokument.
  *
- * Die ersten beiden Bilder sind die einzigen, die in der Suchliste erscheinen
- * — sie müssen allein tragen. Deshalb steht vorn nicht der Funktionsumfang,
- * sondern das Versprechen (»sagt dir, ob alles im Rahmen ist«) und der
- * Moment, an dem es sich einlöst (die Erfassung am Zähler).
- *
- * Das letzte Bild ist bewusst der Preis: Wer bis dahin gewischt hat, will
- * wissen, was es kostet — und »kein Abo« ist hier das stärkste Argument. */
-const SHOTS = [
-  {
-    file: "screenshot-light.png",
-    headline: "Eine Zahl eintragen.\nDen Rest macht die App.",
-    sub: "Verbrauch, Kosten und Vergleich zum Vorjahr — auf einen Blick."
-  },
-  {
-    file: "screenshot-capture-light.png",
-    headline: "Ablesen dauert\nzehn Sekunden.",
-    sub: "Großer Ziffernblock statt Tastatur. Die App merkt, wenn eine Ziffer verrutscht ist."
-  },
-  {
-    file: "screenshot-verlauf-light.png",
-    headline: "Sieh, wohin\nes geht.",
-    sub: "Monat, Quartal, Jahr — und der Vergleich mit demselben Zeitraum im Vorjahr."
-  },
-  {
-    file: "screenshot-bericht-light.png",
-    headline: "Ein Dokument,\ndas jeder versteht.",
-    sub: "Für die Jahresabrechnung, den Vermieter oder das Finanzamt."
-  },
-  {
-    file: "screenshot-dark.png",
-    headline: "Deine Daten\nbleiben deine.",
-    sub: "Kein Konto. Kein Tracking. Export als Tabelle — dauerhaft kostenlos."
-  },
-  {
-    file: "screenshot-pro-light.png",
-    headline: "Einmal kaufen.\nKein Abo.",
-    sub: "Zwei Zähler sind für immer frei. Pro schaltet den Rest frei — einmalig."
-  }
+ * Eine Zeile je Bild: `quelle | Überschrift | Unterzeile | Leiste`. Ein Wort
+ * zwischen Sternchen steht in Bernstein, die Leiste ist optional und durch
+ * „·" getrennt. Die Reihenfolge der Zeilen ist die Reihenfolge im Laden. */
+function ueberschriften() {
+  const doc = readFileSync("docs/09-appstore.md", "utf8");
+  const abschnitt = doc.split("### Überschriften der Bildschirmfotos")[1];
+  if (!abschnitt) throw new Error("09-appstore.md: Abschnitt „Überschriften der Bildschirmfotos“ fehlt");
+  const block = abschnitt.match(/```\n([\s\S]*?)```/);
+  if (!block) throw new Error("09-appstore.md: kein Textblock unter „Überschriften der Bildschirmfotos“");
+  return block[1].trim().split("\n").map((zeile, i) => {
+    const [quelle, kopf, unter, leiste] = zeile.split("|").map(t => (t || "").trim());
+    if (!quelle || !kopf || !unter) throw new Error(`09-appstore.md: Zeile ${i + 1} unvollständig: ${zeile}`);
+    return { nummer: i + 1, quelle, kopf, unter, leiste: leiste ? leiste.split("·").map(t => t.trim()) : [] };
+  });
+}
+
+/* Zwei Geräte, zwei Maße. Die Schriftgrößen gehen mit der Breite, das
+ * Verhältnis bleibt: Auf dem iPad soll die Überschrift nicht wie ein Zettel
+ * an einer Wand aussehen. */
+const GERAETE = [
+  { praefix: "", w: 1320, h: 2868, rand: 90, oben: 150, kopf: 108, unter: 50, leiste: 34, breite: 1040, radius: 96, rahmen: 18 },
+  { praefix: "ipad-", w: 2064, h: 2752, rand: 150, oben: 150, kopf: 128, unter: 58, leiste: 44, breite: 1540, radius: 56, rahmen: 22 }
 ];
 
-/* Das Gerät wird angedeutet, nicht nachgebaut.
- *
- * Apple verbietet keine Rahmen, aber ein falsch gezeichnetes iPhone sieht
- * billiger aus als gar keines — und veraltet mit dem nächsten Modell. Ein
- * abgerundetes Rechteck mit Schatten genügt: Es sagt »Telefon«, ohne eines
- * zu behaupten. */
-function page(shot, dataURI) {
-  return `<!doctype html><html><head><meta charset="utf-8"><style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  html,body{width:${CANVAS.width}px;height:${CANVAS.height}px;overflow:hidden}
-  body{
-    background:linear-gradient(168deg,#241F16 0%,#17150F 46%,#12100C 100%);
-    font-family:-apple-system,"SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif;
-    display:flex;flex-direction:column;align-items:center;
-    padding:150px 96px 0;
+const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const betont = s => esc(s).replace(/\*([^*]+)\*/g, "<em>$1</em>");
+
+function seite(g, bild, text) {
+  const daten = readFileSync(bild).toString("base64");
+  const leiste = text.leiste.length
+    ? `<div class="leiste">${text.leiste.map(n => `<span>${esc(n)}</span>`).join("")}</div>` : "";
+  return `<!doctype html><html lang="de"><head><meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@500;600;800&display=block">
+<style>
+  /* Warmes Dunkel wie das App-Symbol: Bernstein darauf fällt in einer
+     Ergebnisliste auf, in der fast alles weiß, blau oder grün ist. */
+  html, body { margin: 0; }
+  body {
+    width: ${g.w}px; height: ${g.h}px; overflow: hidden;
+    background:
+      radial-gradient(90% 55% at 50% 0%, #4A3520 0%, rgba(74,53,32,0) 70%),
+      linear-gradient(180deg, #221A12 0%, #17120D 100%);
+    color: #F7F0E5; font-family: Figtree, sans-serif;
+    display: flex; flex-direction: column; align-items: center;
   }
-  /* Ein Hauch Bernstein hinter dem Gerät. Ohne ihn steht das Bild auf
-     einer grauen Fläche und wirkt wie ein Beleg statt wie ein Angebot. */
-  .glow{
-    position:absolute;left:50%;top:940px;transform:translateX(-50%);
-    width:1500px;height:1500px;border-radius:50%;
-    background:radial-gradient(circle,rgba(224,160,64,.20) 0%,rgba(224,160,64,0) 62%);
-  }
-  h1{
-    position:relative;
-    /* 92 statt 104: Bei 104 lief die zweite Zeile trotz gesetztem Umbruch
-       ein drittes Mal um, und eine dreizeilige Überschrift liest im Store
-       niemand mehr. Die Breite ist zusätzlich begrenzt, damit der Umbruch
-       dort sitzt, wo er gesetzt ist, und nicht dort, wo er gerade passt. */
-    font-size:92px;line-height:1.12;font-weight:700;letter-spacing:-1.5px;
-    color:#F7F3EA;text-align:center;white-space:pre-line;max-width:1080px;
-  }
-  p{
-    position:relative;
-    margin-top:34px;font-size:44px;line-height:1.34;font-weight:400;
-    color:#B9AF9C;text-align:center;max-width:1000px;
-  }
-  .device{
-    position:relative;margin-top:96px;
-    border-radius:64px;overflow:hidden;
-    box-shadow:0 60px 120px rgba(0,0,0,.55), 0 0 0 14px #2A251C, 0 0 0 16px #4A4132;
-  }
-  .device img{display:block;width:1000px}
-  </style></head><body>
-  <div class="glow"></div>
-  <h1>${shot.headline}</h1>
-  <p>${shot.sub}</p>
-  <div class="device"><img src="${dataURI}"></div>
-  </body></html>`;
+  .kopf { box-sizing: border-box; width: 100%; padding: ${g.oben}px ${g.rand}px 0; text-align: center; }
+  h1 { margin: 0; font-weight: 800; font-size: ${g.kopf}px; line-height: 1.04;
+       letter-spacing: -0.022em; text-wrap: balance; }
+  h1 em { font-style: normal; color: #F4AE45; }
+  p { margin: 0.55em auto 0; max-width: 92%; font-weight: 500; font-size: ${g.unter}px;
+      line-height: 1.28; color: #DCCFBD; text-wrap: balance; }
+  .leiste { display: flex; flex-wrap: wrap; justify-content: center; gap: ${Math.round(g.leiste * 0.45)}px;
+            margin-top: ${Math.round(g.leiste * 1.1)}px; }
+  .leiste span { font-weight: 600; font-size: ${g.leiste}px; padding: 0.32em 0.85em; border-radius: 999px;
+                 color: #FBE6C4; background: rgba(244,174,69,0.13); box-shadow: inset 0 0 0 2px rgba(244,174,69,0.42); }
+  .geraet { margin-top: ${Math.round(g.kopf * 0.62)}px; width: ${g.breite}px; flex: none;
+            padding: ${g.rahmen}px; border-radius: ${g.radius}px; background: #0A0806;
+            box-shadow: 0 50px 140px rgba(0,0,0,0.6), inset 0 0 0 3px #3B3127; }
+  .geraet img { display: block; width: 100%; border-radius: ${g.radius - g.rahmen}px; }
+</style></head><body>
+  <div class="kopf"><h1>${betont(text.kopf)}</h1><p>${betont(text.unter)}</p>${leiste}</div>
+  <div class="geraet"><img src="data:image/jpeg;base64,${daten}" alt=""></div>
+</body></html>`;
 }
 
-/* PNG bevorzugt, JPEG als Rückfall.
- *
- * Der Store bekommt die PNGs aus `build/`. Der Rückfall existiert, damit sich
- * das Skript auch gegen die verkleinerten Bilder aus dem Zweig `screenshots`
- * ausprobieren lässt — dort liegen sie als JPEG, und ohne diesen Weg ließe
- * sich der Aufbau ohne Mac gar nicht ansehen. Für die Einreichung taugen sie
- * nicht: Der Store nimmt exakte Pixelmaße, und Hochskaliertes sieht man. */
-function source(file) {
-  for (const candidate of [`${IN}/${file}`, `${IN}/${file.replace(/\.png$/, ".jpg")}`]) {
-    if (existsSync(candidate)) {
-      return { path: candidate, mime: candidate.endsWith(".png") ? "image/png" : "image/jpeg" };
-    }
-  }
-  return null;
-}
-
-const missing = SHOTS.filter(s => !source(s.file)).map(s => s.file);
-if (missing.length === SHOTS.length) {
-  console.error(`Keine Bilder in ${IN}/ gefunden. Erst \`scripts/run.sh\` laufen lassen —`);
-  console.error("und zwar auf einem Mac, denn die Bilder entstehen im Simulator.");
-  process.exit(1);
-}
-if (missing.length) console.warn(`Übersprungen, weil nicht vorhanden: ${missing.join(", ")}`);
-
+const texte = ueberschriften();
 mkdirSync(OUT, { recursive: true });
 const browser = await chromium.launch({ executablePath: process.env.PULSE_CHROMIUM || undefined });
-const view = await browser.newPage({ viewport: CANVAS, deviceScaleFactor: 1 });
-
-let n = 0;
-for (const shot of SHOTS) {
-  const found = source(shot.file);
-  if (!found) continue;
-  const dataURI = `data:${found.mime};base64,` + readFileSync(found.path).toString("base64");
-  await view.setContent(page(shot, dataURI));
-  await view.waitForTimeout(120);
-  n += 1;
-  const name = `${OUT}/${String(n).padStart(2, "0")}-${shot.file.replace(/^screenshot-|\.png$/g, "")}.png`;
-  await view.screenshot({ path: name });
-  console.log(`  ${name}`);
+let fehlt = 0, gesetzt = 0;
+for (const g of GERAETE) {
+  const page = await browser.newPage({ viewport: { width: g.w, height: g.h }, deviceScaleFactor: 1 });
+  for (const text of texte) {
+    const bild = join(IN, `${g.praefix}${text.quelle}.jpg`);
+    if (!existsSync(bild)) {
+      console.log(`  · fehlt: ${bild}`);
+      fehlt++;
+      continue;
+    }
+    await page.setContent(seite(g, bild, text), { waitUntil: "networkidle" });
+    await page.evaluate(() => document.fonts.ready);
+    // **Eine Ersatzschrift wäre ein stiller Fehler.** Lädt die Schrift nicht,
+    // setzt Chromium eine andere, und das Bild sieht aus wie gewollt, nur
+    // schlechter. Dann lieber kein Bild.
+    const geladen = await page.evaluate(() => document.fonts.check('800 100px "Figtree"'));
+    if (!geladen) throw new Error("Die Schrift Figtree ist nicht geladen (fonts.googleapis.com erreichbar?)");
+    const ziel = join(OUT, `${g.praefix}${String(text.nummer).padStart(2, "0")}-${text.quelle}.jpg`);
+    writeFileSync(ziel, await page.screenshot({ type: "jpeg", quality: 92 }));
+    console.log(`  ✓ ${ziel}`);
+    gesetzt++;
+  }
+  await page.close();
 }
 await browser.close();
-console.log(`\n${n} Bilder in ${CANVAS.width}×${CANVAS.height} — das Maß für 6,9 Zoll.`);
-console.log("Apple rechnet die kleineren Geräte selbst herunter.");
+console.log(`${gesetzt} Bilder gesetzt${fehlt ? `, ${fehlt} Quellen fehlen` : ""}.`);
+process.exit(fehlt ? 1 : 0);

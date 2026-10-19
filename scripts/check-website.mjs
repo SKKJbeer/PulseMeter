@@ -1116,8 +1116,16 @@ console.log("\nVerhalten");
     daten: (document.querySelector("#daten h2") || {}).textContent || "",
     dunkel: document.querySelector("#daten")?.classList.contains("abschnitt-dunkel"),
   }));
-  note(oben.abschnitte[0] === "funktionen" && oben.abschnitte[1] === "daten",
+  // Seit 0.134.0 steht davor der Kurzblock „Wofür sich der Download lohnt"
+  // (`#gruende`). Er nimmt die Reihenfolge vorweg und muss sie deshalb selbst
+  // einhalten: zuerst der Verbrauch, die Daten zuletzt.
+  const ausfuehrlich = oben.abschnitte.filter(x => x !== "gruende");
+  note(ausfuehrlich[0] === "funktionen" && ausfuehrlich[1] === "daten",
        `Startseite: erst Verbrauch, dann Datenschutz (${oben.abschnitte.slice(0, 3).join(", ")})`);
+  const gruende = await page.evaluate(() =>
+    [...document.querySelectorAll("#gruende h3")].map(h => h.textContent.trim()));
+  note(gruende.length === 3 && /Monat|Verbrauch/.test(gruende[0]) && /Zahlen|Daten/.test(gruende[2]),
+       `Startseite: drei Gründe oben, Verbrauch zuerst, Daten zuletzt (${gruende.join(" · ")})`);
   note(/Zählerstände/.test(oben.zusage) && /nie|nicht/.test(oben.zusage),
        `Startseite: die erste Zusage ganz oben sagt, dass wir die Zählerstände nicht sehen („${oben.zusage}")`);
   note(/haben wir nicht|sehen wir nie/.test(oben.daten) && oben.dunkel,

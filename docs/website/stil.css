@@ -451,6 +451,18 @@ p { margin: 0 0 16px; max-width: var(--w-text); text-wrap: pretty; }
 .karten + p, .karten + .blass { margin-top: 34px; }
 /* Vier Karten: eine Reihe, zwei mal zwei oder untereinander. Mit dem
    allgemeinen Raster stand die vierte allein in der zweiten Reihe. */
+/* Die drei Gründe unter dem Kopf der Startseite: eine Reihe, auf dem
+   Telefon untereinander. Eine Liste, weil es drei gleichrangige Aussagen sind,
+   keine Reihenfolge. */
+.gruende { padding-top: clamp(24px, 3vw, 40px); }
+.gruende h2 { margin-bottom: 0; }
+.gruende-karten { list-style: none; padding: 0; margin-top: 22px;
+                  grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.gruende-karten h3 { margin: 0 0 8px; font-size: 19px; }
+@media (max-width: 860px) { .gruende-karten { grid-template-columns: minmax(0, 1fr); } }
+.gruende-knopf { margin-top: 26px; gap: 16px; }
+.gruende-knopf .blass { margin: 0; font-size: 15px; }
+
 .karten-vier { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 @media (max-width: 980px) { .karten-vier { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px) { .karten-vier { grid-template-columns: minmax(0, 1fr); } }

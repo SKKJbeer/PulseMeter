@@ -1,0 +1,8 @@
+{
+  "fassung": "1.5.1",
+  "weg": {
+    "titel": "Kleine Korrekturen beim Ablesen",
+    "text": "Bei einem Zähler mit zwei Zahlen, etwa Strom mit Solar, steht beim Ablesen jetzt „Schritt 1 von 2“, und die Rückmeldung sagt „in einem Tag“ statt „in 1 Tagen“."
+  },
+  "start": null
+}

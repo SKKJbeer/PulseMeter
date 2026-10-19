@@ -658,7 +658,7 @@ struct ImportView: View {
         case .time: return "Uhrzeit"
         case .reading: return "Zählerstand"
         case .meter: return "Zähler"
-        case .register: return "Zählwerk"
+        case .register: return "Zahl am Zähler"
         case .unit: return "Einheit"
         case .note: return "Notiz"
         case .ignored: return "Nicht einlesen"

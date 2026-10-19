@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-10-19, Version 0.133.5
+Stand: 2026-10-19, Version 0.134.0
 
 ---
 
@@ -113,6 +113,7 @@ dort je Punkt.
 | 5 | App-Store-Berichtsschlüssel (Rolle Admin) `ASC_BERICHT_KEY_ID`/`_P8` | `zahlen.yml` scheitert täglich mit 403 |
 | 6 | Anbieterkennung `pt` in den Chat | Laden-Knopf auf der Website ohne Kampagne |
 | 7 | Domain `zaehlora.de` | **erledigt am 3. Oktober**: Website unter `zaehlora.de`, `zaehlora.pages.dev` und `www` leiten mit 301 weiter |
+| 8 | Telefonnummer der Händlerangaben gegen eine nicht private tauschen (App Store Connect → Geschäftliches → Vereinbarungen → Compliance → Gesetz über digitale Dienste) | seine Handynummer steht öffentlich auf der Produktseite in der EU. Erst tauschen, wenn keine Einreichung läuft: Während Apple prüft, scheitert jede Einreichung |
 
 Sobald einer davon kommt: Punkt 1 → `website.yml` von Hand anstoßen und live
 `x-zaehlung` prüfen; Punkt 3 → Meta-Zeile in `index.html`, veröffentlichen,
@@ -127,6 +128,14 @@ Klick-Dummy. Der Satz „Alle Werte in …" unter der Tabelle im Entwurf ist weg
 
 ### Als Nächstes
 
+0. **1.5.1 mit den neuen Store-Bildern** (0.134.0): Schaufenster-Haushalt,
+   gesetzte Bilder, „Schritt 1 von 2" statt „Zählwerk". Versionshinweise und
+   `docs/fassungen/1.5.1.json` liegen bereit. Ablauf: CI auf dem Mac grün →
+   Bilder aus dem Zweig `screenshots` mit `store-shots.mjs` setzen und ansehen
+   → Bau 45 → Gründer zeigt die Bilder frei → `einreichung.yml` (1.5.1,
+   füllen) → `einreichen.yml` (min_bau 45). Die Beschreibung im Store nennt
+   den Import noch nicht; mit 1.5.1 ließe sie sich nachziehen, ist aber 3982
+   von 4000 Zeichen lang.
 1. **1.4 Rundgang**: **im Laden** seit 5. Oktober, 16:42 UTC (Bau 39). Auf
    Website und Entwicklungsseite eingetragen.
 2. **1.5 Import aus einer Tabelle**, **im Laden seit 14. Oktober, 22:44 UTC**, Bau 44 (vom Gründer vorgezogen, geplant war der 4. November). **Gebaut in 0.133.0**: Blatt „Einlesen“ im Zähler-Tab und auf der leeren Übersicht, Erkennung in `TableImport`, Konzept in `03-ux-konzept.md` 5a. Kostenlos wie der Export. Offen: in TestFlight mit einer echten Liste ausprobieren; xlsx direkt lesen kann er nicht, nur CSV, Text und Eingefügtes, danach **Kamera** in zwei

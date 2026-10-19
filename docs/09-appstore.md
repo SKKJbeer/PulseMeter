@@ -430,6 +430,20 @@ geplanten 4. November, mit Bau 44. Der Import steht vorn, weil er die Lage
 eines Umsteigers beschreibt; der Ausblick ist für jeden neu, der ihn bisher
 nicht hatte.
 
+
+Für 1.5.1:
+
+```
+Beim Ablesen eines Zählers mit zwei Zahlen, etwa Strom mit Solar, steht jetzt
+„Schritt 1 von 2“, und die Rückmeldung zum Stand sagt „in einem Tag“ statt
+„in 1 Tagen“. Neu sind auch die Bilder hier im App Store: ein ganzer Haushalt
+mit Strom, Solar, Gas, Wasser und Wallbox.
+```
+
+**Warum eine eigene Fassung:** Die Bilder im Laden lassen sich nur mit einer
+neuen Fassung ändern. Mit ihr gehen zwei kleine Korrekturen, die beim Sichten
+der Bilder aufgefallen sind (0.134.0).
+
 ---
 
 ## 2. Einordnung
@@ -507,25 +521,51 @@ auseinander.
 ### Bildschirmfotos
 
 ```bash
-scripts/run.sh              # legt die Simulator-Bilder in build/ ab
-node scripts/store-shots.mjs # setzt sie für den Store
+scripts/run.sh                    # Simulator-Bilder nach build/, mit dem Schaufenster
+node scripts/store-shots.mjs      # setzt sie mit Überschrift nach build/store-gesetzt/
 ```
 
-Ergebnis: `build/appstore/*.png` in **1320 × 2868** — das Maß für 6,9 Zoll und
-seit 2024 das einzige Pflichtmaß fürs iPhone. Apple rechnet die kleineren
-Geräte selbst herunter.
+**Seit 0.134.0 gesetzt, nicht roh.** Bis 1.5 gingen die Simulator-Bilder ohne
+ein Wort in den Store. Das erste war ein leerer Ziffernblock („00.000,000",
+grauer Knopf), das zweite meldete „Gas ist seit 105 Tagen nicht abgelesen" und
+bei der Wärmepumpe eine Nachzahlung. Beides war als Prüffall gewollt und hat
+im Laden gegen die App gearbeitet. Vom Gründer am 19. Oktober: Das erste Bild
+muss Interesse wecken und einen vollen Haushalt zeigen.
 
-**Die Reihenfolge, die bei Apple ankommt, steht in `BILDER` in
-`scripts/asc-einreichung.py`**, und `bilder_ordnen()` setzt sie bei jedem
-Füllen durch. Seit 8. Oktober steht **Ablesen** vorn, dann Übersicht, Verlauf,
-Bericht, Zähler: Der Name verspricht „Zählerstand ablesen", und die ersten
-Bilder erscheinen schon in der Suchliste. Wirksam mit 1.5; an einer Fassung im
-Laden lassen sich die Bilder nicht ändern.
+**Woher die Bilder kommen:** `run.sh` macht fünf eigene Aufnahmen mit
+`-pulse-schaufenster` (`LaunchFixture`): ein Haus mit Strom und Solar, Gas,
+Kalt- und Warmwasser und einer Wallbox, alles abgelesen, die Abschläge
+reichen. Auf dem Ablesebild steht ein eingetippter Stand mit der Rückmeldung,
+ob er passt. Die Zahlen rechnet die App selbst; gesetzt werden nur
+Überschrift, Unterzeile und auf dem ersten Bild die Namen der Zähler.
 
-> ⚠️ **Nach dem Einbau von StoreKit neu erzeugen.** Das sechste Bild zeigt die
-> Kaufseite, und dort steht heute „Der Kauf steht bereit, sobald Zählora im
-> App Store ist". Im Store selbst wäre dieser Satz absurd — und er stünde
-> ausgerechnet auf dem Bild, das verkaufen soll.
+**Wo sie gesetzt werden:** in `einreichung.yml`, vor dem Hochladen, aus den
+Bildern in voller Größe im Zweig `screenshots`. Dieselbe Schrift wie überall
+dort (Figtree, über Google Fonts). Lädt sie nicht, bricht der Setzer ab,
+statt still eine Ersatzschrift zu nehmen.
+
+**Die Reihenfolge ist die der Zeilen unten.** In der Suchliste sieht man die
+ersten drei. Das erste fragt nach dem, was alle umtreibt, und zeigt die
+Antwort auf der Karte („≈ 342,51 € Guthaben"); das zweite den Moment am
+Zähler; das dritte den Vergleich mit dem Vorjahr. Danach der ganze Haushalt,
+der Import und der Bericht.
+
+### Überschriften der Bildschirmfotos
+
+Eine Zeile je Bild: Quelle, Überschrift, Unterzeile, Leiste. Ein Wort zwischen
+Sternchen steht in Bernstein. `store-shots.mjs` liest genau diesen Block.
+
+```
+store-uebersicht | Weißt du schon, ob du *nachzahlen* musst? | Zählora rechnet für jeden Zähler mit und sagt dir, ob dein Abschlag reicht. | Strom mit Solar · Gas · Wasser · Warmwasser · Wallbox
+store-ablesen | Am Zähler eintippen, *fertig* | Zählora rechnet sofort nach, ob der Stand zu deinem Verbrauch passt.
+store-verlauf | Jeder Monat neben dem *Vorjahr* | Und du siehst, wo du am Jahresende ungefähr landest.
+store-zaehler | Jeder Zähler im Haus, *auch die Wallbox* | Strom mit Solar oder Nachtstrom, Gas, Wasser und Wärme. Zwei Zähler sind kostenlos.
+screenshot-import-light | Deine *Excel-Liste* kommt mit | Zellen kopieren und einfügen. Der Verlauf reicht dann so weit zurück wie deine Liste.
+store-bericht | Ein Bericht für die *Abrechnung* | Verbrauch und Kosten je Zähler als PDF, für dich oder den Vermieter.
+```
+
+An einer Fassung im Laden lassen sich die Bilder nicht ändern; sie gehen mit
+der nächsten Fassung hinaus.
 
 **iPad-Bilder sind seit 1.1 Pflicht**, weil die App seitdem auch auf dem iPad
 läuft. Hier stand bis 8. Oktober noch „iPad-Bilder sind nicht nötig" aus der

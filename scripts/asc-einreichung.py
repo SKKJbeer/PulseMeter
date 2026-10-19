@@ -100,6 +100,9 @@ class Apple:
                                  data=json.dumps(koerper), timeout=60)
         return antwort.status_code, antwort
 
+    def loeschen(self, pfad: str) -> int:
+        return requests.delete(f"{BASIS}/{pfad}", headers=self.kopf, timeout=30).status_code
+
 
 def kurz(antwort) -> str:
     try:
@@ -365,18 +368,37 @@ BILDSCHIRM = "APP_IPHONE_67"
 
 # Die Reihenfolge ist die Reihenfolge auf der Store-Seite.
 #
-# **Seit 8. Oktober steht das Ablesen vorn.** Die App heißt im Laden seit 1.4.1
-# „Zählora – Zählerstand ablesen", und das erste Bild sieht man schon in der
-# Suchliste. Es soll zeigen, was der Name verspricht: den Ziffernblock am
-# Zähler. Vorher stand die Übersicht vorn. Vom Gründer freigegeben („mache
-# deine Empfehlungen und setze um").
-BILDER = [
-    ("screenshot-capture-light.jpg", "Ablesen"),
-    ("screenshot-light.jpg", "Übersicht"),
-    ("screenshot-verlauf-light.jpg", "Verlauf"),
-    ("screenshot-bericht-light.jpg", "Bericht"),
-    ("screenshot-zaehler-light.jpg", "Zähler"),
-]
+# **Seit 0.134.0 gesetzt, mit Überschrift, aus einem eigenen Haushalt.** Bis 1.5
+# gingen die Prüfbilder roh in den Laden: vorn ein leerer Ziffernblock, danach
+# „Gas ist seit 105 Tagen nicht abgelesen". Vom Gründer am 19. Oktober: Das
+# erste Bild muss Interesse wecken und einen vollen Haushalt zeigen. Die
+# Bilder entstehen mit `-pulse-schaufenster` (`run.sh`), `store-shots.mjs`
+# setzt sie in `einreichung.yml` nach `build/store-gesetzt/`, und die
+# Überschriften samt Reihenfolge stehen in `docs/09-appstore.md` unter
+# „Überschriften der Bildschirmfotos". **Diese Liste folgt jenem Block**; zwei
+# Reihenfolgen an zwei Orten wären die Fehlerklasse aus dem Baukasten.
+#
+# Davor stand seit 8. Oktober das Ablesen vorn, weil die App im Laden
+# „Zählerstand ablesen" heißt. Es steht jetzt an zweiter Stelle: In der
+# Suchliste sieht man drei Bilder, und das erste muss sagen, was man davon hat.
+def gesetzte_bilder(praefix: str = "") -> list[tuple[str, str]]:
+    """Dateinamen und Bezeichnung in der Reihenfolge aus `09-appstore.md`."""
+    text = pathlib.Path(__file__).resolve().parent.parent.joinpath(
+        "docs", "09-appstore.md").read_text(encoding="utf-8")
+    abschnitt = text.split("### Überschriften der Bildschirmfotos", 1)[-1]
+    block = re.search(r"```\n(.*?)```", abschnitt, re.S)
+    if not block:
+        return []
+    bilder = []
+    for nummer, zeile in enumerate(block.group(1).strip().splitlines(), start=1):
+        quelle = zeile.split("|")[0].strip()
+        bilder.append((f"{praefix}{nummer:02d}-{quelle}.jpg",
+                       quelle.removeprefix("store-").removeprefix("screenshot-")
+                       .removesuffix("-light")))
+    return bilder
+
+
+BILDER = gesetzte_bilder()
 
 # **Der iPad-Satz, seit die App auf dem iPad läuft.** Apple verlangt für eine
 # App mit `TARGETED_DEVICE_FAMILY: "1,2"` einen eigenen Bildersatz; ohne ihn
@@ -384,21 +406,11 @@ BILDER = [
 #
 # **Die Kennung ist eine Vermutung, und sie steht hier als solche.**
 # `APP_IPAD_PRO_3GEN_129` heißt bei Apple 2048 × 2732. Der Simulator „iPad Pro
-# 13-inch (M5)" liefert 2064 × 2752 — sechzehn beziehungsweise zwanzig Pixel
-# mehr. Ob Apple das unter dieser Kennung annimmt, ist **nicht nachgeschlagen,
-# sondern auszuprobieren**: Der Hochladeversuch antwortet eindeutig, eine
-# Suche in der Dokumentation nicht. Lehnt er ab, steht die Begründung von Apple
-# wörtlich in der offenen Liste, und dann ist die richtige Kennung daraus
-# abzulesen — nicht zu raten.
+# 13-inch (M5)" liefert 2064 × 2752. Angenommen hat Apple das seit 1.1 ohne
+# Einwand; die Bilder behalten beim Setzen genau dieses Maß.
 BILDSCHIRME = [
     (BILDSCHIRM, BILDER),
-    ("APP_IPAD_PRO_3GEN_129", [
-        ("ipad-screenshot-capture-light.jpg", "Ablesen"),
-        ("ipad-screenshot-light.jpg", "Übersicht"),
-        ("ipad-screenshot-verlauf-light.jpg", "Verlauf"),
-        ("ipad-screenshot-bericht-light.jpg", "Bericht"),
-        ("ipad-screenshot-zaehler-light.jpg", "Zähler"),
-    ]),
+    ("APP_IPAD_PRO_3GEN_129", gesetzte_bilder("ipad-")),
 ]
 
 
@@ -437,10 +449,11 @@ def bild_hochladen(apple: Apple, satz_id: str, pfad: str, nummer: int) -> str | 
 
 def bilder_fuellen(apple: Apple, ort_id: str) -> None:
     """Die Bildschirmfotos aus dem Zweig `screenshots`, in voller Größe."""
-    ordner = os.path.join(os.path.dirname(__file__), "..", "build", "store")
+    ordner = os.path.join(os.path.dirname(__file__), "..", "build", "store-gesetzt")
     if not os.path.isdir(ordner):
-        offen.append("Bildschirmfotos: der Ordner build/store fehlt — "
-                     "der Ablauf holt ihn aus dem Zweig screenshots")
+        offen.append("Bildschirmfotos: der Ordner build/store-gesetzt fehlt. Der Ablauf "
+                     "holt die Bilder aus dem Zweig screenshots und setzt sie mit "
+                     "scripts/store-shots.mjs")
         return
 
     # **Gesucht wird nach der Kennung, nicht nach der Position.** Hier stand
@@ -474,8 +487,29 @@ def bilder_fuellen(apple: Apple, ort_id: str) -> None:
         # denselben Bildern zweimal füllen.
         stand, vorhanden = apple.holen(
             f"v1/appScreenshotSets/{satz['id']}/appScreenshots", **{"limit": 20})
-        schon = {e["attributes"].get("fileName")
-                 for e in (vorhanden.json().get("data", []) if stand == 200 else [])}
+        da = vorhanden.json().get("data", []) if stand == 200 else []
+        schon = {e["attributes"].get("fileName") for e in da}
+
+        # **Was nicht auf der Liste steht, kommt weg, aber erst, wenn die ganze
+        # Liste bereitliegt.** Eine neue Fassung übernimmt die Bilder der
+        # vorigen. Bis 0.134.0 blieben fremde Bilder „hinten erhalten"; mit dem
+        # Wechsel auf gesetzte Bilder wären das fünf alte neben sechs neuen, und
+        # Apple nimmt höchstens zehn. Fehlt dagegen auch nur eine Quelle, bleibt
+        # alles stehen: ein halber neuer Satz neben gelöschten alten wäre
+        # schlechter als der alte.
+        alle_da = all(os.path.isfile(os.path.join(ordner, d)) for d, _ in bilder)
+        gewollt = {d for d, _ in bilder}
+        if alle_da:
+            for eintrag in da:
+                name = eintrag["attributes"].get("fileName")
+                if name in gewollt:
+                    continue
+                stand = apple.loeschen(f"v1/appScreenshots/{eintrag['id']}")
+                if stand in (200, 204):
+                    getan.append(f"{kennung}: altes Bild {name} entfernt")
+                    schon.discard(name)
+                else:
+                    offen.append(f"{kennung}: altes Bild {name} ließ sich nicht entfernen ({stand})")
 
         for nummer, (datei, was) in enumerate(bilder, start=1):
             if datei in schon:

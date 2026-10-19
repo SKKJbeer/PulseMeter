@@ -9,6 +9,66 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.134.0 — 2026-10-19
+
+**Neue Bilder für den App Store, und die Startseite sagt in drei Sätzen,
+wofür sich der Download lohnt**
+
+Vom Gründer: Das erste Bild im Store „muss eins sein, das Interesse weckt",
+und die Bilder sollen „einen vollen Haushalt darstellen". Dazu eine Rückmeldung
+zur Startseite (P2): inhaltlich stark, aber für jemanden, der nur kurz prüfen
+will, sehr ausführlich.
+
+### Hinzugefügt
+- **Schaufenster-Haushalt** (`-pulse-schaufenster` in `LaunchFixture`): Strom
+  mit Solar, Gas, Kalt- und Warmwasser, Wallbox, alles abgelesen, die Abschläge
+  reichen. Bis jetzt kamen die Store-Bilder aus den Prüfdaten, und dort ist Gas
+  mit Absicht überfällig: Das zweite Bild im Laden meldete „Gas ist seit 105
+  Tagen nicht abgelesen", das iPad-Bild eine Nachzahlung bei der Wärmepumpe.
+- **Ein eingetippter Stand auf dem Ablesebild.** Das erste Store-Bild war ein
+  leerer Ziffernblock („00.000,000", grauer Knopf). Mit dem Schaufenster steht
+  ein Stand darin, und darunter die Rückmeldung, ob er passt.
+- **Gesetzte Store-Bilder** (`scripts/store-shots.mjs`): Überschrift,
+  Unterzeile und echtes Bildschirmfoto auf warmem Dunkel wie das App-Symbol,
+  für iPhone (1320 × 2868) und iPad (2064 × 2752). Die Texte und die
+  Reihenfolge stehen in `09-appstore.md` unter „Überschriften der
+  Bildschirmfotos" und laufen durch `check-store-texte.py`. Gesetzt wird in
+  `einreichung.yml` direkt vor dem Hochladen; lädt die Schrift nicht, bricht
+  der Setzer ab.
+- **Neue Reihenfolge:** 1. „Weißt du schon, ob du nachzahlen musst?" mit der
+  Übersicht und den fünf Zählern, 2. Ablesen, 3. Vorjahresvergleich, 4. alle
+  Zähler, 5. Import aus Excel, 6. Bericht. In der Suchliste sieht man drei.
+- **Alte Bilder werden ersetzt, nicht ergänzt.** Eine neue Fassung übernimmt
+  die Bilder der vorigen; bisher blieben fremde hinten stehen. Jetzt entfernt
+  `asc-einreichung.py` sie, aber nur, wenn der neue Satz vollständig
+  bereitliegt.
+- **Startseite: „Wofür sich der Download lohnt"** direkt unter dem Kopf: drei
+  Gründe (jeden Monat Bescheid wissen, die Nachzahlung vorher sehen, deine
+  Zahlen bleiben bei dir) und ein zweiter Knopf in den App Store. Alles
+  darunter bleibt, wie es war. `check-website.mjs` prüft die Reihenfolge der
+  drei Gründe.
+- **Versionshinweise und Website-Text für 1.5.1**, die Fassung, mit der die
+  Bilder in den Laden gehen (`docs/fassungen/1.5.1.json`).
+
+### Behoben
+- **„Zählwerk" stand in der Oberfläche**, obwohl es auf der Liste der
+  verbotenen Wörter steht: „Zählwerk 2 von 2" auf dem Ablesebild (im Store an
+  zweiter Stelle), dazu in drei Sätzen, die VoiceOver vorliest, und als
+  Spaltenname im Import. Jetzt „Schritt 2 von 2", „Weiter zur nächsten Zahl",
+  „Hier passen nur 8 Stellen", „Zahl am Zähler". Im Klick-Dummy ebenso.
+  **`check-strings.py` sucht seitdem nach allen sieben Wörtern** in jeder
+  Zeichenkette der App; vorher zählte sie niemand.
+- **„in 1 Tagen"** in der Rückmeldung beim Ablesen und Bearbeiten, wenn die
+  letzte Ablesung von gestern war. Jetzt „in einem Tag", auch im Klick-Dummy.
+
+_Prüfung: `pruefen.sh schnell` grün, darin `check-strings.py` mit der neuen
+Wortprüfung, `check-website.mjs`, `check-prototype.mjs`, `check-store-texte.py`
+und `website-fassung.py --selbsttest`. Probesatz der Store-Bilder aus den
+vorhandenen Bildern gesetzt und angesehen; die Bilder aus dem Schaufenster
+entstehen in der CI auf dem Mac._
+
+---
+
 ## 0.133.5 — 2026-10-19
 
 **Die Website nennt immer die Fassung, die im App Store steht**

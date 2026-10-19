@@ -1572,7 +1572,7 @@ final class LaunchTests: XCTestCase {
                       "Der Erfassungsschirm nennt das erste Zählwerk nicht")
         XCTAssertTrue(schritt.label.hasPrefix("Bezug"),
                       "Zuerst ist der Bezug dran — gelesen: \(schritt.label)")
-        XCTAssertTrue(schritt.label.contains("Zählwerk 1 von 2"),
+        XCTAssertTrue(schritt.label.contains("Schritt 1 von 2"),
                       "Ohne den Fortschritt weiß niemand, dass noch etwas kommt — gelesen: \(schritt.label)")
 
         // „Weiter", nicht „Sichern": Es fehlt noch eine Zahl, und ein Knopf,
@@ -1589,7 +1589,7 @@ final class LaunchTests: XCTestCase {
                       "Nach dem Bezug muss die Einspeisung drankommen")
         XCTAssertTrue(schritt.label.hasPrefix("Einspeisung"),
                       "Nach dem Bezug kommt die Einspeisung — gelesen: \(schritt.label)")
-        XCTAssertTrue(schritt.label.contains("Zählwerk 2 von 2"),
+        XCTAssertTrue(schritt.label.contains("Schritt 2 von 2"),
                       "gelesen: \(schritt.label)")
 
         // Über den Anfang: Gas ist in diesen Daten fällig, und dann heißt der

@@ -1383,6 +1383,26 @@ sie ist billig. Zwanzig Zeilen, die die Beträge aus einer Datei ziehen und im
 sichtbaren Text der Seiten suchen, hätten diesen Fall am Tag seiner Entstehung
 gemeldet.
 
+### Prüfdaten sind kein Schaufenster, und eine Wortliste, die niemand zählt, gilt nicht
+
+Zwei Befunde an einem Nachmittag, beide beim Ansehen der Store-Bilder:
+
+- **Die Bilder im App Store kamen aus den Prüfdaten.** Dort ist ein Zähler mit
+  Absicht seit Monaten überfällig, damit der Fällig-Zustand geprüft wird. Im
+  Laden hieß das zweite Bild deshalb „Gas ist seit 105 Tagen nicht
+  abgelesen", und das erste war ein leerer Ziffernblock. Jedes Bild war ein
+  richtiger Beleg und ein schlechtes Verkaufsargument. **Die Regel:** Wer
+  Bilder für den Laden braucht, baut einen eigenen Ausgangszustand dafür,
+  neben den Prüfdaten und nicht an ihrer Stelle, und setzt die Bilder mit
+  Überschrift aus einem Skript, damit sie bei jeder Oberflächenänderung neu
+  entstehen.
+- **„Zählwerk" stand an fünf Stellen in der Oberfläche**, obwohl es seit
+  August auf der Liste der verbotenen Wörter in `CLAUDE.md` steht. Die Liste
+  hat niemand gezählt. Dieselbe Lehre wie bei den Gedankenstrichen auf der
+  Website: **Eine Regel über Wörter wird erst befolgt, wenn ein Skript sie
+  zählt.** Zwanzig Zeilen, die jede Zeichenkette außerhalb von Kommentaren und
+  Einfügungen gegen die Liste halten.
+
 ### Was ein Mensch „danach noch tut", tut am Ende niemand
 
 1.5 ging am 14. Oktober in den Laden, und die Website nannte fünf Tage lang

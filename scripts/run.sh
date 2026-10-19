@@ -98,6 +98,20 @@ shoot light screenshot-leer-light -pulse-empty
 shoot dark  screenshot-leer-dark  -pulse-empty
 shoot light screenshot-zaehler-light -pulse-zaehler
 shoot dark  screenshot-zaehler-dark  -pulse-zaehler
+# **Das Schaufenster: die Bilder für den App Store.**
+#
+# Ein eigener Haushalt (`-pulse-schaufenster` in `LaunchFixture`): Strom mit
+# Solar, Gas, Kalt- und Warmwasser, Wallbox, alles abgelesen, die Abschläge
+# reichen. Die Prüfbilder oben zeigen mit Absicht einen überfälligen Gaszähler;
+# im Store war genau das das zweite Bild. Gesetzt mit Überschrift werden sie in
+# `einreichung.yml` von `scripts/store-shots.mjs`, die Reihenfolge steht dort.
+# Nur hell: Der Store zeigt ein Bild, und die Seite dahinter ist hell.
+shoot light store-uebersicht -pulse-schaufenster
+shoot light store-ablesen    -pulse-schaufenster -pulse-capture
+shoot light store-verlauf    -pulse-schaufenster -pulse-verlauf
+shoot light store-zaehler    -pulse-schaufenster -pulse-zaehler
+PULSE_WARTEN=15 shoot light store-bericht -pulse-schaufenster -pulse-bericht
+
 # Einlesen aus einer Tabelle, mit dem Beispiel und ohne Zähler vorher.
 shoot light screenshot-import-light -pulse-empty -pulse-import
 shoot dark  screenshot-import-dark  -pulse-empty -pulse-import

@@ -253,20 +253,25 @@ struct ReadingEditor: View {
         }
     }
 
+    /// „in 1 Tagen" stand da, sobald die letzte Ablesung von gestern war.
+    private static func spanne(_ days: Int) -> String {
+        days == 1 ? "einem Tag" : "\(days) Tagen"
+    }
+
     private var verdictMessage: AttributedString {
         guard let register else { return AttributedString("") }
         switch verdict {
         case .noReference:
             return AttributedString(digits.isEmpty
                 ? "Zählerstand eintippen"
-                : "Die einzige Ablesung dieses Zählwerks — es gibt nichts zu vergleichen.")
+                : "Die einzige Ablesung dieser Zahl, es gibt nichts zu vergleichen.")
 
         case .normal(let consumption, let days):
             var text = AttributedString("Entspricht ")
             var value = AttributedString("\(number(consumption.value, digits: 0)) \(register.unit.symbol)")
             value.font = .system(.subheadline, weight: .semibold)
             text.append(value)
-            text.append(AttributedString(" in \(days) Tagen — normal für dich."))
+            text.append(AttributedString(" in \(Self.spanne(days)) — normal für dich."))
             return text
 
         case .unusual(let consumption, let days, let factor):
@@ -275,7 +280,7 @@ struct ReadingEditor: View {
             value.font = .system(.subheadline, weight: .semibold)
             text.append(value)
             let times = number(factor, digits: factor < 10 ? 1 : 0)
-            text.append(AttributedString(" in \(days) Tagen — rund \(times)× dein üblicher Verbrauch. Stimmt die Zahl?"))
+            text.append(AttributedString(" in \(Self.spanne(days)) — rund \(times)× dein üblicher Verbrauch. Stimmt die Zahl?"))
             return text
 
         case .belowPrevious(let value):

@@ -82,7 +82,50 @@ enum LaunchFixture {
             var lowTariff: (start: Decimal, monthly: [Decimal], price: Decimal)? = nil
         }
 
-        let profiles: [Profile] = [
+        // **`-pulse-schaufenster`: der Haushalt für die Bilder im App Store.**
+        //
+        // Vom Gründer am 19. Oktober: Die Bilder im Store müssen „einen vollen
+        // Haushalt darstellen" und so attraktiv sein wie möglich. Die
+        // Beispieldaten unten sind für die Prüfungen gebaut, und dort ist Gas
+        // mit Absicht überfällig: Im Store hieß das erste Bild der Übersicht
+        // „Gas ist seit 105 Tagen nicht abgelesen", und die Wärmepumpe meldete
+        // eine Nachzahlung. Beides stimmt als Prüffall und verkauft nichts.
+        //
+        // Hier also ein Haus, wie es oft dasteht: Strom mit Solar auf dem
+        // Dach, Gasheizung, Kalt- und Warmwasser, eine Wallbox in der Garage.
+        // Alles abgelesen, die Abschläge reichen. Die Zahlen sind dieselbe Art
+        // ausgedachter Verlauf wie unten, nichts davon wird geschönt gerechnet.
+        let schaufenster = Startschalter.gesetzt("-pulse-schaufenster")
+        let profiles: [Profile] = schaufenster ? [
+            Profile(name: "Strom", kind: .electricity, start: 41_230,
+                    monthly: [312, 286, 268, 241, 218, 205, 198, 204, 226, 258, 289, 315],
+                    staleMonths: 0,
+                    price: Decimal(string: "0.34")!, base: Decimal(string: "12.90")!,
+                    gas: false, prepay: 100,
+                    feedIn: (start: 6_480,
+                             monthly: [58, 112, 224, 331, 428, 461, 472, 409, 298, 168, 71, 44],
+                             price: Decimal(string: "0.082")!)),
+            Profile(name: "Gas", kind: .gas, start: 3_579,
+                    monthly: [418, 376, 298, 178, 92, 41, 36, 39, 84, 192, 308, 402],
+                    staleMonths: 0,
+                    price: Decimal(string: "0.11")!, base: Decimal(string: "14.50")!,
+                    gas: true, prepay: 230, feedIn: nil),
+            Profile(name: "Wasser", kind: .water, start: 998,
+                    monthly: [10.8, 9.9, 11.2, 10.6, 12.4, 13.1, 13.8, 13.2, 11.6, 10.9, 10.4, 11.1],
+                    staleMonths: 0,
+                    price: Decimal(string: "2.15")!, base: Decimal(string: "8.40")!,
+                    gas: false, prepay: nil, feedIn: nil),
+            Profile(name: "Warmwasser", kind: .hotWater, start: 412,
+                    monthly: [3.4, 3.1, 3.3, 3.0, 2.8, 2.5, 2.3, 2.4, 2.7, 3.1, 3.3, 3.5],
+                    staleMonths: 0,
+                    price: Decimal(string: "9.80")!, base: 0,
+                    gas: false, prepay: nil, feedIn: nil),
+            Profile(name: "Wallbox", kind: .wallbox, start: 5_148,
+                    monthly: [212, 198, 205, 214, 226, 231, 244, 238, 221, 215, 206, 218],
+                    staleMonths: 0,
+                    price: Decimal(string: "0.34")!, base: 0,
+                    gas: false, prepay: nil, feedIn: nil)
+        ] : [
             // Strom mit Photovoltaik: der Fall, an dem ein Modell mit einer
             // Zahl pro Zähler scheitern würde — und in Deutschland längst
             // keine Randgruppe mehr. Die Einspeisung ist gegenläufig zum
@@ -205,8 +248,13 @@ enum LaunchFixture {
             // Abgelesen wird gestern: So sieht das Bild aus, wie es bei jemandem
             // aussieht, der seinen Zähler im Blick hat. Am Monatsersten und
             // -zweiten entfällt es — dann gibt es schlicht noch keine Strecke.
+            //
+            // Im Schaufenster liegt sie neun Tage zurück statt einen: Das
+            // Ablesebild rechnet dann „in 9 Tagen" nach, und eine Strecke von
+            // einem Tag sähe auf einem Werbebild nach nichts aus.
+            let abstand = schaufenster ? min(9, today.day - 2) : 1
             if let stand = laufenderStand, today.day > 2,
-               let gestern = CalendarDay(year: today.year, month: today.month, day: today.day - 1) {
+               let gestern = CalendarDay(year: today.year, month: today.month, day: today.day - abstand) {
                 let tageImMonat = CalendarDay.daysInMonth(year: today.year, month: today.month)
                 let anteil = Decimal(gestern.days(since: stand.day)) / Decimal(tageImMonat)
                 // Dieselben sieben Prozent unter dem Vorjahr wie in der Schleife

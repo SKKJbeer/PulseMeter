@@ -277,6 +277,32 @@ if seite.exists() and einreichung.exists() and ablauf.exists():
         problems.append("Die Website-Adresse laeuft auseinander:\n    "
                         + "\n    ".join(f"{wo}: {was}" for wo, was in orte.items()))
 
+# **Die verbotenen Wörter aus `CLAUDE.md`, in jeder Zeichenkette der App.**
+#
+# Die Liste stand seit August in `CLAUDE.md`: Messstelle, Zählwerk, Register,
+# OBIS, Entität, Datensatz, Synchronisation. Gezählt hat sie niemand. Am
+# 19. Oktober stand „Zählwerk 2 von 2“ auf dem Ablesebild, das im App Store an
+# zweiter Stelle kam, dazu an vier weiteren Stellen, die VoiceOver vorliest.
+#
+# Geprüft werden Zeichenketten, nicht Kommentare und nicht Bezeichner: Im
+# Code heißt das Ding `Register`, und das soll es auch. Was in `\(…)` steht,
+# ist Code und fällt vorher heraus. „Register“ zählt nur als ganzes Wort mit
+# großem Anfang, damit `registers.count` in einer Einfügung nicht anschlägt.
+VERBOTEN = [re.compile(w) for w in (
+    r"Messstelle", r"Zählwerk", r"\bRegister\b", r"\bOBIS\b", r"Entität",
+    r"Datensatz", r"Synchronisation")]
+for wurzel in ("App", "Widget", "Packages/PulseUI"):
+    for datei in sorted(pathlib.Path(wurzel).rglob("*.swift")):
+        for nummer, zeile in enumerate(datei.read_text(encoding="utf-8").splitlines(), 1):
+            if zeile.lstrip().startswith("//"):
+                continue
+            code = re.sub(r'\\\((?:[^()]|\([^()]*\))*\)', "", zeile.split(" //")[0])
+            for text in re.findall(r'"((?:[^"\\]|\\.)*)"', code):
+                for muster in VERBOTEN:
+                    if muster.search(text):
+                        problems.append(f"{datei}:{nummer}: verbotenes Wort in der "
+                                        f"Oberfläche ({muster.pattern}): \"{text[:70]}\"")
+
 if problems:
     print("\n".join(problems))
     print(f"\n{len(problems)} Fund(e).")
