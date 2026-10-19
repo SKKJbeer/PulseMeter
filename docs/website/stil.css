@@ -284,7 +284,14 @@ h1 {
   transition: transform .12s ease, opacity .12s ease;
 }
 .apfel svg { width: 25px; height: 25px; fill: currentColor; flex: none; }
-.apfel-text { display: flex; flex-direction: column; }
+.apfel-text { display: flex; flex-direction: column; min-width: 0; }
+/* **Bei 300 % Text darf der Knopf umbrechen, statt aus dem Schirm zu ragen.**
+   Seit 0.134.0 steht ein zweiter Knopf unter den drei Gründen; der obere
+   liegt in einem Bereich, der abschneidet, dieser nicht. Auf dem Läufer der
+   CI (andere Schrift als hier) ragte er drei Pixel hinaus. „App Store" geht
+   dann auf zwei Zeilen, und der Knopf bleibt ganz zu sehen. */
+.apfel { max-width: 100%; box-sizing: border-box; }
+.apfel b, .apfel small { overflow-wrap: anywhere; }
 .apfel small { font-size: 12px; letter-spacing: .01em; opacity: .92; }
 .apfel b { font-size: 19px; font-weight: 550; letter-spacing: -0.01em; }
 a.apfel:hover { transform: translateY(-1px); }

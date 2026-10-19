@@ -61,6 +61,12 @@ will, sehr ausführlich.
 - **„in 1 Tagen"** in der Rückmeldung beim Ablesen und Bearbeiten, wenn die
   letzte Ablesung von gestern war. Jetzt „in einem Tag", auch im Klick-Dummy.
 
+**Nachtrag, derselbe Tag:** Die Veröffentlichung der Website fiel auf dem
+Läufer mit „iPhone SE, Textgröße 300 %: index.html: 3 px Überlauf". Der neue
+zweite App-Store-Knopf war bei dreifacher Schrift breiter als der Schirm; hier
+lief die Prüfung grün, weil die Schriften im Container schmaler sind. Der
+Knopf darf jetzt umbrechen („App" und „Store" auf zwei Zeilen).
+
 _Prüfung: `pruefen.sh schnell` grün, darin `check-strings.py` mit der neuen
 Wortprüfung, `check-website.mjs`, `check-prototype.mjs`, `check-store-texte.py`
 und `website-fassung.py --selbsttest`. Probesatz der Store-Bilder aus den
