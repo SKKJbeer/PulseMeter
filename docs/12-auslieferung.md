@@ -450,8 +450,21 @@ ging durch:
     · Die Fassung liegt bereits darin — es wird nur abgeschickt.
     Eingereicht. Zustand: WAITING_FOR_REVIEW
 
-Im Laden: noch offen. Bei der Freigabe trägt `website-fassung.yml` sie aus
-`docs/fassungen/1.5.1.json` auf der Website ein.
+**Im Laden seit 19. Oktober, 22:04 UTC**, gut dreizehn Stunden nach dem
+Einreichen, belegt an der Produktseite in drei Ländern
+(`itunes.apple.com/lookup`, `country=de`, `at` und `ch`: `1.5.1 |
+2026-10-19T22:04:26Z`, sechs Bilder, das erste `01-store-uebersicht.jpg`).
+
+**Die Website zog zum ersten Mal von selbst nach:** `website-fassung.yml` lief
+planmäßig um 00:19 UTC, trug 1.5.1 aus `docs/fassungen/1.5.1.json` ein,
+zählte auf neun Fassungen hoch, stieß die Veröffentlichung an und fand die
+Zeile danach auf `zaehlora.de/entwicklung`. Zwei Stunden und fünfzehn Minuten
+nach der Freigabe statt fünf Tage wie bei 1.5.
+
+**Länder:** Verkäuflich in 175 Ländern (`einreichung.yml`, „Verfügbarkeit"),
+darunter Österreich, die Schweiz und Luxemburg, alle mit deutscher
+Produktseite. Am 20. Oktober nachgesehen, weil der Gründer fragte, ob die App
+nur in Deutschland steht.
 
 ### Die achte, 1.5 — eingereicht am 14. Oktober
 
