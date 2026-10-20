@@ -66,6 +66,14 @@ jobs:
         run: scripts/chromium-holen.sh
       - name: Klick-Dummy prüfen
         run: node scripts/check-prototype.mjs
+      # Der Kamera-Leser steht zweimal da, in Swift und im Klick-Dummy. Beide
+      # lesen docs/kamera/vektoren.json; Swift prüft `MeterTextReaderTests`.
+      - name: Kamera-Leser im Klick-Dummy
+        run: node scripts/check-kamera-js.mjs
+      # Fremde Fotos in einem öffentlichen Repository: ohne Urheber, Quelle und
+      # freie Lizenz bricht der Lauf ab.
+      - name: Kamerafotos
+        run: python3 scripts/check-kamerafotos.py
 
       # Zwei Prüfungen der iOS-Quellen, die kein Xcode brauchen — reines Lesen.
       # Sie standen bisher nur in `pruefen.sh`, und damit war die CI-Beschreibung

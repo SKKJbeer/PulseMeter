@@ -111,6 +111,11 @@ fi
 if [ "$SCOPE" != "bilder" ]; then
   step "Sofortprüfungen"
   run "Zeichenketten" python3 scripts/check-strings.py || true
+  # Fremde Fotos, öffentliches Repository: Eine Creative-Commons-Lizenz gilt nur
+  # mit Namensnennung. Und der Kamera-Leser steht zweimal da, in Swift und im
+  # Klick-Dummy; beide lesen dieselben Fälle (0.135.0).
+  run "Kamerafotos" python3 scripts/check-kamerafotos.py || true
+  run "Kamera-Leser im Klick-Dummy" node scripts/check-kamera-js.mjs || true
   # Ein fehlender Import ist syntaktisch fehlerfrei und bricht erst beim
   # Ausführen ab — Bau 24 lag schon in TestFlight, als `import re` fehlte.
   run "Unbekannte Namen" python3 scripts/check-namen.py || true

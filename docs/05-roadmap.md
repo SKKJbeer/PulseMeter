@@ -68,7 +68,7 @@ und stehen nirgends öffentlich (siehe „Öffentlich und intern" unten).
 | **1.4.1** | 07.10. | **Neue Suchbegriffe:** Name, Untertitel und Schlagworte aus `09-appstore.md`. Sonst nichts, damit eine Wirkung im Rang den neuen Wörtern zuzuordnen ist | **im Laden** seit 07.10., Bau 40 |
 | **1.5** | 14.10. | **Import aus einer Tabelle**, für Umsteiger mit Excel-Listen oder anderen Apps · **Ausblick immer** (0.130.0, 0.131.0): „Erwartet für <Jahr>" auf jeder Karte und im Verlauf in jeder Ansicht, Monatsausblick auch ohne Ablesung im Monat | **im Laden** seit 14.10., Bau 44, vom Gründer vorgezogen (geplant war der 04.11.) |
 | **1.5.1** | 19.10. | **Neue Bilder im Laden:** gesetzt mit Überschrift, ein voller Haushalt (Strom mit Solar, Gas, Wasser, Warmwasser, Wallbox) · „Schritt 1 von 2" statt „Zählwerk" | **im Laden** seit 19.10., 22:04 UTC, Bau 45 |
-| **1.6** | 18.11. | **Kamera, Stufe 1:** Foto im Ziffernblock, die App schlägt den Stand vor, du bestätigst. Eigener Kauf 0,99 €, im Bündel enthalten | groß |
+| **1.6** | 18.11. | **Kamera, Stufe 1:** Foto im Ziffernblock, die App schlägt den Stand vor, du bestätigst. Eigener Kauf 0,99 €, im Bündel enthalten | **Vorarbeit fertig (0.135.0):** Leser in PulseCore, 15 Fotos, Ablauf im Klick-Dummy (`docs/kamera/`). **Offen:** Vision an den Fotos messen, Oberfläche und Kamera in der App, Datenschutz und Berechtigungstext |
 | **1.7** | 02.12. | **Kamera, Stufe 2:** Sucher mit Rahmen, zwei Zählwerke auf einem Bild (Tag/Nacht, Bezug/Einspeisung) | groß |
 | **1.8** | 16.12. | offen. Der Jahreswechsel stand hier und ist am 7. Oktober gestrichen | — |
 | **1.9** | 13.01. | Puffer, und was die Zahlen bis dahin sagen | — |

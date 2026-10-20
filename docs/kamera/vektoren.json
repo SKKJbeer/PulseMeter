@@ -1,0 +1,784 @@
+{
+ "hinweis": "Gemeinsame Fälle für MeterTextReader.swift und den Klick-Dummy (docs/prototype/index.html). Beide müssen dasselbe ergeben; geprüft von MeterTextReaderTests.testSharedVectors und scripts/check-kamera-js.mjs. Texte sind von Hand nachgebildet, siehe README.md.",
+ "faelle": [
+  {
+   "name": "siemens-rollen-mit-bereich",
+   "texte": [
+    [
+     "655219",
+     1
+    ],
+    [
+     "SIEMENS",
+     1
+    ],
+    [
+     "kWh",
+     1
+    ],
+    [
+     "Wechselstromzähler",
+     1
+    ],
+    [
+     "220 V",
+     1
+    ],
+    [
+     "10(60) A",
+     1
+    ],
+    [
+     "50 Hz",
+     1
+    ],
+    [
+     "375 U/kWh",
+     1
+    ],
+    [
+     "6.047.178",
+     1
+    ]
+   ],
+   "format": [
+    5,
+    1
+   ],
+   "bereich": [
+    "65000",
+    "66000"
+   ],
+   "erwartet": {
+    "wert": "65521.9"
+   }
+  },
+  {
+   "name": "siemens-rollen-erste-ablesung",
+   "texte": [
+    [
+     "655219",
+     1
+    ],
+    [
+     "SIEMENS",
+     1
+    ],
+    [
+     "kWh",
+     1
+    ]
+   ],
+   "format": [
+    5,
+    1
+   ],
+   "bereich": null,
+   "erwartet": {
+    "keine": "noCandidate"
+   }
+  },
+  {
+   "name": "seriennummer-erste-ablesung",
+   "texte": [
+    [
+     "424501",
+     1
+    ],
+    [
+     "5530",
+     1
+    ],
+    [
+     "2008",
+     1
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": null,
+   "erwartet": {
+    "keine": "noCandidate"
+   }
+  },
+  {
+   "name": "seriennummer-mit-bereich",
+   "texte": [
+    [
+     "424501",
+     1
+    ],
+    [
+     "9023 kWh",
+     1
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": [
+    "9000",
+    "9200"
+   ],
+   "erwartet": {
+    "wert": "9023"
+   }
+  },
+  {
+   "name": "landis-mit-kennzahl-und-einheit",
+   "texte": [
+    [
+     "1.8.0",
+     1
+    ],
+    [
+     "002423 kWh",
+     1
+    ],
+    [
+     "E320",
+     1
+    ],
+    [
+     "5000 Imp/kWh",
+     1
+    ],
+    [
+     "DE-M24",
+     1
+    ],
+    [
+     "2024",
+     1
+    ],
+    [
+     "230V/400V",
+     1
+    ],
+    [
+     "0,25-5(100)A",
+     1
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": null,
+   "erwartet": {
+    "wert": "2423"
+   }
+  },
+  {
+   "name": "gas-rollen-einzeln",
+   "texte": [
+    [
+     "0 0 0 4 7 3 6 m³",
+     1
+    ],
+    [
+     "113457",
+     1
+    ],
+    [
+     "G4",
+     1
+    ],
+    [
+     "6G4L",
+     1
+    ],
+    [
+     "2007",
+     1
+    ]
+   ],
+   "format": [
+    5,
+    2
+   ],
+   "bereich": null,
+   "erwartet": {
+    "wert": "47.36"
+   }
+  },
+  {
+   "name": "gas-mit-komma",
+   "texte": [
+    [
+     "00047,36 m³",
+     1
+    ],
+    [
+     "G4",
+     1
+    ]
+   ],
+   "format": [
+    5,
+    2
+   ],
+   "bereich": null,
+   "erwartet": {
+    "wert": "47.36"
+   }
+  },
+  {
+   "name": "kamstrup-sieben-stellen",
+   "texte": [
+    [
+     "1.8.0",
+     1
+    ],
+    [
+     "0014426",
+     1
+    ],
+    [
+     "2008W38",
+     1
+    ],
+    [
+     "1000 imp/kWh",
+     1
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": null,
+   "erwartet": {
+    "wert": "14426"
+   }
+  },
+  {
+   "name": "lauter-nullen",
+   "texte": [
+    [
+     "180",
+     1
+    ],
+    [
+     "000000 kWh",
+     1
+    ],
+    [
+     "1 LOG00 8612 2566",
+     1
+    ],
+    [
+     "Nr. 86122566",
+     1
+    ],
+    [
+     "500 Imp/kWh",
+     1
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": null,
+   "erwartet": {
+    "wert": "0"
+   }
+  },
+  {
+   "name": "siebensegment-buchstaben-1",
+   "texte": [
+    [
+     "O02423 kWh",
+     1
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": null,
+   "erwartet": {
+    "wert": "2423"
+   }
+  },
+  {
+   "name": "siebensegment-buchstaben-2",
+   "texte": [
+    [
+     "OO2I23",
+     1
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": null,
+   "erwartet": {
+    "wert": "2123"
+   }
+  },
+  {
+   "name": "schwache-zahl-ohne-bereich",
+   "texte": [
+    [
+     "1936",
+     1
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": null,
+   "erwartet": {
+    "keine": "noCandidate"
+   }
+  },
+  {
+   "name": "schwache-zahl-mit-bereich",
+   "texte": [
+    [
+     "1936",
+     1
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": [
+    "1900",
+    "2100"
+   ],
+   "erwartet": {
+    "wert": "1936"
+   }
+  },
+  {
+   "name": "typenschild-allein",
+   "texte": [
+    [
+     "2566",
+     1
+    ],
+    [
+     "5000",
+     1
+    ],
+    [
+     "2024",
+     1
+    ],
+    [
+     "230V",
+     1
+    ],
+    [
+     "50Hz",
+     1
+    ],
+    [
+     "63A",
+     1
+    ],
+    [
+     "424501",
+     1
+    ],
+    [
+     "5530",
+     1
+    ],
+    [
+     "2008",
+     1
+    ],
+    [
+     "500imp/KWh",
+     1
+    ],
+    [
+     "375U/kWh",
+     1
+    ],
+    [
+     "10(60)A",
+     1
+    ],
+    [
+     "7AA50 61",
+     1
+    ],
+    [
+     "50470-3",
+     1
+    ],
+    [
+     "04972G072",
+     1
+    ],
+    [
+     "6.047.178",
+     1
+    ],
+    [
+     "Nr 50 752 788",
+     1
+    ],
+    [
+     "86122566",
+     1
+    ],
+    [
+     "1 LOG00 8612 2566",
+     1
+    ],
+    [
+     "LK11BE803617",
+     1
+    ],
+    [
+     "0A-01-4C-4F-47-00-05-22-20-46",
+     1
+    ],
+    [
+     "7350028676767257",
+     1
+    ],
+    [
+     "1.8.0",
+     1
+    ],
+    [
+     "0,25-5(60)A",
+     1
+    ],
+    [
+     "10.000 Imp/kWh",
+     1
+    ],
+    [
+     "221/12-5004",
+     1
+    ],
+    [
+     "2812689",
+     1
+    ],
+    [
+     "306 495 056",
+     1
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": null,
+   "erwartet": {
+    "keine": "noCandidate"
+   }
+  },
+  {
+   "name": "typenschild-allein-sieben-stellen",
+   "texte": [
+    [
+     "2566",
+     1
+    ],
+    [
+     "5000",
+     1
+    ],
+    [
+     "2812689",
+     1
+    ],
+    [
+     "6.047.178",
+     1
+    ],
+    [
+     "424501",
+     1
+    ]
+   ],
+   "format": [
+    7,
+    0
+   ],
+   "bereich": null,
+   "erwartet": {
+    "keine": "noCandidate"
+   }
+  },
+  {
+   "name": "leeres-display",
+   "texte": [
+    [
+     "Wechselstromzähler",
+     1
+    ],
+    [
+     "1 LOG00 8612 2566",
+     1
+    ],
+    [
+     "Mat. B11538",
+     1
+    ],
+    [
+     "230V",
+     1
+    ],
+    [
+     "50Hz",
+     1
+    ],
+    [
+     "2023",
+     1
+    ],
+    [
+     "1383",
+     1
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": null,
+   "erwartet": {
+    "keine": "noCandidate"
+   }
+  },
+  {
+   "name": "datum-im-display",
+   "texte": [
+    [
+     "27:08:22",
+     1
+    ],
+    [
+     "DATE",
+     1
+    ],
+    [
+     "STATUS",
+     1
+    ],
+    [
+     "K132A09",
+     1
+    ],
+    [
+     "2010",
+     1
+    ],
+    [
+     "1000 imp/kWh",
+     1
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": null,
+   "erwartet": {
+    "keine": "noCandidate"
+   }
+  },
+  {
+   "name": "halbe-ziffer-zwei-lesarten",
+   "texte": [
+    [
+     "006100",
+     1
+    ],
+    [
+     "006700",
+     1
+    ],
+    [
+     "11272121",
+     1
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": null,
+   "erwartet": {
+    "keine": "ambiguous"
+   }
+  },
+  {
+   "name": "dieselbe-zahl-zweimal",
+   "texte": [
+    [
+     "002423",
+     0.6
+    ],
+    [
+     "002423 kWh",
+     0.9
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": null,
+   "erwartet": {
+    "wert": "2423"
+   }
+  },
+  {
+   "name": "falsches-zaehlwerk-wird-vom-bereich-gefangen",
+   "texte": [
+    [
+     "655219",
+     1
+    ]
+   ],
+   "format": [
+    6,
+    2
+   ],
+   "bereich": [
+    "65500",
+    "66500"
+   ],
+   "erwartet": {
+    "keine": "outsideRange"
+   }
+  },
+  {
+   "name": "kennzahl-ersetzt-keinen-stand-ausserhalb",
+   "texte": [
+    [
+     "180",
+     1
+    ],
+    [
+     "002423 kWh",
+     1
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": [
+    "100",
+    "300"
+   ],
+   "erwartet": {
+    "keine": "outsideRange"
+   }
+  },
+  {
+   "name": "zu-unsicher-stark",
+   "texte": [
+    [
+     "002423 kWh",
+     0.3
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": null,
+   "erwartet": {
+    "keine": "lowConfidence"
+   }
+  },
+  {
+   "name": "zu-unsicher-schwach",
+   "texte": [
+    [
+     "1936",
+     0.7
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": [
+    "1900",
+    "2100"
+   ],
+   "erwartet": {
+    "keine": "lowConfidence"
+   }
+  },
+  {
+   "name": "mehr-nachkommastellen-als-das-zaehlwerk",
+   "texte": [
+    [
+     "10.000",
+     1
+    ]
+   ],
+   "format": [
+    6,
+    2
+   ],
+   "bereich": null,
+   "erwartet": {
+    "keine": "noCandidate"
+   }
+  },
+  {
+   "name": "nichts-gelesen",
+   "texte": [],
+   "format": [
+    6,
+    2
+   ],
+   "bereich": null,
+   "erwartet": {
+    "keine": "noCandidate"
+   }
+  },
+  {
+   "name": "nur-woerter",
+   "texte": [
+    [
+     "",
+     1
+    ],
+    [
+     "   ",
+     1
+    ],
+    [
+     "Zähler",
+     1
+    ],
+    [
+     "kWh",
+     1
+    ]
+   ],
+   "format": [
+    6,
+    2
+   ],
+   "bereich": null,
+   "erwartet": {
+    "keine": "noCandidate"
+   }
+  }
+ ]
+}

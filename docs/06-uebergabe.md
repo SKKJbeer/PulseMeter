@@ -128,14 +128,19 @@ Klick-Dummy. Der Satz „Alle Werte in …" unter der Tabelle im Entwurf ist weg
 
 ### Als Nächstes
 
-0. **1.5.1 mit den neuen Store-Bildern** (0.134.0): Schaufenster-Haushalt,
-   gesetzte Bilder, „Schritt 1 von 2" statt „Zählwerk". Versionshinweise und
-   `docs/fassungen/1.5.1.json` liegen bereit. Ablauf: CI auf dem Mac grün →
-   Bilder aus dem Zweig `screenshots` mit `store-shots.mjs` setzen und ansehen
-   → Bau 45 → Gründer zeigt die Bilder frei → `einreichung.yml` (1.5.1,
-   füllen) → `einreichen.yml` (min_bau 45). Die Beschreibung im Store nennt
-   den Import noch nicht; mit 1.5.1 ließe sie sich nachziehen, ist aber 3982
-   von 4000 Zeichen lang.
+0. **Kamera, Stufe 1 (1.6, geplant 18.11.): Vorarbeit fertig in 0.135.0.**
+   Der Leser `MeterTextReader` (PulseCore, 22 Tests), 15 Zählerfotos mit
+   Quelle und Soll-Stand und der Ablauf im Klick-Dummy stehen; alles in
+   `docs/kamera/`, dort auch Befund und Regeln. **Als Nächstes, in dieser
+   Reihenfolge:** (a) **Vision an den Fotos messen**, auf dem Mac, ein Schritt
+   in `pruefen.sh`, der je Foto „Stand / nichts / falsch" zählt; erst die Zahl
+   entscheidet, ob Stufe 1 auf LCD-Zählern taugt oder ob eine eigene
+   Siebensegment-Erkennung vor Stufe 2 nötig ist. (b) Oberfläche in der App
+   (Knopf im Ziffernblock, Kamera, Bereich aus der bestehenden Plausibilität:
+   letzter Stand bis das Vierfache des üblichen Verbrauchs). (c) Datenschutz
+   und Berechtigungstext, vor der ersten Fassung mit Kamera. **Ungeprüft:** Was
+   Vision liefert; die Texte in Tests und Klick-Dummy sind nachgebildet.
+   **1.5.1 ist im Laden seit 19.10.** (Bau 45, neue Store-Bilder).
 1. **1.4 Rundgang**: **im Laden** seit 5. Oktober, 16:42 UTC (Bau 39). Auf
    Website und Entwicklungsseite eingetragen.
 2. **1.5 Import aus einer Tabelle**, **im Laden seit 14. Oktober, 22:44 UTC**, Bau 44 (vom Gründer vorgezogen, geplant war der 4. November). **Gebaut in 0.133.0**: Blatt „Einlesen“ im Zähler-Tab und auf der leeren Übersicht, Erkennung in `TableImport`, Konzept in `03-ux-konzept.md` 5a. Kostenlos wie der Export. Offen: in TestFlight mit einer echten Liste ausprobieren; xlsx direkt lesen kann er nicht, nur CSV, Text und Eingefügtes, danach **Kamera** in zwei

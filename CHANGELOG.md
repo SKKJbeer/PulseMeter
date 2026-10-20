@@ -9,6 +9,58 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.135.0 — 2026-10-20
+
+**Kamera, Vorarbeit: der Leser, die Fotos und der Ablauf im Klick-Dummy**
+
+Vom Gründer: Die Kamera als Nächstes angehen, mit eigenen Beispielfotos aus dem
+Netz statt auf seine zu warten. Nach 1.5.1 steht 1.6 (Kamera, Stufe 1) an; was
+hier entstanden ist, braucht kein Xcode und kein Foto vom Gründer.
+
+### Hinzugefügt
+- **`MeterTextReader` in PulseCore.** Nimmt, was eine Texterkennung auf einem
+  Zählerfoto gelesen hat, und liefert einen Vorschlag oder keinen, mit Grund
+  (nichts gefunden, mehrdeutig, außerhalb des erwarteten Bereichs, zu unsicher).
+  Er schlägt nur vor, was eindeutig ist: Typenschild, Seriennummern, Baujahr,
+  Impulskonstanten und Kennzahlen wie `1.8.0` werden nie zum Stand.
+- **Fotosammlung `docs/kamera/`:** 15 Zählerfotos von Wikimedia Commons (Strom,
+  Gas, Wasser; Display, Rollen, Zeiger), je mit Urheber, Lizenz, Quelle und von
+  Hand abgelesenem Soll-Stand. Sechs davon haben absichtlich keinen: leeres
+  Display, Display mit Datum, Zeigerzähler, halb gedrehte Rolle.
+- **Klick-Dummy: „Vom Foto ablesen"** im Ziffernblock. Sechs Beispielfotos, die
+  Regeln des Lesers laufen echt (JavaScript-Fassung), nur die Texterkennung ist
+  nachgestellt. Ein Vorschlag landet im Ziffernblock mit dem Hinweis „aus dem
+  Foto"; gesichert wird die Ablesung mit der Herkunft „Kamera".
+- **Zwei Prüfungen:** `check-kamerafotos.py` (jedes Foto mit Urheber, Quelle,
+  freier Lizenz) und `check-kamera-js.mjs` (Swift und Klick-Dummy bestehen
+  dieselben 26 Fälle aus `docs/kamera/vektoren.json`), in `pruefen.sh` und CI.
+
+### Gemessen, und was es für 1.6 heißt
+- **Auf einem ganzen Zählerfoto liest Tesseract fast nur das Typenschild:**
+  den richtigen Stand fand es bei 1 von 9 Fotos, auf einem Ausschnitt um das
+  Display bei 0 von 7, bei Foto 32 mit `9357` sogar eine falsche Zahl statt
+  `1936`. Das ist ein Maß für Tesseract, nicht für Apples Vision.
+- **Ob die Kamera auf den häufigsten Zählern taugt, ist deshalb offen**, bis
+  Vision auf dem Mac an denselben Fotos gemessen ist. Das Ziel für Stufe 1 steht
+  in `docs/kamera/README.md`: kein falscher Vorschlag.
+- **Drei Fallen beim Abtippen der Soll-Stände**, zwei davon hatte ich selbst
+  falsch gelesen: ein Display, das das Datum zeigt (`27:08:22`, nicht 270.822 kWh),
+  ein Dezimalpunkt, der aus 4,67 ein 467 macht, und halb gedrehte Rollen.
+
+### Ungeprüft
+- **Nichts davon läuft in der App.** Es gibt noch keine Kamera-Oberfläche, keinen
+  Aufruf von Vision und keinen Berechtigungstext. `PulseData` und die App sind
+  unberührt; unter Linux nicht baubar, hier auch nicht geändert.
+- **Die Texte in den Tests und im Klick-Dummy sind von Hand nachgebildet**, mit
+  dem Typenschild-Rauschen, das Tesseract auf denselben Fotos gezeigt hat. Was
+  Vision liefert, ist nicht gemessen.
+
+_315 Tests in PulseCore, alle grün (22 neu für den Leser, einer davon liest die
+26 gemeinsamen Fälle). Klick-Dummy in Hell und Dunkel geprüft, ohne JS-Fehler und ohne
+Überlauf; die Kameraprüfung deckt Vorschlag, Ablehnung, Bereich und Herkunft ab._
+
+---
+
 ## 0.134.1 — 2026-10-20
 
 **Weniger Token je Sitzung**

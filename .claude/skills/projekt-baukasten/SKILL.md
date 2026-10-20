@@ -2697,6 +2697,43 @@ Version nennen, dann loslaufen.
 
 ---
 
+### Fremde Fotos als Prüfmaterial (Kamera, Texterkennung)
+
+Am 20. Oktober für die Zählerkamera gelernt; gilt für jede Funktion, die etwas
+aus Bildern liest.
+
+- **Wikimedia Commons verlangt einen `User-Agent`**, sonst antwortet die
+  Schnittstelle mit 429, auch bei der ersten Anfrage. Mit Kennung (Projekt und
+  Adresse) und einer Sekunde Pause geht es. Vorschaubilder holen
+  (`iiurlwidth=900`), nicht die Originale; die Lizenz steht in `extmetadata`
+  (`LicenseShortName`, `Artist`). Genommen wird nur CC0, Public Domain, CC BY und
+  CC BY-SA.
+- **In einem öffentlichen Repository ist die Namensnennung Pflicht, nicht
+  Höflichkeit.** `scripts/check-kamerafotos.py` bricht ab, wenn bei einem Foto
+  Urheber, Quelle oder freie Lizenz fehlt oder ein Foto nicht eingetragen ist.
+- **Soll-Werte an der Vergrößerung ablesen, nicht am Übersichtsbild.** Von acht
+  Ständen hatte ich zwei aus dem verkleinerten Bild falsch gelesen: ein Display,
+  das das Datum zeigt (`27:08:22`), und einen Dezimalpunkt, der aus 4,67 ein 467
+  gemacht hätte. Beides sind Fallen, die auch die Funktion trifft; sie gehören in
+  die Sammlung, nicht in den Papierkorb.
+- **Übersichtsblätter** (4×3 Bilder, nummeriert, 420 Pixel) statt 48
+  Einzelbilder: ein Blick sortiert Kandidaten, und ein Bild kostet weniger als
+  zwölf.
+- **Tesseract ist als Maßstab für Apples Vision untauglich**, vor allem bei
+  Siebensegment-Anzeigen (1 von 9 auf ganzen Fotos, 0 von 7 auf dem Ausschnitt,
+  einmal eine falsche Zahl). Brauchbar ist es als **Quelle echten Rauschens** für
+  Testfälle: Es zeigt, was eine Erkennung vor dem eigentlichen Wert findet
+  (Typenschild, Seriennummer, Baujahr). Wie gut die Funktion ist, sagt nur die
+  Messung mit dem echten Werkzeug, und die gibt es nur auf dem Mac.
+- **Zwei Fassungen derselben Regeln (Swift und Klick-Dummy) lesen eine Datei mit
+  Fällen**, nicht je eine eigene Liste: `docs/kamera/vektoren.json`, geprüft von
+  einem Swift-Test und `check-kamera-js.mjs`, das die JavaScript-Fassung über
+  Marken im Klick-Dummy herauslöst. Die erste Gegenüberstellung war sofort
+  identisch, und genau deshalb lohnt sie sich: Sie fängt die zweite, die es nicht ist.
+- **Die Swift-Signatur: Der Schlüsselring von swift.org (`all-keys.asc`) kommt
+  gzip-komprimiert.** `gunzip` davor, sonst meldet `gpg --import` „no valid
+  OpenPGP data found" und die Prüfung sieht aus wie ein Fehler der Signatur.
+
 ## 8. Wann etwas fertig ist
 
 **Fertig heißt: beim Nutzer.** Nicht gepusht, nicht zusammengeführt — bei uns:
