@@ -401,6 +401,54 @@ steht sonst nirgends.
 
 ---
 
+## 3a. Nachschau-Rezepte
+
+Ein Wecker (`send_later`, `CronCreate`) trägt **zwei Zeilen**: Anlass und den
+Namen eines Rezepts von hier, zum Beispiel „Nachschau 1.6, Rezept A". Das
+volle Rezept steht nur hier. Vorher standen bis zu zehn Zeilen im Wecker, und
+jeder Wecker steht dreifach im Kontext: in der Planung, in der Benachrichtigung
+und in der Antwort darauf (`scripts/token-bericht.py`).
+
+**Wann:** Für die Prüfung bei Apple eine Nachschau nach **12 Stunden**, danach
+alle 6. Gemessen haben 1.4.1 zwei, 1.5 achtzehn und 1.5.1 dreizehn Stunden
+gebraucht. Eine Nachschau alle drei Stunden kostet bei großem Kontext jedes Mal
+einen Neuaufbau des Zwischenspeichers (Regel 5 in `CLAUDE.md`).
+
+**Rezept A — Steht die Fassung im Laden?**
+
+1. `python3 scripts/website-fassung.py` zeigt Laden, Repository und Startseite.
+2. Im Laden und auf der Website: nichts zu tun außer dem Eintrag unten.
+   `website-fassung.yml` hat sie selbst eingetragen; bei Zweifel
+   `python3 scripts/website-fassung.py --netz`.
+3. Im Laden, aber nicht auf der Website: `website-fassung.yml` von Hand
+   auslösen. Fehlt `docs/fassungen/<fassung>.json`, wird der Lauf rot: Datei
+   schreiben (Vorlage `1.5.json`).
+4. Eintrag in diesem Dokument („Im Laden seit …", Beleg aus
+   `itunes.apple.com/lookup`), Zeile in `05-roadmap.md`, mit `[skip ci]`
+   committen, `main` und `claude/setup-pruefung-4qyr2u` pushen.
+5. Dem Gründer melden, mit dem Link zur Produktseite. Offene Punkte aus
+   `06-uebergabe.md` („Offen beim Gründer") erinnern.
+6. **Noch in Prüfung:** `einreichen.yml` ohne Bestätigung (nur nachsehen), neue
+   Nachschau in 6 Stunden, nichts melden. **Abgelehnt:** `einreichen.yml` mit
+   `warum`, Grund einordnen.
+
+**Rezept B — CI grün, dann Bau**
+
+1. `ci.yml` auf `main`: `iphone`, `ipad` und `bilder` grün? Sonst Rezept D.
+2. Bilder aus dem Zweig `screenshots` ansehen, **verkleinert**
+   (`scripts/bild-klein.sh`).
+3. `testflight.yml` anstoßen, Hinweistext aus dem CHANGELOG, auf
+   „Bau N: VALID" warten, Zeile in der Tabelle in Abschnitt 3 ergänzen.
+
+**Rezept D — Etwas ist rot**
+
+Zuerst die Schritte des Auftrags über die API ansehen (welcher Schritt?), Logs
+nur dort holen, mit `failed_only` und höchstens 40 Zeilen. Ein Log mit 90 Zeilen
+ist zur Hälfte Aufräumen („Post job cleanup") und steht danach bei jeder
+Antwort im Kontext.
+
+---
+
 ## 4a. Der Starttag — er war am 4. September 2026
 
 **Zählora 1.0 ist seit dem 4. September, 23:00 UTC im deutschen App Store.**

@@ -1,30 +1,20 @@
 # Arbeitsweise in diesem Projekt
 
-> **Die App heißt „Zählora".** Umbenannt am 28. August, vorher „PulseMeter".
-> Im App Store steht sie seit 1.4.1 (7. Oktober) als **„Zählora – Zählerstand
-> ablesen"** (29 von 30 Zeichen), auf dem Homescreen als **„Zählora"**. Davor
-> hieß sie dort „Zählora – Zähler & Verbrauch". Begründung in
-> `docs/09-appstore.md`.
+> **Die App heißt „Zählora"** (vorher „PulseMeter", umbenannt am 28. August).
+> Im Store „Zählora – Zählerstand ablesen", auf dem Homescreen „Zählora",
+> die Website steht auf `zaehlora.de`.
 >
-> **Die Website steht auf `zaehlora.de`.** Seit dem 3. Oktober, gekauft bei
-> netcup, DNS bei Cloudflare. `zaehlora.pages.dev` (seit dem Umzug vom alten
-> Namen am 29. August) und `www.zaehlora.de` leiten mit 301 dorthin weiter,
-> `pulsemeter.pages.dev` ebenso. Das Cloudflare-Projekt heißt weiter
-> `zaehlora`.
->
-> **Was den alten Namen behalten hat, und mit Absicht:** die Bundle-ID
+> **Mit Absicht beim alten Namen geblieben:** Bundle-ID
 > `de.karjoth.pulsemeter`, die fünf Kauf-Kennungen, die Swift-Module
-> `PulseCore`, `PulseData`, `PulseUI`, das Xcode-Ziel und das Repository. Das
-> sieht kein Nutzer, und eine Kauf-Kennung zu ändern heißt, jedem Käufer seinen
-> Kauf zu nehmen. Wer das trotzdem umziehen will, braucht einen neuen
-> App-Eintrag bei Apple — und muss es tun, **bevor** jemand kauft. Vom Gründer
-> am 29. August bestätigt: „ids müssen wir nicht anpassen, die sind ja schon
-> und ist unnötig aufwand."
+> `PulseCore`, `PulseData`, `PulseUI`, das Xcode-Ziel und das Repository.
+> Nicht umbenennen: Eine Kauf-Kennung zu ändern nimmt jedem Käufer seinen Kauf.
 >
-> **Die Adresse steht an drei Orten** — in `canonical` der Seiten, als
-> `WEBSITE` in `asc-einreichung.py` und als `W=` der Prüfung in `website.yml`.
-> `check-strings.py` hält sie zusammen; jede für sich wäre sonst stimmig und
-> das Ganze falsch.
+> **Die Adresse steht an drei Orten** (`canonical` der Seiten, `WEBSITE` in
+> `asc-einreichung.py`, `W=` in `website.yml`); `check-strings.py` hält sie
+> zusammen.
+>
+> Begründungen, Daten und Wortlaut des Gründers zu alledem:
+> `docs/14-arbeitsweise-hintergrund.md`.
 
 ## Regel 1 — Jede Änderung kommt sofort in den Klick-Dummy
 
@@ -77,21 +67,10 @@ Die Datei zusätzlich per SendUserFile mitzuliefern ist nicht nötig, aber auf
 Nachfrage sinnvoll: Sie ist in sich geschlossen und läuft ohne Login und ohne
 Netz.
 
-> **Hier stand „GitHub Pages scheidet aus — das Repo ist privat". Das war
-> falsch.** Am 31. August nachgemessen: `"private": false`, `"visibility":
-> "public"`. Wann es öffentlich wurde, ist nicht rekonstruierbar; die Zeile
-> stand seit Wochen ungeprüft da und ist einmal aus einer Annahme entstanden.
->
-> **Damit ist der ganze Umweg oben verhandelbar.** Regel 1 verlangt bei jeder
-> Veröffentlichung ein neues Artifact unter neuem Dateinamen, weil ein erneutes
-> Veröffentlichen auf denselben Pfad beim Gründer eine Anmeldemaske auslöst.
-> Über GitHub Pages ginge stattdessen eine **feste** Adresse
-> (`skkjbeer.github.io/PulseMeter/prototype/`) — ohne Anmeldung, mit
-> Versionshistorie über die Commits, und ohne dass bei jeder Runde ein Link
-> weiterzugeben wäre.
->
-> Umgestellt ist es nicht: Das ist eine Entscheidung des Gründers, keine
-> Nebenwirkung einer Korrektur. Bis er sie trifft, gilt Regel 1 unverändert.
+> GitHub Pages ginge als feste Adresse ohne Anmeldung statt des Umwegs mit
+> neuem Artifact. **Umgestellt ist es nicht: Das ist Sache des Gründers.** Bis er
+> entscheidet, gilt Regel 1 unverändert (Hintergrund in
+> `docs/14-arbeitsweise-hintergrund.md`).
 
 **Was ein öffentliches Repository sonst noch heißt:** Strategie, Preisfindung,
 Umsatzannahmen, die vollständige Fehlerhistorie und jede Begründung im Code
@@ -123,15 +102,10 @@ nachgetragen — im selben Commit wie die Änderung**, ohne dass der Nutzer dana
 fragt. Auch die Vermutung, die falsch war. Wird eine Zeile widerlegt, wird sie
 geändert, nicht ergänzt.
 
-In ein anderes Vorhaben kommt sie über `scripts/neues-projekt.sh --einrichten`.
-Das läuft **einmal** auf einem Rechner und setzt drei Dinge: den Verweis unter
-`~/.claude/skills`, eine Regel in `~/.claude/CLAUDE.md` — die wird in jeder
-Sitzung gelesen, auch im leeren Ordner — und die Funktion `neu` in der Shell.
-Danach fängt ein Vorhaben mit `neu <name>` an, und das Gerüst steht.
-
-Eine Cloud-Sitzung liest `~/.claude` **nicht**. Sie sieht nur das geklonte
-Repository — dort liegt der Baukasten dann aber schon, weil das Aufsetzen ihn
-hineinschreibt.
+In ein anderes Vorhaben kommt sie über `scripts/neues-projekt.sh
+--einrichten` (Einzelheiten in `docs/14-arbeitsweise-hintergrund.md`).
+**Nie als Ganzes laden** (über 150 KB): mit `Grep` die Überschrift suchen, dann
+mit `Read` und `offset` nur den Abschnitt lesen.
 
 ## Regel 2 — Der Prototyp rechnet echt
 
@@ -229,7 +203,10 @@ Konkret, nach jedem Push und jedem angestoßenen Lauf:
 
 1. **Nachschau planen**, bevor der Zug endet — `send_later` in dieser Umgebung,
    `CronCreate` als Ausweichweg, wenn `send_later` eine Genehmigung verlangt.
-   Nie auf eine Erinnerung warten und nie mit `sleep` blockieren.
+   Nie auf eine Erinnerung warten und nie mit `sleep` blockieren. **Eine**
+   Nachschau je Ereignis, auf die erwartete Dauer gelegt, mit einem Text von
+   zwei Zeilen, der auf ein Rezept in `docs/12-auslieferung.md` verweist
+   (Regel 5).
 2. **Grün** → zusammenführen, TestFlight-Lauf anstoßen, Zeile in
    `docs/12-auslieferung.md` nachtragen, zusammengeführte Arbeitszweige
    löschen, Bilder holen, Ergebnis melden.
@@ -283,32 +260,33 @@ auslösen und `scripts/website-fassung.py` ansehen. Alles Weitere steht in
 
 ### Pushen während eines laufenden Prüflaufs ist erlaubt
 
-**Diese Regel stand hier umgekehrt und war überholt.** Sie lautete „nie pushen,
-solange ein Prüflauf läuft", weil `cancel-in-progress` an einem einzigen Tag
-drei Läufe gekostet hatte — jeden abgebrochen kurz vor dem App-Build, also nach
-der teuersten Minute und ohne je ein Ergebnis. Behoben wurde das damals mit
-**zwei Gruppen** in `ci.yml`, und die Regel blieb trotzdem stehen. Sie hat
-danach nur noch Wartezeit gekostet.
+Der teure Mac-Auftrag reiht sich bei einem neuen Push an, statt abgebrochen zu
+werden (`cancel-in-progress: false`, eigene Gruppen je Gerät). Wer wartet,
+wartet umsonst. Gruppen und Begründung: `docs/14-arbeitsweise-hintergrund.md`.
 
-| Auftrag | Gruppe | Bei neuem Push |
-|---|---|---|
-| `prototype` (Ubuntu, Minuten) | `entwurf-<zweig>` | wird abgebrochen — soll er, er läuft gleich wieder |
-| `iphone` (macOS, teuer) | `iphone-<zweig>` | `cancel-in-progress: false` — **reiht sich an**, beide laufen durch |
-| `ipad` (macOS, teuer) | `ipad-<zweig>` | dasselbe, eigene Gruppe — sonst bricht der eine den anderen ab |
-| `bilder` (macOS, kurz) | — | wartet auf beide, legt beide Bildersätze in den Zweig `screenshots` |
+## Regel 5 — Token sparen
 
-Der teure Auftrag ist also geschützt. Wer wartet, wartet umsonst.
+Vom Gründer am 20. Oktober. Gemessen mit `scripts/token-bericht.py`: Eine
+Sitzung von 13 Tagen hatte im Schnitt **411 000 Token Kontext**, und jede
+Antwort liest den ganzen Kontext neu. Dazu kamen 22 Mal ein kompletter
+Neuaufbau des Zwischenspeichers (ein Viertel aller Kosten), 19 davon nach einer
+Pause über einer Stunde, 3 nach einem Modellwechsel.
 
-```bash
-git fetch origin screenshots && git show origin/screenshots:README.md | head -3
-```
-
-**Nicht als Ersatz lesen, sondern als Vorsprung.** Ein Lauf „mit Änderungen"
-sagt über den committeten Stand nichts, und `schnell` sagt nichts über die App
-im Simulator. Beides steht in der Zeile.
-
-Swift-Toolchain unter Linux: `/opt/swift/usr/bin` (Swift 6.0.3).
-Chromium für Playwright: `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`.
+1. **Eine Sitzung je Auftrag.** Ist ein Auftrag gemeldet und liegt der Kontext
+   über 300 000 Token (`scripts/token-bericht.py` zeigt es), schreibt die
+   Sitzung die Übergabe in `docs/06-uebergabe.md` und sagt dem Gründer, dass
+   eine neue Sitzung billiger ist.
+2. **Das Modell am Anfang wählen, nicht mittendrin wechseln.** Jeder Wechsel
+   baut den Zwischenspeicher neu auf (590 000 Token am 20. Oktober).
+3. **Wecker sparsam.** Jede Weckzeit über einer Stunde Abstand kostet einen
+   Neuaufbau des ganzen Kontexts. Für die Prüfung bei Apple (gemessen: 2 bis 18
+   Stunden) eine Nachschau nach 12 Stunden, nicht alle drei.
+4. **Ergebnisse klein halten.** Logs nur bei Rot (`failed_only`), Bilder mit
+   `scripts/bild-klein.sh` verkleinern, Dateien mit `offset` und `limit` lesen,
+   Befehle mit `tail` oder `grep` begrenzen. Was einmal im Kontext liegt, wird
+   bei jeder weiteren Antwort mitgelesen.
+5. **Aufgabenliste leeren**, wenn sie abgearbeitet ist: Sie erinnert sonst nach
+   jedem Werkzeugaufruf an sich.
 
 ## Sprache
 
@@ -436,6 +414,7 @@ docs/06-uebergabe.md          Der laufende Zustand — für eine kalte Sitzung
 docs/09-appstore.md           Alle Store-Texte, fertig zum Einfügen
 docs/12-auslieferung.md       Vom Code in den App Store, ohne Mac
 docs/13-zugaenge.md           Was nur der Gründer anlegen kann, mit Links
+docs/14-arbeitsweise-hintergrund.md  Warum die Regeln hier so lauten
 docs/prototype/index.html     Klick-Dummy, in sich geschlossen
 .claude/skills/               Das übertragbare Wissen — Baukasten zuerst
 Packages/PulseCore/           Domäne und Rechenkern, nur Foundation

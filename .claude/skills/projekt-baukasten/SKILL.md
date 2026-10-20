@@ -1403,6 +1403,45 @@ Zwei Befunde an einem Nachmittag, beide beim Ansehen der Store-Bilder:
   zählt.** Zwanzig Zeilen, die jede Zeichenkette außerhalb von Kommentaren und
   Einfügungen gegen die Liste halten.
 
+### Der Tokenverbrauch kommt von der Länge der Sitzung, nicht von den Anweisungen
+
+Der Gründer hatte das Gefühl, mehr Token zu verbrauchen. Die erste Vermutung
+waren die langen Anweisungsdateien und der 150 KB große Baukasten. **Gemessen
+(`scripts/token-bericht.py`, aus dem Sitzungsprotokoll) war es etwas anderes:**
+eine Sitzung über 13 Tage und 990 Antworten, im Schnitt 411 000 Token
+Kontext. Jede Antwort liest den ganzen Kontext neu (58 bis 67 % der Kosten),
+und 22 Mal wurde er komplett neu in den Zwischenspeicher geschrieben (22 bis
+30 %): 19 Mal nach einer Pause über einer Stunde, 3 Mal nach einem
+Modellwechsel. Allein am 19. Oktober waren es acht, davon fünf durch meine
+Wecker im Abstand von drei Stunden.
+
+Der Baukasten wurde in der ganzen Sitzung kein einziges Mal als Ganzes geladen
+(45 Zeilen gezielt gelesen), `CLAUDE.md` stand fünf Mal im Kontext (34 000
+Token). Beides ist nicht nichts, aber ein Zehntel dessen, was die Länge der
+Sitzung kostet.
+
+**Die Regeln daraus:**
+
+* **Eine Sitzung je Auftrag**, Übergabe ins Repository, neu anfangen, sobald
+  der Kontext über 300 000 Token liegt. Der Kontext hat bei einer Sitzung, die
+  alles weiterträgt, kein Ende; bei einer frischen beginnt er bei etwa 100 000.
+* **Ein Modell je Sitzung.** Ein Wechsel mitten drin kostet den ganzen
+  Zwischenspeicher.
+* **Wecker nach der erwarteten Dauer, nicht im Takt.** Nach einer Stunde ohne
+  Antwort ist der Zwischenspeicher weg; ein Wecker alle drei Stunden zahlt den
+  Neuaufbau jedes Mal. Und kurze Weckertexte, die auf ein Rezept verweisen.
+* **Ergebnisse klein halten**: Logs nur bei Rot, Bilder verkleinert, Dateien
+  mit `offset`. Was einmal im Kontext steht, wird bei jeder Antwort mitgelesen,
+  bis die Sitzung verdichtet wird.
+* **Verbundene Dienste, die das Vorhaben nicht braucht, abschalten.** Jede
+  Meldung über verbundene oder getrennte Dienste legt die Werkzeugnamen und
+  Anweisungen aller Server neu in den Kontext (hier 111 000 Token in 95
+  Meldungen); allein 237 der rund 360 Werkzeugnamen gehörten zu einem einzigen
+  Dienst, den das Vorhaben nie benutzt hat.
+
+**Messen vor Vermuten:** Das Werkzeug zählt je Sitzung und lässt sich nach
+jeder Änderung wiederholen.
+
 ### Ein 500 beim Absenden direkt nach dem Hochladen: noch einmal, dieselbe Einreichung
 
 Am 19. Oktober kamen zwölf neue Bildschirmfotos hoch, eine Minute später

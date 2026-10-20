@@ -9,6 +9,48 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.134.1 — 2026-10-20
+
+**Weniger Token je Sitzung**
+
+Vom Gründer: „ich habe das gefühl dass ich aktuell mehr token verbrauche."
+Ausgewertet wurde das Sitzungsprotokoll (990 Antworten, 13 Tage).
+
+### Gemessen
+- **Der Kontext war im Schnitt 411 000 Token groß**, zuletzt 622 000, und jede
+  Antwort liest ihn neu: 58 bis 67 % der Kosten.
+- **22 komplette Neuaufbauten des Zwischenspeichers**, 22 bis 30 % der Kosten:
+  19 nach einer Pause über einer Stunde, 3 nach einem Modellwechsel. Am
+  19. Oktober acht, davon fünf durch Wecker im Abstand von drei Stunden.
+- **Im Kontext lagen 206 000 Token Meldungen**, die niemand lesen muss:
+  Verbundene und getrennte Dienste 111 000, CLAUDE.md fünf Mal neu 34 000,
+  Benachrichtigungen 28 000, Skill-Verzeichnis 22 000, Erinnerung an die
+  Aufgabenliste 20 000.
+- **Nicht die Ursache:** der große Baukasten (nie als Ganzes geladen) und die
+  Länge von CLAUDE.md (ein Zehntel der Länge der Sitzung).
+
+### Geändert
+- **`scripts/token-bericht.py`** wertet eine Sitzung aus: Kontextgröße,
+  Kostenanteile, Neuaufbauten nach Ursache, was mitgelesen wird, und sagt, ob
+  eine neue Sitzung billiger ist.
+- **Regel 5 in `CLAUDE.md`**: eine Sitzung je Auftrag (Übergabe, neu anfangen
+  ab 300 000 Token), ein Modell je Sitzung, Wecker nach der erwarteten Dauer,
+  Ergebnisse klein halten, Aufgabenliste leeren.
+- **`docs/12-auslieferung.md`, Abschnitt 3a**: Nachschau-Rezepte. Ein Wecker
+  trägt zwei Zeilen und nennt ein Rezept, statt zehn Zeilen zu wiederholen.
+- **`scripts/bild-klein.sh`** verkleinert Bilder zum Ansehen auf 1000 Pixel
+  Höhe (ein Viertel der Kosten, 360 auf 52 KB).
+- **`CLAUDE.md` 24,8 auf 21,9 KB**: Vorgeschichte (Umbenennung, GitHub Pages,
+  Baukasten in andere Vorhaben, Gruppen der CI) wortgleich nach
+  `docs/14-arbeitsweise-hintergrund.md`; die Regeln selbst sind unverändert.
+- Erledigte Aufgaben gelöscht: Die Erinnerung daran kam 126 Mal.
+
+### Nicht gemacht
+- Die **Anbindungen** (Vercel, CoinMarketCap, Cloudflare, Claude Docs) lassen
+  sich nur in claude.ai abschalten, nicht aus dem Repository.
+
+---
+
 ## 0.134.0 — 2026-10-19
 
 **Neue Bilder für den App Store, und die Startseite sagt in drei Sätzen,
