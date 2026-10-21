@@ -10,10 +10,10 @@ import ImageIO
 /// „verbessert" Ziffern zu Wörtern), Deutsch und Englisch.
 func erkenne(_ datei: URL, ausschnitt: [Double]? = nil) throws -> [RecognizedLine] {
     guard let quelle = CGImageSourceCreateWithURL(datei as CFURL, nil),
-          let bild = CGImageSourceCreateImageAtIndex(quelle, 0, nil) else {
+          let original = CGImageSourceCreateImageAtIndex(quelle, 0, nil) else {
         throw NSError(domain: "KameraMessen", code: 1, userInfo: [NSLocalizedDescriptionKey: "Bild nicht lesbar: \(datei.path)"])
     }
-    var bild = bild
+    var bild = original
     // Der Rahmen aus dem Sucher: Vision liest dann nur das Display, nicht das Typenschild.
     if let a = ausschnitt, a.count == 4 {
         let b = Double(bild.width), h = Double(bild.height)

@@ -9,6 +9,21 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.137.1 — 2026-10-21
+
+**Kamera: Übersetzungsfehler im Rahmen-Modus behoben**
+
+### Behoben
+- **`kamera-messen --ausschnitt` übersetzte nicht.** Im Vision-Teil stand `var bild = bild`
+  im selben Gültigkeitsbereich wie das `guard let bild`: „invalid redeclaration". Der
+  Teil steht hinter `#if canImport(Vision)` und lässt sich unter Linux nicht
+  übersetzen; `kamera.yml` hat es nach 41 Sekunden gemeldet, ohne dass eine Stunde
+  CI nötig war. Die Messung des Rahmen-Modus steht damit weiter aus.
+
+_319 Tests in PulseCore, alle grün; unverändert._
+
+---
+
 ## 0.137.0 — 2026-10-21
 
 **Kamera: die erste Zahl von Vision, und ein Rahmen-Modus, der Stufe 2 prüft**
