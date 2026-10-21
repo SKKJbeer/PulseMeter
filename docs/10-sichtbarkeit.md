@@ -307,6 +307,13 @@ Menschen; wer drei Seiten liest, zählt dreimal. Das ist der Preis, und er ist
 richtig: Ein „Besucher" ließe sich nur mit einer Kennung zählen, und dann
 wäre das Versprechen auf der Startseite falsch.
 
+**404 in drei Fächern (seit 0.135.1).** Am 19. Oktober waren 1272 von 1551
+gezählten Aufrufen Adressen, die es nicht gibt: überwiegend Suchläufe nach
+Schwachstellen. Der Bericht trennt sie jetzt: „404: Suchlauf", „404: /name"
+(gebaut wie unsere Seiten, vielleicht ein kaputter Verweis, nur dieser Name wird
+gespeichert) und „404: sonst". **Nur ein wiederkehrendes „404: /name" verlangt
+eine Handlung**: Weiterleitung anlegen oder den Verweis dort ändern, wo er steht.
+
 `?von=` ist für Verweise, die wir selbst streuen: `…/abschlag-zu-hoch?von=reddit`
 in einem Forenbeitrag zeigt im Bericht, was dieser Beitrag gebracht hat.
 

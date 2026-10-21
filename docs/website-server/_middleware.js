@@ -35,8 +35,24 @@ const BOTS = [
   [/bot|crawl|spider|slurp|preview|facebookexternalhit|curl|wget|python|headless/i, "Bot: andere"],
 ];
 
+// **Ein 404 ist nicht gleich ein 404.** Bis 0.135.1 stand dort nur „404", und
+// im Wochenbericht zählten 1272 von 1551 Aufrufen dazu — ob ein Suchlauf nach
+// `wp-login.php` vorbeikam oder jemand einen kaputten Verweis auf eine unserer
+// Seiten anklickte, war nicht zu unterscheiden. Jetzt drei Fächer:
+//   „404: Suchlauf"  — die Adresse sieht nach einem Scanner aus; der Name wird nicht gespeichert
+//   „404: /name"     — nur Kleinbuchstaben, Ziffern, Bindestrich, höchstens 40 Zeichen:
+//                      wie eine unserer Seiten gebaut, also vielleicht ein kaputter Verweis
+//   „404: sonst"     — alles andere (Punkte, Umlaute, Unterordner, Anhängsel); der Name wird nicht gespeichert
+// Der Name steht also nur dort, wo er eine Seite von uns meinen könnte und
+// nichts Persönliches tragen kann. Die Datenschutzerklärung sagt dasselbe.
+const SUCHLAUF = /\.(php\d?|aspx?|jsp|cgi|env|git|bak|sql|zip|tar|gz|ini|ya?ml|json|log)(\/|$)|wp-|wordpress|xmlrpc|phpmyadmin|cgi-bin|\/(admin|login|config|backup|shell|vendor|actuator|server-status)(\/|$)/i;
+
 export function seite(pfad, status) {
-  if (status === 404) return "404";
+  if (status === 404) {
+    if (SUCHLAUF.test(pfad)) return "404: Suchlauf";
+    const name = pfad.replace(/\.html$/, "").replace(/^\/|\/$/g, "");
+    return /^[a-z0-9-]{1,40}$/.test(name) ? `404: /${name}` : "404: sonst";
+  }
   const p = pfad.replace(/\.html$/, "").replace(/\/index$/, "/").replace(/(.)\/$/, "$1");
   return SEITEN.has(p) ? p : "andere";
 }

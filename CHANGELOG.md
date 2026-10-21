@@ -9,6 +9,44 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.135.1 — 2026-10-21
+
+**Website-Bericht: 404 getrennt von echten Aufrufen**
+
+Der Wochenbericht vom 19. Oktober nannte 1551 Seitenaufrufe. 1272 davon waren
+Aufrufe von Adressen, die es nicht gibt, also gut vier Fünftel; echte Seiten
+bekamen 279. Die Spitze von 890 Aufrufen am 14. Oktober, mit Italien, den USA
+und Indien vorn, passt zu Suchläufen nach Schwachstellen (`wp-login.php`,
+`.env`), wie jede neue Adresse sie bekommt, und nicht zu Lesern. Gesagt hat der
+Bericht das nicht, und ob jemand einen kaputten Verweis auf eine unserer Seiten
+anklickte, war aus „404" nicht zu lesen.
+
+### Geändert
+- **Die Zählung unterscheidet bei einem 404 drei Fächer:** „404: Suchlauf"
+  (sieht nach einem Scanner aus), „404: /name" (nur Kleinbuchstaben, Ziffern,
+  Bindestrich, höchstens 40 Zeichen, also gebaut wie unsere Seiten: ein
+  möglicher kaputter Verweis) und „404: sonst". **Der Name wird nur im zweiten
+  Fach gespeichert.** Eine Adresse mit `@`, Punkt, Umlaut, Unterordner oder mehr
+  als 40 Zeichen speichert nichts, auch keine E-Mail-Adresse im Pfad.
+- **Die Datenschutzerklärung sagt das**, im selben Zug (`check-website.mjs` hält
+  sie und die Zählung gegeneinander).
+- **Der Bericht zählt „Seitenaufrufe" ohne 404** und führt diese in einer
+  eigenen Tabelle „Adressen, die es nicht gibt". Woher, Gerät, Land und
+  `?von=` beschreiben ebenfalls nur noch echte Seiten, sonst hätten
+  Suchläufe die Länderliste bestimmt.
+
+### Ungeprüft
+- **Der Bericht gegen Cloudflare:** Hier fehlt der Leseschlüssel; die Abfragen
+  (`NOT LIKE '404%'`) sind nur gegen nachgestellte Antworten gelaufen. Der erste
+  echte Lauf ist der Montagsbericht oder ein Start von Hand.
+- **Alte Zeilen** tragen noch „404" ohne Fach und stehen in der neuen Tabelle
+  als eigene Zeile.
+
+_Website-Prüfung ohne Fehler (alle Prüfungen der Zählung, vier neue für die
+Fächer). `PulseCore` und App unberührt._
+
+---
+
 ## 0.135.0 — 2026-10-20
 
 **Kamera, Vorarbeit: der Leser, die Fotos und der Ablauf im Klick-Dummy**

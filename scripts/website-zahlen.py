@@ -22,6 +22,11 @@ import urllib.request
 
 DATENSATZ = "zaehlora_aufrufe"
 MENSCH = "(blob4 = 'Telefon' OR blob4 = 'Tablet' OR blob4 = 'Rechner')"
+# Ein Aufruf einer Adresse, die es nicht gibt. Getrennt gezählt: Im Bericht vom
+# 19. Oktober waren 1272 von 1551 „Seitenaufrufen" 404 — also vor allem Suchläufe
+# nach Schwachstellen, nicht Menschen auf unseren Seiten.
+FEHL = "blob1 LIKE '404%'"
+SEITE = "blob1 NOT LIKE '404%'"
 
 
 def abfrage(sql):
@@ -51,7 +56,7 @@ def tabelle(titel, kopf, zeilen):
     return "\n".join(teile + [""])
 
 
-def gruppe(spalte, tage, filter_=MENSCH, grenze=15):
+def gruppe(spalte, tage, filter_=f"{MENSCH} AND {SEITE}", grenze=15):
     return abfrage(
         f"SELECT {spalte} AS wert, SUM(_sample_interval) AS anzahl FROM {DATENSATZ} "
         f"WHERE timestamp > NOW() - INTERVAL '{tage}' DAY AND {filter_} "
@@ -67,24 +72,31 @@ def main():
 
     je_tag = abfrage(
         f"SELECT toStartOfInterval(timestamp, INTERVAL '1' DAY) AS tag, SUM(_sample_interval) AS anzahl "
-        f"FROM {DATENSATZ} WHERE timestamp > NOW() - INTERVAL '{tage}' DAY AND {MENSCH} "
+        f"FROM {DATENSATZ} WHERE timestamp > NOW() - INTERVAL '{tage}' DAY AND {MENSCH} AND {SEITE} "
         f"GROUP BY tag ORDER BY tag"
     )
     gesamt = sum(int(z["anzahl"]) for z in je_tag)
+    fehl = gruppe("blob1", tage, f"{MENSCH} AND {FEHL}", grenze=15)
     zahl = lambda z: int(z["anzahl"])  # noqa: E731
+    fehlaufrufe = sum(zahl(z) for z in fehl)
 
     teile = [
         f"## Website: {gesamt} Seitenaufrufe in {tage} Tagen",
         "",
-        "Gezählt ohne Bots. Ein Aufruf ist eine geladene Seite, kein Mensch: "
+        "Gezählt ohne Bots und ohne Aufrufe von Adressen, die es nicht gibt "
+        f"(dazu unten: {fehlaufrufe}). Ein Aufruf ist eine geladene Seite, kein Mensch: "
         "Wer drei Seiten ansieht, zählt dreimal.",
         "",
         tabelle("Je Tag", ["Tag", "Aufrufe"], ((z["tag"][:10], zahl(z)) for z in je_tag)),
-        tabelle("Je Seite", ["Seite", "Aufrufe"], ((z["wert"], zahl(z)) for z in gruppe("blob1", tage))),
+        tabelle("Je Seite", ["Seite", "Aufrufe"],
+                ((z["wert"], zahl(z)) for z in gruppe("blob1", tage))),
+        # „404: /name" ist ein möglicher kaputter Verweis auf eine Seite von uns,
+        # „404: Suchlauf" ein Scanner. Nur der erste Fall verlangt eine Handlung.
+        tabelle("Adressen, die es nicht gibt", ["Art", "Aufrufe"], ((z["wert"], zahl(z)) for z in fehl)),
         tabelle("Woher", ["Herkunft", "Aufrufe"], ((z["wert"], zahl(z)) for z in gruppe("blob2", tage))),
         tabelle("Selbst gesetzte Quelle (?von=)", ["Quelle", "Aufrufe"],
-                ((z["wert"], zahl(z)) for z in gruppe("blob5", tage, f"{MENSCH} AND blob5 != ''"))),
-        tabelle("Gerät", ["Gerät", "Aufrufe"], ((z["wert"], zahl(z)) for z in gruppe("blob4", tage, "1 = 1"))),
+                ((z["wert"], zahl(z)) for z in gruppe("blob5", tage, f"{MENSCH} AND {SEITE} AND blob5 != ''"))),
+        tabelle("Gerät", ["Gerät", "Aufrufe"], ((z["wert"], zahl(z)) for z in gruppe("blob4", tage, SEITE))),
         tabelle("Land", ["Land", "Aufrufe"], ((z["wert"] or "unbekannt", zahl(z)) for z in gruppe("blob3", tage, grenze=8))),
     ]
     bericht = "\n".join(teile)

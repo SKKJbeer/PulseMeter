@@ -1286,8 +1286,20 @@ console.log("\nZählung");
        "Die Seite kommt unverändert an, mit den Sicherheitsangaben");
 
   note((await aufruf({ pfad: "/stil.css", art: "text/css" })).punkte.length === 0, "Stylesheet wird nicht gezählt");
-  note((await aufruf({ pfad: "/wp-login.php", status: 404 })).punkte[0].blobs[0] === "404",
-       "Eine unbekannte Adresse zählt als 404, nicht mit ihrem Namen");
+  // 404: Der Name wird nur gespeichert, wenn er wie eine unserer Seiten gebaut
+  // ist und nichts Persönliches tragen kann (0.135.1).
+  const fehl = async pfad => (await aufruf({ pfad, status: 404 })).punkte[0].blobs[0];
+  note(await fehl("/wp-login.php") === "404: Suchlauf" && await fehl("/.env") === "404: Suchlauf"
+       && await fehl("/admin/") === "404: Suchlauf" && await fehl("/cgi-bin/x") === "404: Suchlauf",
+       "Ein Suchlauf nach bekannten Schwachstellen zählt als „404: Suchlauf“, nicht mit seinem Namen");
+  note(await fehl("/zaehlerstand-ablesenn") === "404: /zaehlerstand-ablesenn" && await fehl("/ratgeber-alt.html") === "404: /ratgeber-alt",
+       "Eine Adresse, gebaut wie unsere, zählt mit ihrem Namen: Das ist ein möglicher kaputter Verweis");
+  note(await fehl("/robots.txt") === "404: sonst" && await fehl("/anna.mueller@web.de") === "404: sonst"
+       && await fehl("/a/b") === "404: sonst" && await fehl("/Über-uns") === "404: sonst"
+       && await fehl("/" + "a".repeat(41)) === "404: sonst",
+       "Alles andere, auch eine Adresse mit @, Punkt, Umlaut, Unterordner oder über 40 Zeichen, zählt nur als „404: sonst“");
+  note(!JSON.stringify((await aufruf({ pfad: "/anna.mueller@web.de", status: 404 })).punkte).includes("anna"),
+       "Ein 404 mit einer E-Mail-Adresse im Pfad speichert sie nicht");
   note((await aufruf({ pfad: "/irgendwas" })).punkte[0].blobs[0] === "andere", "Eine fremde Seite zählt als „andere“");
   note((await aufruf({ pfad: "/datenschutz.html" })).punkte[0].blobs[0] === "/datenschutz", "„.html“ und ohne zählen gleich");
   note((await aufruf({ pfad: "/?von=Reddit_Forum!" })).punkte[0].blobs[4] === "redditforum",
