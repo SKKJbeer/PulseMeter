@@ -9,6 +9,50 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.137.0 — 2026-10-21
+
+**Kamera: die erste Zahl von Vision, und ein Rahmen-Modus, der Stufe 2 prüft**
+
+Der Vision-Aufruf aus 0.136.1 übersetzt und läuft. Auf dem ganzen Foto (macOS 15.7,
+GitHub-Läufer): **erste Ablesung 1 richtig, 14 nichts, 0 falsch; zweite Ablesung
+1 richtig, 1 teilweise, 13 nichts, 0 falsch.** Was Vision dabei gelesen hat, steht in
+`docs/kamera/vision-gelesen.json`.
+
+### Hinzugefügt
+- **`kamera-messen --ausschnitt`:** liest nur den Rahmen um das Display, wie ihn ein
+  Nutzer im Sucher setzte (Stufe 2). Die Rahmen stehen in `fotos.json` (`ausschnitt`),
+  für neun Fotos, von Hand gesetzt. `kamera.yml` misst beide Modi.
+- **Urteil „teilweise"** im Werkzeug: Die Vorkommastellen stimmen, es fehlen nur die
+  roten Stellen, und der Vorschlag sagt das. Der Siemens-Rollenzähler
+  (`65521` statt 65.521,9) wurde vorher als „falsch" gezählt. Das war er nicht: Die
+  Oberfläche fragt dann nach der roten Stelle.
+- **`MeterTextReaderVisionTests`:** Der Leser an dem, was Vision wirklich gelesen
+  hat, nicht an nachgebildeten Texten. Gehalten wird eine Regel, kein falscher
+  Vorschlag, auch ohne Mac, bei jeder Änderung am Leser.
+
+### Geändert
+- **Der Vision-Schritt ist aus `ci.yml` raus.** Er stand dort mit
+  `continue-on-error` und meldete „success", obwohl er nicht übersetzte; `kamera.yml`
+  deckt ihn ab, mit eigenen Pfaden und fünf Minuten statt einer Stunde.
+
+### Gemessen
+- **Vision liest Rollen mit Sicherheit 1,0, Siebensegment mit 0,3.** `9023 kWh`,
+  `14426` und `00047,3 6 65` sind richtig gelesen, `1935**` statt `1936` ist falsch,
+  **alle vier mit 0,3.** Die Sicherheit trennt Richtiges nicht von Falschem; die
+  Schwelle hält die falsche Ziffer heraus, die richtigen mit.
+- **Stufe 1 (ein Foto aus der Hand) trägt damit Rollenzähler, nicht LCD.** Für LCD
+  braucht es Stufe 2: einen Rahmen um das Display und mehrere Bilder hintereinander.
+  Ob der Rahmen allein reicht, zeigt der erste Lauf von `--ausschnitt`.
+
+### Ungeprüft
+- **Vision auf einem iPhone.** Gemessen ist auf einem macOS-15-Läufer; die Engine
+  ist dieselbe Familie, die Ergebnisse müssen nicht gleich sein. Die Nachprüfung am
+  Gerät ist Sache der TestFlight-Fassung.
+
+_319 Tests in PulseCore, alle grün (3 neu, an echten Vision-Texten)._
+
+---
+
 ## 0.136.1 — 2026-10-21
 
 **Kamera: Der Vision-Aufruf übersetzt jetzt, und es gibt eine Schleife in fünf Minuten**

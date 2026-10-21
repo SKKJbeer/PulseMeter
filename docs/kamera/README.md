@@ -10,8 +10,9 @@ und womit sie geprüft wird.
 | Datei | Was |
 |---|---|
 | `fotos/` | 15 Zählerfotos von Wikimedia Commons, frei lizenziert, verkleinert auf 900 Pixel Breite |
-| `fotos.json` | je Foto: Quelle, Urheber, Lizenz, **Soll-Stand** (von Hand abgelesen), Stellen des Zählwerks, was die Falle ist |
-| `vektoren.json` | 26 Fälle für den Leser, die Swift und der Klick-Dummy beide bestehen müssen |
+| `fotos.json` | je Foto: Quelle, Urheber, Lizenz, **Soll-Stand** (von Hand abgelesen), Stellen des Zählwerks, was die Falle ist, bei lesbaren Anzeigen der Rahmen um das Display (`ausschnitt`) |
+| `vektoren.json` | 30 Fälle für den Leser, die Swift und der Klick-Dummy beide bestehen müssen |
+| `vision-gelesen.json` | was Vision auf den Fotos wirklich gelesen hat (macOS-Läufer, 21.10.2026); `MeterTextReaderVisionTests` liest sie |
 
 `scripts/check-kamerafotos.py` bricht ab, wenn bei einem Foto Urheber, Quelle oder
 eine freie Lizenz fehlt oder ein Foto im Ordner liegt, das nicht in `fotos.json`
@@ -58,6 +59,42 @@ Schwäche), **nichts über Vision**. Es sagt aber zwei Dinge über den Entwurf:
   ähnlich ab, braucht Stufe 2 (Sucher mit Rahmen) eine eigene Ziffernerkennung
   für Siebensegment, die mit Bildpunkten arbeitet statt mit Text.
 
+## Gemessen: Vision auf dem ganzen Foto (21. Oktober 2026)
+
+`kamera-messen` auf dem macOS-Läufer von GitHub (macOS 15.7, `VNRecognizeTextRequest`,
+genaue Stufe, ohne Sprachkorrektur). Was Vision je Foto gelesen hat, steht in
+`vision-gelesen.json`; `MeterTextReaderVisionTests` hält daran fest, dass der
+Leser nie etwas Falsches vorschlägt, auch ohne Mac.
+
+| | richtig | teilweise | nichts | **falsch** |
+|---|---|---|---|---|
+| Erste Ablesung (ohne Bereich) | 1 | 0 | 14 | **0** |
+| Zweite Ablesung (mit Bereich) | 1 | 1 | 13 | **0** |
+
+*Teilweise:* der Siemens-Rollenzähler, `65521` mit Sicherheit 1,0; die rote 9 liest
+Vision als eigenes Stück mit 0,3. Vorgeschlagen wird die Vorkommazahl mit dem
+Kennzeichen, dass die rote Stelle fehlt.
+
+**Was dahintersteckt**
+
+- **Rollen liest Vision mit Sicherheit 1,0, Siebensegment mit 0,3.** Richtig gelesen
+  sind `9023 kWh` (Aidon), `14426` (Kamstrup, mit zerlesener Einheit `:uh`), `00047,3 6 65`
+  (Gas); falsch gelesen ist `1935**` statt `1936` (Foto 32). **Alle vier tragen 0,3.**
+  Die Sicherheit trennt also Richtiges nicht von Falschem, und die Schwelle des
+  Lesers hält die falsche Ziffer heraus, die richtigen mit. Das ist gewollt: Eine
+  falsche Ziffer ist schlimmer als keine.
+- **Ein ganzes Foto aus der Hand liest bei LCD-Zählern fast nichts.** Von 9 Fotos mit
+  Stand wird eines ganz und eines teilweise vorgeschlagen. Stufe 1 trägt damit
+  Rollenzähler und große Ziffern, nicht die LCD-Zähler, die in Deutschland am
+  häufigsten hängen.
+- **Das Datum im Display (Foto 01) liest Vision als `270822` mit 0,5**, ohne die
+  Doppelpunkte, die Tesseract noch sah. Es bleibt trotzdem draußen: ohne Einheit,
+  ohne Komma, ohne führende Null.
+- **Der Weg zu LCD-Zählern ist Stufe 2**: ein Rahmen um das Display (der Sucher), und
+  mehrere Bilder hintereinander. Dieselbe Zahl in drei Bildern ist ein stärkeres
+  Zeichen als eine Sicherheit von 0,3 in einem. Ob der Rahmen allein schon reicht,
+  misst `--ausschnitt`.
+
 ## Die Regeln des Lesers (`MeterTextReader`)
 
 Eingabe ist der Text, den die Texterkennung geliefert hat, dazu die Stellen des
@@ -92,16 +129,12 @@ Steht ein Siemens-Zähler mit 5+1 Stellen auf der Voreinstellung 6+2, wird aus
 der Bereich. Die Kamera sollte deshalb bei der ersten Ablesung die Stellenzahl
 mit dem Foto vergleichen und nachfragen, wenn die Ziffernzahl nicht passt.
 
-## Was noch fehlt (Stand 0.136.0)
+## Was noch fehlt (Stand 0.137.0)
 
-- **Die Messung mit Vision hat ein Werkzeug (0.136.0), aber noch keine Zahl.**
-  `swift run --package-path Packages/KameraMessung kamera-messen` (Optionen im
-  Kopf von `main.swift`) schickt jedes Foto durch `VNRecognizeTextRequest`, lässt
-  den Leser darüber laufen und zählt je Foto richtig, nichts oder falsch, einmal
-  ohne und einmal mit Bereich. Es läuft in der CI auf dem Mac-Läufer; die Zahlen
-  stehen in der Zusammenfassung des Laufs (schnell: `kamera.yml`, fünf Minuten). **Ziel für Stufe 1: kein falscher
-  Vorschlag.** Lieber 3 von 9 richtig und 6 ohne Vorschlag als 7 richtig und
-  einer falsch. Die Ausgangszahl steht hier, sobald der erste Lauf da ist.
+- **Vision auf dem Rahmen um das Display** (`kamera-messen --ausschnitt`): läuft in
+  `kamera.yml`, die Zahl steht hier, sobald der Lauf durch ist. Sie entscheidet, ob
+  Stufe 2 (Sucher mit Rahmen) die LCD-Zähler trägt oder eine eigene
+  Ziffernerkennung für Siebensegment nötig ist.
 - Die Oberfläche in der App (Knopf im Ziffernblock, Kamera, Berechtigung). Der
   Klick-Dummy zeigt den Ablauf schon; dort ist die Texterkennung nachgestellt.
 - Die Datenschutzerklärung und der Berechtigungstext für die Kamera, vor der

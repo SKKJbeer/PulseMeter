@@ -1,5 +1,5 @@
 {
- "hinweis": "Fremde Fotos von Wikimedia Commons, nur als Prüfmaterial, nicht Teil der App. Urheber und Lizenz je Foto. Soll-Stand von Hand abgelesen; null heißt: Eine Erkennung soll nichts vorschlagen.",
+ "hinweis": "Fremde Fotos von Wikimedia Commons, nur als Prüfmaterial, nicht Teil der App. Urheber und Lizenz je Foto. Soll-Stand von Hand abgelesen; null heißt: Eine Erkennung soll nichts vorschlagen. „ausschnitt“ ist der Rahmen um das Display als Bruchteile [links, oben, rechts, unten], von Hand gesetzt, wie ihn ein Nutzer im Sucher setzte (Stufe 2); nur bei Fotos mit ablesbarer Anzeige.",
  "fotos": [
   {
    "datei": "fotos/01-landis-datum.jpg",
@@ -23,7 +23,13 @@
    "quelle": "https://commons.wikimedia.org/wiki/File:Electronic_elecricity_meter_IMG_6895.JPG",
    "titel": "Electronic elecricity meter IMG 6895.JPG",
    "urheber": "Gegik",
-   "lizenz": "CC BY-SA 3.0"
+   "lizenz": "CC BY-SA 3.0",
+   "ausschnitt": [
+    0.3,
+    0.09,
+    0.7,
+    0.18
+   ]
   },
   {
    "datei": "fotos/04-logarex-nullen.jpg",
@@ -35,7 +41,13 @@
    "quelle": "https://commons.wikimedia.org/wiki/File:Logarex_smart_household_electricity_meter_build_year_2023.jpg",
    "titel": "Logarex smart household electricity meter build year 2023.jpg",
    "urheber": "RobbieIanMorrison",
-   "lizenz": "CC BY 4.0"
+   "lizenz": "CC BY 4.0",
+   "ausschnitt": [
+    0.3,
+    0.11,
+    0.66,
+    0.22
+   ]
   },
   {
    "datei": "fotos/06-logarex-leer.jpg",
@@ -59,7 +71,13 @@
    "quelle": "https://commons.wikimedia.org/wiki/File:Siemens_household_electricity_meter_electromechanical_induction_type.jpg",
    "titel": "Siemens household electricity meter electromechanical induction type.jpg",
    "urheber": "RobbieIanMorrison",
-   "lizenz": "CC BY 4.0"
+   "lizenz": "CC BY 4.0",
+   "ausschnitt": [
+    0.5,
+    0.17,
+    0.82,
+    0.26
+   ]
   },
   {
    "datei": "fotos/11-metrix-gas.jpg",
@@ -71,7 +89,13 @@
    "quelle": "https://commons.wikimedia.org/wiki/File:20190918_192129_Gas_meter_in_Lodz,_Poland_2019.jpg",
    "titel": "20190918 192129 Gas meter in Lodz, Poland 2019.jpg",
    "urheber": "Rakoon",
-   "lizenz": "CC0"
+   "lizenz": "CC0",
+   "ausschnitt": [
+    0.26,
+    0.44,
+    0.74,
+    0.53
+   ]
   },
   {
    "datei": "fotos/13-gas-zeiger-1.jpg",
@@ -119,7 +143,13 @@
    "quelle": "https://commons.wikimedia.org/wiki/File:2024-SmartMeter.jpg",
    "titel": "2024-SmartMeter.jpg",
    "urheber": "Achimsh",
-   "lizenz": "CC BY-SA 4.0"
+   "lizenz": "CC BY-SA 4.0",
+   "ausschnitt": [
+    0.32,
+    0.13,
+    0.7,
+    0.25
+   ]
   },
   {
    "datei": "fotos/27-meterus.jpg",
@@ -131,7 +161,13 @@
    "quelle": "https://commons.wikimedia.org/wiki/File:Intelligenter_zaehler-_Smart_meter.jpg",
    "titel": "Intelligenter zaehler- Smart meter.jpg",
    "urheber": "EVB Energy Ltd",
-   "lizenz": "CC BY-SA 3.0"
+   "lizenz": "CC BY-SA 3.0",
+   "ausschnitt": [
+    0.38,
+    0.04,
+    0.78,
+    0.2
+   ]
   },
   {
    "datei": "fotos/28-openway.jpg",
@@ -143,7 +179,13 @@
    "quelle": "https://commons.wikimedia.org/wiki/File:Itron_OpenWay_Electricity_Meter_with_Two-Way_Communications.JPG",
    "titel": "Itron OpenWay Electricity Meter with Two-Way Communications.JPG",
    "urheber": "Dwight Burdette",
-   "lizenz": "CC BY 3.0"
+   "lizenz": "CC BY 3.0",
+   "ausschnitt": [
+    0.3,
+    0.43,
+    0.66,
+    0.55
+   ]
   },
   {
    "datei": "fotos/29-kamstrup.jpg",
@@ -155,7 +197,13 @@
    "quelle": "https://commons.wikimedia.org/wiki/File:Kamstrup_Electricity_meter_382.jpg",
    "titel": "Kamstrup Electricity meter 382.jpg",
    "urheber": "Gert Skriver",
-   "lizenz": "CC BY 3.0"
+   "lizenz": "CC BY 3.0",
+   "ausschnitt": [
+    0.2,
+    0.13,
+    0.64,
+    0.27
+   ]
   },
   {
    "datei": "fotos/32-gruenes-display.jpg",
@@ -167,7 +215,13 @@
    "quelle": "https://commons.wikimedia.org/wiki/File:Smart_Electrical_Meter.jpg",
    "titel": "Smart Electrical Meter.jpg",
    "urheber": "Aliva Sahoo",
-   "lizenz": "CC BY-SA 4.0"
+   "lizenz": "CC BY-SA 4.0",
+   "ausschnitt": [
+    0.38,
+    0.33,
+    0.64,
+    0.43
+   ]
   },
   {
    "datei": "fotos/43-badger-halbe-ziffer.jpg",

@@ -48,6 +48,12 @@ def main() -> int:
                 Decimal(f["stand"])
             except InvalidOperation:
                 fehler.append(f"{name}: Stand „{f['stand']}“ ist keine Zahl")
+        a = f.get("ausschnitt")
+        if a is not None and not (len(a) == 4 and all(isinstance(x, (int, float)) and 0 <= x <= 1 for x in a)
+                                  and a[0] < a[2] and a[1] < a[3]):
+            fehler.append(f"{name}: ausschnitt muss [links, oben, rechts, unten] als Bruchteile sein")
+        if a is not None and f.get("stand") is None:
+            fehler.append(f"{name}: ein Rahmen nur bei Fotos mit ablesbarem Stand")
         for feld in ("vorkommastellen", "nachkommastellen"):
             if not isinstance(f.get(feld), int):
                 fehler.append(f"{name}: {feld} fehlt")

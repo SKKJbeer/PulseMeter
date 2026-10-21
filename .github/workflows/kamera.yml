@@ -27,5 +27,9 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - name: Vision an den Zählerfotos
+      # Ganzes Foto: so liest Stufe 1, ein Foto aus der Hand.
+      - name: Vision, ganzes Foto
         run: swift run --package-path Packages/KameraMessung kamera-messen --zeige
+      # Nur der Rahmen um das Display: so läse Stufe 2 (Sucher mit Rahmen).
+      - name: Vision, nur der Rahmen um das Display
+        run: swift run --package-path Packages/KameraMessung kamera-messen --zeige --ausschnitt

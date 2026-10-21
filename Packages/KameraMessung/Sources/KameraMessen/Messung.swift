@@ -9,6 +9,9 @@ struct Foto: Decodable {
     let stand: String?
     let vorkommastellen: Int
     let nachkommastellen: Int
+    /// Rahmen um das Display als Bruchteile [links, oben, rechts, unten], wie ihn ein
+    /// Nutzer im Sucher setzte (Stufe 2). Nur bei Fotos mit ablesbarer Anzeige.
+    let ausschnitt: [Double]?
 
     var soll: Decimal? { stand.flatMap { Decimal(string: $0, locale: Locale(identifier: "en_US_POSIX")) } }
     var format: MeterFormat { MeterFormat(integerDigits: vorkommastellen, fractionDigits: nachkommastellen) }
@@ -18,16 +21,32 @@ struct Foto: Decodable {
 struct Sammlung: Decodable { let fotos: [Foto] }
 
 enum Urteil: String {
-    case richtig, nichts, falsch
+    /// Der Soll-Stand, ganz.
+    case richtig
+    /// Die Vorkommastellen stimmen, es fehlen nur die roten Stellen, und der
+    /// Vorschlag sagt das (`fractionMissing`): Die Oberfläche fragt dann nach.
+    case teilweise
+    case nichts
+    /// Eine andere Zahl als der Soll-Stand, oder eine, wo keine stehen soll.
+    case falsch
 }
 
 /// **Falsch ist, was schlimmer ist als nichts.** Ein Vorschlag, der nicht dem
 /// Soll-Stand entspricht, ist falsch, und ebenso einer bei einem Foto, auf dem
-/// keiner stehen soll (leeres Display, Datum, Zeiger).
+/// keiner stehen soll (leeres Display, Datum, Zeiger). Ausnahme „teilweise": Nur
+/// die roten Nachkommastellen fehlen und der Vorschlag meldet es.
 func urteil(_ ergebnis: MeterTextReader.Outcome, soll: Decimal?) -> Urteil {
     switch ergebnis {
     case .none: return .nichts
-    case .proposal(let vorschlag): return soll != nil && vorschlag.value == soll ? .richtig : .falsch
+    case .proposal(let vorschlag):
+        guard var soll else { return .falsch }
+        if vorschlag.value == soll { return .richtig }
+        if vorschlag.fractionMissing {
+            var ganz = Decimal()
+            NSDecimalRound(&ganz, &soll, 0, .down)
+            if vorschlag.value == ganz { return .teilweise }
+        }
+        return .falsch
     }
 }
 
@@ -79,7 +98,7 @@ func bericht(_ zeilen: [Zeile], mitTexten: Bool) -> String {
     }
     func summe(_ nimm: (Zeile) -> Urteil) -> String {
         let u = zeilen.map(nimm)
-        return "\(u.filter { $0 == .richtig }.count) richtig, \(u.filter { $0 == .nichts }.count) nichts, \(u.filter { $0 == .falsch }.count) FALSCH"
+        return "\(u.filter { $0 == .richtig }.count) richtig, \(u.filter { $0 == .teilweise }.count) teilweise, \(u.filter { $0 == .nichts }.count) nichts, \(u.filter { $0 == .falsch }.count) FALSCH"
     }
     let ablesbar = zeilen.filter { $0.foto.stand != nil }.count
     out.append("")

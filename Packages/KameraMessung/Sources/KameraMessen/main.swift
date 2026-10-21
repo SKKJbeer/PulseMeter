@@ -4,6 +4,7 @@ import PulseCore
 // Aufruf (aus dem Hauptverzeichnis):
 //   swift run --package-path Packages/KameraMessung kamera-messen            # Vision, nur auf einem Mac
 //   ... kamera-messen --texte gelesen.json                                     # gelesene Texte aus einer Datei
+//   ... kamera-messen --ausschnitt                                            # nur den Rahmen um das Display lesen (Stufe 2)
 //   ... kamera-messen --zeige                                                  # dazu die gelesenen Texte je Foto
 //   ... kamera-messen --streng                                                 # Ausstieg 1, wenn irgendwo ein falscher Vorschlag steht
 //
@@ -12,6 +13,7 @@ import PulseCore
 let argumente = Array(CommandLine.arguments.dropFirst())
 let streng = argumente.contains("--streng")
 let zeige = argumente.contains("--zeige")
+let mitAusschnitt = argumente.contains("--ausschnitt")
 
 func wert(nach schalter: String) -> String? {
     guard let i = argumente.firstIndex(of: schalter), i + 1 < argumente.count else { return nil }
@@ -43,7 +45,7 @@ if let pfad = wert(nach: "--texte") {
 var zeilen: [Zeile] = []
 for foto in sammlung.fotos {
     do {
-        let texte = try vorgegeben?[foto.name] ?? erkenne(wurzel.appendingPathComponent(foto.datei))
+        let texte = try vorgegeben?[foto.name] ?? erkenne(wurzel.appendingPathComponent(foto.datei), ausschnitt: mitAusschnitt ? foto.ausschnitt : nil)
         zeilen.append(auswerten(foto, texte: texte))
     } catch {
         FileHandle.standardError.write(Data("\(foto.name): \(error.localizedDescription)\n".utf8))
@@ -57,7 +59,7 @@ print(text)
 if let ziel = ProcessInfo.processInfo.environment["GITHUB_STEP_SUMMARY"],
    let handle = FileHandle(forWritingAtPath: ziel) {
     handle.seekToEndOfFile()
-    handle.write(Data(("### Kamera: Texterkennung an den Zählerfotos\n\n```\n" + text + "\n```\n").utf8))
+    handle.write(Data(("### Kamera: Texterkennung an den Zählerfotos" + (mitAusschnitt ? " (nur der Rahmen um das Display)" : " (ganzes Foto)") + "\n\n```\n" + text + "\n```\n").utf8))
     try? handle.close()
 }
 exit(streng && hatFalsche(zeilen) ? 1 : 0)
