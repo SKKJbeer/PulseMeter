@@ -25,7 +25,7 @@ guard let daten = try? Data(contentsOf: wurzel.appendingPathComponent("fotos.jso
     exit(2)
 }
 
-var vorgegeben: [String: [RecognizedText]]?
+var vorgegeben: [String: [RecognizedLine]]?
 if let pfad = wert(nach: "--texte") {
     guard let d = try? Data(contentsOf: URL(fileURLWithPath: pfad)),
           let roh = try? JSONSerialization.jsonObject(with: d) as? [String: [[Any]]] else {
@@ -33,7 +33,7 @@ if let pfad = wert(nach: "--texte") {
     }
     vorgegeben = roh.mapValues { $0.compactMap { p in
         guard p.count == 2, let t = p[0] as? String, let c = (p[1] as? NSNumber)?.doubleValue else { return nil }
-        return RecognizedText(t, confidence: c)
+        return RecognizedLine(t, confidence: c)
     } }
 } else if !visionVerfuegbar {
     FileHandle.standardError.write(Data("Vision gibt es nur auf einem Apple-Gerät. Mit --texte <datei> lässt sich der Rest prüfen.\n".utf8))

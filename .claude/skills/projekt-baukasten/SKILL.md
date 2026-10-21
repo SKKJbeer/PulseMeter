@@ -2740,6 +2740,17 @@ aus Bildern liest.
   die niemand stellt. Und: **Ein Schritt, der unter Linux nicht übersetzbar ist,
   meldet beim ersten Mal nur** (`continue-on-error`, in `pruefen.sh` ohne
   Fehlschlag), sonst färbt ein Tippfehler im Vision-Aufruf den Haken vor dem Push.
+- **`continue-on-error` macht den Schritt grün, nicht heil.** Der Vision-Schritt
+  stand in der Auflistung der Schritte auf „success", und im Protokoll darunter
+  stand ein Übersetzungsfehler. Wer einen Schritt tolerant stellt, damit ein
+  ungeprüfter Teil nichts rot färbt, **liest beim ersten Lauf das Protokoll**, nicht
+  die Auflistung. Und: Das Protokoll eines laufenden Jobs gibt GitHub nicht heraus
+  (404), man wartet auf das Jobende; deshalb eine eigene, kurze Schleife
+  (`kamera.yml`, fünf Minuten statt der Stunde der großen CI) für alles, woran man
+  iteriert. Zweite Lehre aus demselben Fehler: **Ein eigener Typname kollidiert
+  mit dem eines Apple-Rahmens, der später dazukommt.** Vision hat seit macOS 15
+  ein `RecognizedText`; der Name in PulseCore war ein Fehler, der erst auftrat, als
+  beide in einer Datei standen.
 - **Die Swift-Signatur: Der Schlüsselring von swift.org (`all-keys.asc`) kommt
   gzip-komprimiert.** `gunzip` davor, sonst meldet `gpg --import` „no valid
   OpenPGP data found" und die Prüfung sieht aus wie ein Fehler der Signatur.

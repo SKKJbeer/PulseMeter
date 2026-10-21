@@ -99,7 +99,7 @@ mit dem Foto vergleichen und nachfragen, wenn die Ziffernzahl nicht passt.
   Kopf von `main.swift`) schickt jedes Foto durch `VNRecognizeTextRequest`, lässt
   den Leser darüber laufen und zählt je Foto richtig, nichts oder falsch, einmal
   ohne und einmal mit Bereich. Es läuft in der CI auf dem Mac-Läufer; die Zahlen
-  stehen in der Zusammenfassung des Laufs. **Ziel für Stufe 1: kein falscher
+  stehen in der Zusammenfassung des Laufs (schnell: `kamera.yml`, fünf Minuten). **Ziel für Stufe 1: kein falscher
   Vorschlag.** Lieber 3 von 9 richtig und 6 ohne Vorschlag als 7 richtig und
   einer falsch. Die Ausgangszahl steht hier, sobald der erste Lauf da ist.
 - Die Oberfläche in der App (Knopf im Ziffernblock, Kamera, Berechtigung). Der

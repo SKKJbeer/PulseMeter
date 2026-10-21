@@ -9,6 +9,39 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.136.1 — 2026-10-21
+
+**Kamera: Der Vision-Aufruf übersetzt jetzt, und es gibt eine Schleife in fünf Minuten**
+
+Der erste Lauf von `kamera-messen` auf dem Mac-Läufer (CI zu 0.136.0) hat den
+Vision-Teil nicht übersetzt. Das war die eine Stelle, die ich unter Linux nicht
+prüfen konnte, und deshalb stand der Schritt auf „meldet nur".
+
+### Behoben
+- **`RecognizedText` ist in PulseCore jetzt `RecognizedLine`.** Apples Vision-Rahmen
+  hat seit macOS 15 und iOS 18 selbst einen Typ `RecognizedText`; wer Vision und
+  PulseCore zugleich importierte, bekam „is ambiguous for type lookup". Es hätte
+  die Kamera in der App genauso getroffen, nur später und teurer. Der Typ war
+  nirgends in der App benutzt, die Umbenennung kostet fünf Dateien.
+- **Der Schritt in der CI meldete „success", obwohl er nicht übersetzte.** Das ist
+  die Wirkung von `continue-on-error`: Die Schrittzeile in der Auflistung ist
+  grün, der Fehler steht nur im Protokoll. Ohne ins Protokoll zu sehen, hätte die
+  Kamera wochenlang „grün" gewesen sein können, ohne je gelaufen zu sein.
+
+### Hinzugefügt
+- **`.github/workflows/kamera.yml`:** nur `kamera-messen` auf dem Mac-Läufer, fünf
+  Minuten statt der Stunde der großen CI. Läuft bei Änderungen an den Fotos, am
+  Leser und am Messwerkzeug und von Hand; die Tabelle steht in der Zusammenfassung.
+
+### Ungeprüft
+- **Ob der Vision-Aufruf jetzt übersetzt und was er liest:** Das zeigt erst der
+  Lauf von `kamera.yml`. Weitere Übersetzungsfehler im Vision-Teil sind möglich,
+  der Compiler hat zuerst nur den einen gemeldet.
+
+_316 Tests in PulseCore, alle grün. Klick-Dummy und Website unberührt._
+
+---
+
 ## 0.136.0 — 2026-10-21
 
 **Kamera: Messwerkzeug für Vision, und ein Fehler im Leser, den es sofort fand**

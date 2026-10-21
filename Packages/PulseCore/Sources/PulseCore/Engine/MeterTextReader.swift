@@ -1,7 +1,12 @@
 import Foundation
 
 /// Ein Stück Text, wie es die Texterkennung des Telefons aus einem Foto liefert.
-public struct RecognizedText: Hashable, Sendable {
+///
+/// **Nicht `RecognizedText`:** Apples Vision-Rahmen hat seit macOS 15 und iOS 18
+/// einen Typ gleichen Namens, und wer Vision und PulseCore zugleich importiert,
+/// bekommt „is ambiguous for type lookup". Aufgefallen ist es beim ersten Lauf
+/// von `kamera-messen` auf dem Mac-Läufer; der Typ war da noch nirgends in der App.
+public struct RecognizedLine: Hashable, Sendable {
     public var text: String
     /// 0 bis 1, so wie Vision es meldet.
     public var confidence: Double
@@ -96,7 +101,7 @@ public enum MeterTextReader {
     ///     letzter Stand plus großzügiger Verbrauch). `nil` bei der ersten
     ///     Ablesung.
     public static func propose(
-        from texts: [RecognizedText],
+        from texts: [RecognizedLine],
         format: MeterFormat,
         plausible: ClosedRange<Decimal>? = nil
     ) -> Outcome {
@@ -144,7 +149,7 @@ public enum MeterTextReader {
         var fractionMissing: Bool
     }
 
-    static func readCandidates(in item: RecognizedText, format: MeterFormat) -> [Candidate] {
+    static func readCandidates(in item: RecognizedLine, format: MeterFormat) -> [Candidate] {
         var text = item.text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return [] }
 

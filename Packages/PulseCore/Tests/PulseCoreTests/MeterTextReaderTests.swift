@@ -15,7 +15,7 @@ final class MeterTextReaderTests: XCTestCase {
     private let electricNoDecimals = MeterFormat(integerDigits: 6, fractionDigits: 0)
     private let gas = MeterFormat(integerDigits: 5, fractionDigits: 2)
 
-    private func texts(_ items: String...) -> [RecognizedText] { items.map { RecognizedText($0) } }
+    private func texts(_ items: String...) -> [RecognizedLine] { items.map { RecognizedLine($0) } }
 
     private func value(_ outcome: MeterTextReader.Outcome, file: StaticString = #filePath, line: UInt = #line) -> Decimal? {
         if case .proposal(let p) = outcome { return p.value }
@@ -148,7 +148,7 @@ final class MeterTextReaderTests: XCTestCase {
     }
 
     func testSameNumberReadTwiceIsNotAmbiguous() {
-        let outcome = MeterTextReader.propose(from: [RecognizedText("002423", confidence: 0.6), RecognizedText("002423 kWh", confidence: 0.9)],
+        let outcome = MeterTextReader.propose(from: [RecognizedLine("002423", confidence: 0.6), RecognizedLine("002423 kWh", confidence: 0.9)],
                                               format: electricNoDecimals)
         XCTAssertEqual(value(outcome), 2423)
         if case .proposal(let p) = outcome { XCTAssertEqual(p.confidence, 0.9) }
@@ -172,10 +172,10 @@ final class MeterTextReaderTests: XCTestCase {
     }
 
     func testLowRecognitionConfidenceProposesNothing() {
-        let outcome = MeterTextReader.propose(from: [RecognizedText("002423 kWh", confidence: 0.3)],
+        let outcome = MeterTextReader.propose(from: [RecognizedLine("002423 kWh", confidence: 0.3)],
                                               format: electricNoDecimals)
         XCTAssertEqual(outcome, .none(.lowConfidence))
-        let weak = MeterTextReader.propose(from: [RecognizedText("1936", confidence: 0.7)], format: electricNoDecimals,
+        let weak = MeterTextReader.propose(from: [RecognizedLine("1936", confidence: 0.7)], format: electricNoDecimals,
                                            plausible: dec("1900")...dec("2100"))
         XCTAssertEqual(weak, .none(.lowConfidence), "Eine schwache Zahl braucht mehr Sicherheit als eine starke")
     }
@@ -219,7 +219,7 @@ final class MeterTextReaderTests: XCTestCase {
         for c in cases {
             let name = c["name"] as! String
             let items = (c["texte"] as! [[Any]]).map {
-                RecognizedText($0[0] as! String, confidence: ($0[1] as! NSNumber).doubleValue)
+                RecognizedLine($0[0] as! String, confidence: ($0[1] as! NSNumber).doubleValue)
             }
             let f = c["format"] as! [Int]
             let range = (c["bereich"] as? [String]).map { dec($0[0])...dec($0[1]) }

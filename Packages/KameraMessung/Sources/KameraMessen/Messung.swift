@@ -43,7 +43,7 @@ func bereich(soll: Decimal?, format: MeterFormat) -> ClosedRange<Decimal> {
 
 struct Zeile {
     let foto: Foto
-    let texte: [RecognizedText]
+    let texte: [RecognizedLine]
     let erste: MeterTextReader.Outcome
     let zweite: MeterTextReader.Outcome
 
@@ -51,7 +51,7 @@ struct Zeile {
     var zweiteUrteil: Urteil { urteil(zweite, soll: foto.soll) }
 }
 
-func auswerten(_ foto: Foto, texte: [RecognizedText]) -> Zeile {
+func auswerten(_ foto: Foto, texte: [RecognizedLine]) -> Zeile {
     Zeile(
         foto: foto, texte: texte,
         erste: MeterTextReader.propose(from: texte, format: foto.format),

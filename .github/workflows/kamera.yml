@@ -1,0 +1,31 @@
+name: Kamera messen
+
+# **Die schnelle Schleife für die Kamera.** Die große CI braucht eine Stunde, der
+# Vision-Schritt darin 24 Sekunden. Wer am Vision-Aufruf oder am Leser arbeitet,
+# soll die Antwort in fünf Minuten haben, nicht in sechzig. Dieser Ablauf macht
+# nur das: `kamera-messen` auf dem Mac-Läufer, die Tabelle in der Zusammenfassung.
+#
+# Er läuft bei Änderungen an den Fotos, am Leser und am Messwerkzeug, und von
+# Hand. Ein Commit mit „[skip ci]" löst ihn nicht aus; dann von Hand starten.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "Packages/KameraMessung/**"
+      - "Packages/PulseCore/Sources/PulseCore/Engine/MeterTextReader.swift"
+      - "docs/kamera/**"
+      - ".github/workflows/kamera.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  messen:
+    runs-on: macos-15
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Vision an den Zählerfotos
+        run: swift run --package-path Packages/KameraMessung kamera-messen --zeige
