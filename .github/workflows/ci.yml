@@ -236,6 +236,18 @@ jobs:
       - name: PulseData
         run: swift test --package-path Packages/PulseData
 
+      # Vision an den 15 Zählerfotos aus docs/kamera/. Meldet die Zahlen in die
+      # Zusammenfassung des Laufs und bricht nicht ab: Wie gut Vision auf
+      # Siebensegment-Anzeigen liest, ist die offene Frage der Kamera, und die
+      # Antwort kommt von hier, vom Läufer, nicht von einem Mac in der Hand.
+      # Mit `--streng` bräche der Schritt bei jedem falschen Vorschlag.
+      # `continue-on-error`, bis der Schritt einmal gelaufen ist: Der Vision-Aufruf
+      # ist die eine Stelle des Pakets, die unter Linux nicht übersetzt werden
+      # konnte. Danach entfernen, und mit `--streng` zum Tor machen.
+      - name: Kamera, Vision an den Zählerfotos
+        continue-on-error: true
+        run: swift run --package-path Packages/KameraMessung kamera-messen --zeige
+
       # PulseUI ist iOS-only und wird beim App-Build mit übersetzt; ein
       # eigener Testlauf auf macOS ginge nicht.
       - name: XcodeGen

@@ -9,6 +9,54 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.136.0 — 2026-10-21
+
+**Kamera: Messwerkzeug für Vision, und ein Fehler im Leser, den es sofort fand**
+
+Die offene Frage der Kamera ist, wie gut Apples Texterkennung die Zählerfotos
+liest. Dafür gibt es jetzt `Packages/KameraMessung` (`kamera-messen`): Es schickt
+jedes der 15 Fotos aus `docs/kamera/` durch Vision, lässt `MeterTextReader`
+darüber laufen und zählt je Foto **richtig, nichts oder falsch**, einmal wie bei
+der ersten Ablesung (ohne Bereich), einmal wie bei einer zweiten (mit Bereich).
+Es läuft in der CI auf dem Mac-Läufer, die Zahlen stehen in der Zusammenfassung
+des Laufs; ein Mac in der Hand ist nicht nötig.
+
+### Hinzugefügt
+- **`kamera-messen`** mit `--zeige` (dazu die gelesenen Texte je Foto), `--streng`
+  (Ausstieg 1 bei jedem falschen Vorschlag) und `--texte <datei>` (gelesene Texte
+  aus einer Datei statt aus Vision; so läuft alles außer dem Vision-Aufruf auch
+  unter Linux). Das Ziel für Stufe 1 ist **kein** falscher Vorschlag.
+
+### Behoben
+- **Ein Kürzel auf dem Typenschild wurde zur Zahl.** `kamera-messen` meldete beim
+  leeren Display (Foto 06) einen FALSCHEN Vorschlag: Die Materialnummer
+  `B11538` wurde durch die Buchstabenkorrektur (B→8) zu `811538`. Dieselbe
+  Lücke hatte `D12345` oder `Q10006`: Aus dem Buchstaben wurde eine führende Null,
+  und die zählte als Merkmal einer echten Anzeige. Ein repariertes Wort gilt
+  jetzt nur noch mit Einheit (`O02423 kWh`), nie allein wegen seiner Breite.
+  Kein ausgedachter Test hatte das gefunden, die 15 echten Fotos fanden es beim
+  ersten Lauf. Vier neue gemeinsame Fälle (30 statt 26), dazu ein Test in Swift.
+- **Der erste Entwurf des Werkzeugs prüfte zu locker:** Bei Fotos ohne Stand gab
+  es einen Bereich über alle Zahlen, und damit ließ jede Zahl vom Typenschild
+  den Schritt „im Bereich" passieren. Die App hat nach einer Ablesung immer einen
+  engen. Das Werkzeug nimmt jetzt einen engen (12.345 bis 13.845).
+
+### Gemessen
+- **Tesseract, Vergleichswert:** 1 richtig, 14 nichts, **0 falsch** in beiden
+  Modi (vorher 1 falsch in der zweiten). Das ist ein Maß für den Leser mit echtem
+  Rauschen, nicht für Vision.
+
+### Ungeprüft
+- **Der Vision-Aufruf** (`Erkennung.swift`, 15 Zeilen) ist unter Linux nicht
+  übersetzbar und noch nie gelaufen. Deshalb meldet der Schritt in der CI mit
+  `continue-on-error` und in `pruefen.sh` ohne Fehlschlag; beides fällt weg, sobald
+  er einmal gelaufen ist.
+
+_316 Tests in PulseCore, alle grün (23 neu für den Leser). Klick-Dummy und
+Website unverändert grün; 30 gemeinsame Fälle in Swift und JavaScript identisch._
+
+---
+
 ## 0.135.1 — 2026-10-21
 
 **Website-Bericht: 404 getrennt von echten Aufrufen**

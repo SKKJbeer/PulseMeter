@@ -132,8 +132,11 @@ Klick-Dummy. Der Satz „Alle Werte in …" unter der Tabelle im Entwurf ist weg
    Der Leser `MeterTextReader` (PulseCore, 22 Tests), 15 Zählerfotos mit
    Quelle und Soll-Stand und der Ablauf im Klick-Dummy stehen; alles in
    `docs/kamera/`, dort auch Befund und Regeln. **Als Nächstes, in dieser
-   Reihenfolge:** (a) **Vision an den Fotos messen**, auf dem Mac, ein Schritt
-   in `pruefen.sh`, der je Foto „Stand / nichts / falsch" zählt; erst die Zahl
+   Reihenfolge:** (a) **Vision an den Fotos messen:** `kamera-messen`
+   (`Packages/KameraMessung`, 0.136.0) steht und läuft in der CI auf dem
+   Mac-Läufer; die Zahlen stehen in der Zusammenfassung des Laufs, die Zahl in
+   `docs/kamera/README.md` eintragen, dann `continue-on-error` und die Toleranz in
+   `pruefen.sh` entfernen. Der Vision-Aufruf ist **noch nie gelaufen**. Erst die Zahl
    entscheidet, ob Stufe 1 auf LCD-Zählern taugt oder ob eine eigene
    Siebensegment-Erkennung vor Stufe 2 nötig ist. (b) Oberfläche in der App
    (Knopf im Ziffernblock, Kamera, Bereich aus der bestehenden Plausibilität:

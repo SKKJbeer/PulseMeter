@@ -91,8 +91,19 @@ final class MeterTextReaderTests: XCTestCase {
         // Siebensegment-Null und Eins als Buchstaben.
         let outcome = MeterTextReader.propose(from: texts("O02423 kWh"), format: electricNoDecimals)
         XCTAssertEqual(value(outcome), 2423)
-        let outcome2 = MeterTextReader.propose(from: texts("OO2I23"), format: electricNoDecimals)
+        let outcome2 = MeterTextReader.propose(from: texts("OO2I23 kWh"), format: electricNoDecimals)
         XCTAssertEqual(value(outcome2), 2123)
+    }
+
+    /// Ein repariertes Wort ist ein geratenes Wort und zählt nur mit Einheit.
+    /// `kamera-messen` hat das an Foto 06 gefunden: Die Materialnummer
+    /// „B11538" auf dem Typenschild wurde zu 811538, und ein Kürzel wie
+    /// „D12345" wäre über die führende Null zu 12345 geworden.
+    func testRepairedWordNeverBecomesAReadingWithoutUnit() {
+        for plate in ["B11538", "D12345", "Q10006", "O02423", "OO2I23"] {
+            XCTAssertNil(value(MeterTextReader.propose(from: texts(plate), format: electricNoDecimals)), plate)
+        }
+        XCTAssertEqual(value(MeterTextReader.propose(from: texts("O02423 kWh"), format: electricNoDecimals)), 2423)
     }
 
     /// Eine Zahl ohne Einheit und ohne führende Nullen ist nur im erwarteten Bereich glaubwürdig.

@@ -2730,6 +2730,16 @@ aus Bildern liest.
   einem Swift-Test und `check-kamera-js.mjs`, das die JavaScript-Fassung über
   Marken im Klick-Dummy herauslöst. Die erste Gegenüberstellung war sofort
   identisch, und genau deshalb lohnt sie sich: Sie fängt die zweite, die es nicht ist.
+- **Ein Messwerkzeug an den echten Fotos findet, was ausgedachte Tests nicht
+  finden, aber es muss so streng messen wie die App.** `kamera-messen` meldete
+  beim ersten Lauf einen falschen Vorschlag (Typenschild `B11538` wurde durch die
+  Buchstabenkorrektur zu `811538`) und deckte damit auch `D12345` auf, das kein
+  Test enthielt. Zugleich war sein erster Bereich für Fotos ohne Stand so weit,
+  dass jede Zahl hindurchging: Die App hat nach einer Ablesung immer einen engen
+  Bereich, und ein Werkzeug, das lockerer prüft als die App, prüft eine Frage,
+  die niemand stellt. Und: **Ein Schritt, der unter Linux nicht übersetzbar ist,
+  meldet beim ersten Mal nur** (`continue-on-error`, in `pruefen.sh` ohne
+  Fehlschlag), sonst färbt ein Tippfehler im Vision-Aufruf den Haken vor dem Push.
 - **Die Swift-Signatur: Der Schlüsselring von swift.org (`all-keys.asc`) kommt
   gzip-komprimiert.** `gunzip` davor, sonst meldet `gpg --import` „no valid
   OpenPGP data found" und die Prüfung sieht aus wie ein Fehler der Signatur.

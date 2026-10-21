@@ -309,7 +309,7 @@
    "name": "siebensegment-buchstaben-2",
    "texte": [
     [
-     "OO2I23",
+     "OO2I23 kWh",
      1
     ]
    ],
@@ -774,6 +774,89 @@
    "format": [
     6,
     2
+   ],
+   "bereich": null,
+   "erwartet": {
+    "keine": "noCandidate"
+   }
+  },
+  {
+   "name": "materialnummer-mit-buchstabe-wird-nicht-zum-stand",
+   "texte": [
+    [
+     "Mat. B11538",
+     1
+    ],
+    [
+     "B11538",
+     1
+    ],
+    [
+     "1 LOG00 8612 2566",
+     1
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": null,
+   "erwartet": {
+    "keine": "noCandidate"
+   }
+  },
+  {
+   "name": "materialnummer-mit-buchstabe-auch-mit-bereich-nicht",
+   "texte": [
+    [
+     "B11538",
+     1
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": [
+    "2000",
+    "2500"
+   ],
+   "erwartet": {
+    "keine": "outsideRange"
+   }
+  },
+  {
+   "name": "reparierte-zahl-ohne-einheit-ist-nur-schwach",
+   "texte": [
+    [
+     "O02423",
+     1
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": null,
+   "erwartet": {
+    "keine": "noCandidate"
+   }
+  },
+  {
+   "name": "kuerzel-mit-d-davor-wird-nicht-zur-fuehrenden-null",
+   "texte": [
+    [
+     "D12345",
+     1
+    ],
+    [
+     "Q10006",
+     1
+    ]
+   ],
+   "format": [
+    6,
+    0
    ],
    "bereich": null,
    "erwartet": {

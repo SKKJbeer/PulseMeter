@@ -156,6 +156,11 @@ public enum MeterTextReader {
             hasUnit = true
         }
         text = text.trimmingCharacters(in: .whitespaces)
+        // Ein repariertes Wort ist ein geratenes Wort: Es zählt nur mit Einheit.
+        // Sonst würde jedes Kürzel auf einem Typenschild (`D12345`, `B11538`) zu
+        // einer Zahl mit führender Null und damit zu einem Merkmal, das es
+        // nie hatte. Gefunden hat das `kamera-messen` an einem leeren Display.
+        let repaired = fixLookalikes(text) != text
         text = fixLookalikes(text)
 
         // Rollenzählwerke und Siebensegment-Anzeigen kommen oft einzeln:
@@ -179,10 +184,10 @@ public enum MeterTextReader {
 
         guard let parsed = parse(joined, format: format) else { return [] }
         // Stark: so breit wie das Zählwerk oder mit Einheit.
-        let strong = hasUnit || parsed.rawIntegerDigits >= format.integerDigits
+        let strong = hasUnit || (!repaired && parsed.rawIntegerDigits >= format.integerDigits)
         return [Candidate(value: parsed.value, raw: item.text.trimmingCharacters(in: .whitespacesAndNewlines),
                           confidence: item.confidence, strong: strong,
-                          marked: hasUnit || joined.contains(",") || joined.contains(".") || joined.hasPrefix("0"),
+                          marked: hasUnit || joined.contains(",") || joined.contains(".") || (!repaired && joined.hasPrefix("0")),
                           fractionMissing: parsed.fractionMissing && format.fractionDigits > 0)]
     }
 

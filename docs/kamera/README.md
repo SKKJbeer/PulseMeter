@@ -92,14 +92,16 @@ Steht ein Siemens-Zähler mit 5+1 Stellen auf der Voreinstellung 6+2, wird aus
 der Bereich. Die Kamera sollte deshalb bei der ersten Ablesung die Stellenzahl
 mit dem Foto vergleichen und nachfragen, wenn die Ziffernzahl nicht passt.
 
-## Was noch fehlt (Stand 0.135.0)
+## Was noch fehlt (Stand 0.136.0)
 
-- **Messung mit Vision auf dem Mac** an diesen Fotos. Bis dahin ist die
-  Trefferquote unbekannt. `scripts/pruefen.sh` bekommt dafür einen Schritt, der
-  jedes Foto durch `VNRecognizeTextRequest` schickt, den Leser darüber laufen
-  lässt und je Foto „Stand / nichts / **falsch**" zählt. **Ziel für Stufe 1: kein
-  falscher Vorschlag.** Lieber 3 von 9 richtig und 6 ohne Vorschlag als 7 richtig
-  und einer falsch.
+- **Die Messung mit Vision hat ein Werkzeug (0.136.0), aber noch keine Zahl.**
+  `swift run --package-path Packages/KameraMessung kamera-messen` (Optionen im
+  Kopf von `main.swift`) schickt jedes Foto durch `VNRecognizeTextRequest`, lässt
+  den Leser darüber laufen und zählt je Foto richtig, nichts oder falsch, einmal
+  ohne und einmal mit Bereich. Es läuft in der CI auf dem Mac-Läufer; die Zahlen
+  stehen in der Zusammenfassung des Laufs. **Ziel für Stufe 1: kein falscher
+  Vorschlag.** Lieber 3 von 9 richtig und 6 ohne Vorschlag als 7 richtig und
+  einer falsch. Die Ausgangszahl steht hier, sobald der erste Lauf da ist.
 - Die Oberfläche in der App (Knopf im Ziffernblock, Kamera, Berechtigung). Der
   Klick-Dummy zeigt den Ablauf schon; dort ist die Texterkennung nachgestellt.
 - Die Datenschutzerklärung und der Berechtigungstext für die Kamera, vor der

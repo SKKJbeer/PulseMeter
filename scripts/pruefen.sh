@@ -236,6 +236,18 @@ if [ "$SCOPE" = "alles" ] || [ "$SCOPE" = "schnell" ]; then
   fi
   if [ "$APPLE" = "1" ]; then
     run "PulseData" swift test --package-path Packages/PulseData || true
+    # Was die Texterkennung des Telefons auf den Zählerfotos liest und was der
+    # Leser daraus macht. **Meldet nur, und ein Scheitern zählt nicht als
+    # Fehlschlag**, bis der Schritt einmal gelaufen ist: Der Vision-Aufruf ist die
+    # eine Stelle des Pakets, die unter Linux nicht übersetzt werden kann, und ein
+    # Tippfehler dort soll nicht den Haken vor dem Push färben. Mit `--streng`
+    # bräche er bei jedem falschen Vorschlag.
+    if swift run --package-path Packages/KameraMessung kamera-messen > /tmp/pulse-kamera.log 2>&1; then
+      note "Kamera, Vision an den Zählerfotos:"
+      grep -E "Fotos, davon|Ablesung \(" /tmp/pulse-kamera.log | sed 's/^/    /'
+    else
+      note "Kamera: Messung nicht gelaufen (zählt nicht als Fehlschlag), Protokoll /tmp/pulse-kamera.log"
+    fi
   else
     note "PulseData übersprungen — SwiftData gibt es nur auf einer Apple-Plattform."
   fi
