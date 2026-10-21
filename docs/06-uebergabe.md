@@ -128,22 +128,23 @@ Klick-Dummy. Der Satz „Alle Werte in …" unter der Tabelle im Entwurf ist weg
 
 ### Als Nächstes
 
-0. **Kamera, Stufe 1 (1.6, geplant 18.11.): Vorarbeit fertig in 0.135.0.**
-   Der Leser `MeterTextReader` (PulseCore, 22 Tests), 15 Zählerfotos mit
-   Quelle und Soll-Stand und der Ablauf im Klick-Dummy stehen; alles in
-   `docs/kamera/`, dort auch Befund und Regeln. **Als Nächstes, in dieser
-   Reihenfolge:** (a) **Vision an den Fotos messen:** `kamera-messen`
-   (`Packages/KameraMessung`, 0.136.0) steht und läuft in der CI auf dem
-   Mac-Läufer; die Zahlen stehen in der Zusammenfassung des Laufs, die Zahl in
-   `docs/kamera/README.md` eintragen, dann `continue-on-error` und die Toleranz in
-   `pruefen.sh` entfernen. Der Vision-Aufruf ist **noch nie gelaufen**. Erst die Zahl
-   entscheidet, ob Stufe 1 auf LCD-Zählern taugt oder ob eine eigene
-   Siebensegment-Erkennung vor Stufe 2 nötig ist. (b) Oberfläche in der App
-   (Knopf im Ziffernblock, Kamera, Bereich aus der bestehenden Plausibilität:
-   letzter Stand bis das Vierfache des üblichen Verbrauchs). (c) Datenschutz
-   und Berechtigungstext, vor der ersten Fassung mit Kamera. **Ungeprüft:** Was
-   Vision liefert; die Texte in Tests und Klick-Dummy sind nachgebildet.
-   **1.5.1 ist im Laden seit 19.10.** (Bau 45, neue Store-Bilder).
+0. **Kamera, Stufe 1 (1.6, geplant 18.11.): Vorarbeit und Messung fertig (0.135.0 bis
+   0.137.1), eine Entscheidung offen.** Alles in `docs/kamera/` (Befund, Regeln,
+   Messungen). Der Leser `MeterTextReader` (PulseCore) schlägt nie etwas Falsches
+   vor (an echten Vision-Texten geprüft, `MeterTextReaderVisionTests`), und der
+   Klick-Dummy zeigt den Ablauf. **Gemessen auf dem macOS-Läufer (`kamera.yml`, fünf
+   Minuten):** Vision liest Rollenzähler brauchbar, **Siebensegment-Anzeigen auch im
+   Rahmen nicht verlässlich** (1 von 9 richtig, 0 falsch). **Die Entscheidung, die der
+   Gründer treffen muss:** (a) 1.6 nur für Rollenzähler und große Ziffern ausliefern,
+   ehrlich beschriftet, oder (b) vorher eine **eigene Ziffernerkennung für
+   Siebensegment** versuchen. Meine Empfehlung: (b) als Versuch mit festem Rahmen,
+   **zuerst in Python unter Linux an den 15 Fotos** (Anzeige finden, Ziffernfelder
+   trennen, je Feld die sieben Segmente prüfen); trägt das, wird es Swift und läuft
+   über dieselbe Schleife. **Danach, in dieser Reihenfolge:** Oberfläche in der App
+   (Knopf im Ziffernblock, Kamera, Bereich aus der bestehenden Plausibilität: letzter
+   Stand bis das Vierfache des üblichen Verbrauchs), Datenschutz und
+   Berechtigungstext. **Ungeprüft:** Vision auf einem iPhone (gemessen auf einem
+   macOS-Läufer). **1.5.1 ist im Laden seit 19.10.** (Bau 45, neue Store-Bilder).
 1. **1.4 Rundgang**: **im Laden** seit 5. Oktober, 16:42 UTC (Bau 39). Auf
    Website und Entwicklungsseite eingetragen.
 2. **1.5 Import aus einer Tabelle**, **im Laden seit 14. Oktober, 22:44 UTC**, Bau 44 (vom Gründer vorgezogen, geplant war der 4. November). **Gebaut in 0.133.0**: Blatt „Einlesen“ im Zähler-Tab und auf der leeren Übersicht, Erkennung in `TableImport`, Konzept in `03-ux-konzept.md` 5a. Kostenlos wie der Export. Offen: in TestFlight mit einer echten Liste ausprobieren; xlsx direkt lesen kann er nicht, nur CSV, Text und Eingefügtes, danach **Kamera** in zwei

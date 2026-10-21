@@ -90,10 +90,49 @@ Kennzeichen, dass die rote Stelle fehlt.
 - **Das Datum im Display (Foto 01) liest Vision als `270822` mit 0,5**, ohne die
   Doppelpunkte, die Tesseract noch sah. Es bleibt trotzdem draußen: ohne Einheit,
   ohne Komma, ohne führende Null.
-- **Der Weg zu LCD-Zählern ist Stufe 2**: ein Rahmen um das Display (der Sucher), und
-  mehrere Bilder hintereinander. Dieselbe Zahl in drei Bildern ist ein stärkeres
-  Zeichen als eine Sicherheit von 0,3 in einem. Ob der Rahmen allein schon reicht,
-  misst `--ausschnitt`.
+- **Der Weg zu LCD-Zählern ist nicht der Rahmen allein.** Siehe den nächsten Abschnitt.
+
+## Gemessen: Vision nur auf dem Rahmen um das Display (21. Oktober 2026)
+
+`kamera-messen --ausschnitt`: dasselbe, aber Vision bekommt nur das von Hand gesetzte
+Rechteck um die Anzeige (`ausschnitt` in `fotos.json`), so wie ein Sucher es setzte.
+Gelesen steht in `vision-ausschnitt-gelesen.json`.
+
+| | richtig | teilweise | nichts | **falsch** |
+|---|---|---|---|---|
+| Erste Ablesung (ohne Bereich) | 1 | 0 | 14 | **0** |
+| Zweite Ablesung (mit Bereich) | 1 | 1 | 13 | **0** |
+
+**Dieselben Zahlen wie auf dem ganzen Foto.** Der Rahmen bringt für den Leser nichts.
+Was Vision im Rahmen liest, zeigt warum:
+
+| Foto | steht im Display | Vision im Rahmen |
+|---|---|---|
+| 32 grünes Display | 1936 | `1936` (0,5) **richtig**, auf dem ganzen Foto war es `1935**` |
+| 29 Kamstrup | 14426 | `Đ0 19426 :WA` (0,3) — **eine Ziffer falsch** (4→9) |
+| 02 Aidon | 9023 kWh | `E208` (0,3) — auf dem ganzen Foto stand `9023 kWh` |
+| 25 Landis, 27 Meterus, 04 Logarex | 002426, 4,67, 000000 | **keine Ziffer** gelesen |
+| 07 Siemens-Rollen | 65521,9 | `65521` (0,5), die rote Rolle fehlt |
+
+**Das heißt:**
+
+- **Vision ist für Siebensegment-Anzeigen kein verlässlicher Leser**, ob ganzes Foto oder
+  Ausschnitt. Es liest sie mal richtig, mal gar nicht, mal mit einer falschen Ziffer,
+  und die Sicherheit (0,3 bis 0,5) verrät nicht, welcher Fall vorliegt. Ein Rahmen
+  macht es nicht besser, im Fall Aidon sogar schlechter (Vision braucht Umgebung).
+- **Mehrere Bilder hintereinander** (Stufe 2) können das teilweise auffangen: Dieselbe
+  Zahl in drei Bildern ist ein stärkeres Zeichen als eine Lesung mit 0,3. Aber auch das
+  trägt nur, wo Vision überhaupt Ziffern liest; bei Landis, Meterus und Logarex las es
+  keine.
+- **Rollenzähler und große Ziffern liest Vision brauchbar** (Siemens, OpenWay, Gas),
+  mit der Einschränkung, dass die roten Stellen oft als eigenes Stück oder gar nicht
+  kommen.
+- **Für die LCD-Zähler, die in Deutschland am häufigsten hängen, braucht es eine
+  eigene Ziffernerkennung für Siebensegment** (Bildpunkte statt Text: Anzeige finden,
+  Ziffernfelder trennen, je Feld die sieben Segmente prüfen). Das ist ein
+  überschaubares, klassisches Verfahren; ob es auf diesen Fotos trägt, lässt sich wie
+  Vision hier messen, **zuerst als Versuch unter Linux** in Python an den 15 Fotos,
+  bevor etwas in Swift entsteht.
 
 ## Die Regeln des Lesers (`MeterTextReader`)
 
@@ -131,10 +170,9 @@ mit dem Foto vergleichen und nachfragen, wenn die Ziffernzahl nicht passt.
 
 ## Was noch fehlt (Stand 0.137.0)
 
-- **Vision auf dem Rahmen um das Display** (`kamera-messen --ausschnitt`): läuft in
-  `kamera.yml`, die Zahl steht hier, sobald der Lauf durch ist. Sie entscheidet, ob
-  Stufe 2 (Sucher mit Rahmen) die LCD-Zähler trägt oder eine eigene
-  Ziffernerkennung für Siebensegment nötig ist.
+- **Eine Ziffernerkennung für Siebensegment-Anzeigen** (siehe oben), zuerst als Versuch
+  unter Linux an den 15 Fotos. Ohne sie trägt die Kamera die Rollenzähler, nicht die
+  LCD-Zähler.
 - Die Oberfläche in der App (Knopf im Ziffernblock, Kamera, Berechtigung). Der
   Klick-Dummy zeigt den Ablauf schon; dort ist die Texterkennung nachgestellt.
 - Die Datenschutzerklärung und der Berechtigungstext für die Kamera, vor der

@@ -55,9 +55,12 @@ GitHub-Läufer): **erste Ablesung 1 richtig, 14 nichts, 0 falsch; zweite Ablesun
   `14426` und `00047,3 6 65` sind richtig gelesen, `1935**` statt `1936` ist falsch,
   **alle vier mit 0,3.** Die Sicherheit trennt Richtiges nicht von Falschem; die
   Schwelle hält die falsche Ziffer heraus, die richtigen mit.
-- **Stufe 1 (ein Foto aus der Hand) trägt damit Rollenzähler, nicht LCD.** Für LCD
-  braucht es Stufe 2: einen Rahmen um das Display und mehrere Bilder hintereinander.
-  Ob der Rahmen allein reicht, zeigt der erste Lauf von `--ausschnitt`.
+- **Stufe 1 (ein Foto aus der Hand) trägt damit Rollenzähler, nicht LCD.**
+- **Der Rahmen um das Display ändert daran nichts** (gemessen mit `--ausschnitt`, nach
+  der Korrektur in 0.137.1): dieselben Zahlen, 1 richtig, 1 teilweise, 13 nichts, 0
+  falsch. Vision liest Siebensegment im Rahmen mal richtig (`1936`, 0,5), mal gar nicht
+  (Aidon: `E208`), mal mit einer falschen Ziffer (`19426` statt `14426`). **Für die
+  LCD-Zähler braucht es eine eigene Ziffernerkennung** (`docs/kamera/README.md`).
 
 ### Ungeprüft
 - **Vision auf einem iPhone.** Gemessen ist auf einem macOS-15-Läufer; die Engine
