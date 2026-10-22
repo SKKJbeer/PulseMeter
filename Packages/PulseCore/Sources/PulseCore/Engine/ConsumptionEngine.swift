@@ -303,6 +303,33 @@ public enum ConsumptionEngine {
         return .normal(consumption: quantity, days: days)
     }
 
+    /// Der Bereich, in dem der nächste Stand liegen kann: vom letzten Stand bis zu dem, was
+    /// die Prüfung im Ziffernblock noch nicht beanstandet (das Vierfache des üblichen
+    /// Verbrauchs seit dann). Die Kamera schlägt nur vor, was darin liegt.
+    ///
+    /// **Dieselbe Grenze wie `plausibility`, nicht eine zweite.** Läge der Bereich weiter
+    /// innen, würde die Kamera einen Stand verwerfen, den die Prüfung durchließe; läge er
+    /// weiter außen, bekäme der Nutzer einen Vorschlag, den die Prüfung gleich anzweifelt.
+    ///
+    /// `nil` bei der ersten Ablesung: Es gibt nichts, woran sich ein Vorschlag messen ließe.
+    /// Ohne üblichen Verbrauch (zu wenig Verlauf) gilt ein Zehntel des Zählwerks als obere
+    /// Grenze — großzügig, aber gegen Seriennummern und Kennzahlen noch wirksam.
+    public static func plausibleReadingRange(
+        register: Register,
+        readings: [Reading],
+        today: CalendarDay
+    ) -> ClosedRange<Decimal>? {
+        let history = readings.forRegister(register.id).chronological()
+        guard let previous = history.last else { return nil }
+        let days = max(1, today.days(since: previous.day))
+        var reach = register.capacity / 10
+        if let series = ConsumptionSeries.build(register: register, readings: history),
+           let usual = referenceRate(series: series, from: previous.day, to: today), usual > 0 {
+            reach = usual * Decimal(days) * unusualFactor
+        }
+        return previous.value...(previous.value + reach)
+    }
+
     /// Der Tagesverbrauch, an dem ein neuer Wert gemessen wird.
     ///
     /// Zuerst derselbe Zeitraum im Vorjahr, erst danach der Gesamtdurchschnitt.

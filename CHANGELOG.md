@@ -9,6 +9,14 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.138.0 — 2026-10-22
+
+**Kamera: Sucher mit Rahmen und ein eigenes Netz für LCD-Ziffern** (Entwurf, Zahlen folgen)
+
+_Zwischenstand, damit die macOS-Läufer den App-Teil übersetzen, während das Netz trainiert._
+
+---
+
 ## 0.137.1 — 2026-10-21
 
 **Kamera: Übersetzungsfehler im Rahmen-Modus behoben**

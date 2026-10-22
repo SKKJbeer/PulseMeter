@@ -94,22 +94,35 @@ public enum MeterTextReader {
         case lowConfidence
     }
 
+    /// So sicher muss sich das Ziffernnetz bei einer eingerahmten Zahl sein, die kein
+    /// Merkmal trägt und für die es keinen Bereich gibt (erste Ablesung, `1936`).
+    /// Niedriger als die 0,8 für Fremdtext: Der Nutzer hat die Zeile selbst gerahmt,
+    /// und das Netz hat gedruckte Ziffern im Training als „nichts" gelernt.
+    static let framedWeakConfidence = 0.6
+
     /// - Parameters:
     ///   - texts: Alles, was die Texterkennung im Foto gefunden hat.
     ///   - format: Stellen des Zählwerks, das abgelesen wird.
     ///   - plausible: Bereich, in dem der Stand liegen kann (letzter Stand bis
     ///     letzter Stand plus großzügiger Verbrauch). `nil` bei der ersten
     ///     Ablesung.
+    ///   - framed: Der Text stammt aus der Zeile, die der Nutzer im Sucher
+    ///     gerahmt hat, nicht aus einem ganzen Foto. Dann ist es kein Typenschild,
+    ///     und eine Zahl ohne Einheit, Komma und führende Null darf auch bei der
+    ///     ersten Ablesung vorgeschlagen werden. **Nur für das Ziffernnetz gedacht:**
+    ///     Apples Texterkennung liest im Rahmen weiter, was auf dem Typenschild
+    ///     stünde, wenn der Rahmen danebenläge.
     public static func propose(
         from texts: [RecognizedLine],
         format: MeterFormat,
-        plausible: ClosedRange<Decimal>? = nil
+        plausible: ClosedRange<Decimal>? = nil,
+        framed: Bool = false
     ) -> Outcome {
         let candidates = texts.flatMap { readCandidates(in: $0, format: format) }
         guard !candidates.isEmpty else { return .none(.noCandidate) }
 
         // Ohne Bereich nur Zahlen mit Merkmal (siehe oben).
-        let strong = candidates.filter { $0.strong && (plausible != nil || $0.marked) }
+        let strong = candidates.filter { $0.strong && (plausible != nil || framed || $0.marked) }
         var pool: [Candidate]
         let needed: Double
 
@@ -121,10 +134,15 @@ public enum MeterTextReader {
             if pool.isEmpty { return .none(.outsideRange) }
             needed = 0.5
         } else {
-            guard let range = plausible else { return .none(.noCandidate) }
-            pool = candidates.filter { range.contains($0.value) }
-            if pool.isEmpty { return .none(.outsideRange) }
-            needed = 0.8
+            if let range = plausible {
+                pool = candidates.filter { range.contains($0.value) }
+                if pool.isEmpty { return .none(.outsideRange) }
+            } else if framed {
+                pool = candidates
+            } else {
+                return .none(.noCandidate)
+            }
+            needed = framed ? framedWeakConfidence : 0.8
         }
 
         let values = Set(pool.map(\.value))

@@ -223,7 +223,8 @@ final class MeterTextReaderTests: XCTestCase {
             }
             let f = c["format"] as! [Int]
             let range = (c["bereich"] as? [String]).map { dec($0[0])...dec($0[1]) }
-            let outcome = MeterTextReader.propose(from: items, format: MeterFormat(integerDigits: f[0], fractionDigits: f[1]), plausible: range)
+            let framed = (c["eingerahmt"] as? Bool) ?? false
+            let outcome = MeterTextReader.propose(from: items, format: MeterFormat(integerDigits: f[0], fractionDigits: f[1]), plausible: range, framed: framed)
 
             let expected = c["erwartet"] as! [String: String]
             if let want = expected["wert"] {
