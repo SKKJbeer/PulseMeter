@@ -17,6 +17,10 @@ const target = process.argv[2] || "docs/prototype/index.html";
 const url = target.startsWith("file:") || target.startsWith("http")
   ? target : "file://" + process.cwd() + "/" + target;
 
+// Das Beispiel, an dem der Ablauf der Kamera geprüft wird: eine LCD-Anzeige, die das Ziffernnetz liest.
+// Welche, hängt davon ab, was das Netz zuverlässig trifft (docs/kamera/README.md, Messung).
+const POSITIV = { id: "landis", wert: 2426, punkt: "2.426" };
+
 const failures = [];
 const note = (ok, text) => {
   console.log((ok ? "  ok   " : "  FEHL ") + text);
@@ -480,35 +484,36 @@ for (const scheme of ["light", "dark"]) {
     await page.locator(`[data-capture="${neu.id}"]`).first().click();
     await page.waitForTimeout(250);
 
-    // --- Kamera, Stufe 1: Foto → Vorschlag → Übernehmen (0.135.0)
+    // --- Kamera: Sucher → Vorschlag → Übernehmen (0.135.0, seit 0.138.0 mit rechnendem Ziffernnetz)
     //
     // Hier, beim Zähler ohne Vorgänger, weil dort die strengere Regel gilt: ohne
     // Bereich, an dem sich eine Seriennummer verraten könnte, schlägt die Kamera
-    // nur Zahlen mit Einheit, Komma oder führender Null vor.
-    note(await page.locator("#foto-open").isVisible(), "Im Ziffernblock steht „Vom Foto ablesen“");
+    // nur Zahlen mit Einheit, Komma oder führender Null vor. Eine Zahl, die der Nutzer
+    // selbst gerahmt hat (Ziffernnetz), darf auch ohne Merkmal vorgeschlagen werden.
+    note(await page.locator("#foto-open").isVisible(), "Im Ziffernblock steht „Mit Kamera ablesen“");
     await page.locator("#foto-open").click();
     await page.waitForTimeout(150);
     note(await page.locator("#foto-panel").isVisible()
-         && (await page.locator(".foto-thumb").count()) >= 5,
-         "Ein Klick öffnet die Beispielfotos im Ziffernblock, ohne ein zweites Blatt");
-    const ohneVorschlag = {};
-    for (const [i, name] of [[2, "Rollenzähler ohne Einheit"], [4, "Display mit Datum"], [5, "leeres Display"]]) {
+         && (await page.locator(".foto-thumb").count()) >= 8,
+         "Ein Klick öffnet die Beispielzähler im Ziffernblock, ohne ein zweites Blatt");
+    // Das Ablesen rechnet: sechs Bilder durchs Netz. Gewartet wird, bis der Text nicht mehr „Ich suche“ sagt.
+    const waehle = async (id) => {
+      const i = await page.evaluate((x) => FOTOS.findIndex(f => f.id === x), id);
       await page.locator(`[data-foto="${i}"]`).click();
-      await page.waitForTimeout(100);
-      ohneVorschlag[name] = {
-        text: (await page.locator("#foto-result").innerText()).trim(),
-        knopf: await page.locator("#foto-nimm").count()
-      };
+      await page.waitForFunction(() => !/^Ich suche/.test(document.getElementById("foto-result").innerText.trim()), null, { timeout: 60000 });
+      return { text: (await page.locator("#foto-result").innerText()).trim(), knopf: await page.locator("#foto-nimm").count() };
+    };
+    const ohneVorschlag = {};
+    for (const [id, name] of [["siemens", "Rollenzähler ohne Einheit"], ["datum", "Display mit Datum"], ["leer", "leeres Display"]]) {
+      ohneVorschlag[name] = await waehle(id);
     }
     for (const [name, r] of Object.entries(ohneVorschlag)) {
       note(r.knopf === 0 && /keinen Zählerstand/.test(r.text),
            `${name}: kein Vorschlag, und das Foto sagt es („${r.text.slice(0, 42)}…“)`);
     }
-    await page.locator('[data-foto="0"]').click();
-    await page.waitForTimeout(100);
-    const vorschlag = (await page.locator("#foto-result").innerText()).trim();
-    note(/Ich lese\s+2\.426/.test(vorschlag) && /002426 kWh/.test(vorschlag),
-         `Das Display „002426 kWh“ wird als 2.426 gelesen, das Typenschild nicht („${vorschlag.slice(0, 48)}…“)`);
+    const vorschlag = (await waehle(POSITIV.id)).text;
+    note(new RegExp("Ich lese\\s+" + POSITIV.punkt.replace(".", "\\.")).test(vorschlag),
+         `Das Ziffernnetz liest im Rahmen ${POSITIV.punkt} („${vorschlag.slice(0, 60)}…“)`);
     note((await page.locator("#foto-nimm").count()) === 1 && (await page.evaluate(() => digits)) === "",
          "Vorgeschlagen ist noch nichts eingetragen: Erst „Übernehmen“ schreibt in den Ziffernblock");
     await page.locator("#foto-nimm").click();
@@ -519,9 +524,9 @@ for (const scheme of ["light", "dark"]) {
       offen: !document.getElementById("foto-panel").hidden,
       gesperrt: document.getElementById("save").disabled
     }));
-    note(uebernommen.wert === 2426 && !uebernommen.offen && !uebernommen.gesperrt,
-         "Übernehmen trägt 2.426 ein und lässt den Stand wie jeden anderen sichern");
-    note(uebernommen.hinweis, "Darunter steht, dass die Zahl aus dem Foto ist");
+    note(uebernommen.wert === POSITIV.wert && !uebernommen.offen && !uebernommen.gesperrt,
+         `Übernehmen trägt ${POSITIV.punkt} ein und lässt den Stand wie jeden anderen sichern`);
+    note(uebernommen.hinweis, "Darunter steht, dass die Zahl von der Kamera ist");
     await page.locator('[data-key="5"]').first().click();
     note(await page.locator("#foto-hinweis").isHidden(),
          "Wer eine Ziffer ändert, hat selbst abgelesen: Der Hinweis verschwindet");
@@ -553,21 +558,23 @@ for (const scheme of ["light", "dark"]) {
     await page.locator('[data-capture="strom"]').first().click();
     await page.waitForTimeout(250);
     await page.locator("#foto-open").click();
-    await page.locator('[data-foto="0"]').click();
-    await page.waitForTimeout(100);
-    const weit = (await page.locator("#foto-result").innerText()).trim();
+    const weit = (await (async () => { const i = await page.evaluate((x) => FOTOS.findIndex(f => f.id === x), POSITIV.id);
+      await page.locator(`[data-foto="${i}"]`).click();
+      await page.waitForFunction(() => !/^Ich suche/.test(document.getElementById("foto-result").innerText.trim()), null, { timeout: 60000 });
+      return (await page.locator("#foto-result").innerText()).trim(); })());
     note((await page.locator("#foto-nimm").count()) === 0 && /weit weg vom letzten Stand von 49\.157/.test(weit),
-         `2.426 kWh bei einem Zähler auf 49.157: kein Vorschlag, und der Grund steht da („${weit.slice(0, 50)}…“)`);
+         `${POSITIV.punkt} kWh bei einem Zähler auf 49.157: kein Vorschlag, und der Grund steht da („${weit.slice(0, 50)}…“)`);
     await page.locator("#cap-back").click();
     await page.waitForTimeout(250);
 
     if (neu) {
-      // Der Prüfzähler hat jetzt einen Stand (123); 2.426 liegt im Bereich.
+      // Der Prüfzähler hat jetzt einen Stand (123); der gelesene Stand liegt im Bereich.
       await page.locator(`[data-capture="${neu.id}"]`).first().click();
       await page.waitForTimeout(250);
       await page.locator("#foto-open").click();
-      await page.locator('[data-foto="0"]').click();
-      await page.waitForTimeout(100);
+      const j = await page.evaluate((x) => FOTOS.findIndex(f => f.id === x), POSITIV.id);
+      await page.locator(`[data-foto="${j}"]`).click();
+      await page.waitForFunction(() => !/^Ich suche/.test(document.getElementById("foto-result").innerText.trim()), null, { timeout: 60000 });
       note((await page.locator("#foto-nimm").count()) === 1,
            "Mit Vorgänger und passendem Bereich kommt der Vorschlag auch hier");
       await page.locator("#foto-nimm").click();
@@ -578,7 +585,7 @@ for (const scheme of ["light", "dark"]) {
         const r = METERS.find(x => x.name === "Prüfzähler").registers[0].readings;
         return { n: r.length, origin: r[r.length - 1].origin, wert: r[r.length - 1].value };
       });
-      note(herkunft.origin === "camera" && herkunft.wert === 2426,
+      note(herkunft.origin === "camera" && herkunft.wert === POSITIV.wert,
            `Gesichert wird mit Herkunft „Kamera“, nicht „manuell“ (${herkunft.origin}, ${herkunft.wert})`);
       if (await page.locator("#sheet-capture.on").count()) await page.locator("#cap-back").click();
       await page.waitForTimeout(250);
