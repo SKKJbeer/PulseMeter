@@ -21,6 +21,9 @@ def read_value(text, conf, fmt, rng_val=None):
             if sig(text) > I: return None
             val = float(text); raw = len(text)
     strong = raw >= I
+    marked = '.' in text or text.startswith('0')
+    if not rng_val and not marked: return None        # erste Ablesung: nur mit Merkmal
+    if not rng_val and not strong: return None
     if rng_val and not (rng_val[0] <= val <= rng_val[1]): return None
     need = 0.5 if strong else 0.6
     return val if conf >= need else None

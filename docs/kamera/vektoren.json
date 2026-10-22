@@ -1,5 +1,5 @@
 {
- "hinweis": "Gemeinsame Fälle für MeterTextReader.swift und den Klick-Dummy (docs/prototype/index.html). Beide müssen dasselbe ergeben; geprüft von MeterTextReaderTests.testSharedVectors und scripts/check-kamera-js.mjs. Texte sind von Hand nachgebildet, siehe README.md. Fälle mit \"eingerahmt\": true laufen im Modus für eine vom Nutzer gerahmte Zeile (nur Ziffernnetz). „einigung“: Folgen von Bildern (Wert oder null = kein Vorschlag) und was ReadingConsensus daraus macht, für Swift und den Klick-Dummy.",
+ "hinweis": "Gemeinsame Fälle für MeterTextReader.swift und den Klick-Dummy (docs/prototype/index.html). Beide müssen dasselbe ergeben; geprüft von MeterTextReaderTests.testSharedVectors und scripts/check-kamera-js.mjs. Texte sind von Hand nachgebildet, siehe README.md. Fälle mit \"eingerahmt\": true laufen im Modus für eine vom Nutzer gerahmte Zeile (nur Ziffernnetz); er senkt nur die nötige Sicherheit im Bereich, die erste Ablesung bleibt streng. „einigung“: Folgen von Bildern (Wert oder null = kein Vorschlag) und was ReadingConsensus daraus macht, für Swift und den Klick-Dummy.",
  "faelle": [
   {
    "name": "siemens-rollen-mit-bereich",
@@ -864,7 +864,7 @@
    }
   },
   {
-   "name": "gerahmt-schwach-ohne-bereich",
+   "name": "gerahmt-schwach-ohne-bereich-bleibt-draussen",
    "texte": [
     [
      "1936",
@@ -878,7 +878,7 @@
    "bereich": null,
    "eingerahmt": true,
    "erwartet": {
-    "wert": "1936"
+    "keine": "noCandidate"
    }
   },
   {
@@ -893,7 +893,10 @@
     6,
     0
    ],
-   "bereich": null,
+   "bereich": [
+    "1000",
+    "3000"
+   ],
    "eingerahmt": true,
    "erwartet": {
     "keine": "lowConfidence"
@@ -1023,6 +1026,45 @@
     0
    ],
    "bereich": null,
+   "erwartet": {
+    "keine": "noCandidate"
+   }
+  },
+  {
+   "name": "gerahmt-schwach-mit-bereich",
+   "texte": [
+    [
+     "1936",
+     0.7
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": [
+    "1000",
+    "3000"
+   ],
+   "eingerahmt": true,
+   "erwartet": {
+    "wert": "1936"
+   }
+  },
+  {
+   "name": "gerahmt-datum-ohne-doppelpunkte-ist-kein-stand",
+   "texte": [
+    [
+     "270822",
+     0.99
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": null,
+   "eingerahmt": true,
    "erwartet": {
     "keine": "noCandidate"
    }

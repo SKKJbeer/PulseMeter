@@ -4430,7 +4430,8 @@ const MeterTextReader = (() => {
   }
 
   /* texts: [{text, confidence}], f: {int, frac}, plausible: [min, max] oder null.
-     framed: Der Text stammt aus der Zeile, die der Nutzer im Sucher gerahmt hat (nur Ziffernnetz).
+     framed: Der Text stammt aus der Zeile, die der Nutzer im Sucher gerahmt hat (nur Ziffernnetz). Senkt nur die
+     Sicherheit für eine Zahl ohne Merkmal im Bereich; ohne Bereich zählt weiter nur, was ein Merkmal trägt.
      Ergebnis: {proposal: {...}} oder {none: "noCandidate"|"ambiguous"|"outsideRange"|"lowConfidence"} */
   const FRAMED_WEAK = 0.6;   // wie MeterTextReader.framedWeakConfidence in Swift
   function propose(texts, f, plausible = null, framed = false) {
@@ -4439,21 +4440,16 @@ const MeterTextReader = (() => {
     if (!candidates.length) return { none: "noCandidate" };
 
     // Ohne Bereich nur Zahlen mit Merkmal: Einheit, Komma oder führende Null.
-    const strong = candidates.filter(c => c.strong && (plausible || framed || c.marked));
+    const strong = candidates.filter(c => c.strong && (plausible || c.marked));
     let pool, needed;
     if (strong.length) {
       pool = strong.filter(inRange);
       if (!pool.length) return { none: "outsideRange" };
       needed = 0.5;
     } else {
-      if (plausible) {
-        pool = candidates.filter(inRange);
-        if (!pool.length) return { none: "outsideRange" };
-      } else if (framed) {
-        pool = candidates;
-      } else {
-        return { none: "noCandidate" };
-      }
+      if (!plausible) return { none: "noCandidate" };
+      pool = candidates.filter(inRange);
+      if (!pool.length) return { none: "outsideRange" };
       needed = framed ? FRAMED_WEAK : 0.8;
     }
     if (new Set(pool.map(c => c.value)).size !== 1) return { none: "ambiguous" };
