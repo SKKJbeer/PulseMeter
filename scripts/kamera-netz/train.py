@@ -1,7 +1,20 @@
+"""Training des Ziffernnetzes. Aufruf (aus diesem Ordner):
+    python3 train.py <Epochen> <Start.pt|-> <train.npz> <Spitzen-LR> <Ausgabe.pt> <val.npz>
+Daten erzeugt `gen.py`. Nach jeder Epoche wird an den echten Fotos gemessen (nur gemessen, nie trainiert).
+"""
 import sys, time, numpy as np, torch, torch.nn as nn, torch.nn.functional as F
-import lcdsynth as L, realtest as RT
+import synth as L, realtest as RT
 torch.set_num_threads(4); torch.manual_seed(0)
 NC = len(L.CHARS) + 1
+
+DILATIONS = (1, 2, 4, 8)
+
+class ResBlock(nn.Module):
+    """Faltung entlang der Zeichenfolge mit Lücken (Reichweite) und Restverbindung."""
+    def __init__(self, c, dil):
+        super().__init__()
+        self.conv = nn.Conv1d(c, c, 5, padding=2 * dil, dilation=dil, bias=False); self.bn = nn.BatchNorm1d(c)
+    def forward(self, x): return x + F.relu(self.bn(self.conv(x)))
 
 class Net(nn.Module):
     def __init__(self):
@@ -13,14 +26,28 @@ class Net(nn.Module):
         self.cnn = nn.Sequential(*blk(1, 16, (2, 2)), *blk(16, 32, (2, 1)), *blk(32, 48, (2, 1)), *blk(48, 64, (2, 1)))
         # Höhe 48 -> 24 -> 12 -> 6 -> 3, Breite 240 -> 120
         self.collapse = nn.Sequential(nn.Conv2d(64, 96, (3, 1), bias=False), nn.BatchNorm2d(96), nn.ReLU())
-        self.seq = nn.Sequential(nn.Conv1d(96, 96, 5, padding=2, bias=False), nn.BatchNorm1d(96), nn.ReLU(),
-                                 nn.Conv1d(96, 96, 5, padding=2, bias=False), nn.BatchNorm1d(96), nn.ReLU(),
-                                 nn.Conv1d(96, NC, 1))
+        self.blocks = nn.ModuleList([ResBlock(96, d) for d in DILATIONS])
+        self.out = nn.Conv1d(96, NC, 1)
     def forward(self, x):                 # x: N,1,48,240 in 0..1
         m = x.mean((2, 3), keepdim=True); s = x.std((2, 3), keepdim=True) + 0.02
         x = (x - m) / s
         x = self.collapse(self.cnn(x)).squeeze(2)
-        return self.seq(x)                # N,C,T
+        for b in self.blocks: x = b(x)
+        return self.out(x)                # N,C,T
+
+def load_v2(net, path):
+    """Gewichte aus der Fassung mit zwei einfachen Faltungen übernehmen; neue Blöcke starten klein."""
+    sd = torch.load(path)
+    if any(k.startswith('blocks.') for k in sd): net.load_state_dict(sd); return
+    own = net.state_dict()
+    for k, v in sd.items():
+        if k.startswith('seq.'): continue
+        own[k] = v
+    for old, new in (('seq.0', 'blocks.0.conv'), ('seq.1', 'blocks.0.bn'), ('seq.3', 'blocks.1.conv'), ('seq.4', 'blocks.1.bn'), ('seq.6', 'out')):
+        for k, v in sd.items():
+            if k.startswith(old + '.'): own[new + k[len(old):]] = v
+    net.load_state_dict(own)
+    for blk in net.blocks[2:]: nn.init.constant_(blk.bn.weight, 0.1)
 
 def decode(logits):
     p = logits.softmax(1); best = p.argmax(1); out = []
@@ -66,9 +93,9 @@ def report(res, thr=0.0):
 if __name__ == '__main__':
     data = sys.argv[3] if len(sys.argv) > 3 else 'train.npz'
     d = np.load(data, allow_pickle=True); X = d['X']; T = list(d['T'])
-    v = np.load('val2.npz', allow_pickle=True); XV = torch.tensor(v['X'], dtype=torch.float32)[:, None] / 255; TV = list(v['T'])
+    v = np.load(sys.argv[6] if len(sys.argv) > 6 else 'val.npz', allow_pickle=True); XV = torch.tensor(v['X'], dtype=torch.float32)[:, None] / 255; TV = list(v['T'])
     net = Net(); print(sum(p.numel() for p in net.parameters()), 'Gewichte')
-    if len(sys.argv) > 2 and sys.argv[2] != '-': net.load_state_dict(torch.load(sys.argv[2])); print('weiter ab', sys.argv[2])
+    if len(sys.argv) > 2 and sys.argv[2] != '-': load_v2(net, sys.argv[2]); print('weiter ab', sys.argv[2])
     peak = float(sys.argv[4]) if len(sys.argv) > 4 else 3e-3
     out_name = sys.argv[5] if len(sys.argv) > 5 else 'net.pt'
     EP = int(sys.argv[1]); BS = 128

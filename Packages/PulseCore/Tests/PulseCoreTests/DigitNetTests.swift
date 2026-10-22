@@ -113,4 +113,62 @@ final class DigitNetTests: XCTestCase {
         XCTAssertEqual(line.text, "11")
         XCTAssertGreaterThan(line.confidence, 0.99)
     }
+
+    // MARK: - Die ganze Kette
+
+    private func dec(_ s: String) -> Decimal { Decimal(string: s, locale: Locale(identifier: "en_US_POSIX"))! }
+
+    /// Ein gezeichnetes Bild geht durch dieselbe Kette wie ein Kamerabild: Rahmen, Netz, Leser.
+    /// Das ist der Weg, den der Oberflächentest im Simulator nimmt (`-pulse-kamera-test`); hier
+    /// steht er ohne Simulator, mit anderen Zahlen und mit Komma.
+    func testDrawnFramesAreReadBackThroughTheWholeChain() {
+        let cases: [(text: String, format: MeterFormat, value: String)] = [
+            ("014426", MeterFormat(integerDigits: 6, fractionDigits: 0), "14426"),
+            ("0004567", MeterFormat(integerDigits: 6, fractionDigits: 0), "4567"),
+            ("000000", MeterFormat(integerDigits: 6, fractionDigits: 0), "0"),
+            ("00047.36", MeterFormat(integerDigits: 5, fractionDigits: 2), "47.36"),
+            ("0123.45", MeterFormat(integerDigits: 5, fractionDigits: 2), "123.45"),
+            ("98765", MeterFormat(integerDigits: 6, fractionDigits: 0), "98765"),
+        ]
+        for c in cases {
+            let frame = DemoFrame.render(c.text)
+            let whole = PixelRect(x: 0, y: 0, width: Double(frame.width), height: Double(frame.height))
+            let line = Viewfinder.read(frame, rect: whole)
+            let range = max(0, dec(c.value) - 50)...(dec(c.value) + 500)
+            let outcome = MeterTextReader.propose(from: [line.recognized], format: c.format, plausible: range, framed: true)
+            guard case .proposal(let p) = outcome else { XCTFail("\(c.text): gelesen „\(line.text)“, kein Vorschlag: \(outcome)"); continue }
+            XCTAssertEqual(p.value, dec(c.value), "\(c.text): gelesen „\(line.text)“")
+        }
+    }
+
+    /// Die echten Fotos (Sucherbilder aus `docs/kamera/`): Ob das Netz sie liest, wird in
+    /// `docs/kamera/README.md` gemessen. **Hier gilt nur die eine Regel: nie ein falscher
+    /// Vorschlag**, ob mit Bereich um den richtigen Stand oder ohne.
+    func testRealPhotoFramesNeverProduceAWrongProposal() throws {
+        let stand: [String: (format: MeterFormat, value: String?)] = [
+            "01": (MeterFormat(integerDigits: 6, fractionDigits: 0), nil),
+            "02": (MeterFormat(integerDigits: 6, fractionDigits: 0), "9023"),
+            "04": (MeterFormat(integerDigits: 6, fractionDigits: 0), "0"),
+            "06": (MeterFormat(integerDigits: 6, fractionDigits: 0), nil),
+            "25": (MeterFormat(integerDigits: 6, fractionDigits: 0), "2426"),
+            "27": (MeterFormat(integerDigits: 5, fractionDigits: 2), "4.67"),
+            "28": (MeterFormat(integerDigits: 5, fractionDigits: 0), "0"),
+            "29": (MeterFormat(integerDigits: 7, fractionDigits: 0), "14426"),
+            "32": (MeterFormat(integerDigits: 6, fractionDigits: 0), "1936"),
+        ]
+        var right = 0
+        for fall in try laden().faelle {
+            let nr = String(fall.name.prefix(2))
+            guard let (format, wanted) = stand[nr] else { return XCTFail("unbekanntes Foto \(nr)") }
+            let pixels = [UInt8](Data(base64Encoded: fall.pixel)!).map { Float($0) / 255 }
+            let line = DigitDecoder.decode(DigitNet.bundled.run(pixels: pixels))
+            for range in [nil, wanted.map { max(0, dec($0) - 100)...(dec($0) + 1000) }] {
+                guard case .proposal(let p) = MeterTextReader.propose(from: line.isEmpty ? [] : [line.recognized], format: format,
+                                                                      plausible: range, framed: true) else { continue }
+                XCTAssertEqual(p.value, wanted.map(dec), "\(fall.name): gelesen „\(line.text)“ ergibt einen falschen Vorschlag")
+                right += 1
+            }
+        }
+        XCTAssertGreaterThan(right, 8, "Das Netz liest an den echten Fotos gar nichts mehr")
+    }
 }

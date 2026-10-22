@@ -1,7 +1,7 @@
 """Gewichte (BatchNorm eingerechnet) in eine flache Binärdatei, dazu Referenzwerte für Swift und JavaScript."""
 import sys, json, struct, numpy as np, torch
 from train import Net
-import lcdsynth as L
+import synth as L
 
 def fold(conv_w, bn):
     g = bn.weight.detach() / torch.sqrt(bn.running_var + bn.eps)
@@ -14,9 +14,9 @@ def tensors(net):
     for i in (0, 4, 8, 12):           # Conv, BN, ReLU, Pool je Block
         w, b = fold(c[i].weight, c[i + 1]); out += [w, b]
     w, b = fold(net.collapse[0].weight, net.collapse[1]); out += [w, b]
-    for i in (0, 3):
-        w, b = fold(net.seq[i].weight, net.seq[i + 1]); out += [w, b]
-    out += [net.seq[6].weight.detach().numpy().astype(np.float32), net.seq[6].bias.detach().numpy().astype(np.float32)]
+    for blk in net.blocks:
+        w, b = fold(blk.conv.weight, blk.bn); out += [w, b]
+    out += [net.out.weight.detach().numpy().astype(np.float32), net.out.bias.detach().numpy().astype(np.float32)]
     return out
 
 def write_bin(ts, path):
@@ -28,6 +28,7 @@ def write_bin(ts, path):
 def forward_np(ts, x):
     """Rechnet das Netz mit den eingerechneten Gewichten nach — dieselbe Reihenfolge wie Swift und JavaScript."""
     import torch.nn.functional as F
+    from train import DILATIONS
     x = torch.tensor(x, dtype=torch.float32)[None, None] / 255
     m = x.mean(); s = x.std() + 0.02; x = (x - m) / s
     T = [torch.tensor(t) for t in ts]
@@ -36,8 +37,9 @@ def forward_np(ts, x):
     x = F.relu(F.conv2d(x, T[4], T[5], padding=1)); x = F.max_pool2d(x, (2, 1))
     x = F.relu(F.conv2d(x, T[6], T[7], padding=1)); x = F.max_pool2d(x, (2, 1))
     x = F.relu(F.conv2d(x, T[8], T[9])).squeeze(2)
-    x = F.relu(F.conv1d(x, T[10], T[11], padding=2)); x = F.relu(F.conv1d(x, T[12], T[13], padding=2))
-    return F.conv1d(x, T[14], T[15])[0].numpy()          # C x T
+    for k, d in enumerate(DILATIONS):
+        x = x + F.relu(F.conv1d(x, T[10 + 2 * k], T[11 + 2 * k], padding=2 * d, dilation=d))
+    return F.conv1d(x, T[18], T[19])[0].numpy()          # C x T
 
 if __name__ == '__main__':
     net = Net(); net.load_state_dict(torch.load(sys.argv[1])); net.eval()

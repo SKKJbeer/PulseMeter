@@ -65,9 +65,9 @@ def draw_line(rng, text, hd, style, ink, ghost, canvas_shape, origin, ss=3):
 def rand_text(rng):
     r = rng.random()
     n = int(rng.integers(3, 9))
-    if r < 0.06:    # Uhrzeit oder Datum: darf nie als Stand gelten, wird als solche gelesen
+    if r < 0.12:    # Uhrzeit oder Datum: darf nie als Stand gelten, wird als solche gelesen
         a = ["%02d" % rng.integers(0, 60) for _ in range(3)]
-        return ':'.join(a)
+        return rng.choice([':', ':', '.']).join(a)
     digs = ''.join(str(int(rng.integers(0, 10))) for _ in range(n))
     if rng.random() < 0.35:  # führende Nullen
         z = int(rng.integers(1, max(2, n)))
@@ -86,10 +86,10 @@ def sample(rng):
     """Ein Trainingsbild (IH x IW, uint8) und der Soll-Text. Soll ist nur die Hauptzahl: die großen
     Ziffern in der Mitte. Einheit, Kennzahl, Tarifziffer und Symbole sind Nebenzeichen."""
     text = rand_text(rng)
-    style = dict(aspect=rng.uniform(0.42, 0.66), thick=rng.uniform(0.07, 0.23), gap=rng.uniform(0.0, 0.07),
-                 slant=rng.choice([0, 0, 0, rng.uniform(3, 20)]) * rng.choice([1, 1, 1, 0]),
+    style = dict(aspect=rng.uniform(0.42, 0.66), thick=rng.uniform(0.05, 0.23), gap=rng.uniform(0.0, 0.07),
+                 slant=rng.choice([0, 0, rng.uniform(3, 28)]) * rng.choice([1, 1, 1, 0]),
                  chamfer=rng.uniform(0, 1), space=rng.uniform(0.14, 0.5), variant=int(rng.integers(0, 8)),
-                 dot=rng.uniform(1.0, 1.6))
+                 dot=rng.uniform(1.0, 1.9))
     if style['slant'] == 0 and rng.random() < 0.15: style['slant'] = -rng.uniform(1, 4)
     ndig = sum(1 for c in text if c in SEGS)
     linew_per_h = ndig * (style['aspect'] + style['space']) + 0.4 * text.count('.') + 0.2 * text.count(':')
@@ -127,15 +127,15 @@ def sample(rng):
     ink_extra = np.zeros((CH, CW), np.float32)
     mk = np.zeros((CH, CW), np.uint8)
     free_left, free_right = ox - 0.1 * IW, IW - xend - 0.04 * IW
-    if rng.random() < 0.65 and free_right > 14:      # Einheit rechts, fast so hoch wie die Ziffern
-        h = hd * rng.uniform(0.35, 0.8)
-        blocky_text(mk, rng.choice(["kWh", "kW h", "m3", "kWh", "m\u00b3", "h", "kW"]), min(xend + 2 + rng.uniform(0, 6), IW - 12), min(oy + hd, IH - 2), h, rng)
-    if rng.random() < 0.45 and free_left > 20:       # kleine Ziffern links: Kennzahl, Tarif, Zählerindex
-        small = hd * rng.uniform(0.25, 0.65)
+    if rng.random() < 0.8 and free_right > 14:      # Einheit rechts, fast so hoch wie die Ziffern
+        h = hd * rng.uniform(0.4, 0.9)
+        blocky_text(mk, rng.choice(["kWh", "kW h", "m3", "kWh", "m\u00b3", "h", "kW", "Wh", "kWh"]), min(xend + 1 + rng.uniform(0, 5), IW - 12), min(oy + hd, IH - 2), h, rng)
+    if rng.random() < 0.65 and free_left > 20:       # kleine Ziffern links: Kennzahl, Tarif, Zählerindex
+        small = hd * rng.uniform(0.3, 0.7)
         extra, _ = draw_line(rng, rng.choice(["180", "004", "18", "1.8.0", "001", "8", "1.8.1"]), small, dict(style), 1.0, 0.0, (CH, CW),
                              (rng.uniform(1, max(2, free_left - 0.35 * small * 3)), oy + (hd - small) * rng.choice([0, 0.5, 1])))
         ink_extra = np.maximum(ink_extra, extra)
-    if rng.random() < 0.25 and (free_left > hd * 1.4 or free_right > hd * 1.4):   # große Tarifziffer, mit Abstand
+    if rng.random() < 0.35 and (free_left > hd * 1.4 or free_right > hd * 1.4):   # große Tarifziffer, mit Abstand
         wd = hd * style['aspect']
         if free_left > hd * 1.4 and (rng.random() < 0.6 or free_right <= hd * 1.4):
             x0 = rng.uniform(1, max(2, ox - wd - 0.12 * IW))
@@ -191,7 +191,7 @@ def negative(rng):
             if rng.random() < .5: cv2.line(mk, (0, int(rng.uniform(0, IH))), (IW, int(rng.uniform(0, IH))), 255, int(rng.integers(1, 4)))
             else: cv2.rectangle(mk, (int(rng.uniform(0, IW)), int(rng.uniform(0, IH))), (int(rng.uniform(0, IW)), int(rng.uniform(0, IH))), 255, int(rng.integers(1, 3)))
     if rng.random() < 0.3:      # nur Nebenzeichen: kleine Ziffern und Einheit, deutlich kleiner als jede Hauptzahl
-        st = dict(aspect=rng.uniform(0.42, 0.66), thick=rng.uniform(0.07, 0.23), gap=rng.uniform(0.0, 0.07), slant=0.0,
+        st = dict(aspect=rng.uniform(0.42, 0.66), thick=rng.uniform(0.05, 0.23), gap=rng.uniform(0.0, 0.07), slant=0.0,
                   chamfer=rng.uniform(0, 1), space=rng.uniform(0.14, 0.5), variant=int(rng.integers(0, 8)), dot=1.2)
         small = rng.uniform(8, 0.22 * IH)
         extra, _ = draw_line(rng, rng.choice(["180", "004", "1.8.0", "18"]), small, st, 1.0, 0.0, (IH, IW),

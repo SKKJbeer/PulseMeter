@@ -68,8 +68,13 @@ jobs:
         run: node scripts/check-prototype.mjs
       # Der Kamera-Leser steht zweimal da, in Swift und im Klick-Dummy. Beide
       # lesen docs/kamera/vektoren.json; Swift prüft `MeterTextReaderTests`.
-      - name: Kamera-Leser im Klick-Dummy
+      - name: Kamera-Leser und Ziffernnetz im Klick-Dummy
         run: node scripts/check-kamera-js.mjs
+      # Die Gewichte des Ziffernnetzes stehen an drei Orten (Quelle, App, Klick-Dummy)
+      # und die Beispielzähler im Klick-Dummy kommen aus einem Skript: Weichen sie ab,
+      # prüft die App ein anderes Netz als der Entwurf zeigt.
+      - name: Gewichte und Beispielzähler
+        run: python3 scripts/kamera-gewichte.py --pruefen && pip install pillow && python3 scripts/kamera-beispiele.py --pruefen
       # Fremde Fotos in einem öffentlichen Repository: ohne Urheber, Quelle und
       # freie Lizenz bricht der Lauf ab.
       - name: Kamerafotos

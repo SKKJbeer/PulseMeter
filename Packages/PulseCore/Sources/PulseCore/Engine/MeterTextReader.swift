@@ -122,7 +122,18 @@ public enum MeterTextReader {
         plausible: ClosedRange<Decimal>? = nil,
         framed: Bool = false
     ) -> Outcome {
-        let candidates = texts.flatMap { readCandidates(in: $0, format: format) }
+        var candidates = texts.flatMap { readCandidates(in: $0, format: format) }
+        // **Ein verlorener Punkt macht aus 4,67 ein 467** (Faktor 100). Hat das Zählwerk
+        // Nachkommastellen und steht in der gerahmten Zeile ohne Komma eine Zahl, die
+        // breiter ist als der Vorkommateil, dann gehören Nachkommastellen dazu, und wo der
+        // Punkt war, weiß nur der, der davorsteht. Genau so breit wie das ganze Zählwerk
+        // (`0000467` bei 5+2) wird weiter geteilt; schmaler gilt als Vorkommateil ohne
+        // rote Stellen (`65521`).
+        if framed, format.fractionDigits > 0 {
+            candidates = candidates.filter {
+                !($0.fractionMissing && $0.raw.filter { $0.isASCIIDigit }.count > format.integerDigits)
+            }
+        }
         guard !candidates.isEmpty else { return .none(.noCandidate) }
 
         // Ohne Bereich nur Zahlen mit Merkmal (siehe oben).

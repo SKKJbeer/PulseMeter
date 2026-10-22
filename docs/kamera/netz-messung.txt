@@ -1,0 +1,18 @@
+01 erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+02 erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+02 zweite richtig  99 falsch   0 nichts   1 | Einzelbilder richtig 591 falsch   0 von 600 
+04 erste  richtig 100 falsch   0 nichts   0 | Einzelbilder richtig 594 falsch   1 von 600 
+04 zweite richtig 100 falsch   0 nichts   0 | Einzelbilder richtig 588 falsch   0 von 600 
+06 erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+25 erste  richtig  95 falsch   0 nichts   5 | Einzelbilder richtig 532 falsch   9 von 600 
+25 zweite richtig  97 falsch   0 nichts   3 | Einzelbilder richtig 556 falsch  14 von 600 
+27 erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   4 von 600 
+27 zweite richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   4 von 600 
+28 erste  richtig  56 falsch   0 nichts  44 | Einzelbilder richtig 302 falsch   4 von 600 
+28 zweite richtig  98 falsch   0 nichts   2 | Einzelbilder richtig 554 falsch   6 von 600 
+29 erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+29 zweite richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+32 erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+32 zweite richtig  99 falsch   0 nichts   1 | Einzelbilder richtig 557 falsch   3 von 600 
+== erste: richtig 251 falsch 0 nichts 649 (von 900)
+== zweite: richtig 493 falsch 0 nichts 207 (von 700)

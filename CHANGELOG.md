@@ -11,9 +11,60 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ## 0.138.0 — 2026-10-22
 
-**Kamera: Sucher mit Rahmen und ein eigenes Netz für LCD-Ziffern** (Entwurf, Zahlen folgen)
+**Kamera: Sucher mit Rahmen und ein eigenes Netz, das LCD-Ziffern liest**
 
-_Zwischenstand, damit die macOS-Läufer den App-Teil übersetzen, während das Netz trainiert._
+Der Gründer wollte die Kamera fertig und die Erkennung bei Siebensegment-Anzeigen gelöst
+(Apples Texterkennung hatte 1 von 9 getroffen). Eine Erkennung, die alles liest, gibt es
+nicht; zugesagt ist, dass die App **nichts Falsches vorschlägt**. Gemessen, nicht versprochen.
+
+### Hinzugefügt
+- **„Mit Kamera ablesen“ im Ziffernblock.** Ein Sucher mit Rahmen: Du hältst die Zahl hinein,
+  sobald dieselbe Zahl in drei von sechs Bildern gelesen wurde, steht sie da. **Übernehmen** trägt sie
+  in den Ziffernblock ein, gesichert wird erst mit „Sichern“. Darunter steht „Von der Kamera
+  gelesen“, solange niemand eine Ziffer ändert; die Ablesung trägt dann die Herkunft „Kamera“.
+- **Hinweise zum Bild:** „Zu dunkel“ (mit Taschenlampe im Sucher), „Kaum Kontrast“, „Unscharf“, nach zwölf
+  Sekunden „Klappt nicht? Tipp den Stand einfach ein.“ Unter dem Rahmen steht live, was das Netz sieht.
+- **Das Ziffernnetz** (`DigitNet`, PulseCore): 250 000 Gewichte, ausgeschrieben in Swift, etwa 70 Millionen
+  Multiplikationen je Bild. Trainiert auf **nachgebauten** Anzeigen (`scripts/kamera-netz/`), an den echten
+  Fotos nur gemessen. Python, Swift und der Klick-Dummy rechnen dasselbe, gegen 18 Referenzbilder.
+- **Der Klick-Dummy rechnet das Netz im Browser** an elf Beispielzählern (Ausschnitt um den Rahmen aus
+  dem Foto). Rollen liest dort weiter die nachgestellte Texterkennung.
+- **Bereich aus der Prüfung:** `ConsumptionEngine.plausibleReadingRange` ist dieselbe Grenze, ab der der
+  Ziffernblock „Stimmt die Zahl?“ fragt. Die Kamera schlägt nur vor, was darin liegt.
+- **Berechtigung `NSCameraUsageDescription`**, die erste und einzige. `scripts/check-sicherheit.sh` lässt genau
+  diese zu, verlangt, dass sie benutzt wird, und bricht ab, sobald die Kamera ein Bild speichern könnte.
+- **Prüfungen:** `kamera-gewichte.py --pruefen` (Gewichte in Quelle, App und Klick-Dummy gleich),
+  `kamera-beispiele.py --pruefen`, UI-Test `testCameraProposalLandsInTheKeypadAndIsNotSavedByItself`
+  (ein gezeichnetes Bild geht im Simulator durch dieselbe Auswertung wie ein Kamerabild).
+
+### Gemessen (je Foto 100 Versuche, sechs Bilder, drei gleiche nötig, Leser wie in der App)
+- **Zweite Ablesung (mit Bereich): 493 richtig, 0 falsch, 207 nichts** (von 700). Aidon 99, Logarex 100, Landis 97,
+  Openway 98, grünes Display 99 von 100. **Meterus und Kamstrup: 0** (nichts gelesen, nichts Falsches).
+- **Erste Ablesung: 251 richtig, 0 falsch, 649 nichts** (von 900). Ohne Bereich zählt nur eine Zahl mit
+  führender Null, Komma oder Einheit.
+- **Das Datum im Display (`27:08:22`) und das leere Display: in 200 Versuchen nie ein Vorschlag.**
+- Rohdaten: `docs/kamera/netz-messung.txt`.
+
+### Behoben (auf dem Weg, mit Test)
+- **Ein verlorener Punkt machte aus 4,67 ein 467** (Faktor 100, Meterus, 1 von 360). Hat das Zählwerk
+  Nachkommastellen und ist die gerahmte Zahl ohne Komma breiter als der Vorkommateil, schlägt die App nichts
+  vor. Fälle `gerahmt-verlorener-punkt-…` in `vektoren.json`.
+- **Das Datum `27:08:22` wurde ohne Doppelpunkte als 270.822 kWh gelesen.** Der „eingerahmt“-Modus des Lesers
+  senkt deshalb nur die nötige Sicherheit im Bereich; die erste Ablesung bleibt streng.
+
+### Geändert
+- Die Kamera ist ein Sucher, kein Foto aus der Mediathek: Ein ganzes Foto liest zuerst das Typenschild.
+  Der Rahmen legt fest, was gelesen wird (`docs/kamera/README.md`).
+- `docs/11-sicherheit.md`, `docs/05-roadmap.md`, `docs/06-uebergabe.md` und der Baukasten nachgezogen.
+
+### Ungeprüft
+- **Der App-Code wurde unter Linux nie übersetzt** (kein Xcode): `KameraSitzung`, `KameraView`, die Einbindung
+  im Ziffernblock und der UI-Test laufen zum ersten Mal auf dem macOS-Läufer.
+- **Ein echtes iPhone-Bild.** Schärfe, Licht, Handzittern im Rahmen zeigt erst TestFlight.
+- **Apples Texterkennung im Sucher** (Rollen) ist nachgemessen (21.10.), nicht am Gerät.
+- **Der Kauf** (0,99 €) ist nicht eingebaut: Die Kaufkennung gibt es in App Store Connect noch nicht.
+
+_340 Tests in PulseCore, alle grün (21 neu: Netz, Sucher, Einigung, Bereich, Leser); Klick-Dummy-Prüfung grün._
 
 ---
 

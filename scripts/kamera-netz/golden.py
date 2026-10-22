@@ -1,6 +1,6 @@
 """Referenzwerte für Swift und JavaScript: gleiche Eingabe, gleiche Ausgabe wie in Python."""
 import sys, json, base64, numpy as np
-import export as E, realtest as RT, lcdsynth as L
+import export as E, realtest as RT, synth as L
 from area import resample
 from train import decode
 import torch
@@ -19,6 +19,7 @@ def build(ts, net, cases):
         lg = E.forward_np(ts, x)
         t = torch.tensor(lg)[None]
         s, c = decode(t)[0]
+        if not s: c = 0.0          # keine Zeichen, keine Sicherheit (wie DigitLine.confidence)
         out['faelle'].append({'name': name, 'soll': soll, 'pixel': b64(x), 'text': s, 'sicherheit': round(c, 4),
                               'ausgabe': [round(float(v), 4) for v in lg.reshape(-1)] if len(out['faelle']) < 3 else None})
     return out

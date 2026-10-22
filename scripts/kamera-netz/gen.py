@@ -1,6 +1,7 @@
+"""Erzeugt Trainingsdaten: python3 gen.py <Anzahl> <Datei.npz> <Anfangswert>"""
 import numpy as np, sys
 from multiprocessing import Pool
-import lcdsynth as L
+import synth as L
 def work(a):
     seed,n=a; rng=np.random.default_rng(seed)
     X=np.zeros((n,L.IH,L.IW),np.uint8); T=[]

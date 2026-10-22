@@ -115,7 +115,12 @@ if [ "$SCOPE" != "bilder" ]; then
   # mit Namensnennung. Und der Kamera-Leser steht zweimal da, in Swift und im
   # Klick-Dummy; beide lesen dieselben Fälle (0.135.0).
   run "Kamerafotos" python3 scripts/check-kamerafotos.py || true
-  run "Kamera-Leser im Klick-Dummy" node scripts/check-kamera-js.mjs || true
+  run "Kamera-Leser und Ziffernnetz im Klick-Dummy" node scripts/check-kamera-js.mjs || true
+  # Die Gewichte stehen als Quelle, in der App und im Klick-Dummy; die Beispielzähler
+  # des Entwurfs kommen aus einem Skript. Weichen sie ab, prüft die App ein anderes
+  # Netz als der Entwurf zeigt.
+  run "Gewichte des Ziffernnetzes" python3 scripts/kamera-gewichte.py --pruefen || true
+  run "Beispielzähler im Klick-Dummy" python3 scripts/kamera-beispiele.py --pruefen || true
   # Ein fehlender Import ist syntaktisch fehlerfrei und bricht erst beim
   # Ausführen ab — Bau 24 lag schon in TestFlight, als `import re` fehlte.
   run "Unbekannte Namen" python3 scripts/check-namen.py || true

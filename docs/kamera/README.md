@@ -11,8 +11,9 @@ und womit sie geprüft wird.
 |---|---|
 | `fotos/` | 15 Zählerfotos von Wikimedia Commons, frei lizenziert, verkleinert auf 900 Pixel Breite |
 | `fotos.json` | je Foto: Quelle, Urheber, Lizenz, **Soll-Stand** (von Hand abgelesen), Stellen des Zählwerks, was die Falle ist, bei lesbaren Anzeigen der Rahmen um das Display (`ausschnitt`) |
-| `vektoren.json` | 30 Fälle für den Leser, die Swift und der Klick-Dummy beide bestehen müssen |
+| `vektoren.json` | 46 Fälle für den Leser, dazu Folgen für die Einigung über mehrere Bilder, die Swift und der Klick-Dummy beide bestehen müssen |
 | `vision-gelesen.json` | was Vision auf den Fotos wirklich gelesen hat (macOS-Läufer, 21.10.2026); `MeterTextReaderVisionTests` liest sie |
+| `lcd-vektoren.json` | Referenzbilder und -ausgaben des Ziffernnetzes (aus Python), die Swift und der Klick-Dummy bestehen müssen; geschrieben von `scripts/kamera-netz/golden.py` |
 
 `scripts/check-kamerafotos.py` bricht ab, wenn bei einem Foto Urheber, Quelle oder
 eine freie Lizenz fehlt oder ein Foto im Ordner liegt, das nicht in `fotos.json`
@@ -134,6 +135,63 @@ Was Vision im Rahmen liest, zeigt warum:
   Vision hier messen, **zuerst als Versuch unter Linux** in Python an den 15 Fotos,
   bevor etwas in Swift entsteht.
 
+## Gemessen: das eigene Ziffernnetz (22. Oktober 2026)
+
+Apples Texterkennung trägt Siebensegment-Anzeigen nicht (oben). Deshalb liest in der App ein
+**eigenes Netz** (`DigitNet`, 250 000 Gewichte) den Ausschnitt im Rahmen, den der Nutzer im
+Sucher auf die Ziffern legt. Es ist auf **nachgebauten** Anzeigen trainiert
+(`scripts/kamera-netz/`) und an diesen Fotos nur **geprüft**; kein Foto hat je ein Gewicht
+bewegt. Gemessen wird, was der Nutzer erlebt: sechs leicht verwackelte Sucherbilder, drei
+gleiche nötig (`ReadingConsensus`), der Leser im Modus „eingerahmt“, je Foto 100 Versuche mit
+anderem Rahmen (`scripts/kamera-netz/evaluate.py`, Rohdaten in `netz-messung.txt`).
+
+| Foto | Anzeige | zweite Ablesung (Bereich um den Stand) | erste Ablesung (ohne Bereich) |
+|---|---|---|---|
+| 02 Aidon | `9023`, blass, grau | **99 / 100** richtig | 0, kein Merkmal (siehe unten) |
+| 04 Logarex | `000000`, groß | **100 / 100** | **100 / 100** |
+| 25 Landis | `002426`, Glanz | **97 / 100** | **95 / 100** |
+| 28 Openway | `00000`, daneben `004` | **98 / 100** | **56 / 100** |
+| 32 grünes Display | `1936`, schlechtes Licht | **99 / 100** | 0, kein Merkmal |
+| 27 Meterus | `00004.67`, schräg, große Tarifziffer links | 0 (nichts gelesen) | 0 |
+| 29 Kamstrup | `0014426`, klein, ungewöhnliche Schrift | 0 (nichts gelesen) | 0 |
+| 01 Datum | `27:08:22` | nie ein Vorschlag | nie ein Vorschlag |
+| 06 leeres Display | nichts | nie ein Vorschlag | nie ein Vorschlag |
+| **zusammen (7 Fotos mit Stand)** | | **493 richtig, 0 falsch, 207 nichts** (von 700) | **251 richtig, 0 falsch, 649 nichts** (von 900) |
+
+**Was das heißt**
+
+- **Nie etwas Falsches in 1 600 Versuchen**, auch beim Datum und beim leeren Display. Das ist die
+  Zusage der App. Eine Erkennungsquote von 100 % ist es nicht: **Fünf von sieben
+  Anzeigen liest sie fast immer, zwei gar nicht.** Bei diesen beiden sagt die App nichts, und
+  der Nutzer tippt.
+- **Warum die erste Ablesung strenger ist.** Ohne Bereich zählt nur eine Zahl mit führender Null,
+  Komma oder Einheit. Das Display zeigt auch Datum und Uhrzeit, und das Netz liest die
+  Doppelpunkte nicht immer: `270822` wäre ein erfundener Stand von 270.822 kWh. Eine erste
+  Ablesung tippt man einmal je Zähler; die Kamera hilft ab der zweiten. Aidon (`9023`) und das
+  grüne Display (`1936`) haben kein Merkmal und fallen deshalb bei der ersten Ablesung heraus.
+- **Ein verlorener Punkt macht aus 4,67 ein 467.** Das Netz las im Zwischenstand bei Meterus einmal
+  `467` (Faktor 100). Seitdem gilt: Hat das Zählwerk Nachkommastellen und ist die gerahmte Zahl
+  ohne Komma breiter als der Vorkommateil, schlägt die App nichts vor (Fälle `gerahmt-verlorener-punkt-…`
+  in `vektoren.json`). Davor lag die Zahl bei einem falschen von 360.
+- **Meterus und Kamstrup** scheitern an unterschiedlichem: Bei Meterus liest das Netz die große
+  Tarifziffer links mit, bei Kamstrup stehen Einheit und Ziffern in einer Schrift, die kein
+  Trainingsbild hatte. Beides sind Trainingsdaten, die fehlen, kein Fehler im Aufbau.
+- **Gerechnet wurde auf Fotos von Wikimedia** (zum Teil 430 Punkte breit). Eine Kamera liefert die
+  Ziffern in voller Auflösung; die Messung ist in dieser Hinsicht eher zu streng.
+- **Ungeprüft: ein iPhone.** Die Rechnung ist in Swift ausgeschrieben und gegen Python
+  geprüft (`DigitNetTests`, 18 Referenzbilder); wie scharf, hell und ruhig ein echtes Kamerabild
+  im Rahmen ist, zeigt erst TestFlight.
+
+**Was auf dem Weg gelernt wurde.** Handgebaute Bildverarbeitung (Schwelle, Komponenten, Segmentprobe)
+las an denselben Fotos 0 von 9. Das Netz wurde erst gut, als im Generator die Nebenzeichen
+dazukamen, die in echten Anzeigen neben der Zahl stehen (Einheit, Kennzahl `1.8.0`, kleine Ziffern,
+eine große Tarifziffer, Symbole), dazu Datum und Uhrzeit mit Doppelpunkt, gedruckte Ziffern als
+„nichts“ und Lücken in der Faltung entlang der Zeile (das Netz muss die ganze Zeile sehen, um
+die kleine `004` neben der großen Zahl zu überhören). Nach jeder Messung wurden die Fehler angesehen
+und der Generator geändert, nicht das Netz auf die Fotos zugeschnitten.
+
+**Wiederholen.** `scripts/kamera-netz/README.md`.
+
 ## Die Regeln des Lesers (`MeterTextReader`)
 
 Eingabe ist der Text, den die Texterkennung geliefert hat, dazu die Stellen des
@@ -168,15 +226,20 @@ Steht ein Siemens-Zähler mit 5+1 Stellen auf der Voreinstellung 6+2, wird aus
 der Bereich. Die Kamera sollte deshalb bei der ersten Ablesung die Stellenzahl
 mit dem Foto vergleichen und nachfragen, wenn die Ziffernzahl nicht passt.
 
-## Was noch fehlt (Stand 0.137.0)
+## Was noch fehlt (Stand 0.138.0)
 
-- **Eine Ziffernerkennung für Siebensegment-Anzeigen** (siehe oben), zuerst als Versuch
-  unter Linux an den 15 Fotos. Ohne sie trägt die Kamera die Rollenzähler, nicht die
-  LCD-Zähler.
-- Die Oberfläche in der App (Knopf im Ziffernblock, Kamera, Berechtigung). Der
-  Klick-Dummy zeigt den Ablauf schon; dort ist die Texterkennung nachgestellt.
-- Die Datenschutzerklärung und der Berechtigungstext für die Kamera, vor der
-  ersten Fassung mit Kamera.
+- **Meterus und Kamstrup** (oben): mehr Trainingsbilder dieser Art, am besten **echte Fotos von
+  Testern**, damit auch das Netz an Anzeigen gemessen wird, die niemand nachgebaut hat. Die
+  Fotos der Tester kommen **nicht** in die App und nicht ungefragt ins Repository.
+- **Ein Kamerabild vom iPhone**: Erst ein Bau in TestFlight zeigt, ob Schärfe, Licht und
+  Handzittern so sind wie im Versuch.
+- **Datenschutzerklärung und Store-Texte** dürfen die Kamera erst nennen, wenn sie im Laden ist
+  (CLAUDE.md, Regel 4a). Vor dem Einreichen von 1.6: Absatz zur Kamera in
+  `docs/website/datenschutz.html` („Bilder werden nur auf dem Gerät ausgewertet, nicht gespeichert,
+  nicht übertragen“) und in `09-appstore.md`. Technisch stimmt der Satz heute schon
+  (`scripts/check-sicherheit.sh` hält ihn).
+- **Der Kauf** (0,99 €, Teil von „Alles freischalten“): Die Kaufkennung ist in App Store Connect
+  noch nicht angelegt. Bis dahin ist die Kamera in TestFlight für alle frei.
 
 ## Namensnennung
 

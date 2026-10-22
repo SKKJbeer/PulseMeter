@@ -1068,6 +1068,101 @@
    "erwartet": {
     "keine": "noCandidate"
    }
+  },
+  {
+   "name": "gerahmt-verlorener-punkt-wird-nicht-zu-faktor-100",
+   "texte": [
+    [
+     "00000467",
+     0.9
+    ]
+   ],
+   "format": [
+    5,
+    2
+   ],
+   "bereich": null,
+   "eingerahmt": true,
+   "erwartet": {
+    "keine": "noCandidate"
+   }
+  },
+  {
+   "name": "gerahmt-verlorener-punkt-auch-mit-bereich",
+   "texte": [
+    [
+     "00000467",
+     0.9
+    ]
+   ],
+   "format": [
+    5,
+    2
+   ],
+   "bereich": [
+    "1",
+    "900"
+   ],
+   "eingerahmt": true,
+   "erwartet": {
+    "keine": "noCandidate"
+   }
+  },
+  {
+   "name": "gerahmt-so-breit-wie-das-zaehlwerk-wird-geteilt",
+   "texte": [
+    [
+     "0000467",
+     0.9
+    ]
+   ],
+   "format": [
+    5,
+    2
+   ],
+   "bereich": null,
+   "eingerahmt": true,
+   "erwartet": {
+    "wert": "4.67"
+   }
+  },
+  {
+   "name": "gerahmt-schmaler-als-vorkommateil-ohne-rote-stellen",
+   "texte": [
+    [
+     "014426",
+     0.9
+    ]
+   ],
+   "format": [
+    6,
+    2
+   ],
+   "bereich": [
+    "10000",
+    "20000"
+   ],
+   "eingerahmt": true,
+   "erwartet": {
+    "wert": "14426"
+   }
+  },
+  {
+   "name": "ungerahmt-bleibt-wie-vorher",
+   "texte": [
+    [
+     "00000467",
+     0.9
+    ]
+   ],
+   "format": [
+    5,
+    2
+   ],
+   "bereich": null,
+   "erwartet": {
+    "wert": "467"
+   }
   }
  ],
  "einigung": [

@@ -1,9 +1,10 @@
 """Das echte Prüfmaterial: Sucherausschnitte um die Hauptziffern der LCD-Fotos, in vielen Varianten.
 Die Rahmen stehen in docs/kamera/fotos.json ('ziffern', 'anzeige')."""
 import json, cv2, numpy as np
-import lcdsynth as L
+import synth as L
 from area import resample
-R = '/home/user/PulseMeter/docs/kamera/'
+import pathlib
+R = str(pathlib.Path(__file__).resolve().parents[2] / 'docs' / 'kamera') + '/'
 
 def _laden():
     d = json.load(open(R + 'fotos.json', encoding='utf-8'))['fotos']

@@ -19,6 +19,7 @@ def read_value(text, conf, fmt, rng_val=None):
         if F > 0 and len(text) == I + F: val = float(text[:-F] + '.' + text[-F:]); raw = I
         else:
             if sig(text) > I: return None
+            if F > 0 and len(text) > I: return None        # verlorener Punkt: nicht raten
             val = float(text); raw = len(text)
     strong = raw >= I
     marked = '.' in text or text.startswith('0')
