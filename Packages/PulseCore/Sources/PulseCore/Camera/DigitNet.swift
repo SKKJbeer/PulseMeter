@@ -24,7 +24,8 @@ import Foundation
 ///
 /// Aufbau (Gewichte mit eingerechneter Normalisierung, Reihenfolge fest):
 /// 4 Faltungsblöcke mit Maxpool, ein Faltungsschritt über die verbleibenden drei
-/// Zeilen, zwei Faltungen entlang der Zeichenfolge und eine Ausgabeschicht.
+/// Zeilen, vier Blöcke mit Lücken (1, 2, 4, 8) und Restverbindung entlang der
+/// Zeichenfolge und eine Ausgabeschicht.
 public struct DigitNet: Sendable {
 
     public static let inputWidth = 240
@@ -32,6 +33,7 @@ public struct DigitNet: Sendable {
     /// Klasse 0 ist „leer", danach die Zeichen in dieser Reihenfolge.
     public static let characters: [Character] = Array("0123456789.:")
     public static let classCount = characters.count + 1
+    static let dilations = [1, 2, 4, 8]
 
     struct Tensor: Sendable {
         let shape: [Int]
@@ -60,7 +62,7 @@ public struct DigitNet: Sendable {
         guard bytes.count > 8, Array(bytes[0..<4]) == Array("ZNW1".utf8) else { throw LoadError.badFormat }
         cursor = 4
         let count = try int32()
-        guard count == 16 else { throw LoadError.unexpectedLayout }
+        guard count == 20 else { throw LoadError.unexpectedLayout }
         var out: [Tensor] = []
         for _ in 0..<count {
             let rank = try int32()
@@ -80,8 +82,9 @@ public struct DigitNet: Sendable {
         }
         // Die Maße, auf die die Rechnung unten fest gebaut ist.
         let expected: [[Int]] = [[16, 1, 3, 3], [16], [32, 16, 3, 3], [32], [48, 32, 3, 3], [48],
-                                 [64, 48, 3, 3], [64], [96, 64, 3, 1], [96], [96, 96, 5], [96],
-                                 [96, 96, 5], [96], [Self.classCount, 96, 1], [Self.classCount]]
+                                 [64, 48, 3, 3], [64], [96, 64, 3, 1], [96],
+                                 [96, 96, 5], [96], [96, 96, 5], [96], [96, 96, 5], [96], [96, 96, 5], [96],
+                                 [Self.classCount, 96, 1], [Self.classCount]]
         guard out.map(\.shape) == expected else { throw LoadError.unexpectedLayout }
         tensors = out
     }
@@ -122,12 +125,17 @@ public struct DigitNet: Sendable {
         x = Self.collapse(x, cin: channels, h: h, w: w, weight: tensors[8].values, bias: tensors[9].values,
                           cout: tensors[8].shape[0])
         channels = tensors[8].shape[0]
-        x = Self.conv1D(x, cin: channels, steps: w, weight: tensors[10].values, bias: tensors[11].values,
-                        cout: tensors[10].shape[0], kernel: 5, relu: true)
-        x = Self.conv1D(x, cin: channels, steps: w, weight: tensors[12].values, bias: tensors[13].values,
-                        cout: tensors[12].shape[0], kernel: 5, relu: true)
-        x = Self.conv1D(x, cin: channels, steps: w, weight: tensors[14].values, bias: tensors[15].values,
-                        cout: Self.classCount, kernel: 1, relu: false)
+        // Vier Blöcke mit wachsenden Lücken (1, 2, 4, 8) und Restverbindung: Jeder Schritt der
+        // Folge sieht so die ganze Zeile. Das braucht das Netz, um die kleine „004“ neben der
+        // großen Zahl zu überhören und das „k“ der Einheit nicht als Ziffer zu lesen.
+        for (k, dilation) in Self.dilations.enumerated() {
+            let branch = Self.conv1D(x, cin: channels, steps: w, weight: tensors[10 + 2 * k].values,
+                                     bias: tensors[11 + 2 * k].values, cout: channels, kernel: 5,
+                                     dilation: dilation, relu: true)
+            for i in 0..<x.count { x[i] += branch[i] }
+        }
+        x = Self.conv1D(x, cin: channels, steps: w, weight: tensors[18].values, bias: tensors[19].values,
+                        cout: Self.classCount, kernel: 1, dilation: 1, relu: false)
         return Output(classCount: Self.classCount, steps: w, values: x)
     }
 
@@ -202,7 +210,7 @@ public struct DigitNet: Sendable {
         return out
     }
 
-    static func conv1D(_ x: [Float], cin: Int, steps: Int, weight: [Float], bias: [Float], cout: Int, kernel: Int, relu: Bool) -> [Float] {
+    static func conv1D(_ x: [Float], cin: Int, steps: Int, weight: [Float], bias: [Float], cout: Int, kernel: Int, dilation: Int, relu: Bool) -> [Float] {
         var out = [Float](repeating: 0, count: cout * steps)
         let pad = kernel / 2
         x.withUnsafeBufferPointer { src in
@@ -213,7 +221,7 @@ public struct DigitNet: Sendable {
                         for ic in 0..<cin {
                             for k in 0..<kernel {
                                 let wv = wt[(oc * cin + ic) * kernel + k]
-                                let shift = k - pad
+                                let shift = (k - pad) * dilation
                                 for t in max(0, -shift)..<min(steps, steps - shift) {
                                     dst[oc * steps + t] += wv * src[ic * steps + t + shift]
                                 }

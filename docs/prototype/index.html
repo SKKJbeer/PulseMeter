@@ -4305,12 +4305,12 @@ const DigitNet = (() => {
     return out;
   }
 
-  function conv1(x, cin, steps, wt, bias, cout, kernel, relu) {
+  function conv1(x, cin, steps, wt, bias, cout, kernel, dil, relu) {
     const out = new Float32Array(cout * steps), pad = kernel >> 1;
     for (let oc = 0; oc < cout; oc++) {
       out.fill(bias[oc], oc * steps, (oc + 1) * steps);
       for (let ic = 0; ic < cin; ic++) for (let k = 0; k < kernel; k++) {
-        const wv = wt[(oc * cin + ic) * kernel + k], sh = k - pad;
+        const wv = wt[(oc * cin + ic) * kernel + k], sh = (k - pad) * dil;
         for (let t = Math.max(0, -sh); t < Math.min(steps, steps - sh); t++) out[oc * steps + t] += wv * x[ic * steps + t + sh];
       }
       if (relu) for (let t = 0; t < steps; t++) if (out[oc * steps + t] < 0) out[oc * steps + t] = 0;
@@ -4331,9 +4331,12 @@ const DigitNet = (() => {
       [x, h, w] = pool(x, ch, h, w, ph, pw);
     });
     x = zusammen(x, ch, h, w, T[8].data, T[9].data, T[8].shape[0]); ch = T[8].shape[0];
-    x = conv1(x, ch, w, T[10].data, T[11].data, T[10].shape[0], 5, true);
-    x = conv1(x, ch, w, T[12].data, T[13].data, T[12].shape[0], 5, true);
-    x = conv1(x, ch, w, T[14].data, T[15].data, NC, 1, false);
+    // Vier Blöcke mit Lücken (1, 2, 4, 8) und Restverbindung, wie DigitNet.run in Swift.
+    [1, 2, 4, 8].forEach((dil, k) => {
+      const zweig = conv1(x, ch, w, T[10 + 2 * k].data, T[11 + 2 * k].data, ch, 5, dil, true);
+      for (let i = 0; i < x.length; i++) x[i] += zweig[i];
+    });
+    x = conv1(x, ch, w, T[18].data, T[19].data, NC, 1, 1, false);
     return { klassen: NC, schritte: w, werte: x };
   }
 
