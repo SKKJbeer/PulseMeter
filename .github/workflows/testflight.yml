@@ -195,7 +195,7 @@ jobs:
       # Der Rechenkern zuerst. Ein Upload eines Standes, dessen Rechnung falsch
       # ist, kostet Tester-Vertrauen und eine Woche.
       - name: PulseCore
-        run: swift test --package-path Packages/PulseCore
+        run: scripts/test-core.sh
 
       - name: XcodeGen
         run: brew install xcodegen

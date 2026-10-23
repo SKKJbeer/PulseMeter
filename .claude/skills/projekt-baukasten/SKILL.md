@@ -2802,6 +2802,12 @@ war, es selbst zu können.
 - **Zwei Netze, die sich einig sein müssen, fingen die meisten Fehler**, die ein einzelnes machte (17 und 33 auf 360 und 240
   Versuchen, danach 4 und 3), zum Preis von mehr „nichts“. Was beide gleich falsch lesen (eine matte `1` als `7`), fängt
   auch das nicht.
+- **Rechenintensive Tests laufen im Release-Bau.** Das Netz rechnet in Swift im Debug-Bau auf dem Mac-Läufer etwa 18-mal
+  langsamer als im Release-Bau; 50 Bilder in den Tests machten aus vier Minuten PulseCore 38 und rissen das
+  Zeitlimit des iPhone-Auftrags (60 Minuten) — als „abgebrochen“, nicht als Fehler. `scripts/test-core.sh`: alles
+  außer den Netz-Tests im Debug-Bau, diese mit `-c release -Xswiftc -enable-testing`. `@_optimize(speed)` auf den
+  Rechenschleifen allein brachte nichts Messbares. Ein „abgebrochen“ im Lauf zuerst mit der Laufzeit der Schritte
+  gegen das Zeitlimit vergleichen, bevor man einen Fehler im Code sucht.
 - **`pkill -f <Muster>` und `ps | grep <Muster> | xargs kill` töten die eigene
   Shell**, wenn das Muster in der eigenen Befehlszeile steht (Ausstieg 144, ohne
   Meldung). Mit `pgrep -af "^python3 train.py"` die Nummer holen und gezielt beenden.

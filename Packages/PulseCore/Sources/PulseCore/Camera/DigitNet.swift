@@ -140,7 +140,13 @@ public struct DigitNet: Sendable {
     }
 
     // MARK: - Schichten
+    //
+    // **`@_optimize(speed)` auf jeder Schleife, die rechnet.** Im Debug-Bau (Tests, Simulator) läuft Swift ohne
+    // Optimierung, und die Rechnung braucht dann auf dem Mac-Läufer Minuten statt Sekunden: Der Lauf zu `41e318a`
+    // brauchte für `PulseCore` 38 statt 4 Minuten und riss das Zeitlimit des iPhone-Auftrags. Das Attribut
+    // optimiert nur diese Funktionen, auch im Debug-Bau; die Ergebnisse bleiben dieselben.
 
+    @_optimize(speed)
     static func conv3x3ReLU(_ x: [Float], cin: Int, h: Int, w: Int, weight: [Float], bias: [Float], cout: Int) -> [Float] {
         var out = [Float](repeating: 0, count: cout * h * w)
         x.withUnsafeBufferPointer { src in
@@ -174,6 +180,7 @@ public struct DigitNet: Sendable {
         return out
     }
 
+    @_optimize(speed)
     static func maxPool(_ x: [Float], channels: Int, h: Int, w: Int, ph: Int, pw: Int) -> ([Float], Int, Int) {
         let oh = h / ph, ow = w / pw
         var out = [Float](repeating: -Float.infinity, count: channels * oh * ow)
@@ -194,6 +201,7 @@ public struct DigitNet: Sendable {
     }
 
     /// Faltung mit Kern (h × 1) ohne Auffüllen: aus `h` Zeilen wird eine.
+    @_optimize(speed)
     static func collapse(_ x: [Float], cin: Int, h: Int, w: Int, weight: [Float], bias: [Float], cout: Int) -> [Float] {
         var out = [Float](repeating: 0, count: cout * w)
         for oc in 0..<cout {
@@ -210,6 +218,7 @@ public struct DigitNet: Sendable {
         return out
     }
 
+    @_optimize(speed)
     static func conv1D(_ x: [Float], cin: Int, steps: Int, weight: [Float], bias: [Float], cout: Int, kernel: Int, dilation: Int, relu: Bool) -> [Float] {
         var out = [Float](repeating: 0, count: cout * steps)
         let pad = kernel / 2

@@ -64,6 +64,8 @@ nicht; zugesagt ist, dass die App **nichts Falsches vorschlägt**. Gemessen, nic
   senkt deshalb nur die nötige Sicherheit im Bereich; die erste Ablesung bleibt streng.
 
 ### Geändert
+- **PulseCore-Tests in zwei Läufen** (`scripts/test-core.sh`): Die Netz-Tests laufen im Release-Bau (10 statt 170 Sekunden lokal), alles andere
+  wie bisher. Im Debug-Bau brauchte der Mac-Läufer 38 statt 4 Minuten und riss das Zeitlimit des iPhone-Auftrags.
 - Die Kamera ist ein Sucher, kein Foto aus der Mediathek: Ein ganzes Foto liest zuerst das Typenschild.
   Der Rahmen legt fest, was gelesen wird (`docs/kamera/README.md`).
 - `docs/11-sicherheit.md`, `docs/05-roadmap.md`, `docs/06-uebergabe.md` und der Baukasten nachgezogen.

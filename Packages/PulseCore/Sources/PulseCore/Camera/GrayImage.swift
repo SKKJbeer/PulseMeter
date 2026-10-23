@@ -79,6 +79,7 @@ public struct GrayImage: Sendable {
     /// die Python-, Swift- und JavaScript-Fassung rechnen dasselbe.
     ///
     /// Werte 0 bis 1.
+    @_optimize(speed)
     public func resampled(rect: PixelRect, outWidth: Int, outHeight: Int) -> [Float] {
         let rows = Self.weights(start: rect.y, length: rect.height, count: outHeight, limit: height)
         let cols = Self.weights(start: rect.x, length: rect.width, count: outWidth, limit: width)

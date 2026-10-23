@@ -235,7 +235,7 @@ if [ "$SCOPE" = "alles" ] || [ "$SCOPE" = "schnell" ]; then
   # Unterscheidung wie bei `PulseData` eine Zeile weiter, und dieselbe wie bei
   # den Berechtigungen: „nicht prüfbar" ist nicht „rot".
   if command -v swift >/dev/null 2>&1; then
-    run "PulseCore" swift test --package-path Packages/PulseCore || true
+    run "PulseCore" scripts/test-core.sh || true
   else
     note "PulseCore übersprungen — keine Swift-Toolchain auf diesem Rechner."
   fi
