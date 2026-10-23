@@ -132,16 +132,18 @@ Klick-Dummy. Der Satz „Alle Werte in …" unter der Tabelle im Entwurf ist weg
    am 22. Oktober entschieden, die Siebensegment-Erkennung selbst zu lösen (Option b). Ergebnis:
    ein eigenes **Ziffernnetz** (`DigitNet` in PulseCore, in Swift ausgeschrieben, Gewichte als
    Zeichenkette im Quelltext), trainiert auf nachgebauten Anzeigen, an den Fotos nur gemessen
-   (`scripts/kamera-netz/`, Messung in `docs/kamera/README.md`). **Zahlen:** 5 von 7 LCD-Anzeigen
-   liest es fast immer (97 bis 100 von 100 Versuchen bei der zweiten Ablesung), Meterus und
-   Kamstrup gar nicht, in 1.600 Versuchen **kein falscher Vorschlag**. „100 % Erkennung“
-   gibt es nicht und wird nicht versprochen; zugesagt ist: nichts Falsches. In der App:
+   (`scripts/kamera-netz/`, Messung in `docs/kamera/README.md`). **Zahlen** (`docs/kamera/README.md`):
+   zwei Netze müssen sich einig sein. Auf den ersten sieben Fotos 0 Fehler, aber das ist kein unabhängiger Test mehr;
+   auf einer **zweiten, nie trainierten Sammlung** (`fotos-lcd.json`) 5 Fehler in 600 Versuchen, alle bei einem
+   Foto (Elster: `7` statt `1`), und nur etwa jeder dritte Versuch liest richtig. Meterus und Kamstrup liest es nie.
+   „100 % Erkennung“ gibt es nicht und wird nicht versprochen; das frühere „nie etwas Falsches“ hat sich auf neuen
+   Fotos nicht gehalten. In der App:
    Knopf „Mit Kamera ablesen“ im Ziffernblock, Sucher mit Rahmen (`App/KameraView.swift`,
    `App/KameraSitzung.swift`), Taschenlampe, Hinweise zum Bild, Vorschlag erst nach drei
    gleichen von sechs Bildern, Herkunft „Kamera“ beim Sichern, Berechtigung
    `NSCameraUsageDescription`. Klick-Dummy rechnet das Netz im Browser. **Offen, in dieser
    Reihenfolge:** (1) ein Bau in TestFlight und ein Test **am Zähler** mit dem iPhone,
-   (2) Fotos von echten Zählern (Meterus-Art, Kamstrup-Art) für mehr Training, (3) Kaufkennung
+   (2) Fotos von echten Zählern (Elster, Kaifa, Focus, Meterus, Kamstrup) für mehr Training, **freiwillig geschickt**, nicht aus der App, (3) Kaufkennung
    „Kamera“ (0,99 €) in App Store Connect anlegen; bis dahin ist die Kamera frei,
    (4) Absatz zur Kamera in Datenschutzerklärung und Store-Texten, **erst wenn 1.6 im Laden
    ist**, (5) Rollen: Vision im Sucher ist nur nachgemessen, nicht am Gerät. **1.5.1 ist im

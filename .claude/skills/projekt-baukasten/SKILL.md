@@ -2791,6 +2791,17 @@ war, es selbst zu können.
 - **Eine lange Trainingsschleife auf vier Kernen kostet zehn Minuten je Epoche.**
   Nach jeder Epoche speichern und messen, nicht auf das Ende warten; und bei einer
   Änderung am Generator **ab dem Zwischenstand weitertrainieren**, nicht von vorn.
+- **Die Fotos, an denen man gebaut hat, sind kein Test mehr.** Nach vier Runden „Fehlerbild ansehen, Generator ändern“
+  stand auf den sieben Fotos null Fehler, auf neun neuen aber 16 in 1.500 Versuchen. **Vor der Behauptung neue Fotos holen**
+  (Wikimedia Commons, `scripts/kamera-netz/README.md`) und die alten Zahlen nicht mehr als Beleg nehmen. Die erste
+  Fassung des Eintrags sagte „nie etwas Falsches“; das musste zurückgenommen werden.
+- **Neue, realistischere Trainingsdaten machen ein Netz nicht automatisch besser.** Echte Siebensegment-Schriften (DSEG)
+  im Generator machten es schlechter: Die Buchstaben „REC“ in Segmentschrift las es als Ziffer. Erst Buchstaben als
+  Nebenzeichen, Spiegelungen und kleine Zahlen mit vielen Nullen (so stehen neue Zähler) halfen. Jede Runde an beiden
+  Sammlungen messen, nicht nur auf den Trainingsverlust schauen.
+- **Zwei Netze, die sich einig sein müssen, fingen die meisten Fehler**, die ein einzelnes machte (17 und 33 auf 360 und 240
+  Versuchen, danach 4 und 3), zum Preis von mehr „nichts“. Was beide gleich falsch lesen (eine matte `1` als `7`), fängt
+  auch das nicht.
 - **`pkill -f <Muster>` und `ps | grep <Muster> | xargs kill` töten die eigene
   Shell**, wenn das Muster in der eigenen Befehlszeile steht (Ausstieg 144, ohne
   Meldung). Mit `pgrep -af "^python3 train.py"` die Nummer holen und gezielt beenden.

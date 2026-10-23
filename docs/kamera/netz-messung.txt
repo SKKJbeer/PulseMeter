@@ -1,18 +1,35 @@
-01 erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
-02 erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
-02 zweite richtig  99 falsch   0 nichts   1 | Einzelbilder richtig 591 falsch   0 von 600 
-04 erste  richtig 100 falsch   0 nichts   0 | Einzelbilder richtig 594 falsch   1 von 600 
-04 zweite richtig 100 falsch   0 nichts   0 | Einzelbilder richtig 588 falsch   0 von 600 
-06 erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
-25 erste  richtig  95 falsch   0 nichts   5 | Einzelbilder richtig 532 falsch   9 von 600 
-25 zweite richtig  97 falsch   0 nichts   3 | Einzelbilder richtig 556 falsch  14 von 600 
-27 erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   4 von 600 
-27 zweite richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   4 von 600 
-28 erste  richtig  56 falsch   0 nichts  44 | Einzelbilder richtig 302 falsch   4 von 600 
-28 zweite richtig  98 falsch   0 nichts   2 | Einzelbilder richtig 554 falsch   6 von 600 
-29 erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
-29 zweite richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
-32 erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
-32 zweite richtig  99 falsch   0 nichts   1 | Einzelbilder richtig 557 falsch   3 von 600 
-== erste: richtig 251 falsch 0 nichts 649 (von 900)
-== zweite: richtig 493 falsch 0 nichts 207 (von 700)
+01 alt erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+02 alt erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+02 alt zweite richtig  99 falsch   0 nichts   1 | Einzelbilder richtig 588 falsch   0 von 600 
+04 alt erste  richtig  99 falsch   0 nichts   1 | Einzelbilder richtig 573 falsch   0 von 600 
+04 alt zweite richtig  98 falsch   0 nichts   2 | Einzelbilder richtig 561 falsch   0 von 600 
+06 alt erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+25 alt erste  richtig  70 falsch   0 nichts  30 | Einzelbilder richtig 382 falsch   1 von 600 
+25 alt zweite richtig  78 falsch   0 nichts  22 | Einzelbilder richtig 438 falsch   3 von 600 
+27 alt erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   3 von 600 
+27 alt zweite richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   3 von 600 
+28 alt erste  richtig  36 falsch   0 nichts  64 | Einzelbilder richtig 213 falsch   1 von 600 
+28 alt zweite richtig  48 falsch   0 nichts  52 | Einzelbilder richtig 264 falsch   2 von 600 
+29 alt erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+29 alt zweite richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+32 alt erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+32 alt zweite richtig  78 falsch   0 nichts  22 | Einzelbilder richtig 389 falsch   0 von 600 
+50 neu erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+50 neu zweite richtig  79 falsch   0 nichts  21 | Einzelbilder richtig 445 falsch   0 von 600 
+51 neu erste  richtig  58 falsch   0 nichts  42 | Einzelbilder richtig 346 falsch   0 von 600 
+51 neu zweite richtig  60 falsch   0 nichts  40 | Einzelbilder richtig 349 falsch  11 von 600 
+52 neu erste  richtig   0 falsch  11 nichts  89 | Einzelbilder richtig   0 falsch  65 von 600 falsch: [7.0, 7.0, 7.0]
+52 neu zweite richtig   0 falsch   5 nichts  95 | Einzelbilder richtig   0 falsch  45 von 600 falsch: [7.0, 7.0, 7.0]
+53 neu erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+53 neu zweite richtig  28 falsch   0 nichts  72 | Einzelbilder richtig 152 falsch   0 von 600 
+54 neu erste  richtig   6 falsch   0 nichts  94 | Einzelbilder richtig  50 falsch   0 von 600 
+54 neu zweite richtig   9 falsch   0 nichts  91 | Einzelbilder richtig  73 falsch   1 von 600 
+55 neu erste  richtig  26 falsch   0 nichts  74 | Einzelbilder richtig 150 falsch   3 von 600 
+55 neu zweite richtig  39 falsch   0 nichts  61 | Einzelbilder richtig 185 falsch   0 von 600 
+56 neu erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+57 neu erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+58 neu erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+== alt (Fotos die ersten sieben) erste: richtig 205 falsch 0 nichts 695 (von 900)
+== alt (Fotos die ersten sieben) zweite: richtig 401 falsch 0 nichts 299 (von 700)
+== neu (Fotos neu, nie trainiert) erste: richtig 90 falsch 11 nichts 799 (von 900)
+== neu (Fotos neu, nie trainiert) zweite: richtig 215 falsch 5 nichts 380 (von 600)

@@ -24,9 +24,11 @@ nicht; zugesagt ist, dass die App **nichts Falsches vorschlägt**. Gemessen, nic
   gelesen“, solange niemand eine Ziffer ändert; die Ablesung trägt dann die Herkunft „Kamera“.
 - **Hinweise zum Bild:** „Zu dunkel“ (mit Taschenlampe im Sucher), „Kaum Kontrast“, „Unscharf“, nach zwölf
   Sekunden „Klappt nicht? Tipp den Stand einfach ein.“ Unter dem Rahmen steht live, was das Netz sieht.
-- **Das Ziffernnetz** (`DigitNet`, PulseCore): 250 000 Gewichte, ausgeschrieben in Swift, etwa 70 Millionen
-  Multiplikationen je Bild. Trainiert auf **nachgebauten** Anzeigen (`scripts/kamera-netz/`), an den echten
-  Fotos nur gemessen. Python, Swift und der Klick-Dummy rechnen dasselbe, gegen 18 Referenzbilder.
+- **Das Ziffernnetz** (`DigitNet`, PulseCore): 250 000 Gewichte, ausgeschrieben in Swift, etwa 90 Millionen
+  Multiplikationen je Bild. Trainiert auf **nachgebauten** Anzeigen (echte Siebensegment-Schriften DSEG, Nebenzeichen,
+  Spiegelungen; `scripts/kamera-netz/`), an Fotos nur gemessen. **Zwei Netze müssen sich einig sein**
+  (`DigitEnsemble`). Python, Swift und der Klick-Dummy rechnen dasselbe, gegen 27 Referenzbilder.
+- **Zweite Fotosammlung** `fotos-lcd.json`: neun Fotos, die nie zum Training dienten, damit die Messung unabhängig bleibt.
 - **Der Klick-Dummy rechnet das Netz im Browser** an elf Beispielzählern (Ausschnitt um den Rahmen aus
   dem Foto). Rollen liest dort weiter die nachgestellte Texterkennung.
 - **Bereich aus der Prüfung:** `ConsumptionEngine.plausibleReadingRange` ist dieselbe Grenze, ab der der
@@ -38,17 +40,26 @@ nicht; zugesagt ist, dass die App **nichts Falsches vorschlägt**. Gemessen, nic
   (ein gezeichnetes Bild geht im Simulator durch dieselbe Auswertung wie ein Kamerabild).
 
 ### Gemessen (je Foto 100 Versuche, sechs Bilder, drei gleiche nötig, Leser wie in der App)
-- **Zweite Ablesung (mit Bereich): 493 richtig, 0 falsch, 207 nichts** (von 700). Aidon 99, Logarex 100, Landis 97,
-  Openway 98, grünes Display 99 von 100. **Meterus und Kamstrup: 0** (nichts gelesen, nichts Falsches).
-- **Erste Ablesung: 251 richtig, 0 falsch, 649 nichts** (von 900). Ohne Bereich zählt nur eine Zahl mit
-  führender Null, Komma oder Einheit.
-- **Das Datum im Display (`27:08:22`) und das leere Display: in 200 Versuchen nie ein Vorschlag.**
-- Rohdaten: `docs/kamera/netz-messung.txt`.
+- **Erste Sammlung** (die sieben LCD-Fotos, nach vielen Runden Fehlerbilder angesehen, also kein unabhängiger Test mehr):
+  zweite Ablesung **401 richtig, 0 falsch**, 299 nichts (von 700); erste Ablesung 205 richtig, 0 falsch (von 900).
+- **Zweite Sammlung** (`docs/kamera/fotos-lcd.json`, neun neue Fotos, nie trainiert): zweite Ablesung **215 richtig,
+  5 falsch**, 380 nichts (von 600); erste Ablesung 90 richtig, **11 falsch**, 799 nichts (von 900).
+  **Alle Fehler stammen von einem Foto**, dem Elster-Zähler: Beide Netze lesen `7` statt `1` (matte Anzeige,
+  Spiegelung, Ziffer am Rand). Ein gemeinsamer Fehler, den auch die Einigung nicht fängt.
+- **Meterus und Kamstrup: 0 von 100** (nichts gelesen, nichts Falsches). Datum, leere Displays und Displaytest:
+  in 500 Versuchen nie ein Vorschlag.
+- **Die Zusage „nie etwas Falsches“ hat sich nicht gehalten.** In der ersten Fassung dieses Eintrags stand
+  „in 1.600 Versuchen kein falscher Vorschlag“. Das galt nur für die Fotos, an denen ich gebaut hatte. Auf neuen
+  Fotos las ein einzelnes Netz in 17 von 360 und 33 von 240 Versuchen falsch. Zwei Netze, die sich einig sein müssen,
+  senken das auf den Wert oben. Es bleibt eine Quote, keine Zusage; der Nutzer sieht die Zahl vor dem Übernehmen.
+- Rohdaten: `docs/kamera/netz-messung.txt`; Einzelheiten und Grenzen: `docs/kamera/README.md`.
 
 ### Behoben (auf dem Weg, mit Test)
 - **Ein verlorener Punkt machte aus 4,67 ein 467** (Faktor 100, Meterus, 1 von 360). Hat das Zählwerk
   Nachkommastellen und ist die gerahmte Zahl ohne Komma breiter als der Vorkommateil, schlägt die App nichts
   vor. Fälle `gerahmt-verlorener-punkt-…` in `vektoren.json`.
+- **Ein Displaytest (`88888888`, alle Segmente) wurde als 888.888 vorgeschlagen.** Lauter Achten (vier oder mehr)
+  gelten nicht als Stand.
 - **Das Datum `27:08:22` wurde ohne Doppelpunkte als 270.822 kWh gelesen.** Der „eingerahmt“-Modus des Lesers
   senkt deshalb nur die nötige Sicherheit im Bereich; die erste Ablesung bleibt streng.
 
@@ -64,7 +75,7 @@ nicht; zugesagt ist, dass die App **nichts Falsches vorschlägt**. Gemessen, nic
 - **Apples Texterkennung im Sucher** (Rollen) ist nachgemessen (21.10.), nicht am Gerät.
 - **Der Kauf** (0,99 €) ist nicht eingebaut: Die Kaufkennung gibt es in App Store Connect noch nicht.
 
-_340 Tests in PulseCore, alle grün (21 neu: Netz, Sucher, Einigung, Bereich, Leser); Klick-Dummy-Prüfung grün._
+_343 Tests in PulseCore, alle grün (24 neu: Netze, Ensemble, Sucher, Einigung, Bereich, Leser); Klick-Dummy-Prüfung grün. Im CI-Lauf zu `4ac5371` waren die iPhone-Prüfungen grün, auf dem iPad fielen der neue Kamera-Test (jetzt behoben, die Vorführung rechnete nach dem Treffer weiter) und ein Widget-Test (Simulator-Wackler `kAXErrorServerNotFound`)._
 
 ---
 

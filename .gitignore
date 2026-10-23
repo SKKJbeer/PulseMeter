@@ -21,3 +21,4 @@ node_modules/
 __pycache__/
 *.pyc
 __pycache__/
+scripts/kamera-netz/dseg/

@@ -1,4 +1,5 @@
-"""Die Messung, auf die es ankommt: Was bekommt der Nutzer vorgeschlagen, wenn er die Zahl in den Rahmen hält?
+"""Aufruf: python3 evaluate.py <netz1.pt[,netz2.pt,…]> <Versuche>   (mehrere Netze: ein Bild gilt nur bei gleichem Text)
+Die Messung, auf die es ankommt: Was bekommt der Nutzer vorgeschlagen, wenn er die Zahl in den Rahmen hält?
 Sechs Bilder, drei gleiche nötig (ReadingConsensus), der Leser im Modus „eingerahmt". Je Foto viele Versuche."""
 import sys, json, numpy as np, torch
 import realtest as RT
