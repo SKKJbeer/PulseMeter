@@ -325,6 +325,7 @@ final class KameraModell {
         konsens.reset()
         gestartet = Date()
         langeOhneTreffer = false
+        if Startschalter.gesetzt("-pulse-kamera-test") { starteVorfuehrung() }
     }
 
     /// Ein Bild ist ausgewertet.
@@ -335,6 +336,10 @@ final class KameraModell {
         langeOhneTreffer = Date().timeIntervalSince(gestartet) > 12
         if let einig = konsens.add(befund.ergebnis) {
             withAnimation(.snappy) { treffer = einig }
+            // Die Vorführung hört auf: Sie rechnet im Debug-Bau Sekunden je Bild und hielt die App
+            // nach dem Treffer beschäftigt, auf dem langsameren iPad so lange, dass der Test
+            // den Hinweis „Von der Kamera gelesen“ nicht rechtzeitig fand.
+            vorfuehrung?.cancel()
             UINotificationFeedbackGenerator().notificationOccurred(.success)
             UIAccessibility.post(notification: .announcement, argument: "Zählerstand gefunden")
         }
@@ -374,6 +379,7 @@ final class KameraModell {
         let ganz = PixelRect(x: 0, y: 0, width: Double(bild.width), height: Double(bild.height))
         let formatKopie = self.format
         let bereichKopie = self.bereich
+        vorfuehrung?.cancel()
         vorfuehrung = Task { [weak self] in
             while !Task.isCancelled {
                 // Gerechnet wird abseits des Hauptthreads: Im Debug-Bau braucht das Netz
@@ -381,6 +387,7 @@ final class KameraModell {
                 let befund = await Task.detached(priority: .userInitiated) {
                     KameraSitzung.auswerten(bild, rahmen: ganz, format: formatKopie, bereich: bereichKopie)
                 }.value
+                if Task.isCancelled { return }
                 self?.aufnehmen(befund)
                 try? await Task.sleep(for: .milliseconds(250))
             }

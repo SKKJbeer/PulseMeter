@@ -2782,7 +2782,8 @@ final class LaunchTests: XCTestCase {
         take.tap()
 
         let hint = app.descendants(matching: .any).matching(identifier: "kamera-hinweis").firstMatch
-        XCTAssertTrue(hint.waitForExistence(timeout: erscheint),
+        // Großzügig: Das Blatt schließt sich, und auf dem iPad im Debug-Bau dauert das.
+        XCTAssertTrue(hint.waitForExistence(timeout: 40),
                       "Nach dem Übernehmen muss der Ziffernblock sagen, dass die Zahl von der Kamera kommt")
         XCTAssertTrue(open.exists, "Der Ziffernblock ist wieder da, die Ablesung ist nicht gesichert")
 
