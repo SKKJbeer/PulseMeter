@@ -265,3 +265,19 @@ Quelle.
 | `fotos/29-kamstrup.jpg` | Strom, LCD | 14426 | 7+0 | [Kamstrup Electricity meter 382.jpg](https://commons.wikimedia.org/wiki/File:Kamstrup_Electricity_meter_382.jpg) | Gert Skriver | CC BY 3.0 |
 | `fotos/32-gruenes-display.jpg` | Strom, LCD, schlechtes Licht | 1936 | 6+0 | [Smart Electrical Meter.jpg](https://commons.wikimedia.org/wiki/File:Smart_Electrical_Meter.jpg) | Aliva Sahoo | CC BY-SA 4.0 |
 | `fotos/43-badger-halbe-ziffer.jpg` | Wasser, Rollenzählwerk | — | 6+0 | [Water Meter USA.JPG](https://commons.wikimedia.org/wiki/File:Water_Meter_USA.JPG) | Stilfehler | Public domain |
+
+### Zweite Sammlung (`fotos-lcd/`, nie zum Training benutzt)
+
+Am 23. Oktober 2026 von Wikimedia Commons geholt, auf 960 Pixel Breite verkleinert, sonst unverändert. Die Rahmen und Soll-Texte stehen in `fotos-lcd.json`.
+
+| Datei | Art | Soll | Stellen | Quelle | Urheber | Lizenz |
+|---|---|---|---|---|---|---|
+| `fotos-lcd/50-aclara-i210.jpg` | Strom, LCD, Aclara I-210+ | 74590 | 5+0 | [Aclara I-210+ single phase smart electricity meter.jpg](https://commons.wikimedia.org/wiki/File:Aclara_I-210%2B_single_phase_smart_electricity_meter.jpg) | 277volts | CC BY-SA 4.0 |
+| `fotos-lcd/51-pel-fesco.jpg` | Strom, LCD, Drehstrom | 10 | 6+0 | [Digital Electric meter Erorr.jpg](https://commons.wikimedia.org/wiki/File:Digital_Electric_meter_Erorr.jpg) | KingWriter1245 | CC BY-SA 4.0 |
+| `fotos-lcd/52-elster-r.jpg` | Strom, LCD, Elster | 1 | 5+0 | [Elster Type R15 electricity meter.jpeg](https://commons.wikimedia.org/wiki/File:Elster_Type_R15_electricity_meter.jpeg) | Zuzu | CC BY-SA 3.0 |
+| `fotos-lcd/53-kaifa-ma105.jpg` | Strom, LCD, Kaifa MA105 | 134141 | 6+0 | [Kaifa MA105H2E AMS-måler.jpg](https://commons.wikimedia.org/wiki/File:Kaifa_MA105H2E_AMS-m%C3%A5ler.jpg) | Fredrik Lindseth | CC BY-SA 4.0 |
+| `fotos-lcd/54-focus-axr.jpg` | Strom, LCD, Landis+Gyr Focus AXR | 0 | 5+0 | [Landis+Gyr FocusAXR-SD Hydro-Quebec.JPG](https://commons.wikimedia.org/wiki/File:Landis%2BGyr_FocusAXR-SD_Hydro-Quebec.JPG) | Bouchecl | CC BY-SA 4.0 |
+| `fotos-lcd/55-flowiq-2200.jpg` | Wasser, LCD, Kamstrup flowIQ | 880.518 | 6+3 | [Digitaler Wasserzaehler.jpg](https://commons.wikimedia.org/wiki/File:Digitaler_Wasserzaehler.jpg) | HelgeRieder | CC0 |
+| `fotos-lcd/56-aclara-leer.jpg` | Strom, LCD ohne Anzeige | — | 6+0 | [Aclara kV2c FITZALL 3-phase smart electricity meter.jpg](https://commons.wikimedia.org/wiki/File:Aclara_kV2c_FITZALL_3-phase_smart_electricity_meter.jpg) | 277volts | CC BY-SA 4.0 |
+| `fotos-lcd/57-iskra-test.jpg` | Strom, LCD mit allen Segmenten | — | 6+0 | [Meterkast meter.jpg](https://commons.wikimedia.org/wiki/File:Meterkast_meter.jpg) | BAsta8 | CC BY-SA 4.0 |
+| `fotos-lcd/58-iskra-leer.jpg` | Strom, LCD ohne Anzeige, Spiegelung | — | 6+0 | [Vorarlberger Kraftwerke-Energy meter (electro)-11ASD.jpg](https://commons.wikimedia.org/wiki/File:Vorarlberger_Kraftwerke-Energy_meter_(electro)-11ASD.jpg) | Asurnipal | CC BY-SA 4.0 |

@@ -123,6 +123,11 @@ public enum MeterTextReader {
         framed: Bool = false
     ) -> Outcome {
         var candidates = texts.flatMap { readCandidates(in: $0, format: format) }
+            // **Lauter Achten sind der Displaytest**, nicht ein Stand: Beim Einschalten und auf
+            // Knopfdruck leuchten alle Segmente. Gefunden an einem Iskra-Zähler (`fotos-lcd/57`),
+            // dessen `88888888` das Netz als 888.888 vorschlug. Ein echter Stand aus lauter Achten
+            // ist so selten, dass der Nutzer ihn lieber tippt.
+            .filter { !$0.isAllEights }
         // **Ein verlorener Punkt macht aus 4,67 ein 467** (Faktor 100). Hat das Zählwerk
         // Nachkommastellen und steht in der gerahmten Zeile ohne Komma eine Zahl, die
         // breiter ist als der Vorkommateil, dann gehören Nachkommastellen dazu, und wo der
@@ -175,6 +180,12 @@ public enum MeterTextReader {
         /// Einheit, Komma oder führende Null: das, was eine Seriennummer nicht hat.
         var marked: Bool
         var fractionMissing: Bool
+
+        /// Vier oder mehr Stellen, alle eine 8.
+        var isAllEights: Bool {
+            let digits = raw.filter { $0.isASCIIDigit }
+            return digits.count >= 4 && digits.allSatisfy { $0 == "8" }
+        }
     }
 
     static func readCandidates(in item: RecognizedLine, format: MeterFormat) -> [Candidate] {

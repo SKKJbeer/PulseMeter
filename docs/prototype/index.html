@@ -4437,6 +4437,8 @@ const MeterTextReader = (() => {
   function propose(texts, f, plausible = null, framed = false) {
     const inRange = c => plausible ? c.value >= plausible[0] && c.value <= plausible[1] : true;
     let candidates = texts.flatMap(t => readCandidates(t, f));
+    // Lauter Achten sind der Displaytest, kein Stand: wie MeterTextReader.propose in Swift.
+    candidates = candidates.filter(c => { const d = [...c.raw].filter(isDigit); return !(d.length >= 4 && d.every(x => x === "8")); });
     // Ein verlorener Punkt macht aus 4,67 ein 467: wie MeterTextReader.propose in Swift.
     if (framed && f.frac > 0) candidates = candidates.filter(c => !(c.fractionMissing && [...c.raw].filter(isDigit).length > f.int));
     if (!candidates.length) return { none: "noCandidate" };

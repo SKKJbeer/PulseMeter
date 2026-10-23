@@ -1163,6 +1163,66 @@
    "erwartet": {
     "wert": "467"
    }
+  },
+  {
+   "name": "displaytest-lauter-achten-ist-kein-stand",
+   "texte": [
+    [
+     "888888",
+     0.95
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": null,
+   "eingerahmt": true,
+   "erwartet": {
+    "keine": "noCandidate"
+   }
+  },
+  {
+   "name": "displaytest-auch-mit-bereich",
+   "texte": [
+    [
+     "888888",
+     0.95
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": [
+    "800000",
+    "900000"
+   ],
+   "eingerahmt": true,
+   "erwartet": {
+    "keine": "noCandidate"
+   }
+  },
+  {
+   "name": "drei-achten-sind-noch-ein-stand",
+   "texte": [
+    [
+     "188",
+     0.95
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": [
+    "100",
+    "300"
+   ],
+   "eingerahmt": true,
+   "erwartet": {
+    "wert": "188"
+   }
   }
  ],
  "einigung": [

@@ -1,0 +1,176 @@
+{
+ "hinweis": "Zweite Sammlung: Zählerfotos mit LCD, die **nie zum Training oder zum Anpassen des Generators gedient haben** (Prüfmaterial, am 23. Oktober 2026 von Wikimedia Commons geholt, auf 960 Pixel Breite verkleinert). „ziffern“ ist der Rahmen um die Hauptziffern (oder um die Anzeige, wo nichts steht) als Bruchteile des Fotos, von Hand gesetzt; „anzeige“ der Text, den ein Mensch dort liest.",
+ "fotos": [
+  {
+   "datei": "fotos-lcd/50-aclara-i210.jpg",
+   "art": "Strom, LCD, Aclara I-210+",
+   "stand": "74590",
+   "vorkommastellen": 5,
+   "nachkommastellen": 0,
+   "anzeige": "74590",
+   "ziffern": [
+    0.4388,
+    0.3332,
+    0.5648,
+    0.3908
+   ],
+   "hinweis": "Fünf Ziffern, die letzte halb hinter dem Rand der Linse. Darunter „kWh“ und „Delivered“.",
+   "quelle": "https://commons.wikimedia.org/wiki/File:Aclara_I-210%2B_single_phase_smart_electricity_meter.jpg",
+   "titel": "Aclara I-210+ single phase smart electricity meter.jpg",
+   "urheber": "277volts",
+   "lizenz": "CC BY-SA 4.0"
+  },
+  {
+   "datei": "fotos-lcd/51-pel-fesco.jpg",
+   "art": "Strom, LCD, Drehstrom",
+   "stand": "10",
+   "vorkommastellen": 6,
+   "nachkommastellen": 0,
+   "anzeige": "000010",
+   "ziffern": [
+    0.3786,
+    0.277,
+    0.5522,
+    0.316
+   ],
+   "hinweis": "„000010“ in feiner Schrift, kleine Zahl „016“ oben links, „Norm“ darunter.",
+   "quelle": "https://commons.wikimedia.org/wiki/File:Digital_Electric_meter_Erorr.jpg",
+   "titel": "Digital Electric meter Erorr.jpg",
+   "urheber": "KingWriter1245",
+   "lizenz": "CC BY-SA 4.0"
+  },
+  {
+   "datei": "fotos-lcd/52-elster-r.jpg",
+   "art": "Strom, LCD, Elster",
+   "stand": "1",
+   "vorkommastellen": 5,
+   "nachkommastellen": 0,
+   "anzeige": "00001",
+   "ziffern": [
+    0.23,
+    0.3884,
+    0.35,
+    0.4196
+   ],
+   "hinweis": "„00001“ mit Einheit „kWh“ und Pfeilen darunter, Spiegelung im Glas.",
+   "quelle": "https://commons.wikimedia.org/wiki/File:Elster_Type_R15_electricity_meter.jpeg",
+   "titel": "Elster Type R15 electricity meter.jpeg",
+   "urheber": "Zuzu",
+   "lizenz": "CC BY-SA 3.0"
+  },
+  {
+   "datei": "fotos-lcd/53-kaifa-ma105.jpg",
+   "art": "Strom, LCD, Kaifa MA105",
+   "stand": "134141",
+   "vorkommastellen": 6,
+   "nachkommastellen": 0,
+   "anzeige": "134141",
+   "ziffern": [
+    0.4328,
+    0.3618,
+    0.6344,
+    0.4179
+   ],
+   "hinweis": "„134141“ neben „kWh“; die Kennzahl „18.0“ oben links ist klein und gehört nicht zur Zahl.",
+   "quelle": "https://commons.wikimedia.org/wiki/File:Kaifa_MA105H2E_AMS-m%C3%A5ler.jpg",
+   "titel": "Kaifa MA105H2E AMS-måler.jpg",
+   "urheber": "Fredrik Lindseth",
+   "lizenz": "CC BY-SA 4.0"
+  },
+  {
+   "datei": "fotos-lcd/54-focus-axr.jpg",
+   "art": "Strom, LCD, Landis+Gyr Focus AXR",
+   "stand": "0",
+   "vorkommastellen": 5,
+   "nachkommastellen": 0,
+   "anzeige": "00000",
+   "ziffern": [
+    0.4358,
+    0.3056,
+    0.6162,
+    0.3872
+   ],
+   "hinweis": "Links das große Wort „REC“ in Segmentschrift, rechts die Zahl. Soll ist nur die Zahl.",
+   "quelle": "https://commons.wikimedia.org/wiki/File:Landis%2BGyr_FocusAXR-SD_Hydro-Quebec.JPG",
+   "titel": "Landis+Gyr FocusAXR-SD Hydro-Quebec.JPG",
+   "urheber": "Bouchecl",
+   "lizenz": "CC BY-SA 4.0"
+  },
+  {
+   "datei": "fotos-lcd/55-flowiq-2200.jpg",
+   "art": "Wasser, LCD, Kamstrup flowIQ",
+   "stand": "880.518",
+   "vorkommastellen": 6,
+   "nachkommastellen": 3,
+   "anzeige": "000880.518",
+   "ziffern": [
+    0.1833,
+    0.4306,
+    0.6272,
+    0.5332
+   ],
+   "hinweis": "Ein Dezimalpunkt vor den letzten drei Stellen. Darunter eine zweite Zeile „0000 l/h“, die nicht der Stand ist.",
+   "quelle": "https://commons.wikimedia.org/wiki/File:Digitaler_Wasserzaehler.jpg",
+   "titel": "Digitaler Wasserzaehler.jpg",
+   "urheber": "HelgeRieder",
+   "lizenz": "CC0"
+  },
+  {
+   "datei": "fotos-lcd/56-aclara-leer.jpg",
+   "art": "Strom, LCD ohne Anzeige",
+   "stand": null,
+   "vorkommastellen": 6,
+   "nachkommastellen": 0,
+   "anzeige": "",
+   "ziffern": [
+    0.3764,
+    0.416,
+    0.578,
+    0.4832
+   ],
+   "hinweis": "Das Display ist dunkel. Eine Erkennung soll nichts vorschlagen.",
+   "quelle": "https://commons.wikimedia.org/wiki/File:Aclara_kV2c_FITZALL_3-phase_smart_electricity_meter.jpg",
+   "titel": "Aclara kV2c FITZALL 3-phase smart electricity meter.jpg",
+   "urheber": "277volts",
+   "lizenz": "CC BY-SA 4.0"
+  },
+  {
+   "datei": "fotos-lcd/57-iskra-test.jpg",
+   "art": "Strom, LCD mit allen Segmenten",
+   "stand": null,
+   "vorkommastellen": 6,
+   "nachkommastellen": 0,
+   "anzeige": "",
+   "ziffern": [
+    0.2964,
+    0.421,
+    0.5538,
+    0.4495
+   ],
+   "hinweis": "Alle Segmente leuchten (Displaytest, „88888888“). Das ist kein Stand.",
+   "quelle": "https://commons.wikimedia.org/wiki/File:Meterkast_meter.jpg",
+   "titel": "Meterkast meter.jpg",
+   "urheber": "BAsta8",
+   "lizenz": "CC BY-SA 4.0"
+  },
+  {
+   "datei": "fotos-lcd/58-iskra-leer.jpg",
+   "art": "Strom, LCD ohne Anzeige, Spiegelung",
+   "stand": null,
+   "vorkommastellen": 6,
+   "nachkommastellen": 0,
+   "anzeige": "",
+   "ziffern": [
+    0.278,
+    0.1652,
+    0.5692,
+    0.2276
+   ],
+   "hinweis": "Das Display ist dunkel und spiegelt. Eine Erkennung soll nichts vorschlagen.",
+   "quelle": "https://commons.wikimedia.org/wiki/File:Vorarlberger_Kraftwerke-Energy_meter_(electro)-11ASD.jpg",
+   "titel": "Vorarlberger Kraftwerke-Energy meter (electro)-11ASD.jpg",
+   "urheber": "Asurnipal",
+   "lizenz": "CC BY-SA 4.0"
+  }
+ ]
+}
