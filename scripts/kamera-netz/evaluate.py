@@ -11,6 +11,8 @@ def read_value(text, conf, fmt, rng_val=None):
     I, F = fmt
     if not text or ':' in text or text.count('.') > 1 or text.startswith('.') or text.endswith('.'): return None
     if not all(c.isdigit() or c == '.' for c in text): return None
+    dd = [c for c in text if c.isdigit()]
+    if len(dd) >= 4 and all(c == '8' for c in dd): return None        # Displaytest
     if '.' in text:
         a, b = text.split('.')
         if len(b) > F or sig(a) > I: return None
@@ -40,7 +42,8 @@ def consensus(vals, required=3, window=6):
     return best
 
 def run(net, trials=60, seed=1, verbose=True, modes=('erste', 'zweite')):
-    rng = np.random.default_rng(seed); net.eval(); res = {}
+    nets = net if isinstance(net, list) else [net]
+    rng = np.random.default_rng(seed); [n.eval() for n in nets]; res = {}
     for nr in RT.ZIFFERN:
         soll_text = RT.ZIFFERN[nr][1]; stand = RT.STAND[nr]; fmt = RT.FORMAT[nr]
         for mode in modes:
@@ -51,7 +54,14 @@ def run(net, trials=60, seed=1, verbose=True, modes=('erste', 'zweite')):
             for t in range(trials):
                 m = rng.uniform(1.5, 2.8); bx = rng.uniform(-.1, .1); by = rng.uniform(-.15, .15)
                 imgs = [RT.frame(nr, m, bx + rng.uniform(-.03, .03), by + rng.uniform(-.05, .05), 1 + rng.uniform(-.05, .05)) for _ in range(6)]
-                with torch.no_grad(): outs = decode(net(torch.tensor(np.stack(imgs), dtype=torch.float32)[:, None] / 255))
+                with torch.no_grad():
+                    X_ = torch.tensor(np.stack(imgs), dtype=torch.float32)[:, None] / 255
+                    alle = [decode(n(X_)) for n in nets]
+                outs = []
+                for k_ in range(len(imgs)):
+                    ts_ = [a[k_] for a in alle]
+                    same = all(t_[0] == ts_[0][0] for t_ in ts_)
+                    outs.append((ts_[0][0], min(t_[1] for t_ in ts_)) if same else ('', 0.0))
                 vals = []
                 for s_, c_ in outs:
                     v = read_value(s_, c_, fmt, rv); vals.append(v)
@@ -67,15 +77,19 @@ def run(net, trials=60, seed=1, verbose=True, modes=('erste', 'zweite')):
     return res
 
 def table(res, trials):
-    lines = []; tot = {'erste': [0, 0, 0], 'zweite': [0, 0, 0]}
+    lines = []; tot = {(g, m): [0, 0, 0] for g in ('alt', 'neu') for m in ('erste', 'zweite')}
     for (nr, mode), (r, f, n, fo, fb, fn, w) in res.items():
         if RT.STAND[nr] is None and mode == 'zweite': continue
-        lines.append(f'{nr} {mode:6s} richtig {r:3d} falsch {f:3d} nichts {n:3d} | Einzelbilder richtig {fo:3d} falsch {fb:3d} von {fn} {("falsch: "+str(w)) if f else ""}')
-        t = tot[mode]; t[0] += r; t[1] += f; t[2] += n
-    for m, (r, f, n) in tot.items(): lines.append(f'== {m}: richtig {r} falsch {f} nichts {n} (von {r+f+n})')
+        g = 'neu' if nr in RT.NEU else 'alt'
+        lines.append(f'{nr} {g} {mode:6s} richtig {r:3d} falsch {f:3d} nichts {n:3d} | Einzelbilder richtig {fo:3d} falsch {fb:3d} von {fn} {("falsch: "+str(w)) if f else ""}')
+        t = tot[(g, mode)]; t[0] += r; t[1] += f; t[2] += n
+    for (g, m), (r, f, n) in tot.items(): lines.append(f'== {g} (Fotos {"neu, nie trainiert" if g == "neu" else "die ersten sieben"}) {m}: richtig {r} falsch {f} nichts {n} (von {r+f+n})')
     return '\n'.join(lines)
 
 if __name__ == '__main__':
-    net = Net(); net.load_state_dict(torch.load(sys.argv[1])); trials = int(sys.argv[2]) if len(sys.argv) > 2 else 40
-    torch.set_num_threads(1)
-    print(table(run(net, trials), trials))
+    nets = []
+    for p_ in sys.argv[1].split(','):
+        n_ = Net(); n_.load_state_dict(torch.load(p_)); nets.append(n_)
+    trials = int(sys.argv[2]) if len(sys.argv) > 2 else 40
+    torch.set_num_threads(2)
+    print(table(run(nets, trials), trials))

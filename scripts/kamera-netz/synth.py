@@ -1,5 +1,44 @@
 """Synthetische Siebensegment-Anzeigen für das Training. Alles Zufall mit festem Anfangswert."""
-import cv2, numpy as np, math
+import cv2, numpy as np, math, os, glob
+from PIL import Image, ImageDraw, ImageFont
+
+# Echte Siebensegment-Schriften (DSEG, SIL Open Font License) als zweite Quelle für die Ziffern.
+# Nur im Training benutzt; in der App läuft das Netz, nicht die Schrift.
+FONT_DIR = os.environ.get('DSEG_DIR', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dseg'))
+FONT_FILES = sorted(glob.glob(FONT_DIR + '/DSEG7*.ttf'))
+FONT14_FILES = sorted(glob.glob(FONT_DIR + '/DSEG14*.ttf'))
+WORDS = ['REC', 'kWh', 'KWH', 'kW', 'Wh', 'Norm', 'NORM', 'T1', 'T2', 'L1', 'L2', 'F1', 'MAX', 'Err', 'ERR', 'A', 'V', 'm3', 'MWh', 'tot', 'TOT', 'In', 'OUT', 'LOAD', 'Hz', 'CUM']
+_fonts = {}
+def get_font(path, size):
+    k = (path, int(size))
+    if k not in _fonts: _fonts[k] = ImageFont.truetype(path, int(size))
+    return _fonts[k]
+
+def font_metrics(path, text, letter):
+    """Breite der Zeile bezogen auf die Ziffernhöhe, und Abstand der Oberkante zur Textposition."""
+    f = get_font(path, 100); b = f.getbbox('0'); h = b[3] - b[1]
+    w = sum(f.getlength(c) for c in text) + letter * h * max(0, len(text) - 1)
+    return w / h, b[1], h
+
+def draw_line_font(rng, text, hd, path, letter, ghost, canvas_shape, origin, shear, ss=3, jit=0.0):
+    Hc, Wc = canvas_shape
+    wph, top100, h100 = font_metrics(path, text, letter)
+    size = 100 * hd * ss / h100
+    f = get_font(path, size); top = f.getbbox('0')[1]
+    def render(txt, fill):
+        im = Image.new('L', (Wc * ss, Hc * ss), 0); d = ImageDraw.Draw(im); x = origin[0] * ss
+        for c in txt:
+            d.text((x, origin[1] * ss - top), c, fill=fill, font=f); x += f.getlength(c) + letter * hd * ss * (1 + jit * rng.uniform(0, 1.5))
+        return np.asarray(im, np.float32) / 255
+    img = render(text, 255)
+    if ghost > 0:
+        g = render(''.join('8' if c.isdigit() else c for c in text), 255) * ghost
+        img = np.maximum(img, g)
+    if abs(shear) > 1e-3:
+        t = math.tan(math.radians(shear)); y0 = (origin[1] + hd / 2) * ss
+        M = np.float32([[1, t, -t * y0], [0, 1, 0]])
+        img = cv2.warpAffine(img, M, (Wc * ss, Hc * ss))
+    return cv2.resize(img, (Wc, Hc), interpolation=cv2.INTER_AREA), origin[0] + wph * hd
 
 IH, IW = 48, 240              # Eingabe des Netzes
 CHARS = "0123456789.:"         # Klasse 0 ist 'leer' (CTC), Zeichen k hat Klasse k+1
@@ -62,12 +101,58 @@ def draw_line(rng, text, hd, style, ink, ghost, canvas_shape, origin, ss=3):
             x += style['space'] * hd * .15
     return cv2.resize(img, (Wc, Hc), interpolation=cv2.INTER_AREA), x
 
+def letters_layer(rng, hd, ox, xend, oy, canvas_shape, ss=3):
+    """Wörter in 14-Segment-Schrift als Nebenzeichen: rechts als Einheit, links in Ziffernhöhe (REC), oder klein darunter/darüber."""
+    Hc, Wc = canvas_shape; layer = np.zeros((Hc * ss, Wc * ss), np.float32)
+    if not FONT14_FILES: return np.zeros((Hc, Wc), np.float32)
+    im = Image.new('L', (Wc * ss, Hc * ss), 0); d = ImageDraw.Draw(im)
+    for _ in range(int(rng.integers(1, 3))):
+        path = FONT14_FILES[int(rng.integers(0, len(FONT14_FILES)))]; word = WORDS[int(rng.integers(0, len(WORDS)))]
+        kind = rng.random()
+        if kind < 0.35: h = hd * rng.uniform(0.9, 1.05); region = 'links'
+        elif kind < 0.7: h = hd * rng.uniform(0.3, 0.8); region = 'rechts'
+        else: h = hd * rng.uniform(0.25, 0.55); region = 'unten'
+        f0 = get_font(path, 100); b0 = f0.getbbox('E'); h100 = b0[3] - b0[1]
+        f = get_font(path, 100 * h * ss / h100); top = f.getbbox('E')[1]; w = sum(f.getlength(c) for c in word) / ss
+        if region == 'links':
+            if ox - w - 0.1 * Wc < 2: continue
+            x = rng.uniform(2, ox - w - 0.1 * Wc); y = oy + (hd - h) * rng.choice([0, 0.5, 1])
+        elif region == 'rechts':
+            x = xend + rng.uniform(1, 8)
+            if x + w > Wc - 2: continue
+            y = oy + hd - h
+        else:
+            x = rng.uniform(2, max(3, Wc - w - 2)); y = oy + hd + rng.uniform(0.15, 0.5) * hd
+            if y + h > Hc - 1: continue
+        d.text((x * ss, y * ss - top), word, fill=255, font=f)
+    layer = np.asarray(im, np.float32) / 255
+    return cv2.resize(layer, (Wc, Hc), interpolation=cv2.INTER_AREA)
+
+def reflection(rng, shape):
+    """Spiegelung im Glas: weiche helle Bänder und Flecken, die auch über die Ziffern laufen."""
+    Hc, Wc = shape; m = np.zeros((Hc, Wc), np.float32)
+    for _ in range(int(rng.integers(1, 4))):
+        if rng.random() < 0.5:
+            pts = np.array([[rng.uniform(-20, Wc), rng.uniform(-10, Hc)] for _ in range(4)], np.int32); cv2.fillConvexPoly(m, pts, 1.0)
+        else:
+            cv2.ellipse(m, (int(rng.uniform(0, Wc)), int(rng.uniform(0, Hc))), (int(rng.uniform(10, 90)), int(rng.uniform(4, 30))), rng.uniform(0, 180), 0, 360, 1.0, -1)
+    return cv2.GaussianBlur(m, (0, 0), rng.uniform(3, 12)) * rng.uniform(15, 70) * rng.choice([1, 1, -0.6])
+
 def rand_text(rng):
     r = rng.random()
-    n = int(rng.integers(3, 9))
     if r < 0.12:    # Uhrzeit oder Datum: darf nie als Stand gelten, wird als solche gelesen
         a = ["%02d" % rng.integers(0, 60) for _ in range(3)]
         return rng.choice([':', ':', '.']).join(a)
+    if r < 0.62:    # Ein Zählwerk fester Breite mit führenden Nullen. Neue Zähler stehen bei kleinen Zahlen:
+        # 000000, 000010, 00001. Gleichverteilte Ziffern erzeugen die kaum, und dünne Einsen unter vielen Nullen
+        # waren genau das, was das Netz auf unbekannten Fotos verlor.
+        n = int(rng.integers(4, 9))
+        v = 0 if rng.random() < 0.05 else int(10 ** rng.uniform(0, n))
+        digs = str(min(v, 10 ** n - 1)).zfill(n)
+        if rng.random() < 0.3 and n >= 4:
+            k = int(rng.integers(1, 4)); digs = digs[:n - k] + '.' + digs[n - k:]
+        return digs
+    n = int(rng.integers(3, 9))
     digs = ''.join(str(int(rng.integers(0, 10))) for _ in range(n))
     if rng.random() < 0.35:  # führende Nullen
         z = int(rng.integers(1, max(2, n)))
@@ -92,7 +177,13 @@ def sample(rng):
                  dot=rng.uniform(1.0, 1.9))
     if style['slant'] == 0 and rng.random() < 0.15: style['slant'] = -rng.uniform(1, 4)
     ndig = sum(1 for c in text if c in SEGS)
-    linew_per_h = ndig * (style['aspect'] + style['space']) + 0.4 * text.count('.') + 0.2 * text.count(':')
+    font_path = None
+    if FONT_FILES and rng.random() < 0.55:
+        font_path = FONT_FILES[int(rng.integers(0, len(FONT_FILES)))]
+        letter = rng.uniform(0.0, 0.35); fshear = rng.choice([0, 0, rng.uniform(-3, 14)])
+        linew_per_h = font_metrics(font_path, text, letter)[0]
+    else:
+        linew_per_h = ndig * (style['aspect'] + style['space']) + 0.4 * text.count('.') + 0.2 * text.count(':')
     m = rng.uniform(1.3, 3.2)                       # Bildhöhe / Ziffernhöhe
     hd = min(IH / m, IW * 0.9 / (linew_per_h + 0.3))
     if hd < 11: hd = 11
@@ -108,7 +199,11 @@ def sample(rng):
     contrast = rng.choice([rng.uniform(22, 60), rng.uniform(50, 130)])
     dark_on_light = rng.random() < 0.93
     sign = 1 if dark_on_light else -1
-    line, xend = draw_line(rng, text, hd, style, 1.0, 0.0 if rng.random() < 0.45 else rng.uniform(0.06, 0.3), (CH, CW), (ox, oy))
+    gh = 0.0 if rng.random() < 0.45 else rng.uniform(0.06, 0.3)
+    if font_path:
+        line, xend = draw_line_font(rng, text, hd, font_path, letter, gh, (CH, CW), (ox, oy), fshear, jit=0.0)
+    else:
+        line, xend = draw_line(rng, text, hd, style, 1.0, gh, (CH, CW), (ox, oy))
     img = np.full((CH, CW), bg, np.float32)
     yy, xx = np.mgrid[0:CH, 0:CW].astype(np.float32)
     img += rng.uniform(-30, 30) * (xx / CW - .5) + rng.uniform(-30, 30) * (yy / CH - .5)
@@ -154,8 +249,10 @@ def sample(rng):
             elif k == 1: cv2.rectangle(mk, (int(px), int(py)), (int(px + s0), int(py + s0 * 0.5)), 255, -1)
             else: cv2.line(mk, (int(px), int(py)), (int(px + s0), int(py + s0)), 255, max(1, int(s0 / 5)))
     ink_extra = np.maximum(ink_extra, mk.astype(np.float32) / 255)
+    if rng.random() < 0.5: ink_extra = np.maximum(ink_extra, letters_layer(rng, hd, ox, xend, oy, (CH, CW)))
     img -= sign * ink_extra * contrast * rng.uniform(0.6, 1.0)
     img -= sign * line * contrast
+    if rng.random() < 0.4: img = img + reflection(rng, (CH, CW))
     ang = rng.uniform(-3, 3)
     M = cv2.getRotationMatrix2D((IW / 2, IH / 2), ang, 1.0)
     img = cv2.warpAffine(img, M, (IW, IH), borderMode=cv2.BORDER_REPLICATE)

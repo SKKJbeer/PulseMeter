@@ -6,14 +6,16 @@ from area import resample
 import pathlib
 R = str(pathlib.Path(__file__).resolve().parents[2] / 'docs' / 'kamera') + '/'
 
-def _laden():
-    d = json.load(open(R + 'fotos.json', encoding='utf-8'))['fotos']
+def _laden(datei):
+    d = json.load(open(R + datei, encoding='utf-8'))['fotos']
     out = {}
     for f in d:
         if 'ziffern' in f:
             out[f['datei'].split('/')[1][:2]] = f
     return out
-FOTOS = _laden()
+FOTOS = _laden('fotos.json')
+NEU = _laden('fotos-lcd.json')          # nie zum Training oder zum Anpassen des Generators benutzt
+FOTOS.update(NEU)
 ZIFFERN = {nr: (None, f['anzeige']) for nr, f in FOTOS.items()}       # Soll-Text je Foto
 FORMAT = {nr: (f['vorkommastellen'], f['nachkommastellen']) for nr, f in FOTOS.items()}
 STAND = {nr: f['stand'] for nr, f in FOTOS.items()}

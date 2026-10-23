@@ -39,9 +39,9 @@ public enum Viewfinder {
     }
 
     /// Liest eine Zeile aus dem Rahmen eines Kamerabilds.
-    public static func read(_ frame: GrayImage, rect: PixelRect, net: DigitNet = .bundled) -> DigitLine {
+    public static func read(_ frame: GrayImage, rect: PixelRect, ensemble: DigitEnsemble = .bundled) -> DigitLine {
         let pixels = frame.resampled(rect: rect, outWidth: DigitNet.inputWidth, outHeight: DigitNet.inputHeight)
-        return DigitDecoder.decode(net.run(pixels: pixels))
+        return ensemble.read(pixels: pixels)
     }
 }
 

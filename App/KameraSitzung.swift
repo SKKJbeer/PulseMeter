@@ -168,7 +168,7 @@ final class KameraSitzung: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
     /// Kamera nicht einig, und eine falsche Zahl ist schlimmer als keine.
     static func auswerten(_ bild: GrayImage, rahmen: PixelRect, format: MeterFormat, bereich: ClosedRange<Decimal>?) -> KameraBefund {
         let pixel = bild.resampled(rect: rahmen, outWidth: DigitNet.inputWidth, outHeight: DigitNet.inputHeight)
-        let zeile = DigitDecoder.decode(DigitNet.bundled.run(pixels: pixel))
+        let zeile = DigitEnsemble.bundled.read(pixels: pixel)
         let qualitaet = FrameQuality(pixels: pixel, width: DigitNet.inputWidth, height: DigitNet.inputHeight).hint
 
         let ausNetz = MeterTextReader.propose(from: zeile.isEmpty ? [] : [zeile.recognized], format: format,

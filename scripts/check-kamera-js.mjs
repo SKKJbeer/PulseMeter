@@ -62,16 +62,24 @@ const klein = DigitNet.verkleinern(bytesVon(v.pixel), v.breite, v.hoehe, v.recht
 const abw = Math.max(...klein.map((x, i) => Math.abs(x - v.erwartet[i])));
 if (!(abw < 1e-4)) { netzFalsch++; console.error(`✗ Verkleinern weicht um ${abw} von Python ab`); }
 
-const T = DigitNet.ladeGewichte(ZIFFERNNETZ_B64);
+const Ts = ZIFFERNNETZ_B64.map((b) => DigitNet.ladeGewichte(b));
 for (const f of lcd.faelle) {
   const px = Float32Array.from(bytesVon(f.pixel), (b) => b / 255);
-  const out = DigitNet.laufen(T, px), zeile = DigitNet.lesen(out);
-  if (f.ausgabe) {
-    const w = Math.max(...f.ausgabe.map((x, i) => Math.abs(x - out.werte[i])));
-    if (!(w < 0.01)) { netzFalsch++; console.error(`✗ ${f.name}: Ausgabe weicht um ${w} von Python ab`); }
-  }
-  if (zeile.text !== f.text || Math.abs(zeile.sicherheit - f.sicherheit) > 0.01) {
-    netzFalsch++; console.error(`✗ ${f.name}: gelesen „${zeile.text}“ (${zeile.sicherheit.toFixed(3)}), Python „${f.text}“ (${f.sicherheit})`);
+  if (f.texte.length !== Ts.length) { netzFalsch++; console.error(`✗ ${f.name}: ${f.texte.length} Netze in den Referenzwerten, ${Ts.length} im Klick-Dummy`); continue; }
+  Ts.forEach((T, i) => {
+    const out = DigitNet.laufen(T, px), zeile = DigitNet.lesen(out);
+    const ref = f.ausgaben && f.ausgaben[i];
+    if (ref) {
+      const w = Math.max(...ref.map((x, k) => Math.abs(x - out.werte[k])));
+      if (!(w < 0.01)) { netzFalsch++; console.error(`✗ ${f.name}, Netz ${i}: Ausgabe weicht um ${w} von Python ab`); }
+    }
+    if (zeile.text !== f.texte[i] || Math.abs(zeile.sicherheit - f.sicherheiten[i]) > 0.01) {
+      netzFalsch++; console.error(`✗ ${f.name}, Netz ${i}: gelesen „${zeile.text}“ (${zeile.sicherheit.toFixed(3)}), Python „${f.texte[i]}“ (${f.sicherheiten[i]})`);
+    }
+  });
+  const ens = DigitNet.lesenEnsemble(Ts, px);
+  if (ens.text !== f.text || Math.abs(ens.sicherheit - f.sicherheit) > 0.01) {
+    netzFalsch++; console.error(`✗ ${f.name}: Ensemble „${ens.text}“ (${ens.sicherheit.toFixed(3)}), Python „${f.text}“ (${f.sicherheit})`);
   }
 }
 if (netzFalsch) { console.error(`Ziffernnetz im Klick-Dummy: ${netzFalsch} Abweichungen von Python.`); process.exit(1); }
