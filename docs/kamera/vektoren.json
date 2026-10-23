@@ -1,5 +1,5 @@
 {
- "hinweis": "Gemeinsame Fälle für MeterTextReader.swift und den Klick-Dummy (docs/prototype/index.html). Beide müssen dasselbe ergeben; geprüft von MeterTextReaderTests.testSharedVectors und scripts/check-kamera-js.mjs. Texte sind von Hand nachgebildet, siehe README.md.",
+ "hinweis": "Gemeinsame Fälle für MeterTextReader.swift und den Klick-Dummy (docs/prototype/index.html). Beide müssen dasselbe ergeben; geprüft von MeterTextReaderTests.testSharedVectors und scripts/check-kamera-js.mjs. Texte sind von Hand nachgebildet, siehe README.md. Fälle mit \"eingerahmt\": true laufen im Modus für eine vom Nutzer gerahmte Zeile (nur Ziffernnetz); er senkt nur die nötige Sicherheit im Bereich, die erste Ablesung bleibt streng. „einigung“: Folgen von Bildern (Wert oder null = kein Vorschlag) und was ReadingConsensus daraus macht, für Swift und den Klick-Dummy.",
  "faelle": [
   {
    "name": "siemens-rollen-mit-bereich",
@@ -862,6 +862,466 @@
    "erwartet": {
     "keine": "noCandidate"
    }
+  },
+  {
+   "name": "gerahmt-schwach-ohne-bereich-bleibt-draussen",
+   "texte": [
+    [
+     "1936",
+     0.7
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": null,
+   "eingerahmt": true,
+   "erwartet": {
+    "keine": "noCandidate"
+   }
+  },
+  {
+   "name": "gerahmt-schwach-zu-unsicher",
+   "texte": [
+    [
+     "1936",
+     0.5
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": [
+    "1000",
+    "3000"
+   ],
+   "eingerahmt": true,
+   "erwartet": {
+    "keine": "lowConfidence"
+   }
+  },
+  {
+   "name": "gerahmt-fuehrende-nullen",
+   "texte": [
+    [
+     "0014426",
+     0.9
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": null,
+   "eingerahmt": true,
+   "erwartet": {
+    "wert": "14426"
+   }
+  },
+  {
+   "name": "gerahmt-mit-komma",
+   "texte": [
+    [
+     "00004.67",
+     0.8
+    ]
+   ],
+   "format": [
+    5,
+    2
+   ],
+   "bereich": null,
+   "eingerahmt": true,
+   "erwartet": {
+    "wert": "4.67"
+   }
+  },
+  {
+   "name": "gerahmt-uhrzeit-ist-kein-stand",
+   "texte": [
+    [
+     "27:08:22",
+     0.95
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": null,
+   "eingerahmt": true,
+   "erwartet": {
+    "keine": "noCandidate"
+   }
+  },
+  {
+   "name": "gerahmt-kennzahl-ist-kein-stand",
+   "texte": [
+    [
+     "1.8.0",
+     0.95
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": null,
+   "eingerahmt": true,
+   "erwartet": {
+    "keine": "noCandidate"
+   }
+  },
+  {
+   "name": "gerahmt-ausserhalb-des-bereichs",
+   "texte": [
+    [
+     "1936",
+     0.9
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": [
+    "20000",
+    "21000"
+   ],
+   "eingerahmt": true,
+   "erwartet": {
+    "keine": "outsideRange"
+   }
+  },
+  {
+   "name": "gerahmt-zu-viele-stellen",
+   "texte": [
+    [
+     "12345678",
+     0.95
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": null,
+   "eingerahmt": true,
+   "erwartet": {
+    "keine": "noCandidate"
+   }
+  },
+  {
+   "name": "ungerahmt-schwach-ohne-bereich-bleibt-draussen",
+   "texte": [
+    [
+     "1936",
+     0.95
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": null,
+   "erwartet": {
+    "keine": "noCandidate"
+   }
+  },
+  {
+   "name": "gerahmt-schwach-mit-bereich",
+   "texte": [
+    [
+     "1936",
+     0.7
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": [
+    "1000",
+    "3000"
+   ],
+   "eingerahmt": true,
+   "erwartet": {
+    "wert": "1936"
+   }
+  },
+  {
+   "name": "gerahmt-datum-ohne-doppelpunkte-ist-kein-stand",
+   "texte": [
+    [
+     "270822",
+     0.99
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": null,
+   "eingerahmt": true,
+   "erwartet": {
+    "keine": "noCandidate"
+   }
+  },
+  {
+   "name": "gerahmt-verlorener-punkt-wird-nicht-zu-faktor-100",
+   "texte": [
+    [
+     "00000467",
+     0.9
+    ]
+   ],
+   "format": [
+    5,
+    2
+   ],
+   "bereich": null,
+   "eingerahmt": true,
+   "erwartet": {
+    "keine": "noCandidate"
+   }
+  },
+  {
+   "name": "gerahmt-verlorener-punkt-auch-mit-bereich",
+   "texte": [
+    [
+     "00000467",
+     0.9
+    ]
+   ],
+   "format": [
+    5,
+    2
+   ],
+   "bereich": [
+    "1",
+    "900"
+   ],
+   "eingerahmt": true,
+   "erwartet": {
+    "keine": "noCandidate"
+   }
+  },
+  {
+   "name": "gerahmt-so-breit-wie-das-zaehlwerk-wird-geteilt",
+   "texte": [
+    [
+     "0000467",
+     0.9
+    ]
+   ],
+   "format": [
+    5,
+    2
+   ],
+   "bereich": null,
+   "eingerahmt": true,
+   "erwartet": {
+    "wert": "4.67"
+   }
+  },
+  {
+   "name": "gerahmt-schmaler-als-vorkommateil-ohne-rote-stellen",
+   "texte": [
+    [
+     "014426",
+     0.9
+    ]
+   ],
+   "format": [
+    6,
+    2
+   ],
+   "bereich": [
+    "10000",
+    "20000"
+   ],
+   "eingerahmt": true,
+   "erwartet": {
+    "wert": "14426"
+   }
+  },
+  {
+   "name": "ungerahmt-bleibt-wie-vorher",
+   "texte": [
+    [
+     "00000467",
+     0.9
+    ]
+   ],
+   "format": [
+    5,
+    2
+   ],
+   "bereich": null,
+   "erwartet": {
+    "wert": "467"
+   }
+  },
+  {
+   "name": "displaytest-lauter-achten-ist-kein-stand",
+   "texte": [
+    [
+     "888888",
+     0.95
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": null,
+   "eingerahmt": true,
+   "erwartet": {
+    "keine": "noCandidate"
+   }
+  },
+  {
+   "name": "displaytest-auch-mit-bereich",
+   "texte": [
+    [
+     "888888",
+     0.95
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": [
+    "800000",
+    "900000"
+   ],
+   "eingerahmt": true,
+   "erwartet": {
+    "keine": "noCandidate"
+   }
+  },
+  {
+   "name": "drei-achten-sind-noch-ein-stand",
+   "texte": [
+    [
+     "188",
+     0.95
+    ]
+   ],
+   "format": [
+    6,
+    0
+   ],
+   "bereich": [
+    "100",
+    "300"
+   ],
+   "eingerahmt": true,
+   "erwartet": {
+    "wert": "188"
+   }
+  }
+ ],
+ "einigung": [
+  {
+   "name": "drei-gleiche-genuegen",
+   "required": 3,
+   "window": 6,
+   "folge": [
+    "14426",
+    "14426",
+    "14426"
+   ],
+   "erwartet": "14426"
+  },
+  {
+   "name": "zwei-gleiche-reichen-nicht",
+   "required": 3,
+   "window": 6,
+   "folge": [
+    "14426",
+    "14426"
+   ],
+   "erwartet": null
+  },
+  {
+   "name": "zwei-konkurrierende-zahlen-keine-einigung",
+   "required": 3,
+   "window": 6,
+   "folge": [
+    "14426",
+    "19426",
+    "14426",
+    "19426",
+    "14426"
+   ],
+   "erwartet": null
+  },
+  {
+   "name": "ein-ausreisser-stoert-nicht",
+   "required": 3,
+   "window": 6,
+   "folge": [
+    "14426",
+    "19426",
+    "14426",
+    "14426"
+   ],
+   "erwartet": "14426"
+  },
+  {
+   "name": "luecken-schieben-altes-hinaus",
+   "required": 3,
+   "window": 4,
+   "folge": [
+    "100",
+    "100",
+    null,
+    null,
+    null,
+    "100"
+   ],
+   "erwartet": null
+  },
+  {
+   "name": "luecken-dazwischen-sind-erlaubt",
+   "required": 3,
+   "window": 6,
+   "folge": [
+    "7",
+    null,
+    "7",
+    null,
+    "7"
+   ],
+   "erwartet": "7"
+  },
+  {
+   "name": "zwei-genuegen-wenn-so-verlangt",
+   "required": 2,
+   "window": 3,
+   "folge": [
+    "5",
+    "5"
+   ],
+   "erwartet": "5"
+  },
+  {
+   "name": "drei-zu-drei-ist-keine-einigung",
+   "required": 3,
+   "window": 6,
+   "folge": [
+    "1",
+    "2",
+    "1",
+    "2",
+    "1",
+    "2"
+   ],
+   "erwartet": null
   }
  ]
 }

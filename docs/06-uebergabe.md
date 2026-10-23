@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-10-19, Version 0.134.1
+Stand: 2026-10-22, Version 0.138.0
 
 ---
 
@@ -128,23 +128,26 @@ Klick-Dummy. Der Satz „Alle Werte in …" unter der Tabelle im Entwurf ist weg
 
 ### Als Nächstes
 
-0. **Kamera, Stufe 1 (1.6, geplant 18.11.): Vorarbeit und Messung fertig (0.135.0 bis
-   0.137.1), eine Entscheidung offen.** Alles in `docs/kamera/` (Befund, Regeln,
-   Messungen). Der Leser `MeterTextReader` (PulseCore) schlägt nie etwas Falsches
-   vor (an echten Vision-Texten geprüft, `MeterTextReaderVisionTests`), und der
-   Klick-Dummy zeigt den Ablauf. **Gemessen auf dem macOS-Läufer (`kamera.yml`, fünf
-   Minuten):** Vision liest Rollenzähler brauchbar, **Siebensegment-Anzeigen auch im
-   Rahmen nicht verlässlich** (1 von 9 richtig, 0 falsch). **Die Entscheidung, die der
-   Gründer treffen muss:** (a) 1.6 nur für Rollenzähler und große Ziffern ausliefern,
-   ehrlich beschriftet, oder (b) vorher eine **eigene Ziffernerkennung für
-   Siebensegment** versuchen. Meine Empfehlung: (b) als Versuch mit festem Rahmen,
-   **zuerst in Python unter Linux an den 15 Fotos** (Anzeige finden, Ziffernfelder
-   trennen, je Feld die sieben Segmente prüfen); trägt das, wird es Swift und läuft
-   über dieselbe Schleife. **Danach, in dieser Reihenfolge:** Oberfläche in der App
-   (Knopf im Ziffernblock, Kamera, Bereich aus der bestehenden Plausibilität: letzter
-   Stand bis das Vierfache des üblichen Verbrauchs), Datenschutz und
-   Berechtigungstext. **Ungeprüft:** Vision auf einem iPhone (gemessen auf einem
-   macOS-Läufer). **1.5.1 ist im Laden seit 19.10.** (Bau 45, neue Store-Bilder).
+0. **Kamera (1.6, geplant 18.11.): gebaut in 0.138.0, am iPhone ungeprüft.** Der Gründer hat
+   am 22. Oktober entschieden, die Siebensegment-Erkennung selbst zu lösen (Option b). Ergebnis:
+   ein eigenes **Ziffernnetz** (`DigitNet` in PulseCore, in Swift ausgeschrieben, Gewichte als
+   Zeichenkette im Quelltext), trainiert auf nachgebauten Anzeigen, an den Fotos nur gemessen
+   (`scripts/kamera-netz/`, Messung in `docs/kamera/README.md`). **Zahlen** (`docs/kamera/README.md`):
+   zwei Netze müssen sich einig sein. Auf den ersten sieben Fotos 0 Fehler, aber das ist kein unabhängiger Test mehr;
+   auf einer **zweiten, nie trainierten Sammlung** (`fotos-lcd.json`) 5 Fehler in 600 Versuchen, alle bei einem
+   Foto (Elster: `7` statt `1`), und nur etwa jeder dritte Versuch liest richtig. Meterus und Kamstrup liest es nie.
+   „100 % Erkennung“ gibt es nicht und wird nicht versprochen; das frühere „nie etwas Falsches“ hat sich auf neuen
+   Fotos nicht gehalten. In der App:
+   Knopf „Mit Kamera ablesen“ im Ziffernblock, Sucher mit Rahmen (`App/KameraView.swift`,
+   `App/KameraSitzung.swift`), Taschenlampe, Hinweise zum Bild, Vorschlag erst nach drei
+   gleichen von sechs Bildern, Herkunft „Kamera“ beim Sichern, Berechtigung
+   `NSCameraUsageDescription`. Klick-Dummy rechnet das Netz im Browser. **Offen, in dieser
+   Reihenfolge:** (1) ein Bau in TestFlight und ein Test **am Zähler** mit dem iPhone,
+   (2) Fotos von echten Zählern (Elster, Kaifa, Focus, Meterus, Kamstrup) für mehr Training, **freiwillig geschickt**, nicht aus der App, (3) Kaufkennung
+   „Kamera“ (0,99 €) in App Store Connect anlegen; bis dahin ist die Kamera frei,
+   (4) Absatz zur Kamera in Datenschutzerklärung und Store-Texten, **erst wenn 1.6 im Laden
+   ist**, (5) Rollen: Vision im Sucher ist nur nachgemessen, nicht am Gerät. **1.5.1 ist im
+   Laden seit 19.10.** (Bau 45, neue Store-Bilder).
 1. **1.4 Rundgang**: **im Laden** seit 5. Oktober, 16:42 UTC (Bau 39). Auf
    Website und Entwicklungsseite eingetragen.
 2. **1.5 Import aus einer Tabelle**, **im Laden seit 14. Oktober, 22:44 UTC**, Bau 44 (vom Gründer vorgezogen, geplant war der 4. November). **Gebaut in 0.133.0**: Blatt „Einlesen“ im Zähler-Tab und auf der leeren Übersicht, Erkennung in `TableImport`, Konzept in `03-ux-konzept.md` 5a. Kostenlos wie der Export. Offen: in TestFlight mit einer echten Liste ausprobieren; xlsx direkt lesen kann er nicht, nur CSV, Text und Eingefügtes, danach **Kamera** in zwei

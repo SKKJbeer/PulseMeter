@@ -19,7 +19,7 @@ const { faelle } = JSON.parse(readFileSync(join(wurzel, "docs/kamera/vektoren.js
 let falsch = 0;
 for (const f of faelle) {
   const texte = f.texte.map(([text, confidence]) => ({ text, confidence }));
-  const r = Reader.propose(texte, { int: f.format[0], frac: f.format[1] }, f.bereich ? f.bereich.map(Number) : null);
+  const r = Reader.propose(texte, { int: f.format[0], frac: f.format[1] }, f.bereich ? f.bereich.map(Number) : null, !!f.eingerahmt);
   const ok = f.erwartet.wert !== undefined
     ? r.proposal && r.proposal.value === Number(f.erwartet.wert)
     : r.none === f.erwartet.keine;
@@ -27,3 +27,60 @@ for (const f of faelle) {
 }
 if (falsch) { console.error(`Kamera-Leser im Klick-Dummy: ${falsch} von ${faelle.length} Fällen weichen von Swift ab.`); process.exit(1); }
 console.log(`Kamera-Leser im Klick-Dummy: ${faelle.length} Fälle, identisch zu Swift.`);
+
+// Einigung über mehrere Bilder: dieselben Folgen wie in Swift (ReadingConsensus).
+{
+  const a = html.indexOf("/* ReadingConsensus:start"), b = html.indexOf("/* ReadingConsensus:end */");
+  if (a < 0 || b < 0) { console.error("✗ Marken für ReadingConsensus fehlen im Klick-Dummy"); process.exit(1); }
+  const Konsens = new Function(html.slice(a, b) + "\nreturn ReadingConsensus;")();
+  const folgen = JSON.parse(readFileSync(join(wurzel, "docs/kamera/vektoren.json"), "utf8")).einigung;
+  let schlecht = 0;
+  for (const f of folgen) {
+    const k = Konsens.neu(f.required, f.window); let einig = null;
+    for (const w of f.folge) einig = k.add(w === null ? { none: "noCandidate" } : { proposal: { value: Number(w) } });
+    const ist = einig ? String(einig.proposal.value) : null;
+    if (ist !== f.erwartet) { schlecht++; console.error(`✗ Einigung ${f.name}: erwartet ${f.erwartet}, bekommen ${ist}`); }
+  }
+  if (schlecht) process.exit(1);
+  console.log(`Einigung im Klick-Dummy: ${folgen.length} Folgen, identisch zu Swift.`);
+}
+
+// Ziffernnetz: dieselbe Rechnung wie in Swift und Python, an denselben Referenzwerten.
+const blockVon = (marke) => {
+  const a = html.indexOf(`/* ${marke}:start`), b = html.indexOf(`/* ${marke}:end */`);
+  if (a < 0 || b < 0) { console.error(`✗ Marken für ${marke} fehlen im Klick-Dummy`); process.exit(1); }
+  return html.slice(a, b);
+};
+const Netz = new Function(blockVon("ZIFFERNNETZ") + "\n" + blockVon("DigitNet") + "\nreturn { DigitNet, ZIFFERNNETZ_B64 };")();
+const { DigitNet, ZIFFERNNETZ_B64 } = Netz;
+const lcd = JSON.parse(readFileSync(join(wurzel, "docs/kamera/lcd-vektoren.json"), "utf8"));
+const bytesVon = (b64) => Uint8Array.from(Buffer.from(b64, "base64"));
+let netzFalsch = 0;
+
+const v = lcd.verkleinern;
+const klein = DigitNet.verkleinern(bytesVon(v.pixel), v.breite, v.hoehe, v.rechteck, v.ziel[0], v.ziel[1]);
+const abw = Math.max(...klein.map((x, i) => Math.abs(x - v.erwartet[i])));
+if (!(abw < 1e-4)) { netzFalsch++; console.error(`✗ Verkleinern weicht um ${abw} von Python ab`); }
+
+const Ts = ZIFFERNNETZ_B64.map((b) => DigitNet.ladeGewichte(b));
+for (const f of lcd.faelle) {
+  const px = Float32Array.from(bytesVon(f.pixel), (b) => b / 255);
+  if (f.texte.length !== Ts.length) { netzFalsch++; console.error(`✗ ${f.name}: ${f.texte.length} Netze in den Referenzwerten, ${Ts.length} im Klick-Dummy`); continue; }
+  Ts.forEach((T, i) => {
+    const out = DigitNet.laufen(T, px), zeile = DigitNet.lesen(out);
+    const ref = f.ausgaben && f.ausgaben[i];
+    if (ref) {
+      const w = Math.max(...ref.map((x, k) => Math.abs(x - out.werte[k])));
+      if (!(w < 0.01)) { netzFalsch++; console.error(`✗ ${f.name}, Netz ${i}: Ausgabe weicht um ${w} von Python ab`); }
+    }
+    if (zeile.text !== f.texte[i] || Math.abs(zeile.sicherheit - f.sicherheiten[i]) > 0.01) {
+      netzFalsch++; console.error(`✗ ${f.name}, Netz ${i}: gelesen „${zeile.text}“ (${zeile.sicherheit.toFixed(3)}), Python „${f.texte[i]}“ (${f.sicherheiten[i]})`);
+    }
+  });
+  const ens = DigitNet.lesenEnsemble(Ts, px);
+  if (ens.text !== f.text || Math.abs(ens.sicherheit - f.sicherheit) > 0.01) {
+    netzFalsch++; console.error(`✗ ${f.name}: Ensemble „${ens.text}“ (${ens.sicherheit.toFixed(3)}), Python „${f.text}“ (${f.sicherheit})`);
+  }
+}
+if (netzFalsch) { console.error(`Ziffernnetz im Klick-Dummy: ${netzFalsch} Abweichungen von Python.`); process.exit(1); }
+console.log(`Ziffernnetz im Klick-Dummy: ${lcd.faelle.length} Fälle, identisch zu Python und Swift.`);

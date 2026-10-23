@@ -9,6 +9,78 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.138.0 — 2026-10-22
+
+**Kamera: Sucher mit Rahmen und ein eigenes Netz, das LCD-Ziffern liest**
+
+Der Gründer wollte die Kamera fertig und die Erkennung bei Siebensegment-Anzeigen gelöst
+(Apples Texterkennung hatte 1 von 9 getroffen). Eine Erkennung, die alles liest, gibt es
+nicht; zugesagt ist, dass die App **nichts Falsches vorschlägt**. Gemessen, nicht versprochen.
+
+### Hinzugefügt
+- **„Mit Kamera ablesen“ im Ziffernblock.** Ein Sucher mit Rahmen: Du hältst die Zahl hinein,
+  sobald dieselbe Zahl in drei von sechs Bildern gelesen wurde, steht sie da. **Übernehmen** trägt sie
+  in den Ziffernblock ein, gesichert wird erst mit „Sichern“. Darunter steht „Von der Kamera
+  gelesen“, solange niemand eine Ziffer ändert; die Ablesung trägt dann die Herkunft „Kamera“.
+- **Hinweise zum Bild:** „Zu dunkel“ (mit Taschenlampe im Sucher), „Kaum Kontrast“, „Unscharf“, nach zwölf
+  Sekunden „Klappt nicht? Tipp den Stand einfach ein.“ Unter dem Rahmen steht live, was das Netz sieht.
+- **Das Ziffernnetz** (`DigitNet`, PulseCore): 250 000 Gewichte, ausgeschrieben in Swift, etwa 90 Millionen
+  Multiplikationen je Bild. Trainiert auf **nachgebauten** Anzeigen (echte Siebensegment-Schriften DSEG, Nebenzeichen,
+  Spiegelungen; `scripts/kamera-netz/`), an Fotos nur gemessen. **Zwei Netze müssen sich einig sein**
+  (`DigitEnsemble`). Python, Swift und der Klick-Dummy rechnen dasselbe, gegen 27 Referenzbilder.
+- **Zweite Fotosammlung** `fotos-lcd.json`: neun Fotos, die nie zum Training dienten, damit die Messung unabhängig bleibt.
+- **Der Klick-Dummy rechnet das Netz im Browser** an elf Beispielzählern (Ausschnitt um den Rahmen aus
+  dem Foto). Rollen liest dort weiter die nachgestellte Texterkennung.
+- **Bereich aus der Prüfung:** `ConsumptionEngine.plausibleReadingRange` ist dieselbe Grenze, ab der der
+  Ziffernblock „Stimmt die Zahl?“ fragt. Die Kamera schlägt nur vor, was darin liegt.
+- **Berechtigung `NSCameraUsageDescription`**, die erste und einzige. `scripts/check-sicherheit.sh` lässt genau
+  diese zu, verlangt, dass sie benutzt wird, und bricht ab, sobald die Kamera ein Bild speichern könnte.
+- **Prüfungen:** `kamera-gewichte.py --pruefen` (Gewichte in Quelle, App und Klick-Dummy gleich),
+  `kamera-beispiele.py --pruefen`, UI-Test `testCameraProposalLandsInTheKeypadAndIsNotSavedByItself`
+  (ein gezeichnetes Bild geht im Simulator durch dieselbe Auswertung wie ein Kamerabild).
+
+### Gemessen (je Foto 100 Versuche, sechs Bilder, drei gleiche nötig, Leser wie in der App)
+- **Erste Sammlung** (die sieben LCD-Fotos, nach vielen Runden Fehlerbilder angesehen, also kein unabhängiger Test mehr):
+  zweite Ablesung **401 richtig, 0 falsch**, 299 nichts (von 700); erste Ablesung 205 richtig, 0 falsch (von 900).
+- **Zweite Sammlung** (`docs/kamera/fotos-lcd.json`, neun neue Fotos, nie trainiert): zweite Ablesung **215 richtig,
+  5 falsch**, 380 nichts (von 600); erste Ablesung 90 richtig, **11 falsch**, 799 nichts (von 900).
+  **Alle Fehler stammen von einem Foto**, dem Elster-Zähler: Beide Netze lesen `7` statt `1` (matte Anzeige,
+  Spiegelung, Ziffer am Rand). Ein gemeinsamer Fehler, den auch die Einigung nicht fängt.
+- **Meterus und Kamstrup: 0 von 100** (nichts gelesen, nichts Falsches). Datum, leere Displays und Displaytest:
+  in 500 Versuchen nie ein Vorschlag.
+- **Die Zusage „nie etwas Falsches“ hat sich nicht gehalten.** In der ersten Fassung dieses Eintrags stand
+  „in 1.600 Versuchen kein falscher Vorschlag“. Das galt nur für die Fotos, an denen ich gebaut hatte. Auf neuen
+  Fotos las ein einzelnes Netz in 17 von 360 und 33 von 240 Versuchen falsch. Zwei Netze, die sich einig sein müssen,
+  senken das auf den Wert oben. Es bleibt eine Quote, keine Zusage; der Nutzer sieht die Zahl vor dem Übernehmen.
+- Rohdaten: `docs/kamera/netz-messung.txt`; Einzelheiten und Grenzen: `docs/kamera/README.md`.
+
+### Behoben (auf dem Weg, mit Test)
+- **Ein verlorener Punkt machte aus 4,67 ein 467** (Faktor 100, Meterus, 1 von 360). Hat das Zählwerk
+  Nachkommastellen und ist die gerahmte Zahl ohne Komma breiter als der Vorkommateil, schlägt die App nichts
+  vor. Fälle `gerahmt-verlorener-punkt-…` in `vektoren.json`.
+- **Ein Displaytest (`88888888`, alle Segmente) wurde als 888.888 vorgeschlagen.** Lauter Achten (vier oder mehr)
+  gelten nicht als Stand.
+- **Das Datum `27:08:22` wurde ohne Doppelpunkte als 270.822 kWh gelesen.** Der „eingerahmt“-Modus des Lesers
+  senkt deshalb nur die nötige Sicherheit im Bereich; die erste Ablesung bleibt streng.
+
+### Geändert
+- **PulseCore-Tests in zwei Läufen** (`scripts/test-core.sh`): Die Netz-Tests laufen im Release-Bau (10 statt 170 Sekunden lokal), alles andere
+  wie bisher. Im Debug-Bau brauchte der Mac-Läufer 38 statt 4 Minuten und riss das Zeitlimit des iPhone-Auftrags.
+- Die Kamera ist ein Sucher, kein Foto aus der Mediathek: Ein ganzes Foto liest zuerst das Typenschild.
+  Der Rahmen legt fest, was gelesen wird (`docs/kamera/README.md`).
+- `docs/11-sicherheit.md`, `docs/05-roadmap.md`, `docs/06-uebergabe.md` und der Baukasten nachgezogen.
+
+### Ungeprüft
+- **Der App-Code wurde unter Linux nie übersetzt** (kein Xcode): `KameraSitzung`, `KameraView`, die Einbindung
+  im Ziffernblock und der UI-Test laufen zum ersten Mal auf dem macOS-Läufer.
+- **Ein echtes iPhone-Bild.** Schärfe, Licht, Handzittern im Rahmen zeigt erst TestFlight.
+- **Apples Texterkennung im Sucher** (Rollen) ist nachgemessen (21.10.), nicht am Gerät.
+- **Der Kauf** (0,99 €) ist nicht eingebaut: Die Kaufkennung gibt es in App Store Connect noch nicht.
+
+_343 Tests in PulseCore, alle grün (24 neu: Netze, Ensemble, Sucher, Einigung, Bereich, Leser); Klick-Dummy-Prüfung grün. Im CI-Lauf zu `4ac5371` waren die iPhone-Prüfungen grün, auf dem iPad fielen der neue Kamera-Test (jetzt behoben, die Vorführung rechnete nach dem Treffer weiter) und ein Widget-Test (Simulator-Wackler `kAXErrorServerNotFound`)._
+
+---
+
 ## 0.137.1 — 2026-10-21
 
 **Kamera: Übersetzungsfehler im Rahmen-Modus behoben**

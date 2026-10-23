@@ -94,18 +94,51 @@ public enum MeterTextReader {
         case lowConfidence
     }
 
+    /// So sicher muss sich das Ziffernnetz bei einer eingerahmten Zahl sein, die kein
+    /// Merkmal trägt (`1936`) und im Bereich liegt. Niedriger als die 0,8 für Fremdtext:
+    /// Der Nutzer hat die Zeile selbst gerahmt, und das Netz hat gedruckte Ziffern im
+    /// Training als „nichts“ gelernt.
+    static let framedWeakConfidence = 0.6
+
     /// - Parameters:
     ///   - texts: Alles, was die Texterkennung im Foto gefunden hat.
     ///   - format: Stellen des Zählwerks, das abgelesen wird.
     ///   - plausible: Bereich, in dem der Stand liegen kann (letzter Stand bis
     ///     letzter Stand plus großzügiger Verbrauch). `nil` bei der ersten
     ///     Ablesung.
+    ///   - framed: Der Text stammt aus der Zeile, die der Nutzer im Sucher
+    ///     gerahmt hat, nicht aus einem ganzen Foto. Dann genügt für eine Zahl ohne
+    ///     Merkmal im Bereich die niedrigere Sicherheit (``framedWeakConfidence``).
+    ///     **Bei der ersten Ablesung ändert sich nichts:** Ohne Bereich zählt weiter nur,
+    ///     was Einheit, Komma oder führende Null trägt. Das Display zeigt auch Datum und
+    ///     Uhrzeit (`27:08:22`), und das Netz liest die Doppelpunkte nicht immer; `270822`
+    ///     ohne Merkmal wäre ein erfundener Stand von 270.822 kWh. Eine erste Ablesung
+    ///     tippt der Nutzer einmal pro Zähler; die Kamera hilft ab der zweiten.
+    ///     **Nur für das Ziffernnetz gedacht:** Apples Texterkennung liest im Rahmen
+    ///     weiter, was auf dem Typenschild stünde, wenn der Rahmen danebenläge.
     public static func propose(
         from texts: [RecognizedLine],
         format: MeterFormat,
-        plausible: ClosedRange<Decimal>? = nil
+        plausible: ClosedRange<Decimal>? = nil,
+        framed: Bool = false
     ) -> Outcome {
-        let candidates = texts.flatMap { readCandidates(in: $0, format: format) }
+        var candidates = texts.flatMap { readCandidates(in: $0, format: format) }
+            // **Lauter Achten sind der Displaytest**, nicht ein Stand: Beim Einschalten und auf
+            // Knopfdruck leuchten alle Segmente. Gefunden an einem Iskra-Zähler (`fotos-lcd/57`),
+            // dessen `88888888` das Netz als 888.888 vorschlug. Ein echter Stand aus lauter Achten
+            // ist so selten, dass der Nutzer ihn lieber tippt.
+            .filter { !$0.isAllEights }
+        // **Ein verlorener Punkt macht aus 4,67 ein 467** (Faktor 100). Hat das Zählwerk
+        // Nachkommastellen und steht in der gerahmten Zeile ohne Komma eine Zahl, die
+        // breiter ist als der Vorkommateil, dann gehören Nachkommastellen dazu, und wo der
+        // Punkt war, weiß nur der, der davorsteht. Genau so breit wie das ganze Zählwerk
+        // (`0000467` bei 5+2) wird weiter geteilt; schmaler gilt als Vorkommateil ohne
+        // rote Stellen (`65521`).
+        if framed, format.fractionDigits > 0 {
+            candidates = candidates.filter {
+                !($0.fractionMissing && $0.raw.filter { $0.isASCIIDigit }.count > format.integerDigits)
+            }
+        }
         guard !candidates.isEmpty else { return .none(.noCandidate) }
 
         // Ohne Bereich nur Zahlen mit Merkmal (siehe oben).
@@ -124,7 +157,7 @@ public enum MeterTextReader {
             guard let range = plausible else { return .none(.noCandidate) }
             pool = candidates.filter { range.contains($0.value) }
             if pool.isEmpty { return .none(.outsideRange) }
-            needed = 0.8
+            needed = framed ? framedWeakConfidence : 0.8
         }
 
         let values = Set(pool.map(\.value))
@@ -147,6 +180,12 @@ public enum MeterTextReader {
         /// Einheit, Komma oder führende Null: das, was eine Seriennummer nicht hat.
         var marked: Bool
         var fractionMissing: Bool
+
+        /// Vier oder mehr Stellen, alle eine 8.
+        var isAllEights: Bool {
+            let digits = raw.filter { $0.isASCIIDigit }
+            return digits.count >= 4 && digits.allSatisfy { $0 == "8" }
+        }
     }
 
     static func readCandidates(in item: RecognizedLine, format: MeterFormat) -> [Candidate] {

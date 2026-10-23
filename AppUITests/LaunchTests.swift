@@ -2759,6 +2759,42 @@ final class LaunchTests: XCTestCase {
         }),
     ]
 
+    /// Die Kamera, ohne Kamera: Ein gezeichnetes Bild geht durch dieselbe Auswertung
+    /// wie ein Kamerabild (`-pulse-kamera-test`), und die Zahl landet im Ziffernblock.
+    ///
+    /// Geprüft wird der ganze Weg, den ein Nutzer geht: Knopf, Sucher, Vorschlag,
+    /// Übernehmen, Hinweis „Von der Kamera gelesen". Dass das Netz echte Anzeigen liest, zeigt
+    /// `docs/kamera/`; hier geht es darum, dass der Weg bis in den Ziffernblock trägt und der
+    /// Vorschlag **nicht** von selbst gesichert wird.
+    func testCameraProposalLandsInTheKeypadAndIsNotSavedByItself() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-pulse-reset", "-pulse-pro", "-pulse-capture", "-pulse-kamera-test"]
+        app.launch()
+
+        let open = app.buttons["kamera-oeffnen"]
+        XCTAssertTrue(open.waitForExistence(timeout: 15), "Der Knopf „Mit Kamera ablesen“ fehlt im Ziffernblock")
+        open.tap()
+
+        // Im Debug-Bau braucht das Netz Sekunden je Bild, und es braucht drei gleiche.
+        let take = app.buttons["kamera-uebernehmen"]
+        XCTAssertTrue(take.waitForExistence(timeout: 90),
+                      "Die Kamera hat das gezeichnete Bild nicht gelesen — kein Vorschlag nach 90 Sekunden")
+        take.tap()
+
+        let hint = app.descendants(matching: .any).matching(identifier: "kamera-hinweis").firstMatch
+        // Großzügig: Das Blatt schließt sich, und auf dem iPad im Debug-Bau dauert das.
+        XCTAssertTrue(hint.waitForExistence(timeout: 40),
+                      "Nach dem Übernehmen muss der Ziffernblock sagen, dass die Zahl von der Kamera kommt")
+        XCTAssertTrue(open.exists, "Der Ziffernblock ist wieder da, die Ablesung ist nicht gesichert")
+
+        // Eine Ziffer ändern heißt: selbst abgelesen. Der Hinweis geht. Gelöscht statt getippt:
+        // Bei voller Anzeige ändert eine neue Ziffer nichts, Löschen immer.
+        app.buttons["Löschen"].tap()
+        let weg = NSPredicate(format: "exists == false")
+        expectation(for: weg, evaluatedWith: hint)
+        waitForExpectations(timeout: erscheint)
+    }
+
     /// Texte, die links oder rechts über das Fenster reichen, soweit sie in
     /// der Höhe gerade zu sehen sind.
     ///

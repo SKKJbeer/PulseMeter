@@ -11,8 +11,11 @@ und womit sie geprüft wird.
 |---|---|
 | `fotos/` | 15 Zählerfotos von Wikimedia Commons, frei lizenziert, verkleinert auf 900 Pixel Breite |
 | `fotos.json` | je Foto: Quelle, Urheber, Lizenz, **Soll-Stand** (von Hand abgelesen), Stellen des Zählwerks, was die Falle ist, bei lesbaren Anzeigen der Rahmen um das Display (`ausschnitt`) |
-| `vektoren.json` | 30 Fälle für den Leser, die Swift und der Klick-Dummy beide bestehen müssen |
+| `vektoren.json` | 46 Fälle für den Leser, dazu Folgen für die Einigung über mehrere Bilder, die Swift und der Klick-Dummy beide bestehen müssen |
 | `vision-gelesen.json` | was Vision auf den Fotos wirklich gelesen hat (macOS-Läufer, 21.10.2026); `MeterTextReaderVisionTests` liest sie |
+| `lcd-vektoren.json` | Referenzbilder und -ausgaben beider Ziffernnetze (aus Python), die Swift und der Klick-Dummy bestehen müssen; geschrieben von `scripts/kamera-netz/golden.py` |
+| `fotos-lcd.json` | die zweite Sammlung: neun LCD-Fotos, die nie zum Training dienten, mit Rahmen und Soll-Text |
+| `netz-messung.txt` | die Rohdaten der Messung oben |
 
 `scripts/check-kamerafotos.py` bricht ab, wenn bei einem Foto Urheber, Quelle oder
 eine freie Lizenz fehlt oder ein Foto im Ordner liegt, das nicht in `fotos.json`
@@ -134,6 +137,70 @@ Was Vision im Rahmen liest, zeigt warum:
   Vision hier messen, **zuerst als Versuch unter Linux** in Python an den 15 Fotos,
   bevor etwas in Swift entsteht.
 
+## Gemessen: das eigene Ziffernnetz (22. und 23. Oktober 2026)
+
+Apples Texterkennung trägt Siebensegment-Anzeigen nicht (oben). Deshalb liest in der App ein
+**eigenes Netz** den Ausschnitt im Rahmen, den der Nutzer im Sucher auf die Ziffern legt
+(`DigitNet`, 250 000 Gewichte). Es ist auf **nachgebauten** Anzeigen trainiert
+(`scripts/kamera-netz/`) und an Fotos nur **geprüft**; kein Foto hat je ein Gewicht bewegt.
+**Zwei Netze müssen sich einig sein** (`DigitEnsemble`): Eine Zeile gilt nur, wenn beide
+denselben Text lesen. Gemessen wird, was der Nutzer erlebt: sechs leicht verwackelte
+Sucherbilder, drei gleiche nötig (`ReadingConsensus`), der Leser im Modus „eingerahmt“, je Foto
+100 Versuche mit anderem Rahmen (`scripts/kamera-netz/evaluate.py`, Rohdaten in `netz-messung.txt`).
+
+**Zwei Sammlungen, und warum.** Die ersten sieben LCD-Fotos (`fotos.json`) habe ich beim Bauen
+des Generators immer wieder angesehen: Jede Runde fand ein Fehlerbild, und der Generator
+bekam dazu, was echten Anzeigen allgemein fehlte. Damit sind sie **kein unabhängiger Test mehr**.
+Deshalb gibt es `fotos-lcd.json`: neun weitere Fotos von Wikimedia Commons, die nie zum
+Training dienten (sechs mit Zahl, drei Fallen). Auch dort habe ich nach dem ersten Lauf Fehlerbilder
+angesehen (Buchstaben „REC“, dünne Einsen) und den Generator **allgemein** erweitert, nicht auf
+diese Fotos zugeschnitten. Die Zahlen der zweiten Sammlung sind deshalb die ehrlicheren, aber nicht mehr
+vollständig blind.
+
+| | erste Ablesung (ohne Bereich) | zweite Ablesung (Bereich um den Stand) |
+|---|---|---|
+| **erste Sammlung** (7 Zähler, 2 Fallen) | 205 richtig, **0 falsch**, 695 nichts (von 900) | 401 richtig, **0 falsch**, 299 nichts (von 700) |
+| **zweite Sammlung** (6 Zähler, 3 Fallen) | 90 richtig, **11 falsch**, 799 nichts (von 900) | 215 richtig, **5 falsch**, 380 nichts (von 600) |
+
+**Je Foto, zweite Ablesung, richtig von 100:** Aidon 99, Logarex 98, Landis 78, Openway 48, grünes Display 78
+(erste Sammlung); Aclara 79, PEL 60, Kaifa 28, flowIQ-Wasserzähler 39, Focus 9 (zweite Sammlung);
+**Meterus, Kamstrup: 0.** Datum-Display, leere Displays und Displaytest: **in 500 Versuchen (fünf Fallen, erste Ablesung) nie ein Vorschlag.**
+
+**Was das heißt, ohne Schönfärben**
+
+- **Es gibt keine Erkennung von 100 %.** Auf bekannten Fotos liest die App fünf von sieben Anzeigen oft, zwei nie; auf
+  unbekannten Fotos kommt in gut einem Drittel der Versuche (36 %) eine richtige Zahl (ein Versuch ist ein Fenster von
+  sechs Bildern; der Sucher läuft weiter, bis etwas gelesen ist oder der Nutzer tippt).
+- **Falsch lag sie in der zweiten Sammlung bei einem Foto: Elster (52).** Beide Netze lesen dort
+  übereinstimmend `7` statt `1`. Ich habe die Stelle vergrößert: Es stehen zwei senkrechte Balken
+  da und kein oberer, also eine `1`; die Anzeige ist matt, spiegelt und die letzte Ziffer sitzt am
+  Rand. Das ist ein **gemeinsamer Fehler beider Netze**, den auch eine Einigung nicht fängt.
+  Der Nutzer sieht die Zahl vor dem Übernehmen (`Ich lese …`) und bekommt den Hinweis „Vergleiche die
+  Ziffern noch einmal mit dem Zähler“; mehr als diese Zusage und diese Messung gibt es nicht.
+- **Warum zwei Netze.** Ein einzelnes Netz irrte sich auf der zweiten Sammlung in 17 von 360 (erste) und
+  33 von 240 (zweite Ablesung) Versuchen. Zwei Netze, die sich einig sein müssen, senkten das auf 4 und 3 (je 40 Versuche,
+  derselbe Lauf, in dem das Paar gewählt wurde; mit 100 Versuchen stehen unten 11 und 5, alle bei Elster) und beseitigen auf der ersten Sammlung alle Fehler. Der Preis sind mehr
+  Versuche ohne Vorschlag.
+- **Was auf dem Weg schiefging.** Runde 4 (echte Schriften im Generator) machte es **schlechter**: Das Netz las
+  die Buchstaben „REC“ des Focus-Zählers als Ziffer. Erst Buchstaben in Segmentschrift als Nebenzeichen, Spiegelungen und
+  kleine Zahlen mit vielen Nullen (so stehen neue Zähler) im Generator brachten es wieder voran.
+- **Die erste Ablesung ist streng.** Ohne Bereich zählt nur eine Zahl mit führender Null, Komma oder Einheit.
+  Das Display zeigt auch Datum und Uhrzeit, und das Netz liest die Doppelpunkte nicht immer: `270822` wäre ein
+  erfundener Stand von 270.822 kWh. Aidon (`9023`) und das grüne Display (`1936`) haben kein Merkmal und fallen
+  bei der ersten Ablesung heraus; eine erste Ablesung tippt man einmal je Zähler.
+- **Zwei Regeln kamen aus Fehlern auf dem Weg:** Ein verlorener Punkt machte aus 4,67 ein 467 (Faktor 100): Hat das
+  Zählwerk Nachkommastellen und ist die gerahmte Zahl ohne Komma breiter als der Vorkommateil, schlägt die App
+  nichts vor. Und: **Lauter Achten sind der Displaytest** (alle Segmente leuchten), kein Stand.
+- **Gerechnet wurde auf Fotos von Wikimedia** (zum Teil unter 1000 Punkten breit). Eine Kamera liefert die Ziffern
+  in voller Auflösung; die Messung ist in dieser Hinsicht eher zu streng.
+- **Ungeprüft: ein iPhone.** Die Rechnung ist in Swift ausgeschrieben und gegen Python geprüft (`DigitNetTests`,
+  27 Referenzbilder, beide Netze); wie scharf, hell und ruhig ein echtes Kamerabild im Rahmen ist, zeigt erst
+  TestFlight.
+
+**Wie es besser wird.** Mehr echte Fotos, vor allem von Zählern, an denen die Kamera nichts oder Falsches liest
+(Elster, Kaifa, Focus, Meterus, Kamstrup). Sie kämen nur freiwillig von Testern, nicht aus der App
+(`scripts/kamera-netz/README.md`).
+
 ## Die Regeln des Lesers (`MeterTextReader`)
 
 Eingabe ist der Text, den die Texterkennung geliefert hat, dazu die Stellen des
@@ -168,15 +235,20 @@ Steht ein Siemens-Zähler mit 5+1 Stellen auf der Voreinstellung 6+2, wird aus
 der Bereich. Die Kamera sollte deshalb bei der ersten Ablesung die Stellenzahl
 mit dem Foto vergleichen und nachfragen, wenn die Ziffernzahl nicht passt.
 
-## Was noch fehlt (Stand 0.137.0)
+## Was noch fehlt (Stand 0.138.0)
 
-- **Eine Ziffernerkennung für Siebensegment-Anzeigen** (siehe oben), zuerst als Versuch
-  unter Linux an den 15 Fotos. Ohne sie trägt die Kamera die Rollenzähler, nicht die
-  LCD-Zähler.
-- Die Oberfläche in der App (Knopf im Ziffernblock, Kamera, Berechtigung). Der
-  Klick-Dummy zeigt den Ablauf schon; dort ist die Texterkennung nachgestellt.
-- Die Datenschutzerklärung und der Berechtigungstext für die Kamera, vor der
-  ersten Fassung mit Kamera.
+- **Meterus und Kamstrup** (oben): mehr Trainingsbilder dieser Art, am besten **echte Fotos von
+  Testern**, damit auch das Netz an Anzeigen gemessen wird, die niemand nachgebaut hat. Die
+  Fotos der Tester kommen **nicht** in die App und nicht ungefragt ins Repository.
+- **Ein Kamerabild vom iPhone**: Erst ein Bau in TestFlight zeigt, ob Schärfe, Licht und
+  Handzittern so sind wie im Versuch.
+- **Datenschutzerklärung und Store-Texte** dürfen die Kamera erst nennen, wenn sie im Laden ist
+  (CLAUDE.md, Regel 4a). Vor dem Einreichen von 1.6: Absatz zur Kamera in
+  `docs/website/datenschutz.html` („Bilder werden nur auf dem Gerät ausgewertet, nicht gespeichert,
+  nicht übertragen“) und in `09-appstore.md`. Technisch stimmt der Satz heute schon
+  (`scripts/check-sicherheit.sh` hält ihn).
+- **Der Kauf** (0,99 €, Teil von „Alles freischalten“): Die Kaufkennung ist in App Store Connect
+  noch nicht angelegt. Bis dahin ist die Kamera in TestFlight für alle frei.
 
 ## Namensnennung
 
@@ -202,3 +274,19 @@ Quelle.
 | `fotos/29-kamstrup.jpg` | Strom, LCD | 14426 | 7+0 | [Kamstrup Electricity meter 382.jpg](https://commons.wikimedia.org/wiki/File:Kamstrup_Electricity_meter_382.jpg) | Gert Skriver | CC BY 3.0 |
 | `fotos/32-gruenes-display.jpg` | Strom, LCD, schlechtes Licht | 1936 | 6+0 | [Smart Electrical Meter.jpg](https://commons.wikimedia.org/wiki/File:Smart_Electrical_Meter.jpg) | Aliva Sahoo | CC BY-SA 4.0 |
 | `fotos/43-badger-halbe-ziffer.jpg` | Wasser, Rollenzählwerk | — | 6+0 | [Water Meter USA.JPG](https://commons.wikimedia.org/wiki/File:Water_Meter_USA.JPG) | Stilfehler | Public domain |
+
+### Zweite Sammlung (`fotos-lcd/`, nie zum Training benutzt)
+
+Am 23. Oktober 2026 von Wikimedia Commons geholt, auf 960 Pixel Breite verkleinert, sonst unverändert. Die Rahmen und Soll-Texte stehen in `fotos-lcd.json`.
+
+| Datei | Art | Soll | Stellen | Quelle | Urheber | Lizenz |
+|---|---|---|---|---|---|---|
+| `fotos-lcd/50-aclara-i210.jpg` | Strom, LCD, Aclara I-210+ | 74590 | 5+0 | [Aclara I-210+ single phase smart electricity meter.jpg](https://commons.wikimedia.org/wiki/File:Aclara_I-210%2B_single_phase_smart_electricity_meter.jpg) | 277volts | CC BY-SA 4.0 |
+| `fotos-lcd/51-pel-fesco.jpg` | Strom, LCD, Drehstrom | 10 | 6+0 | [Digital Electric meter Erorr.jpg](https://commons.wikimedia.org/wiki/File:Digital_Electric_meter_Erorr.jpg) | KingWriter1245 | CC BY-SA 4.0 |
+| `fotos-lcd/52-elster-r.jpg` | Strom, LCD, Elster | 1 | 5+0 | [Elster Type R15 electricity meter.jpeg](https://commons.wikimedia.org/wiki/File:Elster_Type_R15_electricity_meter.jpeg) | Zuzu | CC BY-SA 3.0 |
+| `fotos-lcd/53-kaifa-ma105.jpg` | Strom, LCD, Kaifa MA105 | 134141 | 6+0 | [Kaifa MA105H2E AMS-måler.jpg](https://commons.wikimedia.org/wiki/File:Kaifa_MA105H2E_AMS-m%C3%A5ler.jpg) | Fredrik Lindseth | CC BY-SA 4.0 |
+| `fotos-lcd/54-focus-axr.jpg` | Strom, LCD, Landis+Gyr Focus AXR | 0 | 5+0 | [Landis+Gyr FocusAXR-SD Hydro-Quebec.JPG](https://commons.wikimedia.org/wiki/File:Landis%2BGyr_FocusAXR-SD_Hydro-Quebec.JPG) | Bouchecl | CC BY-SA 4.0 |
+| `fotos-lcd/55-flowiq-2200.jpg` | Wasser, LCD, Kamstrup flowIQ | 880.518 | 6+3 | [Digitaler Wasserzaehler.jpg](https://commons.wikimedia.org/wiki/File:Digitaler_Wasserzaehler.jpg) | HelgeRieder | CC0 |
+| `fotos-lcd/56-aclara-leer.jpg` | Strom, LCD ohne Anzeige | — | 6+0 | [Aclara kV2c FITZALL 3-phase smart electricity meter.jpg](https://commons.wikimedia.org/wiki/File:Aclara_kV2c_FITZALL_3-phase_smart_electricity_meter.jpg) | 277volts | CC BY-SA 4.0 |
+| `fotos-lcd/57-iskra-test.jpg` | Strom, LCD mit allen Segmenten | — | 6+0 | [Meterkast meter.jpg](https://commons.wikimedia.org/wiki/File:Meterkast_meter.jpg) | BAsta8 | CC BY-SA 4.0 |
+| `fotos-lcd/58-iskra-leer.jpg` | Strom, LCD ohne Anzeige, Spiegelung | — | 6+0 | [Vorarlberger Kraftwerke-Energy meter (electro)-11ASD.jpg](https://commons.wikimedia.org/wiki/File:Vorarlberger_Kraftwerke-Energy_meter_(electro)-11ASD.jpg) | Asurnipal | CC BY-SA 4.0 |

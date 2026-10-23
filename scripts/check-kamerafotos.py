@@ -20,16 +20,20 @@ MAX_BYTES = 400_000
 
 def main() -> int:
     fehler: list[str] = []
-    daten = json.loads((WURZEL / "fotos.json").read_text(encoding="utf-8"))
-    fotos = daten["fotos"]
+    # Zwei Sammlungen: die ersten 15 Fotos und die zweite, die nie zum Training diente (LCD).
+    fotos = []
+    eingetragen = set()
+    vorhanden = set()
+    for datei, ordner in (("fotos.json", "fotos"), ("fotos-lcd.json", "fotos-lcd")):
+        sammlung = json.loads((WURZEL / datei).read_text(encoding="utf-8"))["fotos"]
+        fotos += sammlung
+        eingetragen |= {f["datei"] for f in sammlung}
+        vorhanden |= {f"{ordner}/{p.name}" for p in (WURZEL / ordner).glob("*") if p.is_file()}
+        for fehlt in sorted({f["datei"] for f in sammlung} - {f"{ordner}/{p.name}" for p in (WURZEL / ordner).glob("*")}):
+            fehler.append(f"{fehlt}: in {datei}, aber nicht im Ordner")
     readme = (WURZEL / "README.md").read_text(encoding="utf-8")
-
-    eingetragen = {f["datei"] for f in fotos}
-    vorhanden = {f"fotos/{p.name}" for p in (WURZEL / "fotos").glob("*") if p.is_file()}
-    for fehlt in sorted(eingetragen - vorhanden):
-        fehler.append(f"{fehlt}: in fotos.json, aber nicht im Ordner")
     for fremd in sorted(vorhanden - eingetragen):
-        fehler.append(f"{fremd}: im Ordner, aber nicht in fotos.json (Urheber und Lizenz fehlen)")
+        fehler.append(f"{fremd}: im Ordner, aber in keiner Sammlung eingetragen (Urheber und Lizenz fehlen)")
 
     for f in fotos:
         name = f["datei"]

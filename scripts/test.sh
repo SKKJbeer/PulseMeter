@@ -8,7 +8,7 @@ say() { printf "\n\033[1m%s\033[0m\n" "$1"; }
 
 if [ "$SCOPE" = "all" ] || [ "$SCOPE" = "core" ]; then
   say "PulseCore"
-  ( cd Packages/PulseCore && swift test )
+  scripts/test-core.sh
 fi
 
 if [ "$SCOPE" = "all" ] || [ "$SCOPE" = "data" ]; then

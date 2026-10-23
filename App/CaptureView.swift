@@ -37,6 +37,15 @@ struct CaptureView: View {
     @State private var verdict: ConsumptionEngine.Plausibility = .noReference
     @State private var problem: String?
     @State private var changingMeter = false
+    /// Das Kamerablatt ist offen.
+    @State private var zeigtKamera = false
+    /// Der Stand, den die Kamera je Zählwerk vorgeschlagen und der Nutzer übernommen hat.
+    ///
+    /// **Nur zum Vergleichen.** Gesichert wird, was im Ziffernblock steht. Solange das
+    /// dasselbe ist wie der Kamerawert, trägt die Ablesung die Herkunft „Kamera" und der
+    /// Ziffernblock den Hinweis „Von der Kamera gelesen". Sobald jemand eine Ziffer
+    /// ändert, hat er selbst abgelesen, und beides verschwindet (wie im Klick-Dummy).
+    @State private var kameraWert: [Register.ID: Decimal] = [:]
 
     /// Wann abgelesen wurde. Vorbelegt auf **jetzt**, mit Uhrzeit.
     ///
@@ -107,6 +116,15 @@ struct CaptureView: View {
                                 .padding(.bottom, 12)
                         }
                         VerdictBanner(tone: verdictTone, message: verdictMessage)
+                        if kameraHinweisSichtbar {
+                            Label("Von der Kamera gelesen. Vergleiche die Ziffern noch einmal mit dem Zähler.",
+                                  systemImage: "camera.viewfinder")
+                                .font(PulseText.caption)
+                                .foregroundStyle(PulseColor.inkSecondary)
+                                .multilineTextAlignment(.leading)
+                                .padding(.top, 8)
+                                .accessibilityIdentifier("kamera-hinweis")
+                        }
                         // Die Rückfrage stand hier seit jeher — „Wurde der
                         // Zähler gewechselt, oder hat sich eine Ziffer
                         // verirrt?" —, und bis 0.23.0 gab es keine
@@ -157,6 +175,15 @@ struct CaptureView: View {
                 applyScreenshotFixture()
                 loadPrevious()
                 applyShowcaseDigits()
+            }
+            .fullScreenCover(isPresented: $zeigtKamera) {
+                if let register {
+                    KameraView(format: MeterFormat(register), einheit: register.unit.symbol,
+                               bereich: kameraBereich(register), farbe: accent) { value, _ in
+                        adopt(value, register: register)
+                        kameraWert[register.id] = value
+                    }
+                }
             }
             .sheet(isPresented: $changingMeter) {
                 MeterChangeView(meteringPoint: meteringPoint) {
@@ -266,8 +293,37 @@ struct CaptureView: View {
                     .font(PulseText.detail)
                     .foregroundStyle(PulseColor.inkSecondary)
             }
+            if kameraMoeglich {
+                // Gleicher Stil wie „Vom letzten Stand übernehmen": ein Weg neben dem
+                // Tippen, nie davor. Die drei Berührungen bis zur Ablesung bleiben.
+                Button { zeigtKamera = true } label: {
+                    Label("Mit Kamera ablesen", systemImage: "camera.viewfinder")
+                }
+                .font(.system(.footnote, weight: .medium))
+                .foregroundStyle(PulseColor.inkSecondary)
+                .padding(.horizontal, 11)
+                .padding(.vertical, 5)
+                .background(PulseColor.surfaceMuted, in: Capsule())
+                .accessibilityIdentifier("kamera-oeffnen")
+            }
         }
         .padding(.bottom, 10)
+    }
+
+    /// Ob der Knopf da ist: Mit Kamera am Gerät, oder im Test mit dem gezeichneten Bild.
+    private var kameraMoeglich: Bool {
+        KameraSitzung.kameraVorhanden || Startschalter.gesetzt("-pulse-kamera-test")
+    }
+
+    /// Dieselbe Grenze, an der der Ziffernblock fragt „Stimmt die Zahl?"
+    /// (`ConsumptionEngine.plausibleReadingRange`).
+    private func kameraBereich(_ register: Register) -> ClosedRange<Decimal>? {
+        ConsumptionEngine.plausibleReadingRange(register: register, readings: history[register.id] ?? [], today: today)
+    }
+
+    private var kameraHinweisSichtbar: Bool {
+        guard let register, let gelesen = kameraWert[register.id], let aktuell = currentValue else { return false }
+        return gelesen == aktuell
     }
 
     /// Der gesperrte Zustand bekommt eigene Farben statt einer durchscheinenden
@@ -551,8 +607,10 @@ struct CaptureView: View {
         var batch: [(reading: Reading, fractionDigits: Int)] = []
         for register in registers {
             guard let value = entered[register.id] else { continue }
+            // „Kamera" nur, solange der Wert noch der ist, den die Kamera vorgeschlagen hat.
+            let origin: ReadingOrigin = kameraWert[register.id] == value ? .camera : .manual
             batch.append((Reading(registerID: register.id, deviceID: deviceID,
-                                  day: chosenDay, time: chosenTime, value: value),
+                                  day: chosenDay, time: chosenTime, value: value, origin: origin),
                           register.fractionDigits))
         }
         do {

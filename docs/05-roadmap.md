@@ -68,8 +68,8 @@ und stehen nirgends öffentlich (siehe „Öffentlich und intern" unten).
 | **1.4.1** | 07.10. | **Neue Suchbegriffe:** Name, Untertitel und Schlagworte aus `09-appstore.md`. Sonst nichts, damit eine Wirkung im Rang den neuen Wörtern zuzuordnen ist | **im Laden** seit 07.10., Bau 40 |
 | **1.5** | 14.10. | **Import aus einer Tabelle**, für Umsteiger mit Excel-Listen oder anderen Apps · **Ausblick immer** (0.130.0, 0.131.0): „Erwartet für <Jahr>" auf jeder Karte und im Verlauf in jeder Ansicht, Monatsausblick auch ohne Ablesung im Monat | **im Laden** seit 14.10., Bau 44, vom Gründer vorgezogen (geplant war der 04.11.) |
 | **1.5.1** | 19.10. | **Neue Bilder im Laden:** gesetzt mit Überschrift, ein voller Haushalt (Strom mit Solar, Gas, Wasser, Warmwasser, Wallbox) · „Schritt 1 von 2" statt „Zählwerk" | **im Laden** seit 19.10., 22:04 UTC, Bau 45 |
-| **1.6** | 18.11. | **Kamera, Stufe 1:** Foto im Ziffernblock, die App schlägt den Stand vor, du bestätigst. Eigener Kauf 0,99 €, im Bündel enthalten | **Vorarbeit fertig (0.135.0):** Leser in PulseCore, 15 Fotos, Ablauf im Klick-Dummy (`docs/kamera/`). **Gemessen (21.10.):** Vision liest Rollenzähler, aber Siebensegment-Anzeigen auch im Rahmen nicht verlässlich (0 falsch, 1 von 9 richtig). **Offen, und eine Entscheidung des Gründers:** Stufe 1 nur für Rollenzähler und große Ziffern ausliefern, oder zuerst eine eigene Ziffernerkennung für LCD versuchen (zuerst unter Linux, `docs/kamera/README.md`). Dazu Oberfläche, Datenschutz und Berechtigungstext |
-| **1.7** | 02.12. | **Kamera, Stufe 2:** Sucher mit Rahmen, zwei Zählwerke auf einem Bild (Tag/Nacht, Bezug/Einspeisung) | groß |
+| **1.6** | 18.11. | **Kamera:** Sucher mit Rahmen, die App schlägt den Stand vor, du bestätigst. Eigener Kauf 0,99 €, im Bündel enthalten | **Gebaut in 0.138.0** (statt Foto-Auswahl gleich der Sucher mit Rahmen, Taschenlampe und Hinweisen), mit eigenem **Ziffernnetz** für LCD. **Gemessen:** zwei Netze, die sich einig sein müssen; auf bekannten Fotos 0 Fehler, auf einer zweiten, nie trainierten Sammlung 5 Fehler in 600 Versuchen (ein Foto) und nur jeder dritte Versuch liest richtig (`docs/kamera/README.md`). Offen: iPhone-Test in TestFlight, Fotos von Testern für Meterus und Kamstrup, Kaufkennung in App Store Connect, Datenschutz und Store-Texte erst mit der Fassung |
+| **1.7** | 02.12. | **Kamera, Stufe 2:** zwei Zählwerke auf einem Bild (Tag/Nacht, Bezug/Einspeisung), Kennzahl `1.8.0` zuordnen | groß. Der Sucher mit Rahmen ist seit 0.138.0 schon da |
 | **1.8** | 16.12. | offen. Der Jahreswechsel stand hier und ist am 7. Oktober gestrichen | — |
 | **1.9** | 13.01. | Puffer, und was die Zahlen bis dahin sagen | — |
 
@@ -109,8 +109,9 @@ Google, und ein Umzug kostete Weiterleitungen ohne Gewinn.
 
 ### Die Kamera: wie sie gebaut wird
 
-**Nichts verlässt das Telefon.** Erkannt wird mit Apples Texterkennung auf
-dem Gerät (Vision). Kein Bild wird gesendet oder ohne Zutun gespeichert; das
+**Nichts verlässt das Telefon.** Erkannt wird auf dem Gerät: Rollen und große
+Ziffern mit Apples Texterkennung (Vision), **Siebensegment-Anzeigen mit einem
+eigenen Ziffernnetz** (seit 0.138.0, `docs/kamera/README.md`). Kein Bild wird gesendet oder ohne Zutun gespeichert; das
 gehört zum Versprechen der App und steht so in der Datenschutzerklärung,
 bevor die Funktion erscheint.
 
@@ -128,7 +129,10 @@ sie **nichts** vor: Eine falsch gelesene Ziffer ist schlimmer als keine
 | Rote Nachkommastellen | Zahl der Vor- und Nachkommastellen kommt aus dem Zählwerk, nicht aus dem Bild |
 | Zählernummer, Eichjahr, Typenschild im Bild | nur Zahlen mit der Stellenzahl des Zählwerks, nahe am letzten Stand |
 | Digitale Anzeige wechselt zwischen 1.8.0 und 2.8.0 | Stufe 2: Kennzahl neben dem Wert lesen und dem richtigen Zählwerk zuordnen |
-| Schlechtes Licht, Spiegelung | Taschenlampe im Sucher (Stufe 2) |
+| Schlechtes Licht, Spiegelung | Taschenlampe im Sucher; der Sucher sagt „zu dunkel“, „kaum Kontrast“, „unscharf“ (seit 0.138.0) |
+| Datum oder Uhrzeit im Display | Das Netz liest die Doppelpunkte; ohne Bereich zählt zusätzlich nur eine Zahl mit führender Null, Komma oder Einheit |
+| Punkt nicht erkannt (4,67 → 467) | Zahl ohne Komma, breiter als der Vorkommateil: kein Vorschlag |
+| Eine Zahl in einem Bild falsch gelesen | Dieselbe Zahl in drei von sechs Bildern, und keine andere mehr als einmal |
 
 Geprüft wird mit einer Sammlung echter Fotos (vom Gründer, Zählernummer
 geschwärzt) und der erwarteten Zahl je Bild. Die CI rechnet die Trefferquote

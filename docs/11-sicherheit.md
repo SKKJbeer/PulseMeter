@@ -27,7 +27,8 @@ spricht. Zählora spricht mit niemandem:
 | `print`, `NSLog`, `os_log`, `Logger` | **keine** |
 | Eigene URL-Schemata (`CFBundleURLSchemes`) | **eines**, `zaehlora://erfassen`, seit 0.116.0. Es öffnet nur den Ziffernblock, siehe Abschnitt 3 |
 | `NSAllowsArbitraryLoads` oder sonstige ATS-Ausnahmen | **keine** |
-| Berechtigungstexte für Kamera, Ort, Kontakte, Fotos | **keine** |
+| Berechtigungstexte | **einer**, `NSCameraUsageDescription`, seit 0.138.0 (Kamera zum Ablesen). Ort, Kontakte, Fotos, Mikrofon: **keine** |
+| Foto-, Film- oder Mediathekzugriff der Kamera | **keiner**: Der Sucher wertet laufende Bilder auf dem Gerät aus und speichert und sendet nichts (`scripts/check-sicherheit.sh`) |
 
 Das ist kein Zufall, sondern ADR-002: keine Server, kein Konto, keine
 Bibliotheken Dritter. **Was es nicht gibt, kann nicht falsch konfiguriert

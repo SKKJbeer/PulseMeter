@@ -2755,6 +2755,66 @@ aus Bildern liest.
   gzip-komprimiert.** `gunzip` davor, sonst meldet `gpg --import` „no valid
   OpenPGP data found" und die Prüfung sieht aus wie ein Fehler der Signatur.
 
+### Ein eigenes Erkennungsnetz, wenn das Systemwerkzeug eine Klasse nicht trägt
+
+Am 22. Oktober für die Siebensegment-Anzeigen der Zählerkamera gelernt. Apples
+Texterkennung hatte 1 von 9 getroffen; die Messung stand fest, die Entscheidung
+war, es selbst zu können.
+
+- **Handgebaute Bildverarbeitung auf sieben Fotos ist eine Falle.** Der erste
+  Versuch (Schwelle, Zusammenhangskomponenten, Segmentprobe) las 0 von 9, und jede
+  Nachbesserung behob ein Foto und brach das nächste. Was trug, war ein kleines
+  Faltungsnetz mit CTC-Ausgabe (liest eine ganze Ziffernzeile, kein Einzelschnitt),
+  **trainiert auf nachgebauten Anzeigen**, an den echten Fotos nur **geprüft**.
+  Dann ist die Zahl ehrlich: Kein Foto hat je ein Gewicht bewegt.
+- **Der Generator ist das Produkt.** Gut wurde das Netz erst durch das, was im
+  Generator nach den ersten Messungen dazukam: Nebenzeichen, die nicht zur Zahl
+  gehören (Einheit, Kennzahl `1.8.0`, eine große Tarifziffer links, Symbole),
+  Uhrzeit und Datum mit Doppelpunkt, gedruckte Ziffern vom Typenschild als „nichts“,
+  Geisterbilder abgeschalteter Segmente, schräge Schriften, wenig Kontrast. Nach
+  jeder Messung die Fehler **ansehen** (`„00400000“` statt `00000` heißt: Die
+  kleine „004“ links wird mitgelesen), dann den Generator ändern, nicht das Netz.
+- **Am Produkt messen, nicht am Einzelbild.** Das Netz bekommt im Betrieb sechs
+  Bilder und braucht drei gleiche. Die Messung macht dasselbe (`evaluate.py`):
+  je Foto viele Versuche mit verwackeltem Rahmen, dazu der Leser im Modus der App.
+  Einzelbildzahlen sehen schlechter aus und sagen weniger.
+- **Dieselbe Verkleinerung überall.** Trainiert und gemessen mit flächengemittelter
+  Verkleinerung, gebaut in Python, Swift und JavaScript Punkt für Punkt gleich und
+  gegen Referenzwerte geprüft (`lcd-vektoren.json`). Die erste Messung benutzte
+  `warpAffine` (bilinear) und maß damit ein anderes Netz als das, das in der App läuft.
+- **Das Netz in Swift ausschreiben statt Core ML**, wenn es klein ist (160 000
+  Gewichte, 70 Millionen Multiplikationen): Es läuft unter Linux in den Tests, gegen
+  dieselben Referenzwerte wie das Training, und die JavaScript-Fassung im Klick-Dummy
+  rechnet dasselbe. Ein Modellformat, das nur ein Mac laden kann, hätte nichts davon
+  geprüft. Die Gewichte stehen als Zeichenkette im Quelltext, nicht als Ressource
+  (`Bundle.module` hätte erst ein Mac-Lauf gezeigt).
+- **Eine lange Trainingsschleife auf vier Kernen kostet zehn Minuten je Epoche.**
+  Nach jeder Epoche speichern und messen, nicht auf das Ende warten; und bei einer
+  Änderung am Generator **ab dem Zwischenstand weitertrainieren**, nicht von vorn.
+- **Die Fotos, an denen man gebaut hat, sind kein Test mehr.** Nach vier Runden „Fehlerbild ansehen, Generator ändern“
+  stand auf den sieben Fotos null Fehler, auf neun neuen aber 16 in 1.500 Versuchen. **Vor der Behauptung neue Fotos holen**
+  (Wikimedia Commons, `scripts/kamera-netz/README.md`) und die alten Zahlen nicht mehr als Beleg nehmen. Die erste
+  Fassung des Eintrags sagte „nie etwas Falsches“; das musste zurückgenommen werden.
+- **Neue, realistischere Trainingsdaten machen ein Netz nicht automatisch besser.** Echte Siebensegment-Schriften (DSEG)
+  im Generator machten es schlechter: Die Buchstaben „REC“ in Segmentschrift las es als Ziffer. Erst Buchstaben als
+  Nebenzeichen, Spiegelungen und kleine Zahlen mit vielen Nullen (so stehen neue Zähler) halfen. Jede Runde an beiden
+  Sammlungen messen, nicht nur auf den Trainingsverlust schauen.
+- **Zwei Netze, die sich einig sein müssen, fingen die meisten Fehler**, die ein einzelnes machte (17 und 33 auf 360 und 240
+  Versuchen, danach 4 und 3), zum Preis von mehr „nichts“. Was beide gleich falsch lesen (eine matte `1` als `7`), fängt
+  auch das nicht.
+- **Rechenintensive Tests laufen im Release-Bau.** Das Netz rechnet in Swift im Debug-Bau auf dem Mac-Läufer etwa 18-mal
+  langsamer als im Release-Bau; 50 Bilder in den Tests machten aus vier Minuten PulseCore 38 und rissen das
+  Zeitlimit des iPhone-Auftrags (60 Minuten) — als „abgebrochen“, nicht als Fehler. `scripts/test-core.sh`: alles
+  außer den Netz-Tests im Debug-Bau, diese mit `-c release -Xswiftc -enable-testing`. `@_optimize(speed)` auf den
+  Rechenschleifen allein brachte nichts Messbares. Ein „abgebrochen“ im Lauf zuerst mit der Laufzeit der Schritte
+  gegen das Zeitlimit vergleichen, bevor man einen Fehler im Code sucht.
+- **`pkill -f <Muster>` und `ps | grep <Muster> | xargs kill` töten die eigene
+  Shell**, wenn das Muster in der eigenen Befehlszeile steht (Ausstieg 144, ohne
+  Meldung). Mit `pgrep -af "^python3 train.py"` die Nummer holen und gezielt beenden.
+- **Der Schlüsselring von swift.org liegt hinter einer Umleitung**: `curl -L` und
+  `www.swift.org`. Ohne beides steht im „Schlüsselring“ eine HTML-Seite
+  („Document Has Moved“), und `gpg --import` meldet nur „0 processed“.
+
 ## 8. Wann etwas fertig ist
 
 **Fertig heißt: beim Nutzer.** Nicht gepusht, nicht zusammengeführt — bei uns:

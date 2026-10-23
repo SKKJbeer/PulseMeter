@@ -1,5 +1,5 @@
 {
- "hinweis": "Fremde Fotos von Wikimedia Commons, nur als Prüfmaterial, nicht Teil der App. Urheber und Lizenz je Foto. Soll-Stand von Hand abgelesen; null heißt: Eine Erkennung soll nichts vorschlagen. „ausschnitt“ ist der Rahmen um das Display als Bruchteile [links, oben, rechts, unten], von Hand gesetzt, wie ihn ein Nutzer im Sucher setzte (Stufe 2); nur bei Fotos mit ablesbarer Anzeige.",
+ "hinweis": "Fremde Fotos von Wikimedia Commons, nur als Prüfmaterial, nicht Teil der App. Urheber und Lizenz je Foto. Soll-Stand von Hand abgelesen; null heißt: Eine Erkennung soll nichts vorschlagen. „ausschnitt“ ist der Rahmen um das Display als Bruchteile [links, oben, rechts, unten], von Hand gesetzt, wie ihn ein Nutzer im Sucher setzte (Stufe 2); nur bei Fotos mit ablesbarer Anzeige. „ziffern“ ist der Rahmen um die Hauptziffern (oder um die Anzeige, wo nichts steht) als Bruchteile des Fotos, von Hand gesetzt, und „anzeige“ der Text, den ein Mensch dort liest, mit führenden Nullen und Komma: das Soll für das Ziffernnetz (Siebensegment, `docs/kamera/lcd-vektoren.json`).",
  "fotos": [
   {
    "datei": "fotos/01-landis-datum.jpg",
@@ -11,7 +11,14 @@
    "quelle": "https://commons.wikimedia.org/wiki/File:Digital_Economy_7_electricity_meter.jpg",
    "titel": "Digital Economy 7 electricity meter.jpg",
    "urheber": "NoahLovesNesquick",
-   "lizenz": "CC BY-SA 4.0"
+   "lizenz": "CC BY-SA 4.0",
+   "ziffern": [
+    0.4323,
+    0.2406,
+    0.599,
+    0.2734
+   ],
+   "anzeige": "27:08:22"
   },
   {
    "datei": "fotos/02-aidon-5530.jpg",
@@ -29,7 +36,14 @@
     0.09,
     0.7,
     0.18
-   ]
+   ],
+   "ziffern": [
+    0.4131,
+    0.1131,
+    0.5149,
+    0.1384
+   ],
+   "anzeige": "9023"
   },
   {
    "datei": "fotos/04-logarex-nullen.jpg",
@@ -47,7 +61,14 @@
     0.11,
     0.66,
     0.22
-   ]
+   ],
+   "ziffern": [
+    0.3947,
+    0.1464,
+    0.5724,
+    0.1938
+   ],
+   "anzeige": "000000"
   },
   {
    "datei": "fotos/06-logarex-leer.jpg",
@@ -59,7 +80,14 @@
    "quelle": "https://commons.wikimedia.org/wiki/File:Logarex_smart_household_electricity_meter_build_year_2023_no_display.jpg",
    "titel": "Logarex smart household electricity meter build year 2023 no display.jpg",
    "urheber": "RobbieIanMorrison",
-   "lizenz": "CC BY 4.0"
+   "lizenz": "CC BY 4.0",
+   "ziffern": [
+    0.224,
+    0.1292,
+    0.7083,
+    0.2196
+   ],
+   "anzeige": ""
   },
   {
    "datei": "fotos/07-siemens-rollen.jpg",
@@ -149,7 +177,14 @@
     0.13,
     0.7,
     0.25
-   ]
+   ],
+   "ziffern": [
+    0.4323,
+    0.168,
+    0.5776,
+    0.1951
+   ],
+   "anzeige": "002426"
   },
   {
    "datei": "fotos/27-meterus.jpg",
@@ -167,7 +202,14 @@
     0.04,
     0.78,
     0.2
-   ]
+   ],
+   "ziffern": [
+    0.4502,
+    0.1268,
+    0.711,
+    0.1718
+   ],
+   "anzeige": "00004.67"
   },
   {
    "datei": "fotos/28-openway.jpg",
@@ -185,7 +227,14 @@
     0.43,
     0.66,
     0.55
-   ]
+   ],
+   "ziffern": [
+    0.4526,
+    0.4624,
+    0.5972,
+    0.5158
+   ],
+   "anzeige": "00000"
   },
   {
    "datei": "fotos/29-kamstrup.jpg",
@@ -203,7 +252,14 @@
     0.13,
     0.64,
     0.27
-   ]
+   ],
+   "ziffern": [
+    0.2302,
+    0.2032,
+    0.4141,
+    0.2328
+   ],
+   "anzeige": "0014426"
   },
   {
    "datei": "fotos/32-gruenes-display.jpg",
@@ -221,7 +277,14 @@
     0.33,
     0.64,
     0.43
-   ]
+   ],
+   "ziffern": [
+    0.4908,
+    0.3757,
+    0.5621,
+    0.3998
+   ],
+   "anzeige": "1936"
   },
   {
    "datei": "fotos/43-badger-halbe-ziffer.jpg",

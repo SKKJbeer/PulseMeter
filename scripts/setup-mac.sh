@@ -39,7 +39,7 @@ git config core.hooksPath .githooks
 echo "Vor jedem Push laufen die schnellen Prüfungen (überspringen: git push --no-verify)."
 
 say "6/6  Tests der Pakete"
-( cd Packages/PulseCore && swift test )
+scripts/test-core.sh
 ( cd Packages/PulseData && swift build )
 
 say "Fertig."

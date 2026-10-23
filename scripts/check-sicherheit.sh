@@ -80,13 +80,29 @@ fi
 
 # Eine Berechtigung, die niemand braucht, ist ein Ablehnungsgrund und ein
 # Datenschutzversprechen weniger.
+#
+# **Seit der Kamera (0.138.0) genau eine, und keine zweite.** `NSCameraUsageDescription`
+# steht in der App, weil der Sucher sie braucht (`App/KameraSitzung.swift`). Alles andere
+# bleibt verboten: Fotos, Ort, Kontakte, Mikrofon. Das Widget braucht gar keine.
 rechte=$(grep -oE 'NS[A-Za-z]+UsageDescription|NSAllowsArbitraryLoads' \
-         App/Info.plist Widget/Info.plist 2>/dev/null || true)
+         App/Info.plist Widget/Info.plist 2>/dev/null \
+         | grep -v '^App/Info.plist:NSCameraUsageDescription$' || true)
 if [ -z "$rechte" ]; then
   printf "  %s✓%s Keine unbenutzten Berechtigungen in Info.plist\n" "$GRUEN" "$AUS"
 else
   printf "  %s✗%s In Info.plist steht:\n%s\n" "$ROT" "$AUS" "$rechte"; FEHLER=$((FEHLER + 1))
 fi
+# Die eine Berechtigung muss auch benutzt werden: eine Kamerafreigabe ohne Kamera wäre die
+# unbenutzte Berechtigung, vor der diese Prüfung warnt.
+if grep -q 'NSCameraUsageDescription' App/Info.plist 2>/dev/null && ! grep -q 'AVCaptureSession' App/*.swift 2>/dev/null; then
+  printf "  %s✗%s Kameraberechtigung in Info.plist, aber keine Kamera im Code\n" "$ROT" "$AUS"; FEHLER=$((FEHLER + 1))
+fi
+# **Die Kamera speichert nichts und schickt nichts.** Gesagt wird den Leuten: „Die Bilder
+# werden nur auf deinem Gerät ausgewertet und nicht gespeichert." Das gilt, solange es
+# keinen Foto- oder Filmausgang und keinen Zugriff auf die Fotomediathek gibt. Die
+# Vorschau und die Helligkeitsebene eines laufenden Bildes sind kein Speichern.
+pruefe "Kamerabilder werden nicht gespeichert" \
+       'AVCapturePhotoOutput|AVCaptureMovieFileOutput|AVCaptureStillImageOutput|UIImageWriteToSavedPhotosAlbum|PHPhotoLibrary|PHAssetCreationRequest|\.jpegData\(|\.pngData\('
 
 # **Genau ein Adressschema, und genau das, das die App auch zerlegt.**
 #
