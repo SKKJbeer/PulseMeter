@@ -1540,8 +1540,14 @@ enthielt nur den Bilder-Auftrag. Drei Stunden, und am Ende stand die Vermutung s
 - Die Dauer **jedes einzelnen Tests** gehört in die Auswertung. Ein Test, der in grünen Läufen 72 Sekunden
   braucht, während die anderen zwei bis zwölf brauchen, steht an einer Grenze (hier 70) und ist kein stabiler
   Test, auch wenn er bis dahin immer bestand.
-- Ein Protokoll mitten im Lauf holt man nicht über `get_job_logs`, sondern über dessen `logs_url` und `curl`;
-  das geht, solange der **Auftrag** noch läuft, und nur dann, wenn der Schritt schon fertig ist.
+- Ein Protokoll mitten im Lauf holt man nicht über `get_job_logs` mit Inhalt, sondern über dessen `logs_url` und
+  `curl`. **Beim ersten Versuch ging das mitten im Lauf** (die Zeilen bis zum laufenden Schritt waren da), **beim
+  Neustart nicht** (`BlobNotFound`, bis der Auftrag fertig war), und bei einem vom Limit abgebrochenen Auftrag
+  fehlt das Protokoll des Schritts ganz. Den Fehler im Protokoll zu suchen setzt also voraus, dass der Auftrag zu
+  Ende läuft; deshalb das Limit großzügig.
+- **Die Vermutung wurde am nächsten Lauf bestätigt, nicht vorher geglaubt:** Nach `simctl bootstatus -b` vor dem
+  ersten Test stand `testAddingAMeterFromTheMetersTab` bei 36 statt 72 Sekunden. Ein Ergebnis, das man messen
+  kann, gehört in den Changelog mit der Zahl, nicht mit „sollte helfen".
 
 ### Eine Gegenprobe wird zurückgenommen, nicht zurückgesetzt
 

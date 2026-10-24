@@ -26,6 +26,10 @@ Protokoll des roten Schritts gleich mit.
   nicht mehr in die Zeit des ersten Tests fällt. Ob das die Ursache war, ist offen; ein Lauf entscheidet.
 - `ci.yml`: Zeitlimit für `iphone` und `ipad` von 60 auf 90 Minuten (normal 45 und 55, langsam 65).
 
+**Gemessen im nächsten Lauf (614):** `testAddingAMeterFromTheMetersTab` 36 statt 72 Sekunden, alle 53 iPhone-Tests grün.
+Der iPad-Job brach beim ersten Versuch am neuen Limit ab (Läufer mit der zweieinhalbfachen Zeit für die Bilder), der
+zweite lief durch.
+
 _Keine Änderung an App, Rechenkern oder Klick-Dummy._
 
 ---

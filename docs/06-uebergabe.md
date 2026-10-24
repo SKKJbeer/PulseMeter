@@ -128,7 +128,7 @@ Klick-Dummy. Der Satz „Alle Werte in …" unter der Tabelle im Entwurf ist weg
 
 ### Als Nächstes
 
-0. **Kamera (1.6, geplant 18.11.): gebaut in 0.138.0, am iPhone ungeprüft.** Der Gründer hat
+0. **Kamera (1.6, geplant 18.11.): gebaut in 0.138.0 und seit 0.139.0 ein Kauf, in TestFlight als Bau 47 (VALID, 24.10. 11:01 UTC), am iPhone ungeprüft.** Stand für 1.6: Kauf `de.karjoth.pulsemeter.camera` (1,99 €, „Mit Kamera ablesen") steht als Entwurf in App Store Connect, die App kennt ihn, die Website nennt noch fünf Freischaltungen und 8,95 € (`NOCH_NICHT_IM_LADEN`). **Offen für die Einreichung:** Website auf sechs und 10,94 € ziehen und Kamera aus `NOCH_NICHT_IM_LADEN` nehmen, Beschreibung des Bündels in App Store Connect auf „sechs“ ändern, Kauf mit der Fassung einreichen, `docs/fassungen/1.6.json`, Store-Texte und Datenschutzerklärung. **Das Einreichen bleibt die Freigabe des Gründers.** Der Gründer hat
    am 22. Oktober entschieden, die Siebensegment-Erkennung selbst zu lösen (Option b). Ergebnis:
    ein eigenes **Ziffernnetz** (`DigitNet` in PulseCore, in Swift ausgeschrieben, Gewichte als
    Zeichenkette im Quelltext), trainiert auf nachgebauten Anzeigen, an den Fotos nur gemessen
