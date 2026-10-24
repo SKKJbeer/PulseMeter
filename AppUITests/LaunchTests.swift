@@ -2357,7 +2357,7 @@ final class LaunchTests: XCTestCase {
         }
 
         for produkt in ["additionalMeters", "multipleRegisters",
-                        "costsAndTariffs", "pdfReport", "everything"] {
+                        "costsAndTariffs", "pdfReport", "camera", "everything"] {
             let karte = element("kaufkarte-\(produkt)", in: app)
             XCTAssertTrue(karte.waitForExistence(timeout: erscheint),
                           "\(produkt) fehlt in der Übersicht")
@@ -2793,6 +2793,26 @@ final class LaunchTests: XCTestCase {
         let weg = NSPredicate(format: "exists == false")
         expectation(for: weg, evaluatedWith: hint)
         waitForExpectations(timeout: erscheint)
+    }
+
+    /// Ohne den Kauf führt der Knopf aufs Kaufblatt der Kamera, nicht in den Sucher.
+    ///
+    /// Das ist die andere Hälfte von `testCameraProposalLandsInTheKeypad…`: Dort steht
+    /// alles offen (`-pulse-pro`), hier nichts (`-pulse-frei`). Gesperrt ist nur der Weg
+    /// über die Kamera; der Ziffernblock selbst bleibt benutzbar.
+    func testCameraButtonLeadsToThePurchaseWhenNotBought() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-pulse-reset", "-pulse-frei", "-pulse-capture", "-pulse-kamera-test"]
+        app.launch()
+
+        let open = app.buttons["kamera-oeffnen"]
+        XCTAssertTrue(open.waitForExistence(timeout: 15), "Der Knopf fehlt, statt zum Kauf zu führen")
+        open.tap()
+
+        XCTAssertTrue(app.navigationBars["Mit Kamera ablesen"].waitForExistence(timeout: erscheint),
+                      "Das Kaufblatt der Kamera ist nicht aufgegangen")
+        XCTAssertFalse(app.buttons["kamera-uebernehmen"].exists, "Der Sucher darf ohne Kauf nicht laufen")
+        XCTAssertTrue(app.buttons["Wiederherstellen"].exists, "Ohne „Wiederherstellen“ kommt kein Käufer an seinen Kauf")
     }
 
     /// Texte, die links oder rechts über das Fenster reichen, soweit sie in

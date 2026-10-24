@@ -137,9 +137,11 @@ struct UnlockSheet: View {
     private var savingsNote: String {
         let single = ProductID.individually.reduce(Decimal(0)) { $0 + $1.suggestedPrice }
         let saved = single - ProductID.everything.suggestedPrice
-        guard saved > 0 else { return "Alle vier Freischaltungen zusammen." }
+        // Die Zahl kommt aus der Liste: Hier stand „vier", als es fünf waren.
+        let alle = "Alle \(ProductID.individuallyCountWord) Freischaltungen zusammen"
+        guard saved > 0 else { return alle + "." }
         let formatted = saved.formatted(.currency(code: "EUR").locale(Locale(identifier: "de_DE")))
-        return "Alle vier Freischaltungen zusammen — \(formatted) günstiger als einzeln."
+        return alle + " — \(formatted) günstiger als einzeln."
     }
 
     /// Was kostenlos bleibt — und zwar dauerhaft.

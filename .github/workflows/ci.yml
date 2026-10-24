@@ -160,7 +160,12 @@ jobs:
   # zuvor. Eigene Gruppennamen, sonst bricht der eine den anderen ab.
   iphone:
     runs-on: macos-15
-    timeout-minutes: 60
+    # **90 statt 60, seit 0.139.1.** Ein Lauf braucht 45 Minuten, ein langsamer Läufer 65: Am
+    # 24. Oktober hat das Zeitlimit den Neustart eines Laufs nach 60 Minuten mitten in den
+    # Bildern für das iPhone SE abgebrochen, und mit dem Abbruch ging auch das Protokoll des
+    # Schritts verloren, der rot war. Das Limit soll einen hängenden Lauf stoppen, nicht einen
+    # langsamen.
+    timeout-minutes: 90
     concurrency:
       group: iphone-${{ github.event.pull_request.head.ref || github.ref_name }}
       cancel-in-progress: false
@@ -348,7 +353,8 @@ jobs:
   # dadurch nichts doppelt: `run.sh` legt den Bau an, `test.sh` benutzt ihn.
   ipad:
     runs-on: macos-15
-    timeout-minutes: 60
+    # 90 aus demselben Grund wie beim iPhone; der iPad-Lauf braucht 55 Minuten.
+    timeout-minutes: 90
     concurrency:
       group: ipad-${{ github.event.pull_request.head.ref || github.ref_name }}
       cancel-in-progress: false

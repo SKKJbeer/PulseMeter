@@ -202,9 +202,11 @@ struct StoreView: View {
     private var ersparnis: String {
         let einzeln = ProductID.individually.reduce(Decimal(0)) { $0 + $1.suggestedPrice }
         let gespart = einzeln - ProductID.everything.suggestedPrice
-        guard gespart > 0 else { return "Alle vier Freischaltungen zusammen, dauerhaft." }
+        // Die Zahl kommt aus der Liste: Hier stand „vier", als es fünf waren.
+        let alle = ProductID.individuallyCountWord
+        guard gespart > 0 else { return "Alle \(alle) Freischaltungen zusammen, dauerhaft." }
         let betrag = gespart.formatted(.currency(code: "EUR").locale(Locale(identifier: "de_DE")))
-        return "Alle vier zusammen — \(betrag) günstiger als einzeln."
+        return "Alle \(alle) zusammen — \(betrag) günstiger als einzeln."
     }
 }
 

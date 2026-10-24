@@ -3739,8 +3739,8 @@ function renderHistory() {
    nie das Benutzen. Was schon da ist, bleibt vollständig zugänglich —
    Produktprinzip 5.
    ============================================================ */
-/* Seit 0.40.0 wird **einzeln** freigeschaltet: vier Stücke zu ein paar Euro
-   und ein Bündel. Spiegelt `ProductID` und `AccessPolicy` in PulseCore —
+/* Seit 0.40.0 wird **einzeln** freigeschaltet: sechs Stücke zu ein paar Euro
+   (seit 0.139.0 mit der Kamera) und ein Bündel. Spiegelt `ProductID` und `AccessPolicy` in PulseCore —
    dieselben Preise, dieselben Wörter, dieselbe Regel. Weichen beide
    voneinander ab, ist das ein Fehler und kein Zustand (Regel 2).
 
@@ -3761,17 +3761,21 @@ const PRODUCTS = [
   { id: "costsAndTariffs", price: 1.99, title: "Kosten und Preise",
     text: "Zwei Zahlen von der Rechnung, und aus dem Verbrauch wird ein Betrag — mit Abschlagsvergleich und Vorschau aufs Jahresende." },
   { id: "pdfReport", price: 1.99, title: "Bericht ohne Wasserzeichen",
-    text: "Der Bericht zum Weitergeben, ohne den Schriftzug quer darüber. Ansehen und drucken kannst du ihn auch so." }
+    text: "Der Bericht zum Weitergeben, ohne den Schriftzug quer darüber. Ansehen und drucken kannst du ihn auch so." },
+  /* Zuletzt, weil jüngster Kauf (0.139.0). Gesperrt ist nur der Knopf im Ziffernblock,
+     nicht das Tippen: ungekauft führt er aufs Kaufblatt statt ins Leere. */
+  { id: "camera", price: 1.99, title: "Mit Kamera ablesen",
+    text: "Die Kamera liest die Zahl am Zähler und schlägt sie vor. Du vergleichst und übernimmst. Liest sie eine Anzeige nicht, tippst du den Stand ein." }
 ];
-const BUNDLE = { id: "everything", price: 4.99, title: "Alles freischalten",
-                 text: "Alle fünf Freischaltungen zusammen, dauerhaft. Günstiger als einzeln." };
-
 /* **Die Anzahl wird gezählt, nicht getippt.** Hier stand zweimal „Alle vier
    zusammen" — geschrieben, als es vier waren, und stehengeblieben, als die
    Erinnerungen dazukamen. Derselbe Satz stand zur selben Zeit falsch auf der
    Hilfeseite der Website (0.103.1). Eine Anzahl, die man abschreibt, ist eine
    Anzahl, die irgendwann nicht mehr stimmt. */
-const ZAHLWORT = { 1: "eine", 2: "zwei", 3: "drei", 4: "vier", 5: "fünf", 6: "sechs" };
+
+const ZAHLWORT = { 1: "eine", 2: "zwei", 3: "drei", 4: "vier", 5: "fünf", 6: "sechs", 7: "sieben" };
+const BUNDLE = { id: "everything", price: 4.99, title: "Alles freischalten",
+                 text: `Alle ${ZAHLWORT[PRODUCTS.length] || PRODUCTS.length} Freischaltungen zusammen, dauerhaft. Günstiger als einzeln.` };
 
 /* Was in einem Kauf steckt — als Stichpunkte, nicht als Absatz.
 
@@ -3794,6 +3798,9 @@ const INCLUDES = {
                     "Abschlagsvergleich und Vorschau aufs Jahresende"],
   pdfReport: ["Bericht ohne Wasserzeichen",
               "Zum Weitergeben an Vermieter oder Versorger"],
+  camera: ["Zahl in den Rahmen halten, Kamera schlägt sie vor",
+           "Du prüfst die Zahl, gesichert wird erst danach",
+           "Bilder bleiben auf dem Gerät, nichts wird gesendet"],
   everything: PRODUCTS.map(p => p.title)
 };
 
@@ -3832,7 +3839,9 @@ function reportIsWatermarked() { return !owns("pdfReport"); }
    Gekauft wird dort, wo etwas fehlt: Wer am dritten Zähler steht, bekommt den
    dritten Zähler angeboten, mit einem Preis und einem Knopf. Ein eigener
    Schirm mit allen Produkten wäre ein Ort, den niemand aufsucht. */
-function openPaywall(id) {
+let paywallZurueck = null;   // Blatt, auf das „Fertig" und ein Kauf zurückführen (Ziffernblock → Kamera)
+function openPaywall(id, zurueck = null) {
+  paywallZurueck = zurueck;
   const p = product(id);
   const einzeln = PRODUCTS.reduce((a, b) => a + b.price, 0);
   const spart = einzeln - BUNDLE.price;
@@ -3915,13 +3924,17 @@ function renderStoreRow() {
 
 function unlock(id) {
   OWNED.add(id);
-  closeSheets();
+  // Wer aus dem Ziffernblock kam, landet wieder dort — mit dem, was er eingetippt hat.
+  const zurueck = paywallZurueck;
+  paywallZurueck = null;
+  if (zurueck) openSheet(zurueck); else closeSheets();
   const t = document.getElementById("toast");
   document.getElementById("toast-text").textContent = product(id).title + " freigeschaltet";
   t.classList.add("on");
   setTimeout(() => t.classList.remove("on"), 1250);
   setPro(null);
   renderAll();
+  if (zurueck && document.getElementById("foto-open")) fotoKnopfZeichnen();
 }
 
 /* Der Entwurfsschalter. `null` heißt: nur neu zeichnen, nichts umstellen. */
@@ -4532,6 +4545,16 @@ function fotoBereich(reg) {
   return [last.value, last.value + reach];
 }
 
+/* Der Knopf im Ziffernblock: mit Schloss davor, solange die Kamera nicht gekauft ist.
+   Dieselbe Beschriftung wie in der App, ein Schloss statt des Sucher-Symbols. */
+function fotoKnopfZeichnen() {
+  const knopf = document.getElementById("foto-open");
+  if (!knopf) return;
+  const schloss = `<svg width="11" height="11" viewBox="0 0 12 12" aria-hidden="true" style="vertical-align:-1px;margin-right:5px" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="5.2" width="8" height="5.8" rx="1.3"/><path d="M4 5.2V3.6a2 2 0 0 1 4 0v1.6"/></svg>`;
+  knopf.innerHTML = (owns("camera") ? "" : schloss) + "Mit Kamera ablesen";
+  knopf.dataset.gesperrt = owns("camera") ? "0" : "1";
+}
+
 function fotoOeffnen() {
   const panel = document.getElementById("foto-panel");
   panel.hidden = !panel.hidden;
@@ -4767,8 +4790,11 @@ function showCaptureStep() {
   // einen Stand, den jemand schon bestätigt hat.
   if (!capEdit) {
     document.getElementById("cap-meta").insertAdjacentHTML("beforeend",
-      `<br><button type="button" class="prefill" id="foto-open" aria-expanded="false">Mit Kamera ablesen</button>`);
+      `<br><button type="button" class="prefill" id="foto-open" aria-expanded="false"></button>`);
+    fotoKnopfZeichnen();
     document.getElementById("foto-open").onclick = () => {
+      // Ungekauft führt der Knopf aufs Kaufblatt, statt zu fehlen (Produktprinzip 4).
+      if (!owns("camera")) return openPaywall("camera", "sheet-capture");
       fotoOeffnen();
       document.getElementById("foto-open").setAttribute("aria-expanded", String(!document.getElementById("foto-panel").hidden));
     };
@@ -5155,6 +5181,7 @@ function openSheet(id) {
   document.getElementById("scrim").classList.add("on");
 }
 function closeSheets() {
+  paywallZurueck = null;
   document.getElementById("scrim").classList.remove("on");
   document.querySelectorAll(".sheet").forEach(s => s.classList.remove("on"));
 }
@@ -5355,7 +5382,14 @@ document.addEventListener("click", e => {
   }
   if (t.dataset.meterchange) return recordMeterChange();
   if (t.dataset.explain) return openExplain(t.dataset.explain);
-  if (t.hasAttribute("data-close")) return closeSheets();
+  if (t.hasAttribute("data-close")) {
+    if (paywallZurueck && t.closest("#sheet-pro")) {
+      const z = paywallZurueck;
+      paywallZurueck = null;
+      return openSheet(z);
+    }
+    return closeSheets();
+  }
 
   if (t.dataset.key) {
     const k = t.dataset.key;

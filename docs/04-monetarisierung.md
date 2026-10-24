@@ -83,7 +83,9 @@ wiederkehrender Nutzen entsteht.
 **Geplant für 1.6, entschieden am 3. Oktober:** die Kamera als sechster Kauf,
 **1,99 €** (am 3. Oktober waren es 0,99 €; am 24. Oktober vom Gründer auf
 „2 €" geändert, Apple kennt 1,99 und 2,99), im Bündel enthalten (auch für alle,
-die es schon haben). Dann 10,94 € einzeln gegen 4,99 € im Bündel. Die Tabelle oben wird erst geändert,
+die es schon haben). Dann 10,94 € einzeln gegen 4,99 € im Bündel, 54 % gespart.
+**Seit 0.139.0 kennt die App den Kauf** (`ProductID.camera`, Sperre am Knopf im
+Ziffernblock, Eintrag im Bündel). Die Tabelle oben wird erst geändert,
 wenn der Kauf im Laden steht; bis dahin verspricht sie nur, was es gibt.
 
 **Warum die Erinnerung einen Euro unter den anderen liegt, seit 0.100.0.** Sie

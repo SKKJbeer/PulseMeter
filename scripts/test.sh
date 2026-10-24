@@ -39,6 +39,18 @@ if [ "$SCOPE" = "all" ] || [ "$SCOPE" = "app" ]; then
   # ohne Artefakt zu sehen.
   mkdir -p build
   LOG="build/xcodebuild-test.log"
+
+  # **Der Simulator läuft, bevor der erste Test startet, seit 0.139.1.** Der erste Test
+  # (`testAddingAMeterFromTheMetersTab`) braucht auch in grünen Läufen
+  # 72 Sekunden (gemessen, Lauf zu 0.138.0), die anderen zwei bis zwölf. Am 24. Oktober fiel er
+  # mit „Timed out while launching application via Xcode" nach 70 Sekunden durch, bei
+  # unverändertem Code. **Vermutung, nicht bewiesen:** Der Start des Geräts steckt in der Zeit
+  # des ersten Tests. `bootstatus -b` wartet, bis das Gerät fertig ist. Ob es hilft, zeigt der
+  # nächste Lauf: Steht der Test danach bei ein paar Sekunden, war es das.
+  # Schlägt der Befehl fehl, geht es trotzdem weiter: Er ist eine Hilfe, keine Voraussetzung.
+  xcrun simctl boot "$DEVICE" 2>/dev/null || true
+  xcrun simctl bootstatus "$DEVICE" -b >/dev/null 2>&1 || true
+
   set +e
   xcodebuild test \
       -project PulseMeter.xcodeproj \
