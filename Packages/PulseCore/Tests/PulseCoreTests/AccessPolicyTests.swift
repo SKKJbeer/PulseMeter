@@ -3,7 +3,7 @@ import XCTest
 
 /// Die Grenze zwischen Kostenlos und Gekauft.
 ///
-/// Seit 0.40.0 wird **einzeln** freigeschaltet: fünf Stücke zu ein paar Euro
+/// Seit 0.40.0 wird **einzeln** freigeschaltet: sechs Stücke zu ein paar Euro
 /// und ein Bündel. Diese Prüfungen sind die Beschreibung des Modells — eine
 /// Grenze, die nur in einem Dokument steht, verrutscht beim ersten Umbau.
 final class AccessPolicyTests: XCTestCase {
@@ -115,14 +115,18 @@ final class AccessPolicyTests: XCTestCase {
         let einzeln = ProductID.individually.reduce(Decimal(0)) { $0 + $1.suggestedPrice }
         XCTAssertGreaterThan(approx(einzeln), approx(ProductID.everything.suggestedPrice),
                              "Ein Bündel, das nicht spart, kauft niemand")
-        // Und zwar spürbar. Gerechnet: viermal 1,99 plus einmal 0,99 = 8,95 €
-        // einzeln gegen 4,99 € im Bündel — **44 %**. Die Schranke steht
-        // bei 20 %, nicht bei 25: Die Preise hat der Gründer gesetzt, und eine
-        // Prüfung, die seine Entscheidung überstimmt, ist keine Prüfung,
-        // sondern eine Meinung.
+        // Und zwar spürbar. Gerechnet: fünfmal 1,99 plus einmal 0,99 = 10,94 €
+        // einzeln gegen 4,99 € im Bündel — **54 %** (vor der Kamera 44 %). Die
+        // Schranke steht bei 20 %, nicht bei 25: Die Preise hat der Gründer
+        // gesetzt, und eine Prüfung, die seine Entscheidung überstimmt, ist
+        // keine Prüfung, sondern eine Meinung. Nach oben bei 60 %: Mit einem
+        // siebten Stück zu 1,99 € wäre die Grenze erreicht, und dann ist das
+        // Gespräch über den Bündelpreis fällig, nicht über diese Zahl.
         let ersparnis = 1 - approx(ProductID.everything.suggestedPrice) / approx(einzeln)
         XCTAssertGreaterThan(ersparnis, 0.20)
         XCTAssertLessThan(ersparnis, 0.60, "Ein zu billiges Bündel entwertet die Einzelkäufe")
+        XCTAssertEqual(approx(einzeln), 10.94, accuracy: 0.001,
+                       "Die Summe steht so in Doku und Kaufseite (04-monetarisierung.md)")
     }
 
     /// Jedes Stück kostet ein paar Euro, keines mehr.
@@ -157,6 +161,49 @@ final class AccessPolicyTests: XCTestCase {
                       "Das Bündel schließt die Erinnerungen ein")
         XCTAssertFalse(AccessPolicy(Entitlement([.pdfReport])).canRemind,
                        "Ein anderer Kauf schaltet sie nicht mit frei")
+    }
+
+    /// Die Kamera ist ein eigener Kauf und im Bündel — und sperrt nur ihren Knopf.
+    ///
+    /// Der Gründer am 24. Oktober: „kamera soll auch 2€ kosten" und „dass kamera
+    /// in dem 5€ paket ist". Geprüft wird alles, was dabei schiefgehen kann: Das
+    /// Bündel vergisst sie, ein anderer Kauf schaltet sie mit frei, oder sie
+    /// fehlt in der Liste, die die Kaufseite zeichnet.
+    func testTheCameraIsItsOwnPurchaseAndPartOfTheBundle() {
+        XCTAssertFalse(AccessPolicy(.none).canUseCamera, "Ohne Kauf führt der Knopf aufs Kaufblatt")
+        XCTAssertTrue(AccessPolicy(Entitlement([.camera])).canUseCamera)
+        XCTAssertTrue(AccessPolicy(.everything).canUseCamera, "Das Bündel schließt die Kamera ein")
+        for product in ProductID.allCases where product != .camera && product != .everything {
+            XCTAssertFalse(AccessPolicy(Entitlement([product])).canUseCamera,
+                           "\(product) darf die Kamera nicht mit freischalten")
+        }
+        XCTAssertTrue(ProductID.individually.contains(.camera), "Ohne diese Zeile fehlt sie auf der Kaufseite")
+        XCTAssertTrue(ProductID.everything.includes.contains(ProductID.camera.title),
+                      "Das Bündel nennt die Kamera nicht")
+        XCTAssertEqual(ProductID.camera.storeIdentifier, "de.karjoth.pulsemeter.camera",
+                       "Diese Kennung steht in App Store Connect")
+        XCTAssertEqual(approx(ProductID.camera.suggestedPrice), 1.99, accuracy: 0.001)
+        // Gekauft heißt gespeichert: Ein Fall, der beim Lesen verschwindet, wäre
+        // ein bezahlter, aber gesperrter Knopf nach dem nächsten Start.
+        let zurueck = Entitlement(storageValue: Entitlement([.camera]).storageValue)
+        XCTAssertTrue(zurueck.owns(.camera))
+        XCTAssertFalse(zurueck.owns(.reminders))
+    }
+
+    /// Alles, was die Kamera nicht hat, bleibt auch ohne sie frei: Tippen,
+    /// Ablesen, alles Gelesene. Sie sperrt einen Weg, nie Daten.
+    func testWithoutTheCameraEverythingElseStaysOpen() {
+        let policy = AccessPolicy(.none)
+        XCTAssertTrue(policy.canAddMeter(existingCount: 0))
+        XCTAssertTrue(policy.canUse(existingMeterCount: 99))
+        XCTAssertFalse(policy.canUseCamera)
+    }
+
+    /// „Alle sechs zusammen" wird gezählt, nicht getippt. Die Kaufseite sagte
+    /// einmal „Alle vier", als es fünf waren.
+    func testTheCountWordFollowsTheList() {
+        XCTAssertEqual(ProductID.individuallyCountWord, "sechs")
+        XCTAssertTrue(ProductID.everything.explanation.contains("Alle sechs"))
     }
 
     /// Was als dauerhaft kostenlos beworben wird, darf kein Kauf sein.
@@ -205,7 +252,7 @@ final class AccessPolicyTests: XCTestCase {
     ///
     /// Sonst steht dort eine Liste, die nicht mit dem übereinstimmt, was
     /// gekauft wird — und das merkt jemand erst nach dem Kauf.
-    func testTheBundleListsExactlyTheFourPiecesItReplaces() {
+    func testTheBundleListsExactlyThePiecesItReplaces() {
         XCTAssertEqual(ProductID.everything.includes,
                        ProductID.individually.map(\.title))
     }

@@ -8,7 +8,7 @@ import Foundation
 /// gerade fehlt, sind keine Entscheidung, sondern ein Tipp. Wer später mehr
 /// braucht, kauft mehr; wer alles will, nimmt das Bündel und spart ein Drittel.
 ///
-/// **Warum fünf und nicht sieben.** Abschlagsvergleich und Jahresvorschau
+/// **Warum sechs und nicht acht.** Abschlagsvergleich und Jahresvorschau
 /// lassen sich ohne Preise gar nicht rechnen — sie einzeln zu verkaufen hieße,
 /// etwas anzubieten, das ohne einen zweiten Kauf nichts tut. Sie gehören
 /// deshalb zu ``costsAndTariffs``.
@@ -57,6 +57,20 @@ public enum ProductID: String, Hashable, Codable, Sendable, CaseIterable, Identi
     /// Summe; jetzt ist es deutlich darunter.
     case reminders
 
+    /// Die Kamera liest die Zahl am Zähler und schlägt sie vor.
+    ///
+    /// **Der sechste Kauf, seit 0.139.0, und im Bündel enthalten.** Der Gründer
+    /// am 24. Oktober: „kamera soll auch 2€ kosten" und „dass kamera in dem
+    /// 5€ paket ist". Apple verkauft in Deutschland zu 1,99 € und 2,99 €, es
+    /// sind 1,99 € wie bei den vier großen. Das Bündel bleibt bei 4,99 €; die
+    /// Summe der Einzelkäufe steigt auf 10,94 €.
+    ///
+    /// **Gesperrt ist der Knopf, nicht das Tippen.** Wer die Kamera nicht hat,
+    /// liest ab wie immer; der Knopf im Ziffernblock führt aufs Kaufblatt
+    /// statt ins Leere. Die Kennung `de.karjoth.pulsemeter.camera` steht seit
+    /// dem 24. Oktober in App Store Connect und ändert sich nie.
+    case camera
+
     /// Alles auf einmal, günstiger als die Summe.
     case everything
 
@@ -77,6 +91,7 @@ public enum ProductID: String, Hashable, Codable, Sendable, CaseIterable, Identi
         case .costsAndTariffs:   return "Kosten und Preise"
         case .pdfReport:         return "Bericht ohne Wasserzeichen"
         case .reminders:         return "Erinnerung, wenn ein Zähler dran ist"
+        case .camera:            return "Mit Kamera ablesen"
         case .everything:        return "Alles freischalten"
         }
     }
@@ -94,8 +109,10 @@ public enum ProductID: String, Hashable, Codable, Sendable, CaseIterable, Identi
             return "Der Bericht zum Weitergeben, ohne den Schriftzug quer darüber. Ansehen und drucken kannst du ihn auch so."
         case .reminders:
             return "Am Abend, im Rhythmus, den du je Zähler einstellst. Sonst fällt es einem im Februar ein, wenn die Abrechnung kommt."
+        case .camera:
+            return "Die Kamera liest die Zahl am Zähler und schlägt sie vor. Du vergleichst und übernimmst. Liest sie eine Anzeige nicht, tippst du den Stand ein."
         case .everything:
-            return "Alle fünf Freischaltungen zusammen, dauerhaft. Günstiger als einzeln."
+            return "Alle \(ProductID.individuallyCountWord) Freischaltungen zusammen, dauerhaft. Günstiger als einzeln."
         }
     }
 
@@ -130,6 +147,10 @@ public enum ProductID: String, Hashable, Codable, Sendable, CaseIterable, Identi
             return ["Meldung, sobald ein Zähler dran ist",
                     "Monatlich, vierteljährlich oder jährlich",
                     "Läuft auf dem Gerät, ohne Konto"]
+        case .camera:
+            return ["Zahl in den Rahmen halten, Kamera schlägt sie vor",
+                    "Du prüfst die Zahl, gesichert wird erst danach",
+                    "Bilder bleiben auf dem Gerät, nichts wird gesendet"]
         case .everything:
             return ProductID.individually.map(\.title)
         }
@@ -173,14 +194,29 @@ public enum ProductID: String, Hashable, Codable, Sendable, CaseIterable, Identi
         }
     }
 
-    /// Die fünf einzeln käuflichen Stücke, in der Reihenfolge, in der sie auf
+    /// Die sechs einzeln käuflichen Stücke, in der Reihenfolge, in der sie auf
     /// der Kaufseite stehen. Das Bündel gehört nicht dazu — es steht darunter.
     ///
     /// ``reminders`` steht vorn: Es ist der günstigste und der einzige, den
-    /// jemand kauft, bevor er an eine Grenze stößt.
+    /// jemand kauft, bevor er an eine Grenze stößt. ``camera`` steht zuletzt:
+    /// Sie ist das jüngste Stück, und die Reihenfolge der übrigen bleibt, wie
+    /// jemand sie schon gesehen hat.
     public static var individually: [ProductID] {
         [.reminders, .additionalMeters, .multipleRegisters, .costsAndTariffs,
-         .pdfReport]
+         .pdfReport, .camera]
+    }
+
+    /// Wie viele Stücke das Bündel ersetzt, als Wort für den Satz „Alle sechs
+    /// zusammen".
+    ///
+    /// **Gezählt, nicht getippt.** Die Kaufseite sagte „Alle vier", als es
+    /// längst fünf waren; eine Anzahl, die man abschreibt, stimmt irgendwann
+    /// nicht mehr. Über zwölf fällt es auf die Ziffer zurück.
+    public static var individuallyCountWord: String {
+        let worte = ["null", "eine", "zwei", "drei", "vier", "fünf", "sechs", "sieben",
+                     "acht", "neun", "zehn", "elf", "zwölf"]
+        let n = individually.count
+        return n < worte.count ? worte[n] : String(n)
     }
 }
 
@@ -310,4 +346,13 @@ public struct AccessPolicy: Hashable, Sendable {
     /// Ansehen und drucken darf ihn jeder — das Wasserzeichen ist keine Sperre,
     /// sondern der Unterschied zwischen „für mich" und „zum Weitergeben".
     public var reportIsWatermarked: Bool { !allows(.pdfReport) }
+
+    /// Ob der Knopf „Mit Kamera ablesen" in die Kamera führt oder aufs Kaufblatt.
+    ///
+    /// **Nur der Weg über die Kamera ist gesperrt.** Der Ziffernblock, das
+    /// Tippen und alles, was schon gelesen wurde, bleiben frei (Produktprinzip 5
+    /// und die Regel „was schon da ist, bleibt"). Eine Ablesung, die mit der
+    /// Kamera entstand, behält ihre Herkunft, auch wenn der Kauf später
+    /// zurückerstattet wird.
+    public var canUseCamera: Bool { allows(.camera) }
 }

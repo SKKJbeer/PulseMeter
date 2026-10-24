@@ -90,7 +90,16 @@ if "everything" not in preise or "reminders" not in preise or standard is None:
 # Die einzeln käuflichen Stücke — Zahl und Namen aus `individually`.
 block = re.search(r"public static var individually: \[ProductID\] \{(.*?)\}",
                   quelle, re.S)
-einzeln = re.findall(r"\.(\w+)", block.group(1)) if block else []
+einzeln_im_quelltext = re.findall(r"\.(\w+)", block.group(1)) if block else []
+
+# **Was im Quelltext steht, aber noch nicht im Laden, steht noch nicht auf der Website.**
+# Vom Gründer am 7. Oktober: Öffentlich steht nur, was im Laden ist. Die Kamera ist seit
+# 0.139.0 ein Kauf in der App, im Laden aber erst mit 1.6; bis dahin sagt die Website
+# „alle fünf" und „8,95 €", und das ist richtig. **Beim Einreichen von 1.6 kommt der Eintrag
+# hier heraus**, und die Prüfung verlangt dann „alle sechs" und „10,94 €" auf beiden Seiten
+# (`docs/06-uebergabe.md`, Punkt „Kamera", und `CHANGELOG.md` 0.139.0).
+NOCH_NICHT_IM_LADEN = {"camera"}
+einzeln = [p for p in einzeln_im_quelltext if p not in NOCH_NICHT_IM_LADEN]
 
 grenze = re.search(r"freeMeterLimit = (\d+)", quelle)
 

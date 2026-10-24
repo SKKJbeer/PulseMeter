@@ -28,6 +28,7 @@ struct CaptureView: View {
 
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Environment(Purchase.self) private var purchase
 
     @State private var digits = ""
     @State private var previous: Reading?
@@ -39,6 +40,8 @@ struct CaptureView: View {
     @State private var changingMeter = false
     /// Das Kamerablatt ist offen.
     @State private var zeigtKamera = false
+    /// Das Kaufblatt der Kamera, wenn jemand sie antippt, der sie noch nicht hat.
+    @State private var zeigtKameraKauf = false
     /// Der Stand, den die Kamera je Zählwerk vorgeschlagen und der Nutzer übernommen hat.
     ///
     /// **Nur zum Vergleichen.** Gesichert wird, was im Ziffernblock steht. Solange das
@@ -185,6 +188,9 @@ struct CaptureView: View {
                     }
                 }
             }
+            .sheet(isPresented: $zeigtKameraKauf) {
+                UnlockSheet(product: .camera)
+            }
             .sheet(isPresented: $changingMeter) {
                 MeterChangeView(meteringPoint: meteringPoint) {
                     // Nach dem Wechsel ist der eingetippte Wert gegenstandslos:
@@ -296,8 +302,16 @@ struct CaptureView: View {
             if kameraMoeglich {
                 // Gleicher Stil wie „Vom letzten Stand übernehmen": ein Weg neben dem
                 // Tippen, nie davor. Die drei Berührungen bis zur Ablesung bleiben.
-                Button { zeigtKamera = true } label: {
-                    Label("Mit Kamera ablesen", systemImage: "camera.viewfinder")
+                //
+                // **Ungekauft führt der Knopf aufs Kaufblatt, statt zu fehlen.** Ein
+                // fehlender Knopf erklärt nichts; dieser sagt, was es ist und was es
+                // kostet (Produktprinzip 4, keine Sackgasse). Das Schloss davor ist
+                // die einzige Änderung am Aussehen.
+                Button {
+                    if purchase.policy.canUseCamera { zeigtKamera = true } else { zeigtKameraKauf = true }
+                } label: {
+                    Label("Mit Kamera ablesen",
+                          systemImage: purchase.policy.canUseCamera ? "camera.viewfinder" : "lock")
                 }
                 .font(.system(.footnote, weight: .medium))
                 .foregroundStyle(PulseColor.inkSecondary)

@@ -9,6 +9,41 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.139.0 — 2026-10-24
+
+**Die Kamera ist ein Kauf, und sie steckt im Bündel**
+
+Der Gründer: „baue alles sauber auch dass kamera in dem 5€ paket ist." Der Kauf zu 1,99 € steht seit
+0.138.1 in App Store Connect; jetzt kennt ihn die App.
+
+### Hinzugefügt
+- **`ProductID.camera`** („Mit Kamera ablesen", 1,99 €) als sechster Einzelkauf, zuletzt in der Reihenfolge der
+  Kaufseite. **Im Bündel enthalten:** Wer „Alles freischalten" hat, hat die Kamera, ohne dass ein eigener Eintrag
+  im Bestand liegt. Das Bündel bleibt bei 4,99 €; einzeln wären es jetzt 10,94 €, also 5,95 € gespart.
+- **Der Knopf im Ziffernblock** führt ohne Kauf aufs Kaufblatt der Kamera statt in den Sucher, mit einem
+  Schloss davor. Gesperrt ist nur der Weg über die Kamera: Tippen, Ablesen und alles schon Gelesene bleiben frei.
+  Nach „Fertig" oder einem Kauf steht der Ziffernblock wieder da, mit der Ziffer, die jemand schon eingetippt hat.
+- **`AccessPolicy.canUseCamera`**, ein Satz Tests dazu (Kauf, Bündel, kein anderer Kauf schaltet sie mit frei,
+  Speicherform, Kennung, Preis, Summe).
+- Prüfung im Klick-Dummy und ein Oberflächentest: ungekauft Kaufblatt, gekauft Sucher.
+
+### Geändert
+- **„Alle vier Freischaltungen zusammen" stand falsch auf der Kaufseite** (es waren schon fünf). Die Zahl wird jetzt aus
+  der Liste gezählt (`ProductID.individuallyCountWord`): „Alle sechs zusammen — 5,95 € günstiger als einzeln."
+- `check-versprechen.py` kennt `NOCH_NICHT_IM_LADEN`: Die Website nennt weiter fünf Freischaltungen und 8,95 €,
+  bis 1.6 im Laden ist (Regel 4a: öffentlich steht nur, was im Laden ist). **Beim Einreichen von 1.6 kommt die Kamera
+  aus dieser Liste**, und die Prüfung verlangt dann „alle sechs" und 10,94 € auf der Website.
+
+### Noch zu tun, wenn 1.6 eingereicht wird
+- Website: `hilfe.html` und `index.html` auf sechs Freischaltungen und 10,94 € ziehen, Kamera aus `NOCH_NICHT_IM_LADEN`.
+- App Store Connect: Beschreibung des Bündels „Alle fünf Freischaltungen zusammen." auf „sechs" ändern
+  (`scripts/asc-kaeufe.py`, Eintrag `everything`), den Kauf „Kamera" mit der App-Fassung zur Prüfung einreichen.
+- `docs/fassungen/1.6.json`, Store-Texte und Datenschutzerklärung (Kamera, Bilder bleiben auf dem Gerät).
+
+_Tests in PulseCore: 336 grün ohne `DigitNetTests` (die laufen in der CI im Release-Bau), davon 26 in `AccessPolicyTests`, 3 neu. Klick-Dummy: alle Prüfungen in Hell und Dunkel, mit 7 neuen. Oberflächentests (neu: Kauf der Kamera) laufen in der CI._
+
+---
+
 ## 0.138.1 — 2026-10-24
 
 **Kamera: der Kauf wird in App Store Connect angelegt, zu 1,99 €**

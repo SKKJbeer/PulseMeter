@@ -598,6 +598,66 @@ for (const scheme of ["light", "dark"]) {
     }
   }
 
+  // --- Kamera ist ein Kauf (0.139.0): ungekauft führt der Knopf aufs Kaufblatt, gekauft in den Sucher
+  //
+  // Der Gründer am 24. Oktober: „kamera soll auch 2€ kosten", und sie gehört ins Bündel. Gesperrt ist
+  // nur der Weg über die Kamera; wer tippt, tippt wie immer. Und wer aus dem Ziffernblock zum Kaufblatt
+  // geht, kommt dorthin zurück, mit dem, was er eingetippt hat.
+  {
+    // Der Schalter für den Kaufzustand steht auf dem Zähler-Schirm.
+    await page.locator('[data-pane="meters"]:visible').first().click();
+    await page.waitForTimeout(200);
+    await page.locator('[data-pro="0"]').first().click();
+    await page.waitForTimeout(150);
+    await page.locator('[data-pane="home"]:visible').first().click();
+    await page.waitForTimeout(200);
+    await page.locator('[data-capture="strom"]').first().click();
+    await page.waitForTimeout(250);
+    await page.locator('[data-key="7"]').first().click();
+    note(await page.locator('#foto-open[data-gesperrt="1"]').count() === 1,
+         "Ohne Kauf trägt der Knopf „Mit Kamera ablesen“ ein Schloss");
+    await page.locator("#foto-open").click();
+    await page.waitForTimeout(200);
+    const kaufblatt = await page.evaluate(() => ({
+      offen: document.getElementById("sheet-pro").classList.contains("on"),
+      titel: document.getElementById("pro-title").textContent,
+      preis: document.getElementById("pro-buy") ? document.getElementById("pro-buy").textContent : "",
+      buendel: document.getElementById("pro-body").innerText,
+      sucher: !document.getElementById("foto-panel").hidden
+    }));
+    note(kaufblatt.offen && kaufblatt.titel === "Mit Kamera ablesen" && /1,99/.test(kaufblatt.preis),
+         `Ohne Kauf öffnet der Knopf das Kaufblatt der Kamera (${kaufblatt.titel}, ${kaufblatt.preis.trim()})`);
+    note(!kaufblatt.sucher, "Ohne Kauf öffnet sich kein Sucher");
+    note(/Alle sechs zusammen/.test(kaufblatt.buendel) && /4,99/.test(kaufblatt.buendel),
+         "Das Kaufblatt nennt das Bündel mit der Kamera: „Alle sechs zusammen“");
+    // „Fertig" führt zurück in den Ziffernblock, die eingetippte Ziffer steht noch da.
+    await page.locator("#sheet-pro [data-close]").first().click();
+    await page.waitForTimeout(200);
+    const zurueck = await page.evaluate(() => ({
+      capture: document.getElementById("sheet-capture").classList.contains("on"), digits }));
+    note(zurueck.capture && zurueck.digits === "7",
+         `„Fertig“ führt zurück in den Ziffernblock, die Eingabe bleibt (${zurueck.digits})`);
+    await page.locator("#foto-open").click();
+    await page.waitForTimeout(200);
+    await page.locator("#pro-buy").click();
+    await page.waitForTimeout(250);
+    const gekauft = await page.evaluate(() => ({
+      capture: document.getElementById("sheet-capture").classList.contains("on"),
+      gesperrt: document.getElementById("foto-open").dataset.gesperrt,
+      eigene: OWNED.has("camera"), digits }));
+    note(gekauft.eigene && gekauft.capture && gekauft.gesperrt === "0" && gekauft.digits === "7",
+         "Nach dem Kauf steht der Ziffernblock wieder da, das Schloss ist weg, die Eingabe bleibt");
+    await page.locator("#foto-open").click();
+    await page.waitForTimeout(200);
+    note(await page.locator("#foto-panel").isVisible(), "Gekauft öffnet der Knopf den Sucher");
+    await page.locator("#cap-back").click();
+    await page.waitForTimeout(250);
+    await page.locator('[data-pane="meters"]:visible').first().click();
+    await page.waitForTimeout(200);
+    await page.locator('[data-pro="1"]').first().click();
+    await page.waitForTimeout(150);
+  }
+
   // --- Zwei Zählwerke in einem Vorgang
   await page.locator('[data-pane="home"]:visible').first().click();
   await page.waitForTimeout(200);
@@ -1171,6 +1231,8 @@ for (const scheme of ["light", "dark"]) {
        `Alle ${laden.erwartet} Einzelkäufe stehen darin: ${laden.karten.join(", ")}`);
   note(/Alles freischalten/.test(laden.text) && /4,99/.test(laden.text),
        "Das Bündel steht oben, mit Preis");
+  note(/Alle sechs zusammen — 5,95/.test(laden.text) && /Mit Kamera ablesen/.test(laden.text),
+       "Die Übersicht nennt die Kamera und rechnet: alle sechs zusammen, 5,95 € günstiger");
   note(laden.punkte >= 14,
        `Stichpunkte statt Absätze: ${laden.punkte} Zeilen`);
   // Vom Gründer verlangt: „nicht so viel Fließtext". Eine Zeile über 120

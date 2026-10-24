@@ -1519,6 +1519,14 @@ Zwei Regeln, die dabei den Unterschied machen:
   statt *ob gekauft wurde*. Wer eine Grenze prüft, prüft sie am Kauf und nie
   an einem Nebenprodukt davon.
 
+**Nachtrag, 24. Oktober: Der Quelltext ist dem Laden voraus, die Website darf es nicht sein.** Sobald ein neuer
+Kauf in der App steht (`ProductID.camera`), rechnet eine Prüfung „Website gegen Quelltext" ihn mit — und
+verlangt „alle sechs" und eine neue Summe, obwohl im Laden noch die alte Fassung steht. Statt die Website
+vorzuziehen oder die Prüfung zu lockern, gibt es eine **ausdrückliche Liste** `NOCH_NICHT_IM_LADEN` in der Prüfung:
+Was darin steht, zählt für die Website noch nicht. Beim Einreichen kommt der Eintrag heraus, und die Prüfung
+erzwingt den Rest. Dieselbe Vorsicht gilt für die Beschreibung des Bündels in App Store Connect: Eine
+Anzahl im Text („alle fünf") lässt sich erst ändern, wenn sie zur eingereichten Fassung passt.
+
 ### Eine Gegenprobe wird zurückgenommen, nicht zurückgesetzt
 
 Eine neue Prüfung ist erst dann eine, wenn sie mit dem alten Verhalten **rot**
