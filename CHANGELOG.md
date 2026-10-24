@@ -9,6 +9,27 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.139.1 — 2026-10-24
+
+**CI: der Simulator wird vor dem ersten Test gestartet, und die Läufe dürfen 90 Minuten dauern**
+
+Der Lauf zu 0.139.0 war zweimal rot, ohne dass am Code etwas fehlte. Beide Male fiel der erste
+Oberflächentest (`testAddingAMeterFromTheMetersTab`) mit „Timed out while launching application via
+Xcode" durch. Er braucht auch in grünen Läufen 72 Sekunden (im Lauf zu 0.138.0 genau so, die anderen
+Tests zwei bis zwölf), und er fiel nach 70 durch. **Vermutung:** Der Start des Geräts steckt in seiner
+Zeit; der nächste Lauf zeigt, ob das stimmt. Im Neustart kam ein langsamer Läufer
+dazu, und das Zeitlimit von 60 Minuten hat den Auftrag mitten in den Bildern abgebrochen und das
+Protokoll des roten Schritts gleich mit.
+
+### Geändert
+- `scripts/test.sh`: `simctl boot` und `bootstatus -b` vor `xcodebuild test`, damit der Start des Geräts
+  nicht mehr in die Zeit des ersten Tests fällt. Ob das die Ursache war, ist offen; ein Lauf entscheidet.
+- `ci.yml`: Zeitlimit für `iphone` und `ipad` von 60 auf 90 Minuten (normal 45 und 55, langsam 65).
+
+_Keine Änderung an App, Rechenkern oder Klick-Dummy._
+
+---
+
 ## 0.139.0 — 2026-10-24
 
 **Die Kamera ist ein Kauf, und sie steckt im Bündel**

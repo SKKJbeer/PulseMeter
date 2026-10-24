@@ -1527,6 +1527,22 @@ Was darin steht, zählt für die Website noch nicht. Beim Einreichen kommt der E
 erzwingt den Rest. Dieselbe Vorsicht gilt für die Beschreibung des Bündels in App Store Connect: Eine
 Anzahl im Text („alle fünf") lässt sich erst ändern, wenn sie zur eingereichten Fassung passt.
 
+### Ein Zeitlimit, das fast so lang ist wie der Lauf, bricht den Neustart ab
+
+Der Lauf eines Telefons braucht 45 Minuten, der eines iPads 55, das Zeitlimit stand auf 60. Am 24. Oktober
+fiel der erste Oberflächentest durch (Start des Simulators, 70 Sekunden gegen eine Dauer von 72 in grünen
+Läufen), der Neustart erwischte einen langsamen Läufer, und das Limit hat ihn nach 60 Minuten mitten in den
+Bildern abgebrochen. **Mit dem Abbruch fehlte das Protokoll des roten Schritts**: Das Archiv des Laufs
+enthielt nur den Bilder-Auftrag. Drei Stunden, und am Ende stand die Vermutung statt des Fehlers.
+
+- Das Limit soll einen hängenden Lauf stoppen, nicht einen langsamen: mindestens das Eineinhalbfache der
+  normalen Dauer.
+- Die Dauer **jedes einzelnen Tests** gehört in die Auswertung. Ein Test, der in grünen Läufen 72 Sekunden
+  braucht, während die anderen zwei bis zwölf brauchen, steht an einer Grenze (hier 70) und ist kein stabiler
+  Test, auch wenn er bis dahin immer bestand.
+- Ein Protokoll mitten im Lauf holt man nicht über `get_job_logs`, sondern über dessen `logs_url` und `curl`;
+  das geht, solange der **Auftrag** noch läuft, und nur dann, wenn der Schritt schon fertig ist.
+
 ### Eine Gegenprobe wird zurückgenommen, nicht zurückgesetzt
 
 Eine neue Prüfung ist erst dann eine, wenn sie mit dem alten Verhalten **rot**
