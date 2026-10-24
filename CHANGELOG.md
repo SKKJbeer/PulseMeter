@@ -9,6 +9,31 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.138.1 — 2026-10-24
+
+**Kamera: der Kauf wird in App Store Connect angelegt, zu 1,99 €**
+
+Der Gründer: „kamera soll auch 2€ kosten. lege das schonmal an." Geplant waren am 3. Oktober
+0,99 €. Apple verkauft in Deutschland zu 1,99 € und 2,99 €, nicht zu 2,00 €; es sind 1,99 €,
+wie bei den vier großen Käufen.
+
+### Hinzugefügt
+- **Kauf „Kamera"** in `scripts/asc-kaeufe.py`: Kennung `de.karjoth.pulsemeter.camera`, Anzeigename
+  „Mit Kamera ablesen", einmalig, nicht teilbar in der Familie. Er entsteht als Entwurf
+  („Bereit zum Senden"), in TestFlight kostenlos zu sehen und im Laden erst mit der Einreichung von 1.6.
+
+### Geändert
+- Preis der Kamera in `04-monetarisierung.md`, `05-roadmap.md` und `06-uebergabe.md` von 0,99 € auf 1,99 €;
+  einzeln wären es 10,94 € gegen 4,99 € im Bündel.
+
+### Noch nicht
+- Die App kennt den Kauf nicht: Kein `ProductID.camera`, keine Sperre im Ziffernblock, kein Eintrag im
+  Bündel. Die Kamera bleibt in TestFlight frei, bis das gebaut ist.
+
+_Keine Änderung an App und Rechenkern; Tests unverändert._
+
+---
+
 ## 0.138.0 — 2026-10-22
 
 **Kamera: Sucher mit Rahmen und ein eigenes Netz, das LCD-Ziffern liest**

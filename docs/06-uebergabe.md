@@ -144,7 +144,7 @@ Klick-Dummy. Der Satz „Alle Werte in …" unter der Tabelle im Entwurf ist weg
    `NSCameraUsageDescription`. Klick-Dummy rechnet das Netz im Browser. **Offen, in dieser
    Reihenfolge:** (1) ein Bau in TestFlight und ein Test **am Zähler** mit dem iPhone,
    (2) Fotos von echten Zählern (Elster, Kaifa, Focus, Meterus, Kamstrup) für mehr Training, **freiwillig geschickt**, nicht aus der App, (3) Kaufkennung
-   „Kamera“ (0,99 €) in App Store Connect anlegen; bis dahin ist die Kamera frei,
+   „Kamera“ (**1,99 €**, am 24. Oktober vom Gründer so entschieden) **ist angelegt** (`scripts/asc-kaeufe.py`, Kennung `de.karjoth.pulsemeter.camera`, Entwurf). **Offen: der Fall `camera` in `ProductID`, die Sperre im Ziffernblock, der Eintrag im Bündel und der Prüfstand; bis das gebaut ist,** ist die Kamera frei,
    (4) Absatz zur Kamera in Datenschutzerklärung und Store-Texten, **erst wenn 1.6 im Laden
    ist**, (5) Rollen: Vision im Sucher ist nur nachgemessen, nicht am Gerät. **1.5.1 ist im
    Laden seit 19.10.** (Bau 45, neue Store-Bilder).

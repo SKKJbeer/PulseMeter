@@ -75,6 +75,14 @@ KAEUFE = [
     {"kennung": "reminders",         "referenz": "Erinnerungen",
      "name": "Erinnerungen",                "text": "Die App meldet sich, wenn ein Zähler dran ist.",
      "preis": "0.99"},
+    # **Der sechste, angelegt vor der App.** Die Kennung steht damit in App
+    # Store Connect fest, bevor `ProductID` den Fall `camera` kennt; die App
+    # ignoriert, was sie nicht kennt. Zum Verkauf kommt er erst mit 1.6.
+    # Preis 1,99 € wie die vier großen: Der Gründer sagte „2 €", Apple kennt
+    # in Deutschland 1,99 und 2,99, und die Kamera ist keine Erinnerung.
+    {"kennung": "camera",            "referenz": "Kamera",
+     "name": "Mit Kamera ablesen",          "text": "Den Zählerstand von der Kamera lesen lassen.",
+     "preis": "1.99"},
     {"kennung": "everything",        "referenz": "Alles freischalten",
      "name": "Alles freischalten",          "text": "Alle fünf Freischaltungen zusammen.",
      "preis": "4.99"},
