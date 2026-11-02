@@ -887,12 +887,22 @@ final class LaunchTests: XCTestCase {
         let text = vorschau.label
         XCTAssertTrue(text.contains("≈"),
                       "Der hochgerechneten Zahl fehlt das Ungefähr-Zeichen: \(text)")
-        // „gemessen", oder „anteilig", wenn der Monatsanfang zwischen zwei
-        // Ablesungen liegt (seit 0.133.1).
-        XCTAssertTrue(text.contains("gemessen") || text.contains("anteilig"),
-                      "Das schon Gemessene ist nicht als solches benannt: \(text)")
-        XCTAssertTrue(text.contains(" von ") && text.contains("Tagen"),
-                      "Die Prognose nennt ihre Tagesgrundlage nicht: \(text)")
+        // In den ersten Tagen eines Monats liegt die letzte Ablesung der
+        // Beispieldaten noch im Vormonat. Dann ist im laufenden Monat nichts
+        // gemessen, und die Leiste sagt das (seit 0.129.x) samt Grundlage
+        // „aus deinem Verbrauch bis …". Vorher kannte der Test nur den
+        // anderen Zweig und fiel am 2. November auf dem Mac.
+        if text.contains("noch nicht abgelesen") {
+            XCTAssertTrue(text.contains("aus deinem Verbrauch bis"),
+                          "Die Prognose ohne Ablesung im Monat nennt ihre Grundlage nicht: \(text)")
+        } else {
+            // „gemessen", oder „anteilig", wenn der Monatsanfang zwischen zwei
+            // Ablesungen liegt (seit 0.133.1).
+            XCTAssertTrue(text.contains("gemessen") || text.contains("anteilig"),
+                          "Das schon Gemessene ist nicht als solches benannt: \(text)")
+            XCTAssertTrue(text.contains(" von ") && text.contains("Tagen"),
+                          "Die Prognose nennt ihre Tagesgrundlage nicht: \(text)")
+        }
 
         // **Und „Alle Zahlen" nennt dieselbe Erwartung.** Bis 1.2 stand sie
         // nur im Diagramm; in der Tabelle hatte der laufende Monat eine halbe

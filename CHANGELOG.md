@@ -23,6 +23,11 @@ sie 4 von 6.
   richtige werden ein Sechstel weniger. Weil der Sucher weiterläuft, heißt das: etwas länger halten.
 - Oberflächentest der Kamera wartet 120 statt 90 Sekunden auf den Vorschlag (im Debug-Bau braucht das Netz
   Sekunden je Bild, und jetzt eins mehr).
+- Vorführung ohne Kamera (`-pulse-kamera-test`, nur Debug): Das gezeichnete Bild wird einmal ausgewertet und
+  der Befund Bild für Bild an die Einigung gegeben, statt das Netz jedes Mal neu rechnen zu lassen. Mit vier
+  gleichen fand der Oberflächentest auf dem iPad den Hinweis nach dem Übernehmen nicht mehr rechtzeitig.
+- Oberflächentest des laufenden Monats kennt den Fall „noch nicht abgelesen“ (erste Tage eines Monats); er
+  fiel am 2. November, unabhängig von der Kamera.
 
 ### Hinzugefügt
 - **Dritte Fotosammlung, blind** (`docs/kamera/fotos-blind/`, acht Fotos von Wikimedia Commons, sechs mit Stand,
