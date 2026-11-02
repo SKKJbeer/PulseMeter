@@ -13,7 +13,7 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 **Kamera vor 1.6 geprüft: schlechte Bilder und Rahmen neben der Anzeige**
 
-Der Gründer: „mache du nochmal ausgiebige test als test und qualität experte und bringe es dann live“.
+Der Gründer: „mache du nochmal ausgiebige test als test und quantität experte und bringe es dann live“.
 
 ### Hinzugefügt
 - `scripts/kamera-netz/stoertest.py`: dieselbe Messung wie `evaluate.py`, aber jedes Sucherbild verdorben
