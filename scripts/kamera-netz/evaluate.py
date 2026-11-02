@@ -1,7 +1,7 @@
 """Aufruf: python3 evaluate.py <netz1.pt[,netz2.pt,…]> <Versuche>   (mehrere Netze: ein Bild gilt nur bei gleichem Text)
 Die Messung, auf die es ankommt: Was bekommt der Nutzer vorgeschlagen, wenn er die Zahl in den Rahmen hält?
-Sechs Bilder, drei gleiche nötig (ReadingConsensus), der Leser im Modus „eingerahmt". Je Foto viele Versuche."""
-import sys, json, numpy as np, torch
+Sechs Bilder, vier gleiche nötig (ReadingConsensus, seit 0.140.0; REQ=3 misst die alte Regel), der Leser im Modus „eingerahmt". Je Foto viele Versuche."""
+import os, sys, json, numpy as np, torch
 import realtest as RT
 from train import Net, decode
 
@@ -45,7 +45,10 @@ def consensus(vals, required=3, window=6):
 def run(net, trials=60, seed=1, verbose=True, modes=('erste', 'zweite')):
     nets = net if isinstance(net, list) else [net]
     rng = np.random.default_rng(seed); [n.eval() for n in nets]; res = {}
+    import os
+    nur = os.environ.get('NUR')        # z. B. NUR=blind: nur eine Sammlung messen
     for nr in RT.ZIFFERN:
+        if nur == 'blind' and nr not in RT.BLIND: continue
         soll_text = RT.ZIFFERN[nr][1]; stand = RT.STAND[nr]; fmt = RT.FORMAT[nr]
         for mode in modes:
             rv = None
@@ -54,7 +57,7 @@ def run(net, trials=60, seed=1, verbose=True, modes=('erste', 'zweite')):
             richtig = falsch = nichts = 0; frames_ok = frames_bad = frames_n = 0; wrongs = []
             for t in range(trials):
                 m = rng.uniform(1.5, 2.8); bx = rng.uniform(-.1, .1); by = rng.uniform(-.15, .15)
-                imgs = [RT.frame(nr, m, bx + rng.uniform(-.03, .03), by + rng.uniform(-.05, .05), 1 + rng.uniform(-.05, .05)) for _ in range(6)]
+                imgs = [RT.frame(nr, m, bx + rng.uniform(-.03, .03), by + rng.uniform(-.05, .05), 1 + rng.uniform(-.05, .05)) for _ in range(int(os.environ.get("WIN", 6)))]
                 with torch.no_grad():
                     X_ = torch.tensor(np.stack(imgs), dtype=torch.float32)[:, None] / 255
                     alle = [decode(n(X_)) for n in nets]
@@ -70,7 +73,7 @@ def run(net, trials=60, seed=1, verbose=True, modes=('erste', 'zweite')):
                     if v is not None:
                         if stand is not None and abs(v - float(stand)) < 1e-9: frames_ok += 1
                         else: frames_bad += 1
-                win = consensus(vals)
+                win = consensus(vals, int(os.environ.get("REQ", 4)), int(os.environ.get("WIN", 6)))
                 if win is None: nichts += 1
                 elif stand is not None and abs(win - float(stand)) < 1e-9: richtig += 1
                 else: falsch += 1; wrongs.append(win)
@@ -78,13 +81,13 @@ def run(net, trials=60, seed=1, verbose=True, modes=('erste', 'zweite')):
     return res
 
 def table(res, trials):
-    lines = []; tot = {(g, m): [0, 0, 0] for g in ('alt', 'neu') for m in ('erste', 'zweite')}
+    lines = []; tot = {(g, m): [0, 0, 0] for g in ('alt', 'neu', 'blind') for m in ('erste', 'zweite')}
     for (nr, mode), (r, f, n, fo, fb, fn, w) in res.items():
         if RT.STAND[nr] is None and mode == 'zweite': continue
-        g = 'neu' if nr in RT.NEU else 'alt'
+        g = 'blind' if nr in RT.BLIND else 'neu' if nr in RT.NEU else 'alt'
         lines.append(f'{nr} {g} {mode:6s} richtig {r:3d} falsch {f:3d} nichts {n:3d} | Einzelbilder richtig {fo:3d} falsch {fb:3d} von {fn} {("falsch: "+str(w)) if f else ""}')
         t = tot[(g, mode)]; t[0] += r; t[1] += f; t[2] += n
-    for (g, m), (r, f, n) in tot.items(): lines.append(f'== {g} (Fotos {"neu, nie trainiert" if g == "neu" else "die ersten sieben"}) {m}: richtig {r} falsch {f} nichts {n} (von {r+f+n})')
+    for (g, m), (r, f, n) in tot.items(): lines.append(f'== {g} (Fotos { {"neu": "zweite Sammlung", "blind": "dritte Sammlung, blind"}.get(g, "die ersten sieben") }) {m}: richtig {r} falsch {f} nichts {n} (von {r+f+n})')
     return '\n'.join(lines)
 
 if __name__ == '__main__':

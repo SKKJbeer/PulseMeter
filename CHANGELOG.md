@@ -9,6 +9,37 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.140.0 — 2026-11-01
+
+**Die Kamera schlägt erst vor, wenn sie dieselbe Zahl viermal gelesen hat**
+
+Der Gründer: „finalisiere das kamera feature dass wir es ausrollen können mit best möglicher qualität“.
+Gemessen an einer neuen, blinden Fotosammlung lag die Kamera bei 3 von 6 Bildern zu oft daneben. Jetzt braucht
+sie 4 von 6.
+
+### Geändert
+- **`ReadingConsensus`**: vier gleiche von sechs Bildern statt drei (`standardRequired`), in der App und im
+  Klick-Dummy. Über alle drei Fotosammlungen fallen falsche Vorschläge von 28 auf 8, auf der blinden von 12 auf 0;
+  richtige werden ein Sechstel weniger. Weil der Sucher weiterläuft, heißt das: etwas länger halten.
+- Oberflächentest der Kamera wartet 120 statt 90 Sekunden auf den Vorschlag (im Debug-Bau braucht das Netz
+  Sekunden je Bild, und jetzt eins mehr).
+
+### Hinzugefügt
+- **Dritte Fotosammlung, blind** (`docs/kamera/fotos-blind/`, acht Fotos von Wikimedia Commons, sechs mit Stand,
+  zwei Fallen). Abgelesen, bevor daran gemessen wurde; kein Fehlerbild hat Generator oder Netz verändert.
+  `evaluate.py` misst sie mit (`NUR=blind` allein), `check-kamerafotos.py` prüft ihre Lizenzen.
+- Test `testDefaultNeedsFourOfSix`, einmal rot gesehen (mit drei).
+
+### Verworfen, nach Messung
+- **Ein neu trainiertes Netz** (Generator mit Einsen in der linken Spalte, Buchstaben dicht vor der Zahl, kleinen
+  Punkten): auf der blinden Sammlung 23 statt 9 falsche Vorschläge. Die Netze von 0.138.0 bleiben.
+- Vier von **acht** Bildern (20 statt 8 falsche) und eine Regel zur Stellenzahl (keine Wirkung).
+
+Zahlen und Rohdaten: `docs/kamera/README.md`, Abschnitt „Gemessen: blind, und eine strengere Einigung“,
+und `docs/kamera/netz-messung.txt`.
+
+---
+
 ## 0.139.1 — 2026-10-24
 
 **CI: der Simulator wird vor dem ersten Test gestartet, und die Läufe dürfen 90 Minuten dauern**

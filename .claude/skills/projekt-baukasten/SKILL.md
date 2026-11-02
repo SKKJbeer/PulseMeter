@@ -2805,7 +2805,7 @@ war, es selbst zu können.
   jeder Messung die Fehler **ansehen** (`„00400000“` statt `00000` heißt: Die
   kleine „004“ links wird mitgelesen), dann den Generator ändern, nicht das Netz.
 - **Am Produkt messen, nicht am Einzelbild.** Das Netz bekommt im Betrieb sechs
-  Bilder und braucht drei gleiche. Die Messung macht dasselbe (`evaluate.py`):
+  Bilder und braucht vier gleiche (bis 0.139.1 drei). Die Messung macht dasselbe (`evaluate.py`):
   je Foto viele Versuche mit verwackeltem Rahmen, dazu der Leser im Modus der App.
   Einzelbildzahlen sehen schlechter aus und sagen weniger.
 - **Dieselbe Verkleinerung überall.** Trainiert und gemessen mit flächengemittelter
@@ -2821,6 +2821,15 @@ war, es selbst zu können.
 - **Eine lange Trainingsschleife auf vier Kernen kostet zehn Minuten je Epoche.**
   Nach jeder Epoche speichern und messen, nicht auf das Ende warten; und bei einer
   Änderung am Generator **ab dem Zwischenstand weitertrainieren**, nicht von vorn.
+- **Wenn das Netz an seiner Grenze ist, hilft die Regel dahinter mehr als ein weiteres Training.** In Zählora
+  machte eine fünfte Trainingsrunde (Generator erweitert, 160 000 Bilder, 90 Minuten) auf einer blinden Sammlung
+  aus 9 falschen Vorschlägen 23. Vier statt drei gleiche Bilder in der Einigung senkten dieselben Fehler über alle
+  Sammlungen von 28 auf 8, blind von 12 auf 0, und kosteten ein Sechstel der richtigen. Zuerst die blinde Sammlung
+  ablesen, dann beides messen, dann entscheiden. Eine Abwandlung (vier von acht) gab die richtigen zurück und die
+  Fehler auch; eine dritte (Stellenzahl) änderte nichts. Beides steht nur in der Messung, nicht im Code.
+- **Wikimedia sperrt die Programmierschnittstelle von Cloud-Rechnern** (HTTP 429). Die Kategorieseiten
+  (`/wiki/Category:…`) und `Special:FilePath/<Datei>?width=330|1280` gehen, mit eigenem `User-Agent` und einer
+  Pause von einigen Sekunden; Lizenz und Urheber stehen in der Dateiseite (`licensetpl_short`, `fileinfotpl_aut`).
 - **Die Fotos, an denen man gebaut hat, sind kein Test mehr.** Nach vier Runden „Fehlerbild ansehen, Generator ändern“
   stand auf den sieben Fotos null Fehler, auf neun neuen aber 16 in 1.500 Versuchen. **Vor der Behauptung neue Fotos holen**
   (Wikimedia Commons, `scripts/kamera-netz/README.md`) und die alten Zahlen nicht mehr als Beleg nehmen. Die erste

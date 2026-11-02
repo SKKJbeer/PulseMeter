@@ -2775,10 +2775,10 @@ final class LaunchTests: XCTestCase {
         XCTAssertTrue(open.waitForExistence(timeout: 15), "Der Knopf „Mit Kamera ablesen“ fehlt im Ziffernblock")
         open.tap()
 
-        // Im Debug-Bau braucht das Netz Sekunden je Bild, und es braucht drei gleiche.
+        // Im Debug-Bau braucht das Netz Sekunden je Bild, und es braucht vier gleiche (seit 0.140.0).
         let take = app.buttons["kamera-uebernehmen"]
-        XCTAssertTrue(take.waitForExistence(timeout: 90),
-                      "Die Kamera hat das gezeichnete Bild nicht gelesen — kein Vorschlag nach 90 Sekunden")
+        XCTAssertTrue(take.waitForExistence(timeout: 120),
+                      "Die Kamera hat das gezeichnete Bild nicht gelesen — kein Vorschlag nach 120 Sekunden")
         take.tap()
 
         let hint = app.descendants(matching: .any).matching(identifier: "kamera-hinweis").firstMatch

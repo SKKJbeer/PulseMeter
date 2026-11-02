@@ -145,7 +145,7 @@ Apples Texterkennung trägt Siebensegment-Anzeigen nicht (oben). Deshalb liest i
 (`scripts/kamera-netz/`) und an Fotos nur **geprüft**; kein Foto hat je ein Gewicht bewegt.
 **Zwei Netze müssen sich einig sein** (`DigitEnsemble`): Eine Zeile gilt nur, wenn beide
 denselben Text lesen. Gemessen wird, was der Nutzer erlebt: sechs leicht verwackelte
-Sucherbilder, drei gleiche nötig (`ReadingConsensus`), der Leser im Modus „eingerahmt“, je Foto
+Sucherbilder, drei gleiche nötig (`ReadingConsensus`, seit 0.140.0 vier, siehe unten), der Leser im Modus „eingerahmt“, je Foto
 100 Versuche mit anderem Rahmen (`scripts/kamera-netz/evaluate.py`, Rohdaten in `netz-messung.txt`).
 
 **Zwei Sammlungen, und warum.** Die ersten sieben LCD-Fotos (`fotos.json`) habe ich beim Bauen
@@ -201,6 +201,43 @@ vollständig blind.
 (Elster, Kaifa, Focus, Meterus, Kamstrup). Sie kämen nur freiwillig von Testern, nicht aus der App
 (`scripts/kamera-netz/README.md`).
 
+## Gemessen: blind, und eine strengere Einigung (1. November 2026, 0.140.0)
+
+**Eine dritte Sammlung, blind.** `fotos-blind.json`: 386 frei lizenzierte Zählerfotos von Wikimedia Commons
+gesichtet, acht ausgewählt (sechs mit lesbarem Stand, zwei Fallen: Displaytest einer LED-Anzeige und eine
+Anzeige, deren letzte Ziffer hinter dem Rand steckt). Von Hand abgelesen, **bevor** irgendetwas daran
+gemessen wurde, und kein Fehlerbild davon hat den Generator oder das Netz verändert. Das ist die Zahl, die
+am ehesten sagt, was bei einem Fremden am Zähler passiert.
+
+**Neu trainieren hat nicht geholfen.** Der Generator bekam Einsen in der linken Spalte, Buchstaben dicht
+vor der Zahl („ET2“) und kleinere Punkte, Netz 1 wurde vier Epochen weiter trainiert (160 000 Bilder). Auf der
+blinden Sammlung stieg die Zahl falscher Vorschläge von 9 auf 23 (erste Ablesung) und von 3 auf 20 (zweite).
+**Verworfen**; in der App bleiben die beiden Netze von 0.138.0, der Generator ist unverändert.
+
+**Was geholfen hat: vier gleiche statt drei** (`ReadingConsensus.standardRequired`). Dieselben Netze, je Foto
+100 Versuche, Rohdaten unten in `netz-messung.txt`:
+
+| | drei von sechs (bis 0.139.1) | **vier von sechs (ab 0.140.0)** |
+|---|---|---|
+| erste Sammlung, erste / zweite Ablesung | 205 / 401 richtig, 0 / 0 falsch | 184 / 355 richtig, **0 / 0 falsch** |
+| zweite Sammlung | 90 / 215 richtig, 11 / 5 falsch | 78 / 184 richtig, **4 / 4 falsch** |
+| **dritte Sammlung, blind** | 100 / 107 richtig, **9 / 3 falsch** | 62 / 64 richtig, **0 / 0 falsch** |
+| zusammen | 1118 richtig, 28 falsch | 927 richtig, **8 falsch** |
+
+Falsche Vorschläge fallen um gut zwei Drittel, richtige um ein Sechstel. Weil der Sucher weiterläuft, bis
+etwas gelesen ist, heißt „weniger richtig je Fenster“ für den Nutzer **etwas länger halten**, nicht „geht
+nicht“. Die restlichen acht Fehler sind alle die Elster-Anzeige (`7` statt `1`), ein gemeinsamer Fehler beider
+Netze.
+
+**Verworfen nach Messung:** vier von **acht** Bildern brachte die richtigen fast zurück, aber 20 statt 8 falsche
+(15 davon in der ersten Ablesung der zweiten Sammlung). Eine Regel „nicht mehr Ziffern als das Zählwerk hat“
+änderte an keinem Versuch etwas.
+
+**Was die blinde Sammlung über die Grenzen sagt:** Bei der Leistungsanzeige `061.60` lesen beide Netze
+`067.60` (wieder 1 gegen 7), beim Tatung mit `057330` hängen sie eine Ziffer an. Beides fängt die
+strengere Einigung ab, beides zeigt, wo das Netz schwach ist: **dünne Einsen und Ziffern am Rand.**
+Besser wird es nur mit echten Fotos solcher Anzeigen.
+
 ## Die Regeln des Lesers (`MeterTextReader`)
 
 Eingabe ist der Text, den die Texterkennung geliefert hat, dazu die Stellen des
@@ -235,7 +272,7 @@ Steht ein Siemens-Zähler mit 5+1 Stellen auf der Voreinstellung 6+2, wird aus
 der Bereich. Die Kamera sollte deshalb bei der ersten Ablesung die Stellenzahl
 mit dem Foto vergleichen und nachfragen, wenn die Ziffernzahl nicht passt.
 
-## Was noch fehlt (Stand 0.138.0)
+## Was noch fehlt (Stand 0.140.0)
 
 - **Meterus und Kamstrup** (oben): mehr Trainingsbilder dieser Art, am besten **echte Fotos von
   Testern**, damit auch das Netz an Anzeigen gemessen wird, die niemand nachgebaut hat. Die
@@ -247,8 +284,7 @@ mit dem Foto vergleichen und nachfragen, wenn die Ziffernzahl nicht passt.
   `docs/website/datenschutz.html` („Bilder werden nur auf dem Gerät ausgewertet, nicht gespeichert,
   nicht übertragen“) und in `09-appstore.md`. Technisch stimmt der Satz heute schon
   (`scripts/check-sicherheit.sh` hält ihn).
-- **Der Kauf** (0,99 €, Teil von „Alles freischalten“): Die Kaufkennung ist in App Store Connect
-  noch nicht angelegt. Bis dahin ist die Kamera in TestFlight für alle frei.
+- **Der Kauf** steht seit 0.139.0 (1,99 €, Teil von „Alles freischalten“, `de.karjoth.pulsemeter.camera`).
 
 ## Namensnennung
 
@@ -290,3 +326,19 @@ Am 23. Oktober 2026 von Wikimedia Commons geholt, auf 960 Pixel Breite verkleine
 | `fotos-lcd/56-aclara-leer.jpg` | Strom, LCD ohne Anzeige | — | 6+0 | [Aclara kV2c FITZALL 3-phase smart electricity meter.jpg](https://commons.wikimedia.org/wiki/File:Aclara_kV2c_FITZALL_3-phase_smart_electricity_meter.jpg) | 277volts | CC BY-SA 4.0 |
 | `fotos-lcd/57-iskra-test.jpg` | Strom, LCD mit allen Segmenten | — | 6+0 | [Meterkast meter.jpg](https://commons.wikimedia.org/wiki/File:Meterkast_meter.jpg) | BAsta8 | CC BY-SA 4.0 |
 | `fotos-lcd/58-iskra-leer.jpg` | Strom, LCD ohne Anzeige, Spiegelung | — | 6+0 | [Vorarlberger Kraftwerke-Energy meter (electro)-11ASD.jpg](https://commons.wikimedia.org/wiki/File:Vorarlberger_Kraftwerke-Energy_meter_(electro)-11ASD.jpg) | Asurnipal | CC BY-SA 4.0 |
+
+
+### Dritte Sammlung (`fotos-blind/`, blind geholt)
+
+Am 1. November 2026 von Wikimedia Commons geholt (386 Fotos gesichtet, acht mit lesbarer oder absichtlich unlesbarer Anzeige ausgewählt), auf 960 Pixel Breite verkleinert, sonst unverändert. Die Rahmen und Soll-Texte stehen in `fotos-blind.json`.
+
+| Datei | Art | Soll | Stellen | Quelle | Urheber | Lizenz |
+|---|---|---|---|---|---|---|
+| `fotos-blind/60-chunghsin-kv2c.jpg` | Strom, LCD, Chunghsin kV2c | 189300 | 6+0 | [2010 Chunghsin kV2c electronic watthour meter.jpg](https://commons.wikimedia.org/wiki/File:2010_Chunghsin_kV2c_electronic_watthour_meter.jpg) | Solomon203 | CC BY-SA 3.0 |
+| `fotos-blind/61-tatung-rxs4e-kw.jpg` | Strom, LCD, Tatung RXS4e, Leistung in kW | 61.60 | 3+2 | [2010 Tatung RXS4e electronic watthour meter.jpg](https://commons.wikimedia.org/wiki/File:2010_Tatung_RXS4e_electronic_watthour_meter.jpg) | Solomon203 | CC BY-SA 3.0 |
+| `fotos-blind/62-i210-cn.jpg` | Strom, LCD, I-210+cn | 1931 | 5+0 | [Smart Meter (10945291434).jpg](https://commons.wikimedia.org/wiki/File:Smart_Meter_%2810945291434%29.jpg) | National Institute of Standards and Technology | Public domain |
+| `fotos-blind/63-tatung-rxs4e.jpg` | Strom, LCD, Tatung RXS4e | 6143 | 5+0 | [Tatung RXS4e 20230527.jpg](https://commons.wikimedia.org/wiki/File:Tatung_RXS4e_20230527.jpg) | Solomon203 | CC BY-SA 4.0 |
+| `fotos-blind/64-tatung-tt001.jpg` | Strom, LCD, Tatung TT-001 | 57330 | 6+0 | [Tatung TT-001 20200409.jpg](https://commons.wikimedia.org/wiki/File:Tatung_TT-001_20200409.jpg) | Solomon203 | CC BY-SA 4.0 |
+| `fotos-blind/65-tatung-tt001-null.jpg` | Strom, LCD, Tatung TT-001, neuer Zähler | 0 | 6+0 | [Tatung TT-001 20210314.jpg](https://commons.wikimedia.org/wiki/File:Tatung_TT-001_20210314.jpg) | Solomon203 | CC BY-SA 4.0 |
+| `fotos-blind/66-tatung-tt001-staub.jpg` | Strom, LCD, Tatung TT-001, letzte Ziffer verdeckt | — | 6+0 | [Tatung TT-001 20210605.jpg](https://commons.wikimedia.org/wiki/File:Tatung_TT-001_20210605.jpg) | Solomon203 | CC BY-SA 4.0 |
+| `fotos-blind/67-meridian-test.jpg` | Strom, LED, alle Segmente | — | 6+0 | [Meridian105037.jpg](https://commons.wikimedia.org/wiki/File:Meridian105037.jpg) | Wanderer777 | CC BY-SA 4.0 |

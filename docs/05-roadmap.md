@@ -132,7 +132,7 @@ sie **nichts** vor: Eine falsch gelesene Ziffer ist schlimmer als keine
 | Schlechtes Licht, Spiegelung | Taschenlampe im Sucher; der Sucher sagt „zu dunkel“, „kaum Kontrast“, „unscharf“ (seit 0.138.0) |
 | Datum oder Uhrzeit im Display | Das Netz liest die Doppelpunkte; ohne Bereich zählt zusätzlich nur eine Zahl mit führender Null, Komma oder Einheit |
 | Punkt nicht erkannt (4,67 → 467) | Zahl ohne Komma, breiter als der Vorkommateil: kein Vorschlag |
-| Eine Zahl in einem Bild falsch gelesen | Dieselbe Zahl in drei von sechs Bildern, und keine andere mehr als einmal |
+| Eine Zahl in einem Bild falsch gelesen | Dieselbe Zahl in vier von sechs Bildern (bis 0.139.1 drei), und keine andere mehr als einmal |
 
 Geprüft wird mit einer Sammlung echter Fotos (vom Gründer, Zählernummer
 geschwärzt) und der erwarteten Zahl je Bild. Die CI rechnet die Trefferquote

@@ -4,7 +4,7 @@ import Foundation
 /// wenn dieselbe Zahl **mehrfach** gelesen wurde.
 ///
 /// **Warum.** Ein einzelnes Bild kann falsch lesen: Ein Reflex, eine Hand im
-/// Bild, eine Ziffer, die halb verdeckt ist. Dieselbe Zahl in drei von sechs
+/// Bild, eine Ziffer, die halb verdeckt ist. Dieselbe Zahl in vier von sechs
 /// Bildern hintereinander ist ein ganz anderes Zeichen — der gleiche Fehler
 /// müsste jedes Mal an derselben Stelle auftreten. Die Kamera liefert dreißig
 /// Bilder in der Sekunde; die kurze Wartezeit ist umsonst, ein falscher
@@ -25,7 +25,15 @@ public struct ReadingConsensus: Sendable {
     public let window: Int
     private var recent: [MeterTextReader.Proposal?] = []
 
-    public init(required: Int = 3, window: Int = 6) {
+    /// **Vier von sechs, seit 0.140.0** (vorher drei). Gemessen an drei Fotosammlungen, je Foto
+    /// 100 Versuche (`docs/kamera/README.md`): Falsche Vorschläge fielen von 28 auf 8, auf der
+    /// blinden dritten Sammlung von 12 auf 0; richtige Vorschläge um etwa ein Sechstel. Der
+    /// Sucher läuft weiter, bis etwas gelesen ist; weniger Treffer je Fenster heißt also
+    /// länger warten, ein falscher Vorschlag heißt eine falsche Zahl im Verlauf.
+    public static let standardRequired = 4
+    public static let standardWindow = 6
+
+    public init(required: Int = ReadingConsensus.standardRequired, window: Int = ReadingConsensus.standardWindow) {
         precondition(required >= 1 && window >= required)
         self.required = required
         self.window = window
