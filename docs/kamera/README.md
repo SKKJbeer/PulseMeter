@@ -272,6 +272,41 @@ Steht ein Siemens-Zähler mit 5+1 Stellen auf der Voreinstellung 6+2, wird aus
 der Bereich. Die Kamera sollte deshalb bei der ersten Ablesung die Stellenzahl
 mit dem Foto vergleichen und nachfragen, wenn die Ziffernzahl nicht passt.
 
+## Geprüft vor 1.6: schlechte Bilder und Rahmen daneben (2. November 2026)
+
+Zwei Fragen, die die Fotosammlungen allein nicht beantworten. Beide mit den Regeln der App (beide Netze
+einig, Leser „eingerahmt", vier gleiche von sechs), über alle drei Sammlungen, erste und zweite Ablesung.
+
+**1. Schweigt die Kamera bei schlechten Bildern, statt falsch vorzuschlagen?** `stoertest.py` verdirbt jedes
+Sucherbild so, wie es am Zähler passiert. 25 Versuche je Foto und Ablesung, 1125 je Störung:
+
+| Störung | richtig | **falsch** | nichts |
+|---|---|---|---|
+| unscharf (Gauß 1,3 px) | 188 | 3 | 934 |
+| verwackelt (9 px quer) | 3 | 1 | 1121 |
+| dunkel (35 % Helligkeit) | 251 | 3 | 871 |
+| flau (35 % Kontrast) | 248 | 2 | 875 |
+| schräg (3 bis 6 Grad) | 211 | **0** | 914 |
+| verrauscht | 159 | 1 | 965 |
+| stark komprimiert (JPEG 18) | 183 | 2 | 940 |
+| Spiegelung im Glas | 87 | **0** | 1038 |
+
+Ja: Bei allen acht Störungen bleibt der Anteil falscher Vorschläge unter 0,3 Prozent der Versuche, und
+schlechte Bilder enden fast immer in „nichts“ (dann läuft der Sucher weiter, der Hinweis sagt „Zu dunkel“
+oder „Unscharf“). Die 12 Fehler verteilen sich so: acht auf die bekannte Elster-Anzeige (`7` statt `1`),
+drei auf neue Zähler mit Stand 0 bis 10, bei denen der Plausibilitätsbereich der zweiten Ablesung auch
+eine einzelne Ziffer zulässt, und einer auf `1937` statt `1931` (wieder 1 gegen 7, unter Unschärfe).
+Verwacklung ist der eine Fall, in dem die Kamera praktisch nie liest, und das ist richtig so.
+
+**2. Was passiert, wenn der Rahmen neben der Anzeige liegt?** `danebentest.py` legt den Rahmen zufällig
+auf das Foto, ohne die Ziffern zu berühren: auf Seriennummern, Baujahre, Impulsangaben, Strichcodes.
+60 Versuche je Foto: **0 Vorschläge in 1560 Versuchen (erste Ablesung) und 0 in 1140 (zweite).**
+
+**Was das für 1.6 heißt:** Die Kamera ist so eingestellt, dass sie lieber schweigt. Wer übernimmt, sieht die
+Zahl im Ziffernblock mit dem Satz „Vergleiche die Ziffern noch einmal mit dem Zähler“ und sichert selbst.
+Nicht in der Cloud prüfbar und deshalb offen: die Texterkennung von Apple, die in der App neben dem Netz
+mitliest (`KameraSitzung.einigen`), und echte Bilder aus der iPhone-Kamera.
+
 ## Was noch fehlt (Stand 0.140.0)
 
 - **Meterus und Kamstrup** (oben): mehr Trainingsbilder dieser Art, am besten **echte Fotos von

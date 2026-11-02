@@ -12,6 +12,8 @@ diesem Ordner. Einmalig: `python3 schriften-holen.py` (Siebensegment-Schriften D
 | Trainingsdaten | `python3 gen.py 120000 train.npz 9000` und `python3 gen.py 3200 val.npz 970000` | 3 Minuten |
 | Training | `python3 train.py 8 ziffernnetz-1.pt train.npz 1.2e-3 neu.pt val.npz` | etwa 10 Minuten je Epoche |
 | Messen | `python3 evaluate.py ziffernnetz-1.pt,neu.pt 100` (Netze mit Komma: ein Bild gilt nur bei gleichem Text) | 10 Minuten |
+| Schlechte Bilder | `python3 stoertest.py 25` (verwackelt, dunkel, schräg, Spiegelung …; `STOER=dunkel` misst eine) | 40 Minuten |
+| Rahmen daneben | `python3 danebentest.py 60` (Rahmen auf Seriennummer, Strichcode …; jeder Vorschlag ist ein Fehler) | 15 Minuten |
 | Gewichte schreiben | `python3 export.py neu.pt ziffernnetz-2.bin`, dann im Hauptverzeichnis `scripts/kamera-gewichte.py` | Sekunden |
 | Referenzwerte | `python3 golden.py ../../docs/kamera/lcd-vektoren.json ziffernnetz-1.pt neu.pt` | Sekunden |
 | Alles gegenprüfen | `scripts/pruefen.sh schnell` | 1,5 Minuten |

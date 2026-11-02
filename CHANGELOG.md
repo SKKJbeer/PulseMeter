@@ -9,6 +9,22 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.140.1 — 2026-11-02
+
+**Kamera vor 1.6 geprüft: schlechte Bilder und Rahmen neben der Anzeige**
+
+Der Gründer: „mache du nochmal ausgiebige test als test und qualität experte und bringe es dann live“.
+
+### Hinzugefügt
+- `scripts/kamera-netz/stoertest.py`: dieselbe Messung wie `evaluate.py`, aber jedes Sucherbild verdorben
+  (unscharf, verwackelt, dunkel, flau, schräg, verrauscht, stark komprimiert, Spiegelung). Falsche Vorschläge
+  bleiben bei allen acht unter 0,3 Prozent der Versuche; schlechte Bilder enden in „nichts“.
+- `scripts/kamera-netz/danebentest.py`: Rahmen auf Seriennummer, Strichcode und Aufkleber statt auf der
+  Anzeige. 0 Vorschläge in 2700 Versuchen.
+- Ergebnisse in `docs/kamera/README.md` („Geprüft vor 1.6“) und `netz-messung.txt`.
+
+---
+
 ## 0.140.0 — 2026-11-01
 
 **Die Kamera schlägt erst vor, wenn sie dieselbe Zahl viermal gelesen hat**
