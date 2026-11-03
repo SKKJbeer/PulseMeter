@@ -484,6 +484,33 @@ Ablauf die Veröffentlichung ausdrücklich an — und dafür fehlte
 eigene Seite sagte „Bald im App Store". Behoben in 0.106.6, samt einer Prüfung
 am Ende des Ablaufs, die die **Seite abruft** statt den Push zu zählen.
 
+### Die zehnte, 1.6 — eingereicht am 3. November
+
+**Ablesen mit der Kamera** als sechster Kauf (1,99 €), dazu „Alles freischalten"
+mit allen sechs für 4,99 €. Vom Gründer freigegeben am 2. November („mache du
+nochmal ausgiebige test als test und quantität experte und bringe es dann
+live"); die Prüfungen davor stehen in `docs/kamera/README.md`, Abschnitt
+„Geprüft vor 1.6". Bau 48 (0.140.0), VALID seit 03.11.
+
+Eingereicht um 09:54 UTC (Lauf 41614691123):
+
+    ✓ Bau 48 an die Fassung gehängt
+    ✓ Kauf de.karjoth.pulsemeter.reminders zur Prüfung eingereicht
+    ✓ Kauf de.karjoth.pulsemeter.camera zur Prüfung eingereicht
+    ✓ Fassung 1.6 der Einreichung hinzugefügt
+    Eingereicht. Zustand: WAITING_FOR_REVIEW
+
+**Befund dabei:** Der Kauf „Erinnerung" stand seit seiner Anlage auf
+`READY_TO_SUBMIT`, also nie verkauft. Ein Kauf in diesem Zustand ist ein
+Entwurf; erst `POST v1/inAppPurchaseSubmissions` schickt ihn mit. Das macht
+`asc-einreichen.py` seit 0.140.1 bei jeder Einreichung von selbst
+(`kaeufe_einreichen`).
+
+**Offen:** Der Beschreibungstext von „Alles freischalten" steht bei Apple noch
+auf dem alten Wortlaut. Ein freigegebener Kauf (`ACTIVE`) lässt sich über die
+Schnittstelle nicht ändern (`409 Cannot edit InAppPurchaseLocalization when it
+is in ACTIVE`).
+
 ### Die neunte, 1.5.1 — eingereicht am 19. Oktober
 
 **Neue Bilder im Laden**, gesetzt mit Überschrift aus dem Schaufenster-Haushalt
