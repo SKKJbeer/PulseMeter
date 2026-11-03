@@ -15,7 +15,9 @@ def _laden(datei):
     return out
 FOTOS = _laden('fotos.json')
 NEU = _laden('fotos-lcd.json')          # nie zum Training oder zum Anpassen des Generators benutzt
+BLIND = _laden('fotos-blind.json')    # dritte Sammlung: geholt, bevor der Generator zuletzt geändert wurde; Fehler nie angesehen
 FOTOS.update(NEU)
+FOTOS.update(BLIND)
 ZIFFERN = {nr: (None, f['anzeige']) for nr, f in FOTOS.items()}       # Soll-Text je Foto
 FORMAT = {nr: (f['vorkommastellen'], f['nachkommastellen']) for nr, f in FOTOS.items()}
 STAND = {nr: f['stand'] for nr, f in FOTOS.items()}

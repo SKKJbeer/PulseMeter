@@ -19,7 +19,7 @@ diesem Ordner. Einmalig: `python3 schriften-holen.py` (Siebensegment-Schriften D
 Dateien: `synth.py` zeichnet die Anzeigen (**hier steckt die Arbeit**), `train.py` das Netz,
 `area.py` die flächengemittelte Verkleinerung (dieselbe wie `GrayImage.resampled` in Swift und
 `DigitNet.verkleinern` im Klick-Dummy), `realtest.py` schneidet Sucherbilder aus den Fotos in
-`docs/kamera/` (Rahmen in `fotos.json`), `evaluate.py` misst wie die App (sechs Bilder, drei gleiche,
+`docs/kamera/` (Rahmen in `fotos.json`), `evaluate.py` misst wie die App (sechs Bilder, vier gleiche,
 Leser), `ziffernnetz-N.pt` sind die Stände zum Weitertrainieren, `ziffernnetz-N.bin` das, was in die App geht (zwei Netze, die sich einig sein müssen).
 
 **Die Regeln dabei**

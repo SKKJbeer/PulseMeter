@@ -381,13 +381,17 @@ final class KameraModell {
         let bereichKopie = self.bereich
         vorfuehrung?.cancel()
         vorfuehrung = Task { [weak self] in
+            // Gerechnet wird abseits des Hauptthreads und **einmal**: Das Bild ist immer
+            // dasselbe, also auch der Befund. Vorher lief das Netz für jedes Bild neu,
+            // im Debug-Bau eine halbe Minute je Bild auf dem iPad. Mit vier gleichen statt drei
+            // kam der Vorschlag erst nach knapp zwei Minuten, und der Hinweis nach dem Übernehmen
+            // erschien nicht mehr rechtzeitig (CI-Lauf 620, iPad) — vermutlich, weil die noch
+            // laufende Rechnung den Simulator auslastete. Die Einigung selbst durchläuft der
+            // Befund weiterhin Bild für Bild.
+            let befund = await Task.detached(priority: .userInitiated) {
+                KameraSitzung.auswerten(bild, rahmen: ganz, format: formatKopie, bereich: bereichKopie)
+            }.value
             while !Task.isCancelled {
-                // Gerechnet wird abseits des Hauptthreads: Im Debug-Bau braucht das Netz
-                // Sekunden, und der Oberflächentest soll die Oberfläche währenddessen bedienen können.
-                let befund = await Task.detached(priority: .userInitiated) {
-                    KameraSitzung.auswerten(bild, rahmen: ganz, format: formatKopie, bereich: bereichKopie)
-                }.value
-                if Task.isCancelled { return }
                 self?.aufnehmen(befund)
                 try? await Task.sleep(for: .milliseconds(250))
             }

@@ -33,3 +33,83 @@
 == alt (Fotos die ersten sieben) zweite: richtig 401 falsch 0 nichts 299 (von 700)
 == neu (Fotos neu, nie trainiert) erste: richtig 90 falsch 11 nichts 799 (von 900)
 == neu (Fotos neu, nie trainiert) zweite: richtig 215 falsch 5 nichts 380 (von 600)
+
+=== 0.140.0 (1. November 2026): vier gleiche von sechs Bildern, dieselben zwei Netze, alle drei Sammlungen ===
+python3 evaluate.py ziffernnetz-1.pt,ziffernnetz-2.pt 100   (REQ=4, Vorgabe seit 0.140.0)
+01 alt erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+02 alt erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+02 alt zweite richtig  98 falsch   0 nichts   2 | Einzelbilder richtig 588 falsch   0 von 600 
+04 alt erste  richtig  97 falsch   0 nichts   3 | Einzelbilder richtig 573 falsch   0 von 600 
+04 alt zweite richtig  93 falsch   0 nichts   7 | Einzelbilder richtig 561 falsch   0 von 600 
+06 alt erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+25 alt erste  richtig  61 falsch   0 nichts  39 | Einzelbilder richtig 382 falsch   1 von 600 
+25 alt zweite richtig  71 falsch   0 nichts  29 | Einzelbilder richtig 438 falsch   3 von 600 
+27 alt erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   3 von 600 
+27 alt zweite richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   3 von 600 
+28 alt erste  richtig  26 falsch   0 nichts  74 | Einzelbilder richtig 213 falsch   1 von 600 
+28 alt zweite richtig  36 falsch   0 nichts  64 | Einzelbilder richtig 264 falsch   2 von 600 
+29 alt erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+29 alt zweite richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+32 alt erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+32 alt zweite richtig  57 falsch   0 nichts  43 | Einzelbilder richtig 389 falsch   0 von 600 
+50 neu erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+50 neu zweite richtig  74 falsch   0 nichts  26 | Einzelbilder richtig 445 falsch   0 von 600 
+51 neu erste  richtig  54 falsch   0 nichts  46 | Einzelbilder richtig 346 falsch   0 von 600 
+51 neu zweite richtig  57 falsch   0 nichts  43 | Einzelbilder richtig 349 falsch  11 von 600 
+52 neu erste  richtig   0 falsch   4 nichts  96 | Einzelbilder richtig   0 falsch  65 von 600 falsch: [7.0, 7.0, 7.0]
+52 neu zweite richtig   0 falsch   4 nichts  96 | Einzelbilder richtig   0 falsch  45 von 600 falsch: [7.0, 7.0, 7.0]
+53 neu erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+53 neu zweite richtig  23 falsch   0 nichts  77 | Einzelbilder richtig 152 falsch   0 von 600 
+54 neu erste  richtig   4 falsch   0 nichts  96 | Einzelbilder richtig  50 falsch   0 von 600 
+54 neu zweite richtig   9 falsch   0 nichts  91 | Einzelbilder richtig  73 falsch   1 von 600 
+55 neu erste  richtig  20 falsch   0 nichts  80 | Einzelbilder richtig 150 falsch   3 von 600 
+55 neu zweite richtig  21 falsch   0 nichts  79 | Einzelbilder richtig 185 falsch   0 von 600 
+56 neu erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+57 neu erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+58 neu erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+60 blind erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+60 blind zweite richtig   4 falsch   0 nichts  96 | Einzelbilder richtig  40 falsch   0 von 600 
+61 blind erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig  11 falsch  34 von 600 
+61 blind zweite richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   6 falsch  13 von 600 
+62 blind erste  richtig  13 falsch   0 nichts  87 | Einzelbilder richtig  95 falsch  12 von 600 
+62 blind zweite richtig  14 falsch   0 nichts  86 | Einzelbilder richtig 101 falsch  14 von 600 
+63 blind erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   2 falsch   1 von 600 
+63 blind zweite richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+64 blind erste  richtig   1 falsch   0 nichts  99 | Einzelbilder richtig  94 falsch  41 von 600 
+64 blind zweite richtig   2 falsch   0 nichts  98 | Einzelbilder richtig 105 falsch   0 von 600 
+65 blind erste  richtig  48 falsch   0 nichts  52 | Einzelbilder richtig 322 falsch  11 von 600 
+65 blind zweite richtig  44 falsch   0 nichts  56 | Einzelbilder richtig 305 falsch   8 von 600 
+66 blind erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+67 blind erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+== alt (Fotos die ersten sieben) erste: richtig 184 falsch 0 nichts 716 (von 900)
+== alt (Fotos die ersten sieben) zweite: richtig 355 falsch 0 nichts 345 (von 700)
+== neu (Fotos zweite Sammlung) erste: richtig 78 falsch 4 nichts 818 (von 900)
+== neu (Fotos zweite Sammlung) zweite: richtig 184 falsch 4 nichts 412 (von 600)
+== blind (Fotos dritte Sammlung, blind) erste: richtig 62 falsch 0 nichts 738 (von 800)
+== blind (Fotos dritte Sammlung, blind) zweite: richtig 64 falsch 0 nichts 536 (von 600)
+
+=== Zum Vergleich: drei gleiche (REQ=3, Regel bis 0.139.1), dritte Sammlung ===
+60 blind erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+60 blind zweite richtig   2 falsch   0 nichts  98 | Einzelbilder richtig  33 falsch   0 von 600 
+61 blind erste  richtig   1 falsch   3 nichts  96 | Einzelbilder richtig   5 falsch  20 von 600 falsch: [67.6, 67.6, 67.6]
+61 blind zweite richtig   0 falsch   3 nichts  97 | Einzelbilder richtig   6 falsch  21 von 600 falsch: [67.6, 67.6, 67.6]
+62 blind erste  richtig  27 falsch   0 nichts  73 | Einzelbilder richtig 132 falsch   7 von 600 
+62 blind zweite richtig  25 falsch   0 nichts  75 | Einzelbilder richtig 132 falsch   9 von 600 
+63 blind erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   1 falsch   1 von 600 
+63 blind zweite richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   2 falsch   0 von 600 
+64 blind erste  richtig  11 falsch   6 nichts  83 | Einzelbilder richtig  91 falsch  58 von 600 falsch: [573303.0, 573303.0, 573303.0]
+64 blind zweite richtig  13 falsch   0 nichts  87 | Einzelbilder richtig 118 falsch   0 von 600 
+65 blind erste  richtig  61 falsch   0 nichts  39 | Einzelbilder richtig 339 falsch  13 von 600 
+65 blind zweite richtig  67 falsch   0 nichts  33 | Einzelbilder richtig 350 falsch   6 von 600 
+66 blind erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+67 blind erste  richtig   0 falsch   0 nichts 100 | Einzelbilder richtig   0 falsch   0 von 600 
+== blind (Fotos dritte Sammlung, blind) erste: richtig 100 falsch 9 nichts 691 (von 800)
+== blind (Fotos dritte Sammlung, blind) zweite: richtig 107 falsch 3 nichts 490 (von 600)
+
+=== Verworfen: vier von acht Bildern (REQ=4 WIN=8) ===
+== alt (Fotos die ersten sieben) erste: richtig 219 falsch 0 nichts 681 (von 900)
+== alt (Fotos die ersten sieben) zweite: richtig 397 falsch 0 nichts 303 (von 700)
+== neu (Fotos zweite Sammlung) erste: richtig 93 falsch 15 nichts 792 (von 900)
+== neu (Fotos zweite Sammlung) zweite: richtig 205 falsch 2 nichts 393 (von 600)
+== blind (Fotos dritte Sammlung, blind) erste: richtig 84 falsch 0 nichts 716 (von 800)
+== blind (Fotos dritte Sammlung, blind) zweite: richtig 97 falsch 3 nichts 500 (von 600)

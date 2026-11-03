@@ -24,7 +24,7 @@ def main() -> int:
     fotos = []
     eingetragen = set()
     vorhanden = set()
-    for datei, ordner in (("fotos.json", "fotos"), ("fotos-lcd.json", "fotos-lcd")):
+    for datei, ordner in (("fotos.json", "fotos"), ("fotos-lcd.json", "fotos-lcd"), ("fotos-blind.json", "fotos-blind")):
         sammlung = json.loads((WURZEL / datei).read_text(encoding="utf-8"))["fotos"]
         fotos += sammlung
         eingetragen |= {f["datei"] for f in sammlung}

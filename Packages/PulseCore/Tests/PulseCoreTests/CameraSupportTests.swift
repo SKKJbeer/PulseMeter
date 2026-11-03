@@ -74,6 +74,14 @@ final class CameraSupportTests: XCTestCase {
         XCTAssertEqual(a?.frames, 3)
     }
 
+    /// Die App nimmt die Vorgabe. Drei gleiche reichen dort nicht mehr (0.140.0, gemessen in docs/kamera/README.md).
+    func testDefaultNeedsFourOfSix() {
+        var c = ReadingConsensus()
+        XCTAssertEqual(c.required, 4); XCTAssertEqual(c.window, 6)
+        for _ in 0..<3 { XCTAssertNil(c.add(proposal(14426))) }
+        XCTAssertEqual(c.add(proposal(14426))?.frames, 4)
+    }
+
     func testCompetingNumbersMeanNoAgreement() {
         var c = ReadingConsensus(required: 3, window: 6)
         _ = c.add(proposal(14426)); _ = c.add(proposal(19426)); _ = c.add(proposal(14426))

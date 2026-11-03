@@ -2,9 +2,9 @@
     python3 train.py <Epochen> <Start.pt|-> <train.npz> <Spitzen-LR> <Ausgabe.pt> <val.npz>
 Daten erzeugt `gen.py`. Nach jeder Epoche wird an den echten Fotos gemessen (nur gemessen, nie trainiert).
 """
-import sys, time, numpy as np, torch, torch.nn as nn, torch.nn.functional as F
+import os, sys, time, numpy as np, torch, torch.nn as nn, torch.nn.functional as F
 import synth as L, realtest as RT
-torch.set_num_threads(4); torch.manual_seed(0)
+torch.set_num_threads(int(os.environ.get("THREADS", 4))); torch.manual_seed(int(os.environ.get("SEED", 0)))
 NC = len(L.CHARS) + 1
 
 DILATIONS = (1, 2, 4, 8)

@@ -4499,7 +4499,7 @@ const MeterTextReader = (() => {
    Dieselbe Zahl mehrfach in den letzten Bildern, und keine andere mehr als einmal.
    Geprüft von scripts/check-kamera-js.mjs. */
 const ReadingConsensus = (() => {
-  function neu(required = 3, window = 6) {
+  function neu(required = 4, window = 6) {   // vier von sechs seit 0.140.0, wie ReadingConsensus.standardRequired
     const recent = [];
     const agreement = () => {
       const counts = new Map();
@@ -4611,7 +4611,7 @@ async function fotoLesen(i) {
 
   const px = await fotoPixel(f);
   if (!fotoNetz) fotoNetz = ZIFFERNNETZ_B64.map(b => DigitNet.ladeGewichte(b));
-  const rnd = fotoZufall(7 + i), konsens = ReadingConsensus.neu(3, 6), bereich = fotoBereich(reg);
+  const rnd = fotoZufall(7 + i), konsens = ReadingConsensus.neu(), bereich = fotoBereich(reg);
   const [cx, cy, cw, ch] = f.cropRahmen;
   let letzter = null;
   for (let k = 0; k < 6; k++) {
