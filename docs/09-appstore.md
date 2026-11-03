@@ -208,9 +208,9 @@ Tipp einen Monat an, und du siehst, woher der Unterschied kommt.
 
 ZEHN SEKUNDEN AM ZÄHLER
 
-App öffnen, Zahl eintippen, sichern. Das Datum steht schon auf heute, der
-Ziffernblock ist groß genug, dass man ihn einhändig trifft, auch mit
-klammen Fingern.
+App öffnen, Zahl eintippen, sichern. Der Ziffernblock ist groß genug, dass man
+ihn einhändig trifft, auch mit klammen Fingern. Oder du hältst die Kamera an die
+Anzeige, und Zählora schlägt die Zahl vor.
 
 Und bevor der Wert in deinen Daten landet, sieht die App ihn sich an. Eine Zahl
 unter dem letzten Stand, eine Zahl weit über dem, was bei dir üblich ist: dann
@@ -251,11 +251,10 @@ EIN PAAR EURO, EINMAL. KEIN ABO.
 Kostenlos bleiben: zwei Zähler, so viele Ablesungen du willst, der ganze
 Verlauf, der Vorjahresvergleich und der Export.
 
-Wenn dir später etwas fehlt, kaufst du genau das frei und nicht ein Paket, in
-dem drei Dinge stecken, die du nie brauchst. Je 1,99 € kosten unbegrenzt viele
-Zähler, Zähler mit zwei Zahlen, Kosten und Preise sowie der Verbrauchsbericht
-ohne Schriftzug. Die Erinnerung, wenn ein Zähler dran ist, kostet 0,99 €. Alle fünf
-zusammen 4,99 €. Einmal bezahlt, auf allen deinen Geräten, und es bleibt.
+Wenn dir später etwas fehlt, kaufst du genau das frei. Je 1,99 € kosten
+unbegrenzt viele Zähler, Zähler mit zwei Zahlen, Kosten und Preise, der Bericht
+ohne Schriftzug und das Ablesen mit der Kamera. Die Erinnerung kostet 0,99 €.
+Alle sechs zusammen 4,99 €. Einmal bezahlt, auf allen deinen Geräten.
 
 Den Bericht kannst du dir immer ansehen und ausdrucken. Freischalten musst du
 ihn erst, wenn du ihn jemandem geben willst.

@@ -29,6 +29,9 @@ Der Gründer: „mache du nochmal ausgiebige test als test und quantität expert
   gewesen und ihr Kauf ein Entwurf geblieben.
 - `docs/fassungen/1.6.json`, Neuigkeiten „Für 1.6“ in `docs/09-appstore.md`, Bündeltext „Alle sechs
   Freischaltungen zusammen.“ in `asc-kaeufe.py`.
+- **Store-Beschreibung**: Kamera im Abschnitt „Zehn Sekunden am Zähler“ und in der Preisliste („Alle sechs
+  zusammen 4,99 €“, vorher „Alle fünf“). `asc-kaeufe.py` zieht einen abweichenden Kauftext nach, statt ihn nur
+  beim ersten Mal anzulegen.
 - **Datenschutzerklärung** (Website und `docs/datenschutz.md`): Absatz zur Kamera. Das Bild bleibt auf dem
   Gerät, gespeichert wird nur die übernommene Zahl. Die Preiskarte und die Hilfe auf der Website folgen, wenn
   1.6 im Laden steht (Regel 4a).
