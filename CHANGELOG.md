@@ -9,6 +9,35 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.140.1 — 2026-11-02
+
+**Kamera vor 1.6 geprüft: schlechte Bilder und Rahmen neben der Anzeige**
+
+Der Gründer: „mache du nochmal ausgiebige test als test und quantität experte und bringe es dann live“.
+
+### Hinzugefügt
+- `scripts/kamera-netz/stoertest.py`: dieselbe Messung wie `evaluate.py`, aber jedes Sucherbild verdorben
+  (unscharf, verwackelt, dunkel, flau, schräg, verrauscht, stark komprimiert, Spiegelung). Falsche Vorschläge
+  bleiben bei allen acht unter 0,3 Prozent der Versuche; schlechte Bilder enden in „nichts“.
+- `scripts/kamera-netz/danebentest.py`: Rahmen auf Seriennummer, Strichcode und Aufkleber statt auf der
+  Anzeige. 0 Vorschläge in 2700 Versuchen.
+- Ergebnisse in `docs/kamera/README.md` („Geprüft vor 1.6“) und `netz-messung.txt`.
+
+### Für das Einreichen von 1.6 vorbereitet
+- **`asc-einreichen.py`**: Käufe auf `READY_TO_SUBMIT` gehen beim Einreichen mit zur Prüfung
+  (`inAppPurchaseSubmissions`), nachgesehen wird ohne Schalter. Ohne das wäre die Kamera mit 1.6 in der App
+  gewesen und ihr Kauf ein Entwurf geblieben.
+- `docs/fassungen/1.6.json`, Neuigkeiten „Für 1.6“ in `docs/09-appstore.md`, Bündeltext „Alle sechs
+  Freischaltungen zusammen.“ in `asc-kaeufe.py`.
+- **Store-Beschreibung**: Kamera im Abschnitt „Zehn Sekunden am Zähler“ und in der Preisliste („Alle sechs
+  zusammen 4,99 €“, vorher „Alle fünf“). `asc-kaeufe.py` zieht einen abweichenden Kauftext nach, statt ihn nur
+  beim ersten Mal anzulegen.
+- **Datenschutzerklärung** (Website und `docs/datenschutz.md`): Absatz zur Kamera. Das Bild bleibt auf dem
+  Gerät, gespeichert wird nur die übernommene Zahl. Die Preiskarte und die Hilfe auf der Website folgen, wenn
+  1.6 im Laden steht (Regel 4a).
+
+---
+
 ## 0.140.0 — 2026-11-01
 
 **Die Kamera schlägt erst vor, wenn sie dieselbe Zahl viermal gelesen hat**

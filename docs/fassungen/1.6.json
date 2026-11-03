@@ -1,0 +1,14 @@
+{
+  "fassung": "1.6",
+  "weg": {
+    "titel": "Mit der Kamera ablesen",
+    "text": "Du hältst das Telefon an die Anzeige deines Zählers, Zählora liest die Zahl und schlägt sie vor. Du übernimmst sie oder tippst selbst. Das Bild bleibt auf dem Telefon. Ablesen mit der Kamera kostet einmal 1,99 € und steckt in „Alles freischalten“."
+  },
+  "start": {
+    "titel": "Mit der Kamera ablesen",
+    "absaetze": [
+      "Halt dein Telefon an die Anzeige deines Zählers und leg die Ziffern in den Rahmen. Zählora liest die Zahl und schlägt sie vor, sobald es sie mehrmals gleich gelesen hat. Du siehst sie, bevor du sie übernimmst, und kannst jede Ziffer noch ändern.",
+      "Das Bild verlässt dein Telefon nicht und wird nicht gespeichert. Am besten klappt es bei Anzeigen mit großen Ziffern; wo die Kamera unsicher ist, schlägt sie nichts vor und du tippst wie bisher. Ablesen mit der Kamera kostet einmal 1,99 € und steckt in „Alles freischalten“."
+    ]
+  }
+}

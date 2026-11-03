@@ -303,6 +303,7 @@ Store Connect deshalb nie gesehen.
 | 45 | 0.134.0 | 19.10. 07:15 | ✓ | **Für 1.5.1, mit den neuen Store-Bildern.** „Schritt 1 von 2“ statt „Zählwerk“, „in einem Tag“ statt „in 1 Tagen“, Importspalte „Zahl am Zähler“, Schaufenster-Haushalt für die Bilder (nur mit Startschalter, im Release-Bau wirkungslos). Gebaut von 8547763; am App-Code gleich mit 301600b, dessen CI auf iPhone und iPad grün war. Vorher alle zwölf gesetzten Store-Bilder angesehen. VALID, Testhinweise eingetragen |
 | 46 | 0.138.0 | 23.10. 23:21 | ✓ | **Mit Kamera ablesen** (eigenes Ziffernnetz für Siebensegment-Anzeigen, Rollenzähler über die Texterkennung des Systems, Vorschlag nur zum Übernehmen). Gemessen auf ungesehenen Fotos liest sie etwa 36 % der Versuche richtig; Meterus und Kamstrup liest sie nicht, bei Elster stimmt eine Ziffer nicht. Am echten iPhone noch nicht erprobt. VALID, Testhinweise eingetragen. |
 | 47 | 0.139.1 | 24.10. 11:01 | ✓ | **Die Kamera ist ein Kauf** (0.139.0): `ProductID.camera`, 1,99 €, im Bündel (einzeln 10,94 €, Bündel 4,99 €); ungekauft führt der Knopf „Mit Kamera ablesen“ mit Schloss aufs Kaufblatt, Tippen bleibt frei. Kaufseite zählt die Freischaltungen („Alle sechs“, vorher stand dort „vier“). **0.139.1:** Simulator wird vor dem ersten Oberflächentest gestartet (`testAddingAMeterFromTheMetersTab` 72 s → 36 s), Zeitlimit für die Geräteaufträge 90 statt 60 Minuten. In TestFlight kostet der Kauf nichts. VALID, Testhinweise eingetragen. Lauf 614 war nach zwei Fehlstarts in Lauf 613 grün, der iPad-Job im zweiten Versuch (Limit-Abbruch bei langsamem Läufer) |
+| 48 | 0.140.0 | 03.11. 09:17 | ✓ | **Für 1.6.** Die Kamera schlägt erst vor, wenn sie dieselbe Zahl **viermal von sechs** gelesen hat (vorher dreimal); auf der blinden dritten Fotosammlung fielen falsche Vorschläge von 12 auf 0. Vorführung ohne Kamera wertet das gezeichnete Bild einmal aus (Oberflächentest). Vor dem Einreichen geprüft: acht Arten schlechter Bilder und Rahmen neben der Anzeige (0.140.1, `docs/kamera/README.md`). Gebaut von 03d689b nach grüner CI auf iPhone und iPad (Lauf 41409640478, iPad im zweiten Versuch nach Zeitlimit des Läufers). VALID, Testhinweise eingetragen |
 
 Zeitangaben in UTC. Ein ✗ heißt: hochgeladen wurde nichts, die Nummer ist
 trotzdem verbraucht.
@@ -482,6 +483,33 @@ Ablauf die Veröffentlichung ausdrücklich an — und dafür fehlte
 `permissions: actions: write`. Fünf Stunden lang stand die App im Laden und die
 eigene Seite sagte „Bald im App Store". Behoben in 0.106.6, samt einer Prüfung
 am Ende des Ablaufs, die die **Seite abruft** statt den Push zu zählen.
+
+### Die zehnte, 1.6 — eingereicht am 3. November
+
+**Ablesen mit der Kamera** als sechster Kauf (1,99 €), dazu „Alles freischalten"
+mit allen sechs für 4,99 €. Vom Gründer freigegeben am 2. November („mache du
+nochmal ausgiebige test als test und quantität experte und bringe es dann
+live"); die Prüfungen davor stehen in `docs/kamera/README.md`, Abschnitt
+„Geprüft vor 1.6". Bau 48 (0.140.0), VALID seit 03.11.
+
+Eingereicht um 09:54 UTC (Lauf 41614691123):
+
+    ✓ Bau 48 an die Fassung gehängt
+    ✓ Kauf de.karjoth.pulsemeter.reminders zur Prüfung eingereicht
+    ✓ Kauf de.karjoth.pulsemeter.camera zur Prüfung eingereicht
+    ✓ Fassung 1.6 der Einreichung hinzugefügt
+    Eingereicht. Zustand: WAITING_FOR_REVIEW
+
+**Befund dabei:** Der Kauf „Erinnerung" stand seit seiner Anlage auf
+`READY_TO_SUBMIT`, also nie verkauft. Ein Kauf in diesem Zustand ist ein
+Entwurf; erst `POST v1/inAppPurchaseSubmissions` schickt ihn mit. Das macht
+`asc-einreichen.py` seit 0.140.1 bei jeder Einreichung von selbst
+(`kaeufe_einreichen`).
+
+**Offen:** Der Beschreibungstext von „Alles freischalten" steht bei Apple noch
+auf dem alten Wortlaut. Ein freigegebener Kauf (`ACTIVE`) lässt sich über die
+Schnittstelle nicht ändern (`409 Cannot edit InAppPurchaseLocalization when it
+is in ACTIVE`).
 
 ### Die neunte, 1.5.1 — eingereicht am 19. Oktober
 

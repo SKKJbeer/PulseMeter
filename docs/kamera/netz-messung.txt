@@ -113,3 +113,15 @@ python3 evaluate.py ziffernnetz-1.pt,ziffernnetz-2.pt 100   (REQ=4, Vorgabe seit
 == neu (Fotos zweite Sammlung) zweite: richtig 205 falsch 2 nichts 393 (von 600)
 == blind (Fotos dritte Sammlung, blind) erste: richtig 84 falsch 0 nichts 716 (von 800)
 == blind (Fotos dritte Sammlung, blind) zweite: richtig 97 falsch 3 nichts 500 (von 600)
+
+== 2. November 2026, vor 1.6: stoertest.py 25 und danebentest.py 60 (Netze von 0.138.0, vier von sechs)
+unscharf    richtig  188  falsch   3  nichts  934  (von 1125)  28/zweite: 1x [9.0]; 52/zweite: 1x [7.0]; 62/zweite: 1x [1937.0]
+verwackelt  richtig    3  falsch   1  nichts 1121  (von 1125)  51/zweite: 1x [6.0]
+dunkel      richtig  251  falsch   3  nichts  871  (von 1125)  52/erste: 2x [7.0, 7.0]; 52/zweite: 1x [7.0]
+flau        richtig  248  falsch   2  nichts  875  (von 1125)  52/erste: 1x [7.0]; 52/zweite: 1x [7.0]
+schraeg     richtig  211  falsch   0  nichts  914  (von 1125)  
+rauschen    richtig  159  falsch   1  nichts  965  (von 1125)  52/zweite: 1x [7.0]
+jpeg        richtig  183  falsch   2  nichts  940  (von 1125)  51/zweite: 1x [6.0]; 52/zweite: 1x [7.0]
+spiegelung  richtig   87  falsch   0  nichts 1038  (von 1125)  
+daneben erste : 0 Vorschläge in 1560 Versuchen
+daneben zweite: 0 Vorschläge in 1140 Versuchen

@@ -84,7 +84,7 @@ KAEUFE = [
      "name": "Mit Kamera ablesen",          "text": "Den Zählerstand von der Kamera lesen lassen.",
      "preis": "1.99"},
     {"kennung": "everything",        "referenz": "Alles freischalten",
-     "name": "Alles freischalten",          "text": "Alle fünf Freischaltungen zusammen.",
+     "name": "Alles freischalten",          "text": "Alle sechs Freischaltungen zusammen.",
      "preis": "4.99"},
 ]
 
@@ -194,8 +194,26 @@ def kauf_anlegen(apple: Apple, app_id: str, kauf: dict, produkt_id: str):
 def beschriftung(apple: Apple, kauf_id: str, kauf: dict, produkt_id: str) -> None:
     stand, antwort = apple.holen(f"v2/inAppPurchases/{kauf_id}/inAppPurchaseLocalizations",
                                  **{"limit": 20})
-    if stand == 200 and antwort.json().get("data"):
-        getan.append(f"{produkt_id}: Beschriftung stand schon")
+    vorhanden = antwort.json().get("data") if stand == 200 else None
+    if vorhanden:
+        # **Nachziehen, nicht nur anlegen.** Mit 1.6 kam der sechste Kauf, und das
+        # Bündel hieß im Laden weiter „Alle fünf Freischaltungen". Wer nur anlegt,
+        # wenn nichts dasteht, ändert einen falschen Text nie.
+        ort = next((e for e in vorhanden if e["attributes"].get("locale") == "de-DE"), vorhanden[0])
+        alt = ort["attributes"]
+        # Nur der Text, nicht der Name: Ein Name, der im Laden anders steht, kann von
+        # Hand gesetzt sein, und ihn zu ändern schickte einen freigegebenen Kauf neu
+        # zur Prüfung.
+        if alt.get("description") == kauf["text"]:
+            getan.append(f"{produkt_id}: Beschriftung stand schon")
+            return
+        stand, antwort = apple.aendern(f"v1/inAppPurchaseLocalizations/{ort['id']}", {"data": {
+            "type": "inAppPurchaseLocalizations", "id": ort["id"],
+            "attributes": {"description": kauf["text"]}}})
+        if stand == 200:
+            getan.append(f"{produkt_id}: Beschriftung nachgezogen („{alt.get('description')}“ → „{kauf['text']}“)")
+        else:
+            offen.append(f"{produkt_id}: Beschriftung ließ sich nicht ändern ({stand}) — {kurz(antwort)}")
         return
 
     stand, antwort = apple.anlegen("v1/inAppPurchaseLocalizations", {"data": {
