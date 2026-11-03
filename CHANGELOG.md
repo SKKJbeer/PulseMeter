@@ -23,6 +23,16 @@ Der Gründer: „mache du nochmal ausgiebige test als test und quantität expert
   Anzeige. 0 Vorschläge in 2700 Versuchen.
 - Ergebnisse in `docs/kamera/README.md` („Geprüft vor 1.6“) und `netz-messung.txt`.
 
+### Für das Einreichen von 1.6 vorbereitet
+- **`asc-einreichen.py`**: Käufe auf `READY_TO_SUBMIT` gehen beim Einreichen mit zur Prüfung
+  (`inAppPurchaseSubmissions`), nachgesehen wird ohne Schalter. Ohne das wäre die Kamera mit 1.6 in der App
+  gewesen und ihr Kauf ein Entwurf geblieben.
+- `docs/fassungen/1.6.json`, Neuigkeiten „Für 1.6“ in `docs/09-appstore.md`, Bündeltext „Alle sechs
+  Freischaltungen zusammen.“ in `asc-kaeufe.py`.
+- **Datenschutzerklärung** (Website und `docs/datenschutz.md`): Absatz zur Kamera. Das Bild bleibt auf dem
+  Gerät, gespeichert wird nur die übernommene Zahl. Die Preiskarte und die Hilfe auf der Website folgen, wenn
+  1.6 im Laden steht (Regel 4a).
+
 ---
 
 ## 0.140.0 — 2026-11-01

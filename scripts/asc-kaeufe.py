@@ -84,7 +84,7 @@ KAEUFE = [
      "name": "Mit Kamera ablesen",          "text": "Den Zählerstand von der Kamera lesen lassen.",
      "preis": "1.99"},
     {"kennung": "everything",        "referenz": "Alles freischalten",
-     "name": "Alles freischalten",          "text": "Alle fünf Freischaltungen zusammen.",
+     "name": "Alles freischalten",          "text": "Alle sechs Freischaltungen zusammen.",
      "preis": "4.99"},
 ]
 

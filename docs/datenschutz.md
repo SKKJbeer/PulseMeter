@@ -41,7 +41,14 @@ Diese Angaben werden **auf Ihrem Gerät** gespeichert. Sie werden nicht an uns
 übertragen, und wir haben keine Möglichkeit, sie einzusehen.
 
 **Nicht** verarbeitet werden: Name, Adresse, E-Mail-Adresse, Telefonnummer,
-Standort, Kontakte, Fotos, Gerätekennungen zu Werbezwecken, Nutzungsverhalten.
+Standort, Kontakte, Ihre Fotomediathek, Gerätekennungen zu Werbezwecken,
+Nutzungsverhalten.
+
+**Kamera.** Wenn Sie „Mit Kamera ablesen“ verwenden, wertet Zählora das Bild der
+Kamera **nur auf Ihrem Gerät** aus, um die Ziffern im Rahmen zu lesen. Die Bilder
+werden nicht gespeichert und nicht übertragen; gespeichert wird nur die Zahl, die
+Sie übernehmen. Die Erlaubnis für die Kamera können Sie jederzeit in den
+iOS-Einstellungen widerrufen.
 
 ## 3. Synchronisation über iCloud
 

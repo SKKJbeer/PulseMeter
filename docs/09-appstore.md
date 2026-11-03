@@ -444,6 +444,28 @@ mit Strom, Solar, Gas, Wasser und Wallbox.
 neuen Fassung ändern. Mit ihr gehen zwei kleine Korrekturen, die beim Sichten
 der Bilder aufgefallen sind (0.134.0).
 
+
+Für 1.6:
+
+```
+Zählora liest jetzt mit der Kamera ab. Halt dein Telefon an die Anzeige
+deines Zählers und leg die Ziffern in den Rahmen. Hat Zählora dieselbe Zahl
+mehrmals gelesen, schlägt es sie vor, und du übernimmst sie oder tippst
+selbst. Im Dunkeln hilft die Taschenlampe im Sucher.
+
+Das Bild bleibt auf deinem Telefon und wird nicht gespeichert. Am besten
+klappt es bei Anzeigen mit großen Ziffern. Wo die Kamera unsicher ist,
+schlägt sie nichts vor.
+
+Ablesen mit der Kamera kostet einmal 1,99 € und steckt in „Alles
+freischalten“, auch für alle, die das schon gekauft haben.
+```
+
+**Was der Text nicht verspricht:** dass jede Anzeige gelesen wird. Gemessen
+liest die Kamera auf fremden Fotos nur einen Teil der Versuche richtig, manche
+Anzeigen nie (`docs/kamera/README.md`); „wo sie unsicher ist, schlägt sie
+nichts vor“ ist die Zusage, die hält, und auch die nicht vollkommen (Elster).
+
 ---
 
 ## 2. Einordnung

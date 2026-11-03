@@ -456,6 +456,43 @@ def pflichtfelder(apple: Apple, app_id: str, fassung_id: str) -> list:
     return offen
 
 
+def kaeufe_einreichen(apple: Apple, app_id: str, wirklich: bool) -> None:
+    """Käufe, die bereitstehen, gehen mit zur Prüfung.
+
+    **Warum hier.** Ein neuer Kauf (seit 1.6 die Kamera) ist bis zur Prüfung ein
+    Entwurf: in TestFlight kaufbar, im Laden nicht. Die Fassung allein
+    einzureichen hätte die Kamera in die App gebracht und den Kauf draußen
+    gelassen; der Knopf hätte dann aufs Kaufblatt geführt, und dort stünde
+    nichts. Käufe einer App, die schon im Laden ist, reicht Apple einzeln ein
+    (`inAppPurchaseSubmissions`), nicht als Eintrag der Einreichung.
+
+    Ohne `wirklich` wird nur aufgezählt. Ein Fehlschlag hält die Fassung nicht
+    auf, steht aber als Warnung im Protokoll.
+    """
+    stand, antwort = apple.holen(f"v1/apps/{app_id}/inAppPurchasesV2", **{"limit": 50})
+    if stand != 200:
+        print(f"::warning::Käufe nicht lesbar ({stand}) — {kurz(antwort)}")
+        return
+    for kauf in antwort.json().get("data", []):
+        kennung = feld(kauf, "productId")
+        zustand = feld(kauf, "state")
+        if zustand != "READY_TO_SUBMIT":
+            print(f"  · Kauf {kennung}: {zustand}")
+            continue
+        if not wirklich:
+            print(f"  · Kauf {kennung}: READY_TO_SUBMIT — geht beim Einreichen mit")
+            continue
+        s, a = apple.anlegen("v1/inAppPurchaseSubmissions", {"data": {
+            "type": "inAppPurchaseSubmissions",
+            "relationships": {"inAppPurchaseV2": {
+                "data": {"type": "inAppPurchases", "id": kauf["id"]}}},
+        }})
+        if s in (200, 201):
+            print(f"  ✓ Kauf {kennung} zur Prüfung eingereicht")
+        else:
+            print(f"::warning::Kauf {kennung} ließ sich nicht einreichen ({s}) — {kurz(a)}")
+
+
 def einreichen(apple: Apple, app_id: str, fassung) -> int:
     zustand = feld(fassung, "appStoreState") or feld(fassung, "appVersionState")
     print(f"::notice::Fassung {feld(fassung, 'versionString')} — {zustand}")
@@ -478,6 +515,8 @@ def einreichen(apple: Apple, app_id: str, fassung) -> int:
     if not preis_setzen(apple, app_id):
         print("::error::Ohne Preisstufe lässt Apple keine Prüfung zu.")
         return 1
+
+    kaeufe_einreichen(apple, app_id, wirklich=True)
 
     # **Eine vorbereitete wiederverwenden statt eine zweite anzulegen.** Die
     # Fassung darf nur in einer Einreichung hängen; eine zweite anzulegen
@@ -682,6 +721,7 @@ def main() -> int:
     schon = laufende(apple, app_id)
     print(f"Fassung {feld(fassung, 'versionString')}: {zustand}")
     print(f"Bei der Prüfung: {feld(schon, 'state') if schon else 'nichts'}")
+    kaeufe_einreichen(apple, app_id, wirklich=False)
     print("\nZum Einreichen: --einreichen · zum Zurückziehen: --zurueckziehen")
     return 0
 
