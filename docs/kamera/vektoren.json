@@ -1323,5 +1323,80 @@
    ],
    "erwartet": null
   }
+ ],
+ "zuordnung": [
+  {
+   "name": "ein-zaehlwerk",
+   "wert": "12345",
+   "andere": [],
+   "erwartet": null
+  },
+  {
+   "name": "weit-weg-von-einspeisung",
+   "wert": "12345",
+   "andere": [
+    [
+     "980",
+     "1100"
+    ]
+   ],
+   "erwartet": null
+  },
+  {
+   "name": "solar-nah-beieinander",
+   "wert": "5210",
+   "andere": [
+    [
+     "5100",
+     "5400"
+    ]
+   ],
+   "erwartet": 0
+  },
+  {
+   "name": "anderes-nie-abgelesen",
+   "wert": "12345",
+   "andere": [
+    null
+   ],
+   "erwartet": 0
+  },
+  {
+   "name": "zweites-anderes-passt",
+   "wert": "500",
+   "andere": [
+    [
+     "10000",
+     "11000"
+    ],
+    [
+     "450",
+     "600"
+    ]
+   ],
+   "erwartet": 1
+  },
+  {
+   "name": "rand-gehoert-dazu",
+   "wert": "1100",
+   "andere": [
+    [
+     "980",
+     "1100"
+    ]
+   ],
+   "erwartet": 0
+  },
+  {
+   "name": "knapp-darueber",
+   "wert": "1100.1",
+   "andere": [
+    [
+     "980",
+     "1100"
+    ]
+   ],
+   "erwartet": null
+  }
  ]
 }
