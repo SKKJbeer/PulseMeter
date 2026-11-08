@@ -9,6 +9,20 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.140.2 — 2026-11-08
+
+**Website nennt die Kamera als Kauf (1.6 im Laden seit 3. November, 20:32 UTC)**
+
+### Geändert
+- Preise auf der Startseite: Karte „Mit Kamera ablesen“ (1,99 €); das Bündel heißt dort wie in der App
+  und im Laden „Alles freischalten“, „alle sechs“, einzeln 10,94 €.
+- Hilfe, „Was kostet was?“: Kamera bei den Freischaltungen für je 1,99 €, „Alle sechs zusammen“.
+- `check-versprechen.py`: `NOCH_NICHT_IM_LADEN` ist leer, die Prüfung verlangt jetzt sechs und 10,94 €.
+
+Nur Website und Prüfskript, kein neuer Bau.
+
+---
+
 ## 0.140.1 — 2026-11-02
 
 **Kamera vor 1.6 geprüft: schlechte Bilder und Rahmen neben der Anzeige**
