@@ -16,9 +16,11 @@ name: Zahlen
 # Der Zeitplan liegt spät genug, dass der Tagesbericht des Vortags fertig ist;
 # auf die Minute ist bei GitHub ohnehin kein Verlass (siehe live-schalten.yml).
 
+# **Zeitplan aus seit 8. November.** Der Schlüssel darf die Berichte nicht lesen
+# (403), und der Gründer schaut die Zahlen selbst in App Store Connect an
+# (Entscheidung vom 8. November). Ein täglich roter Lauf hätte nur Lärm gemacht.
+# Mit einem Schlüssel der Rolle Admin ließe sich der Zeitplan wieder einsetzen.
 on:
-  schedule:
-    - cron: "0 9 * * *"
   workflow_dispatch:
     inputs:
       rueckwirkend:

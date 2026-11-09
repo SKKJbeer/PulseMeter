@@ -2799,8 +2799,17 @@ final class LaunchTests: XCTestCase {
 
         // Eine Ziffer ändern heißt: selbst abgelesen. Der Hinweis geht. Gelöscht statt getippt:
         // Bei voller Anzeige ändert eine neue Ziffer nichts, Löschen immer.
-        app.buttons["Löschen"].tap()
+        // **Erst muss der Sucher ganz weg sein.** Der Hinweis steht schon im Ziffernblock, während
+        // der Sucher noch hinausgleitet; ein Tippen in diesem Moment trifft den Sucher und geht
+        // verloren (iPhone, Lauf 42492310609: Hinweis blieb, weil „Löschen“ nie ankam).
         let weg = NSPredicate(format: "exists == false")
+        expectation(for: weg, evaluatedWith: take)
+        waitForExpectations(timeout: 40)
+        let loeschen = app.buttons["Löschen"]
+        XCTAssertTrue(loeschen.waitForExistence(timeout: erscheint), "Der Ziffernblock hat keinen Knopf „Löschen“")
+        expectation(for: NSPredicate { el, _ in (el as? XCUIElement)?.isHittable ?? false }, evaluatedWith: loeschen)
+        waitForExpectations(timeout: erscheint)
+        loeschen.tap()
         expectation(for: weg, evaluatedWith: hint)
         waitForExpectations(timeout: erscheint)
     }
