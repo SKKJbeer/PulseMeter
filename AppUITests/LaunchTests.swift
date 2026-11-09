@@ -203,6 +203,15 @@ final class LaunchTests: XCTestCase {
         return "\(was): \(element.frame), hittable=\(element.isHittable)"
     }
 
+    /// Wartet, bis `element` die Bedingung erfüllt, ohne dabei schon einen
+    /// Fehlschlag zu melden — der Aufrufer entscheidet, ob ein zweiter Tipp
+    /// folgt oder ob es ein Fehler ist.
+    private func warte(bis bedingung: NSPredicate, an element: XCUIElement,
+                       timeout: TimeInterval = 10) -> Bool {
+        let erwartung = XCTNSPredicateExpectation(predicate: bedingung, object: element)
+        return XCTWaiter().wait(for: [erwartung], timeout: timeout) == .completed
+    }
+
     /// Tippt einen Knopf und **prüft nach, dass sich das Blatt geöffnet hat**.
     ///
     /// **Dieselbe Geschichte wie beim Tabwechsel, eine Stufe später.** In
@@ -1617,16 +1626,26 @@ final class LaunchTests: XCTestCase {
         XCTAssertTrue(back.exists, "Aus dem zweiten Zählwerk muss ein Weg zurück führen")
         XCTAssertTrue(app.buttons["Abbrechen"].exists,
                       "„Abbrechen“ muss neben „Zurück“ erreichbar bleiben")
-        back.tap()
-
         // **Am Inhalt geprüft, nicht am Dasein.** Die Zeile trägt jetzt eine
         // feste Kennung und ist deshalb immer da — nur was drinsteht, wechselt.
         // `waitForExistence` allein wäre hier seit dieser Fassung eine Prüfung,
         // die nichts mehr prüft.
-        let zurueckAngekommen = expectation(
-            for: NSPredicate(format: "label BEGINSWITH 'Bezug'"),
-            evaluatedWith: schritt)
-        wait(for: [zurueckAngekommen], timeout: erscheint)
+        //
+        // Ein verlorener Tipp braucht einen zweiten Tipp, keine längere Uhr
+        // (die Lehre aus `oeffne`). Auf dem iPad-Läufer der CI ist „Zurück"
+        // zweimal hintereinander ins Leere gegangen (Lauf 42591283481): Die
+        // Zeile blieb auf „Einspeisung", der Knopf stand weiter da. Der zweite
+        // Tipp kommt nur, wenn der Knopf noch treffbar ist, also der erste
+        // nachweislich nichts bewirkt hat.
+        let istBezug = NSPredicate(format: "label BEGINSWITH 'Bezug'")
+        back.tap()
+        if !warte(bis: istBezug, an: schritt), back.exists, back.isHittable {
+            print("Zurück: der erste Tipp kam nicht an, zweiter Versuch.")
+            back.tap()
+        }
+        XCTAssertTrue(warte(bis: istBezug, an: schritt),
+                      "Zurück führt nicht zum Bezug — gelesen: \(schritt.label). "
+                      + "Zu sehen war: \(beschriftungen(in: app))")
         XCTAssertTrue(next.exists, "Beim ersten Zählwerk muss wieder „Weiter“ dastehen")
         // Der eingetippte Wert muss wieder dastehen. „Weiter" ist nur
         // freigeschaltet, wenn eine Zahl im Zählwerk steht — bliebe es

@@ -32,6 +32,11 @@ das nicht abfing.
 - `docs/kamera/stufe-2.md`: das Konzept für 1.7. Als Nächstes die Kennzahl neben dem Wert lesen
   und die Zahl dem richtigen Zählwerk zuordnen; vorher wird gemessen, ob das Netz sie liest.
 
+### Prüfungen
+- Oberflächentests auf dem iPad-Läufer ruhiger: Der Kameratest tippt „Löschen“ erst, wenn der
+  Knopf stillsteht; der Import bekommt 60 s; „Zurück“ beim Zähler mit zwei Zahlen wird ein
+  zweites Mal getippt, wenn der erste Tipp nachweislich nichts bewirkt hat.
+
 ---
 
 ## 0.140.2 — 2026-11-08
