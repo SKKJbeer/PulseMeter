@@ -971,7 +971,10 @@ final class LaunchTests: XCTestCase {
         app.launchArguments = ["-pulse-empty", "-pulse-frei", "-pulse-import"]
         app.launch()
         let einlesen = app.buttons["import-einlesen"]
-        XCTAssertTrue(einlesen.waitForExistence(timeout: 15),
+        // 60 statt 15 Sekunden: Auf dem iPad-Läufer brauchte der Test 188 Sekunden, und die
+        // Meldung zeigte den Knopf „10 Stände einlesen“, nur zu spät (Lauf 42580061417).
+        // Das Blatt kommt also, der Läufer ist langsam.
+        XCTAssertTrue(einlesen.waitForExistence(timeout: 60),
                       "Das Blatt zum Einlesen kam nicht. Zu sehen war: " + beschriftungen(in: app))
         XCTAssertTrue(einlesen.label.hasPrefix("10 Stände"),
                       "Zwei Zähler sind frei, also zweimal fünf Stände: \(einlesen.label)")
