@@ -98,7 +98,7 @@ einzeln_im_quelltext = re.findall(r"\.(\w+)", block.group(1)) if block else []
 # „alle fünf" und „8,95 €", und das ist richtig. **Beim Einreichen von 1.6 kommt der Eintrag
 # hier heraus**, und die Prüfung verlangt dann „alle sechs" und „10,94 €" auf beiden Seiten
 # (`docs/06-uebergabe.md`, Punkt „Kamera", und `CHANGELOG.md` 0.139.0).
-NOCH_NICHT_IM_LADEN = {"camera"}
+NOCH_NICHT_IM_LADEN: set[str] = set()   # leer seit 1.6 (Kamera im Laden)
 einzeln = [p for p in einzeln_im_quelltext if p not in NOCH_NICHT_IM_LADEN]
 
 grenze = re.search(r"freeMeterLimit = (\d+)", quelle)
