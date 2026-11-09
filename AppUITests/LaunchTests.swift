@@ -2809,9 +2809,22 @@ final class LaunchTests: XCTestCase {
         XCTAssertTrue(loeschen.waitForExistence(timeout: erscheint), "Der Ziffernblock hat keinen Knopf „Löschen“")
         expectation(for: NSPredicate { el, _ in (el as? XCUIElement)?.isHittable ?? false }, evaluatedWith: loeschen)
         waitForExpectations(timeout: erscheint)
+        // **Und der Knopf muss stillstehen.** Nach dem Übernehmen schieben Hinweis und Prüfzeile
+        // den Ziffernblock animiert nach unten. Ein Tippen rechnet seinen Punkt aus dem Rahmen
+        // von eben; wandert der Knopf dazwischen, landet es daneben, und „Löschen“ kommt nie an.
+        // Das fiel auch nach dem Warten auf den Sucher noch (Lauf 42574683486, iPhone).
+        var vorher = loeschen.frame
+        for _ in 0..<20 {
+            Thread.sleep(forTimeInterval: 0.25)
+            let jetzt = loeschen.frame
+            if jetzt == vorher { break }
+            vorher = jetzt
+        }
         loeschen.tap()
-        expectation(for: weg, evaluatedWith: hint)
-        waitForExpectations(timeout: erscheint)
+        let nachHinweis = XCTNSPredicateExpectation(predicate: weg, object: hint)
+        if XCTWaiter().wait(for: [nachHinweis], timeout: erscheint) != .completed {
+            XCTFail("Nach „Löschen“ steht der Kamera-Hinweis noch. Zu sehen war: \(beschriftungen(in: app))")
+        }
     }
 
     /// Ohne den Kauf führt der Knopf aufs Kaufblatt der Kamera, nicht in den Sucher.
