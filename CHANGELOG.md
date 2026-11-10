@@ -9,7 +9,7 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
-## 0.142.0 — 2026-11-09
+## 0.144.0 — 2026-11-10
 
 **Kamera: keine Zahl des anderen Zählwerks (erster Schritt zu 1.7)**
 
@@ -36,6 +36,58 @@ das nicht abfing.
 - Oberflächentests auf dem iPad-Läufer ruhiger: Der Kameratest tippt „Löschen“ erst, wenn der
   Knopf stillsteht; der Import bekommt 60 s; „Zurück“ beim Zähler mit zwei Zahlen wird ein
   zweites Mal getippt, wenn der erste Tipp nachweislich nichts bewirkt hat.
+
+---
+
+## 0.142.0 — 2026-11-10
+
+**CloudKit-Schema ohne Mac: aus dem Modell abgeleitet, per CI hochgeladen**
+
+In der CloudKit-Konsole steht unter Development nur der Typ `Users`, kein
+einziger von Zählora. Der Abgleich hat also nie etwas hochgeladen, auch nicht
+aus einem Entwicklungsbau. Der Weg aus 0.141.0 braucht einen Mac mit
+angemeldetem Simulator; dieser hier nicht.
+
+### Hinzugefügt
+- `PulseStore.cloudKitSchemaText()`: das Schema in Apples Schemasprache,
+  abgeleitet aus demselben `NSManagedObjectModel`, das SwiftData für den
+  Abgleich baut.
+- `cloudkit/schema.ckdb` und `CloudKitSchemaTests`: Datei und Modell müssen
+  gleich sein, sonst rot, mit dem richtigen Inhalt in der Meldung.
+- `.github/workflows/cloudkit-schema.yml`: Modus `stand` liest beide Umgebungen,
+  `hochladen` prüft bei Apple und lädt nach Development. Das Übertragen in die
+  Produktion bleibt ein Knopf in der Konsole.
+
+### Geändert
+- `PulseStore.modelTypes`: die Datensatzarten an einer Stelle für Speicher,
+  Schema und Anlegen.
+
+Im Auslieferungsbau ändert sich nichts.
+
+---
+
+## 0.141.0 — 2026-11-10
+
+**iCloud-Abgleich: Das Schema kommt in die Produktion**
+
+Ein Käufer meldete am 14. Oktober, dass er seine Zähler nur auf einem Gerät
+sieht (die Mail lag bis heute im Spam). Wahrscheinlicher Grund: Laden und
+TestFlight sprechen mit der Produktionsumgebung von CloudKit, und dort stand nie
+ein Schema. CloudKit lehnt dann jedes Hochladen ab, SwiftData sichert lokal
+weiter und meldet nichts. Noch nicht gemessen, aber im Repository gibt es
+keinen Schritt, der das Schema je übertragen hätte.
+
+### Hinzugefügt
+- `PulseStore.cloudKitSchemaAnlegen()` (nur Debug): legt das Schema mit
+  `initializeCloudKitSchema()` in der Entwicklungsumgebung an, in einer eigenen
+  Datei, ohne den Bestand anzufassen. Startschalter `-pulse-cloudkit-schema`.
+- `scripts/cloudkit-schema.sh`: baut für einen Simulator, startet mit dem
+  Schalter und sagt, was danach in der CloudKit-Konsole zu tun ist.
+- `docs/12-auslieferung.md` 3.8, Baukasten „CloudKit hat zwei Umgebungen“.
+- Roadmap „Aus Rückmeldungen von Käufern“: Abgleich, Tarifwechsel mit Datum,
+  Gas auch in kWh.
+
+Im Auslieferungsbau ändert sich nichts.
 
 ---
 

@@ -52,6 +52,29 @@ struct PulseMeterApp: App {
         // Deshalb ist die zweite Stufe jetzt derselbe Speicher ohne Abgleich.
         // Auf dem Gerät greift die erste, im Simulator die zweite, und
         // flüchtig wird es erst, wenn beides nicht geht.
+        // Nur mit `scripts/cloudkit-schema.sh`: legt das CloudKit-Schema in
+        // der Entwicklungsumgebung an und beendet sich. Im Auslieferungsbau
+        // gibt es weder den Schalter noch die Funktion dahinter.
+        //
+        // Das Ergebnis geht in eine Datei im Zwischenordner der App, nicht in
+        // eine Protokollausgabe (`check-sicherheit.sh` verbietet `print`).
+        // Das Skript liest sie aus dem Simulator.
+        #if DEBUG
+        if Startschalter.gesetzt("-pulse-cloudkit-schema") {
+            let ergebnis: String
+            do {
+                try PulseStore.cloudKitSchemaAnlegen()
+                ergebnis = "CLOUDKIT-SCHEMA: angelegt\n"
+            } catch {
+                ergebnis = "CLOUDKIT-SCHEMA-FEHLER: \(error)\n"
+            }
+            let datei = FileManager.default.temporaryDirectory
+                .appendingPathComponent("cloudkit-schema-ergebnis.txt")
+            try? ergebnis.write(to: datei, atomically: true, encoding: .utf8)
+            exit(0)
+        }
+        #endif
+
         if let store = try? PulseStore.container(cloudKit: true) {
             container = store
         } else if let lokal = try? PulseStore.container(cloudKit: false) {

@@ -69,7 +69,7 @@ und stehen nirgends öffentlich (siehe „Öffentlich und intern" unten).
 | **1.5** | 14.10. | **Import aus einer Tabelle**, für Umsteiger mit Excel-Listen oder anderen Apps · **Ausblick immer** (0.130.0, 0.131.0): „Erwartet für <Jahr>" auf jeder Karte und im Verlauf in jeder Ansicht, Monatsausblick auch ohne Ablesung im Monat | **im Laden** seit 14.10., Bau 44, vom Gründer vorgezogen (geplant war der 04.11.) |
 | **1.5.1** | 19.10. | **Neue Bilder im Laden:** gesetzt mit Überschrift, ein voller Haushalt (Strom mit Solar, Gas, Wasser, Warmwasser, Wallbox) · „Schritt 1 von 2" statt „Zählwerk" | **im Laden** seit 19.10., 22:04 UTC, Bau 45 |
 | **1.6** | 18.11. | **Kamera:** Sucher mit Rahmen, die App schlägt den Stand vor, du bestätigst. Eigener Kauf 1,99 €, im Bündel enthalten | **Gebaut in 0.138.0** (statt Foto-Auswahl gleich der Sucher mit Rahmen, Taschenlampe und Hinweisen), mit eigenem **Ziffernnetz** für LCD. **Gemessen:** zwei Netze, die sich einig sein müssen; auf bekannten Fotos 0 Fehler, auf einer zweiten, nie trainierten Sammlung 5 Fehler in 600 Versuchen (ein Foto) und nur jeder dritte Versuch liest richtig (`docs/kamera/README.md`). Vor dem Einreichen geprüft mit acht Arten schlechter Bilder und Rahmen neben der Anzeige (0.140.1). **Eingereicht am 3. November** mit Bau 48, Käufe Kamera und Erinnerung gingen mit. Offen: Fotos von Testern für Meterus und Kamstrup |
-| **1.7** | 02.12. | **Kamera, Stufe 2:** zwei Zählwerke auf einem Bild (Tag/Nacht, Bezug/Einspeisung), Kennzahl `1.8.0` zuordnen | groß. Konzept in `docs/kamera/stufe-2.md`. **0.142.0:** keine Zahl, die auch zum anderen Zählwerk passt. Offen: Kennzahl lesen, vorher messen |
+| **1.7** | 02.12. | **Kamera, Stufe 2:** zwei Zählwerke auf einem Bild (Tag/Nacht, Bezug/Einspeisung), Kennzahl `1.8.0` zuordnen | groß. Konzept in `docs/kamera/stufe-2.md`. **0.144.0:** keine Zahl, die auch zum anderen Zählwerk passt. Offen: Kennzahl lesen, vorher messen |
 | **1.8** | 16.12. | offen. Der Jahreswechsel stand hier und ist am 7. Oktober gestrichen | — |
 | **1.9** | 13.01. | Puffer, und was die Zahlen bis dahin sagen | — |
 
@@ -80,6 +80,17 @@ und stehen nirgends öffentlich (siehe „Öffentlich und intern" unten).
 | Neue Bilder im Laden: Rundgang, später Kamera. Dazu Apples A/B-Test der Produktseite mit zwei Bildsätzen | mit 1.4 und mit 1.6 |
 | Eine Ratgeberseite je Woche, nach Saison: Heizkosten im Herbst, „Zählerstand ablesen" als nächste (die Suche, auf die auch der neue Name zielt), „Nachzahlung prüfen" im Januar | laufend |
 | Messen: Berichtsschlüssel für App Store Connect und Kampagnenlink (`13-zugaenge.md`, Punkte 5 und 6) | **vor 1.5**, sonst bleibt offen, ob irgendetwas davon wirkt |
+
+### Aus Rückmeldungen von Käufern
+
+Erste ausführliche Mail eines Käufers, 14. Oktober (lag bis 10. November im
+Spam). Er hat alles freigeschaltet und kommt von einer Excel-Liste.
+
+| Was | Stand |
+|---|---|
+| **iCloud-Abgleich geht im Laden nicht.** Vermutlich nie: Das CloudKit-Schema stand nie in der Produktion (`12-auslieferung.md`, 3.8) | **Fehler, vor allem anderen.** Werkzeug in 0.141.0, Übertragen in der Konsole offen. Danach eine sichtbare Zeile, ob der Abgleich klappt |
+| **Tarifwechsel mit Datum:** neuer Preis ab einem Tag, alte Kosten bleiben | Lücke. Heute ein Preis je Zähler, eine Änderung rechnet rückwirkend. Kandidat für 1.8, vor der Abrechnungszeit im Januar |
+| **Gas auch in kWh:** Verbrauch mit Zustandszahl und Brennwert umgerechnet, damit Gas und Wärmepumpe vergleichbar sind | Wunsch. Die Werte stehen schon am Zähler, nur die Anzeige fehlt. Kandidat für 1.8 |
 
 ### Die Website als Wachstumskanal: Rechner
 

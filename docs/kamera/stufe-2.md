@@ -1,6 +1,6 @@
 # Kamera, Stufe 2: zwei Zahlen an einem Zähler (für 1.7)
 
-Stand 8. November 2026. Konzept vor dem ersten Code. **Umgesetzt in 0.142.0:** die Regel über den Bereich (`RegisterChoice`). Offen: die Kennzahl lesen. Es baut auf Stufe 1 auf
+Stand 8. November 2026. Konzept vor dem ersten Code. **Umgesetzt in 0.144.0:** die Regel über den Bereich (`RegisterChoice`). Offen: die Kennzahl lesen. Es baut auf Stufe 1 auf
 (`README.md` in diesem Ordner, im Laden seit 1.6).
 
 ## Die Lage
