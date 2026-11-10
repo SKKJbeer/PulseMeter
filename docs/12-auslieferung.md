@@ -245,6 +245,13 @@ ein Käufer hat es am 14. Oktober gemeldet. Einmal je Änderung am Datenmodell:
 2. https://icloud.developer.apple.com → `iCloud.de.karjoth.pulsemeter` →
    Schema → „Deploy Schema Changes…" → Deploy.
 
+**Ohne Mac (seit 0.142.0):** Actions › „CloudKit-Schema“, Modus `hochladen`.
+Der Lauf lädt `cloudkit/schema.ckdb` mit `cktool` nach Development und braucht
+dafür den Verwaltungsschlüssel `CLOUDKIT_MANAGEMENT_TOKEN` (CloudKit-Konsole ›
+Settings › Tokens & Keys). Die Datei wird aus dem Modell abgeleitet und von
+`CloudKitSchemaTests` festgehalten. Schritt 2 bleibt in der Konsole, das geht
+auch am Telefon.
+
 Ein neuer Bau ist dafür nicht nötig. Woran man es erkennt: In der Konsole
 stehen unter Production die Typen `CD_ReadingRecord`, `CD_MeteringPointRecord`
 und die übrigen sechs. Die Begründung steht im Baukasten.

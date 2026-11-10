@@ -1,0 +1,95 @@
+# CloudKit-Schema in die Entwicklungsumgebung laden, ohne Mac am Schreibtisch.
+#
+# Warum: Laden- und TestFlight-Bauten sprechen mit der Produktionsumgebung von
+# CloudKit. Dort kennt CloudKit nur Typen, die aus der Entwicklungsumgebung
+# übertragen wurden. Bis 0.142.0 stand in keiner von beiden ein Zählora-Typ,
+# und der Abgleich zwischen Geräten lief nie (Käufermeldung 14.10.).
+#
+# Ablauf:
+#   1. Modus „stand“: liest beide Umgebungen aus, ändert nichts.
+#   2. Modus „hochladen“: prüft cloudkit/schema.ckdb und lädt es nach
+#      Development. Die Datei hält CloudKitSchemaTests mit dem Modell gleich.
+#   3. Von Hand in der CloudKit-Konsole: Schema → „Deploy Schema Changes…“.
+#      Dafür bietet Apple keine Schnittstelle, auch cktool nicht.
+#
+# Geheimnisse: CLOUDKIT_MANAGEMENT_TOKEN (CloudKit-Konsole › Settings ›
+# Tokens & Keys › Management Token), ASC_TEAM_ID (steht schon).
+name: CloudKit-Schema
+
+on:
+  workflow_dispatch:
+    inputs:
+      modus:
+        description: "stand = nur lesen, hochladen = nach Development laden"
+        required: true
+        default: stand
+        type: choice
+        options: [stand, hochladen]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudkit-schema
+  cancel-in-progress: false
+
+jobs:
+  schema:
+    runs-on: macos-15
+    timeout-minutes: 30
+    env:
+      CONTAINER: iCloud.de.karjoth.pulsemeter
+      TEAM: ${{ secrets.ASC_TEAM_ID }}
+      CLOUDKIT_MANAGEMENT_TOKEN: ${{ secrets.CLOUDKIT_MANAGEMENT_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Zugänge da?
+        run: |
+          fehlt=""
+          [ -n "$TEAM" ] || fehlt="$fehlt ASC_TEAM_ID"
+          [ -n "$CLOUDKIT_MANAGEMENT_TOKEN" ] || fehlt="$fehlt CLOUDKIT_MANAGEMENT_TOKEN"
+          if [ -n "$fehlt" ]; then
+            echo "::error::Es fehlt:$fehlt. Den Verwaltungsschlüssel legt die CloudKit-Konsole an (Settings › Tokens & Keys › Management Tokens), hinterlegt wird er unter Settings › Secrets › Actions."
+            exit 1
+          fi
+          xcrun cktool version
+
+      # Apple beschreibt `save-token` nur als Eingabe von Hand. Über die
+      # Standardeingabe geht es trotzdem, und der Schlüssel landet nicht in
+      # der Prozessliste.
+      - name: Schlüssel hinterlegen
+        run: printf '%s\n' "$CLOUDKIT_MANAGEMENT_TOKEN" | xcrun cktool save-token --type management
+
+      # Erst die Datei gegen das Modell, dann gegen Apple. Ein Feld, das hier
+      # fehlt, fehlt sonst später in der Produktion.
+      - name: Datei passt zum Modell
+        run: swift test --package-path Packages/PulseData --filter CloudKitSchemaTests
+
+      - name: Stand vorher
+        run: |
+          for umgebung in development production; do
+            echo "── $umgebung"
+            xcrun cktool export-schema --team-id "$TEAM" --container-id "$CONTAINER" \
+              --environment "$umgebung" --output-file "/tmp/$umgebung.ckdb"
+            grep -E "RECORD TYPE" "/tmp/$umgebung.ckdb" || echo "(keine Typen)"
+          done
+
+      - name: Prüfen bei Apple
+        if: inputs.modus == 'hochladen'
+        run: |
+          xcrun cktool validate-schema --team-id "$TEAM" --container-id "$CONTAINER" \
+            --environment development --file cloudkit/schema.ckdb
+
+      - name: Nach Development laden
+        if: inputs.modus == 'hochladen'
+        run: |
+          xcrun cktool import-schema --team-id "$TEAM" --container-id "$CONTAINER" \
+            --environment development --file cloudkit/schema.ckdb
+          xcrun cktool export-schema --team-id "$TEAM" --container-id "$CONTAINER" \
+            --environment development --output-file /tmp/nachher.ckdb
+          echo "── development nachher"
+          grep -E "RECORD TYPE" /tmp/nachher.ckdb
+          n=$(grep -c "RECORD TYPE CD_" /tmp/nachher.ckdb || true)
+          [ "$n" -eq 8 ] || { echo "::error::Erwartet 8 Zählora-Typen in Development, gefunden $n."; exit 1; }
+          echo "Jetzt in der CloudKit-Konsole: Schema › Deploy Schema Changes… › Deploy" >> "$GITHUB_STEP_SUMMARY"

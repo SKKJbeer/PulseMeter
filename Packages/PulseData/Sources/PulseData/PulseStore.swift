@@ -12,7 +12,14 @@ public enum PulseStore {
     /// statische Konstante wäre unter Swift 6 global geteilter Zustand. Der
     /// Aufbau ist billig und geschieht ohnehin nur beim Start.
     public static var schema: Schema {
-        Schema([
+        Schema(modelTypes)
+    }
+
+    /// Die Datensatzarten, an einer Stelle. Der Speicher, das CloudKit-Schema
+    /// und sein Anlegen lesen alle drei hier, sonst fehlt eine neue Art beim
+    /// Abgleich, ohne dass es jemand merkt.
+    public static var modelTypes: [any PersistentModel.Type] {
+        [
             PropertyRecord.self,
             RentalUnitRecord.self,
             MeteringPointRecord.self,
@@ -21,7 +28,7 @@ public enum PulseStore {
             ReadingRecord.self,
             TariffRecord.self,
             BillingPeriodRecord.self
-        ])
+        ]
     }
 
     public enum StoreError: Error {
@@ -84,17 +91,7 @@ extension PulseStore {
     /// Entwicklungsumgebung, und nur dort darf das Schema wachsen.
     /// Aufgerufen von `scripts/cloudkit-schema.sh`.
     public static func cloudKitSchemaAnlegen() throws {
-        let typen: [any PersistentModel.Type] = [
-            PropertyRecord.self,
-            RentalUnitRecord.self,
-            MeteringPointRecord.self,
-            RegisterRecord.self,
-            MeterDeviceRecord.self,
-            ReadingRecord.self,
-            TariffRecord.self,
-            BillingPeriodRecord.self
-        ]
-        guard let modell = NSManagedObjectModel.makeManagedObjectModel(for: typen) else {
+        guard let modell = NSManagedObjectModel.makeManagedObjectModel(for: modelTypes) else {
             throw StoreError.containerUnavailable(underlying: CocoaError(.featureUnsupported))
         }
         let datei = FileManager.default.temporaryDirectory
