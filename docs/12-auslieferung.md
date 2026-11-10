@@ -233,6 +233,22 @@ Vier getrennte Dinge, und jedes einzelne hält den Bau unsichtbar:
    Das war bei uns der letzte Stolperstein.
 4. Den **Bau der Gruppe zuweisen**.
 
+### 3.8 Das CloudKit-Schema muss von Hand in die Produktion
+
+Der iCloud-Abgleich lief seit 0.108.0 nur in der Entwicklungsumgebung. Laden
+und TestFlight sprechen mit der Produktion, und dort kennt CloudKit nur die
+Datensatztypen, die jemand übertragen hat. Das hat bis 0.141.0 niemand getan;
+ein Käufer hat es am 14. Oktober gemeldet. Einmal je Änderung am Datenmodell:
+
+1. `scripts/cloudkit-schema.sh` am Mac, Simulator in iCloud angemeldet. Am Ende
+   steht „CLOUDKIT-SCHEMA: angelegt".
+2. https://icloud.developer.apple.com → `iCloud.de.karjoth.pulsemeter` →
+   Schema → „Deploy Schema Changes…" → Deploy.
+
+Ein neuer Bau ist dafür nicht nötig. Woran man es erkennt: In der Konsole
+stehen unter Production die Typen `CD_ReadingRecord`, `CD_MeteringPointRecord`
+und die übrigen sechs. Die Begründung steht im Baukasten.
+
 ### 3.7 Die Käufe stehen im Baukasten
 
 Am 26. August kam die Kette der In-App-Käufe dazu: anlegen, beschriften,

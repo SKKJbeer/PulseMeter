@@ -882,6 +882,31 @@ iCloud-Container keine Schnittstelle (404) — das ist kein Fehler, sondern eine
 Handarbeit, die jemand einmal tun muss. Sie stand in keiner Liste, die jemand
 liest, und wartete deshalb vier Wochen.
 
+### CloudKit hat zwei Umgebungen, und die des Ladens wächst nicht von selbst
+
+Berechtigung, Behälter und App-ID standen, der Bau lief durch, und der Abgleich
+über iCloud tat im Laden trotzdem nichts. Gemeldet hat es ein Käufer, zwei
+Monate nach dem Start: „Ich sehe die Daten nur auf einem Gerät.“
+
+**Ein Gerätebau mit Entwicklungsprofil spricht mit der Entwicklungsumgebung von
+CloudKit, TestFlight und der Laden mit der Produktionsumgebung.** In der
+Entwicklungsumgebung legt CloudKit Datensatztypen beim ersten Speichern selbst
+an. In der Produktion nie: Dort lehnt es jedes Hochladen ab, dessen Typ es
+nicht kennt. Die Typen kommen nur in der CloudKit-Konsole hinüber, mit „Deploy
+Schema Changes“, angemeldet mit der Apple-ID des Kontos. Eine Schnittstelle
+dafür gibt es nicht.
+
+SwiftData meldet den Fehlschlag nirgends sichtbar. Der Speicher öffnet, lokal
+wird gesichert, und der Abgleich scheitert im Hintergrund. Von außen sieht eine
+App ohne Abgleich genauso aus wie eine mit.
+
+> **Vor der ersten Fassung mit CloudKit, und nach jeder Änderung am Modell:**
+> Schema in der Entwicklung anlegen (`initializeCloudKitSchema()` über
+> `NSManagedObjectModel.makeManagedObjectModel(for:)`, im Debug-Bau), dann in
+> der Konsole übertragen. Hier: `scripts/cloudkit-schema.sh`. Und geprüft wird
+> der Abgleich mit **zwei Geräten und einem Bau aus TestFlight**, nie mit einem
+> Bau vom Kabel, denn der redet mit der anderen Umgebung.
+
 ### Ein Schlüssel hat eine Rolle, und nicht jede Auskunft hängt an derselben
 
 Derselbe Schlüssel, der bei Apple die App anlegt, Käufe pflegt, Bilder hochlädt

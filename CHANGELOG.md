@@ -9,6 +9,31 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.141.0 — 2026-11-10
+
+**iCloud-Abgleich: Das Schema kommt in die Produktion**
+
+Ein Käufer meldete am 14. Oktober, dass er seine Zähler nur auf einem Gerät
+sieht (die Mail lag bis heute im Spam). Wahrscheinlicher Grund: Laden und
+TestFlight sprechen mit der Produktionsumgebung von CloudKit, und dort stand nie
+ein Schema. CloudKit lehnt dann jedes Hochladen ab, SwiftData sichert lokal
+weiter und meldet nichts. Noch nicht gemessen, aber im Repository gibt es
+keinen Schritt, der das Schema je übertragen hätte.
+
+### Hinzugefügt
+- `PulseStore.cloudKitSchemaAnlegen()` (nur Debug): legt das Schema mit
+  `initializeCloudKitSchema()` in der Entwicklungsumgebung an, in einer eigenen
+  Datei, ohne den Bestand anzufassen. Startschalter `-pulse-cloudkit-schema`.
+- `scripts/cloudkit-schema.sh`: baut für einen Simulator, startet mit dem
+  Schalter und sagt, was danach in der CloudKit-Konsole zu tun ist.
+- `docs/12-auslieferung.md` 3.8, Baukasten „CloudKit hat zwei Umgebungen“.
+- Roadmap „Aus Rückmeldungen von Käufern“: Abgleich, Tarifwechsel mit Datum,
+  Gas auch in kWh.
+
+Im Auslieferungsbau ändert sich nichts.
+
+---
+
 ## 0.140.2 — 2026-11-08
 
 **Website nennt die Kamera als Kauf (1.6 im Laden seit 3. November, 20:32 UTC)**
