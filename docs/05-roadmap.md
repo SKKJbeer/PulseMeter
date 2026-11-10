@@ -81,6 +81,17 @@ und stehen nirgends öffentlich (siehe „Öffentlich und intern" unten).
 | Eine Ratgeberseite je Woche, nach Saison: Heizkosten im Herbst, „Zählerstand ablesen" als nächste (die Suche, auf die auch der neue Name zielt), „Nachzahlung prüfen" im Januar | laufend |
 | Messen: Berichtsschlüssel für App Store Connect und Kampagnenlink (`13-zugaenge.md`, Punkte 5 und 6) | **vor 1.5**, sonst bleibt offen, ob irgendetwas davon wirkt |
 
+### Aus Rückmeldungen von Käufern
+
+Erste ausführliche Mail eines Käufers, 14. Oktober (lag bis 10. November im
+Spam). Er hat alles freigeschaltet und kommt von einer Excel-Liste.
+
+| Was | Stand |
+|---|---|
+| **iCloud-Abgleich geht im Laden nicht.** Vermutlich nie: Das CloudKit-Schema stand nie in der Produktion (`12-auslieferung.md`, 3.8) | **Fehler, vor allem anderen.** Werkzeug in 0.141.0, Übertragen in der Konsole offen. Danach eine sichtbare Zeile, ob der Abgleich klappt |
+| **Tarifwechsel mit Datum:** neuer Preis ab einem Tag, alte Kosten bleiben | Lücke. Heute ein Preis je Zähler, eine Änderung rechnet rückwirkend. Kandidat für 1.8, vor der Abrechnungszeit im Januar |
+| **Gas auch in kWh:** Verbrauch mit Zustandszahl und Brennwert umgerechnet, damit Gas und Wärmepumpe vergleichbar sind | Wunsch. Die Werte stehen schon am Zähler, nur die Anzeige fehlt. Kandidat für 1.8 |
+
 ### Die Website als Wachstumskanal: Rechner
 
 Vom Gründer am 4. Oktober beauftragt: Menschen erreichen, die bei Google ein

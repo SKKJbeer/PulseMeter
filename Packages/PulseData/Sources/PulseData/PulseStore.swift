@@ -1,6 +1,9 @@
 import Foundation
 import SwiftData
 import PulseCore
+#if canImport(CoreData)
+import CoreData
+#endif
 
 /// Aufbau und Verwaltung des Datenspeichers.
 public enum PulseStore {
@@ -9,7 +12,14 @@ public enum PulseStore {
     /// statische Konstante wäre unter Swift 6 global geteilter Zustand. Der
     /// Aufbau ist billig und geschieht ohnehin nur beim Start.
     public static var schema: Schema {
-        Schema([
+        Schema(modelTypes)
+    }
+
+    /// Die Datensatzarten, an einer Stelle. Der Speicher, das CloudKit-Schema
+    /// und sein Anlegen lesen alle drei hier, sonst fehlt eine neue Art beim
+    /// Abgleich, ohne dass es jemand merkt.
+    public static var modelTypes: [any PersistentModel.Type] {
+        [
             PropertyRecord.self,
             RentalUnitRecord.self,
             MeteringPointRecord.self,
@@ -18,7 +28,7 @@ public enum PulseStore {
             ReadingRecord.self,
             TariffRecord.self,
             BillingPeriodRecord.self
-        ])
+        ]
     }
 
     public enum StoreError: Error {
@@ -53,6 +63,60 @@ public enum PulseStore {
         }
     }
 }
+
+#if DEBUG && canImport(CoreData)
+extension PulseStore {
+
+    /// Die Kennung des iCloud-Behälters, wie sie in den Berechtigungen steht.
+    public static let cloudKitContainer = "iCloud.de.karjoth.pulsemeter"
+
+    /// Legt das Schema in der **Entwicklungsumgebung** von CloudKit an.
+    ///
+    /// **Warum es das gibt.** Ein Bau aus dem Laden oder aus TestFlight spricht
+    /// mit der **Produktionsumgebung**. Dort legt CloudKit keine neuen
+    /// Datensatztypen an, es lehnt jedes Hochladen ab, dessen Typ es nicht
+    /// kennt. Die Typen kommen nur auf einem Weg dorthin: Sie stehen in der
+    /// Entwicklungsumgebung, und jemand überträgt sie in der CloudKit-Konsole
+    /// („Deploy Schema Changes"). Bis 0.141.0 hat das niemand getan, und die
+    /// App merkt davon nichts. SwiftData schreibt lokal weiter, der Abgleich
+    /// scheitert im Hintergrund, und auf dem zweiten Gerät bleibt alles leer.
+    /// Gemeldet hat es ein Käufer am 14. Oktober.
+    ///
+    /// Apple beschreibt genau diesen Weg für SwiftData: dasselbe Modell als
+    /// `NSManagedObjectModel`, ein `NSPersistentCloudKitContainer` darum und
+    /// `initializeCloudKitSchema()`. Der Speicher liegt in einer eigenen Datei
+    /// im Zwischenordner, damit der echte Bestand nicht angefasst wird.
+    ///
+    /// Nur im `Debug`-Bau: Ein Entwicklungsprofil zeigt auf die
+    /// Entwicklungsumgebung, und nur dort darf das Schema wachsen.
+    /// Aufgerufen von `scripts/cloudkit-schema.sh`.
+    public static func cloudKitSchemaAnlegen() throws {
+        guard let modell = NSManagedObjectModel.makeManagedObjectModel(for: modelTypes) else {
+            throw StoreError.containerUnavailable(underlying: CocoaError(.featureUnsupported))
+        }
+        let datei = FileManager.default.temporaryDirectory
+            .appendingPathComponent("cloudkit-schema.store")
+        let beschreibung = NSPersistentStoreDescription(url: datei)
+        beschreibung.cloudKitContainerOptions =
+            NSPersistentCloudKitContainerOptions(containerIdentifier: cloudKitContainer)
+        beschreibung.shouldAddStoreAsynchronously = false
+
+        let behaelter = NSPersistentCloudKitContainer(name: "CloudKitSchema",
+                                                      managedObjectModel: modell)
+        behaelter.persistentStoreDescriptions = [beschreibung]
+        var ladefehler: Error?
+        behaelter.loadPersistentStores { _, fehler in ladefehler = fehler }
+        if let ladefehler { throw ladefehler }
+
+        try behaelter.initializeCloudKitSchema()
+
+        // Wieder abmelden, sonst gleicht der Hilfsspeicher weiter ab.
+        for speicher in behaelter.persistentStoreCoordinator.persistentStores {
+            try behaelter.persistentStoreCoordinator.remove(speicher)
+        }
+    }
+}
+#endif
 
 /// Ein Zugriff auf den Speicher, gebunden an den Hauptakteur.
 ///
