@@ -9,6 +9,33 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.142.0 — 2026-11-10
+
+**CloudKit-Schema ohne Mac: aus dem Modell abgeleitet, per CI hochgeladen**
+
+In der CloudKit-Konsole steht unter Development nur der Typ `Users`, kein
+einziger von Zählora. Der Abgleich hat also nie etwas hochgeladen, auch nicht
+aus einem Entwicklungsbau. Der Weg aus 0.141.0 braucht einen Mac mit
+angemeldetem Simulator; dieser hier nicht.
+
+### Hinzugefügt
+- `PulseStore.cloudKitSchemaText()`: das Schema in Apples Schemasprache,
+  abgeleitet aus demselben `NSManagedObjectModel`, das SwiftData für den
+  Abgleich baut.
+- `cloudkit/schema.ckdb` und `CloudKitSchemaTests`: Datei und Modell müssen
+  gleich sein, sonst rot, mit dem richtigen Inhalt in der Meldung.
+- `.github/workflows/cloudkit-schema.yml`: Modus `stand` liest beide Umgebungen,
+  `hochladen` prüft bei Apple und lädt nach Development. Das Übertragen in die
+  Produktion bleibt ein Knopf in der Konsole.
+
+### Geändert
+- `PulseStore.modelTypes`: die Datensatzarten an einer Stelle für Speicher,
+  Schema und Anlegen.
+
+Im Auslieferungsbau ändert sich nichts.
+
+---
+
 ## 0.141.0 — 2026-11-10
 
 **iCloud-Abgleich: Das Schema kommt in die Produktion**
