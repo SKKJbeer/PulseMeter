@@ -9,7 +9,7 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
-## 0.143.3 — 2026-11-11
+## 0.145.3 — 2026-11-11
 
 **CI: Entwurfsprüfung wieder auf Ubuntu 24.04**
 
@@ -21,7 +21,7 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
-## 0.143.2 — 2026-11-11
+## 0.145.2 — 2026-11-11
 
 **Wechsel-Paket und Vermittlung entschieden**
 
@@ -34,7 +34,7 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
-## 0.143.1 — 2026-11-11
+## 0.145.1 — 2026-11-11
 
 **Kauf „Wärmepumpe“ und 1.9 entschieden**
 
@@ -48,7 +48,7 @@ Vergleich kommt schon mit 1.9 am 13. Januar statt eines Puffers.
 
 ---
 
-## 0.143.0 — 2026-11-11
+## 0.145.0 — 2026-11-11
 
 **Website: der Wechsel zur Wärmepumpe**
 
