@@ -9,6 +9,23 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.147.1 — 2026-11-11
+
+**1.7: Rückfrage beim Löschen eines Preises geht zuverlässig auf**
+
+### Behoben
+- Die Rückfrage „Jüngsten Preis löschen?“ hing an einem Abschnitt, den es
+  nur mit zwei Preisen gibt, und ging im Oberflächentest auf dem iPhone nicht
+  auf. Sie hängt jetzt am Formular; der Knopf heißt „Preis löschen“, damit er
+  sich vom Knopf in der Zeile unterscheidet.
+- Der kWh-Test las die Beschriftung der ganzen Karte und erwartete am Ende
+  „kWh“. Er prüft jetzt, dass eine Zahl mit kWh darin steht. Die Zeile selbst
+  stand richtig da („1.338 m³ … 13.349 kWh“).
+- Speichern der Preisliste läuft auf dem Haupt-Thread (`@MainActor`), wie der
+  Bau für das iPhone verlangt.
+
+---
+
 ## 0.147.0 — 2026-11-11
 
 **1.7 in der App: neuer Preis ab einem Tag, Gas und Heizöl in kWh**

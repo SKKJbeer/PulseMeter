@@ -901,6 +901,18 @@ struct MeterEditor: View {
                     }
                 }
             }
+            // Am Formular, nicht an der Abschnittszeile: Ein Dialog an einem
+            // Abschnitt, der nur unter einer Bedingung steht, ging im
+            // Oberflächentest nicht auf.
+            .confirmationDialog("Jüngsten Preis löschen?", isPresented: $confirmingPriceDelete,
+                                titleVisibility: .visible) {
+                Button("Preis löschen", role: .destructive) {
+                    if let existing = draft.existing { removeNewestPrice(of: existing) }
+                }
+                Button("Abbrechen", role: .cancel) { }
+            } message: {
+                Text("Danach gilt wieder der vorige Preis, auch für die Zeit danach.")
+            }
             .confirmationDialog("Wirklich löschen?", isPresented: $confirmingDelete, titleVisibility: .visible) {
                 Button("Löschen", role: .destructive) { deletePermanently() }
                 Button("Abbrechen", role: .cancel) { }
@@ -1073,13 +1085,6 @@ struct MeterEditor: View {
                 }
             } header: {
                 Text("Preisverlauf")
-            }
-            .confirmationDialog("Jüngsten Preis löschen?", isPresented: $confirmingPriceDelete,
-                                titleVisibility: .visible) {
-                Button("Löschen", role: .destructive) { removeNewestPrice(of: existing) }
-                Button("Abbrechen", role: .cancel) { }
-            } message: {
-                Text("Danach gilt wieder der vorige Preis, auch für die Zeit danach.")
             }
         }
     }
