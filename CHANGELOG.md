@@ -57,6 +57,37 @@ _Website-Prüfung (`check-website.mjs`) vollständig grün. App unverändert._
 
 ---
 
+## 0.147.2 — 2026-11-11
+
+**Prüfung „Kein Text über den Rand“ wartet auf die erste Karte**
+
+### Behoben
+- Auf dem iPad quer in größter Schrift wartete die Prüfung auf die Karte
+  „Strom“. Seit die Gaskarte die Zeile in kWh trägt, liegt Strom dort
+  außerhalb dessen, was die Liste schon gebaut hat, und die Prüfung meldete
+  „Übersicht kam nicht“, obwohl die Übersicht dastand. Sie wartet jetzt auf
+  „Gas“, die erste Karte. Auf dem iPhone liefen alle Prüfungen von 0.147.1
+  grün, auch die beiden neuen.
+
+---
+
+## 0.147.1 — 2026-11-11
+
+**1.7: Rückfrage beim Löschen eines Preises geht zuverlässig auf**
+
+### Behoben
+- Die Rückfrage „Jüngsten Preis löschen?“ hing an einem Abschnitt, den es
+  nur mit zwei Preisen gibt, und ging im Oberflächentest auf dem iPhone nicht
+  auf. Sie hängt jetzt am Formular; der Knopf heißt „Preis löschen“, damit er
+  sich vom Knopf in der Zeile unterscheidet.
+- Der kWh-Test las die Beschriftung der ganzen Karte und erwartete am Ende
+  „kWh“. Er prüft jetzt, dass eine Zahl mit kWh darin steht. Die Zeile selbst
+  stand richtig da („1.338 m³ … 13.349 kWh“).
+- Speichern der Preisliste läuft auf dem Haupt-Thread (`@MainActor`), wie der
+  Bau für das iPhone verlangt.
+
+---
+
 ## 0.147.0 — 2026-11-11
 
 **1.7 in der App: neuer Preis ab einem Tag, Gas und Heizöl in kWh**

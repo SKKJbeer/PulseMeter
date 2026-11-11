@@ -1752,8 +1752,10 @@ final class LaunchTests: XCTestCase {
         XCTAssertTrue(kwh.waitForExistence(timeout: erscheint),
                       "Unter den m³ von Gas fehlt die Zeile in kWh. "
                       + "Zu sehen war: \(beschriftungen(in: app))")
-        XCTAssertTrue(kwh.label.hasSuffix("kWh"),
-                      "Die Zeile unter der Zahl sagt „\(kwh.label)“ statt einer Menge in kWh")
+        // Die Karte liest sich für VoiceOver als ein Satz („…, 1.338, m³,
+        // 13.349 kWh, …“); geprüft wird darum, dass eine Zahl mit kWh darin steht.
+        XCTAssertNotNil(kwh.label.range(of: #"\d kWh"#, options: .regularExpression),
+                        "Auf der Karte steht keine Menge in kWh: „\(kwh.label)“")
     }
 
     /// „Neuer Preis ab …“ legt einen zweiten Preis an, und „Löschen“ nimmt
@@ -1802,11 +1804,10 @@ final class LaunchTests: XCTestCase {
         // Die Rückfrage ist auf dem Telefon ein Blatt von unten und auf dem
         // iPad ein Sprechblasenfenster; gesucht wird darum der Knopf, nicht
         // der Behälter.
-        let bestaetigen = app.buttons.matching(
-            NSPredicate(format: "label == 'Löschen' AND identifier != 'preis-loeschen'")
-        ).firstMatch
+        let bestaetigen = app.buttons["Preis löschen"]
         XCTAssertTrue(bestaetigen.waitForExistence(timeout: erscheint),
-                      "Die Rückfrage vor dem Löschen erscheint nicht")
+                      "Die Rückfrage vor dem Löschen erscheint nicht. Zu sehen war: "
+                      + beschriftungen(in: app))
         bestaetigen.tap()
 
         let weg = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"),
@@ -2847,7 +2848,10 @@ final class LaunchTests: XCTestCase {
 
     private static let schirme: [(name: String, schalter: [String],
                                   steht: @MainActor (XCUIApplication) -> XCUIElement)] = [
-        ("Übersicht", [], { $0.staticTexts["Strom"] }),
+        // „Gas“, die erste Karte, nicht „Strom“: Seit 1.7 trägt die Gaskarte
+        // eine Zeile in kWh, und auf dem iPad quer in größter Schrift rückt
+        // die zweite Karte damit aus dem Teil, den die Liste schon gebaut hat.
+        ("Übersicht", [], { $0.staticTexts["Gas"] }),
         ("Verlauf als Tabelle",
          ["-pulse-verlauf", "-pulse-verlauf-vorschau", "-pulse-verlauf-tabelle"],
          { $0.buttons["Alle Zahlen"] }),
