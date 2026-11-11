@@ -9,6 +9,36 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.144.0 — 2026-11-10
+
+**Kamera: keine Zahl des anderen Zählwerks (erster Schritt zu 1.7)**
+
+Die moderne Messeinrichtung zeigt Bezug (1.8.0) und Einspeisung (2.8.0) abwechselnd auf einem
+Display, jede Zahl einige Sekunden lang. Die Einigung „vier von sechs“ steht nach einer Sekunde:
+Wer im Schritt „Bezug“ die Kamera hielt, während gerade die Einspeisung dastand, bekam sie als Bezug
+vorgeschlagen. Bei einer Solaranlage liegen beide Zahlen oft nah genug beieinander, dass der Bereich
+das nicht abfing.
+
+### Geändert
+- Hat der Zähler weitere Zählwerke, schlägt die Kamera eine Zahl nur vor, wenn sie **nicht** in den
+  Bereich eines anderen passt. Ein anderes Zählwerk ohne letzten Stand schließt nichts aus. Sonst sagt
+  der Sucher: „Diese Zahl kann auch „Einspeisung“ sein. Warte, bis die andere Zahl kommt, oder tipp
+  sie selbst ein.“ Zeigt das Display gleich darauf die gefragte Zahl, wird sie vorgeschlagen.
+- Klick-Dummy rechnet dieselbe Regel.
+
+### Hinzugefügt
+- `RegisterChoice` in PulseCore, mit Tests und gemeinsamen Fällen in `docs/kamera/vektoren.json`
+  (Abschnitt `zuordnung`), die `check-kamera-js.mjs` gegen den Klick-Dummy laufen lässt.
+- `docs/kamera/stufe-2.md`: das Konzept für 1.7. Als Nächstes die Kennzahl neben dem Wert lesen
+  und die Zahl dem richtigen Zählwerk zuordnen; vorher wird gemessen, ob das Netz sie liest.
+
+### Prüfungen
+- Oberflächentests auf dem iPad-Läufer ruhiger: Der Kameratest tippt „Löschen“ erst, wenn der
+  Knopf stillsteht; der Import bekommt 60 s; „Zurück“ beim Zähler mit zwei Zahlen wird ein
+  zweites Mal getippt, wenn der erste Tipp nachweislich nichts bewirkt hat.
+
+---
+
 ## 0.142.0 — 2026-11-10
 
 **CloudKit-Schema ohne Mac: aus dem Modell abgeleitet, per CI hochgeladen**

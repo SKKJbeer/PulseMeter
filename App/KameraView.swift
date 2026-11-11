@@ -22,6 +22,10 @@ struct KameraView: View {
     let format: MeterFormat
     let einheit: String
     let bereich: ClosedRange<Decimal>?
+    /// Die anderen Zählwerke desselben Zählers, mit ihrem Bereich (`nil` ohne letzten
+    /// Stand). Eine Zahl, die auch zu einem von ihnen passen kann, wird nicht
+    /// vorgeschlagen: Das Display wechselt zwischen 1.8.0 und 2.8.0 (`docs/kamera/stufe-2.md`).
+    var andere: [(name: String, bereich: ClosedRange<Decimal>?)] = []
     let farbe: Color
     /// Der gelesene Stand und ob nur die Stellen vor dem Komma gelesen wurden.
     let uebernehmen: (Decimal, Bool) -> Void
@@ -70,7 +74,7 @@ struct KameraView: View {
         }
         .statusBarHidden()
         .onDisappear { modell.beenden() }
-        .task { await modell.vorbereiten(format: format, bereich: bereich) }
+        .task { await modell.vorbereiten(format: format, bereich: bereich, andere: andere) }
     }
 
     private func aufmachen(_ groesse: CGSize, _ rahmen: PixelRect) {
@@ -148,6 +152,9 @@ struct KameraView: View {
     /// Der Hinweis zum Bild: ein Satz, der sagt, was sich ändern lässt.
     private var hinweisText: String? {
         if modell.treffer != nil { return nil }
+        if let name = modell.vielleichtVon {
+            return "Diese Zahl kann auch \(name) sein. Warte, bis die andere Zahl kommt, oder tipp sie selbst ein."
+        }
         switch modell.qualitaet {
         case .tooDark: return modell.sitzung.hatTaschenlampe ? "Zu dunkel. Mit der Taschenlampe geht es besser." : "Zu dunkel."
         case .flat: return "Kaum Kontrast. Kipp das Telefon, bis die Spiegelung weg ist."
@@ -255,17 +262,22 @@ final class KameraModell {
     var lampeAn = false
     /// Nach einer Weile ohne Treffer sagt der Sucher, dass Tippen auch geht.
     var langeOhneTreffer = false
+    /// Name des anderen Zählwerks, zu dem die zuletzt gelesene Zahl auch passen kann.
+    var vielleichtVon: String?
     var drehung: CGFloat = 90
 
     private var konsens = ReadingConsensus()
     private var format = MeterFormat(integerDigits: 6, fractionDigits: 0)
     private var bereich: ClosedRange<Decimal>?
+    private var andere: [(name: String, bereich: ClosedRange<Decimal>?)] = []
     private var gestartet = Date()
     private var vorfuehrung: Task<Void, Never>?
 
-    func vorbereiten(format: MeterFormat, bereich: ClosedRange<Decimal>?) async {
+    func vorbereiten(format: MeterFormat, bereich: ClosedRange<Decimal>?,
+                     andere: [(name: String, bereich: ClosedRange<Decimal>?)] = []) async {
         self.format = format
         self.bereich = bereich
+        self.andere = andere
         gestartet = Date()
         // Im Simulator gibt es keine Kamera. Mit `-pulse-kamera-test` läuft ein
         // gezeichnetes Bild durch dieselbe Auswertung, damit der Weg bis in den
@@ -335,6 +347,15 @@ final class KameraModell {
         qualitaet = befund.qualitaet
         langeOhneTreffer = Date().timeIntervalSince(gestartet) > 12
         if let einig = konsens.add(befund.ergebnis) {
+            // Einig, aber vielleicht über die Zahl eines anderen Zählwerks: dann nichts
+            // vorschlagen und von vorn zählen. Zeigt das Display gleich die andere Zahl,
+            // findet die Einigung sie von selbst.
+            if case .couldBeOther(let i) = RegisterChoice.check(einig.proposal.value, others: andere.map(\.bereich)) {
+                vielleichtVon = andere[i].name
+                konsens.reset()
+                return
+            }
+            vielleichtVon = nil
             withAnimation(.snappy) { treffer = einig }
             // Die Vorführung hört auf: Sie rechnet im Debug-Bau Sekunden je Bild und hielt die App
             // nach dem Treffer beschäftigt, auf dem langsameren iPad so lange, dass der Test
