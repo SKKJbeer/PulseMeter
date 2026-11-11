@@ -302,6 +302,9 @@ struct MeterRow: Identifiable {
     /// reicht — bei Gas ohne Zustandszahl und Brennwert etwa. Ein leeres Feld
     /// erklärt sich nicht; ein Satz schon.
     let costProblem: String?
+    /// Gas und Heizöl in kWh, unter der Zahl vom Zähler (1.7). `nil` ohne
+    /// Umrechnung oder ohne „Kosten und Preise“.
+    var energyText: String? = nil
     /// Kosten je laufendem Abschnitt — Monat, Quartal, Jahr.
     ///
     /// **Vom Gründer am 3. September verlangt:** „wenn man die preise
@@ -500,6 +503,7 @@ struct OverviewView: View {
             value: valueText(for: row.yearToDate),
             isApproximate: isApproximate(row.yearToDate),
             unit: row.unit,
+            secondary: row.energyText,
             detail: detailText(for: row),
             badge: row.isDue ? "Fällig" : nil,
             series: row.monthlySeries,
@@ -826,6 +830,34 @@ struct OverviewView: View {
 
     /// Produktprinzip 7: Was nicht ausschließlich auf gemessenen Werten
     /// beruht, wird als solches gekennzeichnet.
+    /// Gas und Heizöl in kWh, für die Zeile unter der Zahl (1.7).
+    ///
+    /// Über denselben Ausschnitt wie die Zahl darüber und je Preisabschnitt
+    /// mit der Umrechnung, die dort galt (`EnergyDisplay`). Ein „≈“, wenn die
+    /// Zahl darüber eins trägt oder der Heizwert geschätzt ist; Heizöl auf
+    /// zehn gerundet, weil eine Zahl aus einem angenommenen Heizwert keine
+    /// Kilowattstunde genau ist.
+    private func energyText(point: MeteringPoint, readings: [Reading],
+                            tariffs: [Tariff], result: ConsumptionResult) -> String? {
+        guard result.hasData, let covered = result.coveredRange else { return nil }
+        let draws = point.registers.filter { $0.direction == .consumption }
+        guard !draws.isEmpty else { return nil }
+        var total = Decimal(0)
+        for register in draws {
+            guard let kwh = EnergyDisplay.kilowattHours(register: register, readings: readings,
+                                                        tariffs: tariffs, in: covered)
+            else { return nil }
+            total += kwh.value
+        }
+        let geschaetzt = draws.contains { EnergyDisplay.isEstimate(unit: $0.unit) }
+        if geschaetzt {
+            var gerundet = Decimal(), zehntel = total / 10
+            NSDecimalRound(&gerundet, &zehntel, 0, .plain)
+            return "≈ \(number(gerundet * 10, digits: 0)) kWh"
+        }
+        return (isApproximate(result) ? "≈ " : "") + "\(number(total, digits: 0)) kWh"
+    }
+
     private func isApproximate(_ result: ConsumptionResult?) -> Bool {
         guard let result, result.hasData else { return false }
         return result.confidence != .measured
@@ -980,7 +1012,7 @@ struct OverviewView: View {
                                                            readings: everything, in: yearRange)
                 let comparison = ConsumptionEngine.yearOverYear(meteringPoint: point,
                                                                readings: everything, in: yearRange)
-                return MeterRow(
+                var row = MeterRow(
                     id: point.id,
                     name: point.name,
                     unit: register.unit.symbol,
@@ -1012,6 +1044,9 @@ struct OverviewView: View {
                     feedIn: feedIn(point: point, readings: everything,
                                    tariffs: tariffs, in: yearRange)
                 )
+                row.energyText = energyText(point: point, readings: everything,
+                                            tariffs: tariffs, result: result)
+                return row
             }
             // Das Widget bekommt dieselbe Rechnung wie dieser Schirm, nur
             // kleiner. Gebaut wird sie in `PulseCore`, damit die beiden nicht

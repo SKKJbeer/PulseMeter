@@ -9,6 +9,36 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.147.0 — 2026-11-11
+
+**1.7 in der App: neuer Preis ab einem Tag, Gas und Heizöl in kWh**
+
+### Neu
+- **„Neuer Preis ab …“** im Zähler (`NewPriceSheet`): Tag wählen, nur ändern,
+  was sich ändert, sichern. Der bisherige Preis gilt bis zum Vortag, die
+  Kosten davor bleiben. Ein Satz unter dem Tag sagt, was er bewirkt, auch
+  wenn er vor der letzten Ablesung liegt und Kosten neu gerechnet werden.
+- **Preisverlauf** im Zähler, sobald es mehr als einen Preis gibt: je Preis
+  eine Zeile mit Zeitraum und Arbeitspreis, beim Doppeltarif beide; der
+  jüngste lässt sich mit Rückfrage löschen. Die Überschrift über den
+  Preisfeldern sagt, ab wann sie gelten.
+- **Gas und Heizöl in kWh auf der Karte**, eine Zeile unter der Zahl vom
+  Zähler, je Preisabschnitt mit der Umrechnung, die dort galt. Heizöl mit
+  „≈“ und auf zehn gerundet, weil der Heizwert geschätzt ist.
+- **Heizwert** als Feld bei Heizöl (üblich 10 kWh je Liter).
+
+### Geändert
+- Der Zähler liest und schreibt nur noch die jüngste Preisgeneration. Bis
+  1.6 suchte er in allen Tarifen und hätte mit einem Verlauf einen alten
+  Preis über den aktuellen geschrieben.
+
+### Tests
+- `testGasCardAlsoShowsKilowattHours`, `testANewPriceFromADayStartsAPriceHistory`
+  (Blatt öffnen, Preis ändern, sichern, zwei Zeilen im Verlauf, jüngsten
+  löschen). Laufen auf dem macOS-Läufer; hier unter Linux nur Syntax geprüft.
+
+---
+
 ## 0.146.1 — 2026-11-11
 
 **Rechenkern für 1.7: Preisverlauf, kWh, Hochrechnung je Preis**
