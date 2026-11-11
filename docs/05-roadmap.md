@@ -71,7 +71,7 @@ und stehen nirgends öffentlich (siehe „Öffentlich und intern" unten).
 | **1.6** | 18.11. | **Kamera:** Sucher mit Rahmen, die App schlägt den Stand vor, du bestätigst. Eigener Kauf 1,99 €, im Bündel enthalten | **Gebaut in 0.138.0** (statt Foto-Auswahl gleich der Sucher mit Rahmen, Taschenlampe und Hinweisen), mit eigenem **Ziffernnetz** für LCD. **Gemessen:** zwei Netze, die sich einig sein müssen; auf bekannten Fotos 0 Fehler, auf einer zweiten, nie trainierten Sammlung 5 Fehler in 600 Versuchen (ein Foto) und nur jeder dritte Versuch liest richtig (`docs/kamera/README.md`). Vor dem Einreichen geprüft mit acht Arten schlechter Bilder und Rahmen neben der Anzeige (0.140.1). **Eingereicht am 3. November** mit Bau 48, Käufe Kamera und Erinnerung gingen mit. Offen: Fotos von Testern für Meterus und Kamstrup |
 | **1.7** | 02.12. | **Kamera, Stufe 2:** zwei Zählwerke auf einem Bild (Tag/Nacht, Bezug/Einspeisung), Kennzahl `1.8.0` zuordnen | groß. Der Sucher mit Rahmen ist seit 0.138.0 schon da |
 | **1.8** | 16.12. | **Aus der Mail eines Käufers:** neuer Preis ab einem Tag, die Kosten davor bleiben wie sie waren · Gas auch in kWh, damit Gas und Wärmepumpe vergleichbar sind (siehe „Aus Rückmeldungen von Käufern") | am 11. November vom Gründer aufgenommen |
-| **1.9** | 13.01. | Puffer, und was die Zahlen bis dahin sagen | — |
+| **1.9** | 13.01. | **Heizungswechsel:** „Heizung gewechselt am …“ verbindet alten und neuen Zähler, Vorher-Nachher-Karte in kWh und Euro, Wechsel-Check, Mappe für den Heizungsbauer. Neuer Kauf „Wärmepumpe“ für 4,99 € | am 11. November vom Gründer entschieden (statt Puffer) |
 
 **Neben jeder Fassung, für neue Nutzer:**
 

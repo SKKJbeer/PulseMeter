@@ -9,6 +9,20 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.143.1 — 2026-11-11
+
+**Kauf „Wärmepumpe“ und 1.9 entschieden**
+
+Der Gründer hat am 11. November beide offenen Fragen aus dem Konzept
+beantwortet: Der Kauf „Wärmepumpe“ kostet 4,99 €, und der Vorher-Nachher-
+Vergleich kommt schon mit 1.9 am 13. Januar statt eines Puffers.
+
+### Geändert
+- `docs/04-monetarisierung.md`: der neue Kauf mit Preis und Umfang.
+- `docs/05-roadmap.md`: 1.9 mit dem Heizungswechsel.
+
+---
+
 ## 0.143.0 — 2026-11-11
 
 **Website: der Wechsel zur Wärmepumpe**
