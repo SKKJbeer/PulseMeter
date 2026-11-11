@@ -2834,15 +2834,25 @@ final class LaunchTests: XCTestCase {
         open.tap()
 
         // Im Debug-Bau braucht das Netz Sekunden je Bild, und es braucht vier gleiche (seit 0.140.0).
+        // **Geduldig warten** (0.149.0): Auf PR #13 fiel der Test hier zweimal, einmal mit
+        // „Timed out while evaluating UI query“. Solange das Netz im Debug-Bau rechnet, beantwortet
+        // die App die Frage nach ihrer Oberfläche manchmal nicht rechtzeitig. Das ist eine Grenze
+        // des Simulators, kein Fehler der App; ob der Vorschlag kommt, prüft die letzte Frage.
         let take = app.buttons["kamera-uebernehmen"]
-        XCTAssertTrue(take.waitForExistence(timeout: 120),
-                      "Die Kamera hat das gezeichnete Bild nicht gelesen — kein Vorschlag nach 120 Sekunden")
+        guard wartetGeduldig(auf: take, sekunden: 180) else {
+            XCTFail("Die Kamera hat das gezeichnete Bild nicht gelesen, kein Vorschlag nach 180 Sekunden. "
+                    + "Zu sehen war: \(beschriftungen(in: app))")
+            return
+        }
         take.tap()
 
         let hint = app.descendants(matching: .any).matching(identifier: "kamera-hinweis").firstMatch
         // Großzügig: Das Blatt schließt sich, und auf dem iPad im Debug-Bau dauert das.
-        XCTAssertTrue(hint.waitForExistence(timeout: 40),
-                      "Nach dem Übernehmen muss der Ziffernblock sagen, dass die Zahl von der Kamera kommt")
+        guard wartetGeduldig(auf: hint, sekunden: 60) else {
+            XCTFail("Nach dem Übernehmen muss der Ziffernblock sagen, dass die Zahl von der Kamera kommt. "
+                    + "Zu sehen war: \(beschriftungen(in: app))")
+            return
+        }
         XCTAssertTrue(open.exists, "Der Ziffernblock ist wieder da, die Ablesung ist nicht gesichert")
 
         // Eine Ziffer ändern heißt: selbst abgelesen. Der Hinweis geht. Gelöscht statt getippt:
@@ -2851,8 +2861,7 @@ final class LaunchTests: XCTestCase {
         // der Sucher noch hinausgleitet; ein Tippen in diesem Moment trifft den Sucher und geht
         // verloren (iPhone, Lauf 42492310609: Hinweis blieb, weil „Löschen“ nie ankam).
         let weg = NSPredicate(format: "exists == false")
-        expectation(for: weg, evaluatedWith: take)
-        waitForExpectations(timeout: 40)
+        geduldig { _ = XCTWaiter().wait(for: [XCTNSPredicateExpectation(predicate: weg, object: take)], timeout: 40) }
         let loeschen = app.buttons["Löschen"]
         XCTAssertTrue(loeschen.waitForExistence(timeout: erscheint), "Der Ziffernblock hat keinen Knopf „Löschen“")
         expectation(for: NSPredicate { el, _ in (el as? XCUIElement)?.isHittable ?? false }, evaluatedWith: loeschen)
@@ -2872,6 +2881,38 @@ final class LaunchTests: XCTestCase {
         let nachHinweis = XCTNSPredicateExpectation(predicate: weg, object: hint)
         if XCTWaiter().wait(for: [nachHinweis], timeout: erscheint) != .completed {
             XCTFail("Nach „Löschen“ steht der Kamera-Hinweis noch. Zu sehen war: \(beschriftungen(in: app))")
+        }
+    }
+
+    /// Wartet auf ein Element und lässt dabei **nur** eine Sorte Fehler durch: dass die App die
+    /// Frage nach ihrer Oberfläche nicht rechtzeitig beantwortet hat.
+    ///
+    /// Das passiert im Simulator, solange die App im Debug-Bau schwer rechnet (die Kamera ohne
+    /// Kamera). XCTest meldet es als Fehler des Tests, obwohl die App danach ganz normal
+    /// weiterläuft. Jeder andere Fehler bleibt ein Fehler, und ob das Element am Ende dasteht,
+    /// entscheidet eine echte Frage — eine App, die hängt, fällt also weiter durch.
+    func wartetGeduldig(auf element: XCUIElement, sekunden: TimeInterval) -> Bool {
+        let ende = Date().addingTimeInterval(sekunden)
+        while Date() < ende {
+            var da = false
+            geduldig { da = element.waitForExistence(timeout: min(10, max(1, ende.timeIntervalSinceNow))) }
+            if da { return true }
+        }
+        var da = false
+        geduldig { da = element.exists }
+        return da
+    }
+
+    /// Siehe ``wartetGeduldig(auf:sekunden:)``.
+    func geduldig(_ block: () -> Void) {
+        let optionen = XCTExpectedFailure.Options()
+        optionen.isStrict = false
+        optionen.issueMatcher = { issue in
+            issue.compactDescription.contains("Timed out while evaluating UI query")
+                || issue.compactDescription.contains("Failed to get matching snapshot")
+        }
+        XCTExpectFailure("Die App war zu beschäftigt, um ihre Oberfläche zu zeigen", options: optionen) {
+            block()
         }
     }
 

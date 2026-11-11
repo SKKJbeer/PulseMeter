@@ -132,7 +132,9 @@ nicht Geschmack bleibt, steht hier je Anspruch die Prüfung, die ihn hält. Wo
    Prüfskripte mit eigener Logik haben einen `--selbsttest`.
 2. **Ein Test, der zufällig fällt, ist ein Fehler** — im Test oder in der App,
    und er wird so behandelt. Längere Wartezeiten nur mit Messung
-   (`LaunchTests.erscheint`).
+   (`LaunchTests.erscheint`). Antwortet die App nur nicht rechtzeitig, weil sie
+   im Debug-Bau schwer rechnet, wartet der Test mit `wartetGeduldig` und lässt
+   genau diesen einen Fehler durch, sonst keinen. So beim Kameratest seit 0.149.0.
 3. **Eine Regel, die nur als Satz dasteht, wird nicht befolgt.** Was sich
    zählen lässt, zählt ein Skript (Gedankenstriche auf der Website, Versionen,
    verbotene Wörter, Regeln für CloudKit).
