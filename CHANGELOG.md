@@ -9,6 +9,23 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.142.1 — 2026-11-11
+
+**iCloud-Abgleich läuft, Wünsche eines Käufers im Plan**
+
+Das CloudKit-Schema steht seit dem 10. November in der Produktion, alle acht
+Typen nachgelesen; der Gründer hat den Abgleich am 11. November auf zwei
+Geräten bestätigt. Die beiden Wünsche aus derselben Mail kommen in 1.8.
+
+### Geändert
+- `docs/05-roadmap.md`: Abgleich als behoben, 1.8 mit Tarifwechsel ab einem
+  Tag und Gas in kWh.
+- `entwicklung.html`: „Als Nächstes" zeigte noch die Kamera, die seit 1.6 im
+  Laden ist. Jetzt Tag- und Nachtstrom mit einem Foto, danach Tarif ab einem
+  Tag und Gas in kWh.
+
+---
+
 ## 0.142.0 — 2026-11-10
 
 **CloudKit-Schema ohne Mac: aus dem Modell abgeleitet, per CI hochgeladen**
