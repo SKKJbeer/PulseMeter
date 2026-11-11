@@ -981,7 +981,7 @@ struct OverviewView: View {
                 // bis zur letzten Ablesung: „bis 1. August" stand über einem
                 // Betrag, der den Grundpreis bis November enthielt. Der
                 // Klick-Dummy schnitt schon immer zu (`costYearToDate`).
-                let costs = Self.abgedeckt(yearRange, von: result)
+                let costs: KostenErgebnis = Self.abgedeckt(yearRange, von: result)
                     .map { cost(point: point, readings: everything, tariffs: tariffs, in: $0) }
                     ?? (nil, false, nil)
                 let comparison = ConsumptionEngine.yearOverYear(meteringPoint: point,
@@ -1113,7 +1113,7 @@ struct OverviewView: View {
         let abschnitte: [(String, PeriodEngine.Granularity)] = [
             ("monat", .month), ("quartal", .quarter), ("jahr", .year),
         ]
-        let spans: [CostSpanRow.Span] = abschnitte.compactMap { kennung, granularitaet in
+        let spans: [CostSpanRow.Span] = abschnitte.compactMap { kennung, granularitaet -> CostSpanRow.Span? in
             guard let range = PeriodEngine.runningRange(containing: today,
                                                         granularity: granularitaet)
             else { return nil }
@@ -1124,7 +1124,7 @@ struct OverviewView: View {
             // gab, und der Betrag sah trotzdem wie Kosten aus — die
             // Fehlerklasse aus CLAUDE.md. Jetzt steht dort ein Strich, wie
             // im Klick-Dummy (`costSpans`) schon immer.
-            let ergebnis = Self.abgedeckt(range, von: yearResult)
+            let ergebnis: KostenErgebnis = Self.abgedeckt(range, von: yearResult)
                 .map { cost(point: point, readings: readings, tariffs: tariffs, in: $0) }
                 ?? (nil, false, nil)
             return CostSpanRow.Span(
@@ -1138,6 +1138,11 @@ struct OverviewView: View {
         // Begründung. Dann wird sie gar nicht erst gezeigt.
         return spans.contains(where: { $0.amount != nil }) ? spans : []
     }
+
+    /// Was ``cost(point:readings:tariffs:in:)`` liefert. Benannt, weil ein
+    /// `?? (nil, false, nil)` sonst als unbeschrifteter Tupel gilt und die
+    /// Namen `value`, `isApproximate`, `problem` verliert.
+    typealias KostenErgebnis = (value: Money?, isApproximate: Bool, problem: String?)
 
     /// Der Teil von `range`, den die Ablesungen hinter `result` abdecken —
     /// `nil`, wenn es keinen ganzen Tag davon gibt.
