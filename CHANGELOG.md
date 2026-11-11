@@ -11,7 +11,7 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ## 0.153.0 — 2026-11-11
 
-**Website: Heizöl in kWh und Wärmepumpe im Monat, die ersten Seiten aus dem Reichweiten-Konzept Stufe 2**
+**Website: Heizöl in kWh, Wärmepumpe im Monat und mit zwei Zählern, die ersten Seiten aus dem Reichweiten-Konzept Stufe 2**
 
 Aus dem Konzept „Mehr Leser über die Wärmepumpe“ (11. November): Zuerst
 kommen die kleinen, genauen Fragen, bei denen die großen Seiten dünn sind.
@@ -34,6 +34,13 @@ kommen die kleinen, genauen Fragen, bei denen die großen Seiten dünn sind.
   Monate für 4.000 kWh im Jahr, fest im HTML, und wann ein Monat wirklich zu
   hoch ist (Frost, Heizstab, Sommer). Verlinkt aus Ratgeber, Startseite,
   Sitemap und der Seite zur Jahresarbeitszahl.
+- **`waermepumpe-zwei-zaehler.html`**: Verbrauch HT und NT mit ihren Preisen
+  eintippen, Summe, Anteil NT, Arbeitspreis und den Preis im Mittel sehen.
+  Der Mittelwert ist nach Menge gewichtet, nicht der Durchschnitt der beiden
+  Preise (27,6 statt 27,0 ct im Beispiel). Erklärt die drei Aufbauten im
+  Zählerschrank und die drei häufigsten Fehler. Verlinkt aus Ratgeber,
+  Startseite, Sitemap und der Seite zum Monat; dort heißt der Hinweis unter
+  dem Feld jetzt „ganzer Monat, HT plus NT“.
 
 ### Gefunden, nicht behoben
 - **Die App rechnet einen Wärmepumpen-Zähler mit dem Profil für
@@ -48,6 +55,10 @@ kommen die kleinen, genauen Fragen, bei denen die großen Seiten dünn sind.
   sonst in einer der Listen vergessen worden.
 - Vier neue Prüfungen für die Seite zum Monat, darunter der Abgleich der
   festen Tabelle mit dem Rechner (einmal rot gesehen mit Juli 2,9 statt 2,6).
+- Fünf neue Prüfungen für die Seite mit zwei Zählern: Summe und Anteil NT,
+  Mittel nach Menge und Kosten, ohne NT-Preis kein Mittel, nur HT, ohne
+  Verbrauch ein Hinweis. Einmal rot gesehen (Mittel als einfacher
+  Durchschnitt gerechnet).
 - Fünf neue Prüfungen für den Ölrechner: 2.000 Liter sind 20.000 kWh, 110 €
   je 100 Liter sind 11,0 ct je kWh und 2.200 €, mit 10,7 sind es 10,3 ct,
   ohne Preis keine Preiskachel, ohne Liter ein Hinweis. Einmal rot gesehen

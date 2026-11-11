@@ -47,8 +47,8 @@ const base = `http://127.0.0.1:${server.address().port}/`;
 // toter Verweis dorthin fällt sonst niemandem auf.
 // Jede Seite mit einem Rechner. Stand bis 0.153.0 fünfmal ausgeschrieben, und
 // eine neue Seite wäre in einer der Listen vergessen worden.
-const rechnerSeiten = ["gas-in-kwh.html", "heizoel-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "waermepumpe-stromverbrauch-monat.html", "photovoltaik-eigenverbrauch.html"];
-const seiten = ["index.html", "entwicklung.html", "hilfe.html", "gas-in-kwh.html", "heizoel-in-kwh.html", "waermepumpe-stromverbrauch-monat.html",
+const rechnerSeiten = ["gas-in-kwh.html", "heizoel-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "waermepumpe-stromverbrauch-monat.html", "waermepumpe-zwei-zaehler.html", "photovoltaik-eigenverbrauch.html"];
+const seiten = ["index.html", "entwicklung.html", "hilfe.html", "gas-in-kwh.html", "heizoel-in-kwh.html", "waermepumpe-stromverbrauch-monat.html", "waermepumpe-zwei-zaehler.html",
                 "zaehlerstand-umzug.html", "ratgeber.html",
                 "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "heizung-auf-waermepumpe-umstellen.html", "zaehlerstand-ablesen.html", "photovoltaik-eigenverbrauch.html", "strompreis-entwicklung.html", "datenschutz.html", "impressum.html", "404.html"];
 
@@ -727,6 +727,22 @@ console.log("\nVerhalten");
        `WP im Monat: Tabelle mit zwölf Monaten wie der Rechner, Januar 15,5 % und 620 kWh, Summe 100 % (${wpTabelle.falsch} abweichend, ${wpTabelle.jan})`);
   await page.fill("#wpm-kwh", "");
   note((await text("#wpm-ergebnis")).includes("Strom") && !(await kaputt("#wpm-ergebnis")), "WP im Monat: ohne Verbrauch ein Hinweis statt einer Zahl");
+
+  // Zwei Zähler: 2.400 kWh HT zu 30 ct und 1.600 kWh NT zu 24 ct sind
+  // 4.000 kWh, 40 % NT, 1.104 € und im Mittel 27,6 ct, nicht 27,0 (der
+  // einfache Durchschnitt der Preise, den man am leichtesten nimmt).
+  await page.goto(base + "waermepumpe-zwei-zaehler.html");
+  note((await kachel("summe")).wert === "4.000 kWh" && /40 % davon im NT/.test((await kachel("summe")).zusatz),
+       `Zwei Zähler: 2.400 + 1.600 kWh sind 4.000 kWh, 40 % im NT (${(await kachel("summe")).wert}, ${(await kachel("summe")).zusatz})`);
+  note((await kachel("misch")).wert === "27,6 ct" && (await kachel("kosten")).wert === "1.104,00 €",
+       `Zwei Zähler: im Mittel 27,6 ct nach Menge, 1.104 € (${(await kachel("misch")).wert}, ${(await kachel("kosten")).wert})`);
+  await page.fill("#z-pnt", "");
+  note((await page.$('[data-kachel="misch"]')) === null && !(await kaputt("#htnt-ergebnis")), "Zwei Zähler: ohne NT-Preis kein Mittelwert und keine kaputte Zahl");
+  await page.fill("#z-nt", "0");
+  note((await kachel("misch")).wert === "30,0 ct" && (await kachel("summe")).wert === "2.400 kWh",
+       `Zwei Zähler: nur HT, dann zählt nur der HT-Preis (${(await kachel("misch")).wert})`);
+  await page.fill("#z-ht", ""); await page.fill("#z-nt", "");
+  note((await text("#htnt-ergebnis")).includes("HT und NT") && !(await kaputt("#htnt-ergebnis")), "Zwei Zähler: ohne Verbrauch ein Hinweis statt einer Zahl");
 
   // Gas: dieselbe Rechnung wie GasConversion.energy in PulseCore.
   await page.goto(base + "gas-in-kwh.html");
