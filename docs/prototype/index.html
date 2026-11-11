@@ -990,7 +990,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>Zählora</h1>
-  <p>Klickbarer Entwurf · v0.138.0</p>
+  <p>Klickbarer Entwurf · v0.149.0</p>
 </div>
 
 <div class="device" id="device">
@@ -4949,9 +4949,17 @@ function judge() {
   const factor = usual > 0 ? perDay / usual : 1;
 
   if (factor >= 4 || factor <= 0.25) {
+    // Zwei Mengen statt eines Faktors, wie `usualConsumption` in PulseCore
+    // (0.149.0). Bis dahin stand hier „rund 3.039,2× dein üblicher Verbrauch“
+    // und beim übernommenen Stand „rund 0×“ — richtig gerechnet, aber nur mit
+    // Kopfrechnen zu verstehen.
     el.className = "verdict warn";
-    el.innerHTML = `${bang}<div>Das wären <b>${nf(delta, capRegister().frac >= 3 ? 1 : 0)} ${capRegister().unit}</b> in ${days === 1 ? "einem Tag" : days + " Tagen"} —
-      rund ${nf(factor, 1).replace(",0", "")}× dein üblicher Verbrauch. Stimmt die Zahl?</div>`;
+    const spanne = days === 1 ? "einem Tag" : days + " Tagen";
+    const stellen = capRegister().frac >= 3 ? 1 : 0;
+    el.innerHTML = delta === 0
+      ? `${bang}<div>Derselbe Stand wie vor ${spanne}. Stimmt die Zahl?</div>`
+      : `${bang}<div>Das wären <b>${nf(delta, stellen)} ${capRegister().unit}</b> in ${spanne},
+      sonst sind es rund ${nf(usual * days, stellen)} ${capRegister().unit}. Stimmt die Zahl?</div>`;
   } else {
     el.className = "verdict";
     el.innerHTML = `${check}<div>Entspricht <b>${nf(delta, capRegister().frac >= 3 ? 1 : 0)} ${capRegister().unit}</b> in ${days === 1 ? "einem Tag" : days + " Tagen"}

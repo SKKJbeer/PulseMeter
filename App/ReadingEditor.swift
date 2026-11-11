@@ -274,13 +274,18 @@ struct ReadingEditor: View {
             text.append(AttributedString(" in \(Self.spanne(days)) — normal für dich."))
             return text
 
-        case .unusual(let consumption, let days, let factor):
+        case .unusual(let consumption, let days, _):
+            // Zwei Mengen statt eines Faktors (0.149.0): „rund 0,2× dein
+            // üblicher Verbrauch“ musste man zurückrechnen, und beim
+            // unveränderten Stand stand „rund 0×“ da.
+            guard let usual = verdict.usualConsumption else {
+                return AttributedString("Derselbe Stand wie vor \(Self.spanne(days)). Stimmt die Zahl?")
+            }
             var text = AttributedString("Das wären ")
             var value = AttributedString("\(number(consumption.value, digits: 0)) \(register.unit.symbol)")
             value.font = .system(.subheadline, weight: .semibold)
             text.append(value)
-            let times = number(factor, digits: factor < 10 ? 1 : 0)
-            text.append(AttributedString(" in \(Self.spanne(days)) — rund \(times)× dein üblicher Verbrauch. Stimmt die Zahl?"))
+            text.append(AttributedString(" in \(Self.spanne(days)), sonst sind es rund \(number(usual.value, digits: 0)) \(register.unit.symbol). Stimmt die Zahl?"))
             return text
 
         case .belowPrevious(let value):

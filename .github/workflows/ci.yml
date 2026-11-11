@@ -89,12 +89,27 @@ jobs:
         run: python3 scripts/check-trefferflaechen.py
       - name: Aktualisierung
         run: python3 scripts/check-aktualisierung.py
+      # Nichts aus der Produktion von CloudKit umbenannt oder umgetypt. Was dort
+      # noch fehlt, ist hier ein Hinweis und erst vor TestFlight ein Fehler
+      # (testflight.yml, cloudkit-wache.yml). Siehe docs/15-testkonzept.md.
+      - name: iCloud-Schema
+        run: python3 scripts/check-cloudkit-schema.py --selbsttest && python3 scripts/check-cloudkit-schema.py
+      # CHANGELOG, project.yml, README und Klick-Dummy nennen dieselbe Version.
+      - name: Versionen
+        run: python3 scripts/check-versionen.py
+      # Das Testkonzept zeigt nur auf Tests, die es gibt (docs/15-testkonzept.md).
+      - name: Testkonzept
+        run: python3 scripts/check-testkonzept.py
 
       # Bedienbarkeit und Geschwindigkeit: Trefferflächen, Kontrast, Namen für
       # die Vorlesefunktion, gemessene Zeiten — und die Produktprinzipien 2 bis
       # 4, gezählt statt behauptet. Braucht dasselbe Chromium wie der Entwurf.
       - name: Bedienbarkeit und Geschwindigkeit
         run: node scripts/check-nichtfunktional.mjs
+      # Bedienung bei Fehlern: jede Rückfrage des Ziffernblocks einmal gelesen,
+      # kein Satz mit einem Faktor, „Abbrechen“ sichert nichts (0.149.0).
+      - name: Bedienung bei Fehlern
+        run: node scripts/check-bedienung.mjs
 
       # Dieselbe Maschine, dasselbe Chromium, kein zusätzlicher Auftrag: Die
       # Website ist statisch und in zwanzig Sekunden geprüft. Der erste Lauf
