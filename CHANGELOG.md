@@ -9,6 +9,36 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.146.1 — 2026-11-11
+
+**Rechenkern für 1.7: Preisverlauf, kWh, Hochrechnung je Preis**
+
+### Neu
+- `TariffHistory` in `PulseCore`: `startingNewPrice(on:tariffs:meteringPointID:adjust:)`
+  schließt die jüngste Generation am Vortag und legt eine neue an, ohne einen
+  Tarif zu überschreiben; `removingNewest` löscht die jüngste und öffnet die
+  vorige; `generations` liefert den Preisverlauf, neueste zuerst. Beim
+  Doppeltarif gehören alle Tarife eines Tages zu einer Generation.
+- `EnergyDisplay`: Gas in kWh je Preisabschnitt mit der Umrechnung, die dort
+  galt; Heizöl als `GasConversion` mit Zustandszahl 1 und 10.000 kWh/m³
+  (10 kWh/l), ohne neues Feld im Speicher; `isEstimate` für die Kennzeichnung.
+
+### Behoben
+- **Die Abschlagsvorschau kannte keinen Preiswechsel in der Zukunft.**
+  `prepaymentOutlook` skalierte die bisherigen Kosten hoch. Eine Erhöhung ab
+  1. Oktober stand damit erst in der Zahl, wenn der Oktober gemessen war.
+  Jetzt kostet der noch nicht gemessene Rest je Abschnitt dessen Preis,
+  verteilt nach der Jahresform; der Grundpreis zählt je Abschnitt. Mit einem
+  Preis bleibt jede Zahl, wie sie war. Gefunden im Klick-Dummy (0.146.0).
+
+### Tests
+- `TariffHistoryTests` (13): Vortag, Doppeltarif, Abweisen, Zukunft, andere
+  Zähler unberührt, Löschen, Kosten über die Grenze, Hochrechnung und
+  Grundpreis mit künftigem Preis (beide ohne die Änderung rot gesehen),
+  Gas je Abschnitt, Heizöl ohne Einfluss auf den Betrag. PulseCore: 360 grün.
+
+---
+
 ## 0.146.0 — 2026-11-11
 
 **Klick-Dummy für 1.7: neuer Preis ab einem Tag, Gas und Heizöl in kWh**
