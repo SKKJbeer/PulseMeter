@@ -182,7 +182,8 @@ struct CaptureView: View {
             .fullScreenCover(isPresented: $zeigtKamera) {
                 if let register {
                     KameraView(format: MeterFormat(register), einheit: register.unit.symbol,
-                               bereich: kameraBereich(register), farbe: accent) { value, _ in
+                               bereich: kameraBereich(register), andere: andereFuerKamera(register),
+                               farbe: accent) { value, _ in
                         adopt(value, register: register)
                         kameraWert[register.id] = value
                     }
@@ -333,6 +334,15 @@ struct CaptureView: View {
     /// (`ConsumptionEngine.plausibleReadingRange`).
     private func kameraBereich(_ register: Register) -> ClosedRange<Decimal>? {
         ConsumptionEngine.plausibleReadingRange(register: register, readings: history[register.id] ?? [], today: today)
+    }
+
+    /// Die übrigen Zählwerke dieses Zählers, für die Kamera: Zeigt das Display gerade
+    /// deren Zahl, darf sie nicht für dieses vorgeschlagen werden (`docs/kamera/stufe-2.md`).
+    private func andereFuerKamera(_ register: Register) -> [(name: String, bereich: ClosedRange<Decimal>?)] {
+        registers.filter { $0.id != register.id }.map { anderes in
+            let name = anderes.label.map { "„\($0)“" } ?? "die andere Zahl dieses Zählers"
+            return (name, kameraBereich(anderes))
+        }
     }
 
     private var kameraHinweisSichtbar: Bool {

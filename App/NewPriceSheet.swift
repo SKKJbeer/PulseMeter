@@ -248,6 +248,7 @@ struct NewPriceSheet: View {
 /// Schreibt eine Tarifliste, wie `TariffHistory` sie zurückgibt: geänderte
 /// und neue sichern, verschwundene löschen. Ein Weg für das Blatt und für
 /// „Löschen“ im Zähler.
+@MainActor
 func speichereTarife(vorher: [Tariff], nachher: [Tariff], in repository: PulseRepository) throws {
     let alt = Dictionary(uniqueKeysWithValues: vorher.map { ($0.id, $0) })
     for tarif in nachher where alt[tarif.id] != tarif {
