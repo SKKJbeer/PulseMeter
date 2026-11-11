@@ -9,6 +9,18 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.143.3 — 2026-11-11
+
+**CI: Entwurfsprüfung wieder auf Ubuntu 24.04**
+
+### Behoben
+- `ci.yml`: Der Auftrag `prototype` lief auf `ubuntu-latest`, inzwischen
+  Ubuntu 26.04. Dort fand der Läufer die Paketquellen nicht, und die
+  Einrichtung von WebKit hing zweimal bis zum Abbruch. Jetzt fest auf
+  `ubuntu-24.04`; die Prüfungen selbst sind unverändert.
+
+---
+
 ## 0.143.2 — 2026-11-11
 
 **Wechsel-Paket und Vermittlung entschieden**
