@@ -54,6 +54,49 @@ Prüfungen haben gleich einen echten Fehler gefunden.
 
 ---
 
+## 0.148.0 — 2026-11-11
+
+**Review: zwei Beträge, die nicht stimmten**
+
+Gefunden beim Review des ganzen Stands am 11. November, an den
+Bildschirmfotos der CI, gegengehalten mit dem Klick-Dummy. Beide Male rechnete
+der Klick-Dummy richtig und die App nicht (Regel 2).
+
+### Behoben
+- **Übersicht, Kosten je Monat und Quartal ohne Ablesung.** Beim Gaszähler,
+  zuletzt am 1. August abgelesen, stand „November ≈ 4,77 €“ und
+  „4. Quartal ≈ 19,55 €“: nur der Grundpreis, ohne einen Kubikmeter Gas.
+  Der Betrag sah aus wie Kosten und war um ein Vielfaches zu klein. Jetzt steht
+  dort ein Strich, solange keine Ablesung einen ganzen Tag des Abschnitts
+  abdeckt. Liegt eine Ablesung im Abschnitt, rechnet der Betrag bis zu ihr.
+- **Übersicht, Jahresbetrag „bis 1. August“** enthielt den Grundpreis bis
+  heute. Er rechnet jetzt über denselben Ausschnitt wie die Menge darüber,
+  wie Verlauf, Bericht und Klick-Dummy schon immer.
+- **Bericht, Zeile „Arbeitspreis“ bei Gas.** Dort stand
+  „1.338,3 m³ × 0,11 €“ neben 1.468,42 €; der Preis gilt je kWh. Jetzt steht
+  die abgerechnete Menge in kWh davor, und Menge mal Preis ergibt den Betrag.
+  Gilt im Zeitraum mehr als ein Preis (ab 1.7 möglich), steht der Preis nicht
+  mehr in der Zeile, statt einer Rechnung, die nicht aufgeht.
+
+Wäre es geblieben: Wer Gas im Winter selten abliest, hätte auf der Übersicht
+für November und das Quartal Beträge von wenigen Euro gesehen, mitten in der
+Heizzeit.
+
+### Hinzugefügt
+- `ReportBuilder.RegisterLine.billedQuantity` mit zwei Tests (Gas in kWh,
+  Strom unverändert).
+- Oberflächentest `testMonthWithoutReadingShowsNoCost`.
+
+### Dokumente
+- `docs/06-uebergabe.md`, Abschnitt „Wo die Arbeit steht“, neu geschrieben:
+  Er stand auf dem 22. Oktober und nannte 1.6 „eingereicht“. Dazu eine Regel
+  für Versionsnummern bei parallelen Zweigen.
+- Kopfzeile des Klick-Dummys auf 0.148.0 (stand auf 0.138.0).
+
+_PulseCore unter Linux geprüft, siehe PR. App-Bau und Oberflächentests in der CI._
+
+---
+
 ## 0.144.0 — 2026-11-10
 
 **Kamera: keine Zahl des anderen Zählwerks (erster Schritt zu 1.7)**
@@ -81,6 +124,25 @@ das nicht abfing.
 - Oberflächentests auf dem iPad-Läufer ruhiger: Der Kameratest tippt „Löschen“ erst, wenn der
   Knopf stillsteht; der Import bekommt 60 s; „Zurück“ beim Zähler mit zwei Zahlen wird ein
   zweites Mal getippt, wenn der erste Tipp nachweislich nichts bewirkt hat.
+
+---
+
+## 0.143.0 — 2026-11-10
+
+**Ratgeberseite „Nachzahlung prüfen“, vor der Abrechnungszeit**
+
+### Hinzugefügt
+- `docs/website/nachzahlung-pruefen.html`: Rechner für die Jahresabrechnung bei Strom und Gas. Aus
+  Anfangs- und Endstand, Abrechnungszeitraum (beide Enden mitgezählt), Arbeits- und Grundpreis und der
+  Summe der Abschläge kommen Nachzahlung oder Guthaben, die Kosten im Zeitraum und der passende Abschlag.
+  Wer den Betrag aus dem Brief einträgt, sieht, ob er stimmt (unter einem Euro: „stimmt“). Bei Gas mit
+  Zustandszahl und Brennwert. Dazu, was auf der Rechnung zu prüfen ist und warum eine Nachzahlung auch
+  stimmen kann.
+- Verlinkt aus Ratgeber und Startseite, in Sitemap und Server-Liste.
+- `check-website.mjs`: Seite in allen Prüflisten, dazu 14 Rechenprüfungen (Beispiel Strom und Gas,
+  Abgleich mit der Rechnung, Guthaben, ≈ bei kürzerem Zeitraum, kaputte Eingaben).
+
+Nur Website, kein neuer Bau.
 
 ---
 
