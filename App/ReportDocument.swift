@@ -323,7 +323,7 @@ struct ReportPageView: View {
         VStack(spacing: 0) {
             ForEach(section.registers.filter { !$0.isFeedIn }) { line in
                 if let amount = line.amount, let price = line.pricePerUnit {
-                    amountRow(workLabel(line, section: section, price: price), amount)
+                    amountRow(workLabel(line, section: section, price: price, amount: amount), amount)
                 }
             }
             if let feedIn = section.feedInAmount, feedIn.amount != 0 {
@@ -410,12 +410,22 @@ struct ReportPageView: View {
     private func workLabel(
         _ line: ReportBuilder.RegisterLine,
         section: ReportBuilder.MeterSection,
-        price: Decimal
+        price: Decimal,
+        amount: Money
     ) -> String {
         let name = line.label.map { "Arbeitspreis \($0)" } ?? "Arbeitspreis"
-        let digits = line.quantity.unit == .cubicMetre ? 1 : 0
-        return "\(name) · \(number(line.quantity.value, digits: digits)) \(line.quantity.unit.symbol)"
-             + " × \(number(price, digits: price < Decimal(string: "0.1")! ? 3 : 2)) €"
+        // **Die Menge, für die der Preis gilt.** Gas zählt m³ und kostet je
+        // kWh; „1.338,3 m³ × 0,11 €" ließ sich nicht nachrechnen
+        // (ReportBuilder.RegisterLine.billedQuantity). Wie im Klick-Dummy.
+        let menge = line.billedQuantity ?? line.quantity
+        let digits = menge.unit == .cubicMetre ? 1 : 0
+        let text = "\(name) · \(number(menge.value, digits: digits)) \(menge.unit.symbol)"
+        // Mit zwei Preisen im Zeitraum (neuer Preis ab einem Tag) ist der
+        // Betrag kein einzelnes Produkt mehr. Dann lieber kein Preis als einer,
+        // der nicht aufgeht.
+        let produkt = menge.value * price
+        guard abs(produkt - amount.amount) < Decimal(string: "0.05")! else { return text }
+        return text + " × \(number(price, digits: price < Decimal(string: "0.1")! ? 3 : 2)) €"
     }
 
     private func standText(

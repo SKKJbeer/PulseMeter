@@ -85,6 +85,14 @@ public enum ReportBuilder {
         return list
     }
 
+    /// Summe der abgerechneten Menge über alle Preisabschnitte, oder `nil`,
+    /// wenn die Abschnitte in verschiedenen Einheiten abrechnen.
+    static func billed(_ segments: [CostEngine.Segment]) -> Quantity? {
+        guard let unit = segments.first?.billedQuantity.unit,
+              segments.allSatisfy({ $0.billedQuantity.unit == unit }) else { return nil }
+        return Quantity(segments.reduce(Decimal(0)) { $0 + $1.billedQuantity.value }, unit)
+    }
+
     // MARK: - Ergebnis
 
     /// Eine Zeile je Zählwerk: Was es gezählt hat und was das kostet.
@@ -106,6 +114,14 @@ public enum ReportBuilder {
         /// Betrag dieses Zählwerks. Bei der Einspeisung eine Gutschrift und
         /// deshalb im Gesamtbetrag abgezogen.
         public let amount: Money?
+        /// Die Menge in der Einheit, in der abgerechnet wird — bei Gas kWh,
+        /// auch wenn der Zähler m³ zählt. `nil` ohne Tarif.
+        ///
+        /// **Warum es das gibt:** Im Bericht stand vor 0.148.0
+        /// „1.338,3 m³ × 0,11 € = 1.468,42 €". Der Preis gilt je kWh, die
+        /// Menge war in m³, und nachrechnen ließ sich die Zeile nicht. Der
+        /// Klick-Dummy zeigte schon immer die kWh.
+        public var billedQuantity: Quantity? = nil
     }
 
     public struct MonthLine: Hashable, Sendable, Identifiable {
@@ -275,7 +291,8 @@ public enum ReportBuilder {
                 fractionDigits: register.fractionDigits,
                 isFeedIn: register.direction == .feedIn,
                 pricePerUnit: tariff.map { CostEngine.price(for: register, tariff: $0) },
-                amount: cost.map(\.energyAmount)
+                amount: cost.map(\.energyAmount),
+                billedQuantity: cost.flatMap { Self.billed($0.segments) }
             ))
         }
 
