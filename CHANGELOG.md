@@ -9,6 +9,22 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.145.4 — 2026-11-11
+
+**1.7 bringt den Tarif ab einem Tag und Gas in kWh**
+
+Am 11. November vom Gründer entschieden: Was für 1.8 geplant war, kommt
+schon am 2. Dezember als 1.7. Kamera Stufe 2 rückt hinter 1.9.
+
+### Geändert
+- `docs/05-roadmap.md`: 1.7 neuer Preis ab einem Tag, Gas in kWh; 1.8 Puffer;
+  Kamera Stufe 2 nach 1.9, erster Schritt liegt in PR #14.
+- `entwicklung.html`: „Als Nächstes“ ist jetzt der Tarif ab einem Tag mit Gas
+  in kWh, „Danach“ der Heizungswechsel mit vorher und nachher. Die Kamera für
+  zwei Zahlen steht unter den Ideen.
+
+---
+
 ## 0.145.3 — 2026-11-11
 
 **CI: Entwurfsprüfung wieder auf Ubuntu 24.04**
