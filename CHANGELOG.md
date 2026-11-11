@@ -9,6 +9,19 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.143.2 — 2026-11-11
+
+**Wechsel-Paket und Vermittlung entschieden**
+
+### Geändert
+- `docs/04-monetarisierung.md`: zweiter Kauf „Wechsel-Paket“ für 14,99 €
+  (Februar bis April 2027), die Mappe für den Fachbetrieb wandert aus 1.9
+  dorthin. Vermittlung mit Provision nur auf der Website, ab 5.000 Besuchen
+  im Monat.
+- `docs/05-roadmap.md`: Wechsel-Paket eingeplant, 2.0 im Sommer 2027.
+
+---
+
 ## 0.143.1 — 2026-11-11
 
 **Kauf „Wärmepumpe“ und 1.9 entschieden**
