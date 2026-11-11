@@ -9,6 +9,53 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.146.0 — 2026-11-11
+
+**Klick-Dummy für 1.7: neuer Preis ab einem Tag, Gas und Heizöl in kWh**
+
+Der erste Schritt für 1.7 (Einreichen 2. Dezember), so wie im Konzept
+`docs/konzepte/1.7-preis-ab-tag-und-kwh.md`. Noch nicht in der App.
+
+### Neu
+- Im Zähler unter den Preisen der Knopf **„Neuer Preis ab …“**. Das Blatt
+  fragt den Tag (Vorschlag heute, auch in der Zukunft) und die Preise,
+  vorbelegt mit den bisherigen; bei Doppeltarif beide Arbeitspreise, bei
+  Einspeisung die Vergütung, bei Gas Zustandszahl und Brennwert, bei Heizöl
+  der Heizwert. Ein Satz unter dem Tag sagt, was passiert („Kosten ab dem
+  1. März werden mit dem neuen Preis neu berechnet.“). Ein Tag vor dem Beginn
+  des jüngsten Preises wird abgewiesen.
+- **Preisverlauf** im Zähler, neuester oben. Nur der jüngste lässt sich
+  löschen, dann gilt der vorige wieder offen. Die Überschrift über den Feldern
+  sagt, welchen Preis sie ändern („Preise ab 1. Januar 2027“).
+- Kosten in Verlauf, Übersicht und Bericht werden je Preisabschnitt
+  gerechnet, Grundpreis tagesgenau. Der Bericht hat je Preis eine Zeile.
+- Die Hochrechnung aufs Jahr teilt sich an einem Preiswechsel: Gemessenes
+  bleibt, wo es gemessen ist, der Rest verteilt sich nach der Jahresform.
+- Die Kostenerklärung zeigt je Preis eine Zeile und nennt den Wechsel
+  („Ab 1. März 0,150 € statt 0,112 € je kWh.“).
+- **Gas in kWh:** Auf der Karte unter den m³, in der Kopfzeile des Verlaufs
+  und als Spalte im Jahresvergleich. Je Abschnitt mit dem Brennwert, der dort
+  galt. Nur mit „Kosten und Preise“.
+- **Heizöl in kWh:** Heizwert im Zähler, vorbelegt mit 10 kWh je Liter, die
+  Zahl auf zehn gerundet und mit ≈. Abgerechnet wird weiter in Litern.
+
+### Behoben
+- Die Hochrechnung rechnete nur das erste Zählwerk zum Preis des Zählers.
+  Beim Doppeltarif fehlte damit der Niedertarif, und der Hochtarif kostete den
+  Zählerpreis statt seines eigenen. Die App rechnete schon je Zählwerk.
+- Wer einen neuen Zähler auf „Gas“ stellte, bekam keine Felder für
+  Zustandszahl und Brennwert: Die Felder wurden nur beim Öffnen gebaut.
+- Die Einspeisevergütung stand in der Erklärung mit zwei Stellen (0,08 €
+  statt 0,082 €).
+
+### Tests
+- `check-prototype.mjs`: 28 neue Prüfungen im Abschnitt „1.7“, darunter
+  Kosten vor dem Wechsel unverändert, Kosten über die Grenze gegen eine
+  Rechnung von Hand, Doppeltarif, Abweisen, Löschen, kWh mit und ohne Kauf,
+  Heizöl ohne Einfluss auf den Betrag.
+
+---
+
 ## 0.145.4 — 2026-11-11
 
 **1.7 bringt den Tarif ab einem Tag und Gas in kWh**
