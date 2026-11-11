@@ -9,6 +9,20 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.147.2 — 2026-11-11
+
+**Prüfung „Kein Text über den Rand“ wartet auf die erste Karte**
+
+### Behoben
+- Auf dem iPad quer in größter Schrift wartete die Prüfung auf die Karte
+  „Strom“. Seit die Gaskarte die Zeile in kWh trägt, liegt Strom dort
+  außerhalb dessen, was die Liste schon gebaut hat, und die Prüfung meldete
+  „Übersicht kam nicht“, obwohl die Übersicht dastand. Sie wartet jetzt auf
+  „Gas“, die erste Karte. Auf dem iPhone liefen alle Prüfungen von 0.147.1
+  grün, auch die beiden neuen.
+
+---
+
 ## 0.147.1 — 2026-11-11
 
 **1.7: Rückfrage beim Löschen eines Preises geht zuverlässig auf**

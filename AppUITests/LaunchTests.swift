@@ -2848,7 +2848,10 @@ final class LaunchTests: XCTestCase {
 
     private static let schirme: [(name: String, schalter: [String],
                                   steht: @MainActor (XCUIApplication) -> XCUIElement)] = [
-        ("Übersicht", [], { $0.staticTexts["Strom"] }),
+        // „Gas“, die erste Karte, nicht „Strom“: Seit 1.7 trägt die Gaskarte
+        // eine Zeile in kWh, und auf dem iPad quer in größter Schrift rückt
+        // die zweite Karte damit aus dem Teil, den die Liste schon gebaut hat.
+        ("Übersicht", [], { $0.staticTexts["Gas"] }),
         ("Verlauf als Tabelle",
          ["-pulse-verlauf", "-pulse-verlauf-vorschau", "-pulse-verlauf-tabelle"],
          { $0.buttons["Alle Zahlen"] }),
