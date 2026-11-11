@@ -164,7 +164,9 @@ Klick-Dummy. Der Satz „Alle Werte in …" unter der Tabelle im Entwurf ist weg
 4. **Ratgeberseiten**, eine je Woche. Gebaut: Stromverbrauch vergleichen
    (4.10.), Jahresarbeitszahl der Wärmepumpe (8.10.), Zählerstand ablesen
    (8.10.), Photovoltaik-Eigenverbrauch (8.10.), Grafik zur Strompreis-Entwicklung
-   (8.10.). Als Nächstes: Nachzahlung prüfen (Januar).
+   (8.10.), Nachzahlung prüfen (8.11., `nachzahlung-pruefen.html`, Rechner
+   für Strom und Gas aus den Angaben der Jahresabrechnung). Damit ist Phase 2
+   der Rechnerseiten gebaut; Phase 3 richtet sich nach der Search Console.
    **Die Strompreis-Grafik braucht Pflege:** Eurostat ergänzt zweimal im Jahr
    ein Halbjahr. Dann `scripts/strompreis-holen.py` laufen lassen; schlägt
    danach `check-website.mjs` an, die Sätze und Kacheln auf

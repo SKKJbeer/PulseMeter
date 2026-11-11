@@ -47,7 +47,7 @@ const base = `http://127.0.0.1:${server.address().port}/`;
 // toter Verweis dorthin fällt sonst niemandem auf.
 const seiten = ["index.html", "entwicklung.html", "hilfe.html", "gas-in-kwh.html",
                 "zaehlerstand-umzug.html", "ratgeber.html",
-                "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "zaehlerstand-ablesen.html", "photovoltaik-eigenverbrauch.html", "strompreis-entwicklung.html", "datenschutz.html", "impressum.html", "404.html"];
+                "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "zaehlerstand-ablesen.html", "photovoltaik-eigenverbrauch.html", "strompreis-entwicklung.html", "nachzahlung-pruefen.html", "datenschutz.html", "impressum.html", "404.html"];
 
 // Was nicht in den Index soll: das Impressum (erreichbar, nicht auffindbar)
 // und die Seite für unbekannte Adressen. Beide tragen `noindex`, keine steht
@@ -953,11 +953,47 @@ console.log("\nVerhalten");
   await page.fill("#s-neu", "12.731"); await page.fill("#s-ap", "");
   note(!(await kaputt("#s-ergebnis")), "Stromkostenrechner: ohne Arbeitspreis keine kaputte Zahl");
 
+  // **Nachzahlung prüfen.** Von Hand: 15.420 − 12.480 = 2.940 kWh × 0,34 €
+  // = 999,60 €, dazu 12 € × 12 ÷ 365 × 365 Tage = 144 €, zusammen
+  // 1.143,60 €, minus 1.020 € Abschläge = 123,60 € Nachzahlung. Der Zeitraum
+  // 1.1.–31.12. hat 365 Tage, weil Versorger beide Enden mitzählen.
+  await page.goto(base + "nachzahlung-pruefen.html");
+  const nz = await kachel("saldo");
+  note(nz.name === "Nachzahlung" && nz.wert === "123,60 €", `Nachzahlung: Beispiel ergibt 123,60 € (${nz.name}: ${nz.wert})`);
+  const nk = await kachel("kosten");
+  note(nk.wert === "1.143,60 €" && nk.zusatz === "2.940 kWh in 365 Tagen", `Nachzahlung: Kosten 1.143,60 € für 2.940 kWh in 365 Tagen (${nk.wert}, ${nk.zusatz})`);
+  note((await kachel("grund")).wert === "144,00 €", "Nachzahlung: ein Kalenderjahr kostet genau zwölf Monatsgrundpreise");
+  note((await kachel("abschlag")).wert === "95,30 €", `Nachzahlung: passender Abschlag 95,30 € ohne ≈ bei einem ganzen Jahr (${(await kachel("abschlag")).wert})`);
+  await page.fill("#n-re", "123,59");
+  note((await kachel("abgleich")).wert === "stimmt", "Nachzahlung: ein Cent Unterschied zur Rechnung heißt „stimmt“");
+  await page.fill("#n-re", "160");
+  const mehr = await kachel("abgleich");
+  note(mehr.name === "Rechnung verlangt mehr" && mehr.wert === "36,40 €", `Nachzahlung: Rechnung 160 € liegt 36,40 € über der eigenen Rechnung (${mehr.name}: ${mehr.wert})`);
+  await page.fill("#n-re", ""); await page.fill("#n-ab", "1.200");
+  const gut = await kachel("saldo");
+  note(gut.name === "Guthaben" && gut.wert === "56,40 €", `Nachzahlung: mehr gezahlt als verbraucht ergibt ein Guthaben (${gut.name}: ${gut.wert})`);
+  await page.fill("#n-bis", "2025-06-30");
+  note(/^≈ /.test((await kachel("abschlag")).wert), "Nachzahlung: ein halbes Jahr aufs Jahr gestreckt trägt ein ≈");
+  await page.fill("#n-bis", "2025-12-31"); await page.fill("#n-ab", "1.020");
+  // Gas: Wer umschaltet, ohne etwas getippt zu haben, bekommt Gaswerte.
+  // 9.538 − 8.214 = 1.324 m³ × 0,9650 × 11,2 = 14.309,79 kWh × 0,11 €
+  // = 1.574,08 €, dazu 180 € Grundpreis, minus 1.680 € = 74,08 €.
+  await page.check('input[name="n-art"][value="gas"]');
+  note(await page.isVisible("#n-z") && (await page.inputValue("#n-ap")) === "11", "Nachzahlung: bei Gas erscheinen Zustandszahl und Brennwert, mit Gaspreisen");
+  const gz = await kachel("saldo"), gk = await kachel("kosten");
+  note(gz.wert === "74,08 €" && gk.zusatz === "1.324 m³ = 14.310 kWh in 365 Tagen", `Nachzahlung Gas: 74,08 €, ${gk.zusatz} (${gz.wert})`);
+  await page.fill("#n-neu", "8.000");
+  note((await text("#n-ergebnis")).includes("getauscht"), "Nachzahlung: ein kleinerer Endstand ergibt einen Hinweis");
+  await page.fill("#n-neu", "9.538"); await page.fill("#n-z", "");
+  note(!(await kaputt("#n-ergebnis")) && (await text("#n-ergebnis")).includes("Zustandszahl"), "Nachzahlung: ohne Zustandszahl ein Hinweis, keine kaputte Zahl");
+  await page.fill("#n-z", "0,9650"); await page.fill("#n-alt", "abc");
+  note(!(await kaputt("#n-ergebnis")), "Nachzahlung: Buchstaben ergeben keine kaputte Zahl");
+
   // **Auf einen Blick.** Vom Gründer am 26. September: nicht zu viel Text,
   // klare Benennungen. Gezählt wird, was sonst schleichend wieder wächst:
   // der Hinweis unter einem Feld, der Text im Ergebnis, und wo der Rechner
   // steht.
-  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "photovoltaik-eigenverbrauch.html"]) {
+  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "photovoltaik-eigenverbrauch.html", "nachzahlung-pruefen.html"]) {
     await page.goto(base + datei);
     const blick = await page.evaluate(() => {
       const erg = document.querySelector(".rechner-ergebnis");
@@ -988,7 +1024,7 @@ console.log("\nVerhalten");
   // neben einem einzeiligen hat die Felder um acht Punkte versetzt; gesehen
   // habe ich es erst auf dem Bildschirmfoto.
   await page.setViewportSize({ width: 1280, height: 900 });
-  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "photovoltaik-eigenverbrauch.html"]) {
+  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "photovoltaik-eigenverbrauch.html", "nachzahlung-pruefen.html"]) {
     await page.goto(base + datei);
     const versatz = await page.evaluate(() => {
       const reihen = {};
@@ -1009,7 +1045,7 @@ console.log("\nVerhalten");
   // „2.702 kWh" mitten in der Zahl um. Gemessen breit und schmal.
   for (const breite of [1280, 390]) {
     await page.setViewportSize({ width: breite, height: 900 });
-    for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "photovoltaik-eigenverbrauch.html"]) {
+    for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "photovoltaik-eigenverbrauch.html", "nachzahlung-pruefen.html"]) {
       await page.goto(base + datei);
       const mass = await page.evaluate(() => {
         // Nur sichtbare: Der Stromkostenrechner blendet die Felder des anderen
@@ -1047,7 +1083,7 @@ console.log("\nVerhalten");
   // **Groß genug für einen Daumen.** Wer mit der Rechnung in der einen Hand
   // tippt, trifft ein kleines Feld nicht.
   await page.setViewportSize({ width: 390, height: 900 });
-  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "photovoltaik-eigenverbrauch.html", "zaehlerstand-umzug.html"]) {
+  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "photovoltaik-eigenverbrauch.html", "nachzahlung-pruefen.html", "zaehlerstand-umzug.html"]) {
     await page.goto(base + datei);
     const klein = await page.evaluate(() =>
       [...document.querySelectorAll(".rechner input, .rechner select, main button")]

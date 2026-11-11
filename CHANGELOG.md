@@ -39,6 +39,25 @@ das nicht abfing.
 
 ---
 
+## 0.143.0 — 2026-11-10
+
+**Ratgeberseite „Nachzahlung prüfen“, vor der Abrechnungszeit**
+
+### Hinzugefügt
+- `docs/website/nachzahlung-pruefen.html`: Rechner für die Jahresabrechnung bei Strom und Gas. Aus
+  Anfangs- und Endstand, Abrechnungszeitraum (beide Enden mitgezählt), Arbeits- und Grundpreis und der
+  Summe der Abschläge kommen Nachzahlung oder Guthaben, die Kosten im Zeitraum und der passende Abschlag.
+  Wer den Betrag aus dem Brief einträgt, sieht, ob er stimmt (unter einem Euro: „stimmt“). Bei Gas mit
+  Zustandszahl und Brennwert. Dazu, was auf der Rechnung zu prüfen ist und warum eine Nachzahlung auch
+  stimmen kann.
+- Verlinkt aus Ratgeber und Startseite, in Sitemap und Server-Liste.
+- `check-website.mjs`: Seite in allen Prüflisten, dazu 14 Rechenprüfungen (Beispiel Strom und Gas,
+  Abgleich mit der Rechnung, Guthaben, ≈ bei kürzerem Zeitraum, kaputte Eingaben).
+
+Nur Website, kein neuer Bau.
+
+---
+
 ## 0.142.0 — 2026-11-10
 
 **CloudKit-Schema ohne Mac: aus dem Modell abgeleitet, per CI hochgeladen**
