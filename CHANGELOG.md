@@ -9,6 +9,33 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.143.0 — 2026-11-11
+
+**Website: der Wechsel zur Wärmepumpe**
+
+Erstes Paket aus dem Schwerpunkt Wärmepumpe. Wer von Öl oder Gas umsteigt,
+findet auf der Website jetzt die Schritte und einen Rechner, der aus dem alten
+Verbrauch die Größe der Wärmepumpe grob schätzt.
+
+### Neu
+- `waermebedarf-berechnen.html`: Gas in m³, Gas in kWh oder Heizöl in Litern,
+  Kessel und Zustand des Hauses. Ergebnis: Wärme im Jahr, Heizlast grob mit
+  Spanne, Strom bei einer Jahresarbeitszahl von 3,4 (Feldtest Fraunhofer ISE).
+  Rechenweg und Volllaststunden aus dem Leitfaden des BürgerNetzwerkSolar
+  Worms (März 2026, nach VDI 4645 und VDI 4650), Quelle auf der Seite.
+  Ergebnisse auf hundert gerundet und mit ≈, weil es eine Schätzung ist.
+- `heizung-auf-waermepumpe-umstellen.html`: vier Schritte vom Festhalten des
+  alten Verbrauchs bis zur Bilanz nach dem ersten Jahr.
+- Beide Seiten im Ratgeber, auf der Startseite und in der Sitemap.
+- `stil.css`: Umschalter mit drei Feldern.
+
+### Geprüft
+- `check-website.mjs`: Werte für Gas in m³, Heizöl und Gas in kWh, leeres
+  Feld, Tabelle der Volllaststunden gleich dem Rechner; beide Seiten in allen
+  Seitenprüfungen, der Rechner in den Prüfungen für Rechner. Alles grün.
+
+---
+
 ## 0.142.1 — 2026-11-11
 
 **iCloud-Abgleich läuft, Wünsche eines Käufers im Plan**
