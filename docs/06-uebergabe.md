@@ -103,11 +103,13 @@ davor stand auf dem 22. Oktober und nannte 1.6 noch „eingereicht“.
 | PR | Inhalt | Stand |
 |---|---|---|
 | #17 | 1.7: neuer Preis ab einem Tag, Gas und Heizöl in kWh (0.145.x bis 0.147.0), dazu Website Wärmepumpe | in Arbeit im Thread zu 1.7, CI läuft |
-| #13 | Ratgeberseite „Nachzahlung prüfen“ (0.143.0) | CI rot seit 10. November. Muss vor Januar live sein, sonst verpasst sie die Abrechnungszeit |
-| Review | Zwei Rechenfehler auf Übersicht und im Bericht (0.148.0), diese Übergabe | dieser Zweig |
+| #19 | Testkonzept, neue Prüfungen (0.149.0) | im Test-Thread |
+| #20 | Website (baut auf #17) | im Website-Thread |
+
+Am 11. November zusammengeführt: #13 (Ratgeberseite „Nachzahlung prüfen“, live vor der Abrechnungszeit) und #18 (zwei Rechenfehler auf Übersicht und im Bericht, 0.148.0).
 
 **Versionsnummern bei parallelen Zweigen:** Jeder offene PR reserviert seine
-Nummern (0.143.0 für #13, 0.145.x bis 0.147.0 für #17). Wer einen neuen Zweig
+Nummern (0.145.x bis 0.147.0 für #17, 0.149.0 für #19, ab 0.150.0 für 1.8 „Einfacher“). Wer einen neuen Zweig
 anfängt, nimmt die nächste freie Nummer über allen offenen PRs, nicht über
 `main`.
 
