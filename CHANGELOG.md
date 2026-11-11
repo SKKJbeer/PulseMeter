@@ -16,6 +16,11 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 Am 11. November vom Gründer entschieden: Was für 1.8 geplant war, kommt
 schon am 2. Dezember als 1.7. Kamera Stufe 2 rückt hinter 1.9.
 
+### Neu
+- `docs/konzepte/1.7-preis-ab-tag-und-kwh.md`: Konzept für 1.7. Neuer Preis
+  ab einem Tag mit Preisverlauf, Gas mit kWh neben m³, Heizöl in kWh mit
+  geschätztem Heizwert. Ohne neues Feld im Speicher.
+
 ### Geändert
 - `docs/05-roadmap.md`: 1.7 neuer Preis ab einem Tag, Gas in kWh; 1.8 Puffer;
   Kamera Stufe 2 nach 1.9, erster Schritt liegt in PR #14.
