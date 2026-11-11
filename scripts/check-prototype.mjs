@@ -623,13 +623,16 @@ for (const scheme of ["light", "dark"]) {
       titel: document.getElementById("pro-title").textContent,
       preis: document.getElementById("pro-buy") ? document.getElementById("pro-buy").textContent : "",
       buendel: document.getElementById("pro-body").innerText,
+      teile: [...document.querySelectorAll("#pro-bundle li")].map(li => li.textContent),
       sucher: !document.getElementById("foto-panel").hidden
     }));
     note(kaufblatt.offen && kaufblatt.titel === "Mit Kamera ablesen" && /1,99/.test(kaufblatt.preis),
          `Ohne Kauf öffnet der Knopf das Kaufblatt der Kamera (${kaufblatt.titel}, ${kaufblatt.preis.trim()})`);
     note(!kaufblatt.sucher, "Ohne Kauf öffnet sich kein Sucher");
-    note(/Alle sechs zusammen/.test(kaufblatt.buendel) && /4,99/.test(kaufblatt.buendel),
-         "Das Kaufblatt nennt das Bündel mit der Kamera: „Alle sechs zusammen“");
+    // Seit 1.8 ohne „Alle sechs zusammen“ im Satz darunter: Die sechs stehen
+    // als Liste im Knopf, ein zweites Mal gezählt sagte es nichts Neues.
+    note(kaufblatt.teile.length === 6 && kaufblatt.teile.includes("Mit Kamera ablesen") && /4,99/.test(kaufblatt.buendel),
+         `Das Kaufblatt nennt das Bündel mit der Kamera, sechs Teile (${kaufblatt.teile.length})`);
     // „Fertig" führt zurück in den Ziffernblock, die eingetippte Ziffer steht noch da.
     await page.locator("#sheet-pro [data-close]").first().click();
     await page.waitForTimeout(200);
@@ -1961,6 +1964,85 @@ for (const scheme of ["light", "dark"]) {
   await sichere();
   await page.waitForTimeout(1700);
   note(!(await offen()), "Nach der 4. Ablesung kommt sie nicht wieder");
+  await page.close();
+}
+
+// --- 1.8 „Einfacher“: kürzere Übersicht, Verlauf mit zwei Reihen oben,
+// Kaufblatt ohne Dopplung, iCloud-Zeile. Konzept: docs/konzepte/1.8-einfacher.md
+{
+  console.log("\n1.8: Einfacher");
+  const page = await browser.newPage({ viewport: { width: 440, height: 1300 } });
+  await page.goto(url);
+  await page.waitForTimeout(300);
+  const ueb = await page.evaluate(() => ({
+    status: document.getElementById("status").innerText.trim(),
+    schilder: document.querySelectorAll("#cards .due-pill").length,
+    erklaerzeilen: document.querySelectorAll("#cards .card-basis").length,
+    striche: [...document.querySelectorAll("#cards .sp-v")].filter(e => e.textContent.trim() === "–").length,
+    gasKosten: (() => {
+      const karte = [...document.querySelectorAll("#cards .card")]
+        .find(k => k.querySelector(".card-name").textContent === "Gas");
+      const z = karte && karte.querySelector("[data-kosten-einzeln]");
+      return z ? z.innerText.replace(/\s+/g, " ").trim() : "";
+    })(),
+    faelligZeile: [...document.querySelectorAll("#cards .card.flagged .sub")].map(e => e.textContent.trim()),
+  }));
+  note(/^([^.]+ ist fällig|[^.]+ sind fällig|Alles im Rahmen)\.$/.test(ueb.status),
+       `Die Statuszeile ist ein kurzer Satz („${ueb.status}“)`);
+  note(ueb.schilder === 0, `Kein Schild „Fällig“ mehr auf den Karten (${ueb.schilder})`);
+  note(ueb.faelligZeile.length > 0 && ueb.faelligZeile.every(t => /^Seit \d+ Tagen fällig$|^Noch nie abgelesen$/.test(t)),
+       `Auf der fälligen Karte steht weiter, seit wann („${ueb.faelligZeile.join(" / ")}“)`);
+  note(ueb.erklaerzeilen === 0, `Keine Erklärzeile „Hochgerechnet …“ auf den Karten (${ueb.erklaerzeilen})`);
+  note(ueb.striche === 0, `Kein Kostenabschnitt mit Strich (${ueb.striche})`);
+  note(/^Kosten bis .+ €$/.test(ueb.gasKosten),
+       `Beim überfälligen Gas bleibt eine Kostenzeile bis zur letzten Ablesung („${ueb.gasKosten}“)`);
+  // Ein Zähler ohne Ablesung im laufenden Jahr bleibt fällig, und der Satz
+  // nennt ihn — „Alles im Rahmen“ wäre beim ersten Öffnen gelogen.
+  const zwei = await page.evaluate(() => faelligSatz(["Gas", "Wasser"]) + " | " + faelligSatz(["Gas", "Wasser", "Strom"]));
+  note(zwei === "Gas und Wasser sind fällig. | Gas, Wasser und Strom sind fällig.",
+       `Mehrere fällige Zähler in einem Satz („${zwei}“)`);
+
+  await page.locator('[data-pane="history"]:visible').first().click();
+  await page.waitForTimeout(250);
+  const verlauf = await page.evaluate(() => {
+    const karte = document.querySelector("#view-chart .chart-card");
+    const mode = document.getElementById("mode");
+    const vorDemDiagramm = [...document.querySelectorAll("#pane-history .segmented")]
+      .filter(e => e.offsetParent !== null && e.getBoundingClientRect().top < karte.getBoundingClientRect().top);
+    return { reihen: vorDemDiagramm.map(e => e.id), unter: mode.previousElementSibling === karte,
+             satz: /Tippe einen/.test(document.getElementById("pane-history").innerText) };
+  });
+  note(verlauf.reihen.length === 1 && verlauf.reihen[0] === "scale",
+       `Über dem Diagramm nur der Zeitraum, neben der Zählerwahl (${verlauf.reihen.join(", ")})`);
+  note(verlauf.unter, "„Diagramm / Alle Zahlen“ steht unter dem Diagramm");
+  note(!verlauf.satz, "Kein Satz, der erklärt, wohin ein Tipp führt");
+  await page.locator('[data-mode="table"]').first().click();
+  await page.waitForTimeout(250);
+  const tabelle = await page.evaluate(() => ({
+    sichtbar: document.getElementById("mode").offsetParent !== null,
+    oben: document.getElementById("view-table").firstElementChild === document.getElementById("mode"),
+  }));
+  note(tabelle.sichtbar && tabelle.oben, "In der Tabelle steht der Umschalter über ihr, zurück geht es mit einem Tipp");
+  await page.locator('[data-mode="chart"]').first().click();
+  await page.waitForTimeout(200);
+
+  const kauf = await page.evaluate(() => {
+    OWNED = new Set();
+    openPaywall("reminders");
+    return document.getElementById("pro-body").innerText;
+  });
+  const alle = (kauf.match(/Alle (sechs|sieben|fünf|\d+)/g) || []).length;
+  note(alle <= 1, `Das Kaufblatt sagt „Alle … zusammen“ höchstens einmal (${alle}×)`);
+  note(/günstiger als einzeln/.test(kauf), "Die Ersparnis steht weiter da");
+  await page.evaluate(() => { OWNED = new Set(["everything"]); closeSheets(); });
+
+  await page.locator('[data-pane="meters"]:visible').first().click();
+  await page.waitForTimeout(200);
+  const icloud = await page.evaluate(() => {
+    const e = document.getElementById("icloud-zeile");
+    return e && e.offsetParent !== null ? e.textContent.trim().replace(/\s+/g, " ") : "";
+  });
+  note(/^(Mit iCloud abgeglichen: .+|iCloud ist .+)$/.test(icloud), `Im Zähler-Tab steht, ob iCloud abgleicht („${icloud}“)`);
   await page.close();
 }
 

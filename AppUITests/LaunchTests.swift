@@ -669,30 +669,91 @@ final class LaunchTests: XCTestCase {
                              "Beim überfälligen Zähler muss der Betrag sein Enddatum nennen")
     }
 
-    /// Ein Monat ohne Ablesung hat keine Kosten, sondern einen Strich.
+    /// Ein Abschnitt ohne Ablesung hat keine Kosten und steht nicht da.
     ///
     /// Vor 0.148.0 stand beim Gaszähler, seit drei Monaten nicht abgelesen,
     /// „November ≈ 4,77 €": der Grundpreis von elf Tagen ohne einen Kubikmeter
-    /// Gas. Im Klick-Dummy stand an derselben Stelle ein Strich (Regel 2).
-    /// Der Gaszähler der Beispieldaten ist bewusst über 90 Tage überfällig,
-    /// also deckt keine Ablesung den laufenden Monat — an jedem Tag des Jahres.
+    /// Gas. 0.148.0 setzte einen Strich, seit 1.8 fällt der Abschnitt weg
+    /// (Klick-Dummy wie App, Regel 2). Der Gaszähler der Beispieldaten ist
+    /// bewusst über 90 Tage überfällig, also deckt keine Ablesung den
+    /// laufenden Monat — an jedem Tag des Jahres.
     func testMonthWithoutReadingShowsNoCost() {
         let app = launchWithData()
-        let monate = app.descendants(matching: .any)
-            .matching(identifier: "kostenabschnitt-monat")
-        XCTAssertTrue(monate.firstMatch.waitForExistence(timeout: erscheint),
-                      "Mit Tarif muss eine Kostenzeile mit Monat dastehen")
+        let abschnitte = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier BEGINSWITH 'kostenabschnitt-' "
+                                   + "OR identifier BEGINSWITH 'kosten-einzeln-'"))
+        XCTAssertTrue(abschnitte.firstMatch.waitForExistence(timeout: erscheint),
+                      "Mit Tarif muss eine Kostenzeile mit Abschnitten dastehen")
         var gelesen: [String] = []
-        for index in 0..<monate.count {
-            gelesen.append(monate.element(boundBy: index).label)
+        for index in 0..<abschnitte.count {
+            gelesen.append(abschnitte.element(boundBy: index).label)
         }
         // Damit ein Fehlschlag nicht raten lässt, was dastand.
-        print("MONATSKOSTEN: \(gelesen)")
-        XCTAssertTrue(gelesen.contains { $0.contains("–") },
-                      "Der überfällige Gaszähler zeigt für den Monat einen Betrag: \(gelesen)")
-        // Bewusst keine Gegenprobe auf „€" bei den anderen Zählern: Sie sind
-        // gestern abgelesen, am Ersten und Zweiten eines Monats deckt das
-        // keinen ganzen Tag des Monats. Die Prüfung hinge am Kalender.
+        print("KOSTENABSCHNITTE: \(gelesen)")
+        XCTAssertFalse(gelesen.contains { $0.contains("–") },
+                       "Ein Abschnitt ohne Betrag steht als Strich da: \(gelesen)")
+        XCTAssertTrue(gelesen.allSatisfy { $0.contains("€") },
+                      "Jeder gezeigte Abschnitt nennt einen Betrag: \(gelesen)")
+    }
+
+    /// Die Statuszeile ist ein kurzer Satz (1.8).
+    ///
+    /// Vorher zwei Sätze, deren zweiter („Ohne aktuellen Stand ist die
+    /// Vorschau ungenau.") nur begründete, was die Karte darunter ohnehin
+    /// sagte. Bei größter Schrift füllten sie allein den Bildschirm.
+    func testStatusLineIsOneShortSentence() {
+        let app = launchWithData()
+        let satz = app.staticTexts.matching(
+            NSPredicate(format: "label ENDSWITH ' fällig.' OR label == 'Alles im Rahmen.'")
+        ).firstMatch
+        XCTAssertTrue(satz.waitForExistence(timeout: erscheint),
+                      "Oben steht kein kurzer Satz wie „Gas ist fällig.“")
+        XCTAssertEqual(satz.label.components(separatedBy: ". ").count, 1,
+                       "Die Statuszeile hat mehr als einen Satz: \(satz.label)")
+        let begruendung = app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS 'Ohne aktuellen Stand'")
+        )
+        XCTAssertEqual(begruendung.count, 0, "Der zweite Satz steht noch da")
+        let schild = app.staticTexts.matching(
+            NSPredicate(format: "label ==[c] 'Fällig'")
+        )
+        XCTAssertEqual(schild.count, 0, "Das Schild „Fällig“ steht noch auf einer Karte")
+    }
+
+    /// Im Verlauf stehen oben nur Zähler und Zeitraum (1.8).
+    ///
+    /// „Diagramm / Alle Zahlen" war die dritte Reihe über dem Diagramm und
+    /// steht jetzt darunter, bei dem, was er umschaltet.
+    func testHistoryHasTwoRowsOnTop() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-pulse-reset", "-pulse-pro", "-pulse-verlauf"]
+        app.launch()
+        let zeitraum = app.buttons["Quartal"]
+        let darstellung = app.buttons["Alle Zahlen"]
+        XCTAssertTrue(zeitraum.waitForExistence(timeout: 15), "Der Zeitraum fehlt im Verlauf")
+        XCTAssertTrue(darstellung.waitForExistence(timeout: erscheint),
+                      "„Alle Zahlen“ fehlt im Verlauf")
+        // Dazwischen liegt das Diagramm, also deutlich mehr als eine Reihe.
+        XCTAssertGreaterThan(darstellung.frame.minY, zeitraum.frame.maxY + 120,
+                             "„Alle Zahlen“ steht nicht unter dem Diagramm "
+                             + "(\(darstellung.frame.minY) zu \(zeitraum.frame.maxY))")
+        let erklaerung = app.staticTexts.containing(
+            NSPredicate(format: "label BEGINSWITH 'Tippe einen Abschnitt'")
+        )
+        XCTAssertEqual(erklaerung.count, 0, "Der Erklärsatz unter dem Diagramm steht noch da")
+    }
+
+    /// Im Zähler-Tab steht, ob der iCloud-Abgleich klappt (1.8).
+    ///
+    /// Im Simulator gibt es keine iCloud-Berechtigung, die App läuft dort mit
+    /// dem Speicher ohne Abgleich — dann muss genau das dastehen, nicht nichts.
+    func testMetersShowICloudLine() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-pulse-reset", "-pulse-pro", "-pulse-zaehler"]
+        app.launch()
+        let zeile = app.descendants(matching: .any)["icloud-zeile"]
+        XCTAssertTrue(zeile.waitForExistence(timeout: 15), "Die iCloud-Zeile fehlt im Zähler-Tab")
+        XCTAssertTrue(zeile.label.contains("iCloud"), "Die Zeile nennt iCloud nicht: \(zeile.label)")
     }
 
     /// Mit Abschlag steht die Vorschau auf dem Jahresende auf der Karte.

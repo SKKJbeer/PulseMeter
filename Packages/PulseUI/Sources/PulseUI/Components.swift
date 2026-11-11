@@ -85,7 +85,7 @@ public struct ValueCard<Footer: View>: View {
     private let isApproximate: Bool
     private let unit: String
     private let detail: Text
-    private let badge: String?
+    private let flagged: Bool
     private let series: [Double]
     private let onOpen: (() -> Void)?
     private let footer: Footer
@@ -113,7 +113,7 @@ public struct ValueCard<Footer: View>: View {
         isApproximate: Bool = false,
         unit: String,
         detail: Text,
-        badge: String? = nil,
+        flagged: Bool = false,
         series: [Double] = [],
         onOpen: (() -> Void)? = nil,
         @ViewBuilder footer: () -> Footer = { EmptyView() }
@@ -126,14 +126,14 @@ public struct ValueCard<Footer: View>: View {
         self.isApproximate = isApproximate
         self.unit = unit
         self.detail = detail
-        self.badge = badge
+        self.flagged = flagged
         self.series = series
         self.onOpen = onOpen
         self.footer = footer()
     }
 
     public var body: some View {
-        PulseCard(accent: badge == nil ? nil : accent) {
+        PulseCard(accent: flagged ? accent : nil) {
             VStack(spacing: 0) {
                 // **Die Karte selbst führt weiter, nicht nur ihr Knopf.**
                 //
@@ -172,20 +172,10 @@ public struct ValueCard<Footer: View>: View {
                     .font(PulseText.cardTitle)
                     .foregroundStyle(PulseColor.ink)
                 Spacer(minLength: 8)
-                if let badge {
-                    Text(badge)
-                        .font(.system(.caption2, weight: .semibold))
-                        .textCase(.uppercase)
-                        // Ein Schild wird nicht getrennt. Auf der größten
-                        // Schrift stand in einer schmalen Karte „FÄL-" über
-                        // „LIG"; lieber gibt der Name daneben eine Zeile her.
-                        .lineLimit(1)
-                        .fixedSize()
-                        .foregroundStyle(accent)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(accent.opacity(0.16), in: Capsule())
-                }
+                // **Kein Schild „Fällig" mehr, seit 1.8.** Dieselbe Nachricht
+                // stand dreimal da: im Satz oben, als Schild und als „Seit 102
+                // Tagen fällig" unter der Zahl. Die Zeile bleibt, weil sie die
+                // Dauer nennt; der farbige Rand (`flagged`) sagt es dem Auge.
                 if onOpen != nil {
                     // **Der Winkel ist ein eigener Knopf, nicht nur ein
                     // Zeichen.** Er sagt dem Auge, dass es weitergeht, und
