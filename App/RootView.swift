@@ -969,8 +969,6 @@ struct OverviewView: View {
                 let tariffs = purchase.allows(.costsAndTariffs)
                     ? try repository.tariffs(for: point.id) : []
                 let periods = try repository.billingPeriods(for: point.id)
-                let costs = cost(point: point, readings: everything,
-                                 tariffs: tariffs, in: yearRange)
                 // **Menge und Vergleich gehören zum Zähler, nicht zum ersten
                 // Zählwerk.** Bei einem Doppeltarifzähler stünde sonst der
                 // Hochtarif allein auf der Karte, und der Niedertarif fehlte
@@ -978,6 +976,14 @@ struct OverviewView: View {
                 // Die Einspeisung ist kein Bezug und zählt nicht mit.
                 let result = ConsumptionEngine.consumption(meteringPoint: point,
                                                            readings: everything, in: yearRange)
+                // **Die Kosten über denselben Ausschnitt wie die Menge darüber.**
+                // Vor 0.148.0 lief der Grundpreis bis heute, der Verbrauch nur
+                // bis zur letzten Ablesung: „bis 1. August" stand über einem
+                // Betrag, der den Grundpreis bis November enthielt. Der
+                // Klick-Dummy schnitt schon immer zu (`costYearToDate`).
+                let costs = Self.abgedeckt(yearRange, von: result)
+                    .map { cost(point: point, readings: everything, tariffs: tariffs, in: $0) }
+                    ?? (nil, false, nil)
                 let comparison = ConsumptionEngine.yearOverYear(meteringPoint: point,
                                                                readings: everything, in: yearRange)
                 return MeterRow(
@@ -1102,7 +1108,7 @@ struct OverviewView: View {
     private func costSpans(point: MeteringPoint, readings: [Reading],
                            tariffs: [Tariff], yearResult: ConsumptionResult?,
                            today: CalendarDay) -> [CostSpanRow.Span] {
-        guard !tariffs.isEmpty else { return [] }
+        guard !tariffs.isEmpty, let yearResult else { return [] }
 
         let abschnitte: [(String, PeriodEngine.Granularity)] = [
             ("monat", .month), ("quartal", .quarter), ("jahr", .year),
@@ -1111,8 +1117,16 @@ struct OverviewView: View {
             guard let range = PeriodEngine.runningRange(containing: today,
                                                         granularity: granularitaet)
             else { return nil }
-            let ergebnis = cost(point: point, readings: readings,
-                                tariffs: tariffs, in: range)
+            // **Nur über den Teil des Abschnitts, den Ablesungen abdecken.**
+            // Vor 0.148.0 stand beim Gaszähler, seit August nicht abgelesen,
+            // „November ≈ 4,77 €": der Grundpreis von elf Tagen, ohne einen
+            // Kubikmeter Gas. Der Verbrauch fehlte, weil es keine Ablesung
+            // gab, und der Betrag sah trotzdem wie Kosten aus — die
+            // Fehlerklasse aus CLAUDE.md. Jetzt steht dort ein Strich, wie
+            // im Klick-Dummy (`costSpans`) schon immer.
+            let ergebnis = Self.abgedeckt(range, von: yearResult)
+                .map { cost(point: point, readings: readings, tariffs: tariffs, in: $0) }
+                ?? (nil, false, nil)
             return CostSpanRow.Span(
                 id: kennung,
                 label: spanLabel(granularitaet, today: today, yearResult: yearResult),
@@ -1123,6 +1137,18 @@ struct OverviewView: View {
         // Striche — die sagt weniger als die bisherige Zeile mit ihrer
         // Begründung. Dann wird sie gar nicht erst gezeigt.
         return spans.contains(where: { $0.amount != nil }) ? spans : []
+    }
+
+    /// Der Teil von `range`, den die Ablesungen hinter `result` abdecken —
+    /// `nil`, wenn es keinen ganzen Tag davon gibt.
+    ///
+    /// Eine Spanne von null Tagen hat keinen Verbrauch, aber einen Grundpreis
+    /// von null; beides zusammen wäre eine Zahl ohne Aussage.
+    static func abgedeckt(_ range: DayRange, von result: ConsumptionResult) -> DayRange? {
+        guard let covered = result.coveredRange,
+              let schnitt = range.intersection(with: covered),
+              schnitt.spanInDays > 0 else { return nil }
+        return schnitt
     }
 
     /// Der Abschnitt beim Namen, nicht bei seiner Art.

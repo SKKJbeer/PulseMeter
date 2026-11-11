@@ -669,6 +669,32 @@ final class LaunchTests: XCTestCase {
                              "Beim überfälligen Zähler muss der Betrag sein Enddatum nennen")
     }
 
+    /// Ein Monat ohne Ablesung hat keine Kosten, sondern einen Strich.
+    ///
+    /// Vor 0.148.0 stand beim Gaszähler, seit drei Monaten nicht abgelesen,
+    /// „November ≈ 4,77 €": der Grundpreis von elf Tagen ohne einen Kubikmeter
+    /// Gas. Im Klick-Dummy stand an derselben Stelle ein Strich (Regel 2).
+    /// Der Gaszähler der Beispieldaten ist bewusst über 90 Tage überfällig,
+    /// also deckt keine Ablesung den laufenden Monat — an jedem Tag des Jahres.
+    func testMonthWithoutReadingShowsNoCost() {
+        let app = launchWithData()
+        let monate = app.descendants(matching: .any)
+            .matching(identifier: "kostenabschnitt-monat")
+        XCTAssertTrue(monate.firstMatch.waitForExistence(timeout: erscheint),
+                      "Mit Tarif muss eine Kostenzeile mit Monat dastehen")
+        var gelesen: [String] = []
+        for index in 0..<monate.count {
+            gelesen.append(monate.element(boundBy: index).label)
+        }
+        // Damit ein Fehlschlag nicht raten lässt, was dastand.
+        print("MONATSKOSTEN: \(gelesen)")
+        XCTAssertTrue(gelesen.contains { $0.contains("–") },
+                      "Der überfällige Gaszähler zeigt für den Monat einen Betrag: \(gelesen)")
+        // Bewusst keine Gegenprobe auf „€" bei den anderen Zählern: Sie sind
+        // gestern abgelesen, am Ersten und Zweiten eines Monats deckt das
+        // keinen ganzen Tag des Monats. Die Prüfung hinge am Kalender.
+    }
+
     /// Mit Abschlag steht die Vorschau auf dem Jahresende auf der Karte.
     ///
     /// Die Kette dahinter ist die längste der App: Ablesungen → Hochrechnung
