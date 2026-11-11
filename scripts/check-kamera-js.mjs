@@ -45,6 +45,21 @@ console.log(`Kamera-Leser im Klick-Dummy: ${faelle.length} Fälle, identisch zu 
   console.log(`Einigung im Klick-Dummy: ${folgen.length} Folgen, identisch zu Swift.`);
 }
 
+// Zuordnung zum Zählwerk: dieselben Fälle wie in Swift (RegisterChoice).
+{
+  const a = html.indexOf("/* RegisterChoice:start"), b = html.indexOf("/* RegisterChoice:end */");
+  if (a < 0 || b < 0) { console.error("✗ Marken für RegisterChoice fehlen im Klick-Dummy"); process.exit(1); }
+  const Wahl = new Function(html.slice(a, b) + "\nreturn RegisterChoice;")();
+  const faelle = JSON.parse(readFileSync(join(wurzel, "docs/kamera/vektoren.json"), "utf8")).zuordnung;
+  let schlecht = 0;
+  for (const f of faelle) {
+    const ist = Wahl.check(Number(f.wert), f.andere.map(r => r && r.map(Number)));
+    if (ist !== f.erwartet) { schlecht++; console.error(`✗ Zuordnung ${f.name}: erwartet ${f.erwartet}, bekommen ${ist}`); }
+  }
+  if (schlecht) process.exit(1);
+  console.log(`Zuordnung im Klick-Dummy: ${faelle.length} Fälle, identisch zu Swift.`);
+}
+
 // Ziffernnetz: dieselbe Rechnung wie in Swift und Python, an denselben Referenzwerten.
 const blockVon = (marke) => {
   const a = html.indexOf(`/* ${marke}:start`), b = html.indexOf(`/* ${marke}:end */`);
