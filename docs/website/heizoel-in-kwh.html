@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Heizöl: Liter in kWh umrechnen, mit Rechner — Zählora</title>
+<meta name="robots" content="max-image-preview:large">
+<meta name="description" content="Heizöl von Litern in Kilowattstunden umrechnen und den Preis je kWh ausrechnen. Mit Rechner, und warum du beim Vergleich mit Gas 10,7 statt 10 nimmst.">
+<meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F0E0C" media="(prefers-color-scheme: dark)">
+<!-- Safari auf dem iPhone blendet darüber eine Leiste mit „Öffnen" oder
+     „Laden" ein. Wer über eine Antwortseite kommt, steht damit einen Tipp
+     vor der App statt einen Umweg über den Store. -->
+<meta name="apple-itunes-app" content="app-id=6802262743">
+<link rel="canonical" href="https://zaehlora.de/heizoel-in-kwh.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Zählora">
+<meta property="og:locale" content="de_DE">
+<meta property="og:title" content="Heizöl: Liter in Kilowattstunden umrechnen — Zählora">
+<meta property="og:description" content="Heizöl von Litern in Kilowattstunden umrechnen und den Preis je kWh ausrechnen. Mit Rechner, und warum du beim Vergleich mit Gas 10,7 statt 10 nimmst.">
+<meta property="og:url" content="https://zaehlora.de/heizoel-in-kwh.html">
+<meta property="og:image" content="https://zaehlora.de/bilder/teilen.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Zählora: Jeden Monat wissen, was du verbrauchst. Daneben die Übersicht der App auf einem iPhone.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="stylesheet" href="stil.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "Heizöl: Liter in Kilowattstunden umrechnen",
+      "description": "Liter Heizöl in kWh, der Preis je Kilowattstunde und wie man Öl fair mit Gas und Wärmepumpe vergleicht.",
+      "inLanguage": "de",
+      "dateModified": "2026-11-11",
+      "author": {"@type": "Organization", "name": "Zählora", "url": "https://zaehlora.de/"},
+      "publisher": {"@type": "Organization", "name": "Zählora", "url": "https://zaehlora.de/"},
+      "mainEntityOfPage": "https://zaehlora.de/heizoel-in-kwh.html"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Zählora", "item": "https://zaehlora.de/"},
+        {"@type": "ListItem", "position": 2, "name": "Ratgeber", "item": "https://zaehlora.de/ratgeber.html"},
+        {"@type": "ListItem", "position": 3, "name": "Heizöl in kWh umrechnen"}
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<a class="sprung" href="#inhalt">Zum Inhalt springen</a>
+
+<header class="kopf">
+  <div class="bahn kopf-innen">
+    <a class="marke" href="index.html">
+      <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <path d="M4 23a12 12 0 0 1 24 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".28"/>
+        <path d="M7 23h4.5l2.5-6.5L18 27l2.5-4H25" fill="none" stroke="#C77A0E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Zählora
+    </a>
+    <nav aria-label="Bereiche">
+      <a href="index.html#funktionen">Funktionen</a>
+      <a href="ratgeber.html">Ratgeber</a>
+      <a href="index.html#preise">Preise</a>
+      <a href="entwicklung.html">Entwicklung</a>
+      <a href="hilfe.html">Hilfe</a>
+    </nav>
+  </div>
+</header>
+
+<main id="inhalt" class="rechtstext artikel">
+  <div class="bahn">
+    <nav class="pfad" aria-label="Pfad">
+      <ol>
+        <li><a href="index.html">Zählora</a></li>
+        <li><a href="ratgeber.html">Ratgeber</a></li>
+        <li aria-current="page">Heizöl in kWh umrechnen</li>
+      </ol>
+    </nav>
+    <h1 id="rechner">Heizöl: Liter in Kilowattstunden umrechnen</h1>
+    <p class="blass">
+      In einem Liter Heizöl stecken rund 10 kWh. Tipp deine Liter und den
+      Preis der letzten Lieferung ein.
+    </p>
+
+    <form class="rechner" id="oelrechner" onsubmit="return false" aria-describedby="oel-ergebnis">
+      <div class="rechner-felder">
+        <label>Heizöl
+          <span class="eingabe"><input id="o-l" inputmode="decimal" autocomplete="off" value="2.000"><span class="einheit">Liter</span></span>
+          <small>getankt oder verbraucht</small>
+        </label>
+        <label>Preis
+          <span class="eingabe"><input id="o-p" inputmode="decimal" autocomplete="off" value="110"><span class="einheit">€ je 100 l</span></span>
+          <small>darf leer bleiben</small>
+        </label>
+        <label>Heizwert
+          <span class="eingabe"><input id="o-h" inputmode="decimal" autocomplete="off" value="10"><span class="einheit">kWh/Liter</span></span>
+          <small>meist 10, siehe unten</small>
+        </label>
+      </div>
+      <div class="rechner-ergebnis" id="oel-ergebnis" aria-live="polite"></div>
+    </form>
+    <script src="rechner.js"></script>
+    <script>
+    // Dieselbe Rechnung wie in der App (PulseCore, EnergyDisplay): Liter ×
+    // Heizwert. Der Heizwert steht auf keiner Rechnung, darum trägt das
+    // Ergebnis ein ≈ (Produktprinzip 7).
+    (function () {
+      var R = window.Rechner;
+      function wert(id) { return R.zahl(document.getElementById(id).value); }
+      function rechne() {
+        var l = wert("o-l"), h = wert("o-h"), p = wert("o-p");
+        var aus = document.getElementById("oel-ergebnis");
+        if (!(l > 0) || !(h > 0)) {
+          aus.innerHTML = R.hinweis("Trag die Liter und den Heizwert ein.");
+          return;
+        }
+        var kwh = l * h;
+        var liste = [R.kachel("kwh", "Wärme im Heizöl", "≈ " + R.format(kwh, 0) + " kWh",
+                              R.format(l, l % 1 ? 1 : 0) + " Liter umgerechnet", "haupt")];
+        if (p > 0) {
+          liste.push(R.kachel("kwhpreis", "Preis je kWh", "≈ " + R.format(p / h, 1) + " ct", "zum Vergleich mit Gas"));
+          liste.push(R.kachel("kosten", "Kosten", R.euro.format(l * p / 100), "für " + R.format(l, 0) + " Liter"));
+        }
+        aus.innerHTML = R.kacheln(liste);
+      }
+      document.getElementById("oelrechner").addEventListener("input", rechne);
+      rechne();
+    })();
+    </script>
+
+    <aside class="app-hinweis nicht-drucken" aria-labelledby="app-hinweis-titel">
+      <h2 id="app-hinweis-titel">Den Winter mitzählen</h2>
+      <p>
+        Trag jede Lieferung und ab und zu den Stand am Tank in Zählora ein. Dann
+        siehst du, was ein Winter wirklich gebraucht hat, und hast die Zahl
+        parat, wenn jemand nach dem Wärmebedarf fragt.
+      </p>
+      <p class="app-hinweis-fuss">
+        <a class="knopf knopf-voll" href="https://apps.apple.com/de/app/id6802262743">Zählora im App Store</a>
+        <span>Laden kostet nichts. Zwei Zähler mit ihrer ganzen Geschichte sind dauerhaft frei, kein Abo.</span>
+      </p>
+    </aside>
+
+    <h2>So wird gerechnet</h2>
+    <div class="anschrift">
+      <strong>Kilowattstunden = Liter × Heizwert</strong><br>
+      <strong>Preis je kWh in Cent = Preis je 100 Liter in Euro ÷ Heizwert</strong>
+    </div>
+    <p>
+      Heizöl EL hat einen Heizwert von 10 kWh je Liter. Das ist die Wärme, die
+      beim Verbrennen frei wird. Ein Brennwertkessel holt zusätzlich etwas aus
+      dem Wasserdampf im Abgas. Rechnet man das mit, sind es 10,7 kWh je
+      Liter, der sogenannte Brennwert.
+    </p>
+    <p class="quelle">
+      Quelle: <a href="https://de.wikipedia.org/wiki/Heiz%C3%B6l" rel="noopener">Wikipedia, Heizöl</a>,
+      Abschnitt Heizöl EL, nach Angaben des Instituts für Wärme und
+      Mobilität: Heizwert 36,0 MJ je Liter, Brennwert 38,4 MJ je Liter, bei
+      0,845 kg je Liter.
+    </p>
+
+    <h2>Öl gegen Gas: mit 10,7 vergleichen</h2>
+    <p>
+      Die Kilowattstunden auf der Gasrechnung sind nach dem Brennwert
+      gerechnet. Wer den Preis je kWh von Öl daneben hält, muss deshalb auch
+      beim Öl den Brennwert nehmen und 10,7 ins Feld Heizwert tippen. Sonst
+      wirkt Öl um sieben Prozent teurer, als es ist.
+    </p>
+
+    <h2>Was dabei am häufigsten schiefgeht</h2>
+    <ul>
+      <li><strong>Eine Lieferung für einen Winter halten.</strong> Getankt wird,
+        wenn der Preis passt, nicht wenn der Winter beginnt. Den Verbrauch eines
+        Jahres zeigt erst der Stand am Tank zum selben Tag in zwei Jahren, oder
+        alle Lieferungen über mehrere Jahre geteilt durch die Jahre.</li>
+      <li><strong>Die Wärme im Haus mit der im Öl verwechseln.</strong> Ein
+        älterer Kessel bringt etwa drei Viertel davon ins Haus, ein
+        Brennwertkessel um die 90 Prozent. Wie viel Wärme dein Haus braucht und
+        was eine Wärmepumpe daraus machen würde, rechnet
+        <a href="waermebedarf-berechnen.html">Wärmebedarf berechnen</a>.</li>
+      <li><strong>Den Tank in Zentimetern ablesen und als Liter nehmen.</strong>
+        Die Peilung zeigt Zentimeter. In Liter rechnet die Tabelle, die zum Tank
+        gehört, und bei liegenden Tanks ist sie nicht gleichmäßig.</li>
+    </ul>
+
+    <aside class="weiterlesen nicht-drucken" aria-labelledby="weiterlesen-titel">
+      <h2 id="weiterlesen-titel">Weiterlesen</h2>
+      <div class="karten">
+      <a class="karte karte-verweis" href="waermebedarf-berechnen.html">
+        <span class="art">Rechner</span>
+        <b>Wie viel Wärme braucht mein Haus?</b>
+        <p>Aus dem Ölverbrauch eines Jahres die grobe Heizlast und der Strom, den eine Wärmepumpe bräuchte.</p>
+        <span class="weiter">Zum Rechner ›</span>
+      </a>
+      <a class="karte karte-verweis" href="heizung-auf-waermepumpe-umstellen.html">
+        <span class="art">Ratgeber</span>
+        <b>Von Öl oder Gas zur Wärmepumpe</b>
+        <p>Was du vor dem Wechsel aufschreibst, was du im ersten Winter ansiehst und woran du merkst, ob es sich gelohnt hat.</p>
+        <span class="weiter">Zum Ratgeber ›</span>
+      </a>
+      <a class="karte karte-verweis" href="gas-in-kwh.html">
+        <span class="art">Rechner</span>
+        <b>Gas von m³ in kWh</b>
+        <p>Mit Zustandszahl und Brennwert von deiner Rechnung, und warum „mal zehn“ danebenliegt.</p>
+        <span class="weiter">Zum Rechner ›</span>
+      </a>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="fuss">
+  <div class="bahn fuss-innen">
+    <span>Zählora — gebaut in Deutschland, von einem Menschen.</span>
+    <nav aria-label="Rechtliches">
+      <a href="index.html">Start</a>
+      <a href="ratgeber.html">Ratgeber</a>
+      <a href="entwicklung.html">Entwicklung</a>
+      <a href="hilfe.html">Hilfe &amp; Kontakt</a>
+      <a href="datenschutz.html">Datenschutz</a>
+      <a href="impressum.html">Impressum</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
