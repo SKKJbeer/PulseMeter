@@ -1,7 +1,7 @@
 # 05 – Roadmap und v1-Scope
 
 Status: laufend gepflegt
-Letzte Änderung: 2026-10-03
+Letzte Änderung: 2026-11-12
 
 ---
 
@@ -57,8 +57,14 @@ Zweites Sparring mit dem Gründer, für den Winter 2026/27:
 
 ## Der Plan
 
-Eingereicht wird mittwochs, alle zwei Wochen. Die Daten sind **Ziele für uns**
+Eingereicht wird spätestens alle zwei Wochen. Die Daten sind **Ziele für uns**
 und stehen nirgends öffentlich (siehe „Öffentlich und intern" unten).
+
+**Die Daten sind späteste Termine, keine festen** (Gründer, 12. November):
+„wir müssen uns nicht strikt an Datum halten. wenn wir schneller sind ist das
+auch kein Problem und können schon alles angehen." Ist eine Fassung grün in
+TestFlight und die vorige bei Apple durch, wird sie eingereicht, ohne auf ihr
+Datum zu warten. Die nächste Fassung wird dann schon angefangen.
 
 | Fassung | Einreichen | Inhalt | Stand |
 |---|---|---|---|
@@ -68,10 +74,13 @@ und stehen nirgends öffentlich (siehe „Öffentlich und intern" unten).
 | **1.4.1** | 07.10. | **Neue Suchbegriffe:** Name, Untertitel und Schlagworte aus `09-appstore.md`. Sonst nichts, damit eine Wirkung im Rang den neuen Wörtern zuzuordnen ist | **im Laden** seit 07.10., Bau 40 |
 | **1.5** | 14.10. | **Import aus einer Tabelle**, für Umsteiger mit Excel-Listen oder anderen Apps · **Ausblick immer** (0.130.0, 0.131.0): „Erwartet für <Jahr>" auf jeder Karte und im Verlauf in jeder Ansicht, Monatsausblick auch ohne Ablesung im Monat | **im Laden** seit 14.10., Bau 44, vom Gründer vorgezogen (geplant war der 04.11.) |
 | **1.5.1** | 19.10. | **Neue Bilder im Laden:** gesetzt mit Überschrift, ein voller Haushalt (Strom mit Solar, Gas, Wasser, Warmwasser, Wallbox) · „Schritt 1 von 2" statt „Zählwerk" | **im Laden** seit 19.10., 22:04 UTC, Bau 45 |
-| **1.6** | 18.11. | **Kamera:** Sucher mit Rahmen, die App schlägt den Stand vor, du bestätigst. Eigener Kauf 1,99 €, im Bündel enthalten | **Gebaut in 0.138.0** (statt Foto-Auswahl gleich der Sucher mit Rahmen, Taschenlampe und Hinweisen), mit eigenem **Ziffernnetz** für LCD. **Gemessen:** zwei Netze, die sich einig sein müssen; auf bekannten Fotos 0 Fehler, auf einer zweiten, nie trainierten Sammlung 5 Fehler in 600 Versuchen (ein Foto) und nur jeder dritte Versuch liest richtig (`docs/kamera/README.md`). Vor dem Einreichen geprüft mit acht Arten schlechter Bilder und Rahmen neben der Anzeige (0.140.1). **Eingereicht am 3. November** mit Bau 48, Käufe Kamera und Erinnerung gingen mit. Offen: Fotos von Testern für Meterus und Kamstrup |
-| **1.7** | 02.12. | **Kamera, Stufe 2:** zwei Zählwerke auf einem Bild (Tag/Nacht, Bezug/Einspeisung), Kennzahl `1.8.0` zuordnen | groß. Konzept in `docs/kamera/stufe-2.md`. **0.144.0:** keine Zahl, die auch zum anderen Zählwerk passt. Offen: Kennzahl lesen, vorher messen |
-| **1.8** | 16.12. | offen. Der Jahreswechsel stand hier und ist am 7. Oktober gestrichen | — |
-| **1.9** | 13.01. | Puffer, und was die Zahlen bis dahin sagen | — |
+| **1.6** | 18.11. | **Kamera:** Sucher mit Rahmen, die App schlägt den Stand vor, du bestätigst. Eigener Kauf 1,99 €, im Bündel enthalten | **Gebaut in 0.138.0** (statt Foto-Auswahl gleich der Sucher mit Rahmen, Taschenlampe und Hinweisen), mit eigenem **Ziffernnetz** für LCD. **Gemessen:** zwei Netze, die sich einig sein müssen; auf bekannten Fotos 0 Fehler, auf einer zweiten, nie trainierten Sammlung 5 Fehler in 600 Versuchen (ein Foto) und nur jeder dritte Versuch liest richtig (`docs/kamera/README.md`). Vor dem Einreichen geprüft mit acht Arten schlechter Bilder und Rahmen neben der Anzeige (0.140.1). **Eingereicht am 3. November** mit Bau 48, Käufe Kamera und Erinnerung gingen mit. **Im Laden seit 3. November.** Offen: Fotos von Testern für Meterus und Kamstrup |
+| **1.7** | 02.12. | **Aus der Mail eines Käufers:** neuer Preis ab einem Tag, die Kosten davor bleiben wie sie waren · Gas auch in kWh, damit Gas und Wärmepumpe vergleichbar sind (siehe „Aus Rückmeldungen von Käufern") | **Eingereicht am 12. November** mit Bau 50 (0.145.0 bis 0.147.2, PR #17), wartet auf Apples Prüfung |
+| **1.8** | 16.12., früher sobald 1.7 durch ist | **Einfacher:** Statuszeile ein Satz, Karte ohne Schild und Erklärzeilen, Kostenabschnitte ohne Betrag fallen weg · Verlauf oben nur Zähler und Zeitraum · Kaufblatt ohne Dopplung · Zeile im Zähler-Tab, ob der iCloud-Abgleich klappt | am 11. November vom Gründer statt Puffer entschieden. **Gebaut in 0.150.0** (PR #21, Konzept `docs/konzepte/1.8-einfacher.md`). Gemessen: Statuszeile 89 → 48 Punkte, Karten 36 bis 71 Punkte kürzer; zwei ganze Karten je iPhone-Schirm sind damit nicht erreicht |
+| **1.9** | 13.01. | **Heizungswechsel:** „Heizung gewechselt am …“ verbindet alten und neuen Zähler, Vorher-Nachher-Karte in kWh und Euro. Neuer Kauf „Wärmepumpe“ für 4,99 € | am 11. November vom Gründer entschieden. Konzept und Klick-Dummy in Arbeit ab 12. November (Versionen ab 0.160.0), baut auf 1.8 auf |
+| **Kamera, Stufe 2** | nach 1.9 | **Kamera, Stufe 2:** zwei Zählwerke auf einem Bild (Tag/Nacht, Bezug/Einspeisung), Kennzahl `1.8.0` zuordnen | groß. Der Sucher mit Rahmen ist seit 0.138.0 schon da; am 11. November hinter 1.9 geschoben. Erster Schritt (0.144.0: keine Zahl, die auch zum anderen Zählwerk passt) ist mit PR #14 in `main`, Konzept `docs/kamera/stufe-2.md`. Offen: Kennzahl lesen, vorher messen |
+| **Wechsel-Paket** | Feb. bis Apr. 2027 | **Für alle vor dem Wechsel:** Heizlast aus dem Verbrauch, Gegenprobe für Angebote, Mappe für den Fachbetrieb. Eigener Kauf 14,99 € | am 11. November vom Gründer entschieden |
+| **2.0** | Sommer 2027 | **Läuft sie gut?** Jahresarbeitszahl aus eigenen Zählern, Heizstab-Hinweis, Jahresbericht | am 11. November in den Sommer verschoben |
 
 **Neben jeder Fassung, für neue Nutzer:**
 
@@ -88,9 +97,9 @@ Spam). Er hat alles freigeschaltet und kommt von einer Excel-Liste.
 
 | Was | Stand |
 |---|---|
-| **iCloud-Abgleich geht im Laden nicht.** Vermutlich nie: Das CloudKit-Schema stand nie in der Produktion (`12-auslieferung.md`, 3.8) | **Fehler, vor allem anderen.** Werkzeug in 0.141.0, Übertragen in der Konsole offen. Danach eine sichtbare Zeile, ob der Abgleich klappt |
-| **Tarifwechsel mit Datum:** neuer Preis ab einem Tag, alte Kosten bleiben | Lücke. Heute ein Preis je Zähler, eine Änderung rechnet rückwirkend. Kandidat für 1.8, vor der Abrechnungszeit im Januar |
-| **Gas auch in kWh:** Verbrauch mit Zustandszahl und Brennwert umgerechnet, damit Gas und Wärmepumpe vergleichbar sind | Wunsch. Die Werte stehen schon am Zähler, nur die Anzeige fehlt. Kandidat für 1.8 |
+| **iCloud-Abgleich ging im Laden nicht.** Das CloudKit-Schema stand nie in der Produktion (`12-auslieferung.md`, 3.8) | **Behoben am 10. November**, ohne neuen Bau: Schema per `cloudkit-schema.yml` nach Development, in der Konsole übertragen, alle acht Typen in der Produktion nachgelesen. Vom Gründer am 11. November auf zwei Geräten bestätigt, dem Käufer geantwortet. Offen: eine sichtbare Zeile in der App, ob der Abgleich klappt |
+| **Tarifwechsel mit Datum:** neuer Preis ab einem Tag, alte Kosten bleiben | Lücke. Der Rechenkern kennt Tarife mit `validFrom` schon, die Oberfläche legt aber keinen zweiten an, sie ändert den bestehenden. **In 1.7**, vor der Abrechnungszeit im Januar |
+| **Gas auch in kWh:** Verbrauch mit Zustandszahl und Brennwert umgerechnet, damit Gas und Wärmepumpe vergleichbar sind | Wunsch. Die Werte stehen schon am Zähler, nur die Anzeige fehlt. **In 1.7** |
 
 ### Die Website als Wachstumskanal: Rechner
 
@@ -104,6 +113,7 @@ versprechen, was die App nicht kann.
 |---|---|---|
 | 1 | Startseite erklärt in einer Zeile, was Zählora ist · Stromkostenkarte im vorhandenen Rechner-Abschnitt · **Stromkosten- und Abschlagsrechner** (der frühere Abschlagsrechner ist darin aufgegangen) · Hinweis zur App unter jedem Rechner · Rechnerseiten als Spalte in der Mitte | **online seit 4. Oktober** (0.120.0, bereinigt in 0.120.3) |
 | 2 | **„Ist mein Stromverbrauch normal?"** mit den Klassen des Stromspiegels 2025 (co2online), danach eine Seite je Woche: **„Zählerstand ablesen"** für Strom, Gas und Wasser (seit 7. Oktober vorgezogen, dieselbe Suche wie der neue Name im Laden), PV-Rechner aus gemessenen Werten, Wärmepumpe, „Nachzahlung prüfen" (Januar). „Zählerstand zum Jahreswechsel" ist gestrichen | Stromverbrauch: gebaut am 4. Oktober. **Photovoltaik-Eigenverbrauch: gebaut am 8. Oktober** (`photovoltaik-eigenverbrauch.html`, nur Rechnung, keine fremden Werte). **Zählerstand ablesen: gebaut am 8. Oktober** (`zaehlerstand-ablesen.html`, mit Ablesehilfe für vier Zähler). **Wärmepumpe: gebaut am 8. Oktober** (`jahresarbeitszahl-berechnen.html`, Werte von Fraunhofer ISE). **Nachzahlung prüfen: gebaut am 8. November** (`nachzahlung-pruefen.html`, Rechner für Strom und Gas mit Zählerständen, Zeitraum, Preisen und Abschlägen der Jahresabrechnung, vor der Abrechnungszeit im Januar online). Der Vergleich je Quadratmeter aus dem Heizspiegel wartet auf eine Genehmigung von co2online, siehe `06-uebergabe.md` |
+| 2a | **Schwerpunkt Wechsel zur Wärmepumpe** (Konzept vom 11. November): Themenseite **„Von Öl oder Gas zur Wärmepumpe“** und Rechner **„Wie viel Wärme braucht mein Haus?“** (Wärme im Jahr, Heizlast grob mit Spanne, Strom bei JAZ 3,4; Werte aus dem Leitfaden des BürgerNetzwerkSolar Worms nach VDI 4645/4650). Danach Rechner „Hat sich der Wechsel gelohnt?“. Gekennzeichnete Vermittlung an Fachbetriebe erst ab 5.000 Besuchen im Monat auf diesen Seiten | **Paket 1 gebaut am 11. November (0.145.0)** (`heizung-auf-waermepumpe-umstellen.html`, `waermebedarf-berechnen.html`) |
 | 3 | Wasser (Verbrauch und Kosten), Vorjahresvergleich, nach dem, was die Search Console an Suchbegriffen zeigt | später |
 
 **Entschieden am 4. Oktober, für die Reichweite:** nur Inhalte und Google.
@@ -329,7 +339,10 @@ Die Reihenfolge ist bewusst nicht „Screens von oben nach unten", sondern nach 
 
 ---
 
-## Aktueller Stand — Version 0.115.4
+## Stand vom 23. September — Version 0.115.4 (überholt)
+
+> **Der laufende Stand steht in `06-uebergabe.md`**, die Fassungen oben in
+> „Der Plan". Dieser Abschnitt bleibt als Momentaufnahme stehen.
 
 > **Hier stand achtzig Versionen lang „Aktueller Stand — Version 0.34.1".**
 > Darin: „Paywall und StoreKit — offen, braucht das Apple Developer Program."

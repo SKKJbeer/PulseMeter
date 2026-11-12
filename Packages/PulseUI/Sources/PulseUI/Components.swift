@@ -84,6 +84,7 @@ public struct ValueCard<Footer: View>: View {
     private let value: String
     private let isApproximate: Bool
     private let unit: String
+    private let secondary: String?
     private let detail: Text
     private let flagged: Bool
     private let series: [Double]
@@ -104,6 +105,9 @@ public struct ValueCard<Footer: View>: View {
     /// - Parameter onOpen: Wohin die Karte führt. Ist sie gesetzt, ist alles
     ///   oberhalb der Fußzeile antippbar und ein Winkel rechts oben sagt, dass
     ///   es weitergeht. Ohne sie bleibt die Karte, was sie war — eine Anzeige.
+    /// - Parameter secondary: Dieselbe Menge in einer zweiten Einheit, eine
+    ///   Zeile unter der Zahl (seit 1.7: Gas und Heizöl in kWh). Darunter und
+    ///   nicht daneben: Neben der Zahl und der Linie bräche sie um.
     public init(
         title: String,
         symbolName: String,
@@ -112,6 +116,7 @@ public struct ValueCard<Footer: View>: View {
         value: String,
         isApproximate: Bool = false,
         unit: String,
+        secondary: String? = nil,
         detail: Text,
         flagged: Bool = false,
         series: [Double] = [],
@@ -125,6 +130,7 @@ public struct ValueCard<Footer: View>: View {
         self.value = value
         self.isApproximate = isApproximate
         self.unit = unit
+        self.secondary = secondary
         self.detail = detail
         self.flagged = flagged
         self.series = series
@@ -244,6 +250,14 @@ public struct ValueCard<Footer: View>: View {
                             .foregroundStyle(PulseColor.inkSecondary)
                             .lineLimit(1)
                             .fixedSize()
+                    }
+                    if let secondary {
+                        Text(secondary)
+                            .font(PulseText.unit)
+                            .foregroundStyle(PulseColor.inkSecondary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
+                            .accessibilityIdentifier("karte-kwh")
                     }
                     detail
                         .font(PulseText.detail)

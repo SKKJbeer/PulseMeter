@@ -90,6 +90,228 @@ Heizzeit.
 - Kopfzeile des Klick-Dummys auf 0.148.0 (stand auf 0.138.0).
 
 _PulseCore unter Linux geprüft, siehe PR. App-Bau und Oberflächentests in der CI._
+## 0.147.2 — 2026-11-11
+
+**Prüfung „Kein Text über den Rand“ wartet auf die erste Karte**
+
+### Behoben
+- Auf dem iPad quer in größter Schrift wartete die Prüfung auf die Karte
+  „Strom“. Seit die Gaskarte die Zeile in kWh trägt, liegt Strom dort
+  außerhalb dessen, was die Liste schon gebaut hat, und die Prüfung meldete
+  „Übersicht kam nicht“, obwohl die Übersicht dastand. Sie wartet jetzt auf
+  „Gas“, die erste Karte. Auf dem iPhone liefen alle Prüfungen von 0.147.1
+  grün, auch die beiden neuen.
+
+---
+
+## 0.147.1 — 2026-11-11
+
+**1.7: Rückfrage beim Löschen eines Preises geht zuverlässig auf**
+
+### Behoben
+- Die Rückfrage „Jüngsten Preis löschen?“ hing an einem Abschnitt, den es
+  nur mit zwei Preisen gibt, und ging im Oberflächentest auf dem iPhone nicht
+  auf. Sie hängt jetzt am Formular; der Knopf heißt „Preis löschen“, damit er
+  sich vom Knopf in der Zeile unterscheidet.
+- Der kWh-Test las die Beschriftung der ganzen Karte und erwartete am Ende
+  „kWh“. Er prüft jetzt, dass eine Zahl mit kWh darin steht. Die Zeile selbst
+  stand richtig da („1.338 m³ … 13.349 kWh“).
+- Speichern der Preisliste läuft auf dem Haupt-Thread (`@MainActor`), wie der
+  Bau für das iPhone verlangt.
+
+---
+
+## 0.147.0 — 2026-11-11
+
+**1.7 in der App: neuer Preis ab einem Tag, Gas und Heizöl in kWh**
+
+### Neu
+- **„Neuer Preis ab …“** im Zähler (`NewPriceSheet`): Tag wählen, nur ändern,
+  was sich ändert, sichern. Der bisherige Preis gilt bis zum Vortag, die
+  Kosten davor bleiben. Ein Satz unter dem Tag sagt, was er bewirkt, auch
+  wenn er vor der letzten Ablesung liegt und Kosten neu gerechnet werden.
+- **Preisverlauf** im Zähler, sobald es mehr als einen Preis gibt: je Preis
+  eine Zeile mit Zeitraum und Arbeitspreis, beim Doppeltarif beide; der
+  jüngste lässt sich mit Rückfrage löschen. Die Überschrift über den
+  Preisfeldern sagt, ab wann sie gelten.
+- **Gas und Heizöl in kWh auf der Karte**, eine Zeile unter der Zahl vom
+  Zähler, je Preisabschnitt mit der Umrechnung, die dort galt. Heizöl mit
+  „≈“ und auf zehn gerundet, weil der Heizwert geschätzt ist.
+- **Heizwert** als Feld bei Heizöl (üblich 10 kWh je Liter).
+
+### Geändert
+- Der Zähler liest und schreibt nur noch die jüngste Preisgeneration. Bis
+  1.6 suchte er in allen Tarifen und hätte mit einem Verlauf einen alten
+  Preis über den aktuellen geschrieben.
+
+### Tests
+- `testGasCardAlsoShowsKilowattHours`, `testANewPriceFromADayStartsAPriceHistory`
+  (Blatt öffnen, Preis ändern, sichern, zwei Zeilen im Verlauf, jüngsten
+  löschen). Laufen auf dem macOS-Läufer; hier unter Linux nur Syntax geprüft.
+
+---
+
+## 0.146.1 — 2026-11-11
+
+**Rechenkern für 1.7: Preisverlauf, kWh, Hochrechnung je Preis**
+
+### Neu
+- `TariffHistory` in `PulseCore`: `startingNewPrice(on:tariffs:meteringPointID:adjust:)`
+  schließt die jüngste Generation am Vortag und legt eine neue an, ohne einen
+  Tarif zu überschreiben; `removingNewest` löscht die jüngste und öffnet die
+  vorige; `generations` liefert den Preisverlauf, neueste zuerst. Beim
+  Doppeltarif gehören alle Tarife eines Tages zu einer Generation.
+- `EnergyDisplay`: Gas in kWh je Preisabschnitt mit der Umrechnung, die dort
+  galt; Heizöl als `GasConversion` mit Zustandszahl 1 und 10.000 kWh/m³
+  (10 kWh/l), ohne neues Feld im Speicher; `isEstimate` für die Kennzeichnung.
+
+### Behoben
+- **Die Abschlagsvorschau kannte keinen Preiswechsel in der Zukunft.**
+  `prepaymentOutlook` skalierte die bisherigen Kosten hoch. Eine Erhöhung ab
+  1. Oktober stand damit erst in der Zahl, wenn der Oktober gemessen war.
+  Jetzt kostet der noch nicht gemessene Rest je Abschnitt dessen Preis,
+  verteilt nach der Jahresform; der Grundpreis zählt je Abschnitt. Mit einem
+  Preis bleibt jede Zahl, wie sie war. Gefunden im Klick-Dummy (0.146.0).
+
+### Tests
+- `TariffHistoryTests` (13): Vortag, Doppeltarif, Abweisen, Zukunft, andere
+  Zähler unberührt, Löschen, Kosten über die Grenze, Hochrechnung und
+  Grundpreis mit künftigem Preis (beide ohne die Änderung rot gesehen),
+  Gas je Abschnitt, Heizöl ohne Einfluss auf den Betrag. PulseCore: 360 grün.
+
+---
+
+## 0.146.0 — 2026-11-11
+
+**Klick-Dummy für 1.7: neuer Preis ab einem Tag, Gas und Heizöl in kWh**
+
+Der erste Schritt für 1.7 (Einreichen 2. Dezember), so wie im Konzept
+`docs/konzepte/1.7-preis-ab-tag-und-kwh.md`. Noch nicht in der App.
+
+### Neu
+- Im Zähler unter den Preisen der Knopf **„Neuer Preis ab …“**. Das Blatt
+  fragt den Tag (Vorschlag heute, auch in der Zukunft) und die Preise,
+  vorbelegt mit den bisherigen; bei Doppeltarif beide Arbeitspreise, bei
+  Einspeisung die Vergütung, bei Gas Zustandszahl und Brennwert, bei Heizöl
+  der Heizwert. Ein Satz unter dem Tag sagt, was passiert („Kosten ab dem
+  1. März werden mit dem neuen Preis neu berechnet.“). Ein Tag vor dem Beginn
+  des jüngsten Preises wird abgewiesen.
+- **Preisverlauf** im Zähler, neuester oben. Nur der jüngste lässt sich
+  löschen, dann gilt der vorige wieder offen. Die Überschrift über den Feldern
+  sagt, welchen Preis sie ändern („Preise ab 1. Januar 2027“).
+- Kosten in Verlauf, Übersicht und Bericht werden je Preisabschnitt
+  gerechnet, Grundpreis tagesgenau. Der Bericht hat je Preis eine Zeile.
+- Die Hochrechnung aufs Jahr teilt sich an einem Preiswechsel: Gemessenes
+  bleibt, wo es gemessen ist, der Rest verteilt sich nach der Jahresform.
+- Die Kostenerklärung zeigt je Preis eine Zeile und nennt den Wechsel
+  („Ab 1. März 0,150 € statt 0,112 € je kWh.“).
+- **Gas in kWh:** Auf der Karte unter den m³, in der Kopfzeile des Verlaufs
+  und als Spalte im Jahresvergleich. Je Abschnitt mit dem Brennwert, der dort
+  galt. Nur mit „Kosten und Preise“.
+- **Heizöl in kWh:** Heizwert im Zähler, vorbelegt mit 10 kWh je Liter, die
+  Zahl auf zehn gerundet und mit ≈. Abgerechnet wird weiter in Litern.
+
+### Behoben
+- Die Hochrechnung rechnete nur das erste Zählwerk zum Preis des Zählers.
+  Beim Doppeltarif fehlte damit der Niedertarif, und der Hochtarif kostete den
+  Zählerpreis statt seines eigenen. Die App rechnete schon je Zählwerk.
+- Wer einen neuen Zähler auf „Gas“ stellte, bekam keine Felder für
+  Zustandszahl und Brennwert: Die Felder wurden nur beim Öffnen gebaut.
+- Die Einspeisevergütung stand in der Erklärung mit zwei Stellen (0,08 €
+  statt 0,082 €).
+
+### Tests
+- `check-prototype.mjs`: 28 neue Prüfungen im Abschnitt „1.7“, darunter
+  Kosten vor dem Wechsel unverändert, Kosten über die Grenze gegen eine
+  Rechnung von Hand, Doppeltarif, Abweisen, Löschen, kWh mit und ohne Kauf,
+  Heizöl ohne Einfluss auf den Betrag.
+
+---
+
+## 0.145.4 — 2026-11-11
+
+**1.7 bringt den Tarif ab einem Tag und Gas in kWh**
+
+Am 11. November vom Gründer entschieden: Was für 1.8 geplant war, kommt
+schon am 2. Dezember als 1.7. Kamera Stufe 2 rückt hinter 1.9.
+
+### Neu
+- `docs/konzepte/1.7-preis-ab-tag-und-kwh.md`: Konzept für 1.7. Neuer Preis
+  ab einem Tag mit Preisverlauf, Gas mit kWh neben m³, Heizöl in kWh mit
+  geschätztem Heizwert. Ohne neues Feld im Speicher.
+
+### Geändert
+- `docs/05-roadmap.md`: 1.7 neuer Preis ab einem Tag, Gas in kWh; 1.8 Puffer;
+  Kamera Stufe 2 nach 1.9, erster Schritt liegt in PR #14.
+- `entwicklung.html`: „Als Nächstes“ ist jetzt der Tarif ab einem Tag mit Gas
+  in kWh, „Danach“ der Heizungswechsel mit vorher und nachher. Die Kamera für
+  zwei Zahlen steht unter den Ideen.
+
+---
+
+## 0.145.3 — 2026-11-11
+
+**CI: Entwurfsprüfung wieder auf Ubuntu 24.04**
+
+### Behoben
+- `ci.yml`: Der Auftrag `prototype` lief auf `ubuntu-latest`, inzwischen
+  Ubuntu 26.04. Dort fand der Läufer die Paketquellen nicht, und die
+  Einrichtung von WebKit hing zweimal bis zum Abbruch. Jetzt fest auf
+  `ubuntu-24.04`; die Prüfungen selbst sind unverändert.
+
+---
+
+## 0.145.2 — 2026-11-11
+
+**Wechsel-Paket und Vermittlung entschieden**
+
+### Geändert
+- `docs/04-monetarisierung.md`: zweiter Kauf „Wechsel-Paket“ für 14,99 €
+  (Februar bis April 2027), die Mappe für den Fachbetrieb wandert aus 1.9
+  dorthin. Vermittlung mit Provision nur auf der Website, ab 5.000 Besuchen
+  im Monat.
+- `docs/05-roadmap.md`: Wechsel-Paket eingeplant, 2.0 im Sommer 2027.
+
+---
+
+## 0.145.1 — 2026-11-11
+
+**Kauf „Wärmepumpe“ und 1.9 entschieden**
+
+Der Gründer hat am 11. November beide offenen Fragen aus dem Konzept
+beantwortet: Der Kauf „Wärmepumpe“ kostet 4,99 €, und der Vorher-Nachher-
+Vergleich kommt schon mit 1.9 am 13. Januar statt eines Puffers.
+
+### Geändert
+- `docs/04-monetarisierung.md`: der neue Kauf mit Preis und Umfang.
+- `docs/05-roadmap.md`: 1.9 mit dem Heizungswechsel.
+
+---
+
+## 0.145.0 — 2026-11-11
+
+**Website: der Wechsel zur Wärmepumpe**
+
+Erstes Paket aus dem Schwerpunkt Wärmepumpe. Wer von Öl oder Gas umsteigt,
+findet auf der Website jetzt die Schritte und einen Rechner, der aus dem alten
+Verbrauch die Größe der Wärmepumpe grob schätzt.
+
+### Neu
+- `waermebedarf-berechnen.html`: Gas in m³, Gas in kWh oder Heizöl in Litern,
+  Kessel und Zustand des Hauses. Ergebnis: Wärme im Jahr, Heizlast grob mit
+  Spanne, Strom bei einer Jahresarbeitszahl von 3,4 (Feldtest Fraunhofer ISE).
+  Rechenweg und Volllaststunden aus dem Leitfaden des BürgerNetzwerkSolar
+  Worms (März 2026, nach VDI 4645 und VDI 4650), Quelle auf der Seite.
+  Ergebnisse auf hundert gerundet und mit ≈, weil es eine Schätzung ist.
+- `heizung-auf-waermepumpe-umstellen.html`: vier Schritte vom Festhalten des
+  alten Verbrauchs bis zur Bilanz nach dem ersten Jahr.
+- Beide Seiten im Ratgeber, auf der Startseite und in der Sitemap.
+- `stil.css`: Umschalter mit drei Feldern.
+
+### Geprüft
+- `check-website.mjs`: Werte für Gas in m³, Heizöl und Gas in kWh, leeres
+  Feld, Tabelle der Volllaststunden gleich dem Rechner; beide Seiten in allen
+  Seitenprüfungen, der Rechner in den Prüfungen für Rechner. Alles grün.
 
 ---
 
@@ -142,6 +364,20 @@ Nur Website, kein neuer Bau.
 
 ---
 
+## 0.142.1 — 2026-11-11
+
+**iCloud-Abgleich läuft, Wünsche eines Käufers im Plan**
+
+Das CloudKit-Schema steht seit dem 10. November in der Produktion, alle acht
+Typen nachgelesen; der Gründer hat den Abgleich am 11. November auf zwei
+Geräten bestätigt. Die beiden Wünsche aus derselben Mail kommen in 1.8.
+
+### Geändert
+- `docs/05-roadmap.md`: Abgleich als behoben, 1.8 mit Tarifwechsel ab einem
+  Tag und Gas in kWh.
+- `entwicklung.html`: „Als Nächstes" zeigte noch die Kamera, die seit 1.6 im
+  Laden ist. Jetzt Tag- und Nachtstrom mit einem Foto, danach Tarif ab einem
+  Tag und Gas in kWh.
 ## 0.142.0 — 2026-11-10
 
 **CloudKit-Schema ohne Mac: aus dem Modell abgeleitet, per CI hochgeladen**
