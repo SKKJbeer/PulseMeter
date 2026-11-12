@@ -1,8 +1,6 @@
-import CloudKit
 import CoreData
 import Foundation
 import Observation
-import PulseData
 
 /// Ob der iCloud-Abgleich klappt — als eine Zeile im Zähler-Tab (1.8).
 ///
@@ -11,8 +9,9 @@ import PulseData
 /// der Produktion, behoben am 10. November), aber die App konnte es ihm nicht
 /// sagen: Ob abgeglichen wird, war nirgends zu sehen. Er konnte nur warten.
 ///
-/// **Was gelesen wird, und was nicht.** Der Kontostatus von iCloud
-/// (`CKContainer.accountStatus`) und die Ereignisse, die SwiftData über
+/// **Was gelesen wird, und was nicht.** Ob auf dem Gerät jemand bei iCloud
+/// angemeldet ist (`FileManager.ubiquityIdentityToken`) und die Ereignisse,
+/// die SwiftData über
 /// `NSPersistentCloudKitContainer.eventChangedNotification` meldet. Beides
 /// fragt nur das Gerät; es geht keine eigene Anfrage ins Netz und nichts wird
 /// gesendet.
@@ -36,12 +35,18 @@ final class ICloudAbgleich {
     private(set) var zustand: Zustand
     @ObservationIgnored private var beobachter: NSObjectProtocol?
 
-    /// - Parameter aktiv: ob der Speicher mit iCloud aufgebaut wurde. Nur dann
-    ///   wird `CKContainer` überhaupt angefasst — ohne die Berechtigung bricht
-    ///   schon das Anlegen ab, und das ist im Simulator der Normalfall.
+    /// - Parameter aktiv: ob der Speicher mit iCloud aufgebaut wurde.
+    ///
+    /// **Kein `CKContainer`.** Der erste Anlauf fragte
+    /// `CKContainer(identifier:).accountStatus()`, und mit ihm stürzte die App
+    /// im Simulator der CI beim Start ab (Lauf 43122513685, alle 57
+    /// Oberflächenprüfungen rot, der Startbildschirm auf dem Foto). Die
+    /// naheliegende Ursache: Ohne passendes Profil wirft das Anlegen eine
+    /// Ausnahme, die Swift nicht fangen kann. `ubiquityIdentityToken` sagt
+    /// dasselbe, was hier gebraucht wird (angemeldet oder nicht), und wirft nie.
     init(aktiv: Bool) {
-        zustand = aktiv ? .wartet : .aus
-        guard aktiv else { return }
+        guard aktiv else { zustand = .aus; return }
+        zustand = FileManager.default.ubiquityIdentityToken == nil ? .keinKonto : .wartet
         beobachter = NotificationCenter.default.addObserver(
             forName: NSPersistentCloudKitContainer.eventChangedNotification,
             object: nil, queue: .main
@@ -54,7 +59,6 @@ final class ICloudAbgleich {
                 self?.melde(geklappt: geklappt, ende: ende)
             }
         }
-        Task { await pruefeKonto() }
     }
 
     /// Ein beendetes Ereignis. Ein Fehlschlag überschreibt einen früheren
@@ -62,11 +66,6 @@ final class ICloudAbgleich {
     func melde(geklappt: Bool, ende: Date) {
         if zustand == .keinKonto || zustand == .aus { return }
         zustand = geklappt ? .abgeglichen(ende) : .fehler
-    }
-
-    private func pruefeKonto() async {
-        let status = try? await CKContainer(identifier: PulseStore.cloudKitContainer).accountStatus()
-        if status != .available { zustand = .keinKonto }
     }
 
     /// Die Zeile, wie sie im Zähler-Tab steht.
