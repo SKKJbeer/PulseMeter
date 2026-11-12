@@ -301,3 +301,26 @@ extension BillingPeriodRecord {
         currencyCode = value.currency.code
     }
 }
+
+// MARK: - HeatingChange
+
+extension HeatingChangeRecord {
+    func toDomain() -> HeatingChange {
+        HeatingChange(
+            id: id,
+            day: Mapping.day(day),
+            oldMeterID: oldMeterID,
+            newMeterID: newMeterID,
+            boilerEfficiency: ScaledDecimal(scaled: efficiencyScaled, scale: valueScale).value
+        )
+    }
+
+    func apply(_ value: HeatingChange) {
+        id = value.id
+        day = value.day.rawValue
+        oldMeterID = value.oldMeterID
+        newMeterID = value.newMeterID
+        valueScale = ScaledDecimal.moneyScale
+        efficiencyScaled = ScaledDecimal(money: value.boilerEfficiency).scaled
+    }
+}

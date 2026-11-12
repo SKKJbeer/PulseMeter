@@ -83,6 +83,17 @@ KAEUFE = [
     {"kennung": "camera",            "referenz": "Kamera",
      "name": "Mit Kamera ablesen",          "text": "Den Zählerstand von der Kamera lesen lassen.",
      "preis": "1.99"},
+    # **Der siebte, für 1.9 (Heizungswechsel).** 4,99 €, am 11. November vom
+    # Gründer entschieden. Angelegt vor der App, wie die Kamera: Die Kennung
+    # steht dann fest, und die App ignoriert, was sie nicht kennt.
+    {"kennung": "heatpump",          "referenz": "Wärmepumpe",
+     "name": "Wärmepumpe",                  "text": "Heizungswechsel: vorher und nachher.",
+     "preis": "4.99"},
+    # **Das Bündel bleibt hier bei 4,99 €, bis 1.9 im Laden ist.** Entschieden
+    # sind 7,99 € ab 1.9 (Gründer, 12. November). Ein Preis bei Apple gilt
+    # sofort: Stünde hier schon 7,99, zahlte jeder Käufer von heute drei Euro
+    # mehr für sechs Stücke statt sieben. Umstellen zusammen mit der Freigabe
+    # von 1.9, dann auch der Text auf „Alle sieben“.
     {"kennung": "everything",        "referenz": "Alles freischalten",
      "name": "Alles freischalten",          "text": "Alle sechs Freischaltungen zusammen.",
      "preis": "4.99"},

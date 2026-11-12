@@ -1014,7 +1014,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>Zählora</h1>
-  <p>Klickbarer Entwurf · v0.161.0</p>
+  <p>Klickbarer Entwurf · v0.162.0</p>
 </div>
 
 <div class="device" id="device">
@@ -2641,6 +2641,14 @@ function heatingComparison(ch) {
   // Der erste volle Monat beginnt am Ersten nach dem Wechsel — oder am
   // Wechseltag selbst, wenn das ein Erster ist.
   let start = ch.day.d === 1 ? ersterDesMonats(ch.day) : monatePlus(ch.day, 1);
+  // … und nach der ersten Ablesung des neuen Zählers: Liegt sie am
+  // 5. Oktober, ist der Oktober nicht gemessen, sondern geschätzt.
+  for (const r of bezugsZaehlwerke(neu)) {
+    const erste = r.readings[0];
+    if (!erste) continue;
+    const ab = erste.d === 1 ? ersterDesMonats(erste) : monatePlus(erste, 1);
+    if (vorTag(start, ab)) start = ab;
+  }
   const letzte = bezugsZaehlwerke(neu).map(r => r.readings[r.readings.length - 1])
     .reduce((a, r) => !r ? a : (!a || vorTag(r, a) ? r : a), null);
   // Das Ende: der letzte Monatserste, bis zu dem **alle** Zählwerke reichen.
@@ -2652,7 +2660,11 @@ function heatingComparison(ch) {
   // Jahr und drei Monate zählte drei Wintermonate doppelt.
   if (monateZwischen(start, ende) > 12) start = monatePlus(ende, -12);
   const monate = monateZwischen(start, ende);
-  const vorFrom = shiftYear(start, -1), vorTo = shiftYear(ende, -1);
+  // Ab einem ganzen Jahr läge „ein Jahr früher" teils schon nach dem Wechsel.
+  // Ein ganzes Jahr enthält jeden Monat einmal; dann zählen die zwölf Monate
+  // direkt vor dem Wechsel. Wie `HeatingComparison.compare`.
+  const vorFrom = monate === 12 ? monatePlus(ersterDesMonats(ch.day), -12) : shiftYear(start, -1);
+  const vorTo = monate === 12 ? ersterDesMonats(ch.day) : shiftYear(ende, -1);
 
   let altMenge = 0, altKwh = 0, kwhBekannt = true;
   for (const r of bezugsZaehlwerke(alt)) {
@@ -4613,8 +4625,8 @@ const INCLUDES = {
   camera: ["Zahl in den Rahmen halten, Kamera schlägt sie vor",
            "Du prüfst die Zahl, gesichert wird erst danach",
            "Bilder bleiben auf dem Gerät, nichts wird gesendet"],
-  heatPump: ["Heizung gewechselt am …: alter und neuer Zähler verbunden",
-             "Vorher und nachher, dieselben Monate, in kWh und in Euro",
+  heatPump: ["Heizungswechsel mit Tag, altem und neuem Zähler",
+             "Vorher und nachher, dieselben Monate, kWh und Euro",
              "Als Bild teilen, ohne Zählerstände"],
   everything: PRODUCTS.map(p => p.title)
 };

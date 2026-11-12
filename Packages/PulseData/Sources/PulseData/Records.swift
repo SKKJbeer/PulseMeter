@@ -191,6 +191,20 @@ public final class TariffRecord {
     public init(id: UUID = UUID()) { self.id = id }
 }
 
+/// Heizung gewechselt (1.9). Felder mit Vorgabe, damit CloudKit sie ohne
+/// Pflichtwert anlegen kann.
+@Model
+public final class HeatingChangeRecord {
+    public var id: UUID = UUID()
+    public var day: Int = 0
+    public var oldMeterID: UUID = UUID()
+    public var newMeterID: UUID = UUID()
+    public var efficiencyScaled: Int = 0
+    public var valueScale: Int = ScaledDecimal.moneyScale
+
+    public init(id: UUID = UUID()) { self.id = id }
+}
+
 @Model
 public final class BillingPeriodRecord {
     public var id: UUID = UUID()

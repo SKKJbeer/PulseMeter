@@ -42,11 +42,25 @@ final class PulseSnapshotTests: XCTestCase {
         XCTAssertNotNil(points[0]["measuresHeatPump"], "Das Feld wird geschrieben")
         for i in points.indices { points[i].removeValue(forKey: "measuresHeatPump") }
         json["meteringPoints"] = points
+        XCTAssertNotNil(json["heatingChanges"])
+        json.removeValue(forKey: "heatingChanges")
         let alt = try JSONSerialization.data(withJSONObject: json)
 
         let restored = try PulseSnapshot.decode(from: alt)
         XCTAssertEqual(restored.meteringPoints.count, snapshot.meteringPoints.count)
         XCTAssertFalse(restored.meteringPoints[0].measuresHeatPump)
+        XCTAssertEqual(restored.heatingChanges, [])
+    }
+
+    /// Ein Heizungswechsel steckt in der Sicherung und kommt wieder heraus.
+    func testAHeatingChangeRoundTrips() throws {
+        var snapshot = sample()
+        let change = HeatingChange(day: day(2025, 10, 1), oldMeterID: UUID(), newMeterID: UUID(),
+                                   boilerEfficiency: dec("0.9"))
+        snapshot.heatingChanges = [change]
+        let restored = try PulseSnapshot.decode(from: snapshot.encoded())
+        XCTAssertEqual(restored.heatingChanges, [change])
+        XCTAssertEqual(restored.merged(into: restored).heatingChanges, [change])
     }
 
     func testSnapshotCarriesEveryEntityNotJustReadings() throws {

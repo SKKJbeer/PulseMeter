@@ -9,6 +9,45 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.162.0 — 2026-11-12
+
+**Rechenkern und Datenmodell für 1.9: Heizungswechsel, vorher und nachher**
+
+### Neu
+- `HeatingChange` (Tag, alter Zähler, Zähler der Wärmepumpe, Wirkungsgrad
+  des Kessels, Vorgabe 90 % Gas, 85 % Öl).
+- `HeatingComparison.compare(change:old:new:readings:tariffs:today:)`:
+  ganze Monate nach dem Wechsel gegen dieselben Monate ein Jahr früher.
+  Ein Monat zählt erst ab der ersten Ablesung am neuen Zähler. Höchstens
+  das jüngste Jahr; ein ganzes Jahr steht gegen die zwölf Monate vor dem
+  Wechsel, weil „ein Jahr früher“ dann schon in der Zeit der Wärmepumpe
+  läge. Ergebnis: Menge, kWh, Wärme (Brennstoff × Wirkungsgrad), Kosten
+  mit Grundpreis und den Tarifen, die dort galten, Unterschied in Euro und
+  kWh. Sonst „wartet bis …“ oder „Vorjahr fehlt“.
+- `HeatingComparison.eligibility`: Ein Stromzähler mit Ablesungen mehr als
+  31 Tage vor dem Wechsel gilt nicht als Zähler der Wärmepumpe.
+- Kauf `ProductID.heatPump` („Wärmepumpe“, 4,99 €,
+  `de.karjoth.pulsemeter.heatpump`), `AccessPolicy.canCompareHeating`. Das
+  Bündel nennt sieben Stücke, der Ersatzpreis in der App ist 7,99 €.
+- Bei Apple (`scripts/asc-kaeufe.py`): Kauf „Wärmepumpe“ eingetragen. Das
+  Bündel bleibt dort bei 4,99 €, bis 1.9 im Laden ist, weil ein Preis bei
+  Apple sofort gilt.
+- `HeatingChangeRecord` in PulseData, mit Speichern, Löschen, Sicherung und
+  Wiederherstellung; neuer Typ in `cloudkit/schema.ckdb`. Sicherungen ohne
+  `heatingChanges` lesen sich weiter ein.
+- Klick-Dummy: dieselbe Regel für die erste Ablesung und für das ganze Jahr.
+
+### Tests
+- `HeatingComparisonTests` (11), darunter „halber Winter gegen ganzen“,
+  Preiswechsel im Ausschnitt, Heizöl, Grundpreis, mehr als ein Jahr. Rot
+  gesehen mit einem Ausschnitt über das ganze Vorjahr.
+- `AccessPolicyTests.testTheHeatPumpIsItsOwnPurchaseAndPartOfTheBundle`
+  (rot gesehen), Summe einzeln 15,93 €, „Alle sieben“.
+- `PulseSnapshotTests.testAHeatingChangeRoundTrips`. PulseCore: 378 Tests
+  grün.
+
+---
+
 ## 0.161.0 — 2026-11-12
 
 **Klick-Dummy für 1.9: Heizung gewechselt, vorher und nachher**

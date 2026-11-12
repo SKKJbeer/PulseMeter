@@ -23,6 +23,8 @@ public struct PulseSnapshot: Codable, Hashable, Sendable {
     public var readings: [Reading]
     public var tariffs: [Tariff]
     public var billingPeriods: [BillingPeriod]
+    /// Seit 1.9. Fehlt in Sicherungen älterer Fassungen, siehe `init(from:)`.
+    public var heatingChanges: [HeatingChange]
 
     public static let currentVersion = 1
 
@@ -34,7 +36,8 @@ public struct PulseSnapshot: Codable, Hashable, Sendable {
         meteringPoints: [MeteringPoint] = [],
         readings: [Reading] = [],
         tariffs: [Tariff] = [],
-        billingPeriods: [BillingPeriod] = []
+        billingPeriods: [BillingPeriod] = [],
+        heatingChanges: [HeatingChange] = []
     ) {
         self.version = version
         self.createdAt = createdAt
@@ -44,6 +47,23 @@ public struct PulseSnapshot: Codable, Hashable, Sendable {
         self.readings = readings
         self.tariffs = tariffs
         self.billingPeriods = billingPeriods
+        self.heatingChanges = heatingChanges
+    }
+
+    /// Von Hand, weil eine Sicherung aus einer Fassung vor 1.9 keine
+    /// `heatingChanges` kennt. Die Formatversion bleibt 1: Ältere Fassungen
+    /// lesen eine neue Sicherung weiter und lassen das Feld liegen.
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        version = try c.decode(Int.self, forKey: .version)
+        createdAt = try c.decode(Date.self, forKey: .createdAt)
+        properties = try c.decode([Property].self, forKey: .properties)
+        units = try c.decode([RentalUnit].self, forKey: .units)
+        meteringPoints = try c.decode([MeteringPoint].self, forKey: .meteringPoints)
+        readings = try c.decode([Reading].self, forKey: .readings)
+        tariffs = try c.decode([Tariff].self, forKey: .tariffs)
+        billingPeriods = try c.decode([BillingPeriod].self, forKey: .billingPeriods)
+        heatingChanges = try c.decodeIfPresent([HeatingChange].self, forKey: .heatingChanges) ?? []
     }
 
     public var isEmpty: Bool {
@@ -95,7 +115,8 @@ extension PulseSnapshot {
             meteringPoints: Self.merge(existing.meteringPoints, self.meteringPoints),
             readings: Self.merge(existing.readings, self.readings),
             tariffs: Self.merge(existing.tariffs, self.tariffs),
-            billingPeriods: Self.merge(existing.billingPeriods, self.billingPeriods)
+            billingPeriods: Self.merge(existing.billingPeriods, self.billingPeriods),
+            heatingChanges: Self.merge(existing.heatingChanges, self.heatingChanges)
         )
     }
 
