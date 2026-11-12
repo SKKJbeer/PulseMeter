@@ -554,10 +554,15 @@ struct HistoryView: View {
             // eigene Zeile darunter. Das Menü heißt jetzt nach dem, was es
             // wirklich enthält.
         } label: {
-            exportLabel("Tabellen", symbol: "square.and.arrow.down")
+            // **Teilen-Symbol statt Download-Pfeil** (0.164.0). Der Pfeil
+            // versprach einen Download, es kam das Teilen-Blatt, und der
+            // naheliegende Griff dort war Mail. Ein Käufer im Laden: „Warum
+            // ist der CSV-Export nur tabellarisch in einer E-Mail
+            // abgehängt?“ Der Knopf sagt jetzt beide Wege, die er hat.
+            exportLabel("Tabelle sichern oder teilen", symbol: "square.and.arrow.up")
         }
-        .accessibilityLabel("Tabellen herunterladen")
-        .accessibilityHint("Ablesungen oder Auswertung als CSV. Der Verbrauchsbericht als PDF steht darunter")
+        .accessibilityLabel("Tabelle sichern oder teilen")
+        .accessibilityHint("Ablesungen oder Auswertung als CSV-Datei, zum Sichern in Dateien oder zum Verschicken. Der Verbrauchsbericht als PDF steht darunter")
     }
 
     /// **Was fehlt, steht da — mit seinem Preis.**
@@ -1948,35 +1953,4 @@ private extension Array {
     }
 }
 
-/// Eine Tabelle, die **erst beim Teilen** entsteht.
-///
-/// **Der Grund, warum dieser Typ existiert.** Bis 0.61.0 waren die zwei
-/// Exportdateien berechnete Eigenschaften, die im Bildaufbau standen. Jede
-/// Neuauswertung des Verlaufsschirms hat damit zwei CSV-Dateien gebaut **und
-/// auf die Platte geschrieben** — beim Blättern, beim Umschalten von Monat auf
-/// Quartal, und beim Antippen von „Alle Ablesungen", weil auch das den Zustand
-/// ändert. Der Gründer beim ersten Gebrauch: „lädt ziemlich lange".
-///
-/// Dateien als Nebenwirkung des Zeichnens zu schreiben ist unabhängig von der
-/// Geschwindigkeit falsch. `Transferable` löst beides: Die Beschreibung ist
-/// billig, `inhalt` läuft erst, wenn das Teilen-Blatt die Daten anfordert.
-///
-/// `exportedContentType: .commaSeparatedText` sagt dem System ausdrücklich,
-/// dass es eine Tabelle ist — vorher hing das allein an der Dateiendung, und
-/// je nach Ziel kam sie als Textdatei an.
-struct CSVAusgabe: Transferable {
-
-    let dateiname: String
-    /// Wird genau einmal aufgerufen, und nur beim Teilen.
-    let inhalt: () -> String
-
-    static var transferRepresentation: some TransferRepresentation {
-        DataRepresentation(exportedContentType: .commaSeparatedText) { ausgabe in
-            // Byte-Reihenfolge-Marke für Excel: Ohne sie öffnet es eine
-            // UTF-8-Datei mit Umlauten als Buchstabensalat.
-            Data("\u{FEFF}\(ausgabe.inhalt())".utf8)
-        }
-        .suggestedFileName { $0.dateiname }
-    }
-}
 

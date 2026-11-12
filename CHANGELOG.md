@@ -9,6 +9,66 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.164.0 — 2026-11-12
+
+**Alle Zähler als Tabelle, und die Tabelle kommt als Datei an**
+
+Aus einer Rezension im Laden (4 Sterne, sieben Zähler): „Warum ist der
+CSV-Export nur tabellarisch in einer E-Mail abgehängt? Ich wünsche mir eine
+echte CSV, die auch in Excel eingelesen werden kann.“ Konzept:
+`docs/konzepte/export-alle-zaehler.md`.
+
+### Neu
+- Im Tab „Zähler“ steht ab zwei Zählern unter „Aus einer Tabelle einlesen“ die
+  Karte **„Alle Zähler als Tabelle“**. Ein Tipp öffnet das Teilen-Blatt mit
+  einer Datei `Zählora-Alle-Zähler-<Datum>.csv`: alle Ablesungen aller Zähler,
+  archivierte eingeschlossen, Zähler für Zähler, darin nach Datum. Ohne Kauf.
+- Die Spalten sind dieselben wie beim Export je Zähler. „Bezeichnung“ und
+  „Uhrzeit“ stehen da, sobald ein Zähler sie braucht; zwei Zähler mit gleichem
+  Namen heißen „Wasser“ und „Wasser (2)“. Die Datei lässt sich mit „Aus einer
+  Tabelle einlesen“ wieder einlesen.
+
+### Behoben
+- **Die Tabelle landete in Mail im Text statt als Anhang.** Sie ging als
+  Textdaten ins Teilen-Blatt (`DataRepresentation`, Typ CSV), und Mail setzt
+  Text in die Nachricht. Jetzt wird eine Datei geschrieben und weitergegeben
+  (`FileRepresentation`): in Mail ein Anhang, in „In Dateien sichern“ eine
+  `.csv`, in Excel und Numbers zum Öffnen. Gilt auch für „Ablesungen als CSV“
+  und „Auswertung als CSV“ im Verlauf. Der Inhalt der Dateien ist unverändert.
+  Unbemerkt hätte jeder, der seine Daten an Excel weitergeben will, eine Mail
+  voller Semikolons bekommen und keine Datei.
+
+### Geändert
+- Der Knopf im Verlauf heißt **„Tabelle sichern oder teilen“** mit dem
+  Teilen-Symbol statt „Tabellen“ mit Download-Pfeil. Der Pfeil versprach einen
+  Download, es kam das Teilen-Blatt, und dort lag Mail am nächsten.
+- `CSVAusgabe` steht in einer eigenen Datei (`App/CSVAusgabe.swift`), weil
+  zwei Schirme sie brauchen. Der Inhalt entsteht weiter erst beim Teilen, jetzt
+  auf dem Hauptfaden.
+- Der Export je Zähler und „Alle Zähler“ sind dieselbe Umsetzung
+  (`TableExport.allMeters`), damit beide Dateien nebeneinander passen.
+- `scripts/check-verwaiste-namen.py` hält eine Argumentbeschriftung
+  (`CSVAusgabe(dateiname: …)`) nicht mehr für eine Verwendung. Sie meldete
+  sonst `dateiname` als verwaist, nachdem `CSVAusgabe` in eine eigene Datei
+  gewandert war. Ein echter Fall (Variable umbenannt, alter Name noch benutzt)
+  wird weiter gemeldet, gegengeprüft.
+
+### Tests
+- `TableExportTests`: gemeinsame Kopfzeile und Reihenfolge über drei Zähler,
+  gleich viele Felder in jeder Zeile, gleiche Namen unterscheidbar, keine
+  leere Spalte ohne Doppeltarif, Formeln im Namen entschärft, ein Zähler über
+  die neue Funktion gibt dieselbe Datei wie der Verlauf.
+- `TableImportTests.testAllMetersExportReadsBack`: Datei aller Zähler wieder
+  eingelesen, vier Reihen, acht Stände.
+- Neue Prüfungen einmal rot gesehen (Namensnummer und Spaltenregel
+  abgeschaltet: drei Tests fielen).
+- App: `testAllMetersCanBeExportedFromTheMetersTabWithoutPurchase`;
+  `testTheReportIsWatermarkedAndTheExportNeverCosts` sucht den Knopf unter
+  dem neuen Namen.
+
+_PulseCore: TableExport- und TableImport-Tests grün unter Linux (Swift 6.0.3).
+Klick-Dummy: alle Prüfungen durchgelaufen. App-Bau und App-Tests in der CI._
+
 ## 0.163.0 — 2026-11-12
 
 **1.9 in der App: Heizung gewechselt, vorher und nachher**

@@ -35,6 +35,43 @@ final class TableImportTests: XCTestCase {
         XCTAssertTrue(r.issues.isEmpty, "Unser eigener Export darf keine Hinweise erzeugen: \(r.issues)")
     }
 
+    /// „Alle Zähler als Tabelle“ ist auch eine Sicherung — und eine
+    /// Sicherung, die man nicht zurückbekommt, ist keine.
+    func testAllMetersExportReadsBack() {
+        let strom = Register(unit: .kilowattHour, fractionDigits: 1)
+        let gas = Register(unit: .cubicMetre, fractionDigits: 3)
+        let hoch = Register(label: "HT", unit: .kilowattHour, fractionDigits: 1)
+        let nieder = Register(label: "NT", unit: .kilowattHour, fractionDigits: 1)
+        func punkt(_ name: String, _ r: [Register], _ kind: ResourceKind) -> MeteringPoint {
+            MeteringPoint(propertyID: Fixture.property.id, name: name, kind: kind, registers: r)
+        }
+        let text = TableExport.allMeters([
+            .init(meteringPoint: punkt("Strom", [strom], .electricity), readings: [
+                Reading(registerID: strom.id, day: day(2025, 1, 1), value: 1000),
+                Reading(registerID: strom.id, day: day(2025, 2, 1), value: 1100)
+            ]),
+            .init(meteringPoint: punkt("Gas", [gas], .gas), readings: [
+                Reading(registerID: gas.id, day: day(2025, 1, 1), value: dec("8000.25")),
+                Reading(registerID: gas.id, day: day(2025, 2, 1), value: dec("8100.5"))
+            ]),
+            .init(meteringPoint: punkt("Wärmepumpe", [hoch, nieder], .electricity), readings: [
+                Reading(registerID: hoch.id, day: day(2025, 1, 1), value: 200),
+                Reading(registerID: nieder.id, day: day(2025, 1, 1), value: 300),
+                Reading(registerID: hoch.id, day: day(2025, 2, 1), value: 250),
+                Reading(registerID: nieder.id, day: day(2025, 2, 1), value: 380)
+            ])
+        ])
+        let r = result(text)
+
+        XCTAssertEqual(r.series.count, 4, "Strom, Gas und zwei Zählwerke — gelesen: \(r.series.map(\.id))")
+        XCTAssertEqual(r.entryCount, 8)
+        let gasReihe = r.series.first { $0.meterName == "Gas" }
+        XCTAssertEqual(gasReihe?.unit, .cubicMetre)
+        XCTAssertEqual(gasReihe?.entries.last?.value, dec("8100.5"))
+        let labels = Set(r.series.filter { $0.meterName == "Wärmepumpe" }.compactMap(\.registerLabel))
+        XCTAssertEqual(labels, ["HT", "NT"])
+    }
+
     func testOwnDualTariffExportKeepsBothRegisters() {
         let ht = Register(label: "HT", unit: .kilowattHour)
         let nt = Register(label: "NT", unit: .kilowattHour)

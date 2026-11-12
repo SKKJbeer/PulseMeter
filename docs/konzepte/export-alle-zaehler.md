@@ -2,8 +2,9 @@
 
 Stand 12. November 2026. Herkunft: Rezension im App Store („Eine fast perfekte
 App ohne Abo“, 4 Sterne, Lionthooth), vom Gründer am 12. November
-weitergegeben mit dem Auftrag, es zu prüfen und einzuplanen. Wann es kommt,
-steht in `05-roadmap.md`.
+weitergegeben mit dem Auftrag, es zu prüfen und einzuplanen. Am selben Tag
+vom Gründer vorgezogen („ok mach das und schiebe es vor“, ausdrücklich mit
+der Korrektur Datei statt Mail). Gebaut in 0.164.0, fährt mit 1.8.
 
 ## Was der Käufer schreibt
 
@@ -77,9 +78,8 @@ Doppelklick richtig öffnet.
   `CSVAusgabe` existiert, 0.61.0).
 - Alte Dateien im temporären Ordner werden beim nächsten Export weggeräumt.
 - Der Knopf sagt, was passiert: Symbol `square.and.arrow.up` (Teilen) statt
-  des Download-Pfeils, Beschriftung „Tabelle teilen oder sichern“, für
-  VoiceOver „Tabellen teilen oder in Dateien sichern“. Ob das Wort „Teilen“
-  allein reicht, entscheidet der Klick-Dummy.
+  des Download-Pfeils, Beschriftung „Tabelle sichern oder teilen“ (Sichern
+  zuerst, denn das war der Wunsch).
 
 ### B. „Alle Zähler als Tabelle“
 
@@ -140,15 +140,19 @@ der richtige.
   Umsetzung gibt.
 - **App:** `CSVAusgabe` (aus `HistoryView.swift` in eine eigene Datei
   `App/CSVAusgabe.swift`, weil zwei Schirme sie brauchen) mit
-  `FileRepresentation`. `MetersView` liest Zähler und Ablesungen über
-  `PulseRepository` erst beim Teilen.
+  `FileRepresentation`. Der Inhalt entsteht über eine `@MainActor`-Funktion,
+  denn das Teilen-Blatt fordert die Datei auf einem beliebigen Faden an und
+  `PulseRepository` gehört dem Hauptfaden. `MetersView` gibt den
+  `ModelContainer` mit (darf über Fäden gereicht werden) und liest erst beim
+  Teilen über einen eigenen `ModelContext`.
 - **Klick-Dummy:** Karte im Zähler-Tab, Tipp zeigt die Datei als Tabelle.
 
 ## Bedienung
 
 - Text der Karte: „Alle Zähler als Tabelle“, darunter „Alle Ablesungen in einer
   CSV-Datei, für Excel oder Numbers“. Symbol `square.and.arrow.up`.
-- VoiceOver: „Alle Zähler als Tabelle teilen“.
+- VoiceOver: „Alle Zähler als Tabelle“, Hinweis „Alle Ablesungen in einer
+  CSV-Datei sichern oder teilen“.
 - Im Verlauf bleibt „Tabellen“ wie es ist; dort ändert sich nur, dass die Datei
   als Anhang ankommt.
 
