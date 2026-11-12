@@ -56,6 +56,8 @@ Prüfungen haben gleich einen echten Fehler gefunden.
   beantwortete die App die Fragen des Tests nicht rechtzeitig. Er wartet jetzt geduldig und lässt
   dabei nur genau diesen Fehler durch; ob Vorschlag und Hinweis am Ende dastehen, entscheidet
   weiter eine echte Frage. Die Vorführung ohne Kamera rechnet mit niedrigerem Vorrang.
+- `testCapturingBothDirectionsInOneGo` tippt „Sichern“ erst, wenn der Knopf freigeschaltet ist, und
+  ein zweites Mal, wenn das Blatt danach nachweislich noch offen ist (fiel auf dem iPhone).
 
 ---
 

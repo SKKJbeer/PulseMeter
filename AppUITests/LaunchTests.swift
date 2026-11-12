@@ -1684,15 +1684,28 @@ final class LaunchTests: XCTestCase {
             evaluatedWith: schritt)
         wait(for: [wiederVorn], timeout: erscheint)
         app.buttons["Vom letzten Stand übernehmen"].tap()
+        // Erst tippen, wenn „Sichern“ freigeschaltet ist: Kurz nach dem Übernehmen
+        // kann der Knopf noch gesperrt sein, und dann geht der Tipp ins Leere.
+        XCTAssertTrue(warte(bis: NSPredicate(format: "isEnabled == true"), an: save, timeout: erscheint),
+                      "„Sichern“ wurde nach dem Übernehmen nicht freigeschaltet")
         save.tap()
 
         // **Daran, dass das Blatt weg ist, nicht daran, dass „Übersicht"
         // irgendwo steht.** Auf dem iPad heißt schon die erste Zeile der
         // Seitenleiste so, und zwar auch, während das Blatt offen ist — die
         // Prüfung wäre dort erfüllt, bevor irgendetwas gesichert wurde.
-        let blattZu = expectation(for: NSPredicate(format: "exists == 0"),
-                                  evaluatedWith: schritt)
-        wait(for: [blattZu], timeout: erscheint)
+        //
+        // Ein verlorener Tipp braucht einen zweiten Tipp (wie bei „Zurück“ oben):
+        // Auf dem iPhone blieb das Blatt in Lauf 43084599490 offen. Der zweite Tipp
+        // kommt nur, wenn nach der ganzen Wartezeit das Blatt noch dasteht und
+        // „Sichern“ treffbar ist, der erste also nachweislich nichts bewirkt hat.
+        let zu = NSPredicate(format: "exists == 0")
+        if !warte(bis: zu, an: schritt, timeout: erscheint), save.exists, save.isHittable {
+            print("Sichern: der erste Tipp kam nicht an, zweiter Versuch.")
+            save.tap()
+        }
+        XCTAssertTrue(warte(bis: zu, an: schritt, timeout: erscheint),
+                      "Nach „Sichern“ steht das Blatt noch. Zu sehen war: \(beschriftungen(in: app))")
     }
 
     /// Der Rundgang: Nach dem Sichern bleibt das Blatt offen und zeigt den
