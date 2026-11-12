@@ -78,6 +78,9 @@ public final class MeteringPointRecord {
     public var isArchived: Bool = false
     public var sortIndex: Int = 0
     public var note: String?
+    /// Seit 1.9. Mit Vorgabe, damit eine ältere Fassung beim Abgleich nichts
+    /// verliert und CloudKit das Feld ohne Pflichtwert anlegen kann.
+    public var measuresHeatPump: Bool = false
     public var unitID: UUID?
     public var propertyID: UUID = UUID()
 
@@ -184,6 +187,20 @@ public final class TariffRecord {
     public var gasStateNumberScaled: Int?
     public var gasCalorificValueScaled: Int?
     public var feedInPriceScaled: Int?
+
+    public init(id: UUID = UUID()) { self.id = id }
+}
+
+/// Heizung gewechselt (1.9). Felder mit Vorgabe, damit CloudKit sie ohne
+/// Pflichtwert anlegen kann.
+@Model
+public final class HeatingChangeRecord {
+    public var id: UUID = UUID()
+    public var day: Int = 0
+    public var oldMeterID: UUID = UUID()
+    public var newMeterID: UUID = UUID()
+    public var efficiencyScaled: Int = 0
+    public var valueScale: Int = ScaledDecimal.moneyScale
 
     public init(id: UUID = UUID()) { self.id = id }
 }

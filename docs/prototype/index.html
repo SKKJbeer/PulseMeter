@@ -419,7 +419,7 @@ ul.includes.done li::before { content: "✓"; color: var(--tint); font-size: 12p
    Umschalter halten könnte. Dasselbe feste Maß wie `WideLayout.controlWidth`:
    480 Punkte, linksbündig, in der Flucht der Zählerwahl darüber. */
 @container (min-width: 640px) and (max-width: 817.98px) {
-  #pane-history > .segmented, #scale { max-width: 480px; }
+  #pane-history > .segmented, #scale, #mode { max-width: 480px; }
 }
 /* Das Raster wie in `OverviewView`: eine Angabe für ganzes Fenster, Hälfte
    und Drittel, ohne dass irgendwo eine Spaltenzahl festgeschrieben wäre. */
@@ -850,7 +850,6 @@ table.data tr.est td:first-child::after {
 .fc-jahr-zeile { display: flex; justify-content: space-between; gap: 10px;
   font-size: var(--fs-cap); color: var(--ink-2); font-variant-numeric: tabular-nums; }
 .fc-jahr-zeile strong { color: var(--ink); font-weight: 650; }
-.chart-hint { text-align: center; font-size: var(--fs-cap); color: var(--ink-3); margin-top: 10px; }
 #chart rect[data-month] { cursor: pointer; }
 
 /* ---------- Bericht ----------
@@ -963,6 +962,8 @@ select.field { cursor: pointer; }
 .calc-row .v { font-weight: 600; letter-spacing: -0.012em; white-space: nowrap; }
 .calc-row.total { border-top: 1.5px solid var(--ink); margin-top: 4px; padding-top: 13px; }
 .calc-row.total .k, .calc-row.total .v { font-weight: 680; color: var(--ink); }
+.icloud-zeile { display: flex; gap: 6px; align-items: flex-start; margin: 10px 4px 0; font-size: var(--fs-cap, 12px); color: var(--ink-2); }
+.icloud-zeile svg { width: 15px; height: 15px; flex: none; margin-top: 1px; }
 .note {
   font-size: 13px; line-height: 1.5; color: var(--ink-2);
   background: var(--surface-2); border-radius: 12px; padding: 12px 13px; margin-top: 16px;
@@ -975,6 +976,26 @@ select.field { cursor: pointer; }
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+/* 1.9: Vorher und nachher. */
+.hw-wartet { font-size: 17px; font-weight: 640; margin: 4px 0 2px; color: var(--ink); }
+.hw-gross { padding: 16px 4px 6px; }
+.hw-gross .value { font-size: 44px; }
+.hw-zeile { display: grid; grid-template-columns: 1.1fr 1fr 1fr; gap: 8px; align-items: baseline;
+  font-size: 14px; font-variant-numeric: tabular-nums; }
+.hw-zeile > div:not(.rl) { text-align: right; }
+.hw-kopf { font-weight: 650; color: var(--ink-2); font-size: 13px; }
+.hw-wahl { gap: 12px; cursor: pointer; }
+.hw-wahl input { width: 20px; height: 20px; accent-color: var(--tint); flex: 0 0 auto; }
+.hw-wahl.aus { opacity: .55; cursor: default; }
+/* Schalter wie in iOS, für „Misst eine Wärmepumpe" (1.9). */
+.schalter { appearance: none; -webkit-appearance: none; width: 51px; height: 31px; flex: 0 0 auto;
+  border-radius: 16px; background: var(--fill, rgba(120,120,128,.32)); position: relative; margin: 0;
+  cursor: pointer; transition: background .2s; }
+.schalter::after { content: ""; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px;
+  border-radius: 50%; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.25); transition: transform .2s; }
+.schalter:checked { background: var(--green); }
+.schalter:checked::after { transform: translateX(20px); }
+.schalter:focus-visible { outline: 2px solid var(--tint); outline-offset: 2px; }
 </style>
 
 <div class="stage-head">
@@ -993,7 +1014,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>Zählora</h1>
-  <p>Klickbarer Entwurf · v0.148.0</p>
+  <p>Klickbarer Entwurf · v0.162.0</p>
 </div>
 
 <div class="device" id="device">
@@ -1038,6 +1059,10 @@ select.field { cursor: pointer; }
       <h2 class="large">Verlauf</h2>
       <p class="datum">Ein Zähler, ein Zeitraum</p>
       <div class="picker" id="picker"></div>
+      <!-- **Oben nur noch Zähler und Zeitraum, seit 1.8.** „Diagramm / Alle
+           Zahlen" stand als dritte Reihe darüber; jetzt wandert derselbe
+           Umschalter zu dem, was er umschaltet: unter das Diagramm, in der
+           Tabelle über sie (`platziereModus`). Wie `HistoryView.modePicker`. -->
       <div class="segmented" id="mode">
         <button type="button" aria-selected="true" data-mode="chart">Diagramm</button>
         <button type="button" aria-selected="false" data-mode="table">Alle Zahlen</button>
@@ -1066,7 +1091,6 @@ select.field { cursor: pointer; }
             <span><i style="background:repeating-linear-gradient(45deg,var(--ink-3) 0 2px,transparent 2px 4px)"></i><span id="lg-hatch">geschätzt</span></span>
           </div>
           <div class="chart-forecast" id="chart-forecast" style="display:none"></div>
-          <div class="chart-hint" id="chart-hint">Tippe einen Monat an, um ihn mit den Vorjahren zu vergleichen</div>
         </div>
         <div id="compare-block">
           <div class="section-label" id="cmp-label">Damals im August</div>
@@ -1224,6 +1248,12 @@ select.field { cursor: pointer; }
           <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
         </button>
       </div>
+      <!-- Ob der iCloud-Abgleich klappt (1.8), wie `MetersView.icloudZeile`.
+           Der Entwurf kennt kein iCloud und zeigt den Zustand, den ein
+           angemeldetes Gerät nach einem Abgleich hat. -->
+      <p class="icloud-zeile" id="icloud-zeile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 19H7a5 5 0 1 1 .9-9.9A6 6 0 0 1 19 11a4 4 0 0 1-1.5 8z"/><path d="m9 14 2 2 4-4"/></svg>
+        Mit iCloud abgeglichen: heute, 18:10</p>
 
       </div><!-- /leiste -->
       </div><!-- /spalten -->
@@ -1247,6 +1277,15 @@ select.field { cursor: pointer; }
         <div class="row">
           <div class="rl">Tipp auf das Feld am Sperrbildschirm<small>Öffnet den fälligen Zähler, der am längsten wartet</small></div>
           <button type="button" class="pick" data-springe="" id="sprung-widget">Antippen</button>
+        </div>
+        <div class="row" style="flex-direction:column;align-items:stretch;gap:10px">
+          <div class="rl">Beispiel: Heizung gewechselt<small>Gas endet am Tag des Wechsels, ein Zähler „Heizstrom“ beginnt (1.9)</small></div>
+          <div class="segmented">
+            <button type="button" data-hw-beispiel="" aria-selected="true">Keiner</button>
+            <button type="button" data-hw-beispiel="2w" aria-selected="false">vor 2 Wochen</button>
+            <button type="button" data-hw-beispiel="4m" aria-selected="false">vor 4 Monaten</button>
+            <button type="button" data-hw-beispiel="10m" aria-selected="false">vor 10 Monaten</button>
+          </div>
         </div>
         <div class="row">
           <div class="rl">Kaufzustand<small>Zum Ansehen beider Seiten der Grenze — in der App gibt es diesen Schalter nicht</small></div>
@@ -1329,6 +1368,35 @@ select.field { cursor: pointer; }
       <button type="button" class="sheet-close" style="visibility:hidden">Abbrechen</button>
     </div>
     <div class="sheet-body" id="editor-body"></div>
+  </div>
+
+  <!-- 1.9: Heizung gewechselt am …, Vorher und nachher, Als Bild teilen. -->
+  <div class="sheet" id="sheet-hwx" role="dialog" aria-modal="true" aria-label="Heizung gewechselt">
+    <div class="grabber"></div>
+    <div class="sheet-head">
+      <button type="button" class="sheet-close" data-close>Abbrechen</button>
+      <div class="sheet-title">Heizungswechsel</div>
+      <button type="button" class="sheet-close" style="visibility:hidden">Abbrechen</button>
+    </div>
+    <div class="sheet-body" id="hwx-body"></div>
+  </div>
+  <div class="sheet" id="sheet-hwv" role="dialog" aria-modal="true" aria-label="Vorher und nachher">
+    <div class="grabber"></div>
+    <div class="sheet-head">
+      <button type="button" class="sheet-close" style="visibility:hidden">Fertig</button>
+      <div class="sheet-title">Vorher und nachher</div>
+      <button type="button" class="sheet-close" data-close>Fertig</button>
+    </div>
+    <div class="sheet-body" id="hwv-body"></div>
+  </div>
+  <div class="sheet" id="sheet-hwb" role="dialog" aria-modal="true" aria-label="Als Bild teilen">
+    <div class="grabber"></div>
+    <div class="sheet-head">
+      <button type="button" class="sheet-close" style="visibility:hidden">Fertig</button>
+      <div class="sheet-title">Als Bild teilen</div>
+      <button type="button" class="sheet-close" data-close>Fertig</button>
+    </div>
+    <div class="sheet-body" id="hwb-body"></div>
   </div>
 
   <!-- Neuer Preis ab einem Tag (1.7). Wie `NewPriceSheet` in der App. -->
@@ -1840,6 +1908,8 @@ function daysSinceReading(meter) {
 }
 /* Ohne jede Ablesung ist immer eine fällig — wie `ConsumptionEngine.isReadingDue`. */
 const isDue = m => {
+  // Nach dem Heizungswechsel (1.9) erwartet der alte Zähler nichts mehr.
+  if (m.endedOn) return false;
   const days = daysSinceReading(m);
   return days === null || days >= m.interval;
 };
@@ -1933,6 +2003,9 @@ function referenceProfile(meter, reg) {
   // aus der App stehen — dann bekäme die Einspeisung das Bezugsprofil und
   // liefe der Sonne genau entgegen.
   if (reg && reg.feedIn) return PROFILES.solar;
+  // 1.9, Teil C: Ein Stromzähler, der eine Wärmepumpe misst, folgt dem
+  // Heizen. Mit H0 lag die Jahreszahl im Januar rund 60 % zu hoch.
+  if (meter && meter.kind === "electricity" && meter.measuresHeatPump) return PROFILES.heating;
   switch (meter && meter.kind) {
     case "gas": case "districtHeating": case "heatingOil": return PROFILES.heating;
     case "electricity": case "wallbox": return PROFILES.household;
@@ -2309,26 +2382,25 @@ function costCaption(res) {
 /* ============================================================
    Übersicht
    ============================================================ */
+/* „Gas ist fällig." / „Gas und Wasser sind fällig." / „Gas, Wasser und Strom
+   sind fällig." — wie `OverviewView.faelligSatz` in der App. */
+function faelligSatz(namen) {
+  if (namen.length === 1) return `${namen[0]} ist fällig.`;
+  return `${namen.slice(0, -1).join(", ")} und ${namen[namen.length - 1]} sind fällig.`;
+}
 function renderStatus() {
   const due = activeMeters().filter(isDue);
   const box = document.getElementById("status");
   if (!activeMeters().length) { box.innerHTML = ""; return; }
   if (due.length) {
-    const m = due[0];
-    const days = daysSinceReading(m);
-    box.innerHTML = `<div class="status-line due"><span class="dot"></span><div>
-      <b>${days === null
-          ? `${m.name} wurde noch nie abgelesen.`
-          : `${m.name} ist seit ${days} Tagen nicht abgelesen.`}</b>
-      Ohne aktuellen Stand ist die Vorschau ungenau.</div></div>`;
+    // **Ein kurzer Satz, seit 1.8.** Vorher stand hier, wie lange der Zähler
+    // nicht abgelesen ist, und warum das schadet — und dieselbe Dauer stand
+    // noch einmal auf der Karte, dazu ein Schild „Fällig". Dreimal dieselbe
+    // Nachricht nahm bei größter Schrift den ganzen Bildschirm. Die Dauer
+    // steht jetzt nur auf der Karte, wo sie zum Zähler gehört.
+    box.innerHTML = `<div class="status-line due"><span class="dot"></span><div><b>${faelligSatz(due.map(m => m.name))}</b></div></div>`;
   } else {
-    const first = activeMeters()[0];
-    const reg = first ? first.registers[0] : null;
-    const yoy = reg ? yearOverYear(reg) : null;
-    const txt = yoy !== null && yoy < -0.02
-      ? `<b>Alles im Rahmen.</b> Strom liegt ${pct(yoy)} unter dem Vorjahr.`
-      : `<b>Alles im Rahmen.</b> Alle Zähler sind aktuell.`;
-    box.innerHTML = `<div class="status-line"><span class="dot"></span><div>${txt}</div></div>`;
+    box.innerHTML = `<div class="status-line"><span class="dot"></span><div><b>Alles im Rahmen.</b></div></div>`;
   }
 }
 
@@ -2404,15 +2476,14 @@ function renderCards() {
     // gab es ihn nur als Guthaben oder Nachzahlung. Mit einer Ablesung steht
     // statt der Zahl, was noch fehlt.
     const ja = meterYearForecast(m);
-    const abschlagFc = m.prepay && fc ? fc : null;
-    const geteilt = ja && abschlagFc && !ja.lastDay && ja.method === abschlagFc.method && darfKosten();
     if (ja) {
       extra += `<div class="card-extra"><span>Erwartet für ${TODAY.y}</span>
         <button class="explain" data-ausblick="${m.id}" aria-label="Erwartet für ${TODAY.y}: ungefähr ${nf(ja.value, m.frac >= 3 ? 1 : 0)} ${m.unit}, öffnet den Verlauf">≈ ${nf(ja.value, m.frac >= 3 ? 1 : 0)} ${m.unit}
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button></div>`;
-      if (!geteilt) {
-        extra += `<div class="card-basis">${jahresGrundlage(ja)}</div>`;
-      }
+      // Woraus hochgerechnet ist, steht seit 1.8 nicht mehr auf der Karte,
+      // sondern hinter dem Antippen (Verlauf, `fc-unten`). Das „≈" sagt auf
+      // der Karte, dass geschätzt ist (Prinzip 7); die Zeile darunter machte
+      // die Karte um ein Drittel länger.
     } else if (lastR) {
       // Auch zwei Ablesungen am selben Tag ergeben noch keinen Verbrauch.
       const ersteNur = m.registers.every(r => r.readings.length < 2);
@@ -2439,13 +2510,19 @@ function renderCards() {
     // Jahreszahl steckt als dritte Spalte darin — deshalb tritt diese Zeile an
     // die Stelle der einzelnen Kostenzeile und nicht daneben. Zweimal derselbe
     // Jahresbetrag auf einer Karte wäre nicht doppelt so deutlich.
-    const spans = costSpans(m);
-    if (spans.length) {
+    // Abschnitte ohne Betrag fallen seit 1.8 weg: „November –" neben einem
+    // Jahresbetrag sagte nur, dass etwas fehlt. Bleibt einer übrig, steht er
+    // als eine Zeile wie früher.
+    const spans = costSpans(m).filter(s => s.amount !== null);
+    if (spans.length === 1) {
+      extra += `<div class="card-extra" data-kosten-einzeln><span>Kosten ${spans[0].label}</span>
+        <strong>${money(spans[0].amount)}</strong></div>`;
+    } else if (spans.length) {
       // Überschrift, weil „August · 2,83 €" allein nicht sagt, dass es Geld
       // ist. Siehe den Kommentar an `CostSpanRow` in PulseUI.
       extra += `<div class="card-spans"><span class="spans-cap">Kosten</span>` + spans.map(s =>
         `<div><span class="sp-l">${s.label}</span>
-         <span class="sp-v${s.amount === null ? " leer" : ""}">${s.amount === null ? "–" : money(s.amount)}</span></div>`
+         <span class="sp-v">${money(s.amount)}</span></div>`
       ).join("") + `</div>`;
     } else {
       const ytdCost = costYearToDate(m);
@@ -2459,7 +2536,6 @@ function renderCards() {
       extra += `<div class="card-extra"><span>Abschlag ${moneyRound(m.prepay)} monatlich</span>
         <button class="explain" data-explain="${m.id}">${bal >= 0 ? "≈ " + moneyRound(bal) + " Guthaben" : "≈ " + moneyRound(-bal) + " Nachzahlung"}
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button></div>`;
-      extra += `<div class="card-basis">${geteilt ? "Beides hochgerechnet" : "Hochgerechnet"} ${FORECAST_BASIS[fc.method]}</div>`;
     }
 
     // Ein „≈" vor der Zahl, sobald sie nicht ausschließlich auf gemessenen
@@ -2494,7 +2570,6 @@ function renderCards() {
         <div class="card-top">
           <span class="chip-icon">${icon(m)}</span>
           <span class="card-name">${m.name}</span>
-          ${due ? '<span class="due-pill">Fällig</span>' : ""}
           <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
         </div>
         <div class="card-body">
@@ -2510,8 +2585,482 @@ function renderCards() {
       ${extra}
       <div class="card-actions"><button type="button" data-capture="${m.id}">Stand eintragen</button></div>
     </article>`;
+  }).join("") + heizungsKarten();
+}
+
+/* ============================================================
+   1.9: Heizung gewechselt, vorher und nachher
+   ============================================================
+   Wie `HeatingComparison` in PulseCore (Regel 2). Konzept:
+   docs/konzepte/1.9-heizungswechsel.md.
+
+   Ein Wechsel verbindet den alten Zähler (Gas oder Heizöl) mit dem Strom-
+   zähler der Wärmepumpe. Verglichen wird nur, was nach dem Wechsel **voll**
+   gemessen ist, gegen **dieselben Monate ein Jahr früher** — die wieder-
+   kehrende Fehlerklasse aus CLAUDE.md. Ein halber Winter gegen einen ganzen
+   wäre die bekannteste Art, sich eine Wärmepumpe schönzurechnen. */
+let HEATING_CHANGES = [];
+const WIRKUNGSGRAD = { gas: 0.90, heatingOil: 0.85 };
+const HW_TOLERANZ_TAGE = 31;
+
+const ersterDesMonats = d => ({ y: d.y, m: d.m, d: 1 });
+const monatePlus = (d, n) => {
+  const i = d.y * 12 + (d.m - 1) + n;
+  return { y: Math.floor(i / 12), m: (i % 12) + 1, d: 1 };
+};
+const monateZwischen = (a, b) => (b.y * 12 + b.m) - (a.y * 12 + a.m);
+const bezugsZaehlwerke = m => m.registers.filter(r => !r.feedIn);
+const altArt = m => m.kind === "heatingOil" ? "Heizöl" : "Gas";
+
+/* Darf dieser Stromzähler als Zähler der Wärmepumpe gelten?
+
+   Die offene Frage aus dem Konzept, hier beantwortet: Ein Zähler, der lange
+   vor dem Wechsel schon Ablesungen hat, hat vorher etwas anderes gemessen —
+   das Haus. Nimmt man ihn, steht der Haushaltsstrom auf der Wärmepumpen-
+   seite, und der Vergleich wird um genau diesen Betrag schlechter. Ein
+   Monat Spielraum, weil der Zähler oft ein paar Tage vor der Inbetriebnahme
+   gesetzt und einmal abgelesen wird. */
+function hwZaehlerTauglich(m, tag) {
+  if (m.kind !== "electricity" || m.archived) return { ja: false };
+  const erste = bezugsZaehlwerke(m).flatMap(r => r.readings)
+    .reduce((a, r) => !a || vorTag(r, a) ? r : a, null);
+  if (!erste) return { ja: true };
+  if (between(erste, tag) > HW_TOLERANZ_TAGE) {
+    return { ja: false, grund: `Seit ${dateMedium(erste)} abgelesen, also schon vor dem Wechsel` };
+  }
+  return { ja: true };
+}
+
+/* Der Vergleich. Rückgabe mit `zustand`:
+   "ok" · "wartet" (noch kein voller Monat) · "vorherFehlt" · "zaehlerFehlt". */
+function heatingComparison(ch) {
+  const alt = METERS.find(m => m.id === ch.oldMeterID);
+  const neu = METERS.find(m => m.id === ch.newMeterID);
+  if (!alt || !neu) return { zustand: "zaehlerFehlt" };
+
+  // Der erste volle Monat beginnt am Ersten nach dem Wechsel — oder am
+  // Wechseltag selbst, wenn das ein Erster ist.
+  let start = ch.day.d === 1 ? ersterDesMonats(ch.day) : monatePlus(ch.day, 1);
+  // … und nach der ersten Ablesung des neuen Zählers: Liegt sie am
+  // 5. Oktober, ist der Oktober nicht gemessen, sondern geschätzt.
+  for (const r of bezugsZaehlwerke(neu)) {
+    const erste = r.readings[0];
+    if (!erste) continue;
+    const ab = erste.d === 1 ? ersterDesMonats(erste) : monatePlus(erste, 1);
+    if (vorTag(start, ab)) start = ab;
+  }
+  const letzte = bezugsZaehlwerke(neu).map(r => r.readings[r.readings.length - 1])
+    .reduce((a, r) => !r ? a : (!a || vorTag(r, a) ? r : a), null);
+  // Das Ende: der letzte Monatserste, bis zu dem **alle** Zählwerke reichen.
+  const ende = letzte ? ersterDesMonats(letzte) : null;
+  if (!ende || monateZwischen(start, ende) < 1) {
+    return { zustand: "wartet", ab: monatePlus(start, 1), alt, neu };
+  }
+  // Höchstens ein Jahr: das jüngste. Ein Jahr und drei Monate gegen ein
+  // Jahr und drei Monate zählte drei Wintermonate doppelt.
+  if (monateZwischen(start, ende) > 12) start = monatePlus(ende, -12);
+  const monate = monateZwischen(start, ende);
+  // Ab einem ganzen Jahr läge „ein Jahr früher" teils schon nach dem Wechsel.
+  // Ein ganzes Jahr enthält jeden Monat einmal; dann zählen die zwölf Monate
+  // direkt vor dem Wechsel. Wie `HeatingComparison.compare`.
+  const vorFrom = monate === 12 ? monatePlus(ersterDesMonats(ch.day), -12) : shiftYear(start, -1);
+  const vorTo = monate === 12 ? ersterDesMonats(ch.day) : shiftYear(ende, -1);
+
+  let altMenge = 0, altKwh = 0, kwhBekannt = true;
+  for (const r of bezugsZaehlwerke(alt)) {
+    const c = consumption(r, vorFrom, vorTo);
+    if (!c || !c.complete) return { zustand: "vorherFehlt", start, ende, vorFrom, vorTo, alt, neu, monate };
+    altMenge += c.value;
+    const k = kwhIn(alt, r, vorFrom, vorTo);
+    if (k === null) kwhBekannt = false; else altKwh += k;
+  }
+  let neuKwh = 0;
+  for (const r of bezugsZaehlwerke(neu)) {
+    const c = consumption(r, start, ende);
+    if (!c || !c.complete) return { zustand: "wartet", ab: monatePlus(ende, 1), alt, neu };
+    neuKwh += c.value;
+  }
+  const eff = ch.efficiency;
+  return {
+    zustand: "ok", alt, neu, monate, start, ende, vorFrom, vorTo,
+    altMenge, altKwh: kwhBekannt ? altKwh : null,
+    waerme: kwhBekannt ? altKwh * eff : null,
+    neuKwh,
+    altKosten: kostenOhneSperre(alt, { from: vorFrom, to: vorTo }),
+    neuKosten: kostenOhneSperre(neu, { from: start, to: ende }),
+    eff
+  };
+}
+/* `costFor` ohne die Kaufsperre: Ob Beträge erscheinen, entscheidet die
+   Karte. Rechnen muss sie in jedem Fall gleich. */
+function kostenOhneSperre(m, p) {
+  const vorher = OWNED;
+  OWNED = new Set([...OWNED, "costsAndTariffs"]);
+  try { return costFor(m, p); } finally { OWNED = vorher; }
+}
+
+/* „Oktober bis Juli" — der Ausschnitt des Jahres, auf beiden Seiten gleich.
+   Das Ende ist halboffen: bis zum 1. August heißt „bis Juli". */
+function hwAusschnitt(v) {
+  if (v.monate === 12) return "Ein ganzes Jahr";
+  const letzter = monatePlus(v.ende, -1);
+  const a = MONTHS_LONG[v.start.m - 1], b = MONTHS_LONG[letzter.m - 1];
+  return v.monate === 1 ? a : `${a} bis ${b}`;
+}
+const hwSpanne = (from, to) => {
+  const letzter = monatePlus(to, -1);
+  return from.y === letzter.y && from.m === letzter.m
+    ? `${MONTHS[from.m - 1]} ${from.y}`
+    : `${MONTHS[from.m - 1]} ${from.y} – ${MONTHS[letzter.m - 1]} ${letzter.y}`;
+};
+const hwBetrag = v => v === null ? null : moneyRound(Math.abs(v));
+const WETTER_SATZ = "Das Wetter ist nicht herausgerechnet. War der Winter nach dem Wechsel kälter, sieht die Wärmepumpe schlechter aus, als sie ist.";
+
+/* Die Karten in der Übersicht, unter den Zählern. */
+function heizungsKarten() {
+  return HEATING_CHANGES.map(ch => {
+    const v = heatingComparison(ch);
+    if (v.zustand === "zaehlerFehlt") return "";
+    const titel = `${altArt(v.alt)} und Wärmepumpe`;
+    const kopf = `<div class="card-top">
+          <span class="chip-icon">${icon(v.neu)}</span>
+          <span class="card-name">${titel}</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+        </div>`;
+    // Ohne den Kauf steht der Wechsel da (er kam z. B. über iCloud), die
+    // Zahlen aber nicht. Die Karte führt aufs Kaufblatt, wie die Kamera.
+    if (!owns("heatPump")) {
+      return `<article class="card hw-karte" data-hw-karte="${ch.id}" style="--c:var(--green);--c-ink:var(--green-ink)">
+        <button type="button" class="card-open" data-unlock="heatPump" aria-label="${titel}: freischalten">
+          ${kopf}
+          <div class="card-body"><div class="card-figure">
+            <div class="card-caption">Vorher und nachher</div>
+            <div class="sub">Mit dem Kauf „Wärmepumpe“ ${price("heatPump")}</div>
+          </div></div>
+        </button></article>`;
+    }
+    let figur, sub;
+    if (v.zustand === "wartet") {
+      figur = `<div class="card-caption">Vorher und nachher</div>
+        <div class="hw-wartet">Ab ${dateMedium(v.ab)} steht hier der Vergleich</div>`;
+      sub = `Dann ist der erste ganze Monat mit der Wärmepumpe gemessen.`;
+    } else if (v.zustand === "vorherFehlt") {
+      figur = `<div class="card-caption">${hwAusschnitt(v)}</div>
+        <div class="hw-wartet">Vom ${altArt(v.alt)}zähler fehlt ${hwSpanne(v.vorFrom, v.vorTo)}</div>`;
+      sub = `Verglichen wird nur mit denselben Monaten ein Jahr früher.`;
+    } else {
+      const darfEuro = darfKosten() && v.altKosten !== null && v.neuKosten !== null;
+      if (darfEuro) {
+        const diff = v.neuKosten - v.altKosten;
+        figur = `<div class="card-caption">${hwAusschnitt(v)}, gegen ein Jahr davor</div>
+          <div class="value-row"><span class="value" data-hw-diff>${hwBetrag(diff)}</span>
+          <span class="unit">${diff <= 0 ? "weniger" : "mehr"} bezahlt</span></div>`;
+        sub = `${altArt(v.alt)} ${moneyRound(v.altKosten)} · Wärmepumpe ${moneyRound(v.neuKosten)}`;
+      } else {
+        figur = `<div class="card-caption">${hwAusschnitt(v)}, gegen ein Jahr davor</div>
+          <div class="value-row"><span class="value">${nf(v.neuKwh, 0)}</span><span class="unit">kWh Strom</span></div>`;
+        sub = v.altKwh !== null ? `statt ${nf(v.altKwh, 0)} kWh ${altArt(v.alt)}` : `statt ${nf(v.altMenge, 0)} ${v.alt.unit} ${altArt(v.alt)}`;
+      }
+    }
+    return `<article class="card hw-karte" data-hw-karte="${ch.id}" style="--c:var(--green);--c-ink:var(--green-ink)">
+      <button type="button" class="card-open" data-hw="${ch.id}" aria-label="${titel}: vorher und nachher">
+        ${kopf}
+        <div class="card-body"><div class="card-figure">
+          ${figur}
+          <div class="sub">${sub}</div>
+        </div></div>
+      </button>
+      ${v.zustand === "ok" ? `<div class="card-extra"><span>Wetter nicht herausgerechnet</span></div>` : ""}
+    </article>`;
   }).join("");
 }
+
+/* Die Ansicht hinter der Karte. */
+function openHeizungsVergleich(id) {
+  const ch = HEATING_CHANGES.find(c => c.id === id);
+  if (!ch) return;
+  const v = heatingComparison(ch);
+  const body = document.getElementById("hwv-body");
+  const art = altArt(v.alt);
+  let inhalt;
+  if (v.zustand !== "ok") {
+    inhalt = `<div class="note" style="margin-top:18px">${v.zustand === "wartet"
+      ? `Ab ${dateMedium(v.ab)} steht hier der Vergleich. Dann ist der erste ganze Monat mit der Wärmepumpe gemessen.`
+      : `Vom ${art}zähler fehlt ${hwSpanne(v.vorFrom, v.vorTo)}. Verglichen wird nur mit denselben Monaten ein Jahr früher.`}</div>`;
+  } else {
+    const darfEuro = darfKosten() && v.altKosten !== null && v.neuKosten !== null;
+    const diff = darfEuro ? v.neuKosten - v.altKosten : null;
+    const zelle = (x, f) => x === null ? "–" : f(x);
+    inhalt = `
+      <div class="hw-gross">
+        <div class="card-caption">${hwAusschnitt(v)}, gegen ein Jahr davor</div>
+        ${darfEuro ? `<div class="value-row"><span class="value">${hwBetrag(diff)}</span>
+          <span class="unit">${diff <= 0 ? "weniger" : "mehr"} bezahlt</span></div>
+          <div class="sub">${nf(Math.abs(v.neuKwh - (v.altKwh || 0)), 0)} kWh ${v.neuKwh <= (v.altKwh || 0) ? "weniger" : "mehr"} gekauft</div>`
+        : `<div class="value-row"><span class="value">${nf(v.neuKwh, 0)}</span><span class="unit">kWh Strom</span></div>`}
+      </div>
+      <div class="list hw-tabelle" data-hw-tabelle>
+        <div class="row hw-zeile hw-kopf"><div></div><div>${art}</div><div>Wärmepumpe</div></div>
+        <div class="row hw-zeile"><div class="rl">Zeitraum</div><div>${hwSpanne(v.vorFrom, v.vorTo)}</div><div>${hwSpanne(v.start, v.ende)}</div></div>
+        <div class="row hw-zeile"><div class="rl">Gekauft</div>
+          <div>${v.altKwh !== null ? kwhText(v.alt, v.altKwh, false) : nf(v.altMenge, 0) + " " + v.alt.unit}</div>
+          <div>${nf(v.neuKwh, 0)} kWh Strom</div></div>
+        <div class="row hw-zeile"><div class="rl">Wärme<small>${art} × ${nf(v.eff * 100, 0)} %</small></div>
+          <div>${zelle(v.waerme, w => "≈ " + nf(Math.round(w / 10) * 10, 0) + " kWh")}</div>
+          <div>unbekannt</div></div>
+        <div class="row hw-zeile"><div class="rl">Kosten<small>mit Grundpreis</small></div>
+          <div>${darfEuro ? moneyRound(v.altKosten) : "–"}</div>
+          <div>${darfEuro ? moneyRound(v.neuKosten) : "–"}</div></div>
+      </div>
+      ${!darfEuro ? `<div class="list" style="margin-top:12px"><button type="button" class="rowbtn" data-unlock="costsAndTariffs">
+        <div class="rl">Beträge mit „Kosten und Preise“</div><span class="freebadge pro">${price("costsAndTariffs")}</span></button></div>` : ""}
+      <div class="note">${WETTER_SATZ}</div>
+      <div class="note">Die Wärme der Wärmepumpe misst nur ein Wärmemengenzähler. Beim ${art} ist sie aus dem Wirkungsgrad
+      des Kessels geschätzt, ${nf(v.eff * 100, 0)} %. Ändern lässt er sich beim Wechsel.</div>
+      <button type="button" class="save" id="hwv-teilen" data-hw-teilen="${ch.id}" style="--c:var(--tint);--c-ink:var(--tint-ink)">Als Bild teilen</button>`;
+  }
+  body.innerHTML = inhalt + `
+    <div class="list" style="margin-top:14px"><button type="button" class="rowbtn" data-hw-bearbeiten="${ch.id}">
+      <div class="rl">Wechsel am ${dateMedium(ch.day)}<small>${art}: ${v.alt.name} · Wärmepumpe: ${v.neu.name}</small></div>
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+    </button></div>`;
+  openSheet("sheet-hwv");
+}
+
+/* Das Blatt „Heizung gewechselt am …" — am alten Zähler. */
+let hwBlatt = null;   // { altID, changeID }
+function openHeizungsWechsel(altID, changeID) {
+  if (!owns("heatPump")) return openPaywall("heatPump");
+  const alt = METERS.find(m => m.id === altID);
+  const ch = changeID ? HEATING_CHANGES.find(c => c.id === changeID) : null;
+  hwBlatt = { altID, changeID: ch ? ch.id : null };
+  const tag = ch ? ch.day : ersterDesMonats(TODAY);
+  const iso = d => `${d.y}-${String(d.m).padStart(2, "0")}-${String(d.d).padStart(2, "0")}`;
+  const eff = ch ? ch.efficiency : WIRKUNGSGRAD[alt.kind] || 0.9;
+  document.getElementById("hwx-body").innerHTML = `
+    <div class="section-label">Seit wann heizt die Wärmepumpe?</div>
+    <div class="list"><div class="row"><input class="field" id="hwx-tag" type="date" value="${iso(tag)}" max="${iso(TODAY)}"></div></div>
+
+    <div class="section-label">Zähler der Wärmepumpe</div>
+    <div class="list" id="hwx-zaehler"></div>
+    <div class="note">Nur ein eigener Zähler für die Wärmepumpe. Zählt er auch das Haus mit, stünde der Haushaltsstrom
+    auf der Seite der Wärmepumpe.</div>
+
+    <div class="section-label">Wirkungsgrad des alten Kessels</div>
+    <div class="list"><div class="row"><div class="rl">Wirkungsgrad<small>angenommen</small></div>
+      <div class="rv"><input class="field" id="hwx-eff" type="text" inputmode="numeric"
+        style="text-align:right;width:70px" value="${nf(eff * 100, 0)}"><small>%</small></div></div></div>
+    <div class="note">Ein Brennwertkessel nutzt rund 90 % vom ${altArt(alt)}, ein älterer Kessel weniger. Damit wird aus dem
+    ${altArt(alt)} die Wärme, die im Haus ankam.</div>
+
+    <button type="button" class="save" id="hwx-save" style="--c:var(--tint);--c-ink:var(--tint-ink)">Sichern</button>
+    ${ch ? `<div class="list" style="margin-top:14px"><button type="button" class="rowbtn" id="hwx-delete">
+      <div class="rl" style="color:var(--red);font-weight:600">Wechsel löschen</div></button></div>
+      <div class="note">Die Zähler und ihre Ablesungen bleiben.</div>` : ""}`;
+  hwZaehlerZeichnen(ch ? ch.newMeterID : null);
+  openSheet("sheet-hwx");
+}
+function hwTagAusFeld() {
+  const v = document.getElementById("hwx-tag").value;
+  const [y, m, d] = v.split("-").map(Number);
+  return y && m && d ? { y, m, d } : ersterDesMonats(TODAY);
+}
+function hwZaehlerZeichnen(gewaehlt) {
+  const tag = hwTagAusFeld();
+  const kandidaten = METERS.filter(m => m.kind === "electricity" && !m.archived);
+  const tauglich = kandidaten.filter(m => hwZaehlerTauglich(m, tag).ja);
+  if (gewaehlt === undefined || (gewaehlt && !tauglich.some(m => m.id === gewaehlt))) gewaehlt = null;
+  const zeile = (wert, titel, klein, an, aus) => `<label class="row hw-wahl${aus ? " aus" : ""}">
+      <input type="radio" name="hwx-neu" value="${wert}" ${an ? "checked" : ""} ${aus ? "disabled" : ""}>
+      <div class="rl">${titel}${klein ? `<small>${klein}</small>` : ""}</div></label>`;
+  document.getElementById("hwx-zaehler").innerHTML =
+    zeile("", "Neuer Zähler „Heizstrom“", "Wird angelegt, du trägst dann den ersten Stand ein", !gewaehlt, false)
+    + kandidaten.map(m => {
+      const t = hwZaehlerTauglich(m, tag);
+      return zeile(m.id, m.name, t.ja ? (m.measuresHeatPump ? "Misst eine Wärmepumpe" : "") : t.grund, gewaehlt === m.id, !t.ja);
+    }).join("");
+}
+function hwSichern() {
+  const tag = hwTagAusFeld();
+  const effFeld = parseFloat(document.getElementById("hwx-eff").value.replace(",", "."));
+  // Ein Wirkungsgrad über 100 % oder unter 50 % ist ein Tippfehler, keine
+  // Annahme. Dann bleibt die Vorgabe.
+  const alt = METERS.find(m => m.id === hwBlatt.altID);
+  const eff = effFeld >= 50 && effFeld <= 100 ? effFeld / 100 : (WIRKUNGSGRAD[alt.kind] || 0.9);
+  const wahl = document.querySelector('input[name="hwx-neu"]:checked');
+  let neuID = wahl ? wahl.value : "";
+  if (!neuID) {
+    const kind = KINDS.find(k => k.id === "electricity");
+    neuID = "m" + Date.now();
+    METERS.push({ id: neuID, name: "Heizstrom", kind: "electricity", unit: "kWh", frac: kind.frac, int: 6,
+      color: kind.color, serial: "—", interval: 30, price: 0.27, base: 9.5, prepay: null,
+      measuresHeatPump: true,
+      registers: [{ id: "r" + Date.now(), label: null, unit: "kWh", int: 6, frac: kind.frac, readings: [] }] });
+  }
+  const neu = METERS.find(m => m.id === neuID);
+  // Der Wechsel setzt den Schalter aus 1.9 C von selbst.
+  neu.measuresHeatPump = true;
+  // Nach dem Tag erwartet der alte Zähler keine Ablesung mehr.
+  alt.endedOn = tag;
+  if (hwBlatt.changeID) {
+    Object.assign(HEATING_CHANGES.find(c => c.id === hwBlatt.changeID),
+      { day: tag, newMeterID: neuID, efficiency: eff });
+  } else {
+    HEATING_CHANGES.push({ id: "hw" + Date.now(), day: tag, oldMeterID: alt.id, newMeterID: neuID, efficiency: eff });
+  }
+  closeSheets();
+  renderAll();
+}
+function hwLoeschen() {
+  const ch = HEATING_CHANGES.find(c => c.id === hwBlatt.changeID);
+  HEATING_CHANGES = HEATING_CHANGES.filter(c => c !== ch);
+  const alt = ch && METERS.find(m => m.id === ch.oldMeterID);
+  if (alt) delete alt.endedOn;
+  closeSheets();
+  renderAll();
+}
+
+/* Als Bild teilen (Teil D). Entsteht auf dem Gerät, ohne Link und ohne
+   Werbung; Zählerstände, Namen und Anschrift stehen nicht darauf. */
+function hwBild(id) {
+  const ch = HEATING_CHANGES.find(c => c.id === id);
+  const v = heatingComparison(ch);
+  if (v.zustand !== "ok") return null;
+  const darfEuro = darfKosten() && v.altKosten !== null && v.neuKosten !== null;
+  const W = 1080, H = 1350, c = document.createElement("canvas");
+  c.width = W; c.height = H;
+  const g = c.getContext("2d");
+  const schrift = (gr, gew) => `${gew} ${gr}px -apple-system, "SF Pro Display", "Helvetica Neue", Arial, sans-serif`;
+  g.fillStyle = "#F4F1EA"; g.fillRect(0, 0, W, H);
+  g.fillStyle = "#1C1B19";
+  g.font = schrift(64, 700); g.fillText("Heizung gewechselt", 90, 170);
+  g.fillStyle = "#5A5750"; g.font = schrift(40, 500);
+  g.fillText(`${hwAusschnitt(v)}, gegen ein Jahr davor`, 90, 240);
+  // Die große Zahl: der Unterschied.
+  g.fillStyle = "#2F7A4B"; g.font = schrift(170, 750);
+  const gross = darfEuro ? hwBetrag(v.neuKosten - v.altKosten) : nf(v.neuKwh, 0);
+  g.fillText(gross, 90, 470);
+  g.font = schrift(48, 600);
+  g.fillText(darfEuro ? (v.neuKosten <= v.altKosten ? "weniger bezahlt" : "mehr bezahlt") : "kWh Strom", 90, 545);
+  // Zwei Spalten.
+  const spalte = (x, kopf, zeit, betrag, menge) => {
+    g.fillStyle = "#5A5750"; g.font = schrift(36, 600); g.fillText(kopf, x, 690);
+    g.font = schrift(32, 500); g.fillText(zeit, x, 740);
+    g.fillStyle = "#1C1B19"; g.font = schrift(76, 700); g.fillText(betrag, x, 840);
+    g.fillStyle = "#5A5750"; g.font = schrift(34, 500); g.fillText(menge, x, 895);
+  };
+  g.fillStyle = "#DDD8CC"; g.fillRect(90, 620, W - 180, 3);
+  spalte(90, altArt(v.alt), hwSpanne(v.vorFrom, v.vorTo), darfEuro ? moneyRound(v.altKosten) : "",
+    v.altKwh !== null ? `${nf(Math.round(v.altKwh / 10) * 10, 0)} kWh` : "");
+  spalte(560, "Wärmepumpe", hwSpanne(v.start, v.ende), darfEuro ? moneyRound(v.neuKosten) : "",
+    `${nf(v.neuKwh, 0)} kWh Strom`);
+  // Der Satz zum Wetter, umbrochen.
+  g.fillStyle = "#5A5750"; g.font = schrift(32, 500);
+  let zeile = "", yy = 1020;
+  for (const w of WETTER_SATZ.split(" ")) {
+    const probe = zeile ? zeile + " " + w : w;
+    if (g.measureText(probe).width > W - 180) { g.fillText(zeile, 90, yy); yy += 46; zeile = w; }
+    else zeile = probe;
+  }
+  g.fillText(zeile, 90, yy);
+  g.fillStyle = "#1C1B19"; g.font = schrift(36, 650);
+  g.fillText("Gemessen mit Zählora", 90, H - 90);
+  return c;
+}
+function hwTeilen(id) {
+  const c = hwBild(id);
+  if (!c) return;
+  const url = c.toDataURL("image/png");
+  document.getElementById("hwb-body").innerHTML = `
+    <img src="${url}" alt="Vorher und nachher als Bild" id="hwb-bild" style="width:100%;border-radius:14px;margin-top:14px;box-shadow:0 2px 10px rgba(0,0,0,.12)">
+    <div class="note">Ohne Zählerstände, ohne Namen und ohne Anschrift. In der App öffnet sich hier das Teilen-Fenster
+    von iOS, mit Nachrichten, WhatsApp, Mail und „Bild sichern“.</div>`;
+  openSheet("sheet-hwb");
+}
+
+/* Nur im Entwurf: ein Haus, das gewechselt hat. Die Werte der Wärmepumpe
+   sind aus dem Gas desselben Monats ein Jahr früher gerechnet (90 % Kessel,
+   Jahresarbeitszahl 3,4) — erfunden wie alle Beispielwerte hier, aber so,
+   dass man den Ausschnitt wachsen sieht. */
+let hwBeispiel = null;   // { gasReadings, tariffs }
+function setHeizungsBeispiel(wahl) {
+  const gas = METERS.find(m => m.id === "gas");
+  // Erst zurück auf den Ausgangsstand.
+  if (hwBeispiel) {
+    gas.registers[0].readings = hwBeispiel.gasReadings;
+    delete gas.endedOn;
+    const i = METERS.findIndex(m => m.id === "heizstrom");
+    if (i >= 0) METERS.splice(i, 1);
+    HEATING_CHANGES = HEATING_CHANGES.filter(c => c.id !== "hw-beispiel");
+    hwBeispiel = null;
+  }
+  const tage = { "2w": { y: 2026, m: 7, d: 21 }, "4m": { y: 2026, m: 4, d: 1 }, "10m": { y: 2025, m: 10, d: 1 } };
+  const tag = tage[wahl];
+  document.querySelectorAll("[data-hw-beispiel]").forEach(b =>
+    b.setAttribute("aria-selected", String(b.dataset.hwBeispiel === (wahl || ""))));
+  if (!tag || !gas) { renderAll(); return; }
+
+  const reg = gas.registers[0];
+  hwBeispiel = { gasReadings: reg.readings };
+  // Der Gaszähler endet am Wechseltag, mit dem Stand dieses Tages.
+  const amTag = readingAt(reg, tag);
+  const behalten = reg.readings.filter(r => !vorTag(tag, r));
+  if (amTag && !behalten.some(r => r.y === tag.y && r.m === tag.m && r.d === tag.d)) {
+    behalten.push({ y: tag.y, m: tag.m, d: tag.d, value: round(amTag.v, 3), origin: "manual" });
+  }
+  reg.readings = behalten;
+  gas.endedOn = tag;
+
+  // Heizstrom ab dem Wechseltag, Stand am Monatsersten bis zum 1. August,
+  // dann am 3. August wie die anderen Zähler.
+  const kwhJeM3 = gas.zZahl * gas.brennwert;
+  const tagesRate = d => {
+    const vor = SHAPE.gas[d.y - 1] && SHAPE.gas[d.y - 1][d.m - 1];
+    const tageImMonat = between({ y: d.y, m: d.m, d: 1 }, monatePlus(d, 1));
+    return (vor || 0) * kwhJeM3 * 0.9 / 3.4 / tageImMonat;
+  };
+  const readings = [{ y: tag.y, m: tag.m, d: tag.d, value: 1520.4, origin: "manual" }];
+  let stand = 1520.4, d = tag;
+  const ziel = { y: 2026, m: 8, d: 3 };
+  while (vorTag(d, ziel)) {
+    let naechster = monatePlus(d, 1);
+    if (vorTag(ziel, naechster)) naechster = ziel;
+    stand += tagesRate(d) * between(d, naechster);
+    readings.push({ y: naechster.y, m: naechster.m, d: naechster.d, value: round(stand, 2), origin: "manual" });
+    d = naechster;
+  }
+  const kind = KINDS.find(k => k.id === "electricity");
+  METERS.push({ id: "heizstrom", name: "Heizstrom", kind: "electricity", unit: "kWh", frac: 2, int: 6,
+    color: kind.color, icon: METERS.find(m => m.id === "strom").icon, serial: "1ESY1161290815",
+    interval: 30, price: 0.27, base: 9.5, prepay: null, measuresHeatPump: true,
+    registers: [{ id: "heizstrom-r", label: null, unit: "kWh", int: 6, frac: 2, readings }] });
+  HEATING_CHANGES.push({ id: "hw-beispiel", day: tag, oldMeterID: "gas", newMeterID: "heizstrom", efficiency: WIRKUNGSGRAD.gas });
+  renderAll();
+}
+
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-hw],[data-hw-bearbeiten],[data-hw-teilen],[data-hw-wechsel],[data-hw-beispiel],#hwx-save,#hwx-delete");
+  if (!t) return;
+  if (t.dataset.hw) return openHeizungsVergleich(t.dataset.hw);
+  if (t.dataset.hwBearbeiten) {
+    const ch = HEATING_CHANGES.find(c => c.id === t.dataset.hwBearbeiten);
+    return openHeizungsWechsel(ch.oldMeterID, ch.id);
+  }
+  if (t.dataset.hwTeilen) return hwTeilen(t.dataset.hwTeilen);
+  if (t.dataset.hwWechsel) {
+    const ch = HEATING_CHANGES.find(c => c.oldMeterID === t.dataset.hwWechsel);
+    return openHeizungsWechsel(t.dataset.hwWechsel, ch ? ch.id : null);
+  }
+  if (t.dataset.hwBeispiel !== undefined) return setHeizungsBeispiel(t.dataset.hwBeispiel || null);
+  if (t.id === "hwx-save") return hwSichern();
+  if (t.id === "hwx-delete") return hwLoeschen();
+});
+document.addEventListener("change", e => {
+  if (e.target && e.target.id === "hwx-tag") {
+    const wahl = document.querySelector('input[name="hwx-neu"]:checked');
+    hwZaehlerZeichnen(wahl ? wahl.value || null : null);
+  }
+});
 
 /* ============================================================
    Verlauf
@@ -3073,7 +3622,6 @@ function renderChart() {
   // über einem halben Jahr stehen, ohne dass eine Prüfung anschlug. Der
   // Entwurf hatte die Karte dort nicht, also gab es nichts zu prüfen. Regel 2.
   const inMonth = histScale === "month";
-  document.getElementById("chart-hint").style.display = inMonth ? "" : "none";
   document.getElementById("compare-block").style.display = "";
   if (inMonth) {
     document.getElementById("cmp-label").textContent = `Damals im ${MONTHS_LONG[activeMonth(reg)]}`;
@@ -3978,7 +4526,21 @@ function openExport(kind) {
   };
 }
 
+/* Der Umschalter „Diagramm / Alle Zahlen" steht unter dem Diagramm und über
+   der Tabelle — dasselbe Element, damit es nur einen gibt. */
+function platziereModus() {
+  const mode = document.getElementById("mode");
+  if (histMode === "chart") {
+    document.querySelector("#view-chart .chart-card").after(mode);
+    mode.style.marginTop = "12px";
+  } else {
+    document.getElementById("view-table").prepend(mode);
+    mode.style.marginTop = "";
+  }
+}
+
 function renderHistory() {
+  platziereModus();
   document.getElementById("view-chart").style.display = histMode === "chart" ? "" : "none";
   document.getElementById("view-table").style.display = histMode === "table" ? "" : "none";
   if (histMode === "chart") renderChart(); else renderTable();
@@ -4021,7 +4583,11 @@ const PRODUCTS = [
   /* Zuletzt, weil jüngster Kauf (0.139.0). Gesperrt ist nur der Knopf im Ziffernblock,
      nicht das Tippen: ungekauft führt er aufs Kaufblatt statt ins Leere. */
   { id: "camera", price: 1.99, title: "Mit Kamera ablesen",
-    text: "Die Kamera liest die Zahl am Zähler und schlägt sie vor. Du vergleichst und übernimmst. Liest sie eine Anzeige nicht, tippst du den Stand ein." }
+    text: "Die Kamera liest die Zahl am Zähler und schlägt sie vor. Du vergleichst und übernimmst. Liest sie eine Anzeige nicht, tippst du den Stand ein." },
+  /* 1.9, entschieden am 11. November: 4,99 €, einmal. Der Schalter „Misst
+     eine Wärmepumpe" gehört nicht dazu, er bleibt kostenlos. */
+  { id: "heatPump", price: 4.99, title: "Wärmepumpe",
+    text: "Seit wann die Wärmepumpe heizt, und was sie gegenüber Gas oder Öl kostet. Dieselben Monate, ein Jahr früher, in kWh und in Euro." }
 ];
 /* **Die Anzahl wird gezählt, nicht getippt.** Hier stand zweimal „Alle vier
    zusammen" — geschrieben, als es vier waren, und stehengeblieben, als die
@@ -4030,7 +4596,9 @@ const PRODUCTS = [
    Anzahl, die irgendwann nicht mehr stimmt. */
 
 const ZAHLWORT = { 1: "eine", 2: "zwei", 3: "drei", 4: "vier", 5: "fünf", 6: "sechs", 7: "sieben" };
-const BUNDLE = { id: "everything", price: 4.99, title: "Alles freischalten",
+// 7,99 € seit 1.9, vom Gründer am 12. November entschieden. Bei 4,99 € hätte
+// das Bündel so viel gekostet wie „Wärmepumpe" allein.
+const BUNDLE = { id: "everything", price: 7.99, title: "Alles freischalten",
                  text: `Alle ${ZAHLWORT[PRODUCTS.length] || PRODUCTS.length} Freischaltungen zusammen, dauerhaft. Günstiger als einzeln.` };
 
 /* Was in einem Kauf steckt — als Stichpunkte, nicht als Absatz.
@@ -4057,6 +4625,9 @@ const INCLUDES = {
   camera: ["Zahl in den Rahmen halten, Kamera schlägt sie vor",
            "Du prüfst die Zahl, gesichert wird erst danach",
            "Bilder bleiben auf dem Gerät, nichts wird gesendet"],
+  heatPump: ["Heizungswechsel mit Tag, altem und neuem Zähler",
+             "Vorher und nachher, dieselben Monate, kWh und Euro",
+             "Als Bild teilen, ohne Zählerstände"],
   everything: PRODUCTS.map(p => p.title)
 };
 
@@ -4115,7 +4686,7 @@ function openPaywall(id, zurueck = null) {
         <div class="rl">${BUNDLE.title}${bulletList(INCLUDES.everything, false)}</div>
         <span class="freebadge pro">${money(BUNDLE.price)}</span>
       </button>
-      <div class="note">Alle ${ZAHLWORT[PRODUCTS.length] || PRODUCTS.length} zusammen — ${money(spart)} günstiger als einzeln.</div>` : ""}
+      <div class="note">${money(spart)} günstiger als einzeln.</div>` : ""}
     <div class="section-label">Dauerhaft kostenlos</div>
     ${bulletList(ALWAYS_FREE, true)}
     <div class="note">Im Entwurf schalten die Knöpfe frei, ohne zu bezahlen. In der App
@@ -4363,6 +4934,23 @@ function openMeterEditor(id, artVorgabe) {
       <option value="0">Ohne Erinnerung</option>
     </select></div></div>
     <div class="note">Daraus ergibt sich, wann die Übersicht einen Zähler als fällig meldet.</div>
+
+    ${editMeter && (kindID === "gas" || kindID === "heatingOil") ? (() => {
+      const ch = HEATING_CHANGES.find(c => c.oldMeterID === editMeter.id);
+      return `<div class="section-label">Heizung</div>
+      <div class="list"><button type="button" class="rowbtn" id="hwx-open" data-hw-wechsel="${editMeter.id}">
+        <div class="rl">${ch ? `Heizung gewechselt am ${dateMedium(ch.day)}` : "Heizung gewechselt am …"}<small>${ch
+          ? "Vorher und nachher steht in der Übersicht"
+          : "Auf eine Wärmepumpe? Dann stehen beide Winter nebeneinander, in kWh und in Euro"}</small></div>
+        ${owns("heatPump") ? "" : `<span class="freebadge pro">${price("heatPump")}</span>`}
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+      </button></div>`; })() : ""}
+
+    ${kindID === "electricity" ? `
+    <div class="section-label">Wärmepumpe</div>
+    <div class="list"><label class="row" for="ed-wp"><div class="rl">Misst eine Wärmepumpe</div>
+      <input type="checkbox" id="ed-wp" class="schalter" ${editMeter && editMeter.measuresHeatPump ? "checked" : ""}></label></div>
+    <div class="note">Für einen eigenen Zähler der Wärmepumpe. Die Hochrechnung folgt dann dem Heizen: viel im Winter, wenig im Sommer.</div>` : ""}
 
     ${editMeter ? `<div class="section-label">Entfernen</div>
       <div class="list">
@@ -5731,9 +6319,13 @@ function saveMeter() {
   };
   const price = num("ed-price"), base = num("ed-base"), prepay = num("ed-prepay");
   const zZahl = num("ed-z"), brennwert = num("ed-bw");
+  // Kostenlos und nur bei Strom (1.9, Teil C), wie `MeterEditor`.
+  const wpFeld = document.getElementById("ed-wp");
+  const misstWaermepumpe = !!(wpFeld && wpFeld.checked) && kind.id === "electricity";
 
   if (editMeter) {
     editMeter.name = name;
+    editMeter.measuresHeatPump = misstWaermepumpe && (editMeter.kind === "electricity" || !editMeter.registers[0].readings.length);
     editMeter.interval = interval || 3650;
     // Preise in den jüngsten Preis, nicht an den Zähler: Sonst änderte ein
     // Tippfehler-Korrektur die ganze Vergangenheit, genau der Fehler, den 1.7
@@ -5755,6 +6347,7 @@ function saveMeter() {
   } else {
     METERS.push({
       id: "m" + Date.now(), name, kind: kind.id, unit: kind.unit,
+      measuresHeatPump: misstWaermepumpe,
       frac: kind.frac, int: 6, color: kind.color, serial: "—",
       interval: interval || 3650, price, base, prepay,
       zZahl: zZahl || undefined, brennwert: brennwert || undefined,

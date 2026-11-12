@@ -71,6 +71,16 @@ public enum ProductID: String, Hashable, Codable, Sendable, CaseIterable, Identi
     /// dem 24. Oktober in App Store Connect und ändert sich nie.
     case camera
 
+    /// Heizung gewechselt, vorher und nachher (1.9).
+    ///
+    /// **Der siebte Kauf, 4,99 €, entschieden am 11. November.** Er schaltet
+    /// den Wechsel, die Vorher-Nachher-Karte und das Teilen als Bild frei.
+    /// Der Schalter „Misst eine Wärmepumpe" gehört nicht dazu: Er behebt einen
+    /// Rechenfehler und bleibt kostenlos. Im Bündel enthalten, auch für alle,
+    /// die es schon haben (Gründer, 12. November). Die Kennung
+    /// `de.karjoth.pulsemeter.heatpump` ändert sich nie.
+    case heatPump
+
     /// Alles auf einmal, günstiger als die Summe.
     case everything
 
@@ -92,6 +102,7 @@ public enum ProductID: String, Hashable, Codable, Sendable, CaseIterable, Identi
         case .pdfReport:         return "Bericht ohne Wasserzeichen"
         case .reminders:         return "Erinnerung, wenn ein Zähler dran ist"
         case .camera:            return "Mit Kamera ablesen"
+        case .heatPump:          return "Wärmepumpe"
         case .everything:        return "Alles freischalten"
         }
     }
@@ -111,6 +122,8 @@ public enum ProductID: String, Hashable, Codable, Sendable, CaseIterable, Identi
             return "Am Abend, im Rhythmus, den du je Zähler einstellst. Sonst fällt es einem im Februar ein, wenn die Abrechnung kommt."
         case .camera:
             return "Die Kamera liest die Zahl am Zähler und schlägt sie vor. Du vergleichst und übernimmst. Liest sie eine Anzeige nicht, tippst du den Stand ein."
+        case .heatPump:
+            return "Seit wann die Wärmepumpe heizt, und was sie gegenüber Gas oder Öl kostet. Dieselben Monate, ein Jahr früher, in kWh und in Euro."
         case .everything:
             return "Alle \(ProductID.individuallyCountWord) Freischaltungen zusammen, dauerhaft. Günstiger als einzeln."
         }
@@ -151,6 +164,10 @@ public enum ProductID: String, Hashable, Codable, Sendable, CaseIterable, Identi
             return ["Zahl in den Rahmen halten, Kamera schlägt sie vor",
                     "Du prüfst die Zahl, gesichert wird erst danach",
                     "Bilder bleiben auf dem Gerät, nichts wird gesendet"]
+        case .heatPump:
+            return ["Heizungswechsel mit Tag, altem und neuem Zähler",
+                    "Vorher und nachher, dieselben Monate, kWh und Euro",
+                    "Als Bild teilen, ohne Zählerstände"]
         case .everything:
             return ProductID.individually.map(\.title)
         }
@@ -179,7 +196,10 @@ public enum ProductID: String, Hashable, Codable, Sendable, CaseIterable, Identi
     /// Schweiz falsch und in Österreich womöglich auch.
     public var suggestedPrice: Decimal {
         switch self {
-        case .everything: return Decimal(string: "4.99")!
+        // 7,99 € seit 1.9 (Gründer, 12. November). Bei 4,99 € hätte das
+        // Bündel so viel gekostet wie „Wärmepumpe" allein.
+        case .everything: return Decimal(string: "7.99")!
+        case .heatPump:   return Decimal(string: "4.99")!
         // **Erinnerungen liegen darunter, seit 0.100.0.** Sie sind der Kauf,
         // vor dem niemand steht, weil ihm etwas fehlt — sondern weil er weiß,
         // dass er es sonst vergisst. Ein Euro ist dafür keine Entscheidung.
@@ -194,7 +214,7 @@ public enum ProductID: String, Hashable, Codable, Sendable, CaseIterable, Identi
         }
     }
 
-    /// Die sechs einzeln käuflichen Stücke, in der Reihenfolge, in der sie auf
+    /// Die sieben einzeln käuflichen Stücke, in der Reihenfolge, in der sie auf
     /// der Kaufseite stehen. Das Bündel gehört nicht dazu — es steht darunter.
     ///
     /// ``reminders`` steht vorn: Es ist der günstigste und der einzige, den
@@ -203,7 +223,7 @@ public enum ProductID: String, Hashable, Codable, Sendable, CaseIterable, Identi
     /// jemand sie schon gesehen hat.
     public static var individually: [ProductID] {
         [.reminders, .additionalMeters, .multipleRegisters, .costsAndTariffs,
-         .pdfReport, .camera]
+         .pdfReport, .camera, .heatPump]
     }
 
     /// Wie viele Stücke das Bündel ersetzt, als Wort für den Satz „Alle sechs
@@ -355,4 +375,8 @@ public struct AccessPolicy: Hashable, Sendable {
     /// Kamera entstand, behält ihre Herkunft, auch wenn der Kauf später
     /// zurückerstattet wird.
     public var canUseCamera: Bool { allows(.camera) }
+
+    /// Ob „Heizung gewechselt am …", die Vorher-Nachher-Karte und das Teilen
+    /// als Bild offen sind (1.9). Ohne Kauf führt der Knopf aufs Kaufblatt.
+    public var canCompareHeating: Bool { allows(.heatPump) }
 }

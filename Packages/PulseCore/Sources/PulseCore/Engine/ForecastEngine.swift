@@ -162,7 +162,8 @@ public enum ForecastEngine {
         for register in draws {
             guard let teil = forecast(register: register, readings: readings,
                                       period: period, today: today,
-                                      kind: meteringPoint.kind) else { continue }
+                                      kind: meteringPoint.kind,
+                                      heatPump: meteringPoint.measuresHeatPump) else { continue }
             sawOne = true
             if teil.method.rank < weakest.rank { weakest = teil.method }
             projected += teil.projected.value
@@ -259,7 +260,8 @@ public enum ForecastEngine {
                 }
             }
             if factor == nil,
-               let profile = SeasonalProfile.reference(for: meteringPoint.kind, direction: register.direction) {
+               let profile = SeasonalProfile.reference(for: meteringPoint.kind, direction: register.direction,
+                                                     heatPump: meteringPoint.measuresHeatPump) {
                 let w = profile.share(of: window), p = profile.share(of: period)
                 if w > 0, p > 0 {
                     factor = p / w
@@ -297,7 +299,8 @@ public enum ForecastEngine {
         readings: [Reading],
         period: DayRange,
         today: CalendarDay,
-        kind: ResourceKind? = nil
+        kind: ResourceKind? = nil,
+        heatPump: Bool = false
     ) -> Forecast? {
 
         guard let series = ConsumptionSeries.build(register: register, readings: readings) else {
@@ -348,7 +351,7 @@ public enum ForecastEngine {
         }
 
         if let kind,
-           let profile = SeasonalProfile.reference(for: kind, direction: register.direction),
+           let profile = SeasonalProfile.reference(for: kind, direction: register.direction, heatPump: heatPump),
            let share = profile.share(of: covered, within: period),
            share > 0 {
             // Dieselbe Rechnung wie beim eigenen Vorjahr, nur mit fremdem
@@ -564,7 +567,8 @@ public enum ForecastEngine {
             let istEinspeisung = register.direction == .feedIn
             guard let forecast = forecast(register: register, readings: readings,
                                           period: period.range, today: today,
-                                          kind: meteringPoint.kind) else {
+                                          kind: meteringPoint.kind,
+                                          heatPump: meteringPoint.measuresHeatPump) else {
                 // Ohne Hochrechnung bleibt der gemessene Betrag stehen. Ihn
                 // wegzulassen wäre schlimmer: Der Wert wäre dann kleiner als
                 // das, was schon feststeht. Und weil dann gar nicht
@@ -586,7 +590,8 @@ public enum ForecastEngine {
             let projectedAmount: Decimal
             if let split = try remainderCost(
                 register: register, forecast: forecast, tariffs: relevant,
-                period: period.range, kind: meteringPoint.kind) {
+                period: period.range, kind: meteringPoint.kind,
+                heatPump: meteringPoint.measuresHeatPump) {
                 projectedAmount = energy + split
             } else {
                 projectedAmount = energy * scale
@@ -654,14 +659,15 @@ public enum ForecastEngine {
         forecast: Forecast,
         tariffs: [Tariff],
         period: DayRange,
-        kind: ResourceKind
+        kind: ResourceKind,
+        heatPump: Bool = false
     ) throws -> Decimal? {
         let segments = try CostEngine.segmentsOfValidity(for: register, tariffs: tariffs, in: period)
         guard segments.count > 1 else { return nil }
         let rest = Swift.max(0, forecast.projected.value - forecast.actual.quantity.value)
         guard rest > 0 else { return 0 }
 
-        let profile = SeasonalProfile.reference(for: kind, direction: register.direction)
+        let profile = SeasonalProfile.reference(for: kind, direction: register.direction, heatPump: heatPump)
         func weight(_ range: DayRange) -> Decimal {
             profile?.share(of: range) ?? Decimal(range.spanInDays)
         }

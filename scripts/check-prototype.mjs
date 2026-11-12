@@ -623,13 +623,18 @@ for (const scheme of ["light", "dark"]) {
       titel: document.getElementById("pro-title").textContent,
       preis: document.getElementById("pro-buy") ? document.getElementById("pro-buy").textContent : "",
       buendel: document.getElementById("pro-body").innerText,
+      teile: [...document.querySelectorAll("#pro-bundle li")].map(li => li.textContent),
       sucher: !document.getElementById("foto-panel").hidden
     }));
     note(kaufblatt.offen && kaufblatt.titel === "Mit Kamera ablesen" && /1,99/.test(kaufblatt.preis),
          `Ohne Kauf öffnet der Knopf das Kaufblatt der Kamera (${kaufblatt.titel}, ${kaufblatt.preis.trim()})`);
     note(!kaufblatt.sucher, "Ohne Kauf öffnet sich kein Sucher");
-    note(/Alle sechs zusammen/.test(kaufblatt.buendel) && /4,99/.test(kaufblatt.buendel),
-         "Das Kaufblatt nennt das Bündel mit der Kamera: „Alle sechs zusammen“");
+    // Seit 1.8 ohne „Alle sechs zusammen“ im Satz darunter: Die sechs stehen
+    // als Liste im Knopf, ein zweites Mal gezählt sagte es nichts Neues.
+    // Seit 1.9 sieben Teile (mit „Wärmepumpe“) und 7,99 €.
+    note(kaufblatt.teile.length === 7 && kaufblatt.teile.includes("Mit Kamera ablesen")
+         && kaufblatt.teile.includes("Wärmepumpe") && /7,99/.test(kaufblatt.buendel),
+         `Das Kaufblatt nennt das Bündel mit Kamera und Wärmepumpe, sieben Teile (${kaufblatt.teile.length})`);
     // „Fertig" führt zurück in den Ziffernblock, die eingetippte Ziffer steht noch da.
     await page.locator("#sheet-pro [data-close]").first().click();
     await page.waitForTimeout(200);
@@ -1065,7 +1070,7 @@ for (const scheme of ["light", "dark"]) {
        "Das Kaufblatt zeigt die eine Sache, an der es hakte");
   note(/Freischalten · 1,99/.test(kaufseite.text),
        "Und den Preis dazu, bevor jemand tippt");
-  note(/Alles freischalten/.test(kaufseite.text) && /4,99/.test(kaufseite.text),
+  note(/Alles freischalten/.test(kaufseite.text) && /7,99/.test(kaufseite.text),
        "Das Bündel steht darunter, nicht als Regal davor");
   // Seit 0.92.0 stehen dort Stichpunkte statt eines Absatzes — geprüft wird
   // deshalb die Sache, nicht der Wortlaut: Der freie Export ist Produktprinzip
@@ -1229,10 +1234,11 @@ for (const scheme of ["light", "dark"]) {
   note(laden.offen, "Die Kaufübersicht öffnet sich über eine eigene Zeile");
   note(laden.karten.length === laden.erwartet,
        `Alle ${laden.erwartet} Einzelkäufe stehen darin: ${laden.karten.join(", ")}`);
-  note(/Alles freischalten/.test(laden.text) && /4,99/.test(laden.text),
+  note(/Alles freischalten/.test(laden.text) && /7,99/.test(laden.text),
        "Das Bündel steht oben, mit Preis");
-  note(/Alle sechs zusammen — 5,95/.test(laden.text) && /Mit Kamera ablesen/.test(laden.text),
-       "Die Übersicht nennt die Kamera und rechnet: alle sechs zusammen, 5,95 € günstiger");
+  // 0,99 + 5 × 1,99 + 4,99 = 15,93 € einzeln, 7,99 € zusammen (seit 1.9).
+  note(/Alle sieben zusammen — 7,94/.test(laden.text) && /Wärmepumpe/.test(laden.text),
+       "Die Übersicht nennt die Wärmepumpe und rechnet: alle sieben zusammen, 7,94 € günstiger");
   note(laden.punkte >= 14,
        `Stichpunkte statt Absätze: ${laden.punkte} Zeilen`);
   // Vom Gründer verlangt: „nicht so viel Fließtext". Eine Zeile über 120
@@ -2158,6 +2164,203 @@ for (const scheme of ["light", "dark"]) {
   await page.close();
 }
 
+// --- 1.9, Teil C: Ein Wärmepumpenzähler rechnet mit dem Heizprofil
+//
+// Bis 0.160.0 lief jeder Stromzähler mit H0. Bei einer Wärmepumpe lag die
+// Jahreszahl im Januar dadurch rund 60 % zu hoch. Derselbe Fall wie
+// `ForecastEngineTests.testAHeatPumpMeterProjectsTheYearByTheHeatingProfile`.
+{
+  console.log("\n1.9: Wärmepumpenzähler mit Heizprofil");
+  const page = await browser.newPage({ viewport: { width: 440, height: 1300 } });
+  const fehler = [];
+  page.on("pageerror", e => fehler.push(e.message));
+  await page.goto(url);
+  await page.waitForTimeout(300);
+  await page.evaluate(() => { bewertungGefragt = true; });
+
+  const rechnung = await page.evaluate(() => {
+    const reg = { id: "wp-test", unit: "kWh", int: 6, frac: 2, readings: [
+      { y: 2026, m: 1, d: 1, value: 10000, origin: "manual" },
+      { y: 2026, m: 2, d: 1, value: 11500, origin: "manual" }] };
+    const m = { id: "wp-test-m", kind: "electricity", registers: [reg] };
+    const h0 = forecast(reg, m);
+    m.measuresHeatPump = true;
+    const wp = forecast(reg, m);
+    return { h0: h0 && h0.value, wp: wp && wp.value,
+             heizprofil: referenceProfile(m, reg) === PROFILES.heating,
+             gasBleibt: referenceProfile({ kind: "gas", measuresHeatPump: true }, {}) === PROFILES.heating,
+             einspeisung: referenceProfile(m, { feedIn: true }) === PROFILES.solar };
+  });
+  note(rechnung.heizprofil && rechnung.gasBleibt && rechnung.einspeisung,
+       "Mit „Misst eine Wärmepumpe“ wählt Strom das Heizprofil, Einspeisung bleibt bei der Sonne");
+  note(rechnung.h0 > rechnung.wp * 1.4,
+       `Ohne Schalter liegt die Jahreszahl aus einem Januar weit höher (H0 ${Math.round(rechnung.h0)}, Heizprofil ${Math.round(rechnung.wp)} kWh)`);
+
+  await page.locator('[data-pane="meters"]:visible').first().click();
+  await page.waitForTimeout(200);
+  await page.locator('[data-meter="gas"]').click();
+  await page.waitForTimeout(250);
+  note(await page.locator("#ed-wp").count() === 0, "Beim Gaszähler steht kein Schalter für die Wärmepumpe");
+  await page.evaluate(() => closeSheets());
+  await page.waitForTimeout(200);
+  await page.locator('[data-meter="wallbox"]').click();
+  await page.waitForTimeout(250);
+  note(await page.locator("#ed-wp").count() === 0, "Bei der Wallbox auch nicht");
+  await page.evaluate(() => closeSheets());
+  await page.waitForTimeout(200);
+  await page.locator('[data-meter="strom"]').click();
+  await page.waitForTimeout(250);
+  note(await page.locator("#ed-wp").count() === 1, "Beim Stromzähler steht „Misst eine Wärmepumpe“");
+  await page.locator('label[for="ed-wp"]').click();
+  await page.locator("#ed-save").click();
+  await page.waitForTimeout(250);
+  const gesichert = await page.evaluate(() => METERS.find(m => m.id === "strom").measuresHeatPump === true);
+  note(gesichert, "Der Schalter wird mit dem Zähler gesichert");
+
+  note(fehler.length === 0, `Keine JS-Fehler in 1.9 C (${fehler.join(" | ")})`);
+  await page.close();
+}
+
+// --- 1.9: Heizung gewechselt, vorher und nachher
+//
+// Der Wechsel verbindet Gas und den Zähler der Wärmepumpe. Verglichen wird
+// nur, was danach voll gemessen ist, gegen dieselben Monate ein Jahr früher
+// (wiederkehrende Fehlerklasse, CLAUDE.md). Gegenstück in PulseCore:
+// `HeatingComparisonTests`.
+{
+  console.log("\n1.9: Heizung gewechselt, vorher und nachher");
+  const page = await browser.newPage({ viewport: { width: 440, height: 1300 } });
+  const fehler = [];
+  page.on("pageerror", e => fehler.push(e.message));
+  await page.goto(url);
+  await page.waitForTimeout(300);
+  await page.evaluate(() => { bewertungGefragt = true; });
+
+  // Ohne den Kauf: Knopf mit Preis, und er führt aufs Kaufblatt.
+  await page.evaluate(() => { OWNED = new Set(["costsAndTariffs", "additionalMeters"]); renderAll(); });
+  await page.locator('[data-pane="meters"]:visible').first().click();
+  await page.waitForTimeout(200);
+  await page.locator('[data-meter="gas"]').click();
+  await page.waitForTimeout(250);
+  const knopf = await page.evaluate(() => {
+    const b = document.getElementById("hwx-open");
+    return b ? b.textContent.replace(/\s+/g, " ").trim() : "";
+  });
+  note(/Heizung gewechselt am …/.test(knopf) && /4,99/.test(knopf),
+       `Am Gaszähler steht „Heizung gewechselt am …“ mit Preis („${knopf.slice(0, 60)}“)`);
+  await page.locator("#hwx-open").click();
+  await page.waitForTimeout(250);
+  const kauf = await page.evaluate(() => ({
+    offen: document.getElementById("sheet-pro").classList.contains("on"),
+    titel: (document.getElementById("pro-title") || {}).textContent || ""
+  }));
+  note(kauf.offen && /Wärmepumpe/.test(kauf.titel), `Ohne Kauf führt er aufs Kaufblatt „Wärmepumpe“ (${kauf.titel})`);
+  await page.evaluate(() => closeSheets());
+
+  // Mit dem Kauf: Wechsel über die Oberfläche anlegen, neuer Zähler.
+  await page.evaluate(() => { OWNED.add("heatPump"); renderAll(); });
+  const vorherZaehler = await page.evaluate(() => METERS.length);
+  await page.locator('[data-meter="gas"]').click();
+  await page.waitForTimeout(250);
+  await page.locator("#hwx-open").click();
+  await page.waitForTimeout(250);
+  const blatt = await page.evaluate(() => {
+    const zeilen = [...document.querySelectorAll('input[name="hwx-neu"]')];
+    return {
+      offen: document.getElementById("sheet-hwx").classList.contains("on"),
+      stromGesperrt: zeilen.find(z => z.value === "strom").disabled,
+      neuGewaehlt: zeilen.find(z => z.value === "").checked,
+      eff: document.getElementById("hwx-eff").value
+    };
+  });
+  note(blatt.offen && blatt.neuGewaehlt && blatt.eff === "90",
+       `Das Blatt fragt nach Tag, Zähler und Wirkungsgrad, vorbelegt mit 90 % (${blatt.eff})`);
+  note(blatt.stromGesperrt, "Der Hausstromzähler mit Ablesungen von vor dem Wechsel lässt sich nicht wählen");
+  await page.locator("#hwx-tag").fill("2026-07-21");
+  await page.locator("#hwx-save").click();
+  await page.waitForTimeout(250);
+  const angelegt = await page.evaluate(() => {
+    const ch = HEATING_CHANGES[0];
+    const neu = METERS.find(m => m.id === ch.newMeterID);
+    return { n: HEATING_CHANGES.length, zaehler: METERS.length, wp: neu.measuresHeatPump,
+             gasFaellig: isDue(METERS.find(m => m.id === "gas")) };
+  });
+  note(angelegt.n === 1 && angelegt.zaehler === vorherZaehler + 1 && angelegt.wp,
+       "Sichern legt den Wechsel und den Zähler „Heizstrom“ an, mit „Misst eine Wärmepumpe“");
+  note(!angelegt.gasFaellig, "Der Gaszähler wird nach dem Wechsel nicht mehr als fällig gemeldet");
+  await page.locator('[data-pane="home"]:visible').first().click();
+  await page.waitForTimeout(200);
+  const leer = await page.locator("[data-hw-karte]").textContent();
+  note(/Ab 1\. September steht hier der Vergleich/.test(leer),
+       "Ohne vollen Monat steht keine Zahl, sondern ab wann es eine gibt");
+
+  // Löschen: Wechsel weg, Zähler bleiben.
+  await page.evaluate(() => { hwBlatt = { altID: "gas", changeID: HEATING_CHANGES[0].id }; hwLoeschen(); });
+  const geloescht = await page.evaluate(() => ({ n: HEATING_CHANGES.length, zaehler: METERS.length,
+    gasFaellig: METERS.find(m => m.id === "gas").endedOn === undefined }));
+  note(geloescht.n === 0 && geloescht.zaehler === vorherZaehler + 1 && geloescht.gasFaellig,
+       "Den Wechsel zu löschen lässt beide Zähler stehen");
+
+  // Derselbe Ausschnitt auf beiden Seiten, und er wächst mit.
+  const ausschnitt = await page.evaluate(() => {
+    const aus = {};
+    for (const w of ["4m", "10m"]) {
+      setHeizungsBeispiel(w);
+      const v = heatingComparison(HEATING_CHANGES.find(c => c.id === "hw-beispiel"));
+      const gleich = monateZwischen(v.vorFrom, v.vorTo) === monateZwischen(v.start, v.ende)
+        && v.vorFrom.m === v.start.m && v.vorTo.m === v.ende.m && v.vorFrom.y === v.start.y - 1;
+      // Die Gegenprobe: das ganze Vorjahr statt desselben Ausschnitts —
+      // genau der Fehler, den der Vergleich nicht machen darf.
+      const ganzesJahr = consumption(METERS.find(m => m.id === "gas").registers[0],
+        { y: v.start.y - 1, m: 1, d: 1 }, { y: v.start.y, m: 1, d: 1 });
+      aus[w] = { text: hwAusschnitt(v), gleich, monate: v.monate, menge: v.altMenge,
+                 ganz: ganzesJahr ? ganzesJahr.value : 0,
+                 diff: document.querySelector("[data-hw-diff]") ? document.querySelector("[data-hw-diff]").textContent : "",
+                 erwartet: moneyRound(Math.abs(v.neuKosten - v.altKosten)),
+                 grund: v.neuKosten - kostenOhneSperre(v.neu, { from: v.start, to: v.ende }) === 0
+                   && v.neuKosten > v.neuKwh * 0.27 };
+    }
+    return aus;
+  });
+  note(ausschnitt["4m"].text === "April bis Juli" && ausschnitt["10m"].text === "Oktober bis Juli",
+       `Der Ausschnitt heißt, was er ist, und wächst (${ausschnitt["4m"].text} → ${ausschnitt["10m"].text})`);
+  note(ausschnitt["4m"].gleich && ausschnitt["10m"].gleich,
+       "Vorher und nachher beschreiben dieselben Monate, ein Jahr versetzt");
+  note(ausschnitt["10m"].menge < ausschnitt["10m"].ganz,
+       `Vorher zählt nur der Ausschnitt, nicht das ganze Jahr (${Math.round(ausschnitt["10m"].menge)} statt ${Math.round(ausschnitt["10m"].ganz)} m³)`);
+  note(ausschnitt["10m"].diff === ausschnitt["10m"].erwartet,
+       `Die große Zahl ist der Unterschied in Euro (${ausschnitt["10m"].diff})`);
+  note(ausschnitt["10m"].grund, "Der Grundpreis zählt mit");
+
+  // Ohne „Kosten und Preise“ keine Beträge, aber kWh.
+  const ohneKosten = await page.evaluate(() => {
+    OWNED.delete("costsAndTariffs"); renderAll();
+    const t = document.querySelector("[data-hw-karte]").textContent;
+    OWNED.add("costsAndTariffs"); renderAll();
+    return t;
+  });
+  note(!/€/.test(ohneKosten) && /kWh Strom/.test(ohneKosten),
+       "Ohne „Kosten und Preise“ zeigt die Karte kWh statt Euro");
+
+  // Die Ansicht dahinter: Wirkungsgrad als Annahme, Satz zum Wetter, Teilen.
+  await page.locator("[data-hw]").click();
+  await page.waitForTimeout(250);
+  const ansicht = await page.locator("#hwv-body").textContent();
+  note(/Gas × 90 %/.test(ansicht) && /Das Wetter ist nicht herausgerechnet/.test(ansicht),
+       "Die Ansicht nennt den Wirkungsgrad als Annahme und sagt, dass das Wetter fehlt");
+  await page.locator("#hwv-teilen").click();
+  await page.waitForTimeout(300);
+  const bild = await page.evaluate(() => {
+    const img = document.getElementById("hwb-bild");
+    return { da: !!img && img.naturalWidth === 1080 && img.naturalHeight === 1350,
+             link: [...document.querySelectorAll("#hwb-body a")].every(a => a.href.startsWith("data:image/png")) };
+  });
+  note(bild.da && bild.link, "Als Bild teilen erzeugt ein Bild auf dem Gerät, 1080 × 1350, ohne Link nach außen");
+
+  note(fehler.length === 0, `Keine JS-Fehler in 1.9 (${fehler.join(" | ")})`);
+  await page.close();
+}
+
 // --- Bewertungsfrage: einmal, nach der dritten gesicherten Ablesung
 //
 // Auf einer frischen Seite, weil der Durchlauf oben schon Ablesungen sichert
@@ -2190,6 +2393,85 @@ for (const scheme of ["light", "dark"]) {
   await sichere();
   await page.waitForTimeout(1700);
   note(!(await offen()), "Nach der 4. Ablesung kommt sie nicht wieder");
+  await page.close();
+}
+
+// --- 1.8 „Einfacher“: kürzere Übersicht, Verlauf mit zwei Reihen oben,
+// Kaufblatt ohne Dopplung, iCloud-Zeile. Konzept: docs/konzepte/1.8-einfacher.md
+{
+  console.log("\n1.8: Einfacher");
+  const page = await browser.newPage({ viewport: { width: 440, height: 1300 } });
+  await page.goto(url);
+  await page.waitForTimeout(300);
+  const ueb = await page.evaluate(() => ({
+    status: document.getElementById("status").innerText.trim(),
+    schilder: document.querySelectorAll("#cards .due-pill").length,
+    erklaerzeilen: document.querySelectorAll("#cards .card-basis").length,
+    striche: [...document.querySelectorAll("#cards .sp-v")].filter(e => e.textContent.trim() === "–").length,
+    gasKosten: (() => {
+      const karte = [...document.querySelectorAll("#cards .card")]
+        .find(k => k.querySelector(".card-name").textContent === "Gas");
+      const z = karte && karte.querySelector("[data-kosten-einzeln]");
+      return z ? z.innerText.replace(/\s+/g, " ").trim() : "";
+    })(),
+    faelligZeile: [...document.querySelectorAll("#cards .card.flagged .sub")].map(e => e.textContent.trim()),
+  }));
+  note(/^([^.]+ ist fällig|[^.]+ sind fällig|Alles im Rahmen)\.$/.test(ueb.status),
+       `Die Statuszeile ist ein kurzer Satz („${ueb.status}“)`);
+  note(ueb.schilder === 0, `Kein Schild „Fällig“ mehr auf den Karten (${ueb.schilder})`);
+  note(ueb.faelligZeile.length > 0 && ueb.faelligZeile.every(t => /^Seit \d+ Tagen fällig$|^Noch nie abgelesen$/.test(t)),
+       `Auf der fälligen Karte steht weiter, seit wann („${ueb.faelligZeile.join(" / ")}“)`);
+  note(ueb.erklaerzeilen === 0, `Keine Erklärzeile „Hochgerechnet …“ auf den Karten (${ueb.erklaerzeilen})`);
+  note(ueb.striche === 0, `Kein Kostenabschnitt mit Strich (${ueb.striche})`);
+  note(/^Kosten bis .+ €$/.test(ueb.gasKosten),
+       `Beim überfälligen Gas bleibt eine Kostenzeile bis zur letzten Ablesung („${ueb.gasKosten}“)`);
+  // Ein Zähler ohne Ablesung im laufenden Jahr bleibt fällig, und der Satz
+  // nennt ihn — „Alles im Rahmen“ wäre beim ersten Öffnen gelogen.
+  const zwei = await page.evaluate(() => faelligSatz(["Gas", "Wasser"]) + " | " + faelligSatz(["Gas", "Wasser", "Strom"]));
+  note(zwei === "Gas und Wasser sind fällig. | Gas, Wasser und Strom sind fällig.",
+       `Mehrere fällige Zähler in einem Satz („${zwei}“)`);
+
+  await page.locator('[data-pane="history"]:visible').first().click();
+  await page.waitForTimeout(250);
+  const verlauf = await page.evaluate(() => {
+    const karte = document.querySelector("#view-chart .chart-card");
+    const mode = document.getElementById("mode");
+    const vorDemDiagramm = [...document.querySelectorAll("#pane-history .segmented")]
+      .filter(e => e.offsetParent !== null && e.getBoundingClientRect().top < karte.getBoundingClientRect().top);
+    return { reihen: vorDemDiagramm.map(e => e.id), unter: mode.previousElementSibling === karte,
+             satz: /Tippe einen/.test(document.getElementById("pane-history").innerText) };
+  });
+  note(verlauf.reihen.length === 1 && verlauf.reihen[0] === "scale",
+       `Über dem Diagramm nur der Zeitraum, neben der Zählerwahl (${verlauf.reihen.join(", ")})`);
+  note(verlauf.unter, "„Diagramm / Alle Zahlen“ steht unter dem Diagramm");
+  note(!verlauf.satz, "Kein Satz, der erklärt, wohin ein Tipp führt");
+  await page.locator('[data-mode="table"]').first().click();
+  await page.waitForTimeout(250);
+  const tabelle = await page.evaluate(() => ({
+    sichtbar: document.getElementById("mode").offsetParent !== null,
+    oben: document.getElementById("view-table").firstElementChild === document.getElementById("mode"),
+  }));
+  note(tabelle.sichtbar && tabelle.oben, "In der Tabelle steht der Umschalter über ihr, zurück geht es mit einem Tipp");
+  await page.locator('[data-mode="chart"]').first().click();
+  await page.waitForTimeout(200);
+
+  const kauf = await page.evaluate(() => {
+    OWNED = new Set();
+    openPaywall("reminders");
+    return document.getElementById("pro-body").innerText;
+  });
+  const alle = (kauf.match(/Alle (sechs|sieben|fünf|\d+)/g) || []).length;
+  note(alle <= 1, `Das Kaufblatt sagt „Alle … zusammen“ höchstens einmal (${alle}×)`);
+  note(/günstiger als einzeln/.test(kauf), "Die Ersparnis steht weiter da");
+  await page.evaluate(() => { OWNED = new Set(["everything"]); closeSheets(); });
+
+  await page.locator('[data-pane="meters"]:visible').first().click();
+  await page.waitForTimeout(200);
+  const icloud = await page.evaluate(() => {
+    const e = document.getElementById("icloud-zeile");
+    return e && e.offsetParent !== null ? e.textContent.trim().replace(/\s+/g, " ") : "";
+  });
+  note(/^(Mit iCloud abgeglichen: .+|iCloud ist .+)$/.test(icloud), `Im Zähler-Tab steht, ob iCloud abgleicht („${icloud}“)`);
   await page.close();
 }
 

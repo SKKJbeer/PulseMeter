@@ -153,6 +153,34 @@ final class ForecastEngineTests: XCTestCase {
                              "Ein Septembermonat steht für weniger als ein Zwölftel des Gasjahres")
     }
 
+    /// **Wärmepumpe (1.9).** Ein Stromzähler, der eine Wärmepumpe misst,
+    /// wurde mit dem Haushaltsprofil hochgerechnet: Januar 9,7 % statt rund
+    /// 15,5 % des Jahres, und die Jahreszahl lag im Januar rund 60 % zu hoch.
+    /// Mit dem Merkmal folgt er dem Heizprofil; ohne bleibt es bei H0.
+    func testAHeatPumpMeterProjectsTheYearByTheHeatingProfile() {
+        let register = Fixture.electricityRegister()
+        var point = Fixture.meteringPoint(registers: [register], kind: .electricity)
+        let readings = [
+            Fixture.reading(register, day(2026, 1, 1), 10_000),
+            Fixture.reading(register, day(2026, 2, 1), 11_500)
+        ]
+        let heute = day(2026, 2, 2)
+
+        let haushalt = ForecastEngine.forecast(meteringPoint: point, readings: readings,
+                                               period: year2026, today: heute)
+        point.measuresHeatPump = true
+        let waermepumpe = ForecastEngine.forecast(meteringPoint: point, readings: readings,
+                                                  period: year2026, today: heute)
+
+        XCTAssertEqual(waermepumpe?.method, .reference)
+        let januar = approx(SeasonalProfile.heating.share(of: span(day(2026, 1, 1), day(2026, 2, 1))))
+        XCTAssertEqual(approx(waermepumpe?.projected.value ?? 0), 1500 / januar, accuracy: 1,
+                       "Der Januar zählt so viel, wie er beim Heizen ausmacht")
+        let h0 = approx(haushalt?.projected.value ?? 0)
+        XCTAssertGreaterThan(h0, approx(waermepumpe?.projected.value ?? 0) * 1.4,
+                             "Ohne Merkmal bleibt H0, und das liegt im Januar weit darüber")
+    }
+
     /// Zwei Ablesungen am selben Tag sind noch kein Verbrauch. Dann gibt es
     /// keine Zahl, und die Oberfläche sagt, dass die nächste Ablesung fehlt.
     func testTwoReadingsOnOneDayHaveNoOutlookYet() {

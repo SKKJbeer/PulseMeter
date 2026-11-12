@@ -45,7 +45,7 @@ const base = `http://127.0.0.1:${server.address().port}/`;
 // Die Antwortseiten zählen mit: Sie sind der Teil, über den jemand die
 // Website überhaupt findet (`docs/10-sichtbarkeit.md`, Abschnitt 7), und ein
 // toter Verweis dorthin fällt sonst niemandem auf.
-// Jede Seite mit einem Rechner. Stand bis 0.153.0 fünfmal ausgeschrieben, und
+// Jede Seite mit einem Rechner. Stand bis 0.164.0 fünfmal ausgeschrieben, und
 // eine neue Seite wäre in einer der Listen vergessen worden.
 const rechnerSeiten = ["gas-in-kwh.html", "heizoel-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "waermepumpe-stromverbrauch-monat.html", "waermepumpe-zwei-zaehler.html", "photovoltaik-eigenverbrauch.html", "nachzahlung-pruefen.html"];
 const seiten = ["index.html", "entwicklung.html", "hilfe.html", "gas-in-kwh.html", "heizoel-in-kwh.html", "waermepumpe-stromverbrauch-monat.html", "waermepumpe-zwei-zaehler.html",

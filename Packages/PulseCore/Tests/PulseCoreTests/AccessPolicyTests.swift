@@ -125,7 +125,8 @@ final class AccessPolicyTests: XCTestCase {
         let ersparnis = 1 - approx(ProductID.everything.suggestedPrice) / approx(einzeln)
         XCTAssertGreaterThan(ersparnis, 0.20)
         XCTAssertLessThan(ersparnis, 0.60, "Ein zu billiges Bündel entwertet die Einzelkäufe")
-        XCTAssertEqual(approx(einzeln), 10.94, accuracy: 0.001,
+        // Seit 1.9: 0,99 + 5 × 1,99 + 4,99 = 15,93 € gegen 7,99 €, 50 %.
+        XCTAssertEqual(approx(einzeln), 15.93, accuracy: 0.001,
                        "Die Summe steht so in Doku und Kaufseite (04-monetarisierung.md)")
     }
 
@@ -202,8 +203,26 @@ final class AccessPolicyTests: XCTestCase {
     /// „Alle sechs zusammen" wird gezählt, nicht getippt. Die Kaufseite sagte
     /// einmal „Alle vier", als es fünf waren.
     func testTheCountWordFollowsTheList() {
-        XCTAssertEqual(ProductID.individuallyCountWord, "sechs")
-        XCTAssertTrue(ProductID.everything.explanation.contains("Alle sechs"))
+        XCTAssertEqual(ProductID.individuallyCountWord, "sieben")
+        XCTAssertTrue(ProductID.everything.explanation.contains("Alle sieben"))
+    }
+
+    /// „Wärmepumpe" (1.9): eigener Kauf zu 4,99 €, im Bündel zu 7,99 €, und
+    /// kein anderer Kauf schaltet ihn mit frei.
+    func testTheHeatPumpIsItsOwnPurchaseAndPartOfTheBundle() {
+        XCTAssertFalse(AccessPolicy(.none).canCompareHeating)
+        XCTAssertTrue(AccessPolicy(Entitlement([.heatPump])).canCompareHeating)
+        XCTAssertTrue(AccessPolicy(.everything).canCompareHeating, "Auch wer das Bündel schon hat")
+        for product in ProductID.allCases where product != .heatPump && product != .everything {
+            XCTAssertFalse(AccessPolicy(Entitlement([product])).canCompareHeating,
+                           "\(product) darf „Wärmepumpe“ nicht mit freischalten")
+        }
+        XCTAssertTrue(ProductID.everything.includes.contains("Wärmepumpe"))
+        XCTAssertEqual(ProductID.heatPump.storeIdentifier, "de.karjoth.pulsemeter.heatpump")
+        XCTAssertEqual(approx(ProductID.heatPump.suggestedPrice), 4.99, accuracy: 0.001)
+        XCTAssertEqual(approx(ProductID.everything.suggestedPrice), 7.99, accuracy: 0.001)
+        let zurueck = Entitlement(storageValue: Entitlement([.heatPump]).storageValue)
+        XCTAssertTrue(zurueck.owns(.heatPump))
     }
 
     /// Was als dauerhaft kostenlos beworben wird, darf kein Kauf sein.

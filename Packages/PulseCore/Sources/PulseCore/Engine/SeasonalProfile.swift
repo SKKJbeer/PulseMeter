@@ -92,12 +92,25 @@ extension SeasonalProfile {
     /// `nil`, wo es keine belastbare Quelle gibt. Dann rechnet
     /// ``ForecastEngine`` linear weiter und sagt das auch — ein erfundenes
     /// Profil wäre schlimmer als gar keines.
+    ///
+    /// - Parameter heatPump: Der Stromzähler misst eine Wärmepumpe
+    ///   (``MeteringPoint/measuresHeatPump``). Dann folgt der Verbrauch dem
+    ///   Heizen und nicht dem Haushalt: Mit H0 stünde der Januar bei 9,7 %
+    ///   statt bei rund 15,5 %, und jede Hochrechnung im Winter läge rund
+    ///   60 % zu hoch.
     public static func reference(for kind: ResourceKind,
-                                 direction: FlowDirection = .consumption) -> SeasonalProfile? {
+                                 direction: FlowDirection = .consumption,
+                                 heatPump: Bool = false) -> SeasonalProfile? {
         // Was ins Netz zurückgeht, folgt der Sonne und nicht dem Zähler
         // dahinter. Ein Bezugsprofil auf die Einspeisung anzuwenden wäre
         // gegenläufig — und damit schlimmer als kein Profil.
         if direction == .feedIn { return solar }
+
+        // Eigene Zählerart gibt es dafür nicht (ADR in 02-datenmodell.md):
+        // Ein Wärmepumpenzähler ist ein Stromzähler, nur das Jahr verläuft
+        // anders. Wärmepumpen heizen und machen Warmwasser, genau das bildet
+        // das Heizprofil ab.
+        if heatPump, kind == .electricity { return heating }
 
         switch kind {
         case .gas, .districtHeating, .heatingOil:
