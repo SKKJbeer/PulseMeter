@@ -505,7 +505,7 @@ struct OverviewView: View {
             unit: row.unit,
             secondary: row.energyText,
             detail: detailText(for: row),
-            badge: row.isDue ? "Fällig" : nil,
+            flagged: row.isDue,
             series: row.monthlySeries,
             onOpen: oeffneVerlauf.map { sprung in { sprung(row.id) } }
         ) {
@@ -545,7 +545,15 @@ struct OverviewView: View {
                 // diese Zeile an die Stelle der einzelnen Kostenzeile und nicht
                 // daneben. Zweimal derselbe Jahresbetrag auf einer Karte wäre
                 // nicht doppelt so deutlich, sondern nur doppelt.
-                if !row.costSpans.isEmpty {
+                if row.costSpans.count == 1, let einzeln = row.costSpans.first,
+                   let betrag = einzeln.amount {
+                    CardFooterRow("Kosten \(einzeln.label)") {
+                        Text((einzeln.isApproximate ? "≈ " : "") + betrag)
+                            .font(.system(.subheadline, weight: .semibold))
+                            .foregroundStyle(PulseColor.ink)
+                    }
+                    .accessibilityIdentifier("kosten-einzeln-\(row.name)")
+                } else if !row.costSpans.isEmpty {
                     CostSpanRow(spans: row.costSpans)
                 } else if let cost = row.cost {
                     CardFooterRow(costCaption(for: row)) {
@@ -600,26 +608,12 @@ struct OverviewView: View {
                         .accessibilityHint("Zeigt, wie diese Zahl entsteht")
                         .accessibilityIdentifier("erklaeren-\(row.name)")
                     }
-                    // **Worauf die Zahl beruht — und zwar direkt darunter.**
-                    //
-                    // Bis 0.38.0 stand hier „≈ 71,63 € Guthaben" und sonst
-                    // nichts. Ob dahinter das eigene Vorjahr steckte oder eine
-                    // gleichmäßige Fortschreibung, die bei Gas im Februar um
-                    // 100 % danebenliegt, war der Zahl nicht anzusehen. Das
-                    // ist die folgenreichste Zahl der App, und Produktprinzip 7
-                    // verlangt genau hier eine Kennzeichnung.
-                    //
-                    // Der Klick-Dummy konnte das längst; die App nicht. Eine
-                    // Abweichung zwischen beiden ist ein Fehler (Regel 2).
-                    Text(teilenGrundlage(row)
-                         ? "Beides hochgerechnet \(outlook.method.explanation)"
-                         : "Hochgerechnet \(outlook.method.explanation)")
-                        .font(PulseText.caption)
-                        .foregroundStyle(PulseColor.inkTertiary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 15)
-                        .padding(.bottom, 10)
-                        .fixedSize(horizontal: false, vertical: true)
+                    // **Worauf die Zahl beruht, steht seit 1.8 hinter dem
+                    // Antippen** (``ExplainView``, Unterzeile), nicht mehr als
+                    // eigene Zeile darunter. Das „≈" kennzeichnet die Zahl als
+                    // geschätzt (Produktprinzip 7); die Erklärzeile machte die
+                    // Karte so lang, dass auf einem iPhone nur eine ganz
+                    // daraufpasste (Prinzip 3).
                 }
                 Divider().overlay(PulseColor.hairline)
                 Button {
@@ -664,11 +658,9 @@ struct OverviewView: View {
     /// dann falsch, und niemand kann es sehen.
     /// **Der Ausblick aufs Jahr, auf jeder Karte.**
     ///
-    /// Links „Erwartet für 2026", rechts die Zahl mit ≈, darunter worauf sie
-    /// beruht. Steht ein Abschlag-Ausblick darunter und ist er gleich gerechnet,
-    /// sagt die Zeile unter ihm die Grundlage für beide — zweimal derselbe Satz
-    /// untereinander läse niemand. Mit einer einzigen Ablesung steht statt der
-    /// Zahl, was noch fehlt.
+    /// Links „Erwartet für 2026", rechts die Zahl mit ≈. Worauf sie beruht,
+    /// zeigt der Verlauf, in den die Zeile führt. Mit einer einzigen Ablesung
+    /// steht statt der Zahl, was noch fehlt.
     @ViewBuilder
     private func jahresausblick(for row: MeterRow) -> some View {
         let titel = "Erwartet für \(today.year)"
@@ -702,15 +694,8 @@ struct OverviewView: View {
             .accessibilityHint(oeffneVerlauf == nil ? "" : "Öffnet den Verlauf")
             .accessibilityAddTraits(.isButton)
             .accessibilityIdentifier("jahresausblick-\(row.name)")
-            if !teilenGrundlage(row) {
-                Text(ausblickGrundlage(ausblick))
-                    .font(PulseText.caption)
-                    .foregroundStyle(PulseColor.inkTertiary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 15)
-                    .padding(.bottom, 10)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+            // Die Grundlage („Aus 212 Tagen hochgerechnet …") steht seit 1.8
+            // im Verlauf, wohin diese Zeile führt — nicht mehr auf der Karte.
         } else if row.yearOutlook == nil, row.readingCount >= 1 {
             // Auch zwei Ablesungen am selben Tag ergeben noch keinen
             // Verbrauch. Dann stand hier bis 0.130.1 gar nichts.
@@ -721,27 +706,6 @@ struct OverviewView: View {
             }
             .accessibilityIdentifier("jahresausblick-\(row.name)")
         }
-    }
-
-    /// Ob Jahresausblick und Abschlag-Ausblick dieselbe Grundlage haben und
-    /// ein Satz für beide reicht. Stammt der Jahresausblick aus Ablesungen vor
-    /// dem Jahr, braucht er seinen eigenen Satz, denn der nennt den Zeitraum.
-    private func teilenGrundlage(_ row: MeterRow) -> Bool {
-        guard let jahr = row.yearOutlook, let abschlag = row.outlook else { return false }
-        return jahr.method == abschlag.method && !jahr.restsOnEarlierReadings
-    }
-
-    /// Worauf der Ausblick beruht, in einem Satz. Ohne Ablesung im laufenden
-    /// Jahr sagt er, aus welchem Zeitraum die Zahl stammt.
-    private func ausblickGrundlage(_ ausblick: ForecastEngine.Forecast) -> String {
-        if let zuletzt = ausblick.lastReadingDay {
-            return "Aus deinem Verbrauch bis \(germanDate(zuletzt)), \(ausblick.method.explanation)"
-        }
-        // Die Zahl der Tage gehört dazu: Aus 30 Tagen hochgerechnet ist eine
-        // andere Aussage als aus 280, und mit einem Monat Daten soll man das
-        // sehen, statt der Zahl mehr zu glauben, als sie trägt.
-        let tage = ausblick.daysElapsed == 1 ? "1 Tag" : "\(ausblick.daysElapsed) Tagen"
-        return "Aus \(tage) hochgerechnet, \(ausblick.method.explanation)"
     }
 
     private func periodCaption(for row: MeterRow) -> String {
@@ -886,33 +850,27 @@ struct OverviewView: View {
         rows.contains(where: \.isDue) ? .notice : .calm
     }
 
+    /// **Ein kurzer Satz, seit 1.8.** Vorher: „Gas ist seit 102 Tagen nicht
+    /// abgelesen. Ohne aktuellen Stand ist die Vorschau ungenau." — und
+    /// dieselbe Dauer noch einmal auf der Karte, dazu ein Schild „Fällig".
+    /// Bei größter Schrift füllte der Satz allein den Bildschirm. Die Dauer
+    /// steht jetzt nur auf der Karte, bei ihrem Zähler.
+    ///
+    /// Ein nie abgelesener Zähler ist fällig (`isDue`) — sonst meldete die
+    /// App „Alles im Rahmen." genau beim ersten Öffnen.
     private var statusMessage: AttributedString {
-        // `daysSinceReading` ist `nil`, solange der Zähler nie abgelesen wurde.
-        // Vorher fiel dieser Fall durch die Bedingung hindurch, und die App
-        // meldete „Alles im Rahmen. Alle Zähler sind aktuell." für einen
-        // Zähler, der noch nie einen Stand hatte — also genau im Zustand, in
-        // dem jeder neue Nutzer die App zum ersten Mal öffnet.
-        if let due = rows.first(where: \.isDue) {
-            var text = AttributedString(due.daysSinceReading.map {
-                "\(due.name) ist seit \($0) Tagen nicht abgelesen."
-            } ?? "\(due.name) wurde noch nie abgelesen.")
-            text.font = .system(.subheadline, weight: .semibold)
-            var rest = AttributedString(due.daysSinceReading == nil
-                ? " Trag den ersten Stand ein, dann fängt der Verlauf an."
-                : " Ohne aktuellen Stand ist die Vorschau ungenau.")
-            rest.font = .system(.subheadline)
-            text.append(rest)
-            return text
-        }
-        var text = AttributedString("Alles im Rahmen.")
+        let faellig = rows.filter(\.isDue).map(\.name)
+        var text = AttributedString(faellig.isEmpty ? "Alles im Rahmen." : Self.faelligSatz(faellig))
         text.font = .system(.subheadline, weight: .semibold)
-        if let first = rows.first, let change = first.changeVersusLastYear, change < -0.02 {
-            let percent = number(abs(change) * 100, digits: 0)
-            text.append(AttributedString(" \(first.name) liegt \(percent) % unter dem Vorjahr."))
-        } else {
-            text.append(AttributedString(" Alle Zähler sind aktuell."))
-        }
         return text
+    }
+
+    /// „Gas ist fällig." / „Gas und Wasser sind fällig." / „Gas, Wasser und
+    /// Strom sind fällig." — wie `faelligSatz` im Klick-Dummy.
+    static func faelligSatz(_ namen: [String]) -> String {
+        guard let letzter = namen.last else { return "" }
+        if namen.count == 1 { return "\(letzter) ist fällig." }
+        return "\(namen.dropLast().joined(separator: ", ")) und \(letzter) sind fällig."
     }
 
     // MARK: - Daten
@@ -1043,9 +1001,9 @@ struct OverviewView: View {
                     outlook: outlook(point: point, readings: everything,
                                      tariffs: tariffs, periods: periods),
                     yearOutlook: PeriodEngine.range(year: today.year, slot: 1, granularity: .year)
-                        .flatMap { jahr in
+                        .flatMap { ganzesJahr in
                             ForecastEngine.forecast(meteringPoint: point, readings: everything,
-                                                    period: jahr, today: today)
+                                                    period: ganzesJahr, today: today)
                         },
                     feedIn: feedIn(point: point, readings: everything,
                                    tariffs: tariffs, in: yearRange)
@@ -1171,7 +1129,11 @@ struct OverviewView: View {
         // Steht in keinem der drei ein Betrag, ist die Zeile eine Reihe
         // Striche — die sagt weniger als die bisherige Zeile mit ihrer
         // Begründung. Dann wird sie gar nicht erst gezeigt.
-        return spans.contains(where: { $0.amount != nil }) ? spans : []
+        //
+        // Seit 1.8 fallen auch einzelne Abschnitte ohne Betrag weg: „November
+        // –" neben einem Jahresbetrag sagte nur, dass etwas fehlt. Bleibt einer
+        // übrig, zeigt die Karte ihn als einzelne Zeile.
+        return spans.filter { $0.amount != nil }
     }
 
     /// Was ``cost(point:readings:tariffs:in:)`` liefert. Benannt, weil ein

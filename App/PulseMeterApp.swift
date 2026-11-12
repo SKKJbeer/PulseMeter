@@ -25,6 +25,9 @@ struct PulseMeterApp: App {
     /// einander nicht erreichen.
     @State private var datenstand = Datenstand()
 
+    /// Ob der iCloud-Abgleich klappt, für die Zeile im Zähler-Tab (1.8).
+    @State private var abgleich: ICloudAbgleich
+
     /// Wohin ein Tipp von außen führt — auf eine Erinnerung, das Widget oder
     /// eine Adresse. Einmal für die ganze App, aus demselben Grund wie die
     /// beiden darüber.
@@ -75,8 +78,10 @@ struct PulseMeterApp: App {
         }
         #endif
 
+        var mitICloud = false
         if let store = try? PulseStore.container(cloudKit: true) {
             container = store
+            mitICloud = true
         } else if let lokal = try? PulseStore.container(cloudKit: false) {
             // Kein Abgleich, aber alles bleibt erhalten. Das ist der Zustand
             // im Simulator, in der CI und auf einem Gerät ohne angemeldete
@@ -99,6 +104,7 @@ struct PulseMeterApp: App {
         } else {
             fatalError("Der Datenspeicher ließ sich nicht anlegen.")
         }
+        _abgleich = State(initialValue: ICloudAbgleich(aktiv: mitICloud))
 
         // Vor der ersten Ansicht, nicht in einer davon: Welcher Tab beim Start
         // sichtbar ist, darf nicht darüber entscheiden, welche Daten da sind.
@@ -139,6 +145,7 @@ struct PulseMeterApp: App {
                 .environment(purchase)
                 .environment(datenstand)
                 .environment(wegweiser)
+                .environment(abgleich)
                 .task {
                     // **Nicht im Konstruktor.** Beides geht übers Netz, und
                     // ein Konstruktor kann nicht warten. Solange nichts

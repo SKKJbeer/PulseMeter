@@ -9,6 +9,47 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.150.0 — 2026-11-12
+
+**1.8 „Einfacher“: Übersicht kürzer, Verlauf mit zwei Reihen oben, iCloud sichtbar**
+
+Entschieden vom Gründer am 11. November: 1.8 vereinfacht die Bedienung.
+Konzept: `docs/konzepte/1.8-einfacher.md`. Klick-Dummy und App gleich (Regel 2).
+
+### Geändert
+- **Statuszeile ein kurzer Satz.** „Gas ist fällig.“, „Gas und Wasser sind
+  fällig.“ oder „Alles im Rahmen.“ Vorher zwei Sätze („Gas ist seit 102 Tagen
+  nicht abgelesen. Ohne aktuellen Stand ist die Vorschau ungenau.“), die bei
+  größter Schrift allein den Bildschirm füllten.
+- **Kein Schild „Fällig“ mehr auf der Karte.** Die Zeile „Seit 102 Tagen
+  fällig“ und der farbige Rand bleiben.
+- **Keine Erklärzeilen auf der Karte.** „Aus 212 Tagen hochgerechnet, …“ und
+  „Beides hochgerechnet …“ stehen jetzt dort, wohin das Antippen führt
+  (Verlauf, Erklärung zum Guthaben). Das „≈“ bleibt an der Zahl.
+- **Kostenabschnitte ohne Betrag fallen weg.** Statt „November –“ steht nur,
+  was es gibt; bleibt ein Abschnitt, ist es eine Zeile („Kosten bis 1. Aug.“).
+- **Verlauf: oben nur Zähler und Zeitraum.** „Diagramm / Alle Zahlen“ steht
+  unter dem Diagramm und in der Tabelle über ihr. Der Satz „Tippe einen
+  Abschnitt an …“ entfällt.
+- **Kaufblatt:** Unter „Alles freischalten“ steht nur noch die Ersparnis,
+  nicht ein zweites Mal „Alle sechs Freischaltungen zusammen“.
+
+### Neu
+- **iCloud-Zeile im Zähler-Tab:** „Mit iCloud abgeglichen: heute, 18:10“,
+  „iCloud ist an. Der Abgleich läuft.“, „Der iCloud-Abgleich klappt gerade
+  nicht.“ oder „iCloud ist aus.“ mit Knopf zu den Einstellungen. Gelesen
+  werden nur Kontostatus und Abgleichsereignisse auf dem Gerät.
+
+### Gemessen (Klick-Dummy, 393 Punkte breit)
+- Statuszeile 89 → 48 Punkte, Karten 36 bis 71 Punkte kürzer
+  (Strom 478 → 442, Gas 440 → 369).
+
+### Prüfungen
+- Klick-Dummy: neuer Abschnitt „1.8: Einfacher“ in `check-prototype.mjs`.
+- Oberflächentests: `testMonthWithoutReadingShowsNoCost` verlangt jetzt, dass
+  kein Abschnitt einen Strich zeigt; neu `testStatusLineIsOneShortSentence`,
+  `testHistoryHasTwoRowsOnTop`, `testMetersShowICloudLine`.
+
 ## 0.148.0 — 2026-11-11
 
 **Review: zwei Beträge, die nicht stimmten**

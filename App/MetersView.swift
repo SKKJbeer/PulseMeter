@@ -15,6 +15,8 @@ struct MetersView: View {
     @Environment(\.modelContext) private var context
     @Environment(Purchase.self) private var purchase
     @Environment(Datenstand.self) private var datenstand
+    /// Optional, damit Vorschauen und Prüfungen ohne Abgleich auskommen.
+    @Environment(ICloudAbgleich.self) private var abgleich: ICloudAbgleich?
 
     @State private var meters: [MeteringPoint] = []
     @State private var showingPaywall = false
@@ -201,6 +203,35 @@ struct MetersView: View {
         if !meters.isEmpty { reminderSection }
         if !archived.isEmpty { archivedSection }
         freischaltenSection
+        if let abgleich { icloudZeile(abgleich.zustand) }
+    }
+
+    /// Ob der iCloud-Abgleich klappt (1.8). Eine Zeile Kleingedrucktes, keine
+    /// Karte: Sie wird gelesen, wenn auf dem iPad etwas fehlt, und sonst nie.
+    /// Ist iCloud aus, führt sie in die Einstellungen der App, von wo es ein
+    /// Schritt zu iCloud ist — einen Weg direkt dorthin gibt iOS nicht frei.
+    @ViewBuilder
+    private func icloudZeile(_ zustand: ICloudAbgleich.Zustand) -> some View {
+        let symbol = switch zustand {
+        case .abgeglichen: "checkmark.icloud"
+        case .wartet: "arrow.triangle.2.circlepath.icloud"
+        case .fehler: "exclamationmark.icloud"
+        case .aus, .keinKonto: "icloud.slash"
+        }
+        VStack(alignment: .leading, spacing: 4) {
+            Label(ICloudAbgleich.text(zustand), systemImage: symbol)
+                .font(PulseText.caption)
+                .foregroundStyle(PulseColor.inkSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("icloud-zeile")
+            if zustand == .keinKonto, let einstellungen = URL(string: UIApplication.openSettingsURLString) {
+                Link("Einstellungen öffnen", destination: einstellungen)
+                    .font(PulseText.caption.weight(.semibold))
+                    .frame(minHeight: 44, alignment: .leading)
+            }
+        }
+        .padding(.horizontal, 4)
+        .padding(.top, 2)
     }
 
     /// Ob noch ein Zähler dazu darf.
