@@ -1,6 +1,6 @@
 # Testkonzept
 
-Stand 0.149.0, 11. November 2026. Auftrag des Gründers am selben Tag: „erweitere
+Stand 0.164.0, 12. November 2026. Auftrag des Gründers am selben Tag: „erweitere
 das testkonzept und erweitere weitere tests. prio ist die qualität und vor allem
 einfaches und user freundliches interface für einfache bedienung."
 
@@ -30,7 +30,7 @@ Drei Fragen, in dieser Reihenfolge:
 Die zweite Frage war bisher am besten abgedeckt (350 Tests im Rechenkern). Die
 erste und die dritte hatten Lücken, die beide Kunden zuerst gesehen haben: Der
 iCloud-Abgleich lief von 1.0 bis 1.6 nie, und im Ziffernblock stand
-„rund 3.039,2× dein üblicher Verbrauch". Beides ist mit 0.149.0 geprüft
+„rund 3.039,2× dein üblicher Verbrauch". Beides ist mit 0.164.0 geprüft
 (Abschnitt 5).
 
 ---
@@ -134,7 +134,7 @@ nicht Geschmack bleibt, steht hier je Anspruch die Prüfung, die ihn hält. Wo
    und er wird so behandelt. Längere Wartezeiten nur mit Messung
    (`LaunchTests.erscheint`). Antwortet die App nur nicht rechtzeitig, weil sie
    im Debug-Bau schwer rechnet, wartet der Test mit `wartetGeduldig` und lässt
-   genau diesen einen Fehler durch, sonst keinen. So beim Kameratest seit 0.149.0.
+   genau diesen einen Fehler durch, sonst keinen. So beim Kameratest seit 0.164.0.
 3. **Eine Regel, die nur als Satz dasteht, wird nicht befolgt.** Was sich
    zählen lässt, zählt ein Skript (Gedankenstriche auf der Website, Versionen,
    verbotene Wörter, Regeln für CloudKit).
@@ -147,10 +147,10 @@ Jede Zeile ist einmal passiert. Die Wache steht daneben.
 
 | Was passiert ist | Seit wann geprüft |
 |---|---|
-| Der iCloud-Abgleich lief von 1.0 bis 1.6 nie: In der CloudKit-Produktion stand kein Schema, SwiftData sicherte still lokal weiter (Käufermeldung 14. Oktober). | 0.142.0 `CloudKitSchemaTests` (Datei = Modell); 0.149.0 `scripts/check-cloudkit-schema.py` mit Ablage `cloudkit/produktion.ckdb`, `.github/workflows/cloudkit-wache.yml` jeden Montag gegen die echte Produktion, Riegel in `.github/workflows/testflight.yml` |
-| Ein Feld des Modells verstößt gegen die Regeln von CloudKit; in der CI ohne iCloud fiele das nie auf. | 0.149.0 `testTheModelFollowsTheRulesOfCloudKit`, gegengeprüft mit `testEachRuleIsSeenWhenBroken` |
-| Im Ziffernblock stand „rund 0× dein üblicher Verbrauch" und „rund 3.039,2×". Richtig gerechnet, unverständlich gesagt. | 0.149.0 `scripts/check-bedienung.mjs`, `testAnUnchangedReadingIsQuestionedInPlainWords`, `testATenfoldTypoNamesTheUsualAmountForTheSameDays` |
-| Die Kopfzeile des Klick-Dummys stand sechs Versionen lang auf 0.138.0. | 0.149.0 `scripts/check-versionen.py` |
+| Der iCloud-Abgleich lief von 1.0 bis 1.6 nie: In der CloudKit-Produktion stand kein Schema, SwiftData sicherte still lokal weiter (Käufermeldung 14. Oktober). | 0.142.0 `CloudKitSchemaTests` (Datei = Modell); 0.164.0 `scripts/check-cloudkit-schema.py` mit Ablage `cloudkit/produktion.ckdb`, `.github/workflows/cloudkit-wache.yml` jeden Montag gegen die echte Produktion, Riegel in `.github/workflows/testflight.yml` |
+| Ein Feld des Modells verstößt gegen die Regeln von CloudKit; in der CI ohne iCloud fiele das nie auf. | 0.164.0 `testTheModelFollowsTheRulesOfCloudKit`, gegengeprüft mit `testEachRuleIsSeenWhenBroken` |
+| Im Ziffernblock stand „rund 0× dein üblicher Verbrauch" und „rund 3.039,2×". Richtig gerechnet, unverständlich gesagt. | 0.164.0 `scripts/check-bedienung.mjs`, `testAnUnchangedReadingIsQuestionedInPlainWords`, `testATenfoldTypoNamesTheUsualAmountForTheSameDays` |
+| Die Kopfzeile des Klick-Dummys stand sechs Versionen lang auf 0.138.0. | 0.164.0 `scripts/check-versionen.py` |
 | Ein Zeitraum mit Daten wurde gegen einen ohne verglichen (die wiederkehrende Fehlerklasse aus `CLAUDE.md`). | `ScenarioMatrixTests`, `PeriodEngineTests` |
 | Die Website versprach Preise und Umfang, die es nicht gab. | 0.103.1 `scripts/check-versprechen.py` |
 | Bau 24 lag in TestFlight, der Schritt danach starb an einem fehlenden `import re`. | `scripts/check-namen.py` |

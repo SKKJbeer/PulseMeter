@@ -4,7 +4,7 @@
  *
  * **Warum es das gibt.** Die Rückfragen im Ziffernblock sind der wichtigste
  * Schutz vor dem häufigsten Datenfehler, dem Tippfehler. PulseCore rechnet sie
- * geprüft aus, aber bis 0.149.0 hat keine Prüfung je den Satz gelesen, der am
+ * geprüft aus, aber bis 0.164.0 hat keine Prüfung je den Satz gelesen, der am
  * Ende auf dem Schirm steht. So stand monatelang „rund 0× dein üblicher
  * Verbrauch“ da, wenn jemand den letzten Stand übernahm — richtig gerechnet,
  * unverständlich gesagt. Dieselben Fälle prüft `AppUITests/BedienungTests.swift`

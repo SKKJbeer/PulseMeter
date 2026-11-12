@@ -84,6 +84,21 @@ final class SeasonalProfileTests: XCTestCase {
         }
     }
 
+    /// Das Merkmal „misst eine Wärmepumpe" wirkt nur bei Strom. Einspeisung
+    /// bleibt bei der Sonne, Gas beim Heizen, Wasser ohne Profil.
+    func testTheHeatPumpFlagOnlyChangesElectricity() {
+        XCTAssertEqual(SeasonalProfile.reference(for: .electricity, heatPump: true)?.source,
+                       SeasonalProfile.heating.source)
+        XCTAssertEqual(SeasonalProfile.reference(for: .electricity)?.source,
+                       SeasonalProfile.household.source)
+        XCTAssertEqual(SeasonalProfile.reference(for: .electricity, direction: .feedIn,
+                                                 heatPump: true)?.source,
+                       SeasonalProfile.solar.source)
+        XCTAssertEqual(SeasonalProfile.reference(for: .wallbox, heatPump: true)?.source,
+                       SeasonalProfile.household.source)
+        XCTAssertNil(SeasonalProfile.reference(for: .water, heatPump: true))
+    }
+
     // MARK: - Anteile über Zeiträume
 
     func testShareOfAFullYearIsEverything() {

@@ -499,7 +499,7 @@ struct CaptureView: View {
             return text
 
         case .unusual(let consumption, let days, _):
-            // Zwei Mengen statt eines Faktors (0.149.0): „rund 0,2× dein
+            // Zwei Mengen statt eines Faktors (0.164.0): „rund 0,2× dein
             // üblicher Verbrauch“ musste man zurückrechnen, und beim
             // unveränderten Stand stand „rund 0×“ da.
             guard let usual = verdict.usualConsumption else {

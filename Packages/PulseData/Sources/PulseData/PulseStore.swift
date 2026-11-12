@@ -27,7 +27,8 @@ public enum PulseStore {
             MeterDeviceRecord.self,
             ReadingRecord.self,
             TariffRecord.self,
-            BillingPeriodRecord.self
+            BillingPeriodRecord.self,
+            HeatingChangeRecord.self
         ]
     }
 
@@ -338,6 +339,33 @@ public final class PulseRepository {
         try context.save()
     }
 
+    // MARK: - Heizungswechsel (1.9)
+
+    public func heatingChanges() throws -> [HeatingChange] {
+        try context.fetch(FetchDescriptor<HeatingChangeRecord>(sortBy: [SortDescriptor(\.day)]))
+            .map { $0.toDomain() }
+    }
+
+    public func save(_ change: HeatingChange) throws {
+        let id = change.id
+        let descriptor = FetchDescriptor<HeatingChangeRecord>(predicate: #Predicate { $0.id == id })
+        let record = try context.fetch(descriptor).first ?? {
+            let fresh = HeatingChangeRecord(id: id)
+            context.insert(fresh)
+            return fresh
+        }()
+        record.apply(change)
+        try context.save()
+    }
+
+    /// Nimmt nur die Verbindung weg. Beide Zähler und ihre Ablesungen bleiben.
+    public func delete(heatingChangeID: HeatingChange.ID) throws {
+        let descriptor = FetchDescriptor<HeatingChangeRecord>(predicate: #Predicate { $0.id == heatingChangeID })
+        guard let record = try context.fetch(descriptor).first else { return }
+        context.delete(record)
+        try context.save()
+    }
+
     public func billingPeriods(for meteringPointID: MeteringPoint.ID) throws -> [BillingPeriod] {
         let descriptor = FetchDescriptor<BillingPeriodRecord>(
             predicate: #Predicate { $0.meteringPointID == meteringPointID },
@@ -376,6 +404,9 @@ public final class PulseRepository {
         for record in try context.fetch(FetchDescriptor<BillingPeriodRecord>()) {
             context.delete(record)
         }
+        for record in try context.fetch(FetchDescriptor<HeatingChangeRecord>()) {
+            context.delete(record)
+        }
         try context.save()
     }
 
@@ -390,7 +421,8 @@ public final class PulseRepository {
             meteringPoints: points,
             readings: try context.fetch(FetchDescriptor<ReadingRecord>()).map { $0.toDomain() },
             tariffs: try context.fetch(FetchDescriptor<TariffRecord>()).map { $0.toDomain() },
-            billingPeriods: try context.fetch(FetchDescriptor<BillingPeriodRecord>()).compactMap { $0.toDomain() }
+            billingPeriods: try context.fetch(FetchDescriptor<BillingPeriodRecord>()).compactMap { $0.toDomain() },
+            heatingChanges: try heatingChanges()
         )
     }
 
@@ -411,6 +443,7 @@ public final class PulseRepository {
         }
         for tariff in snapshot.tariffs { try save(tariff) }
         for period in snapshot.billingPeriods { try save(period) }
+        for change in snapshot.heatingChanges { try save(change) }
         try context.save()
     }
 

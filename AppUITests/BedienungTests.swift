@@ -6,7 +6,7 @@ import XCTest
 /// **Warum eine eigene Klasse.** `LaunchTests` prüft, ob die Hauptwege
 /// funktionieren. Hier steht, ob die App den Nutzer auffängt, wenn er vom Weg
 /// abkommt — der Teil, den das Testkonzept (`docs/15-testkonzept.md`,
-/// Abschnitt „Bedienung“) bis 0.149.0 als Lücke führte: Die Rückfragen im
+/// Abschnitt „Bedienung“) bis 0.164.0 als Lücke führte: Die Rückfragen im
 /// Ziffernblock („Stimmt die Zahl?“, „unter dem letzten Wert“) rechnete
 /// PulseCore geprüft aus, aber kein Oberflächentest hat sie je gesehen.
 ///

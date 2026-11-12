@@ -15,6 +15,8 @@ struct MetersView: View {
     @Environment(\.modelContext) private var context
     @Environment(Purchase.self) private var purchase
     @Environment(Datenstand.self) private var datenstand
+    /// Optional, damit Vorschauen und Prüfungen ohne Abgleich auskommen.
+    @Environment(ICloudAbgleich.self) private var abgleich: ICloudAbgleich?
 
     @State private var meters: [MeteringPoint] = []
     @State private var showingPaywall = false
@@ -201,6 +203,35 @@ struct MetersView: View {
         if !meters.isEmpty { reminderSection }
         if !archived.isEmpty { archivedSection }
         freischaltenSection
+        if let abgleich { icloudZeile(abgleich.zustand) }
+    }
+
+    /// Ob der iCloud-Abgleich klappt (1.8). Eine Zeile Kleingedrucktes, keine
+    /// Karte: Sie wird gelesen, wenn auf dem iPad etwas fehlt, und sonst nie.
+    /// Ist iCloud aus, führt sie in die Einstellungen der App, von wo es ein
+    /// Schritt zu iCloud ist — einen Weg direkt dorthin gibt iOS nicht frei.
+    @ViewBuilder
+    private func icloudZeile(_ zustand: ICloudAbgleich.Zustand) -> some View {
+        let symbol = switch zustand {
+        case .abgeglichen: "checkmark.icloud"
+        case .wartet: "arrow.triangle.2.circlepath.icloud"
+        case .fehler: "exclamationmark.icloud"
+        case .aus, .keinKonto: "icloud.slash"
+        }
+        VStack(alignment: .leading, spacing: 4) {
+            Label(ICloudAbgleich.text(zustand), systemImage: symbol)
+                .font(PulseText.caption)
+                .foregroundStyle(PulseColor.inkSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("icloud-zeile")
+            if zustand == .keinKonto, let einstellungen = URL(string: UIApplication.openSettingsURLString) {
+                Link("Einstellungen öffnen", destination: einstellungen)
+                    .font(PulseText.caption.weight(.semibold))
+                    .frame(minHeight: 44, alignment: .leading)
+            }
+        }
+        .padding(.horizontal, 4)
+        .padding(.top, 2)
     }
 
     /// Ob noch ein Zähler dazu darf.
@@ -617,6 +648,7 @@ struct MeterEditor: View {
     /// dem Produkt auf, das vor dem Tipp dastand — sichtbar der falsche Kauf.
     /// Zwei Zustände für eine Sache geraten aus dem Takt; einer kann das nicht.
     @State private var paywallReason: ProductID?
+    @State private var wechseltHeizung = false
 
     @State private var name = ""
     @State private var kind: ResourceKind = .electricity
@@ -652,6 +684,7 @@ struct MeterEditor: View {
     /// anzulegen, und ein Haushalt mit Photovoltaik konnte seinen Zähler
     /// deshalb gar nicht abbilden.
     @State private var hasFeedIn = false
+    @State private var measuresHeatPump = false
     /// Ob für die Einspeisung schon Werte vorliegen. Dann darf sie nicht mehr
     /// abgeschaltet werden — die Ablesungen hingen sonst an einem Zählwerk,
     /// das es nicht mehr gibt.
@@ -827,6 +860,19 @@ struct MeterEditor: View {
                             Text("Tag- und Nachtstrom, Photovoltaik")
                         }
                     }
+
+                    // Kostenlos, weil es einen Rechenfehler behebt und nichts
+                    // Neues freischaltet (1.9, Teil C): Ohne den Schalter
+                    // rechnete ein Wärmepumpenzähler mit dem Haushaltsprofil,
+                    // und die Jahreszahl lag im Januar rund 60 % zu hoch.
+                    Section {
+                        Toggle("Misst eine Wärmepumpe", isOn: $measuresHeatPump)
+                            .accessibilityIdentifier("misst-waermepumpe")
+                    } header: {
+                        Text("Wärmepumpe")
+                    } footer: {
+                        Text("Für einen eigenen Zähler der Wärmepumpe. Die Hochrechnung folgt dann dem Heizen: viel im Winter, wenig im Sommer.")
+                    }
                 }
 
                 priceSection
@@ -849,6 +895,27 @@ struct MeterEditor: View {
                         }
                     } footer: {
                         Text("Beim Wechsel werden Endstand und Anfangsstand erfasst. Der Verbrauch bis zum Wechseltag bleibt erhalten, und der Rücksprung gilt als erklärt.")
+                    }
+                }
+
+                // 1.9: Der Einstieg sitzt beim alten Zähler, weil der
+                // Wechsel dort anfängt. Gesperrt öffnet er das Kaufblatt,
+                // statt zu verschwinden: Wer nicht weiß, dass es den
+                // Vergleich gibt, sucht ihn nicht.
+                if let existing = draft.existing, HeatingChange.canBeOldMeter(existing) {
+                    Section {
+                        Button("Heizung gewechselt am …") {
+                            if purchase.policy.canCompareHeating {
+                                wechseltHeizung = true
+                            } else {
+                                openPaywall(.heatPump)
+                            }
+                        }
+                        .accessibilityIdentifier("heizung-gewechselt")
+                    } header: {
+                        Text("Heizung")
+                    } footer: {
+                        Text("Seit einer Wärmepumpe zeigt die Übersicht dieselben Monate vorher und nachher, in kWh und Euro.")
                     }
                 }
 
@@ -892,6 +959,11 @@ struct MeterEditor: View {
             }
             .sheet(item: $paywallReason) { produkt in
                 UnlockSheet(product: produkt)
+            }
+            .sheet(isPresented: $wechseltHeizung) {
+                if let existing = draft.existing {
+                    HeizungsWechselSheet(alt: existing, onDone: onDone)
+                }
             }
             .sheet(isPresented: $addingPrice) {
                 if let existing = draft.existing {
@@ -1216,6 +1288,7 @@ struct MeterEditor: View {
         name = existing.name
         kind = existing.kind
         interval = existing.readingInterval
+        measuresHeatPump = existing.measuresHeatPump
         if let register = existing.primaryRegister {
             integerDigits = register.integerDigits
             fractionDigits = register.fractionDigits
@@ -1549,6 +1622,7 @@ struct MeterEditor: View {
                 // sich hinten an. Andersherum stünde sie in der Mitte.
                 applyDualTariff(to: &existing)
                 applyFeedIn(to: &existing)
+                existing.measuresHeatPump = measuresHeatPump && existing.kind == .electricity
                 try repository.save(existing)
                 try saveTariff(for: existing, in: repository)
                 try saveBilling(for: existing, in: repository)
@@ -1577,7 +1651,8 @@ struct MeterEditor: View {
                     kind: kind,
                     registers: registers,
                     readingInterval: interval,
-                    billingCycle: billingCycleFromInput
+                    billingCycle: billingCycleFromInput,
+                    measuresHeatPump: measuresHeatPump && kind == .electricity
                 )
                 try repository.save(point)
                 try saveTariff(for: point, in: repository)

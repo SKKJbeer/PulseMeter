@@ -9,7 +9,7 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
-## 0.149.0 — 2026-11-11
+## 0.164.0 — 2026-11-12
 
 **Testkonzept: Bedienung bei Fehlern, iCloud-Wache, ehrliche Abdeckung**
 
@@ -60,6 +60,202 @@ Prüfungen haben gleich einen echten Fehler gefunden.
   Tipp verloren, der Sucher stand danach noch da (zweiter Tipp nur dann).
 - `testCapturingBothDirectionsInOneGo` tippt „Sichern“ erst, wenn der Knopf freigeschaltet ist, und
   ein zweites Mal, wenn das Blatt danach nachweislich noch offen ist (fiel auf dem iPhone).
+
+---
+
+## 0.163.0 — 2026-11-12
+
+**1.9 in der App: Heizung gewechselt, vorher und nachher**
+
+### Neu
+- Am Gas- oder Ölzähler steht unter „Heizung“ der Knopf „Heizung gewechselt
+  am …“. Er öffnet das Blatt „Heizungswechsel“: Tag, Zähler der Wärmepumpe
+  (ein vorhandener Stromzähler oder ein neuer Zähler „Heizstrom“) und der
+  angenommene Wirkungsgrad des alten Kessels. Stromzähler, die schon vor dem
+  Wechsel abgelesen wurden, sind ausgegraut und sagen warum.
+- In der Übersicht steht unter den Zählern die Karte „Gas und Wärmepumpe“
+  (oder „Heizöl und …“): Unterschied in Euro, mit „Kosten und Preise“, sonst
+  in kWh. Solange noch kein ganzer Monat gemessen ist, sagt sie, ab wann es
+  eine Zahl gibt.
+- Ein Tipp öffnet „Vorher und nachher“: dieselben Monate auf beiden Seiten,
+  Menge, kWh, Wärme und Kosten, darunter der Hinweis zum Wetter. „Teilen“
+  gibt ein Bild weiter, „Gemessen mit Zählora“, ohne Zählerstände und ohne
+  Link.
+- Ohne den Kauf „Wärmepumpe“ öffnen Knopf und Karte das Kaufblatt.
+- Ein neuer Zähler „Heizstrom“ zählt gegen die Grenze von zwei Zählern; ohne
+  „Unbegrenzt viele Zähler“ bleibt ein vorhandener Stromzähler wählbar.
+
+### Geändert
+- Ein abgelöster Gas- oder Ölzähler gilt ab dem Wechseltag nicht mehr als
+  fällig und bekommt keine Erinnerung mehr.
+
+### Tests
+- `testAHeatingChangeShowsBeforeAndAfterOnTheOverview`: Wechsel am Gaszähler
+  mit neuem Zähler, Karte in der Übersicht, Gas nicht mehr fällig.
+- `testTheHeatingChangeLeadsToItsPurchaseWithoutIt`: ohne Kauf das
+  Kaufblatt, kein Blatt „Heizungswechsel“.
+- `check-versprechen.py` kennt den Stand im Laden: „Wärmepumpe“ steht noch
+  nicht dort, und das Bündel kostet im Laden bis 1.9 weiter 4,99 €. Beides
+  kommt beim Einreichen von 1.9 heraus. Vorher fiel die Prüfung seit 0.162.0,
+  weil die Website richtig den Ladenpreis nennt.
+
+## 0.162.0 — 2026-11-12
+
+**Rechenkern und Datenmodell für 1.9: Heizungswechsel, vorher und nachher**
+
+### Neu
+- `HeatingChange` (Tag, alter Zähler, Zähler der Wärmepumpe, Wirkungsgrad
+  des Kessels, Vorgabe 90 % Gas, 85 % Öl).
+- `HeatingComparison.compare(change:old:new:readings:tariffs:today:)`:
+  ganze Monate nach dem Wechsel gegen dieselben Monate ein Jahr früher.
+  Ein Monat zählt erst ab der ersten Ablesung am neuen Zähler. Höchstens
+  das jüngste Jahr; ein ganzes Jahr steht gegen die zwölf Monate vor dem
+  Wechsel, weil „ein Jahr früher“ dann schon in der Zeit der Wärmepumpe
+  läge. Ergebnis: Menge, kWh, Wärme (Brennstoff × Wirkungsgrad), Kosten
+  mit Grundpreis und den Tarifen, die dort galten, Unterschied in Euro und
+  kWh. Sonst „wartet bis …“ oder „Vorjahr fehlt“.
+- `HeatingComparison.eligibility`: Ein Stromzähler mit Ablesungen mehr als
+  31 Tage vor dem Wechsel gilt nicht als Zähler der Wärmepumpe.
+- Kauf `ProductID.heatPump` („Wärmepumpe“, 4,99 €,
+  `de.karjoth.pulsemeter.heatpump`), `AccessPolicy.canCompareHeating`. Das
+  Bündel nennt sieben Stücke, der Ersatzpreis in der App ist 7,99 €.
+- Bei Apple (`scripts/asc-kaeufe.py`): Kauf „Wärmepumpe“ eingetragen. Das
+  Bündel bleibt dort bei 4,99 €, bis 1.9 im Laden ist, weil ein Preis bei
+  Apple sofort gilt.
+- `HeatingChangeRecord` in PulseData, mit Speichern, Löschen, Sicherung und
+  Wiederherstellung; neuer Typ in `cloudkit/schema.ckdb`. Sicherungen ohne
+  `heatingChanges` lesen sich weiter ein.
+- Klick-Dummy: dieselbe Regel für die erste Ablesung und für das ganze Jahr.
+
+### Tests
+- `HeatingComparisonTests` (11), darunter „halber Winter gegen ganzen“,
+  Preiswechsel im Ausschnitt, Heizöl, Grundpreis, mehr als ein Jahr. Rot
+  gesehen mit einem Ausschnitt über das ganze Vorjahr.
+- `AccessPolicyTests.testTheHeatPumpIsItsOwnPurchaseAndPartOfTheBundle`
+  (rot gesehen), Summe einzeln 15,93 €, „Alle sieben“.
+- `PulseSnapshotTests.testAHeatingChangeRoundTrips`. PulseCore: 378 Tests
+  grün.
+
+---
+
+## 0.161.0 — 2026-11-12
+
+**Klick-Dummy für 1.9: Heizung gewechselt, vorher und nachher**
+
+Regel 1: erst anklickbar, dann gebaut. Konzept
+`docs/konzepte/1.9-heizungswechsel.md`.
+
+### Neu im Klick-Dummy
+- **„Heizung gewechselt am …“** am Gas- oder Heizölzähler. Das Blatt fragt
+  nach dem Tag, dem Zähler der Wärmepumpe (neu anlegen oder einen
+  vorhandenen) und dem Wirkungsgrad des alten Kessels (90 % Gas, 85 % Öl,
+  sichtbar als Annahme). Der alte Zähler wird danach nicht mehr als fällig
+  gemeldet, der neue bekommt „Misst eine Wärmepumpe“. Löschen lässt die
+  Zähler stehen.
+- **Welcher Zähler zählt:** Ein Stromzähler mit Ablesungen mehr als einen
+  Monat vor dem Wechsel lässt sich nicht wählen („also schon vor dem
+  Wechsel“). Damit ist der offene Punkt aus dem Konzept beantwortet.
+- **Karte „Gas und Wärmepumpe“** in der Übersicht unter den Zählern. Groß
+  der Unterschied in Euro, darunter beide Beträge. Verglichen werden nur
+  ganze Monate nach dem Wechsel gegen dieselben Monate ein Jahr früher
+  („Oktober bis Juli“), höchstens ein Jahr. Ohne vollen Monat: „Ab
+  1. September steht hier der Vergleich“. Ohne „Kosten und Preise“ kWh
+  statt Euro.
+- **Ansicht dahinter:** Zeitraum, gekauft, Wärme (Gas × Wirkungsgrad, bei
+  der Wärmepumpe „unbekannt“), Kosten mit Grundpreis, der Satz zum Wetter.
+- **Als Bild teilen:** 1080 × 1350, „Gemessen mit Zählora“, ohne Link,
+  ohne Zählerstände, ohne Namen.
+- **Kauf „Wärmepumpe“ 4,99 €.** Ohne ihn führt der Knopf aufs Kaufblatt.
+  Das Bündel kostet jetzt 7,99 € und enthält sieben Käufe (entschieden am
+  12. November).
+- Nur im Entwurf: Schalter „Beispiel: Heizung gewechselt“ (vor 2 Wochen,
+  4 Monaten, 10 Monaten), damit man den Ausschnitt wachsen sieht.
+
+### Tests
+- Neuer Block „1.9“ in `scripts/check-prototype.mjs`, 17 Prüfungen. Die
+  Gegenprobe (ganzes Vorjahr statt desselben Ausschnitts) wurde rot
+  gesehen. Bündel-Prüfungen auf sieben Teile und 7,99 € umgestellt.
+
+---
+
+## 0.160.0 — 2026-11-12
+
+**Ein Wärmepumpenzähler rechnet mit dem Heizprofil (1.9, Teil C)**
+
+Erster Schritt von 1.9 „Heizungswechsel, vorher und nachher“
+(`docs/konzepte/1.9-heizungswechsel.md`). Er steht vorn, weil er einen
+Rechenfehler behebt, den heutige Nutzer schon haben.
+
+### Behoben
+- **Jahreszahl eines Wärmepumpenzählers im Winter rund 60 % zu hoch.** Ein
+  Stromzähler wurde immer mit dem Haushaltsprofil H0 hochgerechnet: Januar
+  9,7 % des Jahres statt rund 15,5 % beim Heizen. Aus 1.500 kWh im Januar
+  wurden so 15.484 kWh im Jahr statt 9.697 kWh (gemessen im neuen Test, mit
+  rot gesehen).
+
+### Neu
+- **Schalter „Misst eine Wärmepumpe“** beim Stromzähler, kostenlos. Ist er
+  an, folgt die Hochrechnung dem Heizprofil (Gradtagszahlen nach VDI 2067
+  mit Warmwasser). Kein neuer Zählertyp, sondern ein Merkmal am Zähler
+  (`MeteringPoint.measuresHeatPump`).
+- Klick-Dummy: derselbe Schalter im Zählerblatt, dieselbe Profilwahl.
+
+### Technisch
+- `SeasonalProfile.reference(for:direction:heatPump:)`, durchgereicht in
+  `ForecastEngine` (Hochrechnung, Abschlagsausblick, Rest nach Preiswechsel).
+- `MeteringPointRecord.measuresHeatPump` mit Vorgabe `false`, neues Feld
+  `CD_measuresHeatPump` in `cloudkit/schema.ckdb`.
+- `MeteringPoint` liest Sicherungen ohne das Feld weiter ein (eigener
+  Decoder, sonst scheiterte jede Sicherung aus einer älteren Fassung).
+
+### Tests
+- `ForecastEngineTests.testAHeatPumpMeterProjectsTheYearByTheHeatingProfile`,
+  `SeasonalProfileTests.testTheHeatPumpFlagOnlyChangesElectricity`,
+  `PulseSnapshotTests.testABackupFromBeforeTheHeatPumpFlagStillLoads`, alle
+  drei einmal rot gesehen. `PulseCore`: 365 Tests grün.
+
+---
+
+## 0.150.0 — 2026-11-12
+
+**1.8 „Einfacher“: Übersicht kürzer, Verlauf mit zwei Reihen oben, iCloud sichtbar**
+
+Entschieden vom Gründer am 11. November: 1.8 vereinfacht die Bedienung.
+Konzept: `docs/konzepte/1.8-einfacher.md`. Klick-Dummy und App gleich (Regel 2).
+
+### Geändert
+- **Statuszeile ein kurzer Satz.** „Gas ist fällig.“, „Gas und Wasser sind
+  fällig.“ oder „Alles im Rahmen.“ Vorher zwei Sätze („Gas ist seit 102 Tagen
+  nicht abgelesen. Ohne aktuellen Stand ist die Vorschau ungenau.“), die bei
+  größter Schrift allein den Bildschirm füllten.
+- **Kein Schild „Fällig“ mehr auf der Karte.** Die Zeile „Seit 102 Tagen
+  fällig“ und der farbige Rand bleiben.
+- **Keine Erklärzeilen auf der Karte.** „Aus 212 Tagen hochgerechnet, …“ und
+  „Beides hochgerechnet …“ stehen jetzt dort, wohin das Antippen führt
+  (Verlauf, Erklärung zum Guthaben). Das „≈“ bleibt an der Zahl.
+- **Kostenabschnitte ohne Betrag fallen weg.** Statt „November –“ steht nur,
+  was es gibt; bleibt ein Abschnitt, ist es eine Zeile („Kosten bis 1. Aug.“).
+- **Verlauf: oben nur Zähler und Zeitraum.** „Diagramm / Alle Zahlen“ steht
+  unter dem Diagramm und in der Tabelle über ihr. Der Satz „Tippe einen
+  Abschnitt an …“ entfällt.
+- **Kaufblatt:** Unter „Alles freischalten“ steht nur noch die Ersparnis,
+  nicht ein zweites Mal „Alle sechs Freischaltungen zusammen“.
+
+### Neu
+- **iCloud-Zeile im Zähler-Tab:** „Mit iCloud abgeglichen: heute, 18:10“,
+  „iCloud ist an. Der Abgleich läuft.“, „Der iCloud-Abgleich klappt gerade
+  nicht.“ oder „iCloud ist aus.“ mit Knopf zu den Einstellungen. Gelesen
+  werden nur Kontostatus und Abgleichsereignisse auf dem Gerät.
+
+### Gemessen (Klick-Dummy, 393 Punkte breit)
+- Statuszeile 89 → 48 Punkte, Karten 36 bis 71 Punkte kürzer
+  (Strom 478 → 442, Gas 440 → 369).
+
+### Prüfungen
+- Klick-Dummy: neuer Abschnitt „1.8: Einfacher“ in `check-prototype.mjs`.
+- Oberflächentests: `testMonthWithoutReadingShowsNoCost` verlangt jetzt, dass
+  kein Abschnitt einen Strich zeigt; neu `testStatusLineIsOneShortSentence`,
+  `testHistoryHasTwoRowsOnTop`, `testMetersShowICloudLine`.
 
 ---
 

@@ -409,7 +409,7 @@ final class KameraModell {
             // erschien nicht mehr rechtzeitig (CI-Lauf 620, iPad) — vermutlich, weil die noch
             // laufende Rechnung den Simulator auslastete. Die Einigung selbst durchläuft der
             // Befund weiterhin Bild für Bild.
-            // `.utility` statt `.userInitiated` (0.149.0): Im Debug-Bau rechnet das Netz lange, und
+            // `.utility` statt `.userInitiated` (0.164.0): Im Debug-Bau rechnet das Netz lange, und
             // mit hohem Vorrang ließ es im Simulator keine Luft für die Fragen des Oberflächentests
             // („Timed out while evaluating UI query“ auf dem iPad, PR #13). Es geht nur um diesen
             // Vorführweg; die echte Kamera wertet in `KameraSitzung` aus.

@@ -140,15 +140,16 @@ struct HistoryView: View {
                         } else if meters.isEmpty {
                             emptyState
                         } else {
-                            // Die drei Wähler bleiben quer über die ganze
+                            // Die zwei Wähler bleiben quer über die ganze
                             // Breite: Sie gehören zu beiden Spalten, und eine
                             // Auswahl, die nur über der halben Ansicht steht,
                             // sieht aus, als gälte sie auch nur dort.
+                            //
+                            // **Oben nur Zähler und Zeitraum, seit 1.8.** „Diagramm
+                            // / Alle Zahlen" war die dritte Reihe; jetzt steht er
+                            // bei dem, was er umschaltet (``buehne``).
                             meterPicker
                             granularityPicker
-                                .frame(maxWidth: WideLayout.controlWidth(breite) ?? .infinity,
-                                       alignment: .leading)
-                            modePicker
                                 .frame(maxWidth: WideLayout.controlWidth(breite) ?? .infinity,
                                        alignment: .leading)
 
@@ -234,6 +235,8 @@ struct HistoryView: View {
             noHistoryYet
         } else if mode == .chart {
             chartCard(breite)
+            modePicker
+                .frame(maxWidth: WideLayout.controlWidth(breite) ?? .infinity, alignment: .leading)
             if granularity == .year {
                 if let jahresmonate {
                     jahresmonateCard(jahresmonate, breite: breite)
@@ -242,6 +245,8 @@ struct HistoryView: View {
                 comparisonCard(comparison)
             }
         } else {
+            modePicker
+                .frame(maxWidth: WideLayout.controlWidth(breite) ?? .infinity, alignment: .leading)
             if !tariffs.isEmpty { metricPicker }
             tableCard
         }
@@ -725,13 +730,17 @@ struct HistoryView: View {
                 forecastLine
                 jahresLine
 
-                Text(selectedSlot == nil
-                     ? "Tippe einen Abschnitt an, um ihn mit den Vorjahren zu vergleichen"
-                     : "Noch einmal antippen hebt die Auswahl auf")
-                    .font(PulseText.caption)
-                    .foregroundStyle(PulseColor.inkTertiary)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity, alignment: .center)
+                // „Tippe einen Abschnitt an …" stand hier bis 1.8 unter jedem
+                // Diagramm. Die Vergleichskarte darunter zeigt schon, wohin
+                // ein Tipp führt; ein Satz, der die Bedienung erklärt, ist
+                // eine Beschriftung, die nicht stimmt (`selbstsprechend`).
+                if selectedSlot != nil {
+                    Text("Noch einmal antippen hebt die Auswahl auf")
+                        .font(PulseText.caption)
+                        .foregroundStyle(PulseColor.inkTertiary)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
             }
             .padding(15)
         }
