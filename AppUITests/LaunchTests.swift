@@ -615,10 +615,13 @@ final class LaunchTests: XCTestCase {
 
     /// Ein Zähler ohne aktuelle Ablesung wird gemeldet. Die Hinweiszeile ist
     /// der Retention-Motor der App — ohne sie kommt niemand zurück.
+    ///
+    /// Seit 1.8 ein kurzer Satz („Gas ist fällig.“) statt „Gas ist seit 102
+    /// Tagen nicht abgelesen. …“; die Dauer steht auf der Karte.
     func testStaleMeterIsReportedAsDue() {
         let app = launchWithData()
-        let notice = app.staticTexts.containing(
-            NSPredicate(format: "label CONTAINS 'nicht abgelesen'")
+        let notice = app.staticTexts.matching(
+            NSPredicate(format: "label BEGINSWITH 'Gas' AND label ENDSWITH 'fällig.'")
         ).firstMatch
         XCTAssertTrue(notice.waitForExistence(timeout: erscheint),
                       "Der überfällige Gaszähler wurde nicht gemeldet")
