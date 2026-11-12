@@ -4,7 +4,7 @@ Stand 12. November 2026. Herkunft: Rezension im App Store („Eine fast perfekte
 App ohne Abo“, 4 Sterne, Lionthooth), vom Gründer am 12. November
 weitergegeben mit dem Auftrag, es zu prüfen und einzuplanen. Am selben Tag
 vom Gründer vorgezogen („ok mach das und schiebe es vor“, ausdrücklich mit
-der Korrektur Datei statt Mail). Gebaut in 0.164.0, fährt mit 1.8.
+der Korrektur Datei statt Mail). Gebaut in 0.165.0, fährt mit 1.8.
 
 ## Was der Käufer schreibt
 

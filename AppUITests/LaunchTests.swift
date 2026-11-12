@@ -2511,7 +2511,7 @@ final class LaunchTests: XCTestCase {
         // Seit 0.92.0 heißt der Knopf „Tabellen": Der Bericht stand vorher in
         // diesem Menü **und** in der Zeile darunter, also zweimal auf einem
         // Schirm. Jetzt trägt das Menü, was es wirklich enthält.
-        // Seit 0.164.0 „Tabelle sichern oder teilen“: Der Download-Pfeil
+        // Seit 0.165.0 „Tabelle sichern oder teilen“: Der Download-Pfeil
         // versprach einen Download und öffnete das Teilen-Blatt.
         XCTAssertTrue(app.buttons["Tabelle sichern oder teilen"].exists,
                       "Der Export muss ohne Kauf erreichbar sein — dauerhaft")

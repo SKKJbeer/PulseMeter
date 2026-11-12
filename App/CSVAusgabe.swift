@@ -12,7 +12,7 @@ import UniformTypeIdentifiers
 /// `Transferable` löst das: Die Beschreibung ist billig, `inhalt` läuft erst,
 /// wenn das Teilen-Blatt die Daten anfordert.
 ///
-/// **Warum eine Datei und keine Daten** (0.164.0). Bis 0.163.0 ging die
+/// **Warum eine Datei und keine Daten** (0.165.0). Bis 0.163.0 ging die
 /// Tabelle als `DataRepresentation` mit dem Typ `.commaSeparatedText` hinaus.
 /// Der Typ gilt für iOS als Text, und Mail setzt Text, den es aus dem
 /// Teilen-Blatt bekommt, in die Nachricht statt ihn anzuhängen. Ein Käufer im

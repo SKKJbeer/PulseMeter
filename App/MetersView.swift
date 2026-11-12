@@ -192,7 +192,7 @@ struct MetersView: View {
             .accessibilityIdentifier("import-oeffnen")
         }
 
-        // **Was hineinkommt, kommt hier auch wieder heraus** (0.164.0). Aus
+        // **Was hineinkommt, kommt hier auch wieder heraus** (0.165.0). Aus
         // einer Rezension im Laden: sieben Zähler, und jeder musste einzeln
         // über seinen Verlauf verschickt werden. Ab zwei Zählern steht hier
         // eine Datei mit allen Ablesungen. Mit einem Zähler reicht der Weg

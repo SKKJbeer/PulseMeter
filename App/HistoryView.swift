@@ -554,7 +554,7 @@ struct HistoryView: View {
             // eigene Zeile darunter. Das Menü heißt jetzt nach dem, was es
             // wirklich enthält.
         } label: {
-            // **Teilen-Symbol statt Download-Pfeil** (0.164.0). Der Pfeil
+            // **Teilen-Symbol statt Download-Pfeil** (0.165.0). Der Pfeil
             // versprach einen Download, es kam das Teilen-Blatt, und der
             // naheliegende Griff dort war Mail. Ein Käufer im Laden: „Warum
             // ist der CSV-Export nur tabellarisch in einer E-Mail

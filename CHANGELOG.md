@@ -9,7 +9,7 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
-## 0.164.0 — 2026-11-12
+## 0.165.0 — 2026-11-12
 
 **Alle Zähler als Tabelle, und die Tabelle kommt als Datei an**
 
