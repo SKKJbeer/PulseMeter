@@ -248,6 +248,21 @@ public enum ConsumptionEngine {
         case belowPrevious(previous: Decimal)
         /// Das Datum liegt in der Zukunft.
         case futureDate
+
+        /// Was in derselben Zeit sonst durch den Zähler geht — bei einem
+        /// auffälligen Wert die Zahl, an der der Nutzer ihn messen kann.
+        ///
+        /// **Warum nicht der Faktor.** Bis 0.148 stand im Ziffernblock „rund
+        /// 0,2× dein üblicher Verbrauch“ und beim unveränderten Stand „rund 0×“.
+        /// Ein Vielfaches muss man im Kopf zurückrechnen; zwei Mengen in
+        /// derselben Einheit lassen sich nebeneinander lesen (0.149.0).
+        /// `nil`, wenn sich nichts bewegt hat: Dann gibt es keinen Faktor, aus
+        /// dem sich die übliche Menge zurückrechnen ließe, und der Satz dazu
+        /// braucht sie nicht.
+        public var usualConsumption: Quantity? {
+            guard case let .unusual(consumption, _, factor) = self, factor > 0 else { return nil }
+            return Quantity(consumption.value / factor, consumption.unit)
+        }
     }
 
     /// Ab welchem Vielfachen des gewohnten Tagesverbrauchs ein Wert als

@@ -9,6 +9,60 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.164.0 — 2026-11-12
+
+**Testkonzept: Bedienung bei Fehlern, iCloud-Wache, ehrliche Abdeckung**
+
+Der Gründer: „erweitere das testkonzept und erweitere weitere tests. prio ist die qualität und vor
+allem einfaches und user freundliches interface“. Das Konzept steht jetzt in einer Datei, und die neuen
+Prüfungen haben gleich einen echten Fehler gefunden.
+
+### Geändert
+- **Rückfrage im Ziffernblock in Mengen statt Faktoren.** Bisher stand bei einem auffälligen Stand
+  „rund 3.039,2× dein üblicher Verbrauch“ und, wenn jemand den letzten Stand übernahm, „rund 0×“. Jetzt:
+  „Das wären 20.000 kWh in einem Tag, sonst sind es rund 7 kWh. Stimmt die Zahl?“ und „Derselbe Stand
+  wie vor 40 Tagen. Stimmt die Zahl?“. Beim Eintragen (`CaptureView`) und beim Ändern
+  (`ReadingEditor`), im Klick-Dummy genauso.
+
+### Hinzugefügt
+- `docs/15-testkonzept.md`: Ebenen, woran „einfach“ gemessen wird (je Anspruch die Prüfung in App und
+  Klick-Dummy), wann welcher Test dazukommt, Fehlerklassen mit ihren Wachen, was nur am Gerät geht, und
+  die offenen Lücken nach Gewicht.
+- `scripts/check-testkonzept.py`: Jeder Test und jede Datei im Konzept existiert, jedes Prüfskript
+  steht darin.
+- `AppUITests/BedienungTests.swift`: „Sichern“ wartet auf eine Zahl und sagt warum; ein zu kleiner
+  Stand wird sofort beanstandet, bietet den Zählerwechsel an, lässt sich trotzdem sichern, und
+  „Abbrechen“ sichert nichts; der unveränderte Stand wird in Worten beanstandet.
+- `scripts/check-bedienung.mjs`: dieselben Fälle im Klick-Dummy, jeder Zweig der Prüfung einmal, kein
+  Satz mit „×“. Zuerst rot gegen den alten Stand (drei Fehlschläge), dann grün.
+- `ConsumptionEngine.Plausibility.usualConsumption` in PulseCore mit `UsualConsumptionTests`.
+- **iCloud-Wache.** `scripts/check-cloudkit-schema.py` vergleicht `cloudkit/schema.ckdb` mit der neuen
+  Ablage `cloudkit/produktion.ckdb`: nichts aus der Produktion umbenannt oder umgetypt (immer), alles
+  dort angekommen (mit `--auslieferung`). `.github/workflows/cloudkit-wache.yml` liest jeden Montag die
+  echte Produktion und vergleicht. `testflight.yml` lädt keinen Bau hoch, dessen Felder die Produktion
+  nicht kennt. So lief der Abgleich von 1.0 bis 1.6 nie, ohne dass es jemand merkte.
+- `CloudKitRegelnTests` in PulseData: Das Modell hält die Regeln von CloudKit ein (optional oder
+  Vorgabewert, nichts Eindeutiges, Beziehungen optional mit Umkehrung); ein absichtlich kaputtes Modell
+  zeigt, dass jede Regel anschlägt.
+- `scripts/check-versionen.py`: CHANGELOG, `project.yml`, README und Klick-Dummy nennen dieselbe
+  Version. Die Kopfzeile des Klick-Dummys stand bis hier auf 0.138.0.
+
+### Prüfungen
+- `pruefen.sh --nur` findet Tests auch außerhalb von `LaunchTests`.
+- Neue Schritte in `pruefen.sh` und im CI-Auftrag `prototype`: iCloud-Schema, Versionen, Testkonzept,
+  Bedienung bei Fehlern.
+- Der Kameratest (`testCameraProposalLandsInTheKeypadAndIsNotSavedByItself`) fiel auf iPhone und iPad
+  immer wieder, ohne dass die App etwas falsch machte: Solange das Netz im Debug-Bau rechnet,
+  beantwortete die App die Fragen des Tests nicht rechtzeitig. Er wartet jetzt geduldig und lässt
+  dabei nur genau diesen Fehler durch; ob Vorschlag und Hinweis am Ende dastehen, entscheidet
+  weiter eine echte Frage. Die Vorführung ohne Kamera rechnet mit niedrigerem Vorrang. Und
+  „Übernehmen“ wird erst getippt, wenn der Knopf stillsteht: Im nächsten Lauf ging genau dieser
+  Tipp verloren, der Sucher stand danach noch da (zweiter Tipp nur dann).
+- `testCapturingBothDirectionsInOneGo` tippt „Sichern“ erst, wenn der Knopf freigeschaltet ist, und
+  ein zweites Mal, wenn das Blatt danach nachweislich noch offen ist (fiel auf dem iPhone).
+
+---
+
 ## 0.163.0 — 2026-11-12
 
 **1.9 in der App: Heizung gewechselt, vorher und nachher**
@@ -202,6 +256,8 @@ Konzept: `docs/konzepte/1.8-einfacher.md`. Klick-Dummy und App gleich (Regel 2).
 - Oberflächentests: `testMonthWithoutReadingShowsNoCost` verlangt jetzt, dass
   kein Abschnitt einen Strich zeigt; neu `testStatusLineIsOneShortSentence`,
   `testHistoryHasTwoRowsOnTop`, `testMetersShowICloudLine`.
+
+---
 
 ## 0.148.0 — 2026-11-11
 

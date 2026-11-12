@@ -1748,15 +1748,28 @@ final class LaunchTests: XCTestCase {
             evaluatedWith: schritt)
         wait(for: [wiederVorn], timeout: erscheint)
         app.buttons["Vom letzten Stand übernehmen"].tap()
+        // Erst tippen, wenn „Sichern“ freigeschaltet ist: Kurz nach dem Übernehmen
+        // kann der Knopf noch gesperrt sein, und dann geht der Tipp ins Leere.
+        XCTAssertTrue(warte(bis: NSPredicate(format: "isEnabled == true"), an: save, timeout: erscheint),
+                      "„Sichern“ wurde nach dem Übernehmen nicht freigeschaltet")
         save.tap()
 
         // **Daran, dass das Blatt weg ist, nicht daran, dass „Übersicht"
         // irgendwo steht.** Auf dem iPad heißt schon die erste Zeile der
         // Seitenleiste so, und zwar auch, während das Blatt offen ist — die
         // Prüfung wäre dort erfüllt, bevor irgendetwas gesichert wurde.
-        let blattZu = expectation(for: NSPredicate(format: "exists == 0"),
-                                  evaluatedWith: schritt)
-        wait(for: [blattZu], timeout: erscheint)
+        //
+        // Ein verlorener Tipp braucht einen zweiten Tipp (wie bei „Zurück“ oben):
+        // Auf dem iPhone blieb das Blatt in Lauf 43084599490 offen. Der zweite Tipp
+        // kommt nur, wenn nach der ganzen Wartezeit das Blatt noch dasteht und
+        // „Sichern“ treffbar ist, der erste also nachweislich nichts bewirkt hat.
+        let zu = NSPredicate(format: "exists == 0")
+        if !warte(bis: zu, an: schritt, timeout: erscheint), save.exists, save.isHittable {
+            print("Sichern: der erste Tipp kam nicht an, zweiter Versuch.")
+            save.tap()
+        }
+        XCTAssertTrue(warte(bis: zu, an: schritt, timeout: erscheint),
+                      "Nach „Sichern“ steht das Blatt noch. Zu sehen war: \(beschriftungen(in: app))")
     }
 
     /// Der Rundgang: Nach dem Sichern bleibt das Blatt offen und zeigt den
@@ -3049,15 +3062,40 @@ final class LaunchTests: XCTestCase {
         open.tap()
 
         // Im Debug-Bau braucht das Netz Sekunden je Bild, und es braucht vier gleiche (seit 0.140.0).
+        // **Geduldig warten** (0.164.0): Auf PR #13 fiel der Test hier zweimal, einmal mit
+        // „Timed out while evaluating UI query“. Solange das Netz im Debug-Bau rechnet, beantwortet
+        // die App die Frage nach ihrer Oberfläche manchmal nicht rechtzeitig. Das ist eine Grenze
+        // des Simulators, kein Fehler der App; ob der Vorschlag kommt, prüft die letzte Frage.
         let take = app.buttons["kamera-uebernehmen"]
-        XCTAssertTrue(take.waitForExistence(timeout: 120),
-                      "Die Kamera hat das gezeichnete Bild nicht gelesen — kein Vorschlag nach 120 Sekunden")
-        take.tap()
+        guard wartetGeduldig(auf: take, sekunden: 180) else {
+            XCTFail("Die Kamera hat das gezeichnete Bild nicht gelesen, kein Vorschlag nach 180 Sekunden. "
+                    + "Zu sehen war: \(beschriftungen(in: app))")
+            return
+        }
+        // **Der Tipp auf „Übernehmen“ ging verloren** (Lauf 43120039795, iPhone): Danach stand der
+        // Sucher noch mit „Gefunden“ da, und im Ziffernblock dahinter „00.000,000“. Der Knopf gleitet
+        // mit dem Treffer animiert herein; getippt wird erst, wenn er stillsteht, und ein zweites
+        // Mal nur, wenn er nach der Wartezeit nachweislich noch dasteht.
+        tippeRuhig(take)
+        let weg = NSPredicate(format: "exists == false")
+        var zu = false
+        geduldig { zu = XCTWaiter().wait(for: [XCTNSPredicateExpectation(predicate: weg, object: take)], timeout: 20) == .completed }
+        if !zu {
+            var nochDa = false
+            geduldig { nochDa = take.exists && take.isHittable }
+            if nochDa {
+                print("Übernehmen: der erste Tipp kam nicht an, zweiter Versuch.")
+                tippeRuhig(take)
+            }
+        }
 
         let hint = app.descendants(matching: .any).matching(identifier: "kamera-hinweis").firstMatch
         // Großzügig: Das Blatt schließt sich, und auf dem iPad im Debug-Bau dauert das.
-        XCTAssertTrue(hint.waitForExistence(timeout: 40),
-                      "Nach dem Übernehmen muss der Ziffernblock sagen, dass die Zahl von der Kamera kommt")
+        guard wartetGeduldig(auf: hint, sekunden: 60) else {
+            XCTFail("Nach dem Übernehmen muss der Ziffernblock sagen, dass die Zahl von der Kamera kommt. "
+                    + "Zu sehen war: \(beschriftungen(in: app))")
+            return
+        }
         XCTAssertTrue(open.exists, "Der Ziffernblock ist wieder da, die Ablesung ist nicht gesichert")
 
         // Eine Ziffer ändern heißt: selbst abgelesen. Der Hinweis geht. Gelöscht statt getippt:
@@ -3065,9 +3103,7 @@ final class LaunchTests: XCTestCase {
         // **Erst muss der Sucher ganz weg sein.** Der Hinweis steht schon im Ziffernblock, während
         // der Sucher noch hinausgleitet; ein Tippen in diesem Moment trifft den Sucher und geht
         // verloren (iPhone, Lauf 42492310609: Hinweis blieb, weil „Löschen“ nie ankam).
-        let weg = NSPredicate(format: "exists == false")
-        expectation(for: weg, evaluatedWith: take)
-        waitForExpectations(timeout: 40)
+        geduldig { _ = XCTWaiter().wait(for: [XCTNSPredicateExpectation(predicate: weg, object: take)], timeout: 40) }
         let loeschen = app.buttons["Löschen"]
         XCTAssertTrue(loeschen.waitForExistence(timeout: erscheint), "Der Ziffernblock hat keinen Knopf „Löschen“")
         expectation(for: NSPredicate { el, _ in (el as? XCUIElement)?.isHittable ?? false }, evaluatedWith: loeschen)
@@ -3076,17 +3112,61 @@ final class LaunchTests: XCTestCase {
         // den Ziffernblock animiert nach unten. Ein Tippen rechnet seinen Punkt aus dem Rahmen
         // von eben; wandert der Knopf dazwischen, landet es daneben, und „Löschen“ kommt nie an.
         // Das fiel auch nach dem Warten auf den Sucher noch (Lauf 42574683486, iPhone).
-        var vorher = loeschen.frame
-        for _ in 0..<20 {
-            Thread.sleep(forTimeInterval: 0.25)
-            let jetzt = loeschen.frame
-            if jetzt == vorher { break }
-            vorher = jetzt
-        }
-        loeschen.tap()
+        tippeRuhig(loeschen)
         let nachHinweis = XCTNSPredicateExpectation(predicate: weg, object: hint)
         if XCTWaiter().wait(for: [nachHinweis], timeout: erscheint) != .completed {
             XCTFail("Nach „Löschen“ steht der Kamera-Hinweis noch. Zu sehen war: \(beschriftungen(in: app))")
+        }
+    }
+
+    /// Wartet auf ein Element und lässt dabei **nur** eine Sorte Fehler durch: dass die App die
+    /// Frage nach ihrer Oberfläche nicht rechtzeitig beantwortet hat.
+    ///
+    /// Das passiert im Simulator, solange die App im Debug-Bau schwer rechnet (die Kamera ohne
+    /// Kamera). XCTest meldet es als Fehler des Tests, obwohl die App danach ganz normal
+    /// weiterläuft. Jeder andere Fehler bleibt ein Fehler, und ob das Element am Ende dasteht,
+    /// entscheidet eine echte Frage — eine App, die hängt, fällt also weiter durch.
+    func wartetGeduldig(auf element: XCUIElement, sekunden: TimeInterval) -> Bool {
+        let ende = Date().addingTimeInterval(sekunden)
+        while Date() < ende {
+            var da = false
+            geduldig { da = element.waitForExistence(timeout: min(10, max(1, ende.timeIntervalSinceNow))) }
+            if da { return true }
+        }
+        var da = false
+        geduldig { da = element.exists }
+        return da
+    }
+
+    /// Tippt erst, wenn das Element treffbar ist und **stillsteht**. Ein Tipp rechnet seinen Punkt
+    /// aus dem Rahmen von eben; gleitet der Knopf dazwischen weiter, landet er daneben.
+    /// Ob der Tipp gewirkt hat, prüft der Aufrufer an der Folge, nicht hier.
+    func tippeRuhig(_ element: XCUIElement) {
+        geduldig {
+            _ = XCTWaiter().wait(for: [XCTNSPredicateExpectation(
+                predicate: NSPredicate { el, _ in (el as? XCUIElement)?.isHittable ?? false },
+                object: element)], timeout: 10)
+            var vorher = element.frame
+            for _ in 0..<20 {
+                Thread.sleep(forTimeInterval: 0.25)
+                let jetzt = element.frame
+                if jetzt == vorher { break }
+                vorher = jetzt
+            }
+            element.tap()
+        }
+    }
+
+    /// Siehe ``wartetGeduldig(auf:sekunden:)``.
+    func geduldig(_ block: () -> Void) {
+        let optionen = XCTExpectedFailure.Options()
+        optionen.isStrict = false
+        optionen.issueMatcher = { issue in
+            issue.compactDescription.contains("Timed out while evaluating UI query")
+                || issue.compactDescription.contains("Failed to get matching snapshot")
+        }
+        XCTExpectFailure("Die App war zu beschäftigt, um ihre Oberfläche zu zeigen", options: optionen) {
+            block()
         }
     }
 

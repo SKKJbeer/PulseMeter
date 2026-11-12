@@ -1,0 +1,96 @@
+# Wache über den iCloud-Abgleich: Kennt die Produktion von CloudKit alles, was
+# die App hochlädt?
+#
+# Warum: Von 1.0 bis 1.6 lief der Abgleich zwischen den Geräten nie, und keine
+# Prüfung hat es gemerkt. In der Produktion stand kein Zählora-Typ; CloudKit
+# lehnte jedes Hochladen ab, und die App sicherte still lokal weiter. Ein
+# Käufer hat es am 14. Oktober gemeldet. Im Simulator der CI lässt sich der
+# echte Abgleich nicht prüfen (kein iCloud-Konto) — die Voraussetzung dafür
+# aber schon: Steht in der Produktion jedes Feld, das das Modell braucht?
+#
+# Was geprüft wird (scripts/check-cloudkit-schema.py):
+#   - cloudkit/produktion.ckdb stimmt noch mit der echten Produktion
+#   - nichts aus der Produktion wurde im Modell umbenannt oder umgetypt
+#   - alles aus cloudkit/schema.ckdb steht in der Produktion
+#
+# Rot heißt: Ein Bau aus TestFlight oder dem Laden kann gerade Daten nicht
+# abgleichen. Die frische Ausfuhr liegt dann als Artefakt `produktion-ckdb` am
+# Lauf und gehört nach cloudkit/produktion.ckdb, sobald sie stimmt.
+#
+# Läuft jeden Montag, bei jeder Änderung an den Schemadateien und von Hand.
+# Liest nur, ändert bei Apple nichts.
+name: CloudKit-Wache
+
+on:
+  schedule:
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "cloudkit/**"
+      - "scripts/check-cloudkit-schema.py"
+      - ".github/workflows/cloudkit-wache.yml"
+  push:
+    branches: [main]
+    paths:
+      - "cloudkit/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudkit-wache
+  cancel-in-progress: false
+
+jobs:
+  wache:
+    runs-on: macos-15
+    timeout-minutes: 15
+    env:
+      CONTAINER: iCloud.de.karjoth.pulsemeter
+      TEAM: ${{ secrets.ASC_TEAM_ID }}
+      CLOUDKIT_MANAGEMENT_TOKEN: ${{ secrets.CLOUDKIT_MANAGEMENT_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Ohne Zugang wird nichts behauptet. Grün ohne Messung wäre genau der
+      # stille Zustand, gegen den diese Wache steht.
+      - name: Zugänge da?
+        run: |
+          fehlt=""
+          [ -n "$TEAM" ] || fehlt="$fehlt ASC_TEAM_ID"
+          [ -n "$CLOUDKIT_MANAGEMENT_TOKEN" ] || fehlt="$fehlt CLOUDKIT_MANAGEMENT_TOKEN"
+          if [ -n "$fehlt" ]; then
+            echo "::error::Es fehlt:$fehlt — die Wache kann die Produktion nicht lesen."
+            exit 1
+          fi
+
+      - name: Regeln der Prüfung
+        run: python3 scripts/check-cloudkit-schema.py --selbsttest
+
+      # Als Argument, nicht über die Standardeingabe: Dort liest cktool im
+      # nicht-interaktiven Betrieb nichts (cloudkit-schema.yml, Lauf 1 und 3).
+      - name: Schlüssel hinterlegen
+        run: xcrun cktool save-token --type management --method keychain "$CLOUDKIT_MANAGEMENT_TOKEN"
+
+      - name: Produktion ausführen
+        run: |
+          xcrun cktool export-schema --team-id "$TEAM" --container-id "$CONTAINER" \
+            --environment production --output-file "$RUNNER_TEMP/production.ckdb"
+          grep -E "RECORD TYPE" "$RUNNER_TEMP/production.ckdb"
+
+      - name: Frische Ausfuhr ablegen
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: produktion-ckdb
+          path: ${{ runner.temp }}/production.ckdb
+          if-no-files-found: ignore
+
+      - name: Kennt die Produktion alles?
+        run: |
+          python3 scripts/check-cloudkit-schema.py --auslieferung \
+            --gegen "$RUNNER_TEMP/production.ckdb" | tee "$RUNNER_TEMP/ergebnis.txt"
+          status=${PIPESTATUS[0]}
+          { echo "### CloudKit-Wache"; echo '```'; cat "$RUNNER_TEMP/ergebnis.txt"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
