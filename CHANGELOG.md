@@ -9,6 +9,46 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.161.0 — 2026-11-12
+
+**Klick-Dummy für 1.9: Heizung gewechselt, vorher und nachher**
+
+Regel 1: erst anklickbar, dann gebaut. Konzept
+`docs/konzepte/1.9-heizungswechsel.md`.
+
+### Neu im Klick-Dummy
+- **„Heizung gewechselt am …“** am Gas- oder Heizölzähler. Das Blatt fragt
+  nach dem Tag, dem Zähler der Wärmepumpe (neu anlegen oder einen
+  vorhandenen) und dem Wirkungsgrad des alten Kessels (90 % Gas, 85 % Öl,
+  sichtbar als Annahme). Der alte Zähler wird danach nicht mehr als fällig
+  gemeldet, der neue bekommt „Misst eine Wärmepumpe“. Löschen lässt die
+  Zähler stehen.
+- **Welcher Zähler zählt:** Ein Stromzähler mit Ablesungen mehr als einen
+  Monat vor dem Wechsel lässt sich nicht wählen („also schon vor dem
+  Wechsel“). Damit ist der offene Punkt aus dem Konzept beantwortet.
+- **Karte „Gas und Wärmepumpe“** in der Übersicht unter den Zählern. Groß
+  der Unterschied in Euro, darunter beide Beträge. Verglichen werden nur
+  ganze Monate nach dem Wechsel gegen dieselben Monate ein Jahr früher
+  („Oktober bis Juli“), höchstens ein Jahr. Ohne vollen Monat: „Ab
+  1. September steht hier der Vergleich“. Ohne „Kosten und Preise“ kWh
+  statt Euro.
+- **Ansicht dahinter:** Zeitraum, gekauft, Wärme (Gas × Wirkungsgrad, bei
+  der Wärmepumpe „unbekannt“), Kosten mit Grundpreis, der Satz zum Wetter.
+- **Als Bild teilen:** 1080 × 1350, „Gemessen mit Zählora“, ohne Link,
+  ohne Zählerstände, ohne Namen.
+- **Kauf „Wärmepumpe“ 4,99 €.** Ohne ihn führt der Knopf aufs Kaufblatt.
+  Das Bündel kostet jetzt 7,99 € und enthält sieben Käufe (entschieden am
+  12. November).
+- Nur im Entwurf: Schalter „Beispiel: Heizung gewechselt“ (vor 2 Wochen,
+  4 Monaten, 10 Monaten), damit man den Ausschnitt wachsen sieht.
+
+### Tests
+- Neuer Block „1.9“ in `scripts/check-prototype.mjs`, 17 Prüfungen. Die
+  Gegenprobe (ganzes Vorjahr statt desselben Ausschnitts) wurde rot
+  gesehen. Bündel-Prüfungen auf sieben Teile und 7,99 € umgestellt.
+
+---
+
 ## 0.160.0 — 2026-11-12
 
 **Ein Wärmepumpenzähler rechnet mit dem Heizprofil (1.9, Teil C)**
