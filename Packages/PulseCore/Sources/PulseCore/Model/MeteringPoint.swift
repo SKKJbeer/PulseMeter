@@ -140,6 +140,11 @@ public struct MeteringPoint: Identifiable, Hashable, Codable, Sendable {
     public var isArchived: Bool
     public var sortIndex: Int
     public var note: String?
+    /// Der Stromzähler misst eine Wärmepumpe (seit 1.9). Kein eigener
+    /// Zählertyp (ADR in 02-datenmodell.md), sondern ein Merkmal: Es
+    /// ändert nur, nach welchem Jahresverlauf hochgerechnet wird. Bei
+    /// anderen Zählerarten bleibt es wirkungslos.
+    public var measuresHeatPump: Bool
 
     public init(
         id: UUID = UUID(),
@@ -154,7 +159,8 @@ public struct MeteringPoint: Identifiable, Hashable, Codable, Sendable {
         billingCycle: BillingCycle? = nil,
         isArchived: Bool = false,
         sortIndex: Int = 0,
-        note: String? = nil
+        note: String? = nil,
+        measuresHeatPump: Bool = false
     ) {
         self.id = id
         self.propertyID = propertyID
@@ -169,6 +175,7 @@ public struct MeteringPoint: Identifiable, Hashable, Codable, Sendable {
         self.isArchived = isArchived
         self.sortIndex = sortIndex
         self.note = note
+        self.measuresHeatPump = measuresHeatPump
     }
 
     /// Ob die Messstelle mehr als ein Zählwerk führt. Nur dann darf die
@@ -252,5 +259,28 @@ public struct MeteringPoint: Identifiable, Hashable, Codable, Sendable {
                          integerDigits: 6, fractionDigits: 2, obisCode: "1.8.2")
             ]
         )
+    }
+}
+
+extension MeteringPoint {
+    /// Von Hand, weil eine Sicherung aus einer Fassung vor 1.9 das Feld
+    /// `measuresHeatPump` nicht kennt. Der erzeugte Decoder würde daran
+    /// scheitern, und die ganze Sicherung ließe sich nicht mehr einlesen.
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(UUID.self, forKey: .id)
+        propertyID = try c.decode(Property.ID.self, forKey: .propertyID)
+        unitID = try c.decodeIfPresent(RentalUnit.ID.self, forKey: .unitID)
+        name = try c.decode(String.self, forKey: .name)
+        kind = try c.decode(ResourceKind.self, forKey: .kind)
+        appearance = try c.decode(Appearance.self, forKey: .appearance)
+        registers = try c.decode([Register].self, forKey: .registers)
+        devices = try c.decode([MeterDevice].self, forKey: .devices)
+        readingInterval = try c.decode(ReadingInterval.self, forKey: .readingInterval)
+        billingCycle = try c.decodeIfPresent(BillingCycle.self, forKey: .billingCycle)
+        isArchived = try c.decode(Bool.self, forKey: .isArchived)
+        sortIndex = try c.decode(Int.self, forKey: .sortIndex)
+        note = try c.decodeIfPresent(String.self, forKey: .note)
+        measuresHeatPump = try c.decodeIfPresent(Bool.self, forKey: .measuresHeatPump) ?? false
     }
 }

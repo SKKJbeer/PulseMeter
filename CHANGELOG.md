@@ -9,6 +9,44 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.160.0 — 2026-11-12
+
+**Ein Wärmepumpenzähler rechnet mit dem Heizprofil (1.9, Teil C)**
+
+Erster Schritt von 1.9 „Heizungswechsel, vorher und nachher“
+(`docs/konzepte/1.9-heizungswechsel.md`). Er steht vorn, weil er einen
+Rechenfehler behebt, den heutige Nutzer schon haben.
+
+### Behoben
+- **Jahreszahl eines Wärmepumpenzählers im Winter rund 60 % zu hoch.** Ein
+  Stromzähler wurde immer mit dem Haushaltsprofil H0 hochgerechnet: Januar
+  9,7 % des Jahres statt rund 15,5 % beim Heizen. Aus 1.500 kWh im Januar
+  wurden so 15.484 kWh im Jahr statt 9.697 kWh (gemessen im neuen Test, mit
+  rot gesehen).
+
+### Neu
+- **Schalter „Misst eine Wärmepumpe“** beim Stromzähler, kostenlos. Ist er
+  an, folgt die Hochrechnung dem Heizprofil (Gradtagszahlen nach VDI 2067
+  mit Warmwasser). Kein neuer Zählertyp, sondern ein Merkmal am Zähler
+  (`MeteringPoint.measuresHeatPump`).
+- Klick-Dummy: derselbe Schalter im Zählerblatt, dieselbe Profilwahl.
+
+### Technisch
+- `SeasonalProfile.reference(for:direction:heatPump:)`, durchgereicht in
+  `ForecastEngine` (Hochrechnung, Abschlagsausblick, Rest nach Preiswechsel).
+- `MeteringPointRecord.measuresHeatPump` mit Vorgabe `false`, neues Feld
+  `CD_measuresHeatPump` in `cloudkit/schema.ckdb`.
+- `MeteringPoint` liest Sicherungen ohne das Feld weiter ein (eigener
+  Decoder, sonst scheiterte jede Sicherung aus einer älteren Fassung).
+
+### Tests
+- `ForecastEngineTests.testAHeatPumpMeterProjectsTheYearByTheHeatingProfile`,
+  `SeasonalProfileTests.testTheHeatPumpFlagOnlyChangesElectricity`,
+  `PulseSnapshotTests.testABackupFromBeforeTheHeatPumpFlagStillLoads`, alle
+  drei einmal rot gesehen. `PulseCore`: 365 Tests grün.
+
+---
+
 ## 0.150.0 — 2026-11-12
 
 **1.8 „Einfacher“: Übersicht kürzer, Verlauf mit zwei Reihen oben, iCloud sichtbar**

@@ -683,6 +683,7 @@ struct MeterEditor: View {
     /// anzulegen, und ein Haushalt mit Photovoltaik konnte seinen Zähler
     /// deshalb gar nicht abbilden.
     @State private var hasFeedIn = false
+    @State private var measuresHeatPump = false
     /// Ob für die Einspeisung schon Werte vorliegen. Dann darf sie nicht mehr
     /// abgeschaltet werden — die Ablesungen hingen sonst an einem Zählwerk,
     /// das es nicht mehr gibt.
@@ -857,6 +858,19 @@ struct MeterEditor: View {
                         } header: {
                             Text("Tag- und Nachtstrom, Photovoltaik")
                         }
+                    }
+
+                    // Kostenlos, weil es einen Rechenfehler behebt und nichts
+                    // Neues freischaltet (1.9, Teil C): Ohne den Schalter
+                    // rechnete ein Wärmepumpenzähler mit dem Haushaltsprofil,
+                    // und die Jahreszahl lag im Januar rund 60 % zu hoch.
+                    Section {
+                        Toggle("Misst eine Wärmepumpe", isOn: $measuresHeatPump)
+                            .accessibilityIdentifier("misst-waermepumpe")
+                    } header: {
+                        Text("Wärmepumpe")
+                    } footer: {
+                        Text("Für einen eigenen Zähler der Wärmepumpe. Die Hochrechnung folgt dann dem Heizen: viel im Winter, wenig im Sommer.")
                     }
                 }
 
@@ -1247,6 +1261,7 @@ struct MeterEditor: View {
         name = existing.name
         kind = existing.kind
         interval = existing.readingInterval
+        measuresHeatPump = existing.measuresHeatPump
         if let register = existing.primaryRegister {
             integerDigits = register.integerDigits
             fractionDigits = register.fractionDigits
@@ -1580,6 +1595,7 @@ struct MeterEditor: View {
                 // sich hinten an. Andersherum stünde sie in der Mitte.
                 applyDualTariff(to: &existing)
                 applyFeedIn(to: &existing)
+                existing.measuresHeatPump = measuresHeatPump && existing.kind == .electricity
                 try repository.save(existing)
                 try saveTariff(for: existing, in: repository)
                 try saveBilling(for: existing, in: repository)
@@ -1608,7 +1624,8 @@ struct MeterEditor: View {
                     kind: kind,
                     registers: registers,
                     readingInterval: interval,
-                    billingCycle: billingCycleFromInput
+                    billingCycle: billingCycleFromInput,
+                    measuresHeatPump: measuresHeatPump && kind == .electricity
                 )
                 try repository.save(point)
                 try saveTariff(for: point, in: repository)

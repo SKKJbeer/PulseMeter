@@ -976,6 +976,15 @@ select.field { cursor: pointer; }
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+/* Schalter wie in iOS, für „Misst eine Wärmepumpe" (1.9). */
+.schalter { appearance: none; -webkit-appearance: none; width: 51px; height: 31px; flex: 0 0 auto;
+  border-radius: 16px; background: var(--fill, rgba(120,120,128,.32)); position: relative; margin: 0;
+  cursor: pointer; transition: background .2s; }
+.schalter::after { content: ""; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px;
+  border-radius: 50%; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.25); transition: transform .2s; }
+.schalter:checked { background: var(--green); }
+.schalter:checked::after { transform: translateX(20px); }
+.schalter:focus-visible { outline: 2px solid var(--tint); outline-offset: 2px; }
 </style>
 
 <div class="stage-head">
@@ -994,7 +1003,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>Zählora</h1>
-  <p>Klickbarer Entwurf · v0.150.0</p>
+  <p>Klickbarer Entwurf · v0.160.0</p>
 </div>
 
 <div class="device" id="device">
@@ -1943,6 +1952,9 @@ function referenceProfile(meter, reg) {
   // aus der App stehen — dann bekäme die Einspeisung das Bezugsprofil und
   // liefe der Sonne genau entgegen.
   if (reg && reg.feedIn) return PROFILES.solar;
+  // 1.9, Teil C: Ein Stromzähler, der eine Wärmepumpe misst, folgt dem
+  // Heizen. Mit H0 lag die Jahreszahl im Januar rund 60 % zu hoch.
+  if (meter && meter.kind === "electricity" && meter.measuresHeatPump) return PROFILES.heating;
   switch (meter && meter.kind) {
     case "gas": case "districtHeating": case "heatingOil": return PROFILES.heating;
     case "electricity": case "wallbox": return PROFILES.household;
@@ -4389,6 +4401,12 @@ function openMeterEditor(id, artVorgabe) {
     </select></div></div>
     <div class="note">Daraus ergibt sich, wann die Übersicht einen Zähler als fällig meldet.</div>
 
+    ${kindID === "electricity" ? `
+    <div class="section-label">Wärmepumpe</div>
+    <div class="list"><label class="row" for="ed-wp"><div class="rl">Misst eine Wärmepumpe</div>
+      <input type="checkbox" id="ed-wp" class="schalter" ${editMeter && editMeter.measuresHeatPump ? "checked" : ""}></label></div>
+    <div class="note">Für einen eigenen Zähler der Wärmepumpe. Die Hochrechnung folgt dann dem Heizen: viel im Winter, wenig im Sommer.</div>` : ""}
+
     ${editMeter ? `<div class="section-label">Entfernen</div>
       <div class="list">
         <button type="button" class="rowbtn" id="ed-archive">
@@ -5756,9 +5774,13 @@ function saveMeter() {
   };
   const price = num("ed-price"), base = num("ed-base"), prepay = num("ed-prepay");
   const zZahl = num("ed-z"), brennwert = num("ed-bw");
+  // Kostenlos und nur bei Strom (1.9, Teil C), wie `MeterEditor`.
+  const wpFeld = document.getElementById("ed-wp");
+  const misstWaermepumpe = !!(wpFeld && wpFeld.checked) && kind.id === "electricity";
 
   if (editMeter) {
     editMeter.name = name;
+    editMeter.measuresHeatPump = misstWaermepumpe && (editMeter.kind === "electricity" || !editMeter.registers[0].readings.length);
     editMeter.interval = interval || 3650;
     // Preise in den jüngsten Preis, nicht an den Zähler: Sonst änderte ein
     // Tippfehler-Korrektur die ganze Vergangenheit, genau der Fehler, den 1.7
@@ -5780,6 +5802,7 @@ function saveMeter() {
   } else {
     METERS.push({
       id: "m" + Date.now(), name, kind: kind.id, unit: kind.unit,
+      measuresHeatPump: misstWaermepumpe,
       frac: kind.frac, int: 6, color: kind.color, serial: "—",
       interval: interval || 3650, price, base, prepay,
       zZahl: zZahl || undefined, brennwert: brennwert || undefined,

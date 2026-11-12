@@ -2161,6 +2161,63 @@ for (const scheme of ["light", "dark"]) {
   await page.close();
 }
 
+// --- 1.9, Teil C: Ein Wärmepumpenzähler rechnet mit dem Heizprofil
+//
+// Bis 0.160.0 lief jeder Stromzähler mit H0. Bei einer Wärmepumpe lag die
+// Jahreszahl im Januar dadurch rund 60 % zu hoch. Derselbe Fall wie
+// `ForecastEngineTests.testAHeatPumpMeterProjectsTheYearByTheHeatingProfile`.
+{
+  console.log("\n1.9: Wärmepumpenzähler mit Heizprofil");
+  const page = await browser.newPage({ viewport: { width: 440, height: 1300 } });
+  const fehler = [];
+  page.on("pageerror", e => fehler.push(e.message));
+  await page.goto(url);
+  await page.waitForTimeout(300);
+  await page.evaluate(() => { bewertungGefragt = true; });
+
+  const rechnung = await page.evaluate(() => {
+    const reg = { id: "wp-test", unit: "kWh", int: 6, frac: 2, readings: [
+      { y: 2026, m: 1, d: 1, value: 10000, origin: "manual" },
+      { y: 2026, m: 2, d: 1, value: 11500, origin: "manual" }] };
+    const m = { id: "wp-test-m", kind: "electricity", registers: [reg] };
+    const h0 = forecast(reg, m);
+    m.measuresHeatPump = true;
+    const wp = forecast(reg, m);
+    return { h0: h0 && h0.value, wp: wp && wp.value,
+             heizprofil: referenceProfile(m, reg) === PROFILES.heating,
+             gasBleibt: referenceProfile({ kind: "gas", measuresHeatPump: true }, {}) === PROFILES.heating,
+             einspeisung: referenceProfile(m, { feedIn: true }) === PROFILES.solar };
+  });
+  note(rechnung.heizprofil && rechnung.gasBleibt && rechnung.einspeisung,
+       "Mit „Misst eine Wärmepumpe“ wählt Strom das Heizprofil, Einspeisung bleibt bei der Sonne");
+  note(rechnung.h0 > rechnung.wp * 1.4,
+       `Ohne Schalter liegt die Jahreszahl aus einem Januar weit höher (H0 ${Math.round(rechnung.h0)}, Heizprofil ${Math.round(rechnung.wp)} kWh)`);
+
+  await page.locator('[data-pane="meters"]:visible').first().click();
+  await page.waitForTimeout(200);
+  await page.locator('[data-meter="gas"]').click();
+  await page.waitForTimeout(250);
+  note(await page.locator("#ed-wp").count() === 0, "Beim Gaszähler steht kein Schalter für die Wärmepumpe");
+  await page.evaluate(() => closeSheets());
+  await page.waitForTimeout(200);
+  await page.locator('[data-meter="wallbox"]').click();
+  await page.waitForTimeout(250);
+  note(await page.locator("#ed-wp").count() === 0, "Bei der Wallbox auch nicht");
+  await page.evaluate(() => closeSheets());
+  await page.waitForTimeout(200);
+  await page.locator('[data-meter="strom"]').click();
+  await page.waitForTimeout(250);
+  note(await page.locator("#ed-wp").count() === 1, "Beim Stromzähler steht „Misst eine Wärmepumpe“");
+  await page.locator('label[for="ed-wp"]').click();
+  await page.locator("#ed-save").click();
+  await page.waitForTimeout(250);
+  const gesichert = await page.evaluate(() => METERS.find(m => m.id === "strom").measuresHeatPump === true);
+  note(gesichert, "Der Schalter wird mit dem Zähler gesichert");
+
+  note(fehler.length === 0, `Keine JS-Fehler in 1.9 C (${fehler.join(" | ")})`);
+  await page.close();
+}
+
 // --- Bewertungsfrage: einmal, nach der dritten gesicherten Ablesung
 //
 // Auf einer frischen Seite, weil der Durchlauf oben schon Ablesungen sichert

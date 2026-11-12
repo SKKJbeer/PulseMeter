@@ -78,6 +78,9 @@ public final class MeteringPointRecord {
     public var isArchived: Bool = false
     public var sortIndex: Int = 0
     public var note: String?
+    /// Seit 1.9. Mit Vorgabe, damit eine ältere Fassung beim Abgleich nichts
+    /// verliert und CloudKit das Feld ohne Pflichtwert anlegen kann.
+    public var measuresHeatPump: Bool = false
     public var unitID: UUID?
     public var propertyID: UUID = UUID()
 

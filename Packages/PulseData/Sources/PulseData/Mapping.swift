@@ -133,7 +133,8 @@ extension MeteringPointRecord {
             billingCycle: cycle,
             isArchived: isArchived,
             sortIndex: sortIndex,
-            note: note
+            note: note,
+            measuresHeatPump: measuresHeatPump
         )
     }
 
@@ -156,6 +157,7 @@ extension MeteringPointRecord {
         isArchived = value.isArchived
         sortIndex = value.sortIndex
         note = value.note
+        measuresHeatPump = value.measuresHeatPump
         unitID = value.unitID
         propertyID = value.propertyID
 
