@@ -9,7 +9,7 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
-## 0.164.0 — 2026-11-12
+## 0.170.0 — 2026-11-12
 
 **Website: Heizöl in kWh, Wärmepumpe im Monat, mit zwei Zählern und der Heizstab, die ersten Seiten aus dem Reichweiten-Konzept Stufe 2**
 
