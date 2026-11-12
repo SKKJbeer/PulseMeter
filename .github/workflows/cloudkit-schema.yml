@@ -97,5 +97,9 @@ jobs:
           echo "── development nachher"
           grep -E "RECORD TYPE" /tmp/nachher.ckdb
           n=$(grep -c "RECORD TYPE CD_" /tmp/nachher.ckdb || true)
-          [ "$n" -eq 8 ] || { echo "::error::Erwartet 8 Zählora-Typen in Development, gefunden $n."; exit 1; }
+          # Die Zahl kommt aus der Datei, nicht aus dem Kopf: Bis 0.163.0 stand
+          # hier eine feste 8, und der neunte Typ (Heizungswechsel) liess den
+          # Lauf rot werden, obwohl das Hochladen geklappt hatte.
+          soll=$(grep -c "RECORD TYPE CD_" cloudkit/schema.ckdb)
+          [ "$n" -eq "$soll" ] || { echo "::error::Erwartet $soll Zählora-Typen in Development, gefunden $n."; exit 1; }
           echo "Jetzt in der CloudKit-Konsole: Schema › Deploy Schema Changes… › Deploy" >> "$GITHUB_STEP_SUMMARY"
