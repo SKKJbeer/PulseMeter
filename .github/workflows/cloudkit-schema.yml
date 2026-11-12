@@ -55,11 +55,17 @@ jobs:
           fi
           xcrun cktool version
 
-      # Apple beschreibt `save-token` nur als Eingabe von Hand. Über die
-      # Standardeingabe geht es trotzdem, und der Schlüssel landet nicht in
-      # der Prozessliste.
+      # Über die Standardeingabe nimmt `save-token` nichts an (Lauf 1:
+      # „Interaction was required while running in non-interactive mode … No
+      # token or token type was provided in command arguments“). Also als
+      # Argument. Der Läufer ist nach dem Lauf weg, die Prozessliste mit ihm.
       - name: Schlüssel hinterlegen
-        run: printf '%s\n' "$CLOUDKIT_MANAGEMENT_TOKEN" | xcrun cktool save-token --type management
+        run: |
+          xcrun cktool save-token --type management --method keychain "$CLOUDKIT_MANAGEMENT_TOKEN" \
+            || { xcrun cktool save-token --help; exit 1; }
+          # Welche Befehle es gibt, steht damit im Protokoll — auch die Antwort
+          # auf die Frage, ob cktool nach Production übertragen kann.
+          xcrun cktool --help
 
       # Erst die Datei gegen das Modell, dann gegen Apple. Ein Feld, das hier
       # fehlt, fehlt sonst später in der Produktion.

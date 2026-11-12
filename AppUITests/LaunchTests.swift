@@ -1767,6 +1767,81 @@ final class LaunchTests: XCTestCase {
                       "Mit hinterlegter Vergütung muss ein Betrag dabeistehen")
     }
 
+    /// Gas steht auf der Karte auch in kWh (1.7).
+    ///
+    /// Die Beispieldaten tragen für Gas eine Umrechnung; ohne sie stünde dort
+    /// nichts, und das ist richtig so. Geprüft wird, dass die zweite Zeile da
+    /// ist und eine Zahl in kWh trägt, nicht welche: Die hängt am Tag des Laufs.
+    func testGasCardAlsoShowsKilowattHours() {
+        let app = launchWithData()
+        let kwh = app.staticTexts.matching(identifier: "karte-kwh").firstMatch
+        XCTAssertTrue(kwh.waitForExistence(timeout: erscheint),
+                      "Unter den m³ von Gas fehlt die Zeile in kWh. "
+                      + "Zu sehen war: \(beschriftungen(in: app))")
+        // Die Karte liest sich für VoiceOver als ein Satz („…, 1.338, m³,
+        // 13.349 kWh, …“); geprüft wird darum, dass eine Zahl mit kWh darin steht.
+        XCTAssertNotNil(kwh.label.range(of: #"\d kWh"#, options: .regularExpression),
+                        "Auf der Karte steht keine Menge in kWh: „\(kwh.label)“")
+    }
+
+    /// „Neuer Preis ab …“ legt einen zweiten Preis an, und „Löschen“ nimmt
+    /// ihn wieder weg (1.7).
+    ///
+    /// Bis 1.6 änderte das Preisfeld den einen Tarif, und die App rechnete
+    /// die ganze Vergangenheit mit dem neuen Preis. Geprüft wird die Wirkung,
+    /// die der Nutzer sieht: Nach dem Sichern stehen im Preisverlauf zwei
+    /// Zeilen, die jüngere mit dem neuen Preis; nach dem Löschen keine mehr,
+    /// weil ein einzelner Preis keinen Verlauf hat.
+    func testANewPriceFromADayStartsAPriceHistory() {
+        let app = launchWithData()
+        guard wechsel(zu: "Zähler", in: app) else { return }
+
+        let zeile = app.buttons.matching(
+            NSPredicate(format: "label BEGINSWITH 'Wasser'")
+        ).firstMatch
+        guard oeffne(zeile, bis: app.buttons["Abbrechen"], in: app, "Wasser öffnen") else { return }
+
+        let neuerPreis = element("neuer-preis", in: app)
+        XCTAssertTrue(scroll(to: neuerPreis, in: app), "Der Knopf „Neuer Preis ab …“ fehlt")
+        guard oeffne(neuerPreis, bis: app.navigationBars["Neuer Preis"], in: app,
+                     "Neuer Preis") else { return }
+
+        let hinweis = element("neuer-preis-hinweis", in: app)
+        XCTAssertTrue(hinweis.waitForExistence(timeout: erscheint),
+                      "Das Blatt sagt nicht, was der Tag bewirkt")
+
+        let feld = app.textFields["Arbeitspreis (brutto)"]
+        guard tippe(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 12) + "9,87",
+                    in: feld, app: app) else { return }
+        element("neuer-preis-sichern", in: app).tap()
+
+        let zeilen = app.descendants(matching: .any).matching(identifier: "preiszeile")
+        let zweite = zeilen.element(boundBy: 1)
+        XCTAssertTrue(zweite.waitForExistence(timeout: erscheint),
+                      "Nach dem Sichern stehen keine zwei Preise im Verlauf. "
+                      + "Zu sehen war: \(beschriftungen(in: app))")
+        XCTAssertEqual(zeilen.count, 2, "Ein neuer Preis ergibt genau zwei Zeilen")
+        XCTAssertTrue(zeilen.element(boundBy: 0).label.contains("9,87"),
+                      "Oben steht nicht der neue Preis: „\(zeilen.element(boundBy: 0).label)“")
+
+        let loeschen = element("preis-loeschen", in: app)
+        XCTAssertTrue(scroll(to: loeschen, in: app), "Der jüngste Preis lässt sich nicht löschen")
+        loeschen.tap()
+        // Die Rückfrage ist auf dem Telefon ein Blatt von unten und auf dem
+        // iPad ein Sprechblasenfenster; gesucht wird darum der Knopf, nicht
+        // der Behälter.
+        let bestaetigen = app.buttons["Preis löschen"]
+        XCTAssertTrue(bestaetigen.waitForExistence(timeout: erscheint),
+                      "Die Rückfrage vor dem Löschen erscheint nicht. Zu sehen war: "
+                      + beschriftungen(in: app))
+        bestaetigen.tap()
+
+        let weg = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"),
+                                            object: zweite)
+        XCTAssertEqual(XCTWaiter().wait(for: [weg], timeout: erscheint), .completed,
+                       "Nach dem Löschen steht der Preisverlauf noch da")
+    }
+
     /// Wie lange es vom Start bis zur ersten lesbaren Zahl dauert.
     ///
     /// **Was diese Messung nicht kann.** In `00-produktstrategie.md` steht
@@ -2799,7 +2874,10 @@ final class LaunchTests: XCTestCase {
 
     private static let schirme: [(name: String, schalter: [String],
                                   steht: @MainActor (XCUIApplication) -> XCUIElement)] = [
-        ("Übersicht", [], { $0.staticTexts["Strom"] }),
+        // „Gas“, die erste Karte, nicht „Strom“: Seit 1.7 trägt die Gaskarte
+        // eine Zeile in kWh, und auf dem iPad quer in größter Schrift rückt
+        // die zweite Karte damit aus dem Teil, den die Liste schon gebaut hat.
+        ("Übersicht", [], { $0.staticTexts["Gas"] }),
         ("Verlauf als Tabelle",
          ["-pulse-verlauf", "-pulse-verlauf-vorschau", "-pulse-verlauf-tabelle"],
          { $0.buttons["Alle Zahlen"] }),
