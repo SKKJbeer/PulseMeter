@@ -286,6 +286,9 @@ ul.includes.done li::before { content: "✓"; color: var(--tint); font-size: 12p
   font-size: var(--fs-value); font-weight: 700; letter-spacing: -0.032em; line-height: 1.05;
 }
 .unit { font-size: 15px; font-weight: 560; color: var(--ink-2); }
+/* kWh unter m³ oder Litern (1.7): eine eigene Zeile, weil die Zahl daneben
+   neben dem Verlaufsbild keinen Platz hat und umbrach. */
+.card-kwh { font-size: 15px; font-weight: 560; color: var(--ink-2); margin-top: 1px; font-variant-numeric: tabular-nums; }
 .sub { font-size: var(--fs-sub); color: var(--ink-2); margin-top: 4px; letter-spacing: -0.005em; }
 .sub .delta { font-weight: 620; }
 .sub .delta.down { color: var(--good); }
@@ -1328,6 +1331,17 @@ select.field { cursor: pointer; }
     <div class="sheet-body" id="editor-body"></div>
   </div>
 
+  <!-- Neuer Preis ab einem Tag (1.7). Wie `NewPriceSheet` in der App. -->
+  <div class="sheet" id="sheet-newprice" role="dialog" aria-modal="true" aria-label="Neuer Preis">
+    <div class="grabber"></div>
+    <div class="sheet-head">
+      <button type="button" class="sheet-close" id="np-back">Zurück</button>
+      <div class="sheet-title" id="np-title">Neuer Preis</div>
+      <button type="button" class="sheet-close" style="visibility:hidden">Zurück</button>
+    </div>
+    <div class="sheet-body" id="np-body"></div>
+  </div>
+
   <!-- Aus einer Tabelle einlesen. Wie `ImportView` in der App. -->
   <div class="sheet" id="sheet-import" role="dialog" aria-modal="true" aria-label="Aus einer Tabelle einlesen">
     <div class="grabber"></div>
@@ -2151,13 +2165,68 @@ function billedUnits(meter, cubicOrKwh) {
    durch, die Einspeisung noch lange nicht. */
 function projectedCost(m, fc) {
   if (!darfKosten()) return null;
-  let energy = billedUnits(m, fc.value) * m.price;
-  const second = m.registers[1];
-  if (second && m.feedInPrice) {
-    const f = forecast(second, m);
-    if (f) energy -= f.value * m.feedInPrice;
+  return projectedParts(m, fc).reduce((a, p) => a + p.work - p.credit + p.base, 0);
+}
+/* **Die Hochrechnung je Preisabschnitt (1.7).**
+
+   Gilt ab dem 1. September ein neuer Preis, kostet der Verbrauch bis dahin
+   den alten und der danach den neuen. Gemessenes bleibt, wo es gemessen ist;
+   was noch kommt, verteilt sich nach der Jahresform des Zählers auf die
+   Abschnitte. Nach Tagen verteilt läge Gas falsch: Von September bis Dezember
+   fällt viel mehr an als von Januar bis April Tage hätte.
+
+   Mit einem Preis ist es ein Abschnitt, und die Summe ist genau die alte:
+   Hochrechnung mal Preis plus zwölf Grundpreise. */
+function projectedParts(m, fc) {
+  const jahr = { y: TODAY.y, m: 1, d: 1 }, ende = { y: TODAY.y + 1, m: 1, d: 1 };
+  const jahrTage = between(jahr, ende);
+  const parts = tariffSegments(m, jahr, ende).map(s => ({
+    ...s, billed: 0, work: 0, feedUnits: 0, credit: 0, zeilen: [],
+    base: s.t.base * 12 / jahrTage * between(s.from, s.to)
+  }));
+  // **Jedes Bezugszählwerk mit seinem Preis.** Bis 0.145 rechnete die
+  // Hochrechnung nur das erste Zählwerk zum Preis des Zählers. Beim
+  // Doppeltarif fehlte damit der Niedertarif ganz, und der Hochtarif kostete
+  // den Zählerpreis statt seines eigenen. Die App rechnet seit jeher je
+  // Zählwerk (`prepaymentOutlook`); aufgefallen beim Teilen nach Preisen.
+  for (const reg of m.registers) {
+    const f = reg === m.registers[0] ? fc : forecast(reg, m);
+    if (!f) continue;
+    const mengen = parts.map(() => 0);
+    verteile(m, reg, f, parts, mengen);
+    parts.forEach((p, i) => {
+      if (reg.feedIn) {
+        p.feedUnits += mengen[i];
+        p.credit += mengen[i] * (p.t.feedInPrice || 0);
+        return;
+      }
+      const billed = billedUnitsIn(m, p.t, mengen[i]);
+      const price = registerPriceIn(p.t, reg);
+      p.billed += billed;
+      p.work += billed * price;
+      p.zeilen.push({ reg, billed, price, work: billed * price });
+    });
   }
-  return energy + m.base * 12;
+  return parts;
+}
+function verteile(m, reg, fc, parts, mengen) {
+  const now = fc.now;
+  if (!now || parts.length === 1) { mengen[0] += fc.value; return; }
+  const jahr = parts[0].from, ende = parts[parts.length - 1].to;
+  const prof = referenceProfile(m, reg);
+  const gewicht = (a, b) => !vorTag(a, b) ? 0 : prof ? profileShare(prof, a, b) : between(a, b);
+  const spaeter = (a, b) => vorTag(a, b) ? b : a, frueher = (a, b) => vorTag(a, b) ? a : b;
+  // Was nicht gemessen ist: vor der ersten und nach der letzten Ablesung im Jahr.
+  const offen = [[jahr, now.cfrom], [now.cto, ende]];
+  const rest = Math.max(0, fc.value - now.value);
+  const w = parts.map(p => offen.reduce((a, [o1, o2]) =>
+    a + gewicht(spaeter(p.from, o1), frueher(p.to, o2)), 0));
+  const summe = w.reduce((a, b) => a + b, 0);
+  parts.forEach((p, i) => {
+    const a = spaeter(p.from, now.cfrom), b = frueher(p.to, now.cto);
+    const c = vorTag(a, b) ? consumption(reg, a, b) : null;
+    mengen[i] += (c ? c.value : 0) + (summe > 0 ? rest * w[i] / summe : (i === parts.length - 1 ? rest : 0));
+  });
 }
 const balance = (m, fc) => {
   const cost = projectedCost(m, fc);
@@ -2400,6 +2469,8 @@ function renderCards() {
     // länger geführten Zähler fast immer da — der Wert zum 1. Januar liegt
     // zwischen zwei Ablesungen und wird interpoliert. Gerade weil es fast
     // immer da ist, darf es der Zahl nicht die Aufmerksamkeit nehmen.
+    // Gas und Heizöl auch in kWh, neben der Zahl vom Zähler (1.7).
+    const kwhKarte = ytd ? kwhMeter(m, ytd) : null;
     const figure = !ytd ? "—"
       : (ytd.exact ? "" : '<span class="approx" title="Zwischen zwei Ablesungen berechnet">≈</span>')
         + nf(ytd.value, m.frac >= 3 ? 1 : 0);
@@ -2430,6 +2501,7 @@ function renderCards() {
           <div class="card-figure">
             <div class="card-caption">${periodCaption(ytd)}</div>
             <div class="value-row"><span class="value">${figure}</span><span class="unit">${m.unit}</span></div>
+            ${kwhKarte !== null ? `<div class="card-kwh" data-kwh>${kwhText(m, kwhKarte, !ytd.exact)}</div>` : ""}
             <div class="sub">${sub}</div>
           </div>
           ${sparkline(reg, m.color)}
@@ -2842,7 +2914,9 @@ function renderChart() {
         kopfMarke.textContent = `${name} · keine Ablesung`;
       } else {
         // Das ≈ heißt hier wie überall: gerechnet, nicht gemessen.
-        kopfZahl.textContent = (c.exact ? "" : "≈ ") + nf(c.value, dp) + " " + m.unit;
+        const k = kwhMeter(m, c);
+        kopfZahl.textContent = (c.exact ? "" : "≈ ") + nf(c.value, dp) + " " + m.unit
+          + (k !== null ? " · " + kwhText(m, k) : "");
         // Und die Beschriftung sagt, aus wie vielen Tagen die Zahl stammt —
         // dieselbe Wendung wie in den Vergleichszeilen.
         // Das gilt nur für den laufenden Monat. Ein abgeschlossener sagt, woher
@@ -2855,7 +2929,9 @@ function renderChart() {
         }
       }
     } else {
-      kopfZahl.textContent = (ytd.exact ? "" : "≈ ") + nf(ytd.value, dp) + " " + m.unit;
+      const k = kwhMeter(m, ytd);
+      kopfZahl.textContent = (ytd.exact ? "" : "≈ ") + nf(ytd.value, dp) + " " + m.unit
+        + (k !== null ? " · " + kwhText(m, k) : "");
       kopfMarke.textContent = "seit 1. Januar 2026";
     }
     // Die Zahl zum blassen Balken. Sie steht als Satz unter der großen Zahl und
@@ -3071,6 +3147,158 @@ function registerPrice(m, reg) {
   return reg.price !== undefined ? reg.price : m.price;
 }
 
+/* ============================================================
+   Preisverlauf — wie `TariffHistory` in PulseCore (1.7)
+
+   Bis 1.6 hatte jeder Zähler genau einen Preis. Wer ihn nach einer Erhöhung
+   änderte, änderte damit auch die Vergangenheit: Die App rechnete das ganze
+   Jahr rückwirkend mit dem neuen Preis. Jetzt hat ein Zähler eine Liste von
+   Preisen, jeder ab einem Tag, und der Rechenkern teilt jeden Zeitraum an
+   diesen Tagen. In der App konnte er das schon (`segmentsOfValidity`), es
+   fehlte nur der Weg dorthin.
+
+   `m.price`, `m.base` und die übrigen Felder am Zähler bleiben stehen und
+   tragen den Preis, der **heute** gilt. So rechnen alle Stellen, die nur einen
+   Preis brauchen (Arbeitspreis in der Erklärung, Monatsvergleich), weiter wie
+   bisher, und nur die Stellen über Zeiträume teilen.
+   ============================================================ */
+function snapshotTariff(m, from) {
+  const regPrices = {};
+  for (const r of m.registers) if (r.price !== undefined) regPrices[r.id] = r.price;
+  return { from, price: m.price || 0, base: m.base || 0, feedInPrice: m.feedInPrice,
+           regPrices, zZahl: m.zZahl, brennwert: m.brennwert, heizwert: m.heizwert };
+}
+/* Älteste zuerst. Der erste Preis hat `from: null`: Er gilt von Anfang an,
+   wie der eine Tarif, den jeder Zähler bis 1.6 hatte. */
+function tariffsOf(m) {
+  if (!m.tariffs) m.tariffs = [snapshotTariff(m, null)];
+  return m.tariffs;
+}
+const vorTag = (a, b) => serial(a.y, a.m, a.d) < serial(b.y, b.m, b.d);
+function addDaysTo(day, n) {
+  const dt = new Date(Date.UTC(day.y, day.m - 1, day.d + n));
+  return { y: dt.getUTCFullYear(), m: dt.getUTCMonth() + 1, d: dt.getUTCDate() };
+}
+function tariffAt(m, day) {
+  const list = tariffsOf(m);
+  let t = list[0];
+  for (const x of list) if (!x.from || !vorTag(day, x.from)) t = x;
+  return t;
+}
+/* Die Felder am Zähler auf den Preis von heute stellen. */
+function syncCurrentTariff(m) {
+  const t = tariffAt(m, TODAY);
+  m.price = t.price; m.base = t.base; m.feedInPrice = t.feedInPrice;
+  m.zZahl = t.zZahl; m.brennwert = t.brennwert; m.heizwert = t.heizwert;
+  for (const r of m.registers) if (t.regPrices[r.id] !== undefined) r.price = t.regPrices[r.id];
+}
+/* Der Zeitraum, an den Preisgrenzen geteilt. Halboffen wie `consumption`:
+   Der Grenztag gehört dem neuen Preis, und weil ein Verbrauch die Differenz
+   zweier Stände ist, zählt nichts doppelt. Spiegelt `segmentsOfValidity`. */
+function tariffSegments(m, from, to) {
+  const list = tariffsOf(m), out = [];
+  for (let i = 0; i < list.length; i++) {
+    const t = list[i], next = list[i + 1];
+    const a = t.from && vorTag(from, t.from) ? t.from : from;
+    const b = next && vorTag(next.from, to) ? next.from : to;
+    if (vorTag(a, b)) out.push({ from: a, to: b, t });
+  }
+  return out;
+}
+/* `TariffHistory.startingNewPrice`: Der bisherige Preis endet am Vortag, der
+   neue beginnt am Tag. Erlaubt ist jeder Tag nach dem Beginn des jüngsten
+   Preises, auch einer in der Zukunft — die angekündigte Erhöhung zum
+   1. Januar ist der häufigste Fall. Gibt eine Fehlermeldung zurück oder null. */
+function startNewPrice(m, from, werte) {
+  const list = tariffsOf(m), newest = list[list.length - 1];
+  if (newest.from && !vorTag(newest.from, from)) {
+    return `Der neue Preis muss nach dem ${dateMedium(newest.from)} beginnen. Ab dann gilt schon der jetzige.`;
+  }
+  list.push({ ...snapshotTariffFromTariff(newest), ...werte, from });
+  syncCurrentTariff(m);
+  return null;
+}
+function snapshotTariffFromTariff(t) {
+  return { ...t, regPrices: { ...t.regPrices } };
+}
+/* `TariffHistory.removingNewest`: Nur der jüngste lässt sich löschen. Ein
+   älterer hinterließe eine Lücke ohne Preis. */
+function removeNewestPrice(m) {
+  const list = tariffsOf(m);
+  if (list.length < 2) return;
+  list.pop();
+  syncCurrentTariff(m);
+}
+/* „bis 31. August" oder „ab 1. September": Wie ein Abschnitt in einer
+   Rechnungszeile heißt. Der erste nennt sein Ende, jeder weitere seinen Beginn. */
+function abschnittText(s, start) {
+  return s.from === start || !vorTag(start, s.from)
+    ? `bis ${dateMedium(addDaysTo(s.to, -1))}` : `ab ${dateMedium(s.from)}`;
+}
+function registerPriceIn(t, reg) {
+  if (reg.feedIn) return t.feedInPrice || 0;
+  return t.regPrices[reg.id] !== undefined ? t.regPrices[reg.id] : t.price;
+}
+/* Gas wird in m³ gemessen und in kWh abgerechnet — je Abschnitt mit den
+   Faktoren, die dort galten. Heizöl nie: Liter werden gegen Liter abgerechnet,
+   wie in `CostEngine.billedQuantity`, wo nur eine andere Dimension umrechnet. */
+function billedUnitsIn(m, t, v) {
+  return m.unit === "m³" && t.zZahl && t.brennwert ? v * t.zZahl * t.brennwert : v;
+}
+
+/* ============================================================
+   Gas und Heizöl in kWh — wie `EnergyDisplay` in PulseCore (1.7)
+
+   Wer von Gas oder Öl auf eine Wärmepumpe wechselt, will kWh neben kWh sehen.
+   m³ und Liter bleiben die Hauptzahl, weil sie am Zähler stehen.
+   ============================================================ */
+function kwhFactor(m, t) {
+  if (m.unit === "m³" && t.zZahl && t.brennwert) return t.zZahl * t.brennwert;
+  if (m.unit === "l" && t.heizwert) return t.heizwert;
+  return null;
+}
+/* Heizöl hat keinen Brennwert auf der Rechnung. Der Heizwert ist darum immer
+   eine Annahme, und die Zahl trägt ein ≈ (Produktprinzip 7). */
+const HEIZWERT_OEL = 10;
+const kwhGeschaetzt = m => m.unit === "l";
+function kwhIn(m, reg, from, to) {
+  let sum = 0, any = false;
+  for (const s of tariffSegments(m, from, to)) {
+    const f = kwhFactor(m, s.t);
+    if (f === null) return null;
+    const c = consumption(reg, s.from, s.to);
+    if (!c) continue;
+    sum += c.value * f; any = true;
+  }
+  return any ? sum : null;
+}
+/* Für eine Verbrauchsangabe des ganzen Zählers, über ihren abgedeckten
+   Ausschnitt. Nur mit „Kosten und Preise“: Zustandszahl, Brennwert und
+   Heizwert trägt man dort ein (Entscheidung 11. November). */
+function kwhMeter(m, c) {
+  if (!darfKosten() || !c || !c.cfrom) return null;
+  let sum = 0;
+  for (const reg of m.registers.filter(r => !r.feedIn)) {
+    const k = kwhIn(m, reg, c.cfrom, c.cto);
+    if (k === null) return null;
+    sum += k;
+  }
+  return sum;
+}
+/* Für eine Menge ohne Zeitraum (Hochrechnung): mit dem Faktor von heute. */
+function kwhNow(m, v) {
+  const f = kwhFactor(m, tariffAt(m, TODAY));
+  return f === null ? null : v * f;
+}
+function kwhText(m, kwh, ungefaehr) {
+  // Öl auf zehn gerundet: Eine Zahl aus einem angenommenen Heizwert auf die
+  // Kilowattstunde genau täuscht eine Genauigkeit vor, die sie nicht hat.
+  // Ein ≈ auch, wenn schon die m³ daneben gerechnet sind: Die kWh stammen
+  // aus derselben Zahl und sind nicht genauer als sie.
+  return kwhGeschaetzt(m) ? `≈ ${nf(Math.round(kwh / 10) * 10, 0)} kWh`
+    : `${ungefaehr ? "≈ " : ""}${nf(kwh, 0)} kWh`;
+}
+
 /* Kosten aller Zählwerke im Zeitraum.
 
    Der Grundpreis wird **einmal** berechnet, nicht je Zählwerk: Er gehört zum
@@ -3082,14 +3310,19 @@ function costFor(m, p) {
   const first = consumption(m.registers[0], p.from, p.to);
   if (!first || !first.complete) return null;
 
-  let energy = 0;
-  for (const reg of m.registers) {
-    const c = consumption(reg, p.from, p.to);
-    if (!c || !c.complete) continue;
-    const sign = reg.feedIn ? -1 : 1;
-    energy += sign * billedUnits(m, c.value) * registerPrice(m, reg);
+  // Je Preisabschnitt mit dem Preis, der dort galt (1.7). Ohne Preisverlauf
+  // ist es ein Abschnitt, und die Rechnung ist dieselbe wie vorher.
+  let energy = 0, base = 0;
+  for (const s of tariffSegments(m, p.from, p.to)) {
+    for (const reg of m.registers) {
+      const c = consumption(reg, s.from, s.to);
+      if (!c || !c.complete) continue;
+      const sign = reg.feedIn ? -1 : 1;
+      energy += sign * billedUnitsIn(m, s.t, c.value) * registerPriceIn(s.t, reg);
+    }
+    base += s.t.base * 12 / 365 * between(s.from, s.to);
   }
-  return energy + m.base * 12 / 365 * between(p.from, p.to);
+  return energy + base;
 }
 /* Kosten des laufenden Jahres für die Übersichtskarte.
    Über den Zeitraum, den die Ablesungen **abdecken**, nicht über den bis
@@ -3228,12 +3461,23 @@ function renderTable() {
       const delta = value !== null && prev !== null && prev !== 0 ? (value - prev) / prev : null;
       return { year: y, value, days, partial, delta, est: periodEstimated(target, range) };
     });
+    // Eine Spalte kWh bei Gas und Heizöl (1.7). Das Diagramm bleibt in der
+    // Einheit des Zählers: ein Balken, eine Einheit.
+    const km = target !== "all" && histMetric !== "cost" ? METERS.find(x => x.id === target) : null;
+    const mitKwh = km && rows.some(r => r.value !== null &&
+      kwhMeter(km, { cfrom: { y: r.year, m: 1, d: 1 }, cto: coveredEnd(target, { y: r.year + 1, m: 1, d: 1 }) }) !== null);
+    const kwhZelle = r => {
+      if (!mitKwh || r.value === null) return mitKwh ? '<td class="na">—</td>' : "";
+      const k = kwhMeter(km, { cfrom: { y: r.year, m: 1, d: 1 }, cto: coveredEnd(target, { y: r.year + 1, m: 1, d: 1 }) });
+      return k === null ? '<td class="na">—</td>' : `<td>${kwhText(km, k).replace(" kWh", "")}</td>`;
+    };
     html = `<table class="data"><thead><tr>
         <th>Jahr</th><th>${histMetric === "cost" || target === "all" ? "Kosten" : "Verbrauch"}</th>
-        <th>Ø je Tag</th><th>Δ</th></tr></thead><tbody>` +
+        ${mitKwh ? "<th>kWh</th>" : ""}<th>Ø je Tag</th><th>Δ</th></tr></thead><tbody>` +
       rows.map(r => `<tr class="${r.partial ? "partial" : r.est ? "est" : ""}">
         <td>${r.year}</td>
         <td class="now">${r.value === null ? "—" : fmtCell(target, r.value) + " " + unit}</td>
+        ${kwhZelle(r)}
         <td>${r.value === null ? "—" : nf(r.value / r.days, 2) + " " + unit}</td>
         ${deltaCell(r.delta)}</tr>`).join("") + `</tbody></table>`;
     note = "Δ ist die Veränderung gegenüber dem Vorjahr. Das laufende Jahr ist unvollständig — verglichen wird deshalb immer derselbe Zeitausschnitt beider Jahre, nie ein Teiljahr mit einem vollen.";
@@ -3500,17 +3744,29 @@ function reportRows(meters, from, to) {
     // Arbeitspreis je Zählwerk: Bei zwei Tarifen sind es zwei Preise, und ein
     // Mischpreis wäre eine Zahl, die auf keiner Rechnung steht.
     const parts = [];
-    let work = 0, feed = 0;
     for (const r of m.registers) {
       const cr = consumption(r, c.cfrom, c.cto);
       if (!cr) continue;
-      const price = registerPrice(m, r);
-      const amount = billedUnits(m, cr.value) * price;
-      if (r.feedIn) { feed += amount; } else { work += amount; }
-      parts.push({ reg: r, c: cr, price, amount,
-                   start: readingAt(r, c.cfrom), end: readingAt(r, c.cto) });
+      parts.push({ reg: r, c: cr, start: readingAt(r, c.cfrom), end: readingAt(r, c.cto) });
     }
-    const base = m.base * 12 / 365 * c.days;
+    // Und je Preisabschnitt (1.7): Hat der Preis im Zeitraum gewechselt, steht
+    // jeder Preis in einer eigenen Zeile, wie auf der Rechnung des Versorgers.
+    const preise = [];
+    let work = 0, feed = 0, base = 0;
+    const abschnitte = tariffSegments(m, c.cfrom, c.cto);
+    for (const s of abschnitte) {
+      for (const r of m.registers) {
+        const cr = consumption(r, s.from, s.to);
+        if (!cr) continue;
+        const price = registerPriceIn(s.t, r);
+        const units = billedUnitsIn(m, s.t, cr.value);
+        const amount = units * price;
+        if (r.feedIn) { feed += amount; } else { work += amount; }
+        preise.push({ reg: r, c: cr, units, price, amount,
+                      wann: abschnitte.length > 1 ? abschnittText(s, c.cfrom) : "" });
+      }
+      base += s.t.base * 12 / 365 * between(s.from, s.to);
+    }
 
     // Monate des gewählten Zeitraums, jeder gegen denselben Monat des Vorjahres.
     const months = [];
@@ -3522,7 +3778,7 @@ function reportRows(meters, from, to) {
       cur = cur.m === 12 ? { y: cur.y + 1, m: 1, d: 1 } : { y: cur.y, m: cur.m + 1, d: 1 };
     }
     return {
-      m, reg, c, prev, delta, work, feed, base, months, parts,
+      m, reg, c, prev, delta, work, feed, base, months, parts, preise,
       cost: work - feed + base,
       // Roher Stand, nicht aufgelaufener Verbrauch: Im Bericht steht die
       // Zahl, die am Tag auf dem Gerät stand.
@@ -3627,9 +3883,9 @@ function renderReport() {
         </tbody>
       </table>
       <div class="doc-sum" style="margin-top:9px">
-        ${r.parts.filter(p => !p.reg.feedIn).map(p =>
-          `<div><span class="k">Arbeitspreis${r.parts.filter(x => !x.reg.feedIn).length > 1 ? " " + (p.reg.label || "Bezug") : ""}${
-            m.zZahl ? ` · ${nf(billedUnits(m, p.c.value), 0)} kWh × ${nf(p.price, 3)} €`
+        ${r.preise.filter(p => !p.reg.feedIn).map(p =>
+          `<div><span class="k">Arbeitspreis${r.parts.filter(x => !x.reg.feedIn).length > 1 ? " " + (p.reg.label || "Bezug") : ""}${p.wann ? " " + p.wann : ""}${
+            p.units !== p.c.value ? ` · ${nf(p.units, 0)} kWh × ${nf(p.price, 3)} €`
                     : ` · ${nf(p.c.value, dp(m.frac))} ${m.unit} × ${nf(p.price, 2)} €`}</span><span class="v">${money(p.amount)}</span></div>`).join("")}
         ${r.feed ? `<div><span class="k">Einspeisevergütung</span><span class="v">− ${money(r.feed)}</span></div>` : ""}
         ${m.base ? `<div><span class="k">Grundpreis · ${r.c.days} Tage</span><span class="v">${money(r.base)}</span></div>` : ""}
@@ -4014,10 +4270,10 @@ const KINDS = [
 
 let editMeter = null;
 
-function openMeterEditor(id) {
+function openMeterEditor(id, artVorgabe) {
   editMeter = id ? METERS.find(m => m.id === id) : null;
   const readingCount = editMeter ? editMeter.registers[0].readings.length : 0;
-  const kindID = editMeter ? (editMeter.kind || "electricity") : "electricity";
+  const kindID = artVorgabe || (editMeter ? (editMeter.kind || "electricity") : "electricity");
   /* **Allein der Kauf entscheidet, seit 0.104.0.** Hier stand die Ausnahme
      „wer schon einen Preis hinterlegt hat, behält ihn", begründet damit, dass
      sonst auf der Übersicht Beträge stünden, die sich nicht mehr berichtigen
@@ -4025,6 +4281,11 @@ function openMeterEditor(id) {
      Beträge mehr. Übrig blieb eine offene Tür — die Beispielzähler haben
      Preise. Dieselbe Regel wie `canUseTariffs` in `MeterEditor`. */
   const priceOpen = mayUse("costsAndTariffs");
+  // Die Felder zeigen den jüngsten Preis, nicht den von heute: Wer gerade die
+  // Erhöhung zum 1. Januar eingetragen hat und einen Tippfehler sieht,
+  // korrigiert diese, nicht den alten Preis (1.7).
+  const nt = editMeter ? tariffsOf(editMeter)[tariffsOf(editMeter).length - 1] : null;
+  const fmtFeld = v => v ? String(v).replace(".", ",") : "";
 
   document.getElementById("editor-title").textContent = editMeter ? "Zähler" : "Neuer Zähler";
   document.getElementById("editor-body").innerHTML = `
@@ -4053,17 +4314,17 @@ function openMeterEditor(id) {
     </div>
     <div class="note">Ohne Preise zeigt die App den Verbrauch — vollständig und unbegrenzt.
     Beträge, Abschlagsvergleich und die Vorschau aufs Jahresende kommen mit Pro dazu.</div>` : `
-    <div class="section-label">Preise</div>
+    <div class="section-label">${nt && nt.from ? `Preise ${vorTag(TODAY, nt.from) ? "ab" : "seit"} ${dateMedium(nt.from)}` : "Preise"}</div>
     <div class="list">
       <div class="row"><div class="rl">Arbeitspreis (brutto)</div>
         <div class="rv"><input class="field" id="ed-price" type="text" inputmode="decimal"
           style="text-align:right;width:90px" placeholder="0,00"
-          value="${editMeter && editMeter.price ? String(editMeter.price).replace(".", ",") : ""}">
+          value="${nt ? fmtFeld(nt.price) : ""}">
           <small>€/${editMeter && editMeter.zZahl ? "kWh" : (editMeter ? editMeter.unit : "kWh")}</small></div></div>
       <div class="row"><div class="rl">Grundpreis (brutto)</div>
         <div class="rv"><input class="field" id="ed-base" type="text" inputmode="decimal"
           style="text-align:right;width:90px" placeholder="0,00"
-          value="${editMeter && editMeter.base ? String(editMeter.base).replace(".", ",") : ""}">
+          value="${nt && nt.base ? nf(nt.base, 2) : ""}">
           <small>€/Monat</small></div></div>
       <div class="row"><div class="rl">Abschlag</div>
         <div class="rv"><input class="field" id="ed-prepay" type="text" inputmode="decimal"
@@ -4074,16 +4335,24 @@ function openMeterEditor(id) {
       <div class="row"><div class="rl">Zustandszahl</div>
         <div class="rv"><input class="field" id="ed-z" type="text" inputmode="decimal"
           style="text-align:right;width:90px" placeholder="0,95"
-          value="${editMeter && editMeter.zZahl ? String(editMeter.zZahl).replace(".", ",") : ""}"></div></div>
+          value="${nt ? fmtFeld(nt.zZahl) : ""}"></div></div>
       <div class="row"><div class="rl">Brennwert</div>
         <div class="rv"><input class="field" id="ed-bw" type="text" inputmode="decimal"
           style="text-align:right;width:90px" placeholder="10,5"
-          value="${editMeter && editMeter.brennwert ? String(editMeter.brennwert).replace(".", ",") : ""}">
+          value="${nt ? fmtFeld(nt.brennwert) : ""}">
           <small>kWh/m³</small></div></div>` : ""}
+      ${kindID === "heatingOil" ? `
+      <div class="row"><div class="rl">Heizwert<small>geschätzt, wenn du keinen hast</small></div>
+        <div class="rv"><input class="field" id="ed-hw" type="text" inputmode="decimal"
+          style="text-align:right;width:90px" placeholder="10"
+          value="${fmtFeld(nt && nt.heizwert ? nt.heizwert : HEIZWERT_OEL)}">
+          <small>kWh/l</small></div></div>` : ""}
     </div>
     <div class="note">${kindID === "gas"
       ? "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Nimm die Preise inklusive Mehrwertsteuer — der Nettopreis steht auf der Rechnung oft daneben und ist rund ein Fünftel kleiner. Zustandszahl und Brennwert stehen ebenfalls auf deiner Gasrechnung; ohne sie lässt sich aus m³ kein Betrag bilden. Mit dem Abschlag rechnet die App aus, ob am Jahresende ein Guthaben oder eine Nachzahlung zu erwarten ist."
-      : "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Nimm die Preise inklusive Mehrwertsteuer — der Nettopreis steht auf der Rechnung oft daneben und ist rund ein Fünftel kleiner. Mit dem Abschlag rechnet die App aus, ob am Jahresende ein Guthaben oder eine Nachzahlung zu erwarten ist."}</div>`}
+      : "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Nimm die Preise inklusive Mehrwertsteuer — der Nettopreis steht auf der Rechnung oft daneben und ist rund ein Fünftel kleiner. Mit dem Abschlag rechnet die App aus, ob am Jahresende ein Guthaben oder eine Nachzahlung zu erwarten ist."}${kindID === "heatingOil"
+      ? " Mit dem Heizwert steht neben den Litern, wie viele kWh das sind. 10 kWh je Liter ist bei Heizöl üblich." : ""}</div>
+    ${editMeter ? preisVerlaufHtml(editMeter) : ""}`}
 
     <div class="section-label">Wie oft ablesen?</div>
     <div class="list"><div class="row"><select class="field" id="ed-interval">
@@ -5160,10 +5429,33 @@ function openExplain(id) {
   const m = METERS.find(x => x.id === id);
   const reg = m.registers[0];
   const fc = forecast(reg, m), ytd = yearToDate(reg);
-  const units = billedUnits(m, fc.value);
-  const work = units * m.price;
-  const base = m.base * 12;
+  // Je Preisabschnitt des Jahres (1.7). Mit einem Preis ist es eine Zeile,
+  // genau wie vorher.
+  const teile = projectedParts(m, fc);
+  const units = teile.reduce((a, p) => a + p.billed, 0);
+  const work = teile.reduce((a, p) => a + p.work, 0);
+  const base = teile.reduce((a, p) => a + p.base, 0);
   const cost = projectedCost(m, fc);
+  const mehrere = teile.length > 1;
+  const einheitPreis = m.zZahl ? "kWh" : m.unit;
+  // Eine Zeile je Preis: je Abschnitt und, beim Doppeltarif, je Zählwerk.
+  const zeilen = teile.flatMap(p => p.zeilen.map(z => ({ ...z, p })));
+  const preisZeilen = zeilen.length > 1
+    ? zeilen.map(z => `<div class="calc-row"><span class="k">Arbeitspreis${
+        zeilen.some(x => x.reg !== zeilen[0].reg) ? " " + (z.reg.label || "") : ""}${
+        mehrere ? " " + abschnittText(z.p, teile[0].from) : ""}<br><small style="color:var(--ink-3)">${nf(z.billed, 0)} ${einheitPreis} × ${nf(z.price, m.zZahl ? 3 : 2)} €</small></span><span class="v">${money(z.work)}</span></div>`).join("")
+    : `<div class="calc-row"><span class="k">Arbeitspreis<br><small style="color:var(--ink-3)">${nf(zeilen.length ? zeilen[0].price : m.price, m.zZahl ? 3 : 2)} € je ${einheitPreis}</small></span><span class="v">${money(work)}</span></div>`;
+  const grundGleich = teile.every(p => p.t.base === teile[0].t.base);
+  const grundText = grundGleich ? `${money(teile[0].t.base)} × 12 Monate` : "je Preis tagesgenau";
+  // Ein Preiswechsel, der in der Zahl steckt oder gleich nach ihr kommt, steht
+  // als ein Satz darunter. Sonst fragt sich jemand, warum die Zahl gestiegen
+  // ist, und findet die Antwort nirgends (Produktprinzip 4).
+  const wechsel = tariffsOf(m).filter(t => t.from && vorTag(addDaysTo(TODAY, -365), t.from)).map(t => {
+    const vorher = tariffAt(m, addDaysTo(t.from, -1));
+    return t.price === vorher.price ? null
+      : `Ab ${dateMedium(t.from)} ${nf(t.price, m.zZahl ? 3 : 2)} € statt ${nf(vorher.price, m.zZahl ? 3 : 2)} € je ${einheitPreis}.`;
+  }).filter(Boolean);
+  const nachJahr = tariffsOf(m).some(t => t.from && !vorTag(t.from, { y: TODAY.y + 1, m: 1, d: 1 }));
   const paid = m.prepay * 12;
   const bal = balance(m, fc);
 
@@ -5177,27 +5469,27 @@ function openExplain(id) {
   // Ein Schirm mit der Überschrift „Wie diese Zahl entsteht", der einen
   // Rechenschritt verschweigt, ist Produktprinzip 7 in sein Gegenteil verkehrt.
   // Die Zeile steht jetzt da, negativ, wie auf einer Rechnung.
-  const second = m.registers[1];
-  let credit = 0;
-  if (second && m.feedInPrice) {
-    const f = forecast(second, m);
-    if (f) credit = f.value * m.feedInPrice;
-  }
+  const credit = teile.reduce((a, p) => a + p.credit, 0);
+  const feedUnits = teile.reduce((a, p) => a + p.feedUnits, 0);
+  // Verbrauch und Hochrechnung über alle Bezugszählwerke, wie die Preiszeilen
+  // darunter: Beim Doppeltarif ist das Hochtarif plus Niedertarif.
+  const ist = meterYearToDate(m), jahrMenge = meterYearForecast(m);
 
   document.getElementById("ex-title").textContent = "Wie diese Zahl entsteht";
   document.getElementById("ex-body").innerHTML = `
     <div class="calc">
-      <div class="calc-row"><span class="k">Verbrauch bis heute</span><span class="v">${nf(ytd.value, 0)} ${m.unit}</span></div>
-      <div class="calc-row"><span class="k">Hochrechnung aufs Jahr<br><small style="color:var(--ink-3)">${FORECAST_BASIS[fc.method]}</small></span><span class="v">${nf(fc.value, 0)} ${m.unit}</span></div>
+      <div class="calc-row"><span class="k">Verbrauch bis heute</span><span class="v">${nf((ist || ytd).value, 0)} ${m.unit}</span></div>
+      <div class="calc-row"><span class="k">Hochrechnung aufs Jahr<br><small style="color:var(--ink-3)">${FORECAST_BASIS[(jahrMenge || fc).method]}</small></span><span class="v">${nf((jahrMenge || fc).value, 0)} ${m.unit}</span></div>
       ${m.zZahl ? `<div class="calc-row"><span class="k">Umrechnung in kWh<br><small style="color:var(--ink-3)">× ${nf(m.zZahl, 4)} Zustandszahl × ${nf(m.brennwert, 3)} kWh/m³</small></span><span class="v">${nf(units, 0)} kWh</span></div>` : ""}
-      <div class="calc-row"><span class="k">Arbeitspreis<br><small style="color:var(--ink-3)">${nf(m.price, m.zZahl ? 3 : 2)} € je ${m.zZahl ? "kWh" : m.unit}</small></span><span class="v">${money(work)}</span></div>
-      <div class="calc-row"><span class="k">Grundpreis<br><small style="color:var(--ink-3)">${money(m.base)} × 12 Monate</small></span><span class="v">${money(base)}</span></div>
-      ${credit ? `<div class="calc-row"><span class="k">Einspeisevergütung<br><small style="color:var(--ink-3)">${nf(forecast(second, m).value, 0)} kWh × ${nf(m.feedInPrice, 2)} €</small></span><span class="v" style="color:var(--good-ink)">− ${money(credit)}</span></div>` : ""}
+      ${preisZeilen}
+      <div class="calc-row"><span class="k">Grundpreis<br><small style="color:var(--ink-3)">${grundText}</small></span><span class="v">${money(base)}</span></div>
+      ${credit ? `<div class="calc-row"><span class="k">Einspeisevergütung<br><small style="color:var(--ink-3)">${nf(feedUnits, 0)} kWh × ${teile.every(p => p.t.feedInPrice === teile[0].t.feedInPrice) ? nf(teile[0].t.feedInPrice, 3) + " €" : "je Preis"}</small></span><span class="v" style="color:var(--good-ink)">− ${money(credit)}</span></div>` : ""}
       <div class="calc-row total"><span class="k">Erwartete Kosten</span><span class="v">${money(cost)}</span></div>
       <div class="calc-row"><span class="k">Abschläge ${money(m.prepay)} × 12</span><span class="v">${money(paid)}</span></div>
       <div class="calc-row total"><span class="k">${bal >= 0 ? "Voraussichtliches Guthaben" : "Voraussichtliche Nachzahlung"}</span>
         <span class="v" style="color:${bal >= 0 ? "var(--good-ink)" : "var(--red-ink)"}">${money(Math.abs(bal))}</span></div>
     </div>
+    ${wechsel.length ? `<div class="note" data-preiswechsel>${wechsel.join(" ")}${nachJahr ? ` Die Hochrechnung reicht bis zum 31. Dezember.` : ""}</div>` : ""}
     <div class="note">Eine Hochrechnung ist nie eine gemessene Zahl. Sie wird genauer, je aktueller dein letzter Stand ist —
     und sie ersetzt die Abrechnung deines Versorgers nicht.</div>`;
   openSheet("sheet-explain");
@@ -5278,6 +5570,158 @@ function renderReportRow() {
   keys.innerHTML = html;
 })();
 
+/* ============================================================
+   Neuer Preis ab einem Tag (1.7) — wie `NewPriceSheet` in der App
+   ============================================================ */
+const isoTag = d => `${d.y}-${String(d.m).padStart(2, "0")}-${String(d.d).padStart(2, "0")}`;
+const tagAusIso = v => {
+  const t = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v || "");
+  return t ? { y: +t[1], m: +t[2], d: +t[3] } : null;
+};
+const preisStellen = m => m.unit === "m³" && m.zZahl ? 3 : m.unit === "kWh" ? 3 : 2;
+
+/* Wie ein Preis in einer Zeile steht: der Arbeitspreis, beim Doppeltarif
+   beide, dazu Grundpreis und Vergütung. Die Einheit wie im Feld daneben. */
+function preisZeile(m, t) {
+  const einheit = m.unit === "m³" && t.zZahl ? "kWh" : m.unit;
+  const eigene = m.registers.filter(r => !r.feedIn && t.regPrices[r.id] !== undefined);
+  const arbeit = eigene.length
+    ? eigene.map(r => `${r.label || "Bezug"} ${nf(t.regPrices[r.id], preisStellen(m))} €`).join(" · ")
+    : `${nf(t.price, preisStellen(m))} €/${einheit}`;
+  const teile = [arbeit];
+  if (t.base) teile.push(`${money(t.base)}/Monat`);
+  if (t.feedInPrice) teile.push(`Vergütung ${nf(t.feedInPrice, 3)} €`);
+  return teile.join(" · ");
+}
+function preisVerlaufHtml(m) {
+  const list = tariffsOf(m);
+  const chev = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>';
+  const zeilen = list.map((t, i) => {
+    const next = list[i + 1];
+    const wann = !next
+      ? (t.from ? (vorTag(TODAY, t.from) ? `ab ${dateMedium(t.from)}` : `seit ${dateMedium(t.from)}`) : "von Anfang an")
+      : (t.from ? `${dateMedium(t.from)} bis ${dateMedium(addDaysTo(next.from, -1))}`
+                : `bis ${dateMedium(addDaysTo(next.from, -1))}`);
+    const loeschbar = !next && list.length > 1;
+    return `<div class="row" data-preis-zeile><div class="rl">${wann}<small>${preisZeile(m, t)}</small></div>${loeschbar
+      ? `<button type="button" data-tarif-del style="border:0;background:none;color:var(--red-ink);font:inherit;font-size:15px;padding:8px 0 8px 12px;cursor:pointer">Löschen</button>` : ""}</div>`;
+  }).reverse().join("");
+  return `
+    <div class="list" style="margin-top:12px">
+      <button type="button" class="rowbtn" id="ed-newprice">
+        <div class="rl">Neuer Preis ab …<small>Preiserhöhung oder neuer Anbieter</small></div>${chev}
+      </button>
+    </div>
+    ${list.length > 1 ? `<div class="section-label">Preisverlauf</div>
+    <div class="list">${zeilen}</div>` : ""}`;
+}
+
+let npMeter = null;
+function openNewPrice() {
+  if (!editMeter) return;
+  // Was im Editor schon getippt ist, gilt erst als gesichert. Sonst ginge eine
+  // Korrektur verloren, weil das Blatt sie überdeckt.
+  uebernehmePreisfelder();
+  npMeter = editMeter;
+  const m = npMeter, list = tariffsOf(m), nt = list[list.length - 1];
+  const min = nt.from ? addDaysTo(nt.from, 1) : null;
+  const vorschlag = min && vorTag(TODAY, min) ? min : TODAY;
+  const feld = (id, label, wert, einheit, ph) => `
+      <div class="row"><div class="rl">${label}</div>
+        <div class="rv"><input class="field" id="${id}" type="text" inputmode="decimal"
+          style="text-align:right;width:90px" placeholder="${ph || "0,00"}"
+          value="${wert ? String(wert).replace(".", ",") : ""}">${einheit ? `<small>${einheit}</small>` : ""}</div></div>`;
+  const einheit = m.unit === "m³" && nt.zZahl ? "kWh" : m.unit;
+  const eigene = m.registers.filter(r => !r.feedIn && nt.regPrices[r.id] !== undefined);
+  const arbeit = eigene.length
+    ? eigene.map(r => feld(`np-reg-${r.id}`, `Arbeitspreis ${r.label || ""}`, nt.regPrices[r.id], `€/${einheit}`)).join("")
+    : feld("np-price", "Arbeitspreis (brutto)", nt.price, `€/${einheit}`);
+  document.getElementById("np-title").textContent = `Neuer Preis · ${m.name}`;
+  document.getElementById("np-body").innerHTML = `
+    <div class="section-label">Gilt ab</div>
+    <div class="list"><div class="row"><div class="rl">Tag</div>
+      <div class="rv"><input class="field" id="np-date" type="date" value="${isoTag(vorschlag)}"
+        ${min ? `min="${isoTag(min)}"` : ""} style="text-align:right"></div></div></div>
+    <div class="note" id="np-hinweis"></div>
+    <div class="section-label">Neuer Preis</div>
+    <div class="list">
+      ${arbeit}
+      ${feld("np-base", "Grundpreis (brutto)", nt.base ? nf(nt.base, 2) : "", "€/Monat")}
+      ${m.registers.some(r => r.feedIn) ? feld("np-feed", "Einspeisevergütung", nt.feedInPrice, `€/kWh`) : ""}
+      ${m.unit === "m³" && nt.zZahl ? feld("np-z", "Zustandszahl", nt.zZahl, "", "0,95") + feld("np-bw", "Brennwert", nt.brennwert, "kWh/m³", "10,5") : ""}
+      ${m.unit === "l" ? feld("np-hw", "Heizwert", nt.heizwert || HEIZWERT_OEL, "kWh/l", "10") : ""}
+    </div>
+    <div class="note">Vorbelegt mit dem bisherigen Preis. Ändere nur, was sich ändert.</div>
+    <button type="button" class="save" id="np-save" style="--c:var(--tint);--c-ink:var(--tint-ink)">Sichern</button>`;
+  npHinweis();
+  openSheet("sheet-newprice");
+}
+/* Was der Tag bewirkt, in einem Satz unter dem Feld. Rückdatieren ist
+   erlaubt; dann rechnen sich Kosten neu, und das soll niemanden überraschen. */
+function npHinweis() {
+  const el = document.getElementById("np-hinweis");
+  if (!el || !npMeter) return;
+  const tag = tagAusIso(document.getElementById("np-date").value);
+  const list = tariffsOf(npMeter), nt = list[list.length - 1];
+  el.style.color = "";
+  if (!tag) { el.textContent = "Wähle den Tag, ab dem der Preis gilt."; return; }
+  if (nt.from && !vorTag(nt.from, tag)) {
+    el.style.color = "var(--red-ink)";
+    el.textContent = `Der neue Preis muss nach dem ${dateMedium(nt.from)} beginnen. Ab dann gilt schon der jetzige.`;
+    return;
+  }
+  const letzte = lastReading(npMeter);
+  el.textContent = letzte && !vorTag({ y: letzte.y, m: letzte.m, d: letzte.d }, tag)
+    ? `Kosten ab dem ${dateMedium(tag)} werden mit dem neuen Preis neu berechnet.`
+    : vorTag(TODAY, tag)
+    ? `Bis zum ${dateMedium(addDaysTo(tag, -1))} gilt der bisherige Preis.`
+    : `Der bisherige Preis gilt bis zum ${dateMedium(addDaysTo(tag, -1))}.`;
+}
+function saveNewPrice() {
+  const m = npMeter;
+  if (!m) return;
+  const tag = tagAusIso(document.getElementById("np-date").value);
+  if (!tag) { npHinweis(); return; }
+  const num = id => {
+    const el = document.getElementById(id);
+    if (!el) return undefined;
+    const v = parseFloat(el.value.replace(",", "."));
+    return Number.isFinite(v) ? v : 0;
+  };
+  const nt = tariffsOf(m)[tariffsOf(m).length - 1];
+  const werte = { regPrices: { ...nt.regPrices } };
+  for (const r of m.registers) {
+    const v = num(`np-reg-${r.id}`);
+    if (v !== undefined) werte.regPrices[r.id] = v;
+  }
+  const pairs = [["np-price", "price"], ["np-base", "base"], ["np-feed", "feedInPrice"],
+                 ["np-z", "zZahl"], ["np-bw", "brennwert"], ["np-hw", "heizwert"]];
+  for (const [id, key] of pairs) { const v = num(id); if (v !== undefined) werte[key] = v; }
+  const fehler = startNewPrice(m, tag, werte);
+  if (fehler) { npHinweis(); return; }
+  refreshAfterMeterChange();
+  // Zurück in den Zähler, wo der Preisverlauf jetzt zwei Zeilen hat.
+  openMeterEditor(m.id);
+}
+/* Die Preisfelder im Editor gehören dem jüngsten Preis. */
+function uebernehmePreisfelder() {
+  if (!editMeter || !document.getElementById("ed-price")) return;
+  const num = id => {
+    const el = document.getElementById(id);
+    if (!el) return undefined;
+    const v = parseFloat(el.value.replace(",", "."));
+    return Number.isFinite(v) ? v : 0;
+  };
+  const list = tariffsOf(editMeter), nt = list[list.length - 1];
+  nt.price = num("ed-price"); nt.base = num("ed-base");
+  const z = num("ed-z"), bw = num("ed-bw"), hw = num("ed-hw");
+  if (z && bw) { nt.zZahl = z; nt.brennwert = bw; }
+  if (hw !== undefined) nt.heizwert = hw || undefined;
+  const prepay = num("ed-prepay");
+  if (prepay !== undefined) editMeter.prepay = prepay;
+  syncCurrentTariff(editMeter);
+}
+
 /* Übernimmt, was im Editor steht. Im Entwurf bleiben die Daten im Speicher —
    die App legt sie über `PulseRepository` ab, die Oberfläche ist dieselbe. */
 function saveMeter() {
@@ -5299,10 +5743,10 @@ function saveMeter() {
   if (editMeter) {
     editMeter.name = name;
     editMeter.interval = interval || 3650;
-    editMeter.price = price;
-    editMeter.base = base;
-    editMeter.prepay = prepay;
-    if (zZahl && brennwert) { editMeter.zZahl = zZahl; editMeter.brennwert = brennwert; }
+    // Preise in den jüngsten Preis, nicht an den Zähler: Sonst änderte ein
+    // Tippfehler-Korrektur die ganze Vergangenheit, genau der Fehler, den 1.7
+    // behebt.
+    uebernehmePreisfelder();
     if (!editMeter.registers[0].readings.length) {
       editMeter.kind = kind.id; editMeter.unit = kind.unit;
       editMeter.frac = kind.frac; editMeter.color = kind.color;
@@ -5322,6 +5766,7 @@ function saveMeter() {
       frac: kind.frac, int: 6, color: kind.color, serial: "—",
       interval: interval || 3650, price, base, prepay,
       zZahl: zZahl || undefined, brennwert: brennwert || undefined,
+      heizwert: kind.id === "heatingOil" ? (num("ed-hw") || undefined) : undefined,
       // **Vollständig, nicht halb.** Hier stand `{ label: "", readings: [] }` —
       // ein Zählwerk ohne Einheit, ohne Stellen, ohne Kennung. Solange der
       // Ziffernblock diese Werte beim *Zähler* holte, fiel das nicht auf. Seit
@@ -5373,7 +5818,7 @@ function refreshAfterMeterChange() {
 
 /* Ereignisse */
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-foto],[data-capture],[data-reading],#cap-delete,[data-history],button[data-ausblick],[data-meterchange],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export],[data-month],[data-open],[data-kaufen],[data-scope],[data-period],[data-meter],[data-pro],[data-springe],[data-unlock],#add-meter,#first-meter,#ed-save,#ed-archive,#ed-delete");
+  const t = e.target.closest("[data-foto],[data-capture],[data-reading],#cap-delete,[data-history],button[data-ausblick],[data-meterchange],[data-explain],[data-key],[data-pane],[data-pick],[data-scale],[data-close],[data-mode],[data-gran],[data-metric],[data-perday],[data-export],[data-month],[data-open],[data-kaufen],[data-scope],[data-period],[data-meter],[data-pro],[data-springe],[data-unlock],#add-meter,#first-meter,#ed-save,#ed-archive,#ed-delete,#ed-newprice,#np-save,#np-back,[data-tarif-del]");
   if (!t) return;
 
   if (t.dataset.springe !== undefined) return springe(t.dataset.springe || null);
@@ -5390,6 +5835,14 @@ document.addEventListener("click", e => {
   }
   if (t.dataset.meter) return openMeterEditor(t.dataset.meter);
   if (t.id === "ed-save") return saveMeter();
+  if (t.id === "ed-newprice") return openNewPrice();
+  if (t.id === "np-save") return saveNewPrice();
+  if (t.id === "np-back") return openMeterEditor(npMeter.id);
+  if (t.hasAttribute("data-tarif-del")) {
+    removeNewestPrice(editMeter);
+    refreshAfterMeterChange();
+    return openMeterEditor(editMeter.id);
+  }
   if (t.id === "ed-archive") return archiveMeter();
   if (t.id === "ed-delete") return deleteMeter();
 
@@ -6130,6 +6583,7 @@ function impZeichneFertig(host) {
 }
 
 document.addEventListener("input", e => {
+  if (e.target.id === "np-date") return npHinweis();
   if (e.target.id !== "imp-text") return;
   IMP.text = e.target.value; IMP.last = null;
   clearTimeout(IMP.warte);
@@ -6137,6 +6591,16 @@ document.addEventListener("input", e => {
 });
 document.addEventListener("change", e => {
   const t = e.target;
+  // **Die Art bestimmt die Preisfelder.** Bis 0.145 wurden sie nur beim Öffnen
+  // gebaut: Wer einen neuen Zähler auf „Gas“ stellte, bekam keine Felder für
+  // Zustandszahl und Brennwert, und bei Heizöl keinen Heizwert. Aufgefallen
+  // beim Prüfen von 1.7. Neu aufbauen, Name behalten.
+  if (t.id === "ed-kind") {
+    const name = document.getElementById("ed-name").value;
+    openMeterEditor(editMeter ? editMeter.id : null, t.value);
+    document.getElementById("ed-name").value = name;
+    return;
+  }
   if (t.id === "imp-file" && t.files && t.files[0]) {
     t.files[0].arrayBuffer().then(buf => {
       IMP.text = TI.decode(buf); IMP.last = null;

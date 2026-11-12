@@ -1929,6 +1929,235 @@ for (const scheme of ["light", "dark"]) {
   await page.close();
 }
 
+// --- 1.7: Neuer Preis ab einem Tag, Gas und Heizöl in kWh
+//
+// Der Weg, den Uwe am 14. Oktober beschrieben hat: Der Anbieter erhöht, man
+// trägt den neuen Preis mit dem Tag ein, und die Kosten davor bleiben, wie sie
+// waren. Bis 1.6 änderte das Feld den einen Preis und damit das ganze Jahr.
+{
+  console.log("\n1.7: Preis ab einem Tag, Gas und Heizöl in kWh");
+  const page = await browser.newPage({ viewport: { width: 440, height: 1300 } });
+  const fehler = [];
+  page.on("pageerror", e => fehler.push(e.message));
+  await page.goto(url);
+  await page.waitForTimeout(300);
+  await page.evaluate(() => { bewertungGefragt = true; });
+
+  // Ohne den Kauf keine kWh: Zustandszahl und Brennwert gehören zu „Kosten und Preise“.
+  // Der Entwurf startet mit allem gekauft, deshalb erst einmal ohne.
+  await page.evaluate(() => { OWNED = new Set(); renderAll(); });
+  note(await page.locator('[data-kwh]').count() === 0, "Ohne „Kosten und Preise“ steht keine kWh-Zahl auf den Karten");
+  await page.evaluate(() => { OWNED.add("costsAndTariffs"); OWNED.add("additionalMeters"); renderAll(); });
+  const gasKarte = await page.evaluate(() => {
+    const m = METERS.find(x => x.id === "gas");
+    const ytd = meterYearToDate(m);
+    const erwartet = ytd.value * m.zZahl * m.brennwert;
+    const zeichen = ytd.exact ? "" : "≈ ";
+    const el = [...document.querySelectorAll("[data-kwh]")].map(e => e.textContent.trim());
+    return { el, erwartet: zeichen + Math.round(erwartet).toLocaleString("de-DE") };
+  });
+  note(gasKarte.el.length === 1 && gasKarte.el[0] === `${gasKarte.erwartet} kWh`,
+       `Gas zeigt neben den m³ die kWh, gerechnet mit Zustandszahl und Brennwert („${gasKarte.el.join(" | ")}“, erwartet ${gasKarte.erwartet})`);
+
+  const zeitraum = { from: { y: 2026, m: 1, d: 1 }, to: { y: 2026, m: 5, d: 28 } };
+  const vorher = await page.evaluate(z => ({
+    ganz: costFor(METERS.find(x => x.id === "gas"), z),
+    bisMaerz: costFor(METERS.find(x => x.id === "gas"), { from: z.from, to: { y: 2026, m: 3, d: 1 } })
+  }), zeitraum);
+
+  // Über die Oberfläche: Zähler öffnen, „Neuer Preis ab …“, Tag und Preis, sichern.
+  await page.locator('[data-pane="meters"]:visible').first().click();
+  await page.waitForTimeout(200);
+  await page.locator('[data-meter="gas"]').click();
+  await page.waitForTimeout(250);
+  note(await page.locator("#ed-newprice").count() === 1, "Im Zähler steht der Knopf „Neuer Preis ab …“");
+  await page.locator("#ed-newprice").click();
+  await page.waitForTimeout(250);
+  const blatt = await page.evaluate(() => ({
+    offen: document.getElementById("sheet-newprice").classList.contains("on"),
+    preis: document.getElementById("np-price")?.value,
+    z: document.getElementById("np-z")?.value,
+    tag: document.getElementById("np-date")?.value
+  }));
+  note(blatt.offen && blatt.preis === "0,112" && blatt.z === "0,9563" && blatt.tag === "2026-08-04",
+       `Das Blatt ist mit dem bisherigen Preis vorbelegt, Vorschlag heute (${JSON.stringify(blatt)})`);
+  await page.locator("#np-date").fill("2026-03-01");
+  await page.waitForTimeout(100);
+  const hinweis = (await page.locator("#np-hinweis").textContent()).trim();
+  note(/^Kosten ab dem 1\. März werden mit dem neuen Preis neu berechnet\.$/.test(hinweis),
+       `Rückdatiert sagt das Blatt, dass Kosten neu berechnet werden („${hinweis}“)`);
+  await page.locator("#np-price").fill("0,15");
+  await page.locator("#np-save").click();
+  await page.waitForTimeout(300);
+  const nachher = await page.evaluate(z => {
+    const m = METERS.find(x => x.id === "gas");
+    const reg = m.registers[0];
+    // Nachgerechnet ohne `tariffSegments`: zwei Abschnitte, jeder mit seinem Preis.
+    const teil = (a, b, preis) => {
+      const c = consumption(reg, a, b);
+      return c.value * m.zZahl * m.brennwert * preis + 14.20 * 12 / 365 * between(a, b);
+    };
+    const maerz = { y: 2026, m: 3, d: 1 };
+    return {
+      zeilen: [...document.querySelectorAll("[data-preis-zeile] .rl")].map(e => e.firstChild.textContent.trim()),
+      editorOffen: document.getElementById("sheet-editor").classList.contains("on"),
+      ganz: costFor(m, z),
+      vonHand: teil(z.from, maerz, 0.112) + teil(maerz, z.to, 0.15),
+      bisMaerz: costFor(m, { from: z.from, to: maerz }),
+      heute: m.price,
+      titel: document.querySelector("#editor-body .section-label:nth-of-type(3)")?.textContent
+    };
+  }, zeitraum);
+  note(nachher.editorOffen && nachher.zeilen.length === 2
+       && nachher.zeilen[0] === "seit 1. März" && nachher.zeilen[1] === "bis 28. Februar",
+       `Der Preisverlauf zeigt zwei Zeilen, neueste oben (${nachher.zeilen.join(" | ")})`);
+  note(Math.abs(nachher.bisMaerz - vorher.bisMaerz) < 1e-9,
+       `Die Kosten vor dem neuen Preis bleiben, wie sie waren (${nachher.bisMaerz.toFixed(2)} €)`);
+  note(Math.abs(nachher.ganz - nachher.vonHand) < 1e-6 && nachher.ganz > vorher.ganz,
+       `Über die Grenze: alter Abschnitt zum alten, neuer zum neuen Preis, Grundpreis tagesgenau (${nachher.ganz.toFixed(2)} € = ${nachher.vonHand.toFixed(2)} €)`);
+  note(nachher.heute === 0.15, "Der Preis von heute ist der neue");
+
+  // Ein Tag vor dem Beginn des jüngsten Preises wird abgewiesen.
+  await page.locator("#ed-newprice").click();
+  await page.waitForTimeout(200);
+  note(await page.locator("#np-date").inputValue() === "2026-08-04", "Der Vorschlag bleibt heute, weil das nach dem jüngsten Preis liegt");
+  await page.locator("#np-date").fill("2026-02-01");
+  await page.locator("#np-save").click();
+  await page.waitForTimeout(200);
+  const abgewiesen = await page.evaluate(() => ({
+    offen: document.getElementById("sheet-newprice").classList.contains("on"),
+    text: document.getElementById("np-hinweis").textContent.trim(),
+    anzahl: tariffsOf(METERS.find(x => x.id === "gas")).length
+  }));
+  note(abgewiesen.offen && abgewiesen.anzahl === 2 && /muss nach dem 1\. März beginnen/.test(abgewiesen.text),
+       `Ein Tag vor dem jetzigen Preis wird abgewiesen („${abgewiesen.text}“)`);
+
+  // Ein Tag in der Zukunft: die angekündigte Erhöhung zum 1. Januar.
+  await page.locator("#np-date").fill("2027-01-01");
+  await page.waitForTimeout(100);
+  const zukunft = (await page.locator("#np-hinweis").textContent()).trim();
+  note(zukunft === "Bis zum 31. Dezember gilt der bisherige Preis.", `Zukunft: Der Hinweis nennt, bis wann der alte gilt („${zukunft}“)`);
+  await page.locator("#np-price").fill("0,17");
+  await page.locator("#np-save").click();
+  await page.waitForTimeout(300);
+  const drei = await page.evaluate(() => ({
+    zeilen: [...document.querySelectorAll("[data-preis-zeile] .rl")].map(e => e.firstChild.textContent.trim()),
+    heute: METERS.find(x => x.id === "gas").price,
+    loeschen: document.querySelectorAll("[data-tarif-del]").length,
+    titel: [...document.querySelectorAll("#editor-body .section-label")].map(e => e.textContent.trim()),
+    feld: document.getElementById("ed-price").value
+  }));
+  note(drei.zeilen.join(" | ") === "ab 1. Januar 2027 | 1. März bis 31. Dezember | bis 28. Februar",
+       `Ein Preis in der Zukunft steht oben mit „ab“ (${drei.zeilen.join(" | ")})`);
+  note(drei.heute === 0.15, "Bis dahin rechnet die App mit dem Preis von heute");
+  note(drei.loeschen === 1, "Nur der jüngste Preis lässt sich löschen");
+  note(drei.titel.includes("Preise ab 1. Januar 2027") && drei.feld === "0,17",
+       `Die Felder im Zähler gehören dem jüngsten Preis und sagen das (${drei.titel.join(" | ")})`);
+
+  // Die Erklärung der Kosten nennt den Wechsel.
+  await page.locator("#sheet-editor [data-close]").first().click();
+  await page.waitForTimeout(150);
+  await page.evaluate(() => openExplain("gas"));
+  await page.waitForTimeout(150);
+  const erkl = await page.evaluate(() => ({
+    wechsel: document.querySelector("[data-preiswechsel]")?.textContent.replace(/\s+/g, " ").trim() || "",
+    zeilen: [...document.querySelectorAll("#ex-body .calc-row .k")].map(e => e.firstChild.textContent.trim())
+  }));
+  note(erkl.wechsel === "Ab 1. März 0,150 € statt 0,112 € je kWh. Ab 1. Januar 2027 0,170 € statt 0,150 € je kWh. Die Hochrechnung reicht bis zum 31. Dezember.",
+       `Die Kostenerklärung nennt die Preiswechsel („${erkl.wechsel}“)`);
+  note(erkl.zeilen.includes("Arbeitspreis bis 28. Februar") && erkl.zeilen.includes("Arbeitspreis ab 1. März"),
+       `Je Preis eine Zeile in der Erklärung (${erkl.zeilen.join(" | ")})`);
+  const summe = await page.evaluate(() => {
+    const m = METERS.find(x => x.id === "gas");
+    const teile = projectedParts(m, forecast(m.registers[0], m));
+    const menge = teile.reduce((a, p) => a + p.billed, 0);
+    const ganz = billedUnits(m, forecast(m.registers[0], m).value);
+    return { menge, ganz };
+  });
+  note(Math.abs(summe.menge - summe.ganz) < 1e-6,
+       `Die Hochrechnung verteilt sich ohne Rest auf die Abschnitte (${summe.menge.toFixed(1)} kWh)`);
+  await page.evaluate(() => closeSheets());
+
+  // Löschen des jüngsten öffnet den vorigen wieder.
+  await page.locator('[data-meter="gas"]').click();
+  await page.waitForTimeout(200);
+  await page.locator("[data-tarif-del]").click();
+  await page.waitForTimeout(250);
+  const geloescht = await page.evaluate(() => [...document.querySelectorAll("[data-preis-zeile] .rl")].map(e => e.firstChild.textContent.trim()));
+  note(geloescht.join(" | ") === "seit 1. März | bis 28. Februar",
+       `Löschen des jüngsten Preises: Der vorige gilt wieder offen (${geloescht.join(" | ")})`);
+  await page.locator("#sheet-editor [data-close]").first().click();
+  await page.waitForTimeout(150);
+
+  // Doppeltarif: Der neue Preis bekommt beide Arbeitspreise.
+  await page.locator('[data-meter="waermepumpe"]').click();
+  await page.waitForTimeout(200);
+  await page.locator("#ed-newprice").click();
+  await page.waitForTimeout(200);
+  const doppel = await page.evaluate(() => ({
+    ht: document.getElementById("np-reg-wp-ht")?.value, nt: document.getElementById("np-reg-wp-nt")?.value,
+    einfach: !!document.getElementById("np-price")
+  }));
+  note(doppel.ht === "0,31" && doppel.nt === "0,21" && !doppel.einfach,
+       `Doppeltarif: Beide Arbeitspreise stehen im Blatt (${JSON.stringify(doppel)})`);
+  await page.locator("#np-date").fill("2026-06-01");
+  await page.locator("#np-reg-wp-nt").fill("0,24");
+  await page.locator("#np-save").click();
+  await page.waitForTimeout(250);
+  const wp = await page.evaluate(() => {
+    const m = METERS.find(x => x.id === "waermepumpe");
+    const nt = m.registers[1];
+    const c = consumption(nt, { y: 2026, m: 6, d: 1 }, { y: 2026, m: 8, d: 1 });
+    const ht = consumption(m.registers[0], { y: 2026, m: 6, d: 1 }, { y: 2026, m: 8, d: 1 });
+    const kosten = costFor(m, { from: { y: 2026, m: 6, d: 1 }, to: { y: 2026, m: 8, d: 1 } });
+    return { kosten, vonHand: ht.value * 0.31 + c.value * 0.24 + 8.90 * 12 / 365 * 61, ntHeute: nt.price };
+  });
+  note(Math.abs(wp.kosten - wp.vonHand) < 1e-6 && wp.ntHeute === 0.24,
+       `Doppeltarif: Nach dem Wechsel rechnet jedes Zählwerk mit seinem neuen Preis (${wp.kosten.toFixed(2)} €)`);
+  await page.locator("#sheet-editor [data-close]").first().click();
+  await page.waitForTimeout(150);
+
+  // Heizöl: Liter mit kWh daneben, gekennzeichnet als Schätzung.
+  await page.locator("#add-meter").click();
+  await page.waitForTimeout(200);
+  await page.locator("#ed-name").fill("Heizöl");
+  await page.locator("#ed-kind").selectOption("heatingOil");
+  await page.waitForTimeout(150);
+  const hw = await page.evaluate(() => ({
+    wert: document.getElementById("ed-hw")?.value, name: document.getElementById("ed-name").value
+  }));
+  note(hw.wert === "10" && hw.name === "Heizöl",
+       `Bei Heizöl steht der Heizwert im Zähler, vorbelegt mit 10, der Name bleibt (${JSON.stringify(hw)})`);
+  await page.locator("#ed-kind").selectOption("gas");
+  await page.waitForTimeout(150);
+  note(await page.locator("#ed-z").count() === 1, "Wer einen neuen Zähler auf Gas stellt, bekommt Zustandszahl und Brennwert");
+  await page.locator("#ed-kind").selectOption("heatingOil");
+  await page.waitForTimeout(150);
+  await page.locator("#ed-save").click();
+  await page.waitForTimeout(250);
+  const oel = await page.evaluate(() => {
+    const m = METERS.find(x => x.name === "Heizöl");
+    if (!m) return null;
+    const r = m.registers[0];
+    r.readings.push({ y: 2026, m: 1, d: 2, value: 12000 }, { y: 2026, m: 7, d: 1, value: 13450 });
+    renderAll();
+    const karte = [...document.querySelectorAll("article.card")].find(a => a.textContent.includes("Heizöl"));
+    return { heizwert: m.heizwert, kwh: karte?.querySelector("[data-kwh]")?.textContent.trim() };
+  });
+  note(oel && oel.heizwert === 10 && oel.kwh === "≈ 14.500 kWh",
+       `Heizöl zeigt neben den Litern die kWh mit ≈, 10 kWh je Liter (${JSON.stringify(oel)})`);
+  const oelKosten = await page.evaluate(() => {
+    const m = METERS.find(x => x.name === "Heizöl");
+    tariffsOf(m)[0].price = 1.05; syncCurrentTariff(m);
+    return costFor(m, { from: { y: 2026, m: 1, d: 2 }, to: { y: 2026, m: 7, d: 1 } });
+  });
+  note(Math.abs(oelKosten - 1450 * 1.05) < 1e-6,
+       `Heizöl wird weiter in Litern abgerechnet, der Heizwert ändert keinen Betrag (${oelKosten.toFixed(2)} €)`);
+
+  note(fehler.length === 0, `Keine JS-Fehler in 1.7 (${fehler.join(" | ")})`);
+  await page.close();
+}
+
 // --- Bewertungsfrage: einmal, nach der dritten gesicherten Ablesung
 //
 // Auf einer frischen Seite, weil der Durchlauf oben schon Ablesungen sichert

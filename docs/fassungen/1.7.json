@@ -1,0 +1,14 @@
+{
+  "fassung": "1.7",
+  "weg": {
+    "titel": "Neuer Preis ab einem Tag, Gas und Heizöl in kWh",
+    "text": "Wird es teurer, trägst du den neuen Preis mit dem Tag ein, ab dem er gilt, und die Kosten davor bleiben, wie sie waren. Gas und Heizöl stehen auf der Karte auch in kWh, damit du sie neben eine Wärmepumpe legen kannst."
+  },
+  "start": {
+    "titel": "Neuer Preis ab einem Tag",
+    "absaetze": [
+      "Kommt eine Preiserhöhung oder wechselst du den Anbieter, trägst du im Zähler den neuen Preis mit dem Tag ein, ab dem er gilt. Was davor war, kostet weiter, was es gekostet hat. Darunter steht der Preisverlauf, und die Vorschau auf den Abschlag rechnet einen angekündigten Preis schon mit.",
+      "Gas und Heizöl stehen auf der Karte jetzt auch in kWh, gerechnet mit dem Brennwert von deiner Rechnung. So siehst du, wie viel Wärme du im Jahr brauchst, und kannst sie neben eine Wärmepumpe legen. Bei Heizöl ist der Heizwert geschätzt, darum steht dort ein „≈“."
+    ]
+  }
+}

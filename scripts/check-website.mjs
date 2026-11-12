@@ -47,7 +47,7 @@ const base = `http://127.0.0.1:${server.address().port}/`;
 // toter Verweis dorthin fällt sonst niemandem auf.
 const seiten = ["index.html", "entwicklung.html", "hilfe.html", "gas-in-kwh.html",
                 "zaehlerstand-umzug.html", "ratgeber.html",
-                "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "zaehlerstand-ablesen.html", "photovoltaik-eigenverbrauch.html", "strompreis-entwicklung.html", "nachzahlung-pruefen.html", "datenschutz.html", "impressum.html", "404.html"];
+                "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "heizung-auf-waermepumpe-umstellen.html", "zaehlerstand-ablesen.html", "photovoltaik-eigenverbrauch.html", "strompreis-entwicklung.html", "nachzahlung-pruefen.html", "datenschutz.html", "impressum.html", "404.html"];
 
 // Was nicht in den Index soll: das Impressum (erreichbar, nicht auffindbar)
 // und die Seite für unbekannte Adressen. Beide tragen `noindex`, keine steht
@@ -858,6 +858,49 @@ console.log("\nVerhalten");
   const m2 = await page.evaluate(() => ({ s: document.getElementById("m2-spanne").textContent, m: document.getElementById("m2-median").textContent, W: window.WAERME_JE_M2 }));
   note(m2.s === `${m2.W.von} und ${m2.W.bis}` && m2.m === String(m2.W.median), "Wärmepumpe: der Text nennt dieselben Werte je m² wie der Rechner");
 
+  // **Wärmebedarf aus dem alten Verbrauch.** Rechenweg aus dem Leitfaden des
+  // BürgerNetzwerkSolar Worms (März 2026, Abschnitt 4): Verbrauch × kWh je
+  // Einheit × Nutzungsgrad, geteilt durch die Volllaststunden. 1.800 m³ ×
+  // 10,5 × 0,92 sind 17.388 kWh Wärme, teilsaniert mit 1.650 Stunden 10,5 kW,
+  // die Spanne 1.500 bis 1.800 Stunden ergibt 9,7 bis 11,6 kW. Durch 3,4 sind
+  // es 5.114 kWh Strom.
+  await page.goto(base + "waermebedarf-berechnen.html");
+  const wb = await kachel("waerme");
+  note(wb.wert === "≈ 17.400 kWh" && wb.zusatz === "aus 18.900 kWh Gas",
+       `Wärmebedarf: 1.800 m³ × 10,5 × 0,92 sind rund 17.400 kWh Wärme (${wb.wert}, ${wb.zusatz})`);
+  const hl = await kachel("heizlast");
+  note(hl.wert === "≈ 10,5 kW" && hl.zusatz === "Spanne 9,7 bis 11,6",
+       `Wärmebedarf: teilsaniert 10,5 kW, Spanne 9,7 bis 11,6 (${hl.wert}, ${hl.zusatz})`);
+  note((await kachel("strom")).wert === "≈ 5.100 kWh", `Wärmebedarf: durch 3,4 rund 5.100 kWh Strom (${(await kachel("strom")).wert})`);
+  // Heizöl: 2.150 Liter wie im Beispiel des Leitfadens, aber mit dem älteren
+  // Kessel zu 0,75 statt 0,80: 16.125 kWh, durch 1.650 Stunden 9,8 kW.
+  await page.check('input[name="wb-art"][value="oel"]');
+  note(await page.inputValue("#wb-faktor") === "10" && (await text("#wb-faktor-einheit")) === "kWh/Liter",
+       "Wärmebedarf: bei Heizöl rechnet die Umrechnung mit 10 kWh je Liter");
+  await page.fill("#wb-menge", "2.150"); await page.selectOption("#wb-kessel", "alt");
+  const oel = await kachel("waerme");
+  note(oel.wert === "≈ 16.100 kWh" && oel.zusatz === "aus 21.500 kWh Heizöl" && (await kachel("heizlast")).wert === "≈ 9,8 kW",
+       `Wärmebedarf: 2.150 Liter Heizöl, älterer Kessel, sind 16.100 kWh und 9,8 kW (${oel.wert}, ${(await kachel("heizlast")).wert})`);
+  // Gas schon in kWh: Das Feld für die Umrechnung verschwindet.
+  await page.check('input[name="wb-art"][value="gaskwh"]');
+  note(!(await page.isVisible("#wb-faktor")), "Wärmebedarf: bei Gas in kWh gibt es nichts umzurechnen");
+  await page.fill("#wb-menge", "20.000"); await page.selectOption("#wb-kessel", "brennwert"); await page.selectOption("#wb-haus", "unsaniert");
+  const wbHeizlast = await kachel("heizlast");
+  note((await kachel("waerme")).wert === "≈ 18.400 kWh" && wbHeizlast.wert === "≈ 9,2 kW" && wbHeizlast.zusatz === "Spanne 8,4 bis 10,2",
+       `Wärmebedarf: 20.000 kWh Gas, unsaniert, sind 9,2 kW (${wbHeizlast.wert}, ${wbHeizlast.zusatz})`);
+  await page.fill("#wb-menge", "");
+  note((await text("#wb-ergebnis")).includes("Verbrauch") && !(await kaputt("#wb-ergebnis")),
+       "Wärmebedarf: ohne Verbrauch ein Hinweis statt einer kaputten Zahl");
+  const vl = await page.evaluate(() => {
+    const H = window.HAUS, f = n => n.toLocaleString("de-DE");
+    const zeilen = [...document.querySelectorAll("#volllast tbody tr")];
+    return zeilen.filter(tr => {
+      const h = H[tr.dataset.haus], td = [...tr.querySelectorAll("td")].map(t => t.textContent.trim());
+      return !h || td[0] !== f(h.von) + " bis " + f(h.bis) || td[1] !== f(h.mitte);
+    }).length + (zeilen.length === Object.keys(H).length ? 0 : 1);
+  });
+  note(vl === 0, "Wärmebedarf: die Tabelle der Volllaststunden nennt dieselben Werte wie der Rechner");
+
   // **Photovoltaik.** 8.000 kWh erzeugt, 5.200 eingespeist: 2.800 selbst
   // verbraucht, 35 % des Solarstroms. Mit 2.900 kWh Bezug sind es 5.700 kWh
   // Verbrauch, davon 49 % vom Dach. Bei 28 ct nicht gekauft: 784 €.
@@ -993,7 +1036,7 @@ console.log("\nVerhalten");
   // klare Benennungen. Gezählt wird, was sonst schleichend wieder wächst:
   // der Hinweis unter einem Feld, der Text im Ergebnis, und wo der Rechner
   // steht.
-  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "photovoltaik-eigenverbrauch.html", "nachzahlung-pruefen.html"]) {
+  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "photovoltaik-eigenverbrauch.html", "nachzahlung-pruefen.html"]) {
     await page.goto(base + datei);
     const blick = await page.evaluate(() => {
       const erg = document.querySelector(".rechner-ergebnis");
@@ -1024,7 +1067,7 @@ console.log("\nVerhalten");
   // neben einem einzeiligen hat die Felder um acht Punkte versetzt; gesehen
   // habe ich es erst auf dem Bildschirmfoto.
   await page.setViewportSize({ width: 1280, height: 900 });
-  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "photovoltaik-eigenverbrauch.html", "nachzahlung-pruefen.html"]) {
+  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "photovoltaik-eigenverbrauch.html", "nachzahlung-pruefen.html"]) {
     await page.goto(base + datei);
     const versatz = await page.evaluate(() => {
       const reihen = {};
@@ -1045,7 +1088,7 @@ console.log("\nVerhalten");
   // „2.702 kWh" mitten in der Zahl um. Gemessen breit und schmal.
   for (const breite of [1280, 390]) {
     await page.setViewportSize({ width: breite, height: 900 });
-    for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "photovoltaik-eigenverbrauch.html", "nachzahlung-pruefen.html"]) {
+    for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "photovoltaik-eigenverbrauch.html", "nachzahlung-pruefen.html"]) {
       await page.goto(base + datei);
       const mass = await page.evaluate(() => {
         // Nur sichtbare: Der Stromkostenrechner blendet die Felder des anderen
@@ -1083,7 +1126,7 @@ console.log("\nVerhalten");
   // **Groß genug für einen Daumen.** Wer mit der Rechnung in der einen Hand
   // tippt, trifft ein kleines Feld nicht.
   await page.setViewportSize({ width: 390, height: 900 });
-  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "photovoltaik-eigenverbrauch.html", "nachzahlung-pruefen.html", "zaehlerstand-umzug.html"]) {
+  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "photovoltaik-eigenverbrauch.html", "nachzahlung-pruefen.html", "zaehlerstand-umzug.html"]) {
     await page.goto(base + datei);
     const klein = await page.evaluate(() =>
       [...document.querySelectorAll(".rechner input, .rechner select, main button")]

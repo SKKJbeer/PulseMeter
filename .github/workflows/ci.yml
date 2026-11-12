@@ -52,7 +52,11 @@ jobs:
   # Zähler ließ sich im Entwurf nicht ablesen. Gefunden hat es der Gründer
   # beim Ausprobieren.
   prototype:
-    runs-on: ubuntu-latest
+    # Fest auf 24.04 seit 11. November: Mit dem neuen Abbild hinter
+    # `ubuntu-latest` (Ubuntu 26.04) löste der Läufer die Paketquellen nicht
+    # auf, und `playwright install --with-deps webkit` hing zweimal bis zum
+    # Abbruch nach 20 Minuten, obwohl alle Prüfungen davor grün waren.
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     concurrency:
       group: entwurf-${{ github.event.pull_request.head.ref || github.ref_name }}

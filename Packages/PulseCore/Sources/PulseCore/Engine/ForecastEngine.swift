@@ -577,11 +577,25 @@ public enum ForecastEngine {
             if forecast.method.rank < weakest.rank { weakest = forecast.method }
             let measured = forecast.actual.quantity.value
             let scale: Decimal = measured > 0 ? forecast.projected.value / measured : 1
-            projectedEnergy += energy * scale
-            if istEinspeisung {
-                projectedFeedIn += energy * scale
+            // **Ein Preiswechsel im Zeitraum (1.7).** Mit einem Preis ist das
+            // Hochskalieren dasselbe wie „Rest mal Preis“. Mit zweien nicht:
+            // Eine Erhöhung ab dem 1. September stünde erst in der Zahl, wenn
+            // der September gemessen ist, und eine angekündigte zum 1. Januar
+            // gar nicht. Dann bleibt Gemessenes, wie es ist, und der Rest
+            // kostet je Abschnitt den Preis, der dort gilt.
+            let projectedAmount: Decimal
+            if let split = try remainderCost(
+                register: register, forecast: forecast, tariffs: relevant,
+                period: period.range, kind: meteringPoint.kind) {
+                projectedAmount = energy + split
             } else {
-                projectedDraw += energy * scale
+                projectedAmount = energy * scale
+            }
+            projectedEnergy += projectedAmount
+            if istEinspeisung {
+                projectedFeedIn += projectedAmount
+            } else {
+                projectedDraw += projectedAmount
                 measuredDraw += forecast.actual.quantity.value
                 projectedDrawQuantity += forecast.projected.value
                 drawUnit = drawUnit ?? forecast.projected.unit
@@ -594,7 +608,9 @@ public enum ForecastEngine {
         // Hochgerechnet wird er über die abgerechneten Tage, nicht über die
         // gemessenen: Der Grundpreis läuft auch weiter, wenn niemand abliest.
         let elapsedDays = Swift.min(today, period.range.end).days(since: period.range.start)
-        let fullBase = costSoFar.baseAmount.amount
+        let fullBase = try fullBasePrice(meteringPoint: meteringPoint, tariffs: relevant,
+                                         period: period.range)
+            ?? costSoFar.baseAmount.amount
             * Decimal(period.range.spanInDays)
             / Decimal(Swift.max(1, elapsedDays))
         let projectedTotal = projectedEnergy + fullBase
@@ -622,6 +638,88 @@ public enum ForecastEngine {
             method: weakest,
             breakdown: aufschluesselung
         )
+    }
+
+    /// Was der noch nicht gemessene Rest kostet, je Preisabschnitt.
+    ///
+    /// `nil`, solange im Zeitraum nur ein Preis gilt: Dann bleibt die bisherige
+    /// Rechnung, und keine Zahl ändert sich für jemanden, der nie einen neuen
+    /// Preis anlegt.
+    ///
+    /// Verteilt wird nach der Jahresform des Zählers, nicht nach Tagen. Bei Gas
+    /// fällt von September bis Dezember ein Vielfaches dessen an, was die Tage
+    /// hergäben. Ohne Jahresform (Wasser) nach Tagen.
+    static func remainderCost(
+        register: Register,
+        forecast: Forecast,
+        tariffs: [Tariff],
+        period: DayRange,
+        kind: ResourceKind
+    ) throws -> Decimal? {
+        let segments = try CostEngine.segmentsOfValidity(for: register, tariffs: tariffs, in: period)
+        guard segments.count > 1 else { return nil }
+        let rest = Swift.max(0, forecast.projected.value - forecast.actual.quantity.value)
+        guard rest > 0 else { return 0 }
+
+        let profile = SeasonalProfile.reference(for: kind, direction: register.direction)
+        func weight(_ range: DayRange) -> Decimal {
+            profile?.share(of: range) ?? Decimal(range.spanInDays)
+        }
+        func overlap(_ a: DayRange, _ b: DayRange) -> DayRange? {
+            DayRange(start: Swift.max(a.start, b.start), end: Swift.min(a.end, b.end))
+        }
+        // Nicht gemessen: vor der ersten und nach der letzten Ablesung im Zeitraum.
+        let open: [DayRange]
+        if let covered = forecast.actual.coveredRange {
+            open = [DayRange(start: period.start, end: covered.start),
+                    DayRange(start: covered.end, end: period.end)].compactMap { $0 }
+        } else {
+            open = [period]
+        }
+        let weights = segments.map { segment in
+            open.reduce(Decimal(0)) { sum, window in
+                sum + (overlap(segment.0, window).map(weight) ?? 0)
+            }
+        }
+        let total = weights.reduce(0, +)
+        let unit = forecast.projected.unit
+        let sign: Decimal = register.direction == .feedIn ? -1 : 1
+        var amount = Decimal(0)
+        for (index, segment) in segments.enumerated() {
+            let share: Decimal = total > 0
+                ? weights[index] / total
+                : (index == segments.count - 1 ? 1 : 0)
+            guard share > 0 else { continue }
+            let billed = try CostEngine.billedQuantity(Quantity(rest * share, unit),
+                                                       register: register, tariff: segment.1)
+            amount += billed.value * CostEngine.price(for: register, tariff: segment.1) * sign
+        }
+        return amount
+    }
+
+    /// Der Grundpreis über den ganzen Zeitraum, je Abschnitt mit seinem
+    /// Preis. `nil` bei einem Preis; dann bleibt die bisherige Hochrechnung.
+    ///
+    /// Gezählt wie in ``CostEngine/cost(meteringPoint:readings:tariffs:in:)``:
+    /// derselbe Tarif im selben Abschnitt ist derselbe Grundpreis, auch wenn
+    /// zwei Zählwerke ihn teilen.
+    static func fullBasePrice(
+        meteringPoint: MeteringPoint,
+        tariffs: [Tariff],
+        period: DayRange
+    ) throws -> Decimal? {
+        struct Key: Hashable { let id: Tariff.ID; let range: DayRange }
+        var seen: Set<Key> = []
+        var total = Decimal(0)
+        var anySplit = false
+        for register in meteringPoint.registers {
+            let segments = try CostEngine.segmentsOfValidity(for: register, tariffs: tariffs, in: period)
+            if segments.count > 1 { anySplit = true }
+            for (range, tariff) in segments where seen.insert(Key(id: tariff.id, range: range)).inserted {
+                total += CostEngine.dailyBasePrice(tariff, in: range) * Decimal(range.spanInDays)
+            }
+        }
+        return anySplit ? total : nil
     }
 
     private static func cost(

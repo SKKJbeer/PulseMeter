@@ -637,6 +637,14 @@ struct MeterEditor: View {
     /// und beim Sichern müssen ihre Kennungen erhalten bleiben — sonst entstünde
     /// bei jedem Speichern ein neuer Tarif neben dem alten.
     @State private var existingTariffs: [Tariff] = []
+    /// Der Preisverlauf, neueste Generation zuerst (1.7). Die Felder oben
+    /// gehören der neuesten; ältere ändert nur „Neuer Preis ab …“, indem es
+    /// sie am Vortag schließt, und „Löschen“ bei der jüngsten.
+    @State private var tariffGenerations: [TariffHistory.Generation] = []
+    /// Heizwert von Heizöl in kWh je Liter, als Text wie die Preise.
+    @State private var heatingValue = ""
+    @State private var addingPrice = false
+    @State private var confirmingPriceDelete = false
     /// Ob der Zähler auch in die andere Richtung zählt.
     ///
     /// Nur bei Strom sichtbar. Der Rechenkern kann Zweirichtungszähler seit
@@ -885,6 +893,26 @@ struct MeterEditor: View {
             .sheet(item: $paywallReason) { produkt in
                 UnlockSheet(product: produkt)
             }
+            .sheet(isPresented: $addingPrice) {
+                if let existing = draft.existing {
+                    NewPriceSheet(meteringPoint: existing) {
+                        fillTariffs(existing, repository: PulseRepository(context: context))
+                        onDone()
+                    }
+                }
+            }
+            // Am Formular, nicht an der Abschnittszeile: Ein Dialog an einem
+            // Abschnitt, der nur unter einer Bedingung steht, ging im
+            // Oberflächentest nicht auf.
+            .confirmationDialog("Jüngsten Preis löschen?", isPresented: $confirmingPriceDelete,
+                                titleVisibility: .visible) {
+                Button("Preis löschen", role: .destructive) {
+                    if let existing = draft.existing { removeNewestPrice(of: existing) }
+                }
+                Button("Abbrechen", role: .cancel) { }
+            } message: {
+                Text("Danach gilt wieder der vorige Preis, auch für die Zeit danach.")
+            }
             .confirmationDialog("Wirklich löschen?", isPresented: $confirmingDelete, titleVisibility: .visible) {
                 Button("Löschen", role: .destructive) { deletePermanently() }
                 Button("Abbrechen", role: .cancel) { }
@@ -972,6 +1000,12 @@ struct MeterEditor: View {
                 numberRow("Brennwert", unit: "kWh/m³", spokenUnit: "Kilowattstunden je Kubikmeter",
                           placeholder: "10,5", text: $calorificValue)
             }
+            // Heizöl hat keinen Brennwert auf der Rechnung. Mit dem Heizwert
+            // steht neben den Litern, wie viele kWh das sind.
+            if kind == .heatingOil {
+                numberRow("Heizwert", unit: "kWh/l", spokenUnit: "Kilowattstunden je Liter",
+                          placeholder: "10", text: $heatingValue)
+            }
             numberRow("Abschlag", unit: "€/Monat", spokenUnit: "Euro je Monat", text: $prepayment)
             if !prepayment.isEmpty {
                 Picker("Abrechnungsjahr ab", selection: $billingMonth) {
@@ -981,11 +1015,126 @@ struct MeterEditor: View {
                 }
             }
         } header: {
-            Text("Preise")
+            Text(preiseUeberschrift)
         } footer: {
             Text(needsGasConversion
                  ? "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Nimm die Preise inklusive Mehrwertsteuer — der Nettopreis steht auf der Rechnung oft daneben und ist rund ein Fünftel kleiner. Zustandszahl und Brennwert stehen ebenfalls auf deiner Gasrechnung; ohne sie lässt sich aus m³ kein Betrag bilden. Mit dem Abschlag rechnet die App aus, ob am Jahresende ein Guthaben oder eine Nachzahlung zu erwarten ist."
+                 : kind == .heatingOil
+                 ? "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Nimm die Preise inklusive Mehrwertsteuer. Mit dem Heizwert steht neben den Litern, wie viele kWh das sind; 10 kWh je Liter ist bei Heizöl üblich. Mit dem Abschlag rechnet die App aus, ob am Jahresende ein Guthaben oder eine Nachzahlung zu erwarten ist."
                  : "Freiwillig — ohne Preise zeigt die App nur den Verbrauch. Nimm die Preise inklusive Mehrwertsteuer — der Nettopreis steht auf der Rechnung oft daneben und ist rund ein Fünftel kleiner. Mit dem Abschlag rechnet die App aus, ob am Jahresende ein Guthaben oder eine Nachzahlung zu erwarten ist.")
+        }
+
+        if let existing = draft.existing, existingTariff != nil {
+            priceHistorySection(existing)
+        }
+    }
+
+    /// „Preise“, oder ab wann die Felder gelten, sobald es mehr als einen
+    /// Preis gibt. Die Überschrift sagt, welchen Preis sie ändern, statt dass
+    /// ein Satz darunter es erklärt.
+    private var preiseUeberschrift: String {
+        guard tariffGenerations.count > 1, let newest = tariffGenerations.first else { return "Preise" }
+        let heute = CalendarDay.containing(Date(), in: .current)
+        return "Preise \(newest.validFrom > heute ? "ab" : "seit") \(datumLang(newest.validFrom))"
+    }
+
+    /// „Neuer Preis ab …“ und der Preisverlauf (1.7).
+    @ViewBuilder
+    private func priceHistorySection(_ existing: MeteringPoint) -> some View {
+        Section {
+            Button {
+                // Was in den Feldern schon getippt ist, gilt zuerst als
+                // gesichert. Sonst ginge eine Korrektur verloren, weil das
+                // Blatt den bisherigen Preis als Vorlage nimmt.
+                let repository = PulseRepository(context: context)
+                try? saveTariff(for: existing, in: repository)
+                fillTariffs(existing, repository: repository)
+                addingPrice = true
+            } label: {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Neuer Preis ab …").foregroundStyle(PulseColor.ink)
+                    Text("Preiserhöhung oder neuer Anbieter")
+                        .font(PulseText.caption)
+                        .foregroundStyle(PulseColor.inkSecondary)
+                }
+            }
+            .accessibilityIdentifier("neuer-preis")
+        }
+        if tariffGenerations.count > 1 {
+            Section {
+                ForEach(Array(tariffGenerations.enumerated()), id: \.element.validFrom) { index, generation in
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(zeitraumText(generation, index: index))
+                            Text(preisText(generation, of: existing))
+                                .font(PulseText.caption)
+                                .foregroundStyle(PulseColor.inkSecondary)
+                        }
+                        .accessibilityElement(children: .combine)
+                        // Am zusammengefassten Element, nicht an der Zeile:
+                        // Dort erbte auch der Löschen-Knopf die Kennung, und
+                        // ein Test zählte zwei Zeilen, wo eine steht.
+                        .accessibilityIdentifier("preiszeile")
+                        Spacer()
+                        if index == 0 {
+                            Button("Löschen", role: .destructive) { confirmingPriceDelete = true }
+                                .buttonStyle(.borderless)
+                                .accessibilityIdentifier("preis-loeschen")
+                        }
+                    }
+                }
+            } header: {
+                Text("Preisverlauf")
+            }
+        }
+    }
+
+    private func zeitraumText(_ generation: TariffHistory.Generation, index: Int) -> String {
+        let heute = CalendarDay.containing(Date(), in: .current)
+        let istAeltester = index == tariffGenerations.count - 1
+        if let ende = generation.validTo {
+            return istAeltester ? "bis \(datumLang(ende))"
+                : "\(datumLang(generation.validFrom)) bis \(datumLang(ende))"
+        }
+        return "\(generation.validFrom > heute ? "ab" : "seit") \(datumLang(generation.validFrom))"
+    }
+
+    /// Der Arbeitspreis, beim Doppeltarif beide, dazu der Grundpreis.
+    private func preisText(_ generation: TariffHistory.Generation, of point: MeteringPoint) -> String {
+        let draws = point.registers.filter { $0.direction == .consumption }
+        let einheit = billingUnitSymbol
+        var teile: [String] = []
+        if draws.count > 1 {
+            let tag = generation.tariff(for: draws[0].id)?.pricePerUnit
+            let nacht = generation.tariff(for: draws[1].id)?.pricePerUnit
+            if let tag { teile.append("tags \(preis(tag)) €") }
+            if let nacht { teile.append("nachts \(preis(nacht)) €") }
+        } else if let haupt = generation.tariff(for: draws.first?.id) {
+            teile.append("\(preis(haupt.pricePerUnit)) €/\(einheit)")
+        }
+        let grund = generation.tariffs.map(\.monthlyBasePrice).max() ?? 0
+        if grund > 0 { teile.append("\(geld(grund))/Monat") }
+        return teile.joined(separator: " · ")
+    }
+
+    private func preis(_ value: Decimal) -> String {
+        value.formatted(.number.precision(.fractionLength(2...4)).locale(Locale(identifier: "de_DE")))
+    }
+
+    private func geld(_ value: Decimal) -> String {
+        value.formatted(.currency(code: "EUR").locale(Locale(identifier: "de_DE")))
+    }
+
+    private func removeNewestPrice(of existing: MeteringPoint) {
+        do {
+            let repository = PulseRepository(context: context)
+            let before = try repository.tariffs(for: existing.id)
+            let after = try TariffHistory.removingNewest(tariffs: before, meteringPointID: existing.id)
+            try speichereTarife(vorher: before, nachher: after, in: repository)
+            fillTariffs(existing, repository: repository)
+            onDone()
+        } catch {
+            problem = "Der Preis ließ sich nicht löschen: \(error.localizedDescription)"
         }
     }
 
@@ -1034,6 +1183,24 @@ struct MeterEditor: View {
     /// Zähler, die in m³ messen und in kWh abgerechnet werden.
     private var needsGasConversion: Bool { kind == .gas }
 
+    /// Die Umrechnung aus den Feldern: bei Gas Zustandszahl und Brennwert,
+    /// bei Heizöl der Heizwert (1.7). Heizöl wird weiter in Litern
+    /// abgerechnet; die Umrechnung dient nur der Anzeige in kWh
+    /// (`EnergyDisplay`), und der Rechenkern rechnet nur über Dimensionen
+    /// hinweg um.
+    private var conversionFromInput: GasConversion? {
+        if needsGasConversion {
+            return GasConversion(
+                stateNumber: decimalValue(stateNumber) ?? GasConversion.typical.stateNumber,
+                calorificValue: decimalValue(calorificValue) ?? GasConversion.typical.calorificValue)
+        }
+        if kind == .heatingOil {
+            return EnergyDisplay.heatingOilConversion(
+                kWhPerLitre: decimalValue(heatingValue) ?? EnergyDisplay.typicalHeatingOilKWhPerLitre)
+        }
+        return nil
+    }
+
     private var billingUnitSymbol: String {
         needsGasConversion ? "kWh" : kind.defaultUnit.symbol
     }
@@ -1069,10 +1236,21 @@ struct MeterEditor: View {
         }
         fillBilling(existing)
 
-        // Der zuletzt gültige Tarif. Mehrere Tarife über die Zeit kann der
-        // Rechenkern längst; die Oberfläche bearbeitet vorerst nur den
-        // aktuellen — ein Preisverlauf ist eine eigene Ansicht.
-        let all = (try? repository.tariffs(for: existing.id)) ?? []
+        fillTariffs(existing, repository: repository)
+    }
+
+    /// Die Preise der jüngsten Generation in die Felder.
+    ///
+    /// Eigene Funktion, weil „Neuer Preis ab …“ sie nach dem Sichern wieder
+    /// braucht, ohne Name und Art zu überschreiben, die gerade getippt sind.
+    private func fillTariffs(_ existing: MeteringPoint, repository: PulseRepository) {
+        let draws = existing.registers.filter { $0.direction == .consumption }
+        let stored = (try? repository.tariffs(for: existing.id)) ?? []
+        tariffGenerations = TariffHistory.generations(of: stored, meteringPointID: existing.id)
+        // **Nur die jüngste Generation.** Bis 1.6 suchte diese Stelle in allen
+        // Tarifen; mit einem Preisverlauf fände `last` dort einen alten und
+        // schriebe beim Sichern seinen Preis über den aktuellen.
+        let all = tariffGenerations.first?.tariffs ?? []
         existingTariffs = all
 
         // Der Tarif des ersten Bezugs-Zählwerks führt Arbeitspreis, Grundpreis
@@ -1096,8 +1274,12 @@ struct MeterEditor: View {
         pricePerUnit = decimalText(tariff.pricePerUnit)
         monthlyBasePrice = decimalText(tariff.monthlyBasePrice)
         if let conversion = tariff.gasConversion {
-            stateNumber = decimalText(conversion.stateNumber)
-            calorificValue = decimalText(conversion.calorificValue)
+            if existing.kind == .heatingOil {
+                heatingValue = decimalText(EnergyDisplay.kWhPerLitre(conversion))
+            } else {
+                stateNumber = decimalText(conversion.stateNumber)
+                calorificValue = decimalText(conversion.calorificValue)
+            }
         }
     }
 
@@ -1227,15 +1409,12 @@ struct MeterEditor: View {
         let base = decimalValue(monthlyBasePrice)
         guard price != nil || base != nil else { return }
 
-        let conversion: GasConversion? = needsGasConversion
-            ? GasConversion(
-                stateNumber: decimalValue(stateNumber) ?? GasConversion.typical.stateNumber,
-                calorificValue: decimalValue(calorificValue) ?? GasConversion.typical.calorificValue)
-            : nil
+        let conversion: GasConversion? = conversionFromInput
 
         // Gültig ab dem ersten Tag des laufenden Jahres, damit die Kosten des
-        // laufenden Jahres sofort einen Tarif haben. Preisänderungen mit
-        // eigenem Startdatum folgen mit der Preisverlauf-Ansicht.
+        // laufenden Jahres sofort einen Tarif haben. Ein Preis ab einem
+        // anderen Tag kommt über „Neuer Preis ab …“ (`TariffHistory`); hier
+        // wird nur die jüngste Generation geändert, mit ihrem Beginn.
         let from = existingTariff?.validFrom
             ?? CalendarDay(year: CalendarDay.containing(Date(), in: .current).year, month: 1, day: 1)
             ?? CalendarDay.containing(Date(), in: .current)

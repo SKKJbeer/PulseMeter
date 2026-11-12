@@ -88,6 +88,27 @@ die es schon haben). Dann 10,94 € einzeln gegen 4,99 € im Bündel, 54 % gesp
 Ziffernblock, Eintrag im Bündel). Die Tabelle oben wird erst geändert,
 wenn der Kauf im Laden steht; bis dahin verspricht sie nur, was es gibt.
 
+**Geplant für 1.9, entschieden am 11. November:** ein eigener Kauf
+**„Wärmepumpe“ für 4,99 €**, einmal, kein Abo. Er schaltet den Wechsel
+(„Heizung gewechselt am …“, Vorher-Nachher-Karte) und später in 2.0 die
+Jahresarbeitszahl, den Heizstab-Hinweis und den Jahresbericht frei. Zielgruppe sind Wechsler und
+Besitzer einer Wärmepumpe. Gas und Heizöl in kWh und der neue Tarif ab einem
+Tag (1.8) bleiben in „Kosten und Preise“, weil Käufer dafür schon bezahlt
+haben. Der Kauf gehört ins Bündel. Das kostet heute selbst 4,99 €, sein neuer
+Preis wird vor 1.9 entschieden. Konzept:
+https://claude.ai/artifact/97TGsn8x5pJwi9NkMsaKq4
+
+**Geplant für Februar bis April 2027, entschieden am 11. November:** ein
+zweiter Kauf **„Wechsel-Paket“ für 14,99 €**, einmal, für alle, die den
+Wechsel noch vor sich haben: Heizlast aus dem eigenen Verbrauch, Gegenprobe
+für Angebote, Mappe für den Fachbetrieb. Die Mappe wandert dafür aus 1.9 in
+dieses Paket. 2.0 mit der Jahresarbeitszahl rückt in den Sommer. Entwurf:
+https://claude.ai/artifact/Qe8L7RyU5gnFHKvnRupK9b
+
+**Vermittlung, entschieden am 11. November:** gekennzeichnete Vermittlung an
+Fachbetriebe mit Provision, nur auf der Website und nie in der App, und erst
+ab 5.000 Besuchen im Monat auf den Wärmepumpen-Seiten.
+
 **Warum die Erinnerung einen Euro unter den anderen liegt, seit 0.100.0.** Sie
 war bis dahin kostenlos, und der Gründer wollte sie kostenpflichtig, damit das
 Bündel deutlicher lohnt. Beides ist eingetreten: Die Summe der Einzelkäufe
