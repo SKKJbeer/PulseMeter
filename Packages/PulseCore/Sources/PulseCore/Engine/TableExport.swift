@@ -57,40 +57,122 @@ public enum TableExport {
         meteringPoint: MeteringPoint,
         meterName: String
     ) -> String {
-        let registers = meteringPoint.registers
-        guard registers.count > 1, let first = registers.first else {
-            let register = meteringPoint.primaryRegister
-                ?? Register(unit: meteringPoint.kind.defaultUnit)
-            return self.readings(readings, register: register, meterName: meterName)
-        }
+        // Dieselbe Umsetzung wie „Alle Zähler als Tabelle“, mit einem Zähler.
+        // Zwei Umsetzungen würden auseinanderlaufen, und dann passten eine
+        // Datei aus dem Verlauf und eine aus dem Zähler-Tab nicht mehr
+        // nebeneinander.
+        table([Block(name: meterName, meteringPoint: meteringPoint, readings: readings)])
+    }
 
-        let byID = Dictionary(uniqueKeysWithValues: registers.map { ($0.id, $0) })
-        // Reihenfolge wie am Gerät, damit die Zeilen eines Tages so
-        // untereinanderstehen wie sie abgelesen wurden.
-        let order = Dictionary(uniqueKeysWithValues: registers.enumerated().map { ($0.element.id, $0.offset) })
+    /// Ein Zähler mit seinen Ablesungen, für ``allMeters(_:)``.
+    public struct MeterReadings: Sendable {
+        public let meteringPoint: MeteringPoint
+        public let readings: [Reading]
 
-        let mitUhrzeit = readings.contains { $0.time != nil }
-        var lines = ["Zähler\(separator)Bezeichnung\(separator)Datum"
-            + (mitUhrzeit ? "\(separator)Uhrzeit" : "")
-            + "\(separator)Stand\(separator)Einheit\(separator)Art"]
-        // Tag, dann Uhrzeit, dann Reihenfolge am Gerät. Die Zählwerke einer
-        // Ablesung bleiben damit beieinander, und zwei Ablesungen desselben
-        // Tages stehen in der Reihenfolge, in der sie abgelesen wurden.
-        let sorted = readings.sorted {
-            if $0.day != $1.day { return $0.day < $1.day }
-            if let links = $0.time, let rechts = $1.time, links != rechts { return links < rechts }
-            return (order[$0.registerID] ?? 0) < (order[$1.registerID] ?? 0)
+        public init(meteringPoint: MeteringPoint, readings: [Reading]) {
+            self.meteringPoint = meteringPoint
+            self.readings = readings
         }
-        for reading in sorted {
-            let register = byID[reading.registerID] ?? first
-            var felder = [escape(meterName), escape(name(of: register)), isoDate(reading.day)]
-            if mitUhrzeit { felder.append(reading.time?.description ?? "") }
-            felder.append(contentsOf: [
-                decimal(reading.value, digits: register.fractionDigits),
-                escape(register.unit.symbol),
-                origin(reading.origin)
-            ])
-            lines.append(felder.joined(separator: separator))
+    }
+
+    /// Alle Ablesungen aller Zähler in **einer** Tabelle.
+    ///
+    /// Aus einer Rezension im Laden (12. November 2026): sieben Zähler, und
+    /// jeder musste einzeln verschickt werden. Die Spalten sind dieselben wie
+    /// beim Export je Zähler, damit beide Dateien nebeneinander passen und ein
+    /// Filter auf „Zähler“ die Datei je Zähler zurückgibt.
+    ///
+    /// Reihenfolge: Zähler wie übergeben (die App gibt sie wie im Tab
+    /// „Zähler“), darin nach Datum. „Bezeichnung“ und „Uhrzeit“ stehen da,
+    /// sobald **ein** Zähler sie braucht — eine Tabelle hat für alle Zeilen
+    /// dieselben Spalten, sonst verrutscht sie in Excel.
+    ///
+    /// Zwei Zähler mit demselben Namen bekämen sonst dieselben Zeilen-Köpfe,
+    /// und beim Wiedereinlesen würden sie zu einem verschmolzen. Der zweite
+    /// heißt deshalb „Wasser (2)“.
+    public static func allMeters(_ meters: [MeterReadings]) -> String {
+        var vergeben: [String: Int] = [:]
+        var blocks: [Block] = []
+        for meter in meters {
+            let name = meter.meteringPoint.name
+            let anzahl = (vergeben[name] ?? 0) + 1
+            vergeben[name] = anzahl
+            blocks.append(Block(name: anzahl == 1 ? name : "\(name) (\(anzahl))",
+                                meteringPoint: meter.meteringPoint,
+                                readings: meter.readings))
+        }
+        return table(blocks)
+    }
+
+    struct Block {
+        let name: String
+        let meteringPoint: MeteringPoint
+        let readings: [Reading]
+    }
+
+    /// Die eine Umsetzung hinter beiden Exporten.
+    ///
+    /// **Warum es die Spalte „Bezeichnung“ gibt.** Ein Doppeltarifzähler führt
+    /// zwei Zahlen. Wer nur die des ersten Zählwerks exportiert, verliert beim
+    /// Export die Hälfte seiner Daten — und merkt es an der Datei nicht, weil
+    /// sie vollständig aussieht. Produktprinzip 5 ist damit gebrochen, bevor
+    /// jemand die Datei öffnet.
+    ///
+    /// Die Spalte steht nur da, wenn es irgendwo mehr als eine Zahl gibt. Bei
+    /// gewöhnlichen Zählern bliebe sie leer und wäre eine Frage ohne Anlass.
+    /// Dasselbe gilt für „Uhrzeit“.
+    static func table(_ blocks: [Block]) -> String {
+        let mitBezeichnung = blocks.contains { $0.meteringPoint.registers.count > 1 }
+        let mitUhrzeit = blocks.contains { $0.readings.contains { $0.time != nil } }
+
+        var kopf = ["Zähler"]
+        if mitBezeichnung { kopf.append("Bezeichnung") }
+        kopf.append("Datum")
+        if mitUhrzeit { kopf.append("Uhrzeit") }
+        kopf.append(contentsOf: ["Stand", "Einheit", "Art"])
+        var lines = [kopf.joined(separator: separator)]
+
+        for block in blocks {
+            let punkt = block.meteringPoint
+            let registers = punkt.registers
+            let fallback = punkt.primaryRegister ?? registers.first
+                ?? Register(unit: punkt.kind.defaultUnit)
+            let byID = Dictionary(registers.map { ($0.id, $0) }, uniquingKeysWith: { erstes, _ in erstes })
+            // Reihenfolge wie am Gerät, damit die Zeilen eines Tages so
+            // untereinanderstehen wie sie abgelesen wurden.
+            let order = Dictionary(registers.enumerated().map { ($0.element.id, $0.offset) },
+                                   uniquingKeysWith: { erstes, _ in erstes })
+
+            let sorted: [Reading]
+            if registers.count > 1 {
+                // Tag, dann Uhrzeit, dann Reihenfolge am Gerät. Die Zählwerke
+                // einer Ablesung bleiben damit beieinander.
+                sorted = block.readings.sorted {
+                    if $0.day != $1.day { return $0.day < $1.day }
+                    if let links = $0.time, let rechts = $1.time, links != rechts { return links < rechts }
+                    return (order[$0.registerID] ?? 0) < (order[$1.registerID] ?? 0)
+                }
+            } else {
+                sorted = block.readings.chronological()
+            }
+
+            for reading in sorted {
+                // Ein gewöhnlicher Zähler hat ein Zählwerk; jede seiner
+                // Ablesungen gehört dazu, auch wenn die Kennung abweicht.
+                let register = registers.count > 1 ? (byID[reading.registerID] ?? fallback) : fallback
+                var felder = [escape(block.name)]
+                if mitBezeichnung {
+                    felder.append(registers.count > 1 ? escape(name(of: register)) : "")
+                }
+                felder.append(isoDate(reading.day))
+                if mitUhrzeit { felder.append(reading.time?.description ?? "") }
+                felder.append(contentsOf: [
+                    decimal(reading.value, digits: register.fractionDigits),
+                    escape(register.unit.symbol),
+                    origin(reading.origin)
+                ])
+                lines.append(felder.joined(separator: separator))
+            }
         }
         return lines.joined(separator: "\r\n") + "\r\n"
     }

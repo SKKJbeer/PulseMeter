@@ -116,7 +116,14 @@ def verwendet(text: str, name: str) -> bool:
     der zufällig gleich heißt. Ohne diese Einschränkung schlägt die Prüfung
     bei jedem `row.value` an, dessen lokale Fassung gerade weggefallen ist.
     """
-    return re.search(rf"(?<![.\w]){re.escape(name)}\b", text) is not None
+    #
+    # **Eine Argumentbeschriftung zählt auch nicht** (0.165.0). Aus
+    # `HistoryView` wanderte `CSVAusgabe` samt `let dateiname` in eine eigene
+    # Datei; stehen blieb `CSVAusgabe(dateiname: …)` — keine Verwendung einer
+    # Variablen, sondern die Beschriftung eines Arguments. Erkannt am
+    # Doppelpunkt direkt dahinter; der Bedingungsoperator steht in diesem
+    # Projekt mit Leerzeichen (`a ? b : c`) und bleibt damit eine Verwendung.
+    return re.search(rf"(?<![.\w]){re.escape(name)}\b(?!:(?!:))", text) is not None
 
 
 def main() -> int:

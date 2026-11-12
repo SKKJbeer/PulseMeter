@@ -1014,7 +1014,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>Zählora</h1>
-  <p>Klickbarer Entwurf · v0.162.0</p>
+  <p>Klickbarer Entwurf · v0.165.0</p>
 </div>
 
 <div class="device" id="device">
@@ -1143,9 +1143,9 @@ select.field { cursor: pointer; }
         <button type="button" data-open="download">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"
                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M4 20h16"/>
+            <path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/>
           </svg>
-          Tabellen
+          Tabelle sichern oder teilen
         </button>
       </div>
 
@@ -1204,6 +1204,12 @@ select.field { cursor: pointer; }
       <div class="list">
         <button type="button" class="rowbtn" id="imp-open"><span class="rl">Aus einer Tabelle einlesen<small>Stände aus Excel, Numbers oder einer Datei</small></span>
           <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button>
+      </div>
+      <!-- Was hineinkommt, kommt hier auch wieder heraus (0.165.0, aus einer
+           Rezension: sieben Zähler, jeder einzeln verschickt). Ab zwei Zählern. -->
+      <div class="list" id="export-alle-wrap">
+        <button type="button" class="rowbtn" data-export="all"><span class="rl">Alle Zähler als Tabelle<small>Alle Ablesungen in einer CSV-Datei, für Excel oder Numbers</small></span>
+          <span class="freebadge">frei</span></button>
       </div>
       </div><!-- /buehne -->
 
@@ -1454,10 +1460,10 @@ select.field { cursor: pointer; }
   </div>
 
   <!-- Tabellen -->
-  <div class="sheet" id="sheet-download" role="dialog" aria-modal="true" aria-label="Tabellen herunterladen">
+  <div class="sheet" id="sheet-download" role="dialog" aria-modal="true" aria-label="Tabelle sichern oder teilen">
     <div class="grabber"></div>
     <div class="sheet-head">
-      <div class="sheet-title">Tabellen</div>
+      <div class="sheet-title">Tabelle sichern oder teilen</div>
       <button type="button" class="sheet-close" data-close>Fertig</button>
     </div>
     <div class="sheet-body" id="dl-body"></div>
@@ -4142,29 +4148,30 @@ const csvNum = (v, d) => v.toFixed(d).replace(".", ",");
    2. Kein „Zählwerk" in der Kopfzeile. Eine exportierte Datei ist ein
       Dokument, und für Dokumente gilt dieselbe Wortliste wie für die
       Oberfläche (CLAUDE.md, Abschnitt „Sprache"). */
-function buildCsv(kind) {
-  const m = METERS.find(x => x.id === histMeter) || METERS[0];
-  const reg = m.registers[0];
+/* Ablesungen als Tabelle, für einen Zähler oder für alle — wie
+   `TableExport.allMeters` in PulseCore, eine Umsetzung für beide.
 
-  if (kind === "readings") {
-    // **Alle Zählwerke, nicht nur das erste.** Bei einem Zähler mit zwei
-    // Zahlen verlöre der Export sonst die Hälfte — und die Datei sähe
-    // vollständig aus. Die Spalte „Bezeichnung" steht nur da, wo es mehr als
-    // eine Zahl gibt; sonst wäre sie eine Frage ohne Anlass.
-    const many = m.registers.length > 1;
-    // Die Spalte „Uhrzeit" steht nur da, wenn wenigstens eine Ablesung eine
-    // trägt — wie „Bezeichnung". Eine leere Spalte ist eine Frage ohne Anlass.
-    const mitZeit = m.registers.some(r => r.readings.some(a => a.t != null));
-    const lines = ["Zähler" + (many ? ";Bezeichnung" : "") + ";Datum"
-                   + (mitZeit ? ";Uhrzeit" : "") + ";Stand;Einheit;Art"];
+   **Alle Zählwerke, nicht nur das erste.** Bei einem Zähler mit zwei Zahlen
+   verlöre der Export sonst die Hälfte, und die Datei sähe vollständig aus.
+   „Bezeichnung" und „Uhrzeit" stehen da, sobald **ein** Zähler sie braucht:
+   Eine Tabelle hat für alle Zeilen dieselben Spalten. Zwei Zähler mit gleichem
+   Namen bleiben unterscheidbar („Wasser (2)"). */
+function csvReadings(list) {
+  const many = list.some(m => m.registers.length > 1);
+  const mitZeit = list.some(m => m.registers.some(r => r.readings.some(a => a.t != null)));
+  const lines = ["Zähler" + (many ? ";Bezeichnung" : "") + ";Datum"
+                 + (mitZeit ? ";Uhrzeit" : "") + ";Stand;Einheit;Art"];
+  const vergeben = {};
+  for (const m of list) {
+    vergeben[m.name] = (vergeben[m.name] || 0) + 1;
+    const name = vergeben[m.name] === 1 ? m.name : `${m.name} (${vergeben[m.name]})`;
+    const eigene = m.registers.length > 1;
     const zeilen = [];
     m.registers.forEach((r, i) => {
-      for (const a of r.readings) {
-        zeilen.push({ reg: r, order: i, a });
-      }
+      for (const a of r.readings) zeilen.push({ reg: r, order: i, a });
     });
     // Tag, dann Uhrzeit, dann Reihenfolge am Gerät — so, wie sie abgelesen
-    // wurden. Wie `TableExport` in PulseCore.
+    // wurden.
     zeilen.sort((x, y) => {
       const dx = x.a.y * 10000 + x.a.m * 100 + x.a.d;
       const dy = y.a.y * 10000 + y.a.m * 100 + y.a.d;
@@ -4173,10 +4180,10 @@ function buildCsv(kind) {
       return x.order - y.order;
     });
     for (const z of zeilen) {
-      const felder = [csvField(m.name)];
-      // Ohne eigenen Namen ergibt er sich aus der Richtung — ein leeres Feld
-      // neben „Einspeisung" wäre eine Frage statt einer Angabe.
-      if (many) felder.push(csvField(z.reg.label || (z.reg.feedIn ? "Einspeisung" : "Bezug")));
+      const felder = [csvField(name)];
+      // Ohne eigenen Namen ergibt er sich aus der Richtung. Ein gewöhnlicher
+      // Zähler lässt das Feld leer, wie in der App.
+      if (many) felder.push(eigene ? csvField(z.reg.label || (z.reg.feedIn ? "Einspeisung" : "Bezug")) : "");
       felder.push(`${z.a.y}-${String(z.a.m).padStart(2, "0")}-${String(z.a.d).padStart(2, "0")}`);
       if (mitZeit) felder.push(z.a.t == null ? "" : timeLabel(z.a.t));
       felder.push(
@@ -4185,8 +4192,16 @@ function buildCsv(kind) {
       );
       lines.push(felder.join(";"));
     }
-    return lines.join("\n");
   }
+  return lines.join("\n");
+}
+
+function buildCsv(kind) {
+  const m = METERS.find(x => x.id === histMeter) || METERS[0];
+  const reg = m.registers[0];
+
+  if (kind === "readings") return csvReadings([m]);
+  if (kind === "all") return csvReadings(METERS);
 
   // Beim Jahr eine Zeile je Jahr, sonst je Abschnitt des laufenden Jahres —
   // wie in der App (`HistoryView.yearSpan`).
@@ -4500,10 +4515,11 @@ function openDownload() {
 
 function openExport(kind) {
   const csv = buildCsv(kind);
-  const name = kind === "readings" ? "Ablesungen" : "Auswertung";
+  const name = kind === "all" ? "Alle Zähler" : kind === "readings" ? "Ablesungen" : "Auswertung";
   const rows = csv.split("\n").length - 1;
-  const scope = histMeter === "all" ? "Alle Zähler" : METERS.find(x => x.id === histMeter).name;
-  document.getElementById("ex2-title").textContent = name + " exportieren";
+  const scope = kind === "all" ? `${METERS.length} Zähler, alle Ablesungen`
+    : histMeter === "all" ? "Alle Zähler" : METERS.find(x => x.id === histMeter).name;
+  document.getElementById("ex2-title").textContent = kind === "all" ? "Alle Zähler als Tabelle" : name + " exportieren";
   document.getElementById("ex2-body").innerHTML = `
     <div class="capture-meta" style="margin-bottom:10px">${scope} · 2024 bis 2026</div>
     <div class="row" style="padding-left:0;padding-right:0">
@@ -4512,7 +4528,8 @@ function openExport(kind) {
     </div>
     <div class="preview">${csv.split("\n").slice(0, 14).join("\n")
       .replace(/&/g, "&amp;").replace(/</g, "&lt;")}${rows > 13 ? "\n…" : ""}</div>
-    <button type="button" class="save" id="dl" style="--c:var(--tint);--c-ink:var(--tint-ink)">CSV sichern</button>
+    <button type="button" class="save" id="dl" style="--c:var(--tint);--c-ink:var(--tint-ink)">Sichern oder teilen</button>
+    <div class="note">In der App öffnet sich das Teilen-Blatt von iOS: „In Dateien sichern", Mail als Anhang, AirDrop.</div>
     <div class="note">Der Datenexport bleibt dauerhaft kostenlos. Deine Ablesungen sind deine Daten —
     sie sind kein Druckmittel, mit dem wir dich in der App halten.</div>`;
   openSheet("sheet-export");
@@ -4520,7 +4537,7 @@ function openExport(kind) {
     const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `Zählora-${name}-2026-08-04.csv`;
+    a.download = kind === "all" ? "Zählora-Alle-Zähler-2026-08-04.csv" : `Zählora-${name}-2026-08-04.csv`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   };
@@ -4802,6 +4819,10 @@ function renderLimitNote() {
    Zählerliste
    ============================================================ */
 function renderMeterList() {
+  // „Alle Zähler als Tabelle" erst ab zwei Zählern, wie in der App: Mit
+  // einem reicht der Weg über den Verlauf.
+  const alle = document.getElementById("export-alle-wrap");
+  if (alle) alle.style.display = METERS.length >= 2 ? "" : "none";
   document.getElementById("meterlist").innerHTML = METERS.map(m => {
     const last = lastReading(m);
     const regInfo = m.registers.length > 1

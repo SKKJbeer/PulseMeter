@@ -78,6 +78,7 @@ Datum zu warten. Die nächste Fassung wird dann schon angefangen.
 | **1.7** | 02.12. | **Aus der Mail eines Käufers:** neuer Preis ab einem Tag, die Kosten davor bleiben wie sie waren · Gas auch in kWh, damit Gas und Wärmepumpe vergleichbar sind (siehe „Aus Rückmeldungen von Käufern") | **Eingereicht am 12. November** mit Bau 50 (0.145.0 bis 0.147.2, PR #17), wartet auf Apples Prüfung |
 | **1.8** | 16.12., früher sobald 1.7 durch ist | **Einfacher:** Statuszeile ein Satz, Karte ohne Schild und Erklärzeilen, Kostenabschnitte ohne Betrag fallen weg · Verlauf oben nur Zähler und Zeitraum · Kaufblatt ohne Dopplung · Zeile im Zähler-Tab, ob der iCloud-Abgleich klappt | am 11. November vom Gründer statt Puffer entschieden. **Gebaut in 0.150.0** (PR #21, Konzept `docs/konzepte/1.8-einfacher.md`). Gemessen: Statuszeile 89 → 48 Punkte, Karten 36 bis 71 Punkte kürzer; zwei ganze Karten je iPhone-Schirm sind damit nicht erreicht |
 | **1.9** | 13.01. | **Heizungswechsel:** „Heizung gewechselt am …“ verbindet alten und neuen Zähler, Vorher-Nachher-Karte in kWh und Euro. Neuer Kauf „Wärmepumpe“ für 4,99 € | am 11. November vom Gründer entschieden. Konzept und Klick-Dummy in Arbeit ab 12. November (Versionen ab 0.160.0), baut auf 1.8 auf |
+| **1.8 + Export** | mit 1.8, sobald 1.7 durch ist | **Aus einer Rezension im Laden:** „Alle Zähler als Tabelle“ im Tab „Zähler“, eine CSV-Datei mit allen Ablesungen · die Tabelle kommt als Datei an, nicht mehr im Text der Mail, und der Knopf heißt „Tabelle sichern oder teilen“ statt einen Download zu versprechen (auch der Export je Zähler). Frei, Produktprinzip 5 | vom Gründer am 12. November vorgezogen („ok mach das und schiebe es vor“, auch die Korrektur Datei statt Mail). **Gebaut in 0.165.0**, Konzept `docs/konzepte/export-alle-zaehler.md`. Fährt im nächsten Bau mit 1.8 und 1.9 |
 | **Kamera, Stufe 2** | nach 1.9 | **Kamera, Stufe 2:** zwei Zählwerke auf einem Bild (Tag/Nacht, Bezug/Einspeisung), Kennzahl `1.8.0` zuordnen | groß. Der Sucher mit Rahmen ist seit 0.138.0 schon da; am 11. November hinter 1.9 geschoben. Erster Schritt (0.144.0: keine Zahl, die auch zum anderen Zählwerk passt) ist mit PR #14 in `main`, Konzept `docs/kamera/stufe-2.md`. Offen: Kennzahl lesen, vorher messen |
 | **Wechsel-Paket** | Feb. bis Apr. 2027 | **Für alle vor dem Wechsel:** Heizlast aus dem Verbrauch, Gegenprobe für Angebote, Mappe für den Fachbetrieb. Eigener Kauf 14,99 € | am 11. November vom Gründer entschieden |
 | **2.0** | Sommer 2027 | **Läuft sie gut?** Jahresarbeitszahl aus eigenen Zählern, Heizstab-Hinweis, Jahresbericht | am 11. November in den Sommer verschoben |
@@ -100,6 +101,16 @@ Spam). Er hat alles freigeschaltet und kommt von einer Excel-Liste.
 | **iCloud-Abgleich ging im Laden nicht.** Das CloudKit-Schema stand nie in der Produktion (`12-auslieferung.md`, 3.8) | **Behoben am 10. November**, ohne neuen Bau: Schema per `cloudkit-schema.yml` nach Development, in der Konsole übertragen, alle acht Typen in der Produktion nachgelesen. Vom Gründer am 11. November auf zwei Geräten bestätigt, dem Käufer geantwortet. Offen: eine sichtbare Zeile in der App, ob der Abgleich klappt |
 | **Tarifwechsel mit Datum:** neuer Preis ab einem Tag, alte Kosten bleiben | Lücke. Der Rechenkern kennt Tarife mit `validFrom` schon, die Oberfläche legt aber keinen zweiten an, sie ändert den bestehenden. **In 1.7**, vor der Abrechnungszeit im Januar |
 | **Gas auch in kWh:** Verbrauch mit Zustandszahl und Brennwert umgerechnet, damit Gas und Wärmepumpe vergleichbar sind | Wunsch. Die Werte stehen schon am Zähler, nur die Anzeige fehlt. **In 1.7** |
+
+Rezension im Laden, weitergegeben vom Gründer am 12. November („Eine fast
+perfekte App ohne Abo“, 4 Sterne, sieben Zähler). Gelobt: Verbrauchsbericht
+mit Vorjahresvergleich, Einmalkauf, Datenschutz.
+
+| Was | Stand |
+|---|---|
+| **Ablesungen aller Zähler auf einmal verschicken** statt sieben Mal einzeln | Lücke. Alle Zähler gab es nur als PDF-Bericht, die Tabelle nur je Zähler. **Gebaut in 0.165.0:** „Alle Zähler als Tabelle“, vorgezogen |
+| **„Echte CSV, die Excel einliest“** statt einer Tabelle im Text der Mail | Fehler im Teilen-Weg, nicht im Format: Die Datei ist für Excel richtig gebaut (Semikolon, Dezimalkomma, BOM), wird aber als Text weitergegeben, und Mail setzt Text in die Mail. Aus dem Code geschlossen, am Gerät mit dem Testbau zu bestätigen. **Behoben in 0.165.0:** als Datei weitergeben |
+| **Eine CSV über alle Zähler** | wie oben, dieselbe Datei. Lässt sich mit „Aus einer Tabelle einlesen“ wieder einlesen |
 
 ### Die Website als Wachstumskanal: Rechner
 

@@ -191,6 +191,45 @@ struct MetersView: View {
             .buttonStyle(.plain)
             .accessibilityIdentifier("import-oeffnen")
         }
+
+        // **Was hineinkommt, kommt hier auch wieder heraus** (0.165.0). Aus
+        // einer Rezension im Laden: sieben Zähler, und jeder musste einzeln
+        // über seinen Verlauf verschickt werden. Ab zwei Zählern steht hier
+        // eine Datei mit allen Ablesungen. Mit einem Zähler reicht der Weg
+        // über den Verlauf, und die Karte wäre nur eine Zeile mehr.
+        if meters.count >= 2 {
+            PulseCard {
+                ShareLink(item: alleZaehlerAusgabe,
+                          preview: SharePreview(alleZaehlerAusgabe.dateiname)) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "square.and.arrow.up")
+                            .accessibilityHidden(true)
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(PulseColor.tintInk)
+                            .frame(width: 30, height: 30)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Alle Zähler als Tabelle")
+                                .font(.system(.body, weight: .medium))
+                                .foregroundStyle(PulseColor.ink)
+                            Text("Alle Ablesungen in einer CSV-Datei, für Excel oder Numbers")
+                                .font(PulseText.caption)
+                                .foregroundStyle(PulseColor.inkTertiary)
+                                .multilineTextAlignment(.leading)
+                        }
+                        Spacer(minLength: 8)
+                    }
+                    .padding(.horizontal, 15)
+                    .padding(.vertical, 12)
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Alle Zähler als Tabelle")
+                .accessibilityHint("Alle Ablesungen in einer CSV-Datei sichern oder teilen")
+                .accessibilityIdentifier("export-alle")
+            }
+        }
     }
 
     /// Die Leiste: Erinnerungen, Archiv, Freischaltungen.
@@ -541,6 +580,34 @@ struct MetersView: View {
             }
         } catch {
             problem = "Die Zähler ließen sich nicht laden: \(error.localizedDescription)"
+        }
+    }
+
+    // MARK: - Alle Zähler als Tabelle
+
+    /// Die Datei mit allen Ablesungen aller Zähler, archivierte eingeschlossen.
+    ///
+    /// **Gelesen wird erst beim Teilen**, nicht beim Zeichnen: `load()` holt
+    /// absichtlich nur Anzahl und letzten Stand (seit 0.72.1), und das soll so
+    /// bleiben. Das Teilen-Blatt kann die Daten auf einem anderen Faden
+    /// anfordern; ``CSVAusgabe`` holt den Inhalt deshalb auf dem Hauptfaden.
+    /// Mit geht der Container, nicht der Kontext dieses Schirms: Er darf über
+    /// Fäden gereicht werden, der Kontext nicht.
+    ///
+    /// Archivierte Zähler gehören dazu: Auch sie sind Daten des Nutzers
+    /// (Produktprinzip 5), und wer sie nicht will, filtert sie in Excel weg.
+    private var alleZaehlerAusgabe: CSVAusgabe {
+        let container = context.container
+        let heute = CalendarDay.containing(Date(), in: .current)
+        let datum = String(format: "%04d-%02d-%02d", heute.year, heute.month, heute.day)
+        return CSVAusgabe(dateiname: "Zählora-Alle-Zähler-\(datum).csv") {
+            let repository = PulseRepository(context: ModelContext(container))
+            guard let alle = try? repository.meteringPoints(includeArchived: true) else { return "" }
+            let zaehler = alle.map { punkt in
+                TableExport.MeterReadings(meteringPoint: punkt,
+                                          readings: (try? repository.readings(for: punkt)) ?? [])
+            }
+            return TableExport.allMeters(zaehler)
         }
     }
 
