@@ -209,6 +209,54 @@ final class ReportBuilderTests: XCTestCase {
         XCTAssertTrue((report.balance?.amount ?? 0) < 0, "Hier steht eine Nachzahlung an")
     }
 
+    /// **Gas: Die Zeile im Bericht muss sich nachrechnen lassen.**
+    ///
+    /// Vor 0.148.0 stand dort „400 m³ × 0,11 €" neben 438,90 €. Der Preis gilt
+    /// je kWh; ausgewiesen wird deshalb die Menge in kWh, und Menge mal Preis
+    /// ergibt den Betrag.
+    func testGasLineShowsTheBilledKilowattHours() {
+        let gas = Fixture.meteringPoint(registers: [Fixture.gasRegister()], kind: .gas)
+        let readings = [
+            Fixture.reading(gas.registers[0], day(2026, 1, 1), 1_000),
+            Fixture.reading(gas.registers[0], day(2026, 6, 1), 1_400)
+        ]
+        let tariff = [Tariff(meteringPointID: gas.id, validFrom: day(2024, 1, 1),
+                             pricePerUnit: dec("0.11"), monthlyBasePrice: 0,
+                             billingUnit: .kilowattHour, gasConversion: .typical)]
+        let period = ReportBuilder.Period(id: "t", label: "Prüfzeitraum",
+                                          range: span(day(2026, 1, 1), day(2026, 6, 1)),
+                                          isRunning: false)
+
+        let report = ReportBuilder.build(
+            meteringPoints: [gas], readings: [gas.id: readings], tariffs: [gas.id: tariff],
+            prepayments: [:], period: period, propertyName: "Zuhause", today: today)
+
+        let line = report.sections[0].registers[0]
+        XCTAssertEqual(line.quantity, Quantity(400, .cubicMetre), "Gezählt in m³")
+        // 400 m³ × 0,95 × 10,5 kWh/m³ = 3.990 kWh
+        XCTAssertEqual(line.billedQuantity, Quantity(3_990, .kilowattHour),
+                       "Abgerechnet in kWh, wie der Preis")
+        let produkt = (line.billedQuantity?.value ?? 0) * (line.pricePerUnit ?? 0)
+        assertClose(produkt, NSDecimalNumber(decimal: line.amount?.amount ?? -1).doubleValue,
+                    accuracy: 0.005,
+                    "Menge mal Preis muss den Betrag ergeben")
+    }
+
+    /// Strom zählt und kostet in kWh — dort ist die abgerechnete Menge die
+    /// gezählte.
+    func testElectricityBilledQuantityIsTheCountedOne() {
+        let (point, readings, tariffs) = dualTariffFixture()
+        let period = ReportBuilder.Period(id: "t", label: "Prüfzeitraum",
+                                          range: span(day(2026, 1, 1), day(2026, 6, 1)),
+                                          isRunning: false)
+        let report = ReportBuilder.build(
+            meteringPoints: [point], readings: [point.id: readings], tariffs: [point.id: tariffs],
+            prepayments: [:], period: period, propertyName: "Zuhause", today: today)
+        for line in report.sections[0].registers {
+            XCTAssertEqual(line.billedQuantity, line.quantity)
+        }
+    }
+
     /// Ein Zähler ohne Ablesungen im Zeitraum kommt nicht in den Bericht.
     /// Eine Zeile mit Strichen sagt nichts und macht das Dokument länger.
     func testAMeterWithoutDataIsLeftOut() {

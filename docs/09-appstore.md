@@ -465,6 +465,24 @@ liest die Kamera auf fremden Fotos nur einen Teil der Versuche richtig, manche
 Anzeigen nie (`docs/kamera/README.md`); „wo sie unsicher ist, schlägt sie
 nichts vor“ ist die Zusage, die hält, und auch die nicht vollkommen (Elster).
 
+
+Für 1.7:
+
+```
+Wird dein Strom oder Gas teurer, trägst du den neuen Preis jetzt mit dem
+Tag ein, ab dem er gilt. Was davor war, kostet weiter, was es gekostet hat.
+Bisher hat Zählora die ganze Vergangenheit mit dem neuen Preis gerechnet.
+Im Zähler steht dazu der Preisverlauf, und der jüngste Preis lässt sich
+wieder löschen.
+
+Gas und Heizöl stehen auf der Karte jetzt auch in kWh, gerechnet mit dem
+Brennwert von deiner Rechnung. So kannst du sie neben eine Wärmepumpe legen.
+Bei Heizöl ist der Heizwert geschätzt, darum steht dort ein „≈“.
+```
+
+**Aus der Mail eines Käufers** (11. November): Er hatte nach einer
+Preiserhöhung den Preis geändert und sah das ganze Jahr neu berechnet.
+
 ---
 
 ## 2. Einordnung

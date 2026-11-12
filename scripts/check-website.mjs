@@ -47,10 +47,10 @@ const base = `http://127.0.0.1:${server.address().port}/`;
 // toter Verweis dorthin fällt sonst niemandem auf.
 // Jede Seite mit einem Rechner. Stand bis 0.153.0 fünfmal ausgeschrieben, und
 // eine neue Seite wäre in einer der Listen vergessen worden.
-const rechnerSeiten = ["gas-in-kwh.html", "heizoel-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "waermepumpe-stromverbrauch-monat.html", "waermepumpe-zwei-zaehler.html", "photovoltaik-eigenverbrauch.html"];
+const rechnerSeiten = ["gas-in-kwh.html", "heizoel-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "waermepumpe-stromverbrauch-monat.html", "waermepumpe-zwei-zaehler.html", "photovoltaik-eigenverbrauch.html", "nachzahlung-pruefen.html"];
 const seiten = ["index.html", "entwicklung.html", "hilfe.html", "gas-in-kwh.html", "heizoel-in-kwh.html", "waermepumpe-stromverbrauch-monat.html", "waermepumpe-zwei-zaehler.html",
                 "zaehlerstand-umzug.html", "ratgeber.html",
-                "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "heizung-auf-waermepumpe-umstellen.html", "zaehlerstand-ablesen.html", "photovoltaik-eigenverbrauch.html", "strompreis-entwicklung.html", "datenschutz.html", "impressum.html", "404.html"];
+                "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "heizung-auf-waermepumpe-umstellen.html", "zaehlerstand-ablesen.html", "photovoltaik-eigenverbrauch.html", "strompreis-entwicklung.html", "nachzahlung-pruefen.html", "datenschutz.html", "impressum.html", "404.html"];
 
 // Was nicht in den Index soll: das Impressum (erreichbar, nicht auffindbar)
 // und die Seite für unbekannte Adressen. Beide tragen `noindex`, keine steht
@@ -941,9 +941,9 @@ console.log("\nVerhalten");
   await page.check('input[name="wb-art"][value="gaskwh"]');
   note(!(await page.isVisible("#wb-faktor")), "Wärmebedarf: bei Gas in kWh gibt es nichts umzurechnen");
   await page.fill("#wb-menge", "20.000"); await page.selectOption("#wb-kessel", "brennwert"); await page.selectOption("#wb-haus", "unsaniert");
-  const gk = await kachel("heizlast");
-  note((await kachel("waerme")).wert === "≈ 18.400 kWh" && gk.wert === "≈ 9,2 kW" && gk.zusatz === "Spanne 8,4 bis 10,2",
-       `Wärmebedarf: 20.000 kWh Gas, unsaniert, sind 9,2 kW (${gk.wert}, ${gk.zusatz})`);
+  const wbHeizlast = await kachel("heizlast");
+  note((await kachel("waerme")).wert === "≈ 18.400 kWh" && wbHeizlast.wert === "≈ 9,2 kW" && wbHeizlast.zusatz === "Spanne 8,4 bis 10,2",
+       `Wärmebedarf: 20.000 kWh Gas, unsaniert, sind 9,2 kW (${wbHeizlast.wert}, ${wbHeizlast.zusatz})`);
   await page.fill("#wb-menge", "");
   note((await text("#wb-ergebnis")).includes("Verbrauch") && !(await kaputt("#wb-ergebnis")),
        "Wärmebedarf: ohne Verbrauch ein Hinweis statt einer kaputten Zahl");
@@ -1051,6 +1051,42 @@ console.log("\nVerhalten");
   note((await text("#s-ergebnis")).includes("getauscht"), "Stromkostenrechner: ein kleinerer neuer Stand ergibt einen Hinweis");
   await page.fill("#s-neu", "12.731"); await page.fill("#s-ap", "");
   note(!(await kaputt("#s-ergebnis")), "Stromkostenrechner: ohne Arbeitspreis keine kaputte Zahl");
+
+  // **Nachzahlung prüfen.** Von Hand: 15.420 − 12.480 = 2.940 kWh × 0,34 €
+  // = 999,60 €, dazu 12 € × 12 ÷ 365 × 365 Tage = 144 €, zusammen
+  // 1.143,60 €, minus 1.020 € Abschläge = 123,60 € Nachzahlung. Der Zeitraum
+  // 1.1.–31.12. hat 365 Tage, weil Versorger beide Enden mitzählen.
+  await page.goto(base + "nachzahlung-pruefen.html");
+  const nz = await kachel("saldo");
+  note(nz.name === "Nachzahlung" && nz.wert === "123,60 €", `Nachzahlung: Beispiel ergibt 123,60 € (${nz.name}: ${nz.wert})`);
+  const nk = await kachel("kosten");
+  note(nk.wert === "1.143,60 €" && nk.zusatz === "2.940 kWh in 365 Tagen", `Nachzahlung: Kosten 1.143,60 € für 2.940 kWh in 365 Tagen (${nk.wert}, ${nk.zusatz})`);
+  note((await kachel("grund")).wert === "144,00 €", "Nachzahlung: ein Kalenderjahr kostet genau zwölf Monatsgrundpreise");
+  note((await kachel("abschlag")).wert === "95,30 €", `Nachzahlung: passender Abschlag 95,30 € ohne ≈ bei einem ganzen Jahr (${(await kachel("abschlag")).wert})`);
+  await page.fill("#n-re", "123,59");
+  note((await kachel("abgleich")).wert === "stimmt", "Nachzahlung: ein Cent Unterschied zur Rechnung heißt „stimmt“");
+  await page.fill("#n-re", "160");
+  const mehr = await kachel("abgleich");
+  note(mehr.name === "Rechnung verlangt mehr" && mehr.wert === "36,40 €", `Nachzahlung: Rechnung 160 € liegt 36,40 € über der eigenen Rechnung (${mehr.name}: ${mehr.wert})`);
+  await page.fill("#n-re", ""); await page.fill("#n-ab", "1.200");
+  const gut = await kachel("saldo");
+  note(gut.name === "Guthaben" && gut.wert === "56,40 €", `Nachzahlung: mehr gezahlt als verbraucht ergibt ein Guthaben (${gut.name}: ${gut.wert})`);
+  await page.fill("#n-bis", "2025-06-30");
+  note(/^≈ /.test((await kachel("abschlag")).wert), "Nachzahlung: ein halbes Jahr aufs Jahr gestreckt trägt ein ≈");
+  await page.fill("#n-bis", "2025-12-31"); await page.fill("#n-ab", "1.020");
+  // Gas: Wer umschaltet, ohne etwas getippt zu haben, bekommt Gaswerte.
+  // 9.538 − 8.214 = 1.324 m³ × 0,9650 × 11,2 = 14.309,79 kWh × 0,11 €
+  // = 1.574,08 €, dazu 180 € Grundpreis, minus 1.680 € = 74,08 €.
+  await page.check('input[name="n-art"][value="gas"]');
+  note(await page.isVisible("#n-z") && (await page.inputValue("#n-ap")) === "11", "Nachzahlung: bei Gas erscheinen Zustandszahl und Brennwert, mit Gaspreisen");
+  const gz = await kachel("saldo"), gk = await kachel("kosten");
+  note(gz.wert === "74,08 €" && gk.zusatz === "1.324 m³ = 14.310 kWh in 365 Tagen", `Nachzahlung Gas: 74,08 €, ${gk.zusatz} (${gz.wert})`);
+  await page.fill("#n-neu", "8.000");
+  note((await text("#n-ergebnis")).includes("getauscht"), "Nachzahlung: ein kleinerer Endstand ergibt einen Hinweis");
+  await page.fill("#n-neu", "9.538"); await page.fill("#n-z", "");
+  note(!(await kaputt("#n-ergebnis")) && (await text("#n-ergebnis")).includes("Zustandszahl"), "Nachzahlung: ohne Zustandszahl ein Hinweis, keine kaputte Zahl");
+  await page.fill("#n-z", "0,9650"); await page.fill("#n-alt", "abc");
+  note(!(await kaputt("#n-ergebnis")), "Nachzahlung: Buchstaben ergeben keine kaputte Zahl");
 
   // **Auf einen Blick.** Vom Gründer am 26. September: nicht zu viel Text,
   // klare Benennungen. Gezählt wird, was sonst schleichend wieder wächst:

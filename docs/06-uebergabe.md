@@ -1,6 +1,6 @@
 # 06 – Übergabe an eine Sitzung, die diesen Verlauf nicht kennt
 
-Stand: 2026-10-22, Version 0.138.0
+Stand: 2026-11-11, Version 0.148.0
 
 ---
 
@@ -86,104 +86,59 @@ Tabelle im Baukasten unter „Die Prüfungen".
 
 ## Wo die Arbeit steht
 
+Neu geschrieben am 11. November im Review „Stand und Roadmap“. Die Fassung
+davor stand auf dem 22. Oktober und nannte 1.6 noch „eingereicht“.
+
 ### Im Laden und in TestFlight
 
-- **1.2** im Laden seit 24. September (Bau 36).
-- **Bau 38** (0.118.1) in TestFlight, VALID: Siri, Bewertungsfrage, Einheit
-  in der Tabelle. Davor Bau 37 (0.117.8): größte Schrift auf iPad und iPhone
-  SE. Auf `entwicklung.html` steht dafür „Im Test".
-- **1.3** ist **im Laden** seit 3. Oktober, 19:06 UTC (Bau 38). Eingereicht um 07:35 UTC, vorgezogen auf
-  Ansage des Gründers („wir können auch schon heute das nächste releasen“). Darin: Erinnerung und Sperrbildschirm öffnen den Ziffernblock
-  (0.116.0), Umschalter im iPad-Hochformat, **Siri** und die
-  **Bewertungsfrage** (beide 0.118.0), dazu das neue Schlagwortfeld und die
-  Beschreibung aus `09-appstore.md`, die erst mit einer neuen Fassung gelten.
+| | |
+|---|---|
+| **Im Laden** | **1.6** seit 3. November (Bau 48): Mit Kamera ablesen, eigener Kauf 1,99 €, im Bündel. Davor 1.5.1 (19.10.), 1.5 Import (14.10.) |
+| **In TestFlight** | **Bau 49** (0.144.0, 11.11.): Kamera schlägt keine Zahl vor, die auch zum anderen Zählwerk passt |
+| **iCloud-Abgleich** | behoben am 10. November ohne neuen Bau (Schema in der Produktion), vom Gründer am 11. November auf zwei Geräten bestätigt |
+| **Im Rückstand** | `zahlen.yml` (Berichtsschlüssel mit Rolle Admin fehlt, `13-zugaenge.md` Punkt 5); am 8. November abgeschaltet, Reichweite nur aus Bewertungen und Website-Zahlen |
 
-### Offen beim Gründer — nicht vergessen, bei jeder Meldung erinnern
+### Offene Pull Requests (Stand 11. November, abends)
 
-Am 26. September zugesagt, am 28. mit „merk dir das" bestätigt. Alle sechs mit
-direktem Link in **`docs/13-zugaenge.md`**. Was danach von allein läuft, steht
-dort je Punkt.
-
-| # | Was | Folge, solange es fehlt |
+| PR | Inhalt | Stand |
 |---|---|---|
-| 1 | ~~Analytics Engine bei Cloudflare einschalten~~ | **erledigt am 30. September.** Der Gründer hat den Datensatz `zaehlora_aufrufe` mit der Bindung `ZAEHLUNG` angelegt |
-| 2 | ~~Cloudflare-Leseschlüssel `CLOUDFLARE_STATISTIK_TOKEN`~~ | **erledigt am 30. September.** Erster Bericht lief: „Website-Zahlen" von Hand startbar, sonst montags |
-| 3 | ~~Search Console~~ | **erledigt am 3. Oktober**, Domain-Property `zaehlora.de`, über Cloudflare bestätigt |
-| 4 | Google-Dienstkonto `GOOGLE_SC_SCHLUESSEL` | keine Google-Zahlen im Wochenbericht, Sitemap nicht automatisch gemeldet |
-| 5 | App-Store-Berichtsschlüssel (Rolle Admin) `ASC_BERICHT_KEY_ID`/`_P8` | `zahlen.yml` scheitert täglich mit 403 |
-| 6 | Anbieterkennung `pt` in den Chat | Laden-Knopf auf der Website ohne Kampagne |
-| 7 | Domain `zaehlora.de` | **erledigt am 3. Oktober**: Website unter `zaehlora.de`, `zaehlora.pages.dev` und `www` leiten mit 301 weiter |
-| 8 | Telefonnummer der Händlerangaben gegen eine nicht private tauschen (App Store Connect → Geschäftliches → Vereinbarungen → Compliance → Gesetz über digitale Dienste) | seine Handynummer steht öffentlich auf der Produktseite in der EU. Erst tauschen, wenn keine Einreichung läuft: Während Apple prüft, scheitert jede Einreichung |
+| #17 | 1.7: neuer Preis ab einem Tag, Gas und Heizöl in kWh (0.145.x bis 0.147.0), dazu Website Wärmepumpe | in Arbeit im Thread zu 1.7, CI läuft |
+| #19 | Testkonzept, neue Prüfungen (0.149.0) | im Test-Thread |
+| #20 | Website (baut auf #17) | im Website-Thread |
 
-Sobald einer davon kommt: Punkt 1 → `website.yml` von Hand anstoßen und live
-`x-zaehlung` prüfen; Punkt 3 → Meta-Zeile in `index.html`, veröffentlichen,
-Gründer „Bestätigen" sagen lassen; Punkt 6 → `APPSTORE_PT` in `website.yml`;
-Punkte 2, 4, 5 → die Berichte einmal von Hand starten und nachsehen.
+Am 11. November zusammengeführt: #13 (Ratgeberseite „Nachzahlung prüfen“, live vor der Abrechnungszeit) und #18 (zwei Rechenfehler auf Übersicht und im Bericht, 0.148.0).
 
-### Entschieden am 28. September: Einheit in der Tabelle
+**Versionsnummern bei parallelen Zweigen:** Jeder offene PR reserviert seine
+Nummern (0.145.x bis 0.147.0 für #17, 0.149.0 für #19, ab 0.150.0 für 1.8 „Einfacher“). Wer einen neuen Zweig
+anfängt, nimmt die nächste freie Nummer über allen offenen PRs, nicht über
+`main`.
 
-„ok mach" auf den Vorschlag vom 26. September. Seit 0.118.1 steht unter dem
-Tabellenkopf im Verlauf „in kWh" (klein, nicht in Versalien), in App und
-Klick-Dummy. Der Satz „Alle Werte in …" unter der Tabelle im Entwurf ist weg.
+### Der Plan (Einzelheiten in `05-roadmap.md`)
 
-### Als Nächstes
+| Fassung | Einreichen | Inhalt |
+|---|---|---|
+| 1.7 | 02.12. | Neuer Preis ab einem Tag, Gas und Heizöl auch in kWh (aus der Mail eines Käufers) |
+| 1.8 | 16.12. | Puffer für 1.7 |
+| 1.9 | 13.01. | Heizungswechsel: alter und neuer Zähler verbunden, Vorher-Nachher-Karte. Neuer Kauf „Wärmepumpe“ 4,99 € |
+| Wechsel-Paket | Feb. bis Apr. 2027 | Heizlast, Gegenprobe für Angebote, Mappe für den Fachbetrieb, 14,99 € |
+| 2.0 | Sommer 2027 | Jahresarbeitszahl aus eigenen Zählern |
+| Kamera Stufe 2 | nach 1.9 | zwei Zählwerke auf einem Bild |
 
-0. **1.6 ist eingereicht (3. November, 09:54 UTC, Bau 48, WAITING_FOR_REVIEW).** Die Käufe Kamera und Erinnerung gingen mit zur Prüfung. **Nach der Freigabe:** Zweig `release-1.6-vorbereitung` als 0.140.2 übernehmen (Preiskarte sechs Käufe / 10,94 €, „Alles freischalten" statt „Alles zusammen", Hilfe zur Kamera, `NOCH_NICHT_IM_LADEN` leer), `website-fassung.yml` auslösen, `itunes.apple.com/lookup` prüfen (Rezept A in `docs/12-auslieferung.md`). Bündel-Beschreibung bei Apple bleibt alt (`ACTIVE`, nicht änderbar). Der folgende Absatz ist der Stand davor.
-   0. **Kamera (1.6, geplant 18.11.): gebaut in 0.138.0 und seit 0.139.0 ein Kauf, in TestFlight als Bau 47 (VALID, 24.10. 11:01 UTC), am iPhone ungeprüft.** Stand für 1.6: Kauf `de.karjoth.pulsemeter.camera` (1,99 €, „Mit Kamera ablesen") steht als Entwurf in App Store Connect, die App kennt ihn, die Website nennt noch fünf Freischaltungen und 8,95 € (`NOCH_NICHT_IM_LADEN`). **Offen für die Einreichung:** Website auf sechs und 10,94 € ziehen und Kamera aus `NOCH_NICHT_IM_LADEN` nehmen, Beschreibung des Bündels in App Store Connect auf „sechs“ ändern, Kauf mit der Fassung einreichen, `docs/fassungen/1.6.json`, Store-Texte und Datenschutzerklärung. **Das Einreichen bleibt die Freigabe des Gründers.** Der Gründer hat
-   am 22. Oktober entschieden, die Siebensegment-Erkennung selbst zu lösen (Option b). Ergebnis:
-   ein eigenes **Ziffernnetz** (`DigitNet` in PulseCore, in Swift ausgeschrieben, Gewichte als
-   Zeichenkette im Quelltext), trainiert auf nachgebauten Anzeigen, an den Fotos nur gemessen
-   (`scripts/kamera-netz/`, Messung in `docs/kamera/README.md`). **Zahlen** (`docs/kamera/README.md`):
-   zwei Netze müssen sich einig sein. Auf den ersten sieben Fotos 0 Fehler, aber das ist kein unabhängiger Test mehr;
-   auf einer **zweiten, nie trainierten Sammlung** (`fotos-lcd.json`) 5 Fehler in 600 Versuchen, alle bei einem
-   Foto (Elster: `7` statt `1`), und nur etwa jeder dritte Versuch liest richtig. Meterus und Kamstrup liest es nie.
-   „100 % Erkennung“ gibt es nicht und wird nicht versprochen; das frühere „nie etwas Falsches“ hat sich auf neuen
-   Fotos nicht gehalten. In der App:
-   Knopf „Mit Kamera ablesen“ im Ziffernblock, Sucher mit Rahmen (`App/KameraView.swift`,
-   `App/KameraSitzung.swift`), Taschenlampe, Hinweise zum Bild, Vorschlag erst nach drei
-   gleichen von sechs Bildern, Herkunft „Kamera“ beim Sichern, Berechtigung
-   `NSCameraUsageDescription`. Klick-Dummy rechnet das Netz im Browser. **Offen, in dieser
-   Reihenfolge:** (1) ein Bau in TestFlight und ein Test **am Zähler** mit dem iPhone,
-   (2) Fotos von echten Zählern (Elster, Kaifa, Focus, Meterus, Kamstrup) für mehr Training, **freiwillig geschickt**, nicht aus der App, (3) Kaufkennung
-   „Kamera“ (**1,99 €**, am 24. Oktober vom Gründer so entschieden) **ist angelegt** (`scripts/asc-kaeufe.py`, Kennung `de.karjoth.pulsemeter.camera`, Entwurf). **Gebaut in 0.139.0:** `ProductID.camera`, Sperre am Knopf im Ziffernblock (ungekauft Kaufblatt), im Bündel enthalten (10,94 € einzeln, 4,99 € Bündel). **Beim Einreichen von 1.6:** Kamera aus `NOCH_NICHT_IM_LADEN` in `scripts/check-versprechen.py` nehmen und die Website auf sechs Freischaltungen und 10,94 € ziehen, Beschreibung des Bündels in App Store Connect auf „sechs" ändern, den Kauf „Kamera" mit der Fassung einreichen. Bis dahin steht die Kamera in TestFlight hinter dem Kauf, der dort nichts kostet,
-   (4) Absatz zur Kamera in Datenschutzerklärung und Store-Texten, **erst wenn 1.6 im Laden
-   ist**, (5) Rollen: Vision im Sucher ist nur nachgemessen, nicht am Gerät. **1.5.1 ist im
-   Laden seit 19.10.** (Bau 45, neue Store-Bilder).
-1. **1.4 Rundgang**: **im Laden** seit 5. Oktober, 16:42 UTC (Bau 39). Auf
-   Website und Entwicklungsseite eingetragen.
-2. **1.5 Import aus einer Tabelle**, **im Laden seit 14. Oktober, 22:44 UTC**, Bau 44 (vom Gründer vorgezogen, geplant war der 4. November). **Gebaut in 0.133.0**: Blatt „Einlesen“ im Zähler-Tab und auf der leeren Übersicht, Erkennung in `TableImport`, Konzept in `03-ux-konzept.md` 5a. Kostenlos wie der Export. Offen: in TestFlight mit einer echten Liste ausprobieren; xlsx direkt lesen kann er nicht, nur CSV, Text und Eingefügtes, danach **Kamera** in zwei
-   Stufen (1.6 und 1.7, eigener Kauf 0,99 €, im Bündel). Der Jahreswechsel
-   (1.8) ist am 7. Oktober gestrichen. Davor **1.4.1, vorgezogen auf den 7. Oktober,** mit den
-   neuen Suchbegriffen („Zählora – Zählerstand ablesen"), Freigegeben vom Gründer. Wenn sie im Laden steht: Name in README, CLAUDE.md
-   und im JSON-LD von `docs/website/index.html` nachziehen, eine Woche später
-   `scripts/store-rang.py` gegen die Ausgangsmessung in `10-sichtbarkeit.md` 4.1. Entschieden am 3. Oktober, Einzelheiten und das
-   Vorgehen bei der Kamera in `05-roadmap.md`. Der Gründer liefert Fotos
-   seiner Zähler, die Zählernummer wird vor dem Einchecken geschwärzt.
-3. **Neue Bilder für den Laden** mit Rundgang, dazu der A/B-Test der
-   Produktseite (`10-sichtbarkeit.md` 4.4).
-4. **Ratgeberseiten**, eine je Woche. Gebaut: Stromverbrauch vergleichen
-   (4.10.), Jahresarbeitszahl der Wärmepumpe (8.10.), Zählerstand ablesen
-   (8.10.), Photovoltaik-Eigenverbrauch (8.10.), Grafik zur Strompreis-Entwicklung
-   (8.10.). Als Nächstes: Nachzahlung prüfen (Januar).
-   **Die Strompreis-Grafik braucht Pflege:** Eurostat ergänzt zweimal im Jahr
-   ein Halbjahr. Dann `scripts/strompreis-holen.py` laufen lassen; schlägt
-   danach `check-website.mjs` an, die Sätze und Kacheln auf
-   `strompreis-entwicklung.html` an die neuen Zahlen anpassen.
-6. **Aufnahme-Anfrage bei Apple für 1.5**: Text in `09-appstore.md` 4a, vom
-   Gründer in App Store Connect abzuschicken, wenn 1.5 den Import bringt. Frist
-   als Wette: 14. Oktober.
-5. **Erlaubnis von co2online: erteilt am 13. Oktober** (Ticket #109369, Mail
-   an `bierfinanzen@gmail.com`). Wortlaut: „Du kannst die Vergleichswerte von
-   Strom- und Heizspiegel gerne nutzen, wenn du darauf aufmerksam machst, dass
-   die co2online gGmbH die Quelle ist." **Bedingung ist also die
-   Quellenangabe „co2online gGmbH"**, und `check-website.mjs` hält sie auf der
-   Wärmepumpenseite fest. Seit 0.132.0 steht sie auf beiden Seiten, und der
-   Wärmepumpenrechner ordnet den Strom je m² nach dem **Heizspiegel 2026**
-   (Abrechnungsjahr 2025) ein. Der Heizspiegel erscheint jährlich Ende
-   September, der Stromspiegel alle zwei Jahre (zuletzt 2025): Dann die Werte
-   aus dem neuen Faltblatt übernehmen. Dank mit beiden Links am 13. Oktober
-   verschickt, vom Gründer freigegeben. Darin auf den Scherz zu iOS hin:
-   „Android steht auf der Liste." Geplant ist Android damit nicht.
+Der Bericht zum Review vom 11. November (Befunde zu Bedienung, Rechnung,
+Roadmap und Dokumenten) liegt als Dokument beim Gründer; die Befunde, die
+Arbeit bedeuten, stehen in der Roadmap.
+
+### Daueraufgaben
+
+- **Strompreis-Grafik:** Eurostat ergänzt zweimal im Jahr ein Halbjahr. Dann
+  `scripts/strompreis-holen.py`; schlägt `check-website.mjs` an, Sätze und
+  Kacheln auf `strompreis-entwicklung.html` nachziehen.
+- **co2online:** Erlaubnis seit 13. Oktober, Bedingung ist die Quellenangabe
+  „co2online gGmbH“ (`check-website.mjs` hält sie fest). Heizspiegel jährlich
+  Ende September, Stromspiegel alle zwei Jahre (zuletzt 2025): Werte
+  übernehmen.
+- **Händlerangaben:** Telefonnummer in App Store Connect gegen eine nicht
+  private tauschen, aber nur, wenn keine Einreichung läuft.
 
 ## Was zuletzt gefunden wurde, und warum es zählt
 
