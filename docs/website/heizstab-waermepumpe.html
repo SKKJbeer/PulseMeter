@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Heizstab der Wärmepumpe erkennen und was er kostet — Zählora</title>
+<meta name="robots" content="max-image-preview:large">
+<meta name="description" content="Läuft bei deiner Wärmepumpe der Heizstab mit? Woran du es am Zähler und im Menü erkennst und was die Stunden kosten. Mit Rechner.">
+<meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F0E0C" media="(prefers-color-scheme: dark)">
+<!-- Safari auf dem iPhone blendet darüber eine Leiste mit „Öffnen" oder
+     „Laden" ein. Wer über eine Antwortseite kommt, steht damit einen Tipp
+     vor der App statt einen Umweg über den Store. -->
+<meta name="apple-itunes-app" content="app-id=6802262743">
+<link rel="canonical" href="https://zaehlora.de/heizstab-waermepumpe.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Zählora">
+<meta property="og:locale" content="de_DE">
+<meta property="og:title" content="Heizstab der Wärmepumpe erkennen und was er kostet — Zählora">
+<meta property="og:description" content="Läuft bei deiner Wärmepumpe der Heizstab mit? Woran du es am Zähler und im Menü erkennst und was die Stunden kosten. Mit Rechner.">
+<meta property="og:url" content="https://zaehlora.de/heizstab-waermepumpe.html">
+<meta property="og:image" content="https://zaehlora.de/bilder/teilen.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Zählora: Jeden Monat wissen, was du verbrauchst. Daneben die Übersicht der App auf einem iPhone.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="stylesheet" href="stil.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "Heizstab der Wärmepumpe erkennen und was er kostet",
+      "description": "Woran man am Zähler und im Menü erkennt, dass der Heizstab einer Wärmepumpe mitläuft, und was seine Stunden mehr kosten.",
+      "inLanguage": "de",
+      "dateModified": "2026-11-11",
+      "author": {"@type": "Organization", "name": "Zählora", "url": "https://zaehlora.de/"},
+      "publisher": {"@type": "Organization", "name": "Zählora", "url": "https://zaehlora.de/"},
+      "mainEntityOfPage": "https://zaehlora.de/heizstab-waermepumpe.html"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Zählora", "item": "https://zaehlora.de/"},
+        {"@type": "ListItem", "position": 2, "name": "Ratgeber", "item": "https://zaehlora.de/ratgeber.html"},
+        {"@type": "ListItem", "position": 3, "name": "Heizstab der Wärmepumpe"}
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<a class="sprung" href="#inhalt">Zum Inhalt springen</a>
+
+<header class="kopf">
+  <div class="bahn kopf-innen">
+    <a class="marke" href="index.html">
+      <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <path d="M4 23a12 12 0 0 1 24 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".28"/>
+        <path d="M7 23h4.5l2.5-6.5L18 27l2.5-4H25" fill="none" stroke="#C77A0E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Zählora
+    </a>
+    <nav aria-label="Bereiche">
+      <a href="index.html#funktionen">Funktionen</a>
+      <a href="ratgeber.html">Ratgeber</a>
+      <a href="index.html#preise">Preise</a>
+      <a href="entwicklung.html">Entwicklung</a>
+      <a href="hilfe.html">Hilfe</a>
+    </nav>
+  </div>
+</header>
+
+<main id="inhalt" class="rechtstext artikel">
+  <div class="bahn">
+    <nav class="pfad" aria-label="Pfad">
+      <ol>
+        <li><a href="index.html">Zählora</a></li>
+        <li><a href="ratgeber.html">Ratgeber</a></li>
+        <li aria-current="page">Heizstab der Wärmepumpe</li>
+      </ol>
+    </nav>
+    <h1 id="rechner">Heizstab der Wärmepumpe: erkennen, was er kostet</h1>
+    <p class="blass">
+      Der Heizstab macht aus einer Kilowattstunde Strom eine Kilowattstunde
+      Wärme. Die Wärmepumpe macht drei bis vier daraus. Jede Stunde, in der er
+      statt ihr heizt, kostet also mehr. Wie viel, rechnest du hier aus.
+    </p>
+
+    <form class="rechner" id="stabrechner" onsubmit="return false" aria-describedby="stab-ergebnis">
+      <div class="rechner-felder">
+        <label>Leistung Heizstab
+          <span class="eingabe"><input id="h-kw" inputmode="decimal" autocomplete="off" value="6"><span class="einheit">kW</span></span>
+          <small>steht im Handbuch</small>
+        </label>
+        <label>Laufzeit
+          <span class="eingabe"><input id="h-std" inputmode="decimal" autocomplete="off" value="100"><span class="einheit">Stunden</span></span>
+          <small>aus dem Menü der Anlage</small>
+        </label>
+        <label>Jahresarbeitszahl
+          <span class="eingabe"><input id="h-jaz" inputmode="decimal" autocomplete="off" value="3,5"><span class="einheit">ohne Einheit</span></span>
+          <small>deine oder geschätzt</small>
+        </label>
+        <label>Strompreis
+          <span class="eingabe"><input id="h-ct" inputmode="decimal" autocomplete="off" value="30"><span class="einheit">ct/kWh</span></span>
+          <small>darf leer bleiben</small>
+        </label>
+      </div>
+      <div class="rechner-ergebnis" id="stab-ergebnis" aria-live="polite"></div>
+    </form>
+    <script src="rechner.js"></script>
+    <script>
+    // Der Heizstab hat eine Arbeitszahl von 1. Was er an Wärme liefert, hätte
+    // die Wärmepumpe mit Strom ÷ Jahresarbeitszahl geschafft. Das Ergebnis
+    // trägt ein ≈, weil die Jahresarbeitszahl ein Mittel übers Jahr ist und
+    // die Pumpe gerade an Frosttagen schlechter arbeitet (Prinzip 7).
+    (function () {
+      var R = window.Rechner;
+      function wert(id) { return R.zahl(document.getElementById(id).value); }
+      function rechne() {
+        var kw = wert("h-kw"), std = wert("h-std"), jaz = wert("h-jaz"), ct = wert("h-ct");
+        var aus = document.getElementById("stab-ergebnis");
+        if (!(kw > 0) || !(std > 0)) {
+          aus.innerHTML = R.hinweis("Trag die Leistung des Heizstabs und seine Stunden ein.");
+          return;
+        }
+        var strom = kw * std;
+        var liste = [R.kachel("strom", "Strom des Heizstabs", R.format(strom, 0) + " kWh",
+                              R.format(kw, kw % 1 ? 1 : 0) + " kW × " + R.format(std, 0) + " Stunden", "haupt")];
+        if (jaz > 1) {
+          var wp = strom / jaz;
+          liste.push(R.kachel("wp", "Wärmepumpe für dieselbe Wärme", "≈ " + R.format(wp, 0) + " kWh", "mit Jahresarbeitszahl " + R.format(jaz, 1)));
+          if (ct > 0) {
+            liste.push(R.kachel("mehr", "Mehrkosten durch den Heizstab", "≈ " + R.format((strom - wp) * ct / 100, 0) + " €",
+                                R.format(strom - wp, 0) + " kWh zu " + R.format(ct, ct % 1 ? 1 : 0) + " ct"));
+          }
+        }
+        aus.innerHTML = R.kacheln(liste);
+      }
+      document.getElementById("stabrechner").addEventListener("input", rechne);
+      rechne();
+    })();
+    </script>
+
+    <aside class="app-hinweis nicht-drucken" aria-labelledby="app-hinweis-titel">
+      <h2 id="app-hinweis-titel">Den Sprung im Verlauf sehen</h2>
+      <p>
+        Trag den Zähler der Wärmepumpe in Zählora ein, im Winter ruhig jede
+        Woche. Springt der Verbrauch weiter, als es die Kälte erklärt, siehst du
+        es im Verlauf neben dem Vorjahr.
+      </p>
+      <p class="app-hinweis-fuss">
+        <a class="knopf knopf-voll" href="https://apps.apple.com/de/app/id6802262743">Zählora im App Store</a>
+        <span>Laden kostet nichts. Zwei Zähler mit ihrer ganzen Geschichte sind dauerhaft frei, kein Abo.</span>
+      </p>
+    </aside>
+
+    <h2>Woran du merkst, dass er mitläuft</h2>
+    <ul>
+      <li><strong>Im Menü der Anlage.</strong> Die meisten Wärmepumpen zählen
+        die Stunden oder die Kilowattstunden des Heizstabs mit. Er heißt dort
+        oft Zusatzheizung, elektrische Zusatzheizung, Heizstab oder ZWE, kurz
+        für zweiter Wärmeerzeuger. Diese Zahl gehört oben in den Rechner.</li>
+      <li><strong>Am Zähler an Frosttagen.</strong> Bei Kälte braucht die
+        Wärmepumpe mehr, das ist normal. Verdoppelt sich der Verbrauch an einem
+        Tag, obwohl es nur ein paar Grad kälter ist als am Tag davor, arbeitet
+        meist der Heizstab mit.</li>
+      <li><strong>Einmal die Woche ein Ausschlag.</strong> Viele Anlagen heizen
+        das Warmwasser regelmäßig auf über 60 Grad, gegen Legionellen. Das
+        übernimmt oft der Heizstab. Ein Ausschlag am immer gleichen Tag ist dann
+        kein Fehler.</li>
+    </ul>
+
+    <h2>So wird gerechnet</h2>
+    <div class="anschrift">
+      <strong>Strom des Heizstabs = Leistung × Stunden</strong><br>
+      <strong>Wärmepumpe für dieselbe Wärme = Strom des Heizstabs ÷ Jahresarbeitszahl</strong><br>
+      <strong>Mehrkosten = (Strom des Heizstabs − Wärmepumpe) × Strompreis</strong>
+    </div>
+    <p>
+      Läuft der Heizstab nicht mit voller Leistung, ist der echte Verbrauch
+      kleiner. Zählt dein Menü Kilowattstunden statt Stunden, nimm 1 als
+      Leistung und die Kilowattstunden als Stunden. Deine Jahresarbeitszahl
+      rechnet <a href="jahresarbeitszahl-berechnen.html">Jahresarbeitszahl berechnen</a>
+      aus. Wer keine hat, lässt 3,5 stehen.
+    </p>
+
+    <h2>Wenn er zu oft läuft</h2>
+    <ul>
+      <li><strong>Der Punkt, ab dem er zuschalten darf.</strong> In der Anlage
+        ist eine Außentemperatur eingestellt, unter der der Heizstab helfen
+        darf. Steht sie zu hoch, springt er schon bei leichtem Frost an. Frag
+        den Betrieb, der die Anlage eingebaut hat, wo sie bei dir steht.</li>
+      <li><strong>Nach dem Einbau.</strong> Manche Anlagen trocknen den Estrich
+        oder laufen die ersten Wochen mit Heizstab ein. Ein teurer erster Monat
+        sagt deshalb noch nichts über den Winter.</li>
+      <li><strong>Vergleich mit dem Vorjahr.</strong> Ob ein Monat wirklich zu
+        hoch ist, zeigt
+        <a href="waermepumpe-stromverbrauch-monat.html">Wärmepumpe: Verbrauch im Monat</a>.</li>
+    </ul>
+
+    <aside class="weiterlesen nicht-drucken" aria-labelledby="weiterlesen-titel">
+      <h2 id="weiterlesen-titel">Weiterlesen</h2>
+      <div class="karten">
+      <a class="karte karte-verweis" href="waermepumpe-stromverbrauch-monat.html">
+        <span class="art">Rechner</span>
+        <b>Wärmepumpe: Verbrauch im Monat</b>
+        <p>Was dein Januar oder Juli aufs Jahr bedeutet, und wann ein Monat wirklich zu hoch ist.</p>
+        <span class="weiter">Zum Rechner ›</span>
+      </a>
+      <a class="karte karte-verweis" href="jahresarbeitszahl-berechnen.html">
+        <span class="art">Rechner</span>
+        <b>Jahresarbeitszahl berechnen</b>
+        <p>Strom und Wärme eines Jahres, und du siehst deine Jahresarbeitszahl neben 77 Anlagen, die Fraunhofer gemessen hat.</p>
+        <span class="weiter">Zum Rechner ›</span>
+      </a>
+      <a class="karte karte-verweis" href="waermepumpe-zwei-zaehler.html">
+        <span class="art">Rechner</span>
+        <b>Wärmepumpe mit zwei Zählern</b>
+        <p>HT und NT ablesen, zusammenzählen und sehen, was die Kilowattstunde im Mittel kostet.</p>
+        <span class="weiter">Zum Rechner ›</span>
+      </a>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="fuss">
+  <div class="bahn fuss-innen">
+    <span>Zählora — gebaut in Deutschland, von einem Menschen.</span>
+    <nav aria-label="Rechtliches">
+      <a href="index.html">Start</a>
+      <a href="ratgeber.html">Ratgeber</a>
+      <a href="entwicklung.html">Entwicklung</a>
+      <a href="hilfe.html">Hilfe &amp; Kontakt</a>
+      <a href="datenschutz.html">Datenschutz</a>
+      <a href="impressum.html">Impressum</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -9,6 +9,76 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.170.0 — 2026-11-12
+
+**Website: Heizöl in kWh, Wärmepumpe im Monat, mit zwei Zählern und der Heizstab, die ersten Seiten aus dem Reichweiten-Konzept Stufe 2**
+
+Aus dem Konzept „Mehr Leser über die Wärmepumpe“ (11. November): Zuerst
+kommen die kleinen, genauen Fragen, bei denen die großen Seiten dünn sind.
+„Heizöl Liter in kWh“ fehlte, obwohl die Gasseite unsere zweitstärkste ist.
+
+### Neu
+- **`heizoel-in-kwh.html`**: Rechner Liter × Heizwert, dazu der Preis je
+  kWh aus dem Preis je 100 Liter und die Kosten. Das Ergebnis trägt „≈“, weil
+  der Heizwert auf keiner Rechnung steht (Prinzip 7). Dieselbe Rechnung wie
+  `EnergyDisplay` in PulseCore.
+- Abschnitt **„Öl gegen Gas: mit 10,7 vergleichen“**: Die Gasrechnung zählt
+  nach dem Brennwert, wer Öl mit 10 rechnet, macht es um sieben Prozent zu
+  teuer. Quelle Wikipedia, Heizöl EL (Werte des IWO), auf der Seite genannt.
+- Verlinkt aus Ratgeber (Karte und strukturierte Daten), Startseite,
+  Sitemap und der Seite „Von Öl oder Gas zur Wärmepumpe“.
+- **`waermepumpe-stromverbrauch-monat.html`**: Monat und Strom der Wärmepumpe
+  eintippen, aufs Jahr gerechnet sehen. Verteilung wie
+  `SeasonalProfile.heating` (Gradtagzahlen nach VDI 2067 plus 18 %
+  Warmwasser): Januar 15,5 %, Juli 2,6 %. Darunter die Tabelle aller zwölf
+  Monate für 4.000 kWh im Jahr, fest im HTML, und wann ein Monat wirklich zu
+  hoch ist (Frost, Heizstab, Sommer). Verlinkt aus Ratgeber, Startseite,
+  Sitemap und der Seite zur Jahresarbeitszahl.
+- **`waermepumpe-zwei-zaehler.html`**: Verbrauch HT und NT mit ihren Preisen
+  eintippen, Summe, Anteil NT, Arbeitspreis und den Preis im Mittel sehen.
+  Der Mittelwert ist nach Menge gewichtet, nicht der Durchschnitt der beiden
+  Preise (27,6 statt 27,0 ct im Beispiel). Erklärt die drei Aufbauten im
+  Zählerschrank und die drei häufigsten Fehler. Verlinkt aus Ratgeber,
+  Startseite, Sitemap und der Seite zum Monat; dort heißt der Hinweis unter
+  dem Feld jetzt „ganzer Monat, HT plus NT“.
+- **`heizstab-waermepumpe.html`**: Leistung und Stunden des Heizstabs aus
+  dem Menü der Anlage eintippen, dazu Jahresarbeitszahl und Strompreis. Die
+  Seite zeigt seinen Strom, was die Wärmepumpe für dieselbe Wärme gebraucht
+  hätte, und die Mehrkosten (6 kW × 100 Stunden = 600 kWh, mit
+  Jahresarbeitszahl 3,5 rund 129 € mehr). Woran man merkt, dass er
+  mitläuft, und was hilft, wenn er zu oft läuft. Verlinkt aus Ratgeber,
+  Startseite, Sitemap und der Seite zum Monat.
+
+### Gefunden, nicht behoben
+- **Die App rechnet einen Wärmepumpen-Zähler mit dem Profil für
+  Haushaltsstrom hoch** (Januar 9,7 % statt rund 15,5 %), weil er als
+  Stromzähler angelegt wird. Im Januar läge die Hochrechnung aufs Jahr damit
+  gut die Hälfte zu hoch. Gehört in die Planung von 1.9 (Vorher und nachher
+  braucht den Wärmepumpen-Zähler ohnehin als eigene Art).
+
+### Geändert
+- `check-website.mjs`: Die Liste der Rechnerseiten stand fünfmal
+  ausgeschrieben und ist jetzt eine (`rechnerSeiten`). Eine neue Seite wäre
+  sonst in einer der Listen vergessen worden.
+- Vier neue Prüfungen für die Seite zum Monat, darunter der Abgleich der
+  festen Tabelle mit dem Rechner (einmal rot gesehen mit Juli 2,9 statt 2,6).
+- Vier neue Prüfungen für die Heizstab-Seite: Strom, Vergleich und
+  Mehrkosten, ohne Strompreis keine Kostenkachel, mit Arbeitszahl 1 kein
+  Vergleich, ohne Stunden ein Hinweis. Einmal rot gesehen (Vergleich mit
+  falscher Formel).
+- Fünf neue Prüfungen für die Seite mit zwei Zählern: Summe und Anteil NT,
+  Mittel nach Menge und Kosten, ohne NT-Preis kein Mittel, nur HT, ohne
+  Verbrauch ein Hinweis. Einmal rot gesehen (Mittel als einfacher
+  Durchschnitt gerechnet).
+- Fünf neue Prüfungen für den Ölrechner: 2.000 Liter sind 20.000 kWh, 110 €
+  je 100 Liter sind 11,0 ct je kWh und 2.200 €, mit 10,7 sind es 10,3 ct,
+  ohne Preis keine Preiskachel, ohne Liter ein Hinweis. Einmal rot gesehen
+  (Rechnung künstlich um ein Prozent verfälscht).
+
+_Website-Prüfung (`check-website.mjs`) vollständig grün. App unverändert._
+
+---
+
 ## 0.163.0 — 2026-11-12
 
 **1.9 in der App: Heizung gewechselt, vorher und nachher**

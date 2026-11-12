@@ -45,7 +45,10 @@ const base = `http://127.0.0.1:${server.address().port}/`;
 // Die Antwortseiten zählen mit: Sie sind der Teil, über den jemand die
 // Website überhaupt findet (`docs/10-sichtbarkeit.md`, Abschnitt 7), und ein
 // toter Verweis dorthin fällt sonst niemandem auf.
-const seiten = ["index.html", "entwicklung.html", "hilfe.html", "gas-in-kwh.html",
+// Jede Seite mit einem Rechner. Stand bis 0.170.0 fünfmal ausgeschrieben, und
+// eine neue Seite wäre in einer der Listen vergessen worden.
+const rechnerSeiten = ["gas-in-kwh.html", "heizoel-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "waermepumpe-stromverbrauch-monat.html", "waermepumpe-zwei-zaehler.html", "heizstab-waermepumpe.html", "photovoltaik-eigenverbrauch.html", "nachzahlung-pruefen.html"];
+const seiten = ["index.html", "entwicklung.html", "hilfe.html", "gas-in-kwh.html", "heizoel-in-kwh.html", "waermepumpe-stromverbrauch-monat.html", "waermepumpe-zwei-zaehler.html", "heizstab-waermepumpe.html",
                 "zaehlerstand-umzug.html", "ratgeber.html",
                 "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "heizung-auf-waermepumpe-umstellen.html", "zaehlerstand-ablesen.html", "photovoltaik-eigenverbrauch.html", "strompreis-entwicklung.html", "nachzahlung-pruefen.html", "datenschutz.html", "impressum.html", "404.html"];
 
@@ -688,6 +691,72 @@ console.log("\nVerhalten");
   };
   const kaputt = async sel => /NaN|Infinity|undefined/.test(await text(sel));
 
+  // Heizöl: dieselbe Rechnung wie EnergyDisplay in PulseCore, Liter mal
+  // Heizwert. 2.000 Liter zu 10 kWh sind 20.000 kWh; 110 € je 100 Liter
+  // durch 10 sind 11,0 ct je kWh, mit dem Brennwert 10,7 sind es 10,3 ct.
+  await page.goto(base + "heizoel-in-kwh.html");
+  note((await kachel("kwh")).wert === "≈ 20.000 kWh", `Ölrechner: 2.000 Liter × 10 = 20.000 kWh (${(await kachel("kwh")).wert})`);
+  note((await kachel("kwhpreis")).wert === "≈ 11,0 ct" && (await kachel("kosten")).wert === "2.200,00 €",
+       `Ölrechner: 110 € je 100 Liter sind 11,0 ct je kWh und 2.200 € (${(await kachel("kwhpreis")).wert}, ${(await kachel("kosten")).wert})`);
+  await page.fill("#o-h", "10,7");
+  note((await kachel("kwhpreis")).wert === "≈ 10,3 ct", `Ölrechner: mit dem Brennwert 10,7 sind es 10,3 ct (${(await kachel("kwhpreis")).wert})`);
+  await page.fill("#o-p", "");
+  note((await page.$('[data-kachel="kwhpreis"]')) === null && !(await kaputt("#oel-ergebnis")), "Ölrechner: ohne Preis keine Preiskachel und keine kaputte Zahl");
+  await page.fill("#o-l", "");
+  note((await text("#oel-ergebnis")).includes("Liter") && !(await kaputt("#oel-ergebnis")), "Ölrechner: ohne Liter ein Hinweis statt einer Zahl");
+
+  // Wärmepumpe im Monat: dieselbe Verteilung wie SeasonalProfile.heating.
+  // Januar = 0,82 × 0,170 + 0,18 × 31/365 = 15,5 %; 800 kWh durch 0,1547
+  // sind 5.172, auf hundert 5.200. Juli = 0,82 × 0,0133 + 0,0153 = 2,6 %.
+  await page.goto(base + "waermepumpe-stromverbrauch-monat.html");
+  note((await kachel("jahr")).wert === "≈ 5.200 kWh" && (await kachel("anteil")).wert === "≈ 15,5 %" && (await kachel("tag")).wert === "25,8 kWh",
+       `WP im Monat: 800 kWh im Januar sind 15,5 % und rund 5.200 kWh im Jahr (${(await kachel("jahr")).wert}, ${(await kachel("anteil")).wert}, ${(await kachel("tag")).wert})`);
+  await page.selectOption("#wpm-monat", "6"); await page.fill("#wpm-kwh", "100");
+  note((await kachel("jahr")).wert === "≈ 3.800 kWh" && (await kachel("anteil")).wert === "≈ 2,6 %",
+       `WP im Monat: 100 kWh im Juli sind 2,6 % und rund 3.800 kWh (${(await kachel("jahr")).wert}, ${(await kachel("anteil")).wert})`);
+  // Die Tabelle steht fest im HTML, damit sie auch ohne Skript und für
+  // Suchmaschinen da ist. Darum hier der Abgleich mit dem Rechner.
+  const wpTabelle = await page.evaluate(() => {
+    const f = (n, s) => n.toLocaleString("de-DE", { minimumFractionDigits: s, maximumFractionDigits: s });
+    const z = [...document.querySelectorAll("#monate tbody tr")].map(tr => [...tr.querySelectorAll("td")].map(t => t.textContent));
+    const falsch = z.filter((r, i) => r[0] !== f(window.ANTEILE[i] * 100, 1) + " %" ||
+                                     r[1] !== f(Math.round(window.ANTEILE[i] * 400) * 10, 0) + " kWh").length;
+    return { n: z.length, falsch, jan: z[0].join(" | "), summe: window.ANTEILE.reduce((a, b) => a + b, 0) };
+  });
+  note(wpTabelle.n === 12 && wpTabelle.falsch === 0 && wpTabelle.jan === "15,5 % | 620 kWh" && Math.abs(wpTabelle.summe - 1) < 1e-9,
+       `WP im Monat: Tabelle mit zwölf Monaten wie der Rechner, Januar 15,5 % und 620 kWh, Summe 100 % (${wpTabelle.falsch} abweichend, ${wpTabelle.jan})`);
+  await page.fill("#wpm-kwh", "");
+  note((await text("#wpm-ergebnis")).includes("Strom") && !(await kaputt("#wpm-ergebnis")), "WP im Monat: ohne Verbrauch ein Hinweis statt einer Zahl");
+
+  // Zwei Zähler: 2.400 kWh HT zu 30 ct und 1.600 kWh NT zu 24 ct sind
+  // 4.000 kWh, 40 % NT, 1.104 € und im Mittel 27,6 ct, nicht 27,0 (der
+  // einfache Durchschnitt der Preise, den man am leichtesten nimmt).
+  await page.goto(base + "waermepumpe-zwei-zaehler.html");
+  note((await kachel("summe")).wert === "4.000 kWh" && /40 % davon im NT/.test((await kachel("summe")).zusatz),
+       `Zwei Zähler: 2.400 + 1.600 kWh sind 4.000 kWh, 40 % im NT (${(await kachel("summe")).wert}, ${(await kachel("summe")).zusatz})`);
+  note((await kachel("misch")).wert === "27,6 ct" && (await kachel("kosten")).wert === "1.104,00 €",
+       `Zwei Zähler: im Mittel 27,6 ct nach Menge, 1.104 € (${(await kachel("misch")).wert}, ${(await kachel("kosten")).wert})`);
+  await page.fill("#z-pnt", "");
+  note((await page.$('[data-kachel="misch"]')) === null && !(await kaputt("#htnt-ergebnis")), "Zwei Zähler: ohne NT-Preis kein Mittelwert und keine kaputte Zahl");
+  await page.fill("#z-nt", "0");
+  note((await kachel("misch")).wert === "30,0 ct" && (await kachel("summe")).wert === "2.400 kWh",
+       `Zwei Zähler: nur HT, dann zählt nur der HT-Preis (${(await kachel("misch")).wert})`);
+  await page.fill("#z-ht", ""); await page.fill("#z-nt", "");
+  note((await text("#htnt-ergebnis")).includes("HT und NT") && !(await kaputt("#htnt-ergebnis")), "Zwei Zähler: ohne Verbrauch ein Hinweis statt einer Zahl");
+
+  // Heizstab: 6 kW × 100 h = 600 kWh. Die Wärmepumpe hätte mit JAZ 3,5
+  // 171 kWh gebraucht, die 429 kWh dazwischen kosten zu 30 ct rund 129 €.
+  await page.goto(base + "heizstab-waermepumpe.html");
+  note((await kachel("strom")).wert === "600 kWh" && (await kachel("wp")).wert === "≈ 171 kWh" && (await kachel("mehr")).wert === "≈ 129 €",
+       `Heizstab: 600 kWh, die Wärmepumpe ≈ 171 kWh, ≈ 129 € mehr (${(await kachel("strom")).wert}, ${(await kachel("wp")).wert}, ${(await kachel("mehr")).wert})`);
+  await page.fill("#h-ct", "");
+  note((await page.$('[data-kachel="mehr"]')) === null && (await kachel("wp")).wert === "≈ 171 kWh" && !(await kaputt("#stab-ergebnis")),
+       "Heizstab: ohne Strompreis keine Kostenkachel und keine kaputte Zahl");
+  await page.fill("#h-jaz", "1");
+  note((await page.$('[data-kachel="wp"]')) === null && !(await kaputt("#stab-ergebnis")), "Heizstab: mit Arbeitszahl 1 kein Vergleich, weil es keinen Unterschied gibt");
+  await page.fill("#h-std", "");
+  note((await text("#stab-ergebnis")).includes("Stunden") && !(await kaputt("#stab-ergebnis")), "Heizstab: ohne Stunden ein Hinweis statt einer Zahl");
+
   // Gas: dieselbe Rechnung wie GasConversion.energy in PulseCore.
   await page.goto(base + "gas-in-kwh.html");
   note((await kachel("kwh")).wert === "2.702 kWh", `Gasrechner: 250 m³ × 0,9650 × 11,2 = 2.702 kWh (${(await kachel("kwh")).wert})`);
@@ -1036,7 +1105,7 @@ console.log("\nVerhalten");
   // klare Benennungen. Gezählt wird, was sonst schleichend wieder wächst:
   // der Hinweis unter einem Feld, der Text im Ergebnis, und wo der Rechner
   // steht.
-  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "photovoltaik-eigenverbrauch.html", "nachzahlung-pruefen.html"]) {
+  for (const datei of rechnerSeiten) {
     await page.goto(base + datei);
     const blick = await page.evaluate(() => {
       const erg = document.querySelector(".rechner-ergebnis");
@@ -1067,7 +1136,7 @@ console.log("\nVerhalten");
   // neben einem einzeiligen hat die Felder um acht Punkte versetzt; gesehen
   // habe ich es erst auf dem Bildschirmfoto.
   await page.setViewportSize({ width: 1280, height: 900 });
-  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "photovoltaik-eigenverbrauch.html", "nachzahlung-pruefen.html"]) {
+  for (const datei of rechnerSeiten) {
     await page.goto(base + datei);
     const versatz = await page.evaluate(() => {
       const reihen = {};
@@ -1088,7 +1157,7 @@ console.log("\nVerhalten");
   // „2.702 kWh" mitten in der Zahl um. Gemessen breit und schmal.
   for (const breite of [1280, 390]) {
     await page.setViewportSize({ width: breite, height: 900 });
-    for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "photovoltaik-eigenverbrauch.html", "nachzahlung-pruefen.html"]) {
+    for (const datei of rechnerSeiten) {
       await page.goto(base + datei);
       const mass = await page.evaluate(() => {
         // Nur sichtbare: Der Stromkostenrechner blendet die Felder des anderen
@@ -1126,7 +1195,7 @@ console.log("\nVerhalten");
   // **Groß genug für einen Daumen.** Wer mit der Rechnung in der einen Hand
   // tippt, trifft ein kleines Feld nicht.
   await page.setViewportSize({ width: 390, height: 900 });
-  for (const datei of ["gas-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "photovoltaik-eigenverbrauch.html", "nachzahlung-pruefen.html", "zaehlerstand-umzug.html"]) {
+  for (const datei of [...rechnerSeiten, "zaehlerstand-umzug.html"]) {
     await page.goto(base + datei);
     const klein = await page.evaluate(() =>
       [...document.querySelectorAll(".rechner input, .rechner select, main button")]
