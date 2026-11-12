@@ -55,7 +55,9 @@ Prüfungen haben gleich einen echten Fehler gefunden.
   immer wieder, ohne dass die App etwas falsch machte: Solange das Netz im Debug-Bau rechnet,
   beantwortete die App die Fragen des Tests nicht rechtzeitig. Er wartet jetzt geduldig und lässt
   dabei nur genau diesen Fehler durch; ob Vorschlag und Hinweis am Ende dastehen, entscheidet
-  weiter eine echte Frage. Die Vorführung ohne Kamera rechnet mit niedrigerem Vorrang.
+  weiter eine echte Frage. Die Vorführung ohne Kamera rechnet mit niedrigerem Vorrang. Und
+  „Übernehmen“ wird erst getippt, wenn der Knopf stillsteht: Im nächsten Lauf ging genau dieser
+  Tipp verloren, der Sucher stand danach noch da (zweiter Tipp nur dann).
 - `testCapturingBothDirectionsInOneGo` tippt „Sichern“ erst, wenn der Knopf freigeschaltet ist, und
   ein zweites Mal, wenn das Blatt danach nachweislich noch offen ist (fiel auf dem iPhone).
 

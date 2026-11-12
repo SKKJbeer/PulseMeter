@@ -2857,7 +2857,22 @@ final class LaunchTests: XCTestCase {
                     + "Zu sehen war: \(beschriftungen(in: app))")
             return
         }
-        take.tap()
+        // **Der Tipp auf „Übernehmen“ ging verloren** (Lauf 43120039795, iPhone): Danach stand der
+        // Sucher noch mit „Gefunden“ da, und im Ziffernblock dahinter „00.000,000“. Der Knopf gleitet
+        // mit dem Treffer animiert herein; getippt wird erst, wenn er stillsteht, und ein zweites
+        // Mal nur, wenn er nach der Wartezeit nachweislich noch dasteht.
+        tippeRuhig(take)
+        let weg = NSPredicate(format: "exists == false")
+        var zu = false
+        geduldig { zu = XCTWaiter().wait(for: [XCTNSPredicateExpectation(predicate: weg, object: take)], timeout: 20) == .completed }
+        if !zu {
+            var nochDa = false
+            geduldig { nochDa = take.exists && take.isHittable }
+            if nochDa {
+                print("Übernehmen: der erste Tipp kam nicht an, zweiter Versuch.")
+                tippeRuhig(take)
+            }
+        }
 
         let hint = app.descendants(matching: .any).matching(identifier: "kamera-hinweis").firstMatch
         // Großzügig: Das Blatt schließt sich, und auf dem iPad im Debug-Bau dauert das.
@@ -2873,7 +2888,6 @@ final class LaunchTests: XCTestCase {
         // **Erst muss der Sucher ganz weg sein.** Der Hinweis steht schon im Ziffernblock, während
         // der Sucher noch hinausgleitet; ein Tippen in diesem Moment trifft den Sucher und geht
         // verloren (iPhone, Lauf 42492310609: Hinweis blieb, weil „Löschen“ nie ankam).
-        let weg = NSPredicate(format: "exists == false")
         geduldig { _ = XCTWaiter().wait(for: [XCTNSPredicateExpectation(predicate: weg, object: take)], timeout: 40) }
         let loeschen = app.buttons["Löschen"]
         XCTAssertTrue(loeschen.waitForExistence(timeout: erscheint), "Der Ziffernblock hat keinen Knopf „Löschen“")
@@ -2883,14 +2897,7 @@ final class LaunchTests: XCTestCase {
         // den Ziffernblock animiert nach unten. Ein Tippen rechnet seinen Punkt aus dem Rahmen
         // von eben; wandert der Knopf dazwischen, landet es daneben, und „Löschen“ kommt nie an.
         // Das fiel auch nach dem Warten auf den Sucher noch (Lauf 42574683486, iPhone).
-        var vorher = loeschen.frame
-        for _ in 0..<20 {
-            Thread.sleep(forTimeInterval: 0.25)
-            let jetzt = loeschen.frame
-            if jetzt == vorher { break }
-            vorher = jetzt
-        }
-        loeschen.tap()
+        tippeRuhig(loeschen)
         let nachHinweis = XCTNSPredicateExpectation(predicate: weg, object: hint)
         if XCTWaiter().wait(for: [nachHinweis], timeout: erscheint) != .completed {
             XCTFail("Nach „Löschen“ steht der Kamera-Hinweis noch. Zu sehen war: \(beschriftungen(in: app))")
@@ -2914,6 +2921,25 @@ final class LaunchTests: XCTestCase {
         var da = false
         geduldig { da = element.exists }
         return da
+    }
+
+    /// Tippt erst, wenn das Element treffbar ist und **stillsteht**. Ein Tipp rechnet seinen Punkt
+    /// aus dem Rahmen von eben; gleitet der Knopf dazwischen weiter, landet er daneben.
+    /// Ob der Tipp gewirkt hat, prüft der Aufrufer an der Folge, nicht hier.
+    func tippeRuhig(_ element: XCUIElement) {
+        geduldig {
+            _ = XCTWaiter().wait(for: [XCTNSPredicateExpectation(
+                predicate: NSPredicate { el, _ in (el as? XCUIElement)?.isHittable ?? false },
+                object: element)], timeout: 10)
+            var vorher = element.frame
+            for _ in 0..<20 {
+                Thread.sleep(forTimeInterval: 0.25)
+                let jetzt = element.frame
+                if jetzt == vorher { break }
+                vorher = jetzt
+            }
+            element.tap()
+        }
     }
 
     /// Siehe ``wartetGeduldig(auf:sekunden:)``.
