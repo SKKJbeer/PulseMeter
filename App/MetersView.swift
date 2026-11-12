@@ -648,6 +648,7 @@ struct MeterEditor: View {
     /// dem Produkt auf, das vor dem Tipp dastand — sichtbar der falsche Kauf.
     /// Zwei Zustände für eine Sache geraten aus dem Takt; einer kann das nicht.
     @State private var paywallReason: ProductID?
+    @State private var wechseltHeizung = false
 
     @State private var name = ""
     @State private var kind: ResourceKind = .electricity
@@ -897,6 +898,27 @@ struct MeterEditor: View {
                     }
                 }
 
+                // 1.9: Der Einstieg sitzt beim alten Zähler, weil der
+                // Wechsel dort anfängt. Gesperrt öffnet er das Kaufblatt,
+                // statt zu verschwinden: Wer nicht weiß, dass es den
+                // Vergleich gibt, sucht ihn nicht.
+                if let existing = draft.existing, HeatingChange.canBeOldMeter(existing) {
+                    Section {
+                        Button("Heizung gewechselt am …") {
+                            if purchase.policy.canCompareHeating {
+                                wechseltHeizung = true
+                            } else {
+                                openPaywall(.heatPump)
+                            }
+                        }
+                        .accessibilityIdentifier("heizung-gewechselt")
+                    } header: {
+                        Text("Heizung")
+                    } footer: {
+                        Text("Seit einer Wärmepumpe zeigt die Übersicht dieselben Monate vorher und nachher, in kWh und Euro.")
+                    }
+                }
+
                 if let existing = draft.existing {
                     Section {
                         Button(existing.isArchived ? "Aus dem Archiv holen" : "Archivieren") {
@@ -937,6 +959,11 @@ struct MeterEditor: View {
             }
             .sheet(item: $paywallReason) { produkt in
                 UnlockSheet(product: produkt)
+            }
+            .sheet(isPresented: $wechseltHeizung) {
+                if let existing = draft.existing {
+                    HeizungsWechselSheet(alt: existing, onDone: onDone)
+                }
             }
             .sheet(isPresented: $addingPrice) {
                 if let existing = draft.existing {

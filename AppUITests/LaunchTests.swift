@@ -1848,6 +1848,79 @@ final class LaunchTests: XCTestCase {
                         "Auf der Karte steht keine Menge in kWh: „\(kwh.label)“")
     }
 
+    /// Der Heizungswechsel aus Sicht des Nutzers (1.9): am Gaszähler
+    /// eintragen, mit neuem Zähler „Heizstrom“ sichern, und die Übersicht
+    /// zeigt die Karte „Gas und Wärmepumpe“.
+    ///
+    /// Geprüft wird außerdem, dass der abgelöste Gaszähler nicht mehr als
+    /// fällig gilt. In den Beispieldaten ist er absichtlich drei Monate
+    /// überfällig; nach dem Wechsel liest ihn niemand mehr ab, und eine
+    /// Mahnung wäre falsch.
+    func testAHeatingChangeShowsBeforeAndAfterOnTheOverview() {
+        let app = launchWithData()
+        let gasFaellig = app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS 'Gas' AND label CONTAINS 'fällig'")
+        ).firstMatch
+        XCTAssertTrue(gasFaellig.waitForExistence(timeout: erscheint),
+                      "Ausgangslage: Gas muss vor dem Wechsel fällig sein")
+        guard wechsel(zu: "Zähler", in: app) else { return }
+
+        let zeile = app.buttons.matching(
+            NSPredicate(format: "label BEGINSWITH 'Gas'")
+        ).firstMatch
+        guard oeffne(zeile, bis: app.buttons["Abbrechen"], in: app, "Gas öffnen") else { return }
+
+        let knopf = element("heizung-gewechselt", in: app)
+        XCTAssertTrue(scroll(to: knopf, in: app), "Der Knopf „Heizung gewechselt am …“ fehlt am Gaszähler")
+        guard oeffne(knopf, bis: app.navigationBars["Heizungswechsel"], in: app,
+                     "Heizungswechsel") else { return }
+
+        let neu = element("heizung-neuer-zaehler", in: app)
+        XCTAssertTrue(neu.waitForExistence(timeout: erscheint), "Die Wahl „Neuer Zähler“ fehlt")
+        neu.tap()
+        element("heizung-sichern", in: app).tap()
+
+        let zu = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"),
+                                           object: app.navigationBars["Heizungswechsel"])
+        XCTAssertEqual(XCTWaiter().wait(for: [zu], timeout: erscheint), .completed,
+                       "Das Blatt ging nach dem Sichern nicht zu. Zu sehen war: "
+                       + beschriftungen(in: app))
+        app.buttons["Abbrechen"].firstMatch.tap()
+
+        guard wechsel(zu: "Übersicht", in: app) else { return }
+        let karte = element("heizung-karte", in: app)
+        XCTAssertTrue(scroll(to: karte, in: app),
+                      "Die Karte zum Heizungswechsel fehlt. Zu sehen war: \(beschriftungen(in: app))")
+        XCTAssertTrue(karte.label.contains("Wärmepumpe"),
+                      "Die Karte nennt die Wärmepumpe nicht: „\(karte.label)“")
+        XCTAssertTrue(app.staticTexts["Heizstrom"].exists,
+                      "Der neue Zähler „Heizstrom“ fehlt in der Übersicht")
+        XCTAssertFalse(gasFaellig.exists,
+                       "Der abgelöste Gaszähler gilt noch als fällig")
+    }
+
+    /// Ohne den Kauf führt der Knopf zum Kaufblatt „Wärmepumpe“, statt zu
+    /// fehlen (Produktprinzip 4).
+    func testTheHeatingChangeLeadsToItsPurchaseWithoutIt() {
+        let app = launchFree()
+        guard wechsel(zu: "Zähler", in: app) else { return }
+        let zeile = app.buttons.matching(
+            NSPredicate(format: "label BEGINSWITH 'Gas'")
+        ).firstMatch
+        guard oeffne(zeile, bis: app.buttons["Abbrechen"], in: app, "Gas öffnen") else { return }
+
+        let knopf = element("heizung-gewechselt", in: app)
+        XCTAssertTrue(scroll(to: knopf, in: app), "Der Knopf fehlt ohne Kauf — er muss dastehen")
+        knopf.tap()
+        let kaufen = app.buttons.containing(
+            NSPredicate(format: "label CONTAINS 'Wärmepumpe freischalten'")
+        ).firstMatch
+        XCTAssertTrue(kaufen.waitForExistence(timeout: erscheint),
+                      "Das Kaufblatt „Wärmepumpe“ kam nicht. Zu sehen war: \(beschriftungen(in: app))")
+        XCTAssertFalse(app.navigationBars["Heizungswechsel"].exists,
+                       "Ohne Kauf darf sich das Blatt nicht öffnen")
+    }
+
     /// „Neuer Preis ab …“ legt einen zweiten Preis an, und „Löschen“ nimmt
     /// ihn wieder weg (1.7).
     ///

@@ -9,6 +9,42 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.163.0 — 2026-11-12
+
+**1.9 in der App: Heizung gewechselt, vorher und nachher**
+
+### Neu
+- Am Gas- oder Ölzähler steht unter „Heizung“ der Knopf „Heizung gewechselt
+  am …“. Er öffnet das Blatt „Heizungswechsel“: Tag, Zähler der Wärmepumpe
+  (ein vorhandener Stromzähler oder ein neuer Zähler „Heizstrom“) und der
+  angenommene Wirkungsgrad des alten Kessels. Stromzähler, die schon vor dem
+  Wechsel abgelesen wurden, sind ausgegraut und sagen warum.
+- In der Übersicht steht unter den Zählern die Karte „Gas und Wärmepumpe“
+  (oder „Heizöl und …“): Unterschied in Euro, mit „Kosten und Preise“, sonst
+  in kWh. Solange noch kein ganzer Monat gemessen ist, sagt sie, ab wann es
+  eine Zahl gibt.
+- Ein Tipp öffnet „Vorher und nachher“: dieselben Monate auf beiden Seiten,
+  Menge, kWh, Wärme und Kosten, darunter der Hinweis zum Wetter. „Teilen“
+  gibt ein Bild weiter, „Gemessen mit Zählora“, ohne Zählerstände und ohne
+  Link.
+- Ohne den Kauf „Wärmepumpe“ öffnen Knopf und Karte das Kaufblatt.
+- Ein neuer Zähler „Heizstrom“ zählt gegen die Grenze von zwei Zählern; ohne
+  „Unbegrenzt viele Zähler“ bleibt ein vorhandener Stromzähler wählbar.
+
+### Geändert
+- Ein abgelöster Gas- oder Ölzähler gilt ab dem Wechseltag nicht mehr als
+  fällig und bekommt keine Erinnerung mehr.
+
+### Tests
+- `testAHeatingChangeShowsBeforeAndAfterOnTheOverview`: Wechsel am Gaszähler
+  mit neuem Zähler, Karte in der Übersicht, Gas nicht mehr fällig.
+- `testTheHeatingChangeLeadsToItsPurchaseWithoutIt`: ohne Kauf das
+  Kaufblatt, kein Blatt „Heizungswechsel“.
+- `check-versprechen.py` kennt den Stand im Laden: „Wärmepumpe“ steht noch
+  nicht dort, und das Bündel kostet im Laden bis 1.9 weiter 4,99 €. Beides
+  kommt beim Einreichen von 1.9 heraus. Vorher fiel die Prüfung seit 0.162.0,
+  weil die Website richtig den Ladenpreis nennt.
+
 ## 0.162.0 — 2026-11-12
 
 **Rechenkern und Datenmodell für 1.9: Heizungswechsel, vorher und nachher**

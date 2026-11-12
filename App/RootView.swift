@@ -375,6 +375,13 @@ struct OverviewView: View {
     @State private var problem: String?
     /// Welche Zahl gerade erklärt wird — `nil`, solange kein Blatt offen ist.
     @State private var erklaerung: ErklaerungsAnlass?
+    /// 1.9: je Heizungswechsel eine Karte unter den Zählern.
+    @State private var heizungen: [HeizungsKarte] = []
+    @State private var heizungOffen: HeizungsKarte?
+    @State private var heizungBearbeiten: MeteringPoint?
+    @State private var heizungKauf = false
+    @State private var heizungDanach: MeteringPoint?
+    @State private var abgeloest: Set<MeteringPoint.ID> = []
 
     private var today: CalendarDay { CalendarDay.containing(Date(), in: .current) }
 
@@ -416,9 +423,11 @@ struct OverviewView: View {
                                                      spacing: 12, alignment: .top)],
                                   spacing: 12) {
                             ForEach(rows) { row in card(for: row) }
+                            ForEach(heizungen) { karte in heizungsKarte(karte) }
                         }
                     } else {
                         ForEach(rows) { row in card(for: row) }
+                        ForEach(heizungen) { karte in heizungsKarte(karte) }
                     }
                 }
                 .padding(.horizontal, 18)
@@ -447,7 +456,30 @@ struct OverviewView: View {
                 ExplainView(name: anlass.name, outlook: anlass.outlook,
                             unit: anlass.unit)
             }
+            // Erst schließen, dann das nächste Blatt: Zwei Blätter im selben
+            // Augenblick zeigt SwiftUI nicht, das zweite fiele still weg.
+            .sheet(item: $heizungOffen, onDismiss: {
+                if let alt = heizungDanach { heizungDanach = nil; heizungBearbeiten = alt }
+            }) { karte in
+                HeizungsVergleichView(karte: karte) {
+                    heizungDanach = karte.alt
+                    heizungOffen = nil
+                }
+            }
+            .sheet(item: $heizungBearbeiten) { alt in
+                HeizungsWechselSheet(alt: alt, onDone: { datenstand.geaendert() })
+            }
+            .sheet(isPresented: $heizungKauf) {
+                UnlockSheet(product: .heatPump)
+            }
         }
+    }
+
+    private func heizungsKarte(_ karte: HeizungsKarte) -> some View {
+        HeizungsKarteView(karte: karte,
+                          onOpen: { heizungOffen = karte },
+                          onUnlock: { heizungKauf = true },
+                          darf: purchase.policy.canCompareHeating)
     }
 
     // MARK: - Bausteine
@@ -908,6 +940,12 @@ struct OverviewView: View {
             let today = self.today
             guard let yearStart = CalendarDay(year: today.year, month: 1, day: 1),
                   let yearRange = DayRange(start: yearStart, end: today) else { return }
+            let wechsel = try repository.heatingChanges()
+            // **Ein abgelöster Zähler ist nie fällig.** Nach dem Wechsel liest
+            // niemand mehr den Gaszähler ab; die Übersicht hätte ihn sonst
+            // jeden Monat angemahnt, und die Erinnerung gleich mit.
+            let abgeloest = Set(wechsel.filter { $0.day <= today }.map(\.oldMeterID))
+            self.abgeloest = abgeloest
 
             rows = try points.map { point in
                 guard let register = point.primaryRegister else {
@@ -990,7 +1028,8 @@ struct OverviewView: View {
                     changeVersusLastYear: comparison?.relativeChange,
                     monthlySeries: monthlySeries(point: point, readings: everything, today: today),
                     daysSinceReading: last.map { today.days(since: $0.day) },
-                    isDue: ConsumptionEngine.isReadingDue(meteringPoint: point,
+                    isDue: !abgeloest.contains(point.id)
+                        && ConsumptionEngine.isReadingDue(meteringPoint: point,
                                                           readings: primary, today: today),
                     cost: costs.value,
                     costIsApproximate: costs.isApproximate,
@@ -1012,6 +1051,20 @@ struct OverviewView: View {
                                             tariffs: tariffs, result: result)
                 return row
             }
+            heizungen = try wechsel.compactMap { change in
+                guard let alt = points.first(where: { $0.id == change.oldMeterID }),
+                      let neu = points.first(where: { $0.id == change.newMeterID }) else { return nil }
+                let mitBetraegen = purchase.allows(.costsAndTariffs)
+                let tarife = mitBetraegen
+                    ? try repository.tariffs(for: alt.id) + repository.tariffs(for: neu.id) : []
+                let ablesungen = try repository.readings(for: alt) + repository.readings(for: neu)
+                return HeizungsKarte(change: change, alt: alt, neu: neu,
+                                     outcome: HeatingComparison.compare(
+                                        change: change, old: alt, new: neu,
+                                        readings: ablesungen, tariffs: tarife, today: today),
+                                     mitBetraegen: mitBetraegen)
+            }
+
             // Das Widget bekommt dieselbe Rechnung wie dieser Schirm, nur
             // kleiner. Gebaut wird sie in `PulseCore`, damit die beiden nicht
             // auseinanderlaufen können — ein Widget, das eine andere Zahl
@@ -1044,11 +1097,12 @@ struct OverviewView: View {
         do {
             let repository = PulseRepository(context: context)
             var byMeter: [MeteringPoint.ID: [Reading]] = [:]
-            for point in points {
+            for point in points where !abgeloest.contains(point.id) {
                 guard let register = point.primaryRegister else { continue }
                 byMeter[point.id] = try repository.readings(for: register.id)
             }
-            await Reminders.reschedule(meteringPoints: points, readings: byMeter,
+            await Reminders.reschedule(meteringPoints: points.filter { !abgeloest.contains($0.id) },
+                                       readings: byMeter,
                                        today: today,
                                        darfErinnern: purchase.policy.canRemind)
         } catch {
