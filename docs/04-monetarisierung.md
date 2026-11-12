@@ -94,8 +94,9 @@ wenn der Kauf im Laden steht; bis dahin verspricht sie nur, was es gibt.
 Jahresarbeitszahl, den Heizstab-Hinweis und den Jahresbericht frei. Zielgruppe sind Wechsler und
 Besitzer einer Wärmepumpe. Gas und Heizöl in kWh und der neue Tarif ab einem
 Tag (1.8) bleiben in „Kosten und Preise“, weil Käufer dafür schon bezahlt
-haben. Der Kauf gehört ins Bündel. Das kostet heute selbst 4,99 €, sein neuer
-Preis wird vor 1.9 entschieden. Konzept:
+haben. Der Kauf gehört ins Bündel. **Am 12. November entschieden:** Das Bündel
+kostet ab 1.9 **7,99 €** statt 4,99 € (einzeln dann 15,93 €, die Hälfte
+gespart), und wer es schon hat, bekommt „Wärmepumpe“ dazu, wie bei der Kamera. Konzept:
 https://claude.ai/artifact/97TGsn8x5pJwi9NkMsaKq4
 
 **Geplant für Februar bis April 2027, entschieden am 11. November:** ein

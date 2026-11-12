@@ -128,20 +128,23 @@ struct UnlockSheet: View {
             Text("Oder gleich alles")
                 .pulseSectionLabel()
             buyButton(for: .everything, prominent: false)
-            Text(savingsNote)
-                .font(PulseText.caption)
-                .foregroundStyle(PulseColor.inkTertiary)
+            if let savingsNote {
+                Text(savingsNote)
+                    .font(PulseText.caption)
+                    .foregroundStyle(PulseColor.inkTertiary)
+            }
         }
     }
 
-    private var savingsNote: String {
+    /// Nur die Ersparnis, seit 1.8. „Alle sechs Freischaltungen zusammen"
+    /// stand schon im Knopf darüber (`ProductID.explanation`) und hier ein
+    /// zweites Mal.
+    private var savingsNote: String? {
         let single = ProductID.individually.reduce(Decimal(0)) { $0 + $1.suggestedPrice }
         let saved = single - ProductID.everything.suggestedPrice
-        // Die Zahl kommt aus der Liste: Hier stand „vier", als es fünf waren.
-        let alle = "Alle \(ProductID.individuallyCountWord) Freischaltungen zusammen"
-        guard saved > 0 else { return alle + "." }
+        guard saved > 0 else { return nil }
         let formatted = saved.formatted(.currency(code: "EUR").locale(Locale(identifier: "de_DE")))
-        return alle + " — \(formatted) günstiger als einzeln."
+        return "\(formatted) günstiger als einzeln."
     }
 
     /// Was kostenlos bleibt — und zwar dauerhaft.

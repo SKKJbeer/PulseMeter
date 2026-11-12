@@ -98,7 +98,12 @@ einzeln_im_quelltext = re.findall(r"\.(\w+)", block.group(1)) if block else []
 # „alle fünf" und „8,95 €", und das ist richtig. **Beim Einreichen von 1.6 kommt der Eintrag
 # hier heraus**, und die Prüfung verlangt dann „alle sechs" und „10,94 €" auf beiden Seiten
 # (`docs/06-uebergabe.md`, Punkt „Kamera", und `CHANGELOG.md` 0.139.0).
-NOCH_NICHT_IM_LADEN: set[str] = set()   # leer seit 1.6 (Kamera im Laden)
+# Seit 0.162.0 wieder belegt: „Wärmepumpe" ist ein Kauf in der App, im Laden erst mit 1.9.
+# Beim Einreichen von 1.9 kommen beide Zeilen heraus (Eintrag hier, Bündelpreis darunter).
+NOCH_NICHT_IM_LADEN: set[str] = {"heatPump"}
+# Das Bündel kostet im Quelltext 7,99 € ab 1.9, im Laden bis dahin 4,99 €
+# (`scripts/asc-kaeufe.py`). Die Website nennt den Ladenpreis. `None` = wie im Quelltext.
+BUENDEL_IM_LADEN: str | None = "4.99"
 einzeln = [p for p in einzeln_im_quelltext if p not in NOCH_NICHT_IM_LADEN]
 
 grenze = re.search(r"freeMeterLimit = (\d+)", quelle)
@@ -107,7 +112,7 @@ if funde:
     print("\n".join(funde))
     sys.exit(1)
 
-erlaubt = {euro(standard.group(1)), euro(preise["everything"]),
+erlaubt = {euro(standard.group(1)), euro(BUENDEL_IM_LADEN or preise["everything"]),
            euro(preise["reminders"])}
 
 # Die Summe der Einzelkäufe. Sie steht auf der Preisseite als Argument für das

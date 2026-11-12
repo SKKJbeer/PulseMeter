@@ -133,7 +133,8 @@ extension MeteringPointRecord {
             billingCycle: cycle,
             isArchived: isArchived,
             sortIndex: sortIndex,
-            note: note
+            note: note,
+            measuresHeatPump: measuresHeatPump
         )
     }
 
@@ -156,6 +157,7 @@ extension MeteringPointRecord {
         isArchived = value.isArchived
         sortIndex = value.sortIndex
         note = value.note
+        measuresHeatPump = value.measuresHeatPump
         unitID = value.unitID
         propertyID = value.propertyID
 
@@ -297,5 +299,28 @@ extension BillingPeriodRecord {
         valueScale = ScaledDecimal.moneyScale
         monthlyPrepaymentScaled = value.monthlyPrepayment.map { ScaledDecimal(money: $0).scaled }
         currencyCode = value.currency.code
+    }
+}
+
+// MARK: - HeatingChange
+
+extension HeatingChangeRecord {
+    func toDomain() -> HeatingChange {
+        HeatingChange(
+            id: id,
+            day: Mapping.day(day),
+            oldMeterID: oldMeterID,
+            newMeterID: newMeterID,
+            boilerEfficiency: ScaledDecimal(scaled: efficiencyScaled, scale: valueScale).value
+        )
+    }
+
+    func apply(_ value: HeatingChange) {
+        id = value.id
+        day = value.day.rawValue
+        oldMeterID = value.oldMeterID
+        newMeterID = value.newMeterID
+        valueScale = ScaledDecimal.moneyScale
+        efficiencyScaled = ScaledDecimal(money: value.boilerEfficiency).scaled
     }
 }

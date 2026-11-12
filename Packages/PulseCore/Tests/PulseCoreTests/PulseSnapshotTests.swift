@@ -31,6 +31,38 @@ final class PulseSnapshotTests: XCTestCase {
         XCTAssertEqual(restored.tariffs, snapshot.tariffs)
     }
 
+    /// Eine Sicherung aus einer Fassung vor 1.9 kennt `measuresHeatPump`
+    /// nicht. Sie muss sich trotzdem einlesen lassen, mit „aus".
+    func testABackupFromBeforeTheHeatPumpFlagStillLoads() throws {
+        var snapshot = sample()
+        snapshot.meteringPoints[0].measuresHeatPump = true
+        let data = try snapshot.encoded()
+        var json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        var points = try XCTUnwrap(json["meteringPoints"] as? [[String: Any]])
+        XCTAssertNotNil(points[0]["measuresHeatPump"], "Das Feld wird geschrieben")
+        for i in points.indices { points[i].removeValue(forKey: "measuresHeatPump") }
+        json["meteringPoints"] = points
+        XCTAssertNotNil(json["heatingChanges"])
+        json.removeValue(forKey: "heatingChanges")
+        let alt = try JSONSerialization.data(withJSONObject: json)
+
+        let restored = try PulseSnapshot.decode(from: alt)
+        XCTAssertEqual(restored.meteringPoints.count, snapshot.meteringPoints.count)
+        XCTAssertFalse(restored.meteringPoints[0].measuresHeatPump)
+        XCTAssertEqual(restored.heatingChanges, [])
+    }
+
+    /// Ein Heizungswechsel steckt in der Sicherung und kommt wieder heraus.
+    func testAHeatingChangeRoundTrips() throws {
+        var snapshot = sample()
+        let change = HeatingChange(day: day(2025, 10, 1), oldMeterID: UUID(), newMeterID: UUID(),
+                                   boilerEfficiency: dec("0.9"))
+        snapshot.heatingChanges = [change]
+        let restored = try PulseSnapshot.decode(from: snapshot.encoded())
+        XCTAssertEqual(restored.heatingChanges, [change])
+        XCTAssertEqual(restored.merged(into: restored).heatingChanges, [change])
+    }
+
     func testSnapshotCarriesEveryEntityNotJustReadings() throws {
         // Ein Abzug, aus dem sich der Zustand nicht rekonstruieren lässt,
         // ist keine Sicherung.
