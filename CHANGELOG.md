@@ -11,7 +11,7 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ## 0.164.0 — 2026-11-12
 
-**Website: Heizöl in kWh, Wärmepumpe im Monat und mit zwei Zählern, die ersten Seiten aus dem Reichweiten-Konzept Stufe 2**
+**Website: Heizöl in kWh, Wärmepumpe im Monat, mit zwei Zählern und der Heizstab, die ersten Seiten aus dem Reichweiten-Konzept Stufe 2**
 
 Aus dem Konzept „Mehr Leser über die Wärmepumpe“ (11. November): Zuerst
 kommen die kleinen, genauen Fragen, bei denen die großen Seiten dünn sind.
@@ -41,6 +41,13 @@ kommen die kleinen, genauen Fragen, bei denen die großen Seiten dünn sind.
   Zählerschrank und die drei häufigsten Fehler. Verlinkt aus Ratgeber,
   Startseite, Sitemap und der Seite zum Monat; dort heißt der Hinweis unter
   dem Feld jetzt „ganzer Monat, HT plus NT“.
+- **`heizstab-waermepumpe.html`**: Leistung und Stunden des Heizstabs aus
+  dem Menü der Anlage eintippen, dazu Jahresarbeitszahl und Strompreis. Die
+  Seite zeigt seinen Strom, was die Wärmepumpe für dieselbe Wärme gebraucht
+  hätte, und die Mehrkosten (6 kW × 100 Stunden = 600 kWh, mit
+  Jahresarbeitszahl 3,5 rund 129 € mehr). Woran man merkt, dass er
+  mitläuft, und was hilft, wenn er zu oft läuft. Verlinkt aus Ratgeber,
+  Startseite, Sitemap und der Seite zum Monat.
 
 ### Gefunden, nicht behoben
 - **Die App rechnet einen Wärmepumpen-Zähler mit dem Profil für
@@ -55,6 +62,10 @@ kommen die kleinen, genauen Fragen, bei denen die großen Seiten dünn sind.
   sonst in einer der Listen vergessen worden.
 - Vier neue Prüfungen für die Seite zum Monat, darunter der Abgleich der
   festen Tabelle mit dem Rechner (einmal rot gesehen mit Juli 2,9 statt 2,6).
+- Vier neue Prüfungen für die Heizstab-Seite: Strom, Vergleich und
+  Mehrkosten, ohne Strompreis keine Kostenkachel, mit Arbeitszahl 1 kein
+  Vergleich, ohne Stunden ein Hinweis. Einmal rot gesehen (Vergleich mit
+  falscher Formel).
 - Fünf neue Prüfungen für die Seite mit zwei Zählern: Summe und Anteil NT,
   Mittel nach Menge und Kosten, ohne NT-Preis kein Mittel, nur HT, ohne
   Verbrauch ein Hinweis. Einmal rot gesehen (Mittel als einfacher

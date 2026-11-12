@@ -47,8 +47,8 @@ const base = `http://127.0.0.1:${server.address().port}/`;
 // toter Verweis dorthin fällt sonst niemandem auf.
 // Jede Seite mit einem Rechner. Stand bis 0.164.0 fünfmal ausgeschrieben, und
 // eine neue Seite wäre in einer der Listen vergessen worden.
-const rechnerSeiten = ["gas-in-kwh.html", "heizoel-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "waermepumpe-stromverbrauch-monat.html", "waermepumpe-zwei-zaehler.html", "photovoltaik-eigenverbrauch.html", "nachzahlung-pruefen.html"];
-const seiten = ["index.html", "entwicklung.html", "hilfe.html", "gas-in-kwh.html", "heizoel-in-kwh.html", "waermepumpe-stromverbrauch-monat.html", "waermepumpe-zwei-zaehler.html",
+const rechnerSeiten = ["gas-in-kwh.html", "heizoel-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "waermepumpe-stromverbrauch-monat.html", "waermepumpe-zwei-zaehler.html", "heizstab-waermepumpe.html", "photovoltaik-eigenverbrauch.html", "nachzahlung-pruefen.html"];
+const seiten = ["index.html", "entwicklung.html", "hilfe.html", "gas-in-kwh.html", "heizoel-in-kwh.html", "waermepumpe-stromverbrauch-monat.html", "waermepumpe-zwei-zaehler.html", "heizstab-waermepumpe.html",
                 "zaehlerstand-umzug.html", "ratgeber.html",
                 "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "heizung-auf-waermepumpe-umstellen.html", "zaehlerstand-ablesen.html", "photovoltaik-eigenverbrauch.html", "strompreis-entwicklung.html", "nachzahlung-pruefen.html", "datenschutz.html", "impressum.html", "404.html"];
 
@@ -743,6 +743,19 @@ console.log("\nVerhalten");
        `Zwei Zähler: nur HT, dann zählt nur der HT-Preis (${(await kachel("misch")).wert})`);
   await page.fill("#z-ht", ""); await page.fill("#z-nt", "");
   note((await text("#htnt-ergebnis")).includes("HT und NT") && !(await kaputt("#htnt-ergebnis")), "Zwei Zähler: ohne Verbrauch ein Hinweis statt einer Zahl");
+
+  // Heizstab: 6 kW × 100 h = 600 kWh. Die Wärmepumpe hätte mit JAZ 3,5
+  // 171 kWh gebraucht, die 429 kWh dazwischen kosten zu 30 ct rund 129 €.
+  await page.goto(base + "heizstab-waermepumpe.html");
+  note((await kachel("strom")).wert === "600 kWh" && (await kachel("wp")).wert === "≈ 171 kWh" && (await kachel("mehr")).wert === "≈ 129 €",
+       `Heizstab: 600 kWh, die Wärmepumpe ≈ 171 kWh, ≈ 129 € mehr (${(await kachel("strom")).wert}, ${(await kachel("wp")).wert}, ${(await kachel("mehr")).wert})`);
+  await page.fill("#h-ct", "");
+  note((await page.$('[data-kachel="mehr"]')) === null && (await kachel("wp")).wert === "≈ 171 kWh" && !(await kaputt("#stab-ergebnis")),
+       "Heizstab: ohne Strompreis keine Kostenkachel und keine kaputte Zahl");
+  await page.fill("#h-jaz", "1");
+  note((await page.$('[data-kachel="wp"]')) === null && !(await kaputt("#stab-ergebnis")), "Heizstab: mit Arbeitszahl 1 kein Vergleich, weil es keinen Unterschied gibt");
+  await page.fill("#h-std", "");
+  note((await text("#stab-ergebnis")).includes("Stunden") && !(await kaputt("#stab-ergebnis")), "Heizstab: ohne Stunden ein Hinweis statt einer Zahl");
 
   // Gas: dieselbe Rechnung wie GasConversion.energy in PulseCore.
   await page.goto(base + "gas-in-kwh.html");
