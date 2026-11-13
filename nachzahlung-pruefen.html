@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nachzahlung prüfen: Jahresabrechnung nachrechnen — Zählora</title>
+<meta name="robots" content="max-image-preview:large">
+<meta name="description" content="Nachzahlung bei Strom oder Gas? Mit Zählerständen, Preisen und Abschlägen von der Jahresabrechnung nachrechnen, ob der Betrag stimmt, und was du auf der Rechnung prüfst.">
+<meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F0E0C" media="(prefers-color-scheme: dark)">
+<!-- Safari auf dem iPhone blendet darüber eine Leiste mit „Öffnen" oder
+     „Laden" ein. Wer über eine Antwortseite kommt, steht damit einen Tipp
+     vor der App statt einen Umweg über den Store. -->
+<meta name="apple-itunes-app" content="app-id=6802262743">
+<link rel="canonical" href="https://zaehlora.de/nachzahlung-pruefen">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Zählora">
+<meta property="og:locale" content="de_DE">
+<meta property="og:title" content="Nachzahlung prüfen: Jahresabrechnung nachrechnen — Zählora">
+<meta property="og:description" content="Mit Zählerständen, Preisen und Abschlägen von der Jahresabrechnung nachrechnen, ob die Nachzahlung stimmt.">
+<meta property="og:url" content="https://zaehlora.de/nachzahlung-pruefen">
+<meta property="og:image" content="https://zaehlora.de/bilder/teilen.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Zählora: Jeden Monat wissen, was du verbrauchst. Daneben die Übersicht der App auf einem iPhone.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="stylesheet" href="stil.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "Nachzahlung prüfen: Jahresabrechnung nachrechnen",
+      "description": "Nachzahlung bei Strom oder Gas aus Zählerständen, Arbeitspreis, Grundpreis und gezahlten Abschlägen nachrechnen, und was auf der Jahresabrechnung zu prüfen ist.",
+      "inLanguage": "de",
+      "datePublished": "2026-11-08",
+      "dateModified": "2026-11-08",
+      "author": {"@type": "Organization", "name": "Zählora", "url": "https://zaehlora.de/"},
+      "publisher": {"@type": "Organization", "name": "Zählora", "url": "https://zaehlora.de/"},
+      "mainEntityOfPage": "https://zaehlora.de/nachzahlung-pruefen"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Zählora", "item": "https://zaehlora.de/"},
+        {"@type": "ListItem", "position": 2, "name": "Ratgeber", "item": "https://zaehlora.de/ratgeber"},
+        {"@type": "ListItem", "position": 3, "name": "Nachzahlung prüfen"}
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<a class="sprung" href="#inhalt">Zum Inhalt springen</a>
+
+<header class="kopf">
+  <div class="bahn kopf-innen">
+    <a class="marke" href="/">
+      <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <path d="M4 23a12 12 0 0 1 24 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".28"/>
+        <path d="M7 23h4.5l2.5-6.5L18 27l2.5-4H25" fill="none" stroke="#C77A0E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Zählora
+    </a>
+    <nav aria-label="Bereiche">
+      <a href="/#funktionen">Funktionen</a>
+      <a href="/ratgeber">Ratgeber</a>
+      <a href="/#preise">Preise</a>
+      <a href="/entwicklung">Entwicklung</a>
+      <a href="/hilfe">Hilfe</a>
+    </nav>
+  </div>
+</header>
+
+<main id="inhalt" class="rechtstext artikel">
+  <div class="bahn">
+    <nav class="pfad" aria-label="Pfad">
+      <ol>
+        <li><a href="/">Zählora</a></li>
+        <li><a href="/ratgeber">Ratgeber</a></li>
+        <li aria-current="page">Nachzahlung prüfen</li>
+      </ol>
+    </nav>
+    <h1 id="rechner">Nachzahlung prüfen: die Jahresabrechnung nachrechnen</h1>
+    <p class="blass">
+      Leg die Rechnung neben dich und übertrag Zählerstände, Zeitraum, Preise
+      und die Summe deiner Abschläge. Dann siehst du, ob die Nachzahlung so
+      herauskommt, wie sie im Brief steht.
+    </p>
+
+    <form class="rechner" id="nachzahlungsrechner" onsubmit="return false" aria-describedby="n-ergebnis">
+      <fieldset class="umschalter">
+        <legend>Die Rechnung ist für</legend>
+        <div class="umschalter-wahl">
+          <label><input type="radio" name="n-art" value="strom" checked><span>Strom</span></label>
+          <label><input type="radio" name="n-art" value="gas"><span>Gas</span></label>
+        </div>
+      </fieldset>
+
+      <fieldset class="rechner-gruppe">
+        <legend>Zählerstände</legend>
+        <div class="rechner-felder">
+          <label>Anfangsstand
+            <span class="eingabe"><input id="n-alt" inputmode="decimal" autocomplete="off" value="12.480"><span class="einheit" data-einheit>kWh</span></span>
+          </label>
+          <label>Endstand
+            <span class="eingabe"><input id="n-neu" inputmode="decimal" autocomplete="off" value="15.420"><span class="einheit" data-einheit>kWh</span></span>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset class="rechner-gruppe" data-art="gas" hidden>
+        <legend>Umrechnung von der Rechnung</legend>
+        <div class="rechner-felder">
+          <label>Zustandszahl
+            <span class="eingabe"><input id="n-z" inputmode="decimal" autocomplete="off" value="0,9650"></span>
+          </label>
+          <label>Brennwert
+            <span class="eingabe"><input id="n-b" inputmode="decimal" autocomplete="off" value="11,2"><span class="einheit">kWh/m³</span></span>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset class="rechner-gruppe">
+        <legend>Abrechnungszeitraum</legend>
+        <div class="rechner-felder">
+          <label>vom
+            <span class="eingabe"><input id="n-von" type="date" value="2025-01-01"></span>
+          </label>
+          <label>bis einschließlich
+            <span class="eingabe"><input id="n-bis" type="date" value="2025-12-31"></span>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset class="rechner-gruppe">
+        <legend>Preise und Abschläge</legend>
+        <div class="rechner-felder">
+          <label>Arbeitspreis
+            <span class="eingabe"><input id="n-ap" inputmode="decimal" autocomplete="off" value="34"><span class="einheit">ct/kWh</span></span>
+            <small>brutto</small>
+          </label>
+          <label>Grundpreis im Monat
+            <span class="eingabe"><input id="n-gp" inputmode="decimal" autocomplete="off" value="12"><span class="einheit">€</span></span>
+            <small>brutto, Jahrespreis durch zwölf</small>
+          </label>
+          <label>Abschläge zusammen
+            <span class="eingabe"><input id="n-ab" inputmode="decimal" autocomplete="off" value="1.020"><span class="einheit">€</span></span>
+            <small>alles, was abgebucht wurde</small>
+          </label>
+          <label>Nachzahlung laut Rechnung
+            <span class="eingabe"><input id="n-re" inputmode="decimal" autocomplete="off" value=""><span class="einheit">€</span></span>
+            <small>Guthaben mit Minus</small>
+          </label>
+        </div>
+      </fieldset>
+
+      <div class="rechner-ergebnis" id="n-ergebnis" aria-live="polite"></div>
+    </form>
+    <script src="rechner.js"></script>
+    <script>
+    // Dieselbe Rechnung wie in der App (PulseCore, CostEngine): Verbrauch mal
+    // Arbeitspreis, dazu der Grundpreis taggenau, also Monatspreis × 12 durch
+    // die Tage des Jahres, für jeden Tag des Zeitraums. Versorger zählen den
+    // ersten und den letzten Tag mit; ein Kalenderjahr hat deshalb 365 Tage
+    // und kostet genau zwölf Monatsgrundpreise.
+    (function () {
+      var R = window.Rechner;
+      var form = document.getElementById("nachzahlungsrechner");
+      // Beispielwerte je Art. Wer umschaltet, ohne etwas eingetippt zu haben,
+      // soll kein Gas zu 34 Cent sehen.
+      var BEISPIEL = {
+        strom: { "n-alt": "12.480", "n-neu": "15.420", "n-ap": "34", "n-gp": "12", "n-ab": "1.020" },
+        gas:   { "n-alt": "8.214",  "n-neu": "9.538",  "n-ap": "11", "n-gp": "15", "n-ab": "1.680" }
+      };
+      var bisher = "strom";
+      function wert(id) { return R.zahl(document.getElementById(id).value); }
+      function tag(id) {
+        var v = document.getElementById(id).value;
+        var t = v ? Date.parse(v + "T00:00:00Z") : NaN;
+        return isFinite(t) ? t : NaN;
+      }
+      function tageImJahr(ms) {
+        var j = new Date(ms).getUTCFullYear();
+        return (j % 4 === 0 && j % 100 !== 0) || j % 400 === 0 ? 366 : 365;
+      }
+      function art() { return form.querySelector('input[name="n-art"]:checked').value; }
+      function umschalten() {
+        var a = art();
+        if (a === bisher) return;
+        var alt = BEISPIEL[bisher], unberuehrt = Object.keys(alt).every(function (id) {
+          return document.getElementById(id).value === alt[id];
+        });
+        if (unberuehrt) Object.keys(BEISPIEL[a]).forEach(function (id) { document.getElementById(id).value = BEISPIEL[a][id]; });
+        bisher = a;
+        form.querySelectorAll("[data-art]").forEach(function (e) { e.hidden = e.getAttribute("data-art") !== a; });
+        form.querySelectorAll("[data-einheit]").forEach(function (e) { e.textContent = a === "gas" ? "m³" : "kWh"; });
+      }
+      function rechne() {
+        umschalten();
+        var aus = document.getElementById("n-ergebnis");
+        var gas = art() === "gas";
+        var alt = wert("n-alt"), neu = wert("n-neu");
+        var von = tag("n-von"), bis = tag("n-bis");
+        var ap = wert("n-ap"), gp = wert("n-gp"), ab = wert("n-ab"), re = wert("n-re");
+        if (!(alt >= 0) || !(neu >= 0)) { aus.innerHTML = R.hinweis("Trag Anfangs- und Endstand ein."); return; }
+        if (neu < alt) { aus.innerHTML = R.hinweis("Der Endstand ist kleiner als der Anfangsstand. Wurde der Zähler getauscht?"); return; }
+        if (!isFinite(von) || !isFinite(bis)) { aus.innerHTML = R.hinweis("Trag den Zeitraum von der Rechnung ein."); return; }
+        var tage = Math.round((bis - von) / 86400000) + 1;
+        if (tage <= 0) { aus.innerHTML = R.hinweis("Das Ende des Zeitraums muss nach dem Anfang liegen."); return; }
+        if (!(ap >= 0)) { aus.innerHTML = R.hinweis("Trag den Arbeitspreis ein."); return; }
+        if (!(ab >= 0)) { aus.innerHTML = R.hinweis("Trag die Summe deiner Abschläge ein."); return; }
+        var z = wert("n-z"), b = wert("n-b");
+        if (gas && !(z > 0 && b > 0)) { aus.innerHTML = R.hinweis("Trag Zustandszahl und Brennwert von der Rechnung ein."); return; }
+
+        var menge = neu - alt;
+        var kwh = gas ? menge * z * b : menge;
+        var grund = (gp >= 0 ? gp : 0) * 12 / tageImJahr(von) * tage;
+        var kosten = kwh * ap / 100 + grund;
+        var saldo = kosten - ab;
+        var verbrauch = gas ? R.format(menge, 0) + " m³ = " + R.format(kwh, 0) + " kWh"
+                            : R.format(kwh, 0) + " kWh";
+        var tageText = tage + (tage === 1 ? " Tag" : " Tagen");
+
+        var haupt = Math.abs(saldo) < 0.005
+          ? R.kachel("saldo", "Ergebnis", R.euro.format(0), "Abschläge decken die Kosten genau", "haupt")
+          : saldo > 0
+            ? R.kachel("saldo", "Nachzahlung", R.euro.format(saldo), "Kosten " + R.euro.format(kosten) + " minus " + R.euro.format(ab) + " Abschläge", "haupt")
+            : R.kachel("saldo", "Guthaben", R.euro.format(-saldo), "Abschläge " + R.euro.format(ab) + " minus " + R.euro.format(kosten) + " Kosten", "haupt");
+
+        // Ein ganzes Jahr ist kein Schätzwert. Ein kürzerer oder längerer
+        // Zeitraum wird aufs Jahr gestreckt und trägt deshalb ein ≈.
+        var ganzesJahr = tage === 365 || tage === 366;
+        var passend = kosten / tage * 365 / 12;
+        var liste = [
+          haupt,
+          R.kachel("kosten", "Kosten im Zeitraum", R.euro.format(kosten), verbrauch + " in " + tageText),
+          R.kachel("abschlag", "Passender Abschlag", (ganzesJahr ? "" : "≈ ") + R.euro.format(passend), "im Monat, bei gleichem Verbrauch")
+        ];
+        if (isFinite(re) && document.getElementById("n-re").value.trim() !== "") {
+          // Die Rechnung des Versorgers rundet je Abschnitt und je Posten.
+          // Unter einem Euro Unterschied heißt das: stimmt.
+          var diff = re - saldo;
+          if (Math.abs(diff) < 1) liste.push(R.kachel("abgleich", "Rechnung", "stimmt", "auf den Euro genau", "gut"));
+          else if (diff > 0) liste.push(R.kachel("abgleich", "Rechnung verlangt mehr", R.euro.format(diff), "als du nachgerechnet hast", "achtung"));
+          else liste.push(R.kachel("abgleich", "Rechnung verlangt weniger", R.euro.format(-diff), "als du nachgerechnet hast", "achtung"));
+        } else {
+          liste.push(R.kachel("grund", "Davon Grundpreis", R.euro.format(grund), "für " + tageText));
+        }
+        aus.innerHTML = R.kacheln(liste);
+      }
+      form.addEventListener("input", rechne);
+      form.addEventListener("change", rechne);
+      rechne();
+    })();
+    </script>
+
+    <aside class="app-hinweis nicht-drucken" aria-labelledby="app-hinweis-titel">
+      <h2 id="app-hinweis-titel">Nächstes Jahr nicht überrascht werden</h2>
+      <p>
+        Zählora rechnet nach jeder Ablesung aus, wohin dein Jahr läuft, mit
+        deinem Tarif und deinem Abschlag. Ob eine Nachzahlung kommt, siehst du
+        dann im Sommer und nicht erst im Brief.
+      </p>
+      <p class="app-hinweis-fuss">
+        <a class="knopf knopf-voll" href="https://apps.apple.com/de/app/id6802262743">Zählora im App Store</a>
+        <span>Laden kostet nichts. Kosten und Preise schaltest du einmal für 1,99 € frei, kein Abo.</span>
+      </p>
+    </aside>
+
+    <h2>So wird gerechnet</h2>
+    <div class="anschrift">
+      <strong>Verbrauch × Arbeitspreis + Grundpreis − Abschläge</strong>
+    </div>
+    <p>
+      Der <strong>Verbrauch</strong> ist Endstand minus Anfangsstand. Bei Gas
+      steht er auf dem Zähler in Kubikmetern, abgerechnet wird aber in
+      Kilowattstunden: Kubikmeter mal Zustandszahl mal Brennwert. Beide Werte
+      stehen auf der Rechnung, und wie sie zustande kommen, erklärt der
+      <a href="/gas-in-kwh">Gasrechner</a>.
+    </p>
+    <p>
+      Der <strong>Grundpreis</strong> zählt taggenau: Monatspreis mal zwölf,
+      geteilt durch die Tage des Jahres, mal die Tage des Zeitraums. Der erste
+      und der letzte Tag zählen beide mit. Vom 1. Januar bis zum 31. Dezember
+      sind das 365 Tage und genau zwölf Monatsgrundpreise.
+    </p>
+    <p>
+      Was nach Abzug der <strong>Abschläge</strong> übrig bleibt, ist die
+      Nachzahlung. Ist es weniger als nichts, bekommst du Geld zurück.
+    </p>
+
+    <h2>Ein Beispiel</h2>
+    <p>
+      Strom, Anfangsstand 12.480, Endstand 15.420: Das sind 2.940 kWh. Bei 34
+      Cent je Kilowattstunde kosten sie 999,60 €, dazu kommen zwölfmal 12 €
+      Grundpreis, zusammen 1.143,60 €. Abgebucht wurden zwölf Abschläge zu
+      85 €, also 1.020 €. Die Nachzahlung beträgt 123,60 €, und damit sie
+      nächstes Jahr ausbleibt, müsste der Abschlag auf 95,30 € steigen.
+    </p>
+
+    <h2 id="pruefen">Was du auf der Rechnung prüfst</h2>
+    <ul>
+      <li><strong>Ob die Stände abgelesen oder geschätzt sind.</strong> Neben
+        jedem Stand steht, wie er ermittelt wurde. Ein geschätzter Stand am
+        Ende des Zeitraums ist die häufigste Ursache für eine Nachzahlung, die
+        nicht stimmt. Hast du selbst abgelesen, vielleicht mit Foto, schick
+        deinen Stand und bitte um eine neue Rechnung.</li>
+      <li><strong>Die Zählernummer.</strong> Sie steht auf der Rechnung und auf
+        dem Gerät. In einem Mehrfamilienhaus hängen viele Zähler
+        nebeneinander, und eine Verwechslung bemerkt man nur hier. Wo die
+        Nummer steht, zeigt <a href="/zaehlerstand-ablesen">Zählerstand
+        ablesen</a>.</li>
+      <li><strong>Den Zeitraum.</strong> Er schließt an den der letzten Rechnung
+        an, ohne Lücke und ohne einen Tag doppelt. Der Anfangsstand ist der
+        Endstand vom letzten Mal.</li>
+      <li><strong>Die Preise.</strong> Arbeitspreis und Grundpreis stehen in
+        deinem Vertrag oder im letzten Schreiben zur Preisänderung. Hat sich
+        der Preis im Lauf des Jahres geändert, teilt die Rechnung den Zeitraum
+        in Abschnitte. Den Stand am Tag der Änderung hat meist niemand
+        abgelesen; er ist aus dem Verbrauch des Jahres verteilt.</li>
+      <li><strong>Die Abschläge.</strong> Leg den Kontoauszug daneben. Ein
+        Abschlag, der zurückgebucht wurde oder ausgefallen ist, fehlt in der
+        Summe, und die Nachzahlung wird um genau diesen Betrag größer.</li>
+    </ul>
+
+    <h2>Wenn der Preis sich mitten im Jahr geändert hat</h2>
+    <p>
+      Dann rechnest du jeden Abschnitt einzeln: Zeitraum, Stände und Preis so,
+      wie sie auf der Rechnung im Abschnitt stehen, die Abschläge nur einmal
+      und am Ende. Trag dazu im Rechner bei den Abschlägen eine Null ein, notier die
+      Kosten jedes Abschnitts und zieh die Abschläge von der Summe ab.
+    </p>
+
+    <h2>Warum eine Nachzahlung auch stimmen kann</h2>
+    <ul>
+      <li><strong>Der Abschlag ist älter als der Preis.</strong> Steigt der
+        Preis, bleibt der Abschlag oft so, wie er war. Wie viel du im Monat
+        zahlen müsstest, zeigt die Kachel „Passender Abschlag“ oben, und ob
+        dein neuer Abschlag dazu passt, der
+        <a href="/stromkosten-berechnen#abschlag">Stromkostenrechner</a>.</li>
+      <li><strong>Du hast mehr verbraucht.</strong> Ein Kind mehr im Haushalt,
+        Arbeit von zu Hause, ein neuer Trockner. Bei Gas reicht ein kalter
+        Winter. Ob dein Stromverbrauch ungewöhnlich ist, zeigt der
+        <a href="/stromverbrauch-vergleichen">Vergleich mit dem
+        Stromspiegel</a>.</li>
+      <li><strong>Die letzte Rechnung war geschätzt.</strong> War der Endstand
+        damals zu niedrig geschätzt, holt die neue Rechnung den Rest nach. Über
+        beide Jahre zusammen stimmt es dann wieder.</li>
+    </ul>
+
+    <h2>Wenn etwas nicht stimmt</h2>
+    <p>
+      Schreib deinem Versorger, welcher Posten nicht passt, mit Zählernummer,
+      deinem Stand und dem Datum, und häng das Foto vom Zähler an. Ein falscher
+      Stand ist für den Versorger schnell korrigiert, wenn er belegt ist.
+      Kommt keine Antwort oder keine, die die Frage klärt, kannst du dich an
+      die Schlichtungsstelle Energie wenden. Für Verbraucher kostet das
+      nichts.
+    </p>
+
+    <h2>Was der Rechner nicht weiß</h2>
+    <ul>
+      <li><strong>Boni und Gutschriften.</strong> Ein Neukundenbonus oder eine
+        Gutschrift steht auf der Rechnung als eigener Posten und macht die
+        Nachzahlung kleiner. Zieh ihn vom Ergebnis ab.</li>
+      <li><strong>Zwei Tarife.</strong> Bei Tag- und Nachtstrom rechnest du
+        beide Zählwerke einzeln, wie bei einer Preisänderung, und nimmst den
+        Grundpreis nur einmal.</li>
+      <li><strong>Rundung.</strong> Versorger runden je Posten und je
+        Abschnitt. Ein paar Cent Unterschied sind deshalb normal, und der
+        Rechner nennt alles unter einem Euro „stimmt“.</li>
+    </ul>
+
+
+    <aside class="weiterlesen nicht-drucken" aria-labelledby="weiterlesen-titel">
+      <h2 id="weiterlesen-titel">Weiterlesen</h2>
+      <div class="karten">
+      <a class="karte karte-verweis" href="/stromkosten-berechnen">
+        <span class="art">Rechner</span>
+        <b>Stromkosten und Abschlag</b>
+        <p>Was dein Strom im Jahr, im Monat und je Kilowattstunde kostet, und ob dein Abschlag dazu passt.</p>
+        <span class="weiter">Zum Rechner ›</span>
+      </a>
+      <a class="karte karte-verweis" href="/zaehlerstand-ablesen">
+        <span class="art">Anleitung</span>
+        <b>Zählerstand ablesen</b>
+        <p>Welche Ziffern du bei Strom, Gas und Wasser aufschreibst, was 1.8.0 heißt und wo die Zählernummer steht.</p>
+        <span class="weiter">Zur Anleitung ›</span>
+      </a>
+      <a class="karte karte-verweis" href="/gas-in-kwh">
+        <span class="art">Rechner</span>
+        <b>Gas von m³ in kWh</b>
+        <p>Mit Zustandszahl und Brennwert von deiner Rechnung, und warum „mal zehn“ danebenliegt.</p>
+        <span class="weiter">Zum Rechner ›</span>
+      </a>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="fuss">
+  <div class="bahn fuss-innen">
+    <span>Zählora — gebaut in Deutschland, von einem Menschen.</span>
+    <nav aria-label="Rechtliches">
+      <a href="/">Start</a>
+      <a href="/ratgeber">Ratgeber</a>
+      <a href="/entwicklung">Entwicklung</a>
+      <a href="/hilfe">Hilfe &amp; Kontakt</a>
+      <a href="/datenschutz">Datenschutz</a>
+      <a href="/impressum">Impressum</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>

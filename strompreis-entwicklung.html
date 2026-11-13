@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Strompreis-Entwicklung in Deutschland seit 2007 — Zählora</title>
+<meta name="robots" content="max-image-preview:large">
+<meta name="description" content="Was eine Kilowattstunde Strom für Haushalte in Deutschland gekostet hat, jedes Halbjahr seit 2007, neben dem EU-Durchschnitt. Mit den Zahlen von Eurostat.">
+<meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F0E0C" media="(prefers-color-scheme: dark)">
+<!-- Safari auf dem iPhone blendet darüber eine Leiste mit „Öffnen" oder
+     „Laden" ein. Wer über eine Antwortseite kommt, steht damit einen Tipp
+     vor der App statt einen Umweg über den Store. -->
+<meta name="apple-itunes-app" content="app-id=6802262743">
+<link rel="canonical" href="https://zaehlora.de/strompreis-entwicklung">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Zählora">
+<meta property="og:locale" content="de_DE">
+<meta property="og:title" content="Strompreis-Entwicklung seit 2007 — Zählora">
+<meta property="og:description" content="Der Strompreis für Haushalte in Deutschland, jedes Halbjahr seit 2007, neben dem EU-Durchschnitt.">
+<meta property="og:url" content="https://zaehlora.de/strompreis-entwicklung">
+<meta property="og:image" content="https://zaehlora.de/bilder/teilen.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Zählora: Jeden Monat wissen, was du verbrauchst. Daneben die Übersicht der App auf einem iPhone.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="stylesheet" href="stil.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "Wie sich der Strompreis entwickelt hat",
+      "description": "Strompreis für Haushalte in Deutschland je Halbjahr seit 2007 im Vergleich mit dem Durchschnitt der EU, nach Eurostat (nrg_pc_204).",
+      "inLanguage": "de",
+      "dateModified": "2026-10-08",
+      "author": {"@type": "Organization", "name": "Zählora", "url": "https://zaehlora.de/"},
+      "publisher": {"@type": "Organization", "name": "Zählora", "url": "https://zaehlora.de/"},
+      "mainEntityOfPage": "https://zaehlora.de/strompreis-entwicklung",
+      "citation": "https://doi.org/10.2908/NRG_PC_204"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Zählora", "item": "https://zaehlora.de/"},
+        {"@type": "ListItem", "position": 2, "name": "Ratgeber", "item": "https://zaehlora.de/ratgeber"},
+        {"@type": "ListItem", "position": 3, "name": "Strompreis-Entwicklung"}
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<a class="sprung" href="#inhalt">Zum Inhalt springen</a>
+
+<header class="kopf">
+  <div class="bahn kopf-innen">
+    <a class="marke" href="/">
+      <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <path d="M4 23a12 12 0 0 1 24 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".28"/>
+        <path d="M7 23h4.5l2.5-6.5L18 27l2.5-4H25" fill="none" stroke="#C77A0E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Zählora
+    </a>
+    <nav aria-label="Bereiche">
+      <a href="/#funktionen">Funktionen</a>
+      <a href="/ratgeber">Ratgeber</a>
+      <a href="/#preise">Preise</a>
+      <a href="/entwicklung">Entwicklung</a>
+      <a href="/hilfe">Hilfe</a>
+    </nav>
+  </div>
+</header>
+
+<main id="inhalt" class="rechtstext artikel">
+  <div class="bahn">
+    <nav class="pfad" aria-label="Pfad">
+      <ol>
+        <li><a href="/">Zählora</a></li>
+        <li><a href="/ratgeber">Ratgeber</a></li>
+        <li aria-current="page">Strompreis-Entwicklung</li>
+      </ol>
+    </nav>
+    <h1>Wie sich der Strompreis entwickelt hat</h1>
+    <p class="blass">
+      Was eine Kilowattstunde Strom Haushalte in Deutschland gekostet hat, jedes
+      Halbjahr seit 2007, mit allen Steuern und Abgaben. Daneben der Durchschnitt
+      der EU.
+    </p>
+
+    <figure class="preis-grafik" id="preis-grafik">
+      <figcaption class="preis-kopf">
+        <span class="preis-titel">Strompreis für Haushalte, Cent je kWh</span>
+        <span class="preis-legende">
+          <span><i class="preis-schluessel preis-de"></i>Deutschland</span>
+          <span><i class="preis-schluessel preis-eu"></i>Durchschnitt EU</span>
+        </span>
+      </figcaption>
+      <p class="preis-tipp" id="preis-tipp" aria-live="polite"></p>
+      <div class="preis-flaeche" id="preis-flaeche" role="img"
+           aria-label="Liniendiagramm: Strompreis für Haushalte in Deutschland von 20,3 Cent im ersten Halbjahr 2007 auf 41,3 Cent im ersten Halbjahr 2023 und 36,2 Cent im ersten Halbjahr 2026, durchgehend über dem EU-Durchschnitt.">
+      </div>
+      <p class="preis-quelle">Quelle: Eurostat, nrg_pc_204. Haushalte mit 2.500 bis 5.000 kWh im Jahr.</p>
+    </figure>
+
+    <div class="preis-fakten">
+      <div><b id="fakt-anfang">20,3 ct</b><span>im ersten Halbjahr 2007</span></div>
+      <div><b id="fakt-spitze">41,3 ct</b><span>der Höchststand, erstes Halbjahr 2023</span></div>
+      <div><b id="fakt-zuletzt">36,2 ct</b><span>im ersten Halbjahr 2026</span></div>
+    </div>
+
+    <p>
+      Seit 2007 ist die Kilowattstunde um <span id="fakt-plus">79</span> Prozent
+      teurer geworden. Seit dem Höchststand Anfang 2023 ist sie um
+      <span id="fakt-runter">5,1</span> Cent gefallen. Teurer als im EU-Schnitt
+      war Strom in Deutschland in jedem Halbjahr, am weitesten darüber
+      im ersten Halbjahr 2023, mit <span id="fakt-abstand">12,4</span> Cent.
+    </p>
+
+    <aside class="app-hinweis nicht-drucken" aria-labelledby="app-hinweis-titel">
+      <h2 id="app-hinweis-titel">Mit deinem eigenen Preis rechnen</h2>
+      <p>
+        Ein Durchschnitt sagt wenig über deine Rechnung. Zählora rechnet mit
+        deinem Arbeits- und Grundpreis, und wenn der Preis mitten im Jahr
+        wechselt, rechnet es beide Zeiträume getrennt, statt sie zu mitteln.
+      </p>
+      <p class="app-hinweis-fuss">
+        <a class="knopf knopf-voll" href="https://apps.apple.com/de/app/id6802262743">Zählora im App Store</a>
+        <span>Laden kostet nichts. Kosten und Preise sind ein Kauf für 1,99 €, einmal, kein Abo.</span>
+      </p>
+    </aside>
+
+    <h2>Was die Zahlen zeigen</h2>
+    <ul>
+      <li><strong>Ein Durchschnitt über alle Verträge</strong> von Haushalten,
+        die zwischen 2.500 und 5.000 kWh im Jahr verbrauchen. Neue Verträge und
+        die Grundversorgung können darüber oder darunter liegen.</li>
+      <li><strong>Mit allen Steuern und Abgaben</strong>, so wie auf der
+        Rechnung, umgerechnet auf eine Kilowattstunde. Ein Grundpreis steckt
+        darin anteilig.</li>
+      <li><strong>Je Halbjahr</strong>, Januar bis Juni und Juli bis Dezember.
+        Für die EU gibt es das erste Halbjahr 2026 noch nicht.</li>
+    </ul>
+
+    <details class="preis-tabelle">
+      <summary>Alle Werte als Tabelle</summary>
+      <div class="werte-rahmen">
+        <table class="werte" id="preis-werte">
+          <thead><tr><th scope="col">Halbjahr</th><th scope="col">Deutschland</th><th scope="col">EU</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </details>
+
+    <h2>Woher die Zahlen kommen</h2>
+    <p>
+      Von <a href="https://ec.europa.eu/eurostat/databrowser/view/nrg_pc_204/default/table" rel="noopener">Eurostat</a>,
+      dem Statistikamt der Europäischen Union, Datensatz „Electricity prices
+      for household consumers“ (<a href="https://doi.org/10.2908/NRG_PC_204" rel="noopener">nrg_pc_204</a>),
+      Verbrauchsband DC, alle Steuern und Abgaben. Abgerufen am
+      <span id="abgerufen">8. Oktober 2026</span>. Die Werte sind von Euro in
+      Cent umgerechnet und auf eine Stelle gerundet, die Beschriftungen
+      übersetzt. Für diese Darstellung ist Eurostat nicht verantwortlich.
+    </p>
+
+    <aside class="weiterlesen nicht-drucken" aria-labelledby="weiterlesen-titel">
+      <h2 id="weiterlesen-titel">Weiterlesen</h2>
+      <div class="karten">
+      <a class="karte karte-verweis" href="/stromkosten-berechnen">
+        <span class="art">Rechner</span>
+        <b>Stromkosten und Abschlag</b>
+        <p>Was dein Strom im Jahr, im Monat und je Kilowattstunde kostet, und ob dein Abschlag dazu passt.</p>
+        <span class="weiter">Zum Rechner ›</span>
+      </a>
+      <a class="karte karte-verweis" href="/stromverbrauch-vergleichen">
+        <span class="art">Vergleich</span>
+        <b>Ist mein Stromverbrauch normal?</b>
+        <p>Dein Jahresverbrauch neben Haushalten derselben Größe, mit den Klassen des Stromspiegels.</p>
+        <span class="weiter">Zum Vergleich ›</span>
+      </a>
+      <a class="karte karte-verweis" href="/photovoltaik-eigenverbrauch">
+        <span class="art">Rechner</span>
+        <b>Wie viel vom Solarstrom nutze ich selbst?</b>
+        <p>Aus Erzeugung, Einspeisung und Bezug: Eigenverbrauch, wie viel vom Bedarf das Dach deckt und was du nicht kaufen musstest.</p>
+        <span class="weiter">Zum Rechner ›</span>
+      </a>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<script>
+  (function () {
+    /* DATEN-ANFANG, geschrieben von scripts/strompreis-holen.py */
+    var ABGERUFEN = "2026-10-08";
+    // [Halbjahr, Deutschland, EU-27] in Cent je kWh
+    var PREISE = [
+      ["2007-S1", 20.25, 18.26],
+      ["2007-S2", 21.05, 15.37],
+      ["2008-S1", 21.48, 16.04],
+      ["2008-S2", 21.95, 16.76],
+      ["2009-S1", 22.82, 16.7],
+      ["2009-S2", 22.94, 16.77],
+      ["2010-S1", 23.75, 17.25],
+      ["2010-S2", 24.38, 17.77],
+      ["2011-S1", 25.28, 18.58],
+      ["2011-S2", 25.31, 18.86],
+      ["2012-S1", 25.95, 19.16],
+      ["2012-S2", 26.76, 19.96],
+      ["2013-S1", 29.19, 20.42],
+      ["2013-S2", 29.21, 20.62],
+      ["2014-S1", 29.81, 20.58],
+      ["2014-S2", 29.74, 20.84],
+      ["2015-S1", 29.51, 20.83],
+      ["2015-S2", 29.46, 20.89],
+      ["2016-S1", 29.69, 20.51],
+      ["2016-S2", 29.77, 20.69],
+      ["2017-S1", 30.48, 20.89],
+      ["2017-S2", 30.48, 20.89],
+      ["2018-S1", 29.87, 21.03],
+      ["2018-S2", 30.0, 21.52],
+      ["2019-S1", 30.88, 21.68],
+      ["2019-S2", 28.78, 21.69],
+      ["2020-S1", 30.43, 21.39],
+      ["2020-S2", 30.06, 21.53],
+      ["2021-S1", 31.93, 22.03],
+      ["2021-S2", 32.34, 24.15],
+      ["2022-S1", 32.79, 24.9],
+      ["2022-S2", 33.57, 27.68],
+      ["2023-S1", 41.25, 28.87],
+      ["2023-S2", 40.2, 28.47],
+      ["2024-S1", 39.51, 29.16],
+      ["2024-S2", 39.43, 28.87],
+      ["2025-S1", 38.35, 28.79],
+      ["2025-S2", 38.69, 28.96],
+      ["2026-S1", 36.18, null]
+    ];
+    /* DATEN-ENDE */
+    window.STROMPREISE = PREISE;
+    window.STROMPREISE_ABGERUFEN = ABGERUFEN;
+
+    var nf1 = new Intl.NumberFormat("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    function ct(x) { return nf1.format(x) + " ct"; }
+    function halbjahr(h) { var t = h.split("-S"); return (t[1] === "1" ? "1. Halbjahr " : "2. Halbjahr ") + t[0]; }
+
+    // Die Tabelle: dieselben Zahlen wie die Linie, neueste oben.
+    var tbody = document.querySelector("#preis-werte tbody");
+    tbody.innerHTML = PREISE.slice().reverse().map(function (p) {
+      return "<tr><th scope=\"row\">" + halbjahr(p[0]) + "</th><td>" + ct(p[1]) + "</td><td>" + (p[2] == null ? "noch nicht veröffentlicht" : ct(p[2])) + "</td></tr>";
+    }).join("");
+
+    var flaeche = document.getElementById("preis-flaeche");
+    var tipp = document.getElementById("preis-tipp");
+    var NS = "http://www.w3.org/2000/svg";
+    function el(name, attrs, eltern) {
+      var e = document.createElementNS(NS, name);
+      for (var k in attrs) e.setAttribute(k, attrs[k]);
+      if (eltern) eltern.appendChild(e);
+      return e;
+    }
+
+    // Die Zeile über der Grafik: ohne Zeiger das neueste Halbjahr, mit Zeiger
+    // das darunter. Fest statt schwebend, damit sie auf dem Telefon nichts
+    // von der Linie verdeckt.
+    function lies(i) {
+      var p = PREISE[i];
+      tipp.innerHTML = "<b>" + halbjahr(p[0]) + "</b>" +
+        '<span><i class="preis-schluessel preis-de"></i>Deutschland ' + ct(p[1]) + "</span>" +
+        '<span><i class="preis-schluessel preis-eu"></i>EU ' + (p[2] == null ? "noch nicht veröffentlicht" : ct(p[2])) + "</span>";
+    }
+
+    function zeichne() {
+      var alt = flaeche.querySelector("svg");
+      if (alt) alt.remove();
+      var B = Math.max(260, flaeche.clientWidth);
+      var schmal = B < 520;
+      var H = schmal ? 240 : 300;
+      // Rechts Platz für die Werte am Ende der Linien.
+      var R = { l: 30, r: schmal ? 64 : 84, o: 14, u: 26 };
+      var n = PREISE.length, YMAX = 45;
+      function x(i) { return R.l + i / (n - 1) * (B - R.l - R.r); }
+      function y(v) { return R.o + (1 - v / YMAX) * (H - R.o - R.u); }
+      var svg = el("svg", { viewBox: "0 0 " + B + " " + H, width: B, height: H, "aria-hidden": "true" });
+      flaeche.appendChild(svg);
+
+      // Raster: Haarlinien bei 0, 10, 20, 30, 40 Cent. Die Achse beginnt bei
+      // null, damit die Verdopplung so aussieht, wie sie ist.
+      [0, 10, 20, 30, 40].forEach(function (v) {
+        el("line", { x1: R.l, x2: B - R.r, y1: y(v), y2: y(v), class: v === 0 ? "achse" : "raster" }, svg);
+        var t = el("text", { x: R.l - 6, y: y(v) + 4, class: "achsen-text", "text-anchor": "end" }, svg);
+        t.textContent = v;
+      });
+      // Jahre unten: jedes dritte, auf dem Telefon jedes sechste.
+      PREISE.forEach(function (p, i) {
+        var jahr = Number(p[0].slice(0, 4));
+        if (p[0].slice(-1) !== "1" || (jahr - 2007) % (schmal ? 6 : 3) !== 0) return;
+        var t = el("text", { x: x(i), y: H - 6, class: "achsen-text", "text-anchor": "middle" }, svg);
+        t.textContent = jahr;
+      });
+
+      function pfad(spalte) {
+        var d = "";
+        PREISE.forEach(function (p, i) {
+          if (p[spalte] == null) return;
+          d += (d ? "L" : "M") + x(i).toFixed(1) + "," + y(p[spalte]).toFixed(1);
+        });
+        return d;
+      }
+      function letzter(spalte) {
+        for (var i = n - 1; i >= 0; i--) if (PREISE[i][spalte] != null) return i;
+        return -1;
+      }
+      // Eine zarte Fläche unter Deutschland, dann die beiden Linien.
+      var iDe = letzter(1), iEu = letzter(2);
+      el("path", { d: pfad(1) + "L" + x(iDe).toFixed(1) + "," + y(0) + "L" + x(0) + "," + y(0) + "Z", class: "flaeche-de" }, svg);
+      el("path", { d: pfad(2), class: "linie linie-eu" }, svg);
+      el("path", { d: pfad(1), class: "linie linie-de" }, svg);
+
+      // Der Höchststand, markiert und beschriftet.
+      var iMax = 0;
+      PREISE.forEach(function (p, i) { if (p[1] > PREISE[iMax][1]) iMax = i; });
+      el("circle", { cx: x(iMax), cy: y(PREISE[iMax][1]), r: 4.5, class: "punkt-de" }, svg);
+      var m = el("text", { x: x(iMax), y: y(PREISE[iMax][1]) - 10, class: "marke-text", "text-anchor": "middle" }, svg);
+      m.textContent = ct(PREISE[iMax][1]);
+
+      // Werte am Ende der Linien, in Textfarbe; die Farbe trägt der Punkt.
+      [[1, iDe, "punkt-de"], [2, iEu, "punkt-eu"]].forEach(function (s) {
+        var v = PREISE[s[1]][s[0]];
+        el("circle", { cx: x(s[1]), cy: y(v), r: 4.5, class: s[2] }, svg);
+        var t = el("text", { x: x(s[1]) + 9, y: y(v) + 4, class: "ende-text" }, svg);
+        t.textContent = ct(v);
+      });
+
+      // Fadenkreuz beim Darüberfahren oder Antippen.
+      var kreuz = el("line", { y1: R.o, y2: H - R.u, class: "kreuz", visibility: "hidden" }, svg);
+      var pDe = el("circle", { r: 4.5, class: "punkt-de", visibility: "hidden" }, svg);
+      var pEu = el("circle", { r: 4.5, class: "punkt-eu", visibility: "hidden" }, svg);
+      var ziel = el("rect", { x: R.l, y: 0, width: B - R.l - R.r, height: H, fill: "transparent" }, svg);
+      function zeige(evt) {
+        var box = svg.getBoundingClientRect();
+        var px = (evt.clientX - box.left) * (B / box.width);
+        var i = Math.max(0, Math.min(n - 1, Math.round((px - R.l) / (B - R.l - R.r) * (n - 1))));
+        var p = PREISE[i];
+        kreuz.setAttribute("x1", x(i)); kreuz.setAttribute("x2", x(i)); kreuz.setAttribute("visibility", "visible");
+        pDe.setAttribute("cx", x(i)); pDe.setAttribute("cy", y(p[1])); pDe.setAttribute("visibility", "visible");
+        if (p[2] != null) { pEu.setAttribute("cx", x(i)); pEu.setAttribute("cy", y(p[2])); pEu.setAttribute("visibility", "visible"); }
+        else pEu.setAttribute("visibility", "hidden");
+        lies(i);
+      }
+      function verstecke() {
+        kreuz.setAttribute("visibility", "hidden"); pDe.setAttribute("visibility", "hidden");
+        pEu.setAttribute("visibility", "hidden"); lies(n - 1);
+      }
+      lies(n - 1);
+      ziel.addEventListener("pointermove", zeige);
+      ziel.addEventListener("pointerdown", zeige);
+      ziel.addEventListener("pointerleave", verstecke);
+    }
+    zeichne();
+    var warten;
+    window.addEventListener("resize", function () { clearTimeout(warten); warten = setTimeout(zeichne, 120); });
+  })();
+</script>
+
+<footer class="fuss">
+  <div class="bahn fuss-innen">
+    <span>Zählora — gebaut in Deutschland, von einem Menschen.</span>
+    <nav aria-label="Rechtliches">
+      <a href="/">Start</a>
+      <a href="/ratgeber">Ratgeber</a>
+      <a href="/entwicklung">Entwicklung</a>
+      <a href="/hilfe">Hilfe &amp; Kontakt</a>
+      <a href="/datenschutz">Datenschutz</a>
+      <a href="/impressum">Impressum</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
