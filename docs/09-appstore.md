@@ -483,6 +483,34 @@ Bei Heizöl ist der Heizwert geschätzt, darum steht dort ein „≈“.
 **Aus der Mail eines Käufers** (11. November): Er hatte nach einer
 Preiserhöhung den Preis geändert und sah das ganze Jahr neu berechnet.
 
+Für 1.8:
+
+```
+Seit einer Wärmepumpe heizt du anders, aber spart sie auch? Trag am
+Gaszähler ein, an welchem Tag die Wärmepumpe kam. Zählora legt dann
+dieselben Monate vorher und nachher nebeneinander, in kWh und in Euro,
+und du kannst das Ergebnis als Bild teilen. Das gehört zum neuen Kauf
+„Wärmepumpe“.
+
+Ein Zähler, der nur die Wärmepumpe misst, rechnet das Jahr jetzt nach dem
+Heizen hoch: viel im Winter, wenig im Sommer. Bisher lag die Zahl im
+Januar deutlich zu hoch. Das ist kostenlos.
+
+Die Übersicht ist kürzer: oben ein Satz, ob etwas fällig ist, und auf den
+Karten nur noch, was du brauchst. Im Zähler-Tab steht, ob der Abgleich
+über iCloud klappt.
+
+Alle Zähler gehen jetzt in eine Tabelle, als CSV-Datei, die du in Dateien
+sicherst oder per Mail verschickst. Bisher landete sie im Text der Mail.
+```
+
+1.8 trägt auch, was als 1.9 geplant war (Gründer am 12. November: „wenn wir
+schneller sind … können schon alles angehen“). Ab dieser Fassung kostet
+„Alles freischalten“ 7,99 € und enthält „Wärmepumpe“; wer das Bündel schon
+hat, bekommt sie mit (Gründer, 12. November). Den Preis setzt
+`scripts/asc-kaeufe.py` erst bei der Freigabe, weil ein Preis bei Apple
+sofort gilt.
+
 ---
 
 ## 2. Einordnung

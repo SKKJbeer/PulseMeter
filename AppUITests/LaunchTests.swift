@@ -1081,6 +1081,26 @@ final class LaunchTests: XCTestCase {
                       "Der Weg zur Freischaltung fehlt. Zu sehen war: " + beschriftungen(in: app))
     }
 
+    /// Aus einer Rezension im Laden: sieben Zähler, jeder einzeln
+    /// verschickt. Im Zähler-Tab steht ab zwei Zählern eine Datei mit allen
+    /// Ablesungen — ohne Kauf (Produktprinzip 5).
+    ///
+    /// Geprüft wird der Zugang, nicht das Teilen-Blatt dahinter: Das ist ein
+    /// Fenster von iOS. Was in der Datei steht, prüft `TableExportTests`.
+    func testAllMetersCanBeExportedFromTheMetersTabWithoutPurchase() {
+        let app = launchFree()
+        XCTAssertTrue(app.staticTexts["Strom"].waitForExistence(timeout: 15),
+                      "Die Beispieldaten wurden nicht angelegt")
+        wechsel(zu: "Zähler", in: app)
+        // Über die Kennung und ohne den Typ zu raten: Ein ShareLink mit
+        // zusammengefasster Beschriftung kann als Knopf oder als anderes
+        // Element ankommen.
+        let karte = app.descendants(matching: .any)["export-alle"].firstMatch
+        XCTAssertTrue(karte.waitForExistence(timeout: erscheint),
+                      "„Alle Zähler als Tabelle“ fehlt im Zähler-Tab. Zu sehen war: " + beschriftungen(in: app))
+        XCTAssertEqual(karte.label, "Alle Zähler als Tabelle")
+    }
+
     func testAddingAMeterFromTheMetersTab() {
         let app = launchWithData()
         wechsel(zu: "Zähler", in: app)
@@ -2504,7 +2524,9 @@ final class LaunchTests: XCTestCase {
         // Seit 0.92.0 heißt der Knopf „Tabellen": Der Bericht stand vorher in
         // diesem Menü **und** in der Zeile darunter, also zweimal auf einem
         // Schirm. Jetzt trägt das Menü, was es wirklich enthält.
-        XCTAssertTrue(app.buttons["Tabellen herunterladen"].exists,
+        // Seit 0.173.0 „Tabelle sichern oder teilen“: Der Download-Pfeil
+        // versprach einen Download und öffnete das Teilen-Blatt.
+        XCTAssertTrue(app.buttons["Tabelle sichern oder teilen"].exists,
                       "Der Export muss ohne Kauf erreichbar sein — dauerhaft")
 
         bericht.tap()
@@ -3062,7 +3084,7 @@ final class LaunchTests: XCTestCase {
         open.tap()
 
         // Im Debug-Bau braucht das Netz Sekunden je Bild, und es braucht vier gleiche (seit 0.140.0).
-        // **Geduldig warten** (0.172.0): Auf PR #13 fiel der Test hier zweimal, einmal mit
+        // **Geduldig warten** (0.174.0): Auf PR #13 fiel der Test hier zweimal, einmal mit
         // „Timed out while evaluating UI query“. Solange das Netz im Debug-Bau rechnet, beantwortet
         // die App die Frage nach ihrer Oberfläche manchmal nicht rechtzeitig. Das ist eine Grenze
         // des Simulators, kein Fehler der App; ob der Vorschlag kommt, prüft die letzte Frage.

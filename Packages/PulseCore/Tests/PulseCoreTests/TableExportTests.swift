@@ -132,6 +132,97 @@ final class TableExportTests: XCTestCase {
         XCTAssertFalse(viaMeter.contains("Bezeichnung"))
     }
 
+    // MARK: - Alle Zähler in einer Tabelle
+
+    private func punkt(_ name: String, _ registers: [Register], kind: ResourceKind = .electricity) -> MeteringPoint {
+        MeteringPoint(propertyID: Fixture.property.id, name: name, kind: kind, registers: registers)
+    }
+
+    /// Aus einer Rezension: sieben Zähler, jeder einzeln verschickt. Eine
+    /// Datei trägt jetzt alle, Zähler für Zähler, und jede Zeile hat gleich
+    /// viele Spalten — sonst verrutscht die Tabelle in Excel.
+    func testAllMetersShareOneHeaderAndKeepTheirOrder() {
+        let strom = Fixture.electricityRegister()
+        let gas = Fixture.gasRegister()
+        let hoch = Register(label: "HT", unit: .kilowattHour, integerDigits: 6, fractionDigits: 1)
+        let nieder = Register(label: "NT", unit: .kilowattHour, integerDigits: 6, fractionDigits: 1)
+
+        let csv = TableExport.allMeters([
+            .init(meteringPoint: punkt("Strom", [strom]), readings: [
+                Fixture.reading(strom, day(2026, 2, 1), 1_100, sequence: 1),
+                Fixture.reading(strom, day(2026, 1, 1), 1_000, sequence: 0)
+            ]),
+            .init(meteringPoint: punkt("Gas", [gas], kind: .gas), readings: [
+                Fixture.reading(gas, day(2026, 1, 1), dec("8000.25"), time: TimeOfDay(hour: 7, minute: 30))
+            ]),
+            .init(meteringPoint: punkt("Wärmepumpe", [hoch, nieder]), readings: [
+                Fixture.reading(nieder, day(2026, 1, 1), 300),
+                Fixture.reading(hoch, day(2026, 1, 1), 200)
+            ])
+        ])
+        let lines = csv.split(separator: "\r\n").map(String.init)
+
+        XCTAssertEqual(lines[0], "Zähler;Bezeichnung;Datum;Uhrzeit;Stand;Einheit;Art",
+                       "Bezeichnung und Uhrzeit, weil je ein Zähler sie braucht")
+        XCTAssertEqual(lines[1], "Strom;;2026-01-01;;1000,0;kWh;abgelesen")
+        XCTAssertEqual(lines[2], "Strom;;2026-02-01;;1100,0;kWh;abgelesen")
+        XCTAssertEqual(lines[3], "Gas;;2026-01-01;07:30;8000,250;m³;abgelesen")
+        XCTAssertEqual(lines[4], "Wärmepumpe;HT;2026-01-01;;200,0;kWh;abgelesen",
+                       "Am selben Tag steht das erste Zählwerk oben")
+        XCTAssertEqual(lines[5], "Wärmepumpe;NT;2026-01-01;;300,0;kWh;abgelesen")
+        XCTAssertEqual(lines.count, 6)
+        let spalten = Set(lines.map { $0.split(separator: ";", omittingEmptySubsequences: false).count })
+        XCTAssertEqual(spalten, [7], "Jede Zeile hat so viele Felder wie die Kopfzeile")
+    }
+
+    /// Zwei Zähler „Wasser“ dürfen beim Wiedereinlesen nicht zu einem werden.
+    func testAllMetersKeepsMetersWithTheSameNameApart() {
+        let kalt = Register(unit: .cubicMetre, integerDigits: 5, fractionDigits: 3)
+        let warm = Register(unit: .cubicMetre, integerDigits: 5, fractionDigits: 3)
+        let csv = TableExport.allMeters([
+            .init(meteringPoint: punkt("Wasser", [kalt], kind: .water),
+                  readings: [Fixture.reading(kalt, day(2026, 1, 1), 10)]),
+            .init(meteringPoint: punkt("Wasser", [warm], kind: .water),
+                  readings: [Fixture.reading(warm, day(2026, 1, 1), 20)])
+        ])
+        let lines = csv.split(separator: "\r\n").map(String.init)
+        XCTAssertTrue(lines[1].hasPrefix("Wasser;"))
+        XCTAssertTrue(lines[2].hasPrefix("Wasser (2);"), "gelesen: \(lines[2])")
+    }
+
+    /// Ohne Doppeltarif und ohne Uhrzeit bleibt die Datei so schmal wie der
+    /// Export je Zähler — keine leere Spalte als Frage ohne Anlass.
+    func testAllMetersWithoutDualTariffHasNoLabelColumn() {
+        let strom = Fixture.electricityRegister()
+        let gas = Fixture.gasRegister()
+        let csv = TableExport.allMeters([
+            .init(meteringPoint: punkt("Strom", [strom]), readings: [Fixture.reading(strom, day(2026, 1, 1), 1_000)]),
+            .init(meteringPoint: punkt("Gas", [gas], kind: .gas), readings: [Fixture.reading(gas, day(2026, 1, 1), 5)])
+        ])
+        XCTAssertTrue(csv.hasPrefix("Zähler;Datum;Stand;Einheit;Art\r\n"))
+    }
+
+    /// Ein Name, der mit „=“ beginnt, wird auch in der Gesamtdatei entschärft.
+    func testAllMetersDefusesFormulaNames() {
+        let strom = Fixture.electricityRegister()
+        let csv = TableExport.allMeters([
+            .init(meteringPoint: punkt("=1+1", [strom]), readings: [Fixture.reading(strom, day(2026, 1, 1), 1)])
+        ])
+        XCTAssertTrue(csv.contains("\r\n'=1+1;"))
+    }
+
+    /// Der Export je Zähler ist dieselbe Umsetzung mit einem Zähler und darf
+    /// sich dadurch nicht verändern.
+    func testOneMeterInAllMetersEqualsTheExportFromHistory() {
+        let hoch = Register(label: "HT", unit: .kilowattHour, integerDigits: 6, fractionDigits: 1)
+        let nieder = Register(label: "NT", unit: .kilowattHour, integerDigits: 6, fractionDigits: 1)
+        let point = punkt("Wärmepumpe", [hoch, nieder])
+        let readings = [Fixture.reading(nieder, day(2026, 1, 1), 300),
+                        Fixture.reading(hoch, day(2026, 1, 1), 200)]
+        XCTAssertEqual(TableExport.allMeters([.init(meteringPoint: point, readings: readings)]),
+                       TableExport.readings(readings, meteringPoint: point, meterName: "Wärmepumpe"))
+    }
+
     // MARK: - Formeln in der Tabelle
 
     /// **Ein Zählername darf keine Formel werden.**

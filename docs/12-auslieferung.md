@@ -329,6 +329,7 @@ Store Connect deshalb nie gesehen.
 | 48 | 0.140.0 | 03.11. 09:17 | ✓ | **Für 1.6.** Die Kamera schlägt erst vor, wenn sie dieselbe Zahl **viermal von sechs** gelesen hat (vorher dreimal); auf der blinden dritten Fotosammlung fielen falsche Vorschläge von 12 auf 0. Vorführung ohne Kamera wertet das gezeichnete Bild einmal aus (Oberflächentest). Vor dem Einreichen geprüft: acht Arten schlechter Bilder und Rahmen neben der Anzeige (0.140.1, `docs/kamera/README.md`). Gebaut von 03d689b nach grüner CI auf iPhone und iPad (Lauf 41409640478, iPad im zweiten Versuch nach Zeitlimit des Läufers). VALID, Testhinweise eingetragen |
 | 49 | 0.144.0 | 11.11. 17:01 | ✓ | **Erster Schritt zu Kamera Stufe 2.** Die Kamera schlägt keine Zahl vor, die auch in den Bereich der anderen Zahl desselben Zählers passt (`RegisterChoice`), und sagt stattdessen, dass es die andere Zahl sein kann. Dazu die iCloud-Schemata aus 0.141.0/0.142.0. Gebaut von c62466c nach grüner CI auf iPhone und iPad. VALID, Testhinweise eingetragen |
 | 50 | 0.148.0 | 12.11. 04:5x | ✓ | **1.7: neuer Preis ab einem Tag, Gas und Heizöl in kWh** (0.146.0 bis 0.147.2): Blatt „Neuer Preis ab …“, Preisverlauf mit Löschen, kWh-Zeile auf der Karte, Heizwert bei Heizöl, Hochrechnung je Preisabschnitt. Dazu aus 0.148.0 die Kosten der Übersicht auf die abgedeckten Tage und Gas in kWh im Bericht. Gebaut von faaff5c nach grüner CI auf iPhone und iPad. VALID, Testhinweise eingetragen |
+| 51 | 0.163.0 | 12.11. 10:3x | ✓ | **1.8 „Einfacher“ und 1.9 „Vorher und nachher“ in einem Bau** (0.150.0, 0.160.0 bis 0.163.0): kürzere Übersicht, Verlauf mit zwei Reihen oben, iCloud-Zeile; Wärmepumpenzähler mit Heizprofil, „Heizung gewechselt am …“, Karte „Gas und Wärmepumpe“, Vorher und nachher als teilbares Bild, Kauf „Wärmepumpe“. Gebaut von a389b0c (PR #24) nach grüner CI auf iPhone und iPad. VALID, Testhinweise eingetragen. Neuer iCloud-Typ `CD_HeatingChangeRecord` liegt in Development; ohne Deploy nach Production gleicht der Heizungswechsel nicht ab |
 
 Zeitangaben in UTC. Ein ✗ heißt: hochgeladen wurde nichts, die Nummer ist
 trotzdem verbraucht.
@@ -508,6 +509,18 @@ Ablauf die Veröffentlichung ausdrücklich an — und dafür fehlte
 `permissions: actions: write`. Fünf Stunden lang stand die App im Laden und die
 eigene Seite sagte „Bald im App Store". Behoben in 0.106.6, samt einer Prüfung
 am Ende des Ablaufs, die die **Seite abruft** statt den Push zu zählen.
+
+### Die elfte, 1.7 — eingereicht und freigegeben am 12. November
+
+**Neuer Preis ab einem Tag, Gas und Heizöl in kWh**, aus der Mail eines
+Käufers. Vom Gründer am 12. November freigegeben („mach 1.7 live"), statt bis
+zum 2. Dezember zu warten. Bau 50 (0.148.0), eingereicht um ca. 06:20 UTC
+(Lauf 43165418536), um 09:15 UTC noch `WAITING_FOR_REVIEW`, seit 16:59 UTC
+im Laden (`itunes.apple.com/lookup`, Fassung 1.7). Die Website nennt 1.7 seit
+dem 13. November (`website-fassung.yml`, a50a3e3).
+
+**Gemessen:** Von der Einreichung bis in den Laden vergingen gut zehneinhalb
+Stunden.
 
 ### Die zehnte, 1.6 — eingereicht am 3. November
 
