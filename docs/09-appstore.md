@@ -499,6 +499,9 @@ Januar deutlich zu hoch. Das ist kostenlos.
 Die Übersicht ist kürzer: oben ein Satz, ob etwas fällig ist, und auf den
 Karten nur noch, was du brauchst. Im Zähler-Tab steht, ob der Abgleich
 über iCloud klappt.
+
+Alle Zähler gehen jetzt in eine Tabelle, als CSV-Datei, die du in Dateien
+sicherst oder per Mail verschickst. Bisher landete sie im Text der Mail.
 ```
 
 1.8 trägt auch, was als 1.9 geplant war (Gründer am 12. November: „wenn wir

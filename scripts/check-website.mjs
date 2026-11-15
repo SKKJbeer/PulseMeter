@@ -47,8 +47,8 @@ const base = `http://127.0.0.1:${server.address().port}/`;
 // toter Verweis dorthin fällt sonst niemandem auf.
 // Jede Seite mit einem Rechner. Stand bis 0.170.0 fünfmal ausgeschrieben, und
 // eine neue Seite wäre in einer der Listen vergessen worden.
-const rechnerSeiten = ["gas-in-kwh.html", "heizoel-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "waermepumpe-stromverbrauch-monat.html", "waermepumpe-zwei-zaehler.html", "heizstab-waermepumpe.html", "photovoltaik-eigenverbrauch.html", "nachzahlung-pruefen.html"];
-const seiten = ["index.html", "entwicklung.html", "hilfe.html", "gas-in-kwh.html", "heizoel-in-kwh.html", "waermepumpe-stromverbrauch-monat.html", "waermepumpe-zwei-zaehler.html", "heizstab-waermepumpe.html",
+const rechnerSeiten = ["gas-in-kwh.html", "heizoel-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "waermepumpe-stromverbrauch-monat.html", "waermepumpe-zwei-zaehler.html", "heizstab-waermepumpe.html", "waermemengenzaehler-ablesen.html", "photovoltaik-eigenverbrauch.html", "nachzahlung-pruefen.html"];
+const seiten = ["index.html", "entwicklung.html", "hilfe.html", "gas-in-kwh.html", "heizoel-in-kwh.html", "waermepumpe-stromverbrauch-monat.html", "waermepumpe-zwei-zaehler.html", "heizstab-waermepumpe.html", "waermemengenzaehler-ablesen.html",
                 "zaehlerstand-umzug.html", "ratgeber.html",
                 "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "heizung-auf-waermepumpe-umstellen.html", "zaehlerstand-ablesen.html", "photovoltaik-eigenverbrauch.html", "strompreis-entwicklung.html", "nachzahlung-pruefen.html", "datenschutz.html", "impressum.html", "404.html"];
 
@@ -756,6 +756,18 @@ console.log("\nVerhalten");
   note((await page.$('[data-kachel="wp"]')) === null && !(await kaputt("#stab-ergebnis")), "Heizstab: mit Arbeitszahl 1 kein Vergleich, weil es keinen Unterschied gibt");
   await page.fill("#h-std", "");
   note((await text("#stab-ergebnis")).includes("Stunden") && !(await kaputt("#stab-ergebnis")), "Heizstab: ohne Stunden ein Hinweis statt einer Zahl");
+
+  // Wärmemengenzähler: 12,40 → 16,90 MWh sind 4.500 kWh, mit 1.300 kWh
+  // Strom eine Arbeitszahl von 3,5. In GJ: 4,5 GJ sind 1.250 kWh.
+  await page.goto(base + "waermemengenzaehler-ablesen.html");
+  note((await kachel("waerme")).wert === "4.500 kWh" && (await kachel("az")).wert === "3,5",
+       `Wärmemengenzähler: 4,5 MWh sind 4.500 kWh, Arbeitszahl 3,5 (${(await kachel("waerme")).wert}, ${(await kachel("az")).wert})`);
+  await page.selectOption("#w-einheit", "277.7777777777778");
+  note((await kachel("waerme")).wert === "1.250 kWh", `Wärmemengenzähler: 4,5 GJ sind 1.250 kWh (${(await kachel("waerme")).wert})`);
+  await page.fill("#w-strom", "");
+  note((await page.$('[data-kachel="az"]')) === null && !(await kaputt("#wmz-ergebnis")), "Wärmemengenzähler: ohne Strom keine Arbeitszahl und keine kaputte Zahl");
+  await page.fill("#w-neu", "10");
+  note((await text("#wmz-ergebnis")).includes("größer") && !(await kaputt("#wmz-ergebnis")), "Wärmemengenzähler: kleinerer Stand jetzt ergibt einen Hinweis");
 
   // Gas: dieselbe Rechnung wie GasConversion.energy in PulseCore.
   await page.goto(base + "gas-in-kwh.html");
