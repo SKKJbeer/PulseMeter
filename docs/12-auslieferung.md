@@ -510,6 +510,18 @@ Ablauf die Veröffentlichung ausdrücklich an — und dafür fehlte
 eigene Seite sagte „Bald im App Store". Behoben in 0.106.6, samt einer Prüfung
 am Ende des Ablaufs, die die **Seite abruft** statt den Push zu zählen.
 
+### Die elfte, 1.7 — eingereicht und freigegeben am 12. November
+
+**Neuer Preis ab einem Tag, Gas und Heizöl in kWh**, aus der Mail eines
+Käufers. Vom Gründer am 12. November freigegeben („mach 1.7 live"), statt bis
+zum 2. Dezember zu warten. Bau 50 (0.148.0), eingereicht um ca. 06:20 UTC
+(Lauf 43165418536), um 09:15 UTC noch `WAITING_FOR_REVIEW`, seit 16:59 UTC
+im Laden (`itunes.apple.com/lookup`, Fassung 1.7). Die Website nennt 1.7 seit
+dem 13. November (`website-fassung.yml`, a50a3e3).
+
+**Gemessen:** Von der Einreichung bis in den Laden vergingen gut zehneinhalb
+Stunden.
+
 ### Die zehnte, 1.6 — eingereicht am 3. November
 
 **Ablesen mit der Kamera** als sechster Kauf (1,99 €), dazu „Alles freischalten"
