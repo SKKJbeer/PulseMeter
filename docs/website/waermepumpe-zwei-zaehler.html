@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wärmepumpe mit zwei Zählern: HT und NT ablesen und rechnen — Zählora</title>
+<meta name="robots" content="max-image-preview:large">
+<meta name="description" content="Wärmepumpe mit zwei Zählern oder einem Zähler mit HT und NT: welche Zahl du abliest, wie du beide zusammenrechnest und was die Kilowattstunde im Mittel kostet. Mit Rechner.">
+<meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F0E0C" media="(prefers-color-scheme: dark)">
+<!-- Safari auf dem iPhone blendet darüber eine Leiste mit „Öffnen" oder
+     „Laden" ein. Wer über eine Antwortseite kommt, steht damit einen Tipp
+     vor der App statt einen Umweg über den Store. -->
+<meta name="apple-itunes-app" content="app-id=6802262743">
+<link rel="canonical" href="https://zaehlora.de/waermepumpe-zwei-zaehler.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Zählora">
+<meta property="og:locale" content="de_DE">
+<meta property="og:title" content="Wärmepumpe mit zwei Zählern: HT und NT ablesen — Zählora">
+<meta property="og:description" content="Wärmepumpe mit zwei Zählern oder einem Zähler mit HT und NT: welche Zahl du abliest, wie du beide zusammenrechnest und was die Kilowattstunde im Mittel kostet. Mit Rechner.">
+<meta property="og:url" content="https://zaehlora.de/waermepumpe-zwei-zaehler.html">
+<meta property="og:image" content="https://zaehlora.de/bilder/teilen.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Zählora: Jeden Monat wissen, was du verbrauchst. Daneben die Übersicht der App auf einem iPhone.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="stylesheet" href="stil.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "Wärmepumpe mit zwei Zählern: HT und NT ablesen und rechnen",
+      "description": "Welche Zahl am Wärmepumpenzähler zählt, wie man Hochtarif und Niedertarif zusammenrechnet und was die Kilowattstunde im Mittel kostet.",
+      "inLanguage": "de",
+      "dateModified": "2026-11-11",
+      "author": {"@type": "Organization", "name": "Zählora", "url": "https://zaehlora.de/"},
+      "publisher": {"@type": "Organization", "name": "Zählora", "url": "https://zaehlora.de/"},
+      "mainEntityOfPage": "https://zaehlora.de/waermepumpe-zwei-zaehler.html"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Zählora", "item": "https://zaehlora.de/"},
+        {"@type": "ListItem", "position": 2, "name": "Ratgeber", "item": "https://zaehlora.de/ratgeber.html"},
+        {"@type": "ListItem", "position": 3, "name": "Wärmepumpe mit zwei Zählern"}
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<a class="sprung" href="#inhalt">Zum Inhalt springen</a>
+
+<header class="kopf">
+  <div class="bahn kopf-innen">
+    <a class="marke" href="index.html">
+      <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <path d="M4 23a12 12 0 0 1 24 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".28"/>
+        <path d="M7 23h4.5l2.5-6.5L18 27l2.5-4H25" fill="none" stroke="#C77A0E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Zählora
+    </a>
+    <nav aria-label="Bereiche">
+      <a href="index.html#funktionen">Funktionen</a>
+      <a href="ratgeber.html">Ratgeber</a>
+      <a href="index.html#preise">Preise</a>
+      <a href="entwicklung.html">Entwicklung</a>
+      <a href="hilfe.html">Hilfe</a>
+    </nav>
+  </div>
+</header>
+
+<main id="inhalt" class="rechtstext artikel">
+  <div class="bahn">
+    <nav class="pfad" aria-label="Pfad">
+      <ol>
+        <li><a href="index.html">Zählora</a></li>
+        <li><a href="ratgeber.html">Ratgeber</a></li>
+        <li aria-current="page">Wärmepumpe mit zwei Zählern</li>
+      </ol>
+    </nav>
+    <h1 id="rechner">Wärmepumpe mit zwei Zählern: HT und NT ablesen</h1>
+    <p class="blass">
+      Viele Wärmepumpen laufen über einen eigenen Tarif. Dann hängen zwei
+      Zähler im Zählerschrank, oder einer zeigt zwei Zahlen. Tipp den
+      Verbrauch beider Zahlen und ihre Preise ein.
+    </p>
+
+    <form class="rechner" id="htntrechner" onsubmit="return false" aria-describedby="htnt-ergebnis">
+      <div class="rechner-felder">
+        <label>Verbrauch HT
+          <span class="eingabe"><input id="z-ht" inputmode="decimal" autocomplete="off" value="2.400"><span class="einheit">kWh</span></span>
+          <small>Hochtarif, tagsüber</small>
+        </label>
+        <label>Verbrauch NT
+          <span class="eingabe"><input id="z-nt" inputmode="decimal" autocomplete="off" value="1.600"><span class="einheit">kWh</span></span>
+          <small>Niedertarif, meist nachts</small>
+        </label>
+        <label>Preis HT
+          <span class="eingabe"><input id="z-pht" inputmode="decimal" autocomplete="off" value="30"><span class="einheit">ct/kWh</span></span>
+          <small>von der Rechnung</small>
+        </label>
+        <label>Preis NT
+          <span class="eingabe"><input id="z-pnt" inputmode="decimal" autocomplete="off" value="24"><span class="einheit">ct/kWh</span></span>
+          <small>darf leer bleiben</small>
+        </label>
+      </div>
+      <div class="rechner-ergebnis" id="htnt-ergebnis" aria-live="polite"></div>
+    </form>
+    <script src="rechner.js"></script>
+    <script>
+    // Zwei Zahlen, ein Verbrauch: Die Summe ist, was die Wärmepumpe wirklich
+    // gebraucht hat. Der Preis im Mittel ist nach Menge gewichtet, nicht der
+    // Durchschnitt der beiden Preise. Genau das verwechselt man am leichtesten.
+    (function () {
+      var R = window.Rechner;
+      function wert(id) { return R.zahl(document.getElementById(id).value); }
+      function rechne() {
+        var ht = wert("z-ht"), nt = wert("z-nt"), pht = wert("z-pht"), pnt = wert("z-pnt");
+        var aus = document.getElementById("htnt-ergebnis");
+        if (!(ht >= 0) || !(nt >= 0) || !(ht + nt > 0)) {
+          aus.innerHTML = R.hinweis("Trag den Verbrauch von HT und NT ein. Gibt es nur eine Zahl, die andere mit 0.");
+          return;
+        }
+        var summe = ht + nt;
+        var liste = [R.kachel("summe", "Verbrauch zusammen", R.format(summe, 0) + " kWh",
+                              R.format(nt / summe * 100, 0) + " % davon im NT", "haupt")];
+        var htPreis = ht > 0 ? pht > 0 : true, ntPreis = nt > 0 ? pnt > 0 : true;
+        if (htPreis && ntPreis) {
+          var cent = (ht > 0 ? ht * pht : 0) + (nt > 0 ? nt * pnt : 0);
+          liste.push(R.kachel("misch", "Preis im Mittel", R.format(cent / summe, 1) + " ct", "je kWh, nach Menge gewichtet"));
+          liste.push(R.kachel("kosten", "Arbeitspreis zusammen", R.euro.format(cent / 100), "ohne Grundpreis"));
+        }
+        aus.innerHTML = R.kacheln(liste);
+      }
+      document.getElementById("htntrechner").addEventListener("input", rechne);
+      rechne();
+    })();
+    </script>
+
+    <aside class="app-hinweis nicht-drucken" aria-labelledby="app-hinweis-titel">
+      <h2 id="app-hinweis-titel">Beide Zahlen an einem Ort</h2>
+      <p>
+        In Zählora legst du den Zähler einmal mit zwei Zahlen an und trägst bei
+        jeder Ablesung beide ein. Den Verbrauch rechnet die App für jede Zahl
+        einzeln und zusammen, mit dem jeweils richtigen Preis.
+      </p>
+      <p class="app-hinweis-fuss">
+        <a class="knopf knopf-voll" href="https://apps.apple.com/de/app/id6802262743">Zählora im App Store</a>
+        <span>Laden kostet nichts. Zähler mit zwei Zahlen schaltest du einmal für 1,99 € frei, kein Abo.</span>
+      </p>
+    </aside>
+
+    <h2>Welcher Aufbau hängt bei dir?</h2>
+    <ul>
+      <li><strong>Zwei Zähler nebeneinander.</strong> Einer zählt den
+        Haushalt, der andere nur die Wärmepumpe. Jeder hat eine eigene Nummer
+        und eine eigene Rechnung oder eine eigene Zeile darauf. Was die
+        Wärmepumpe braucht, steht allein auf ihrem Zähler.</li>
+      <li><strong>Ein Zähler mit zwei Zahlen.</strong> Er zählt tagsüber in
+        HT und in den günstigen Stunden in NT. Ein digitaler Zähler wechselt
+        die Anzeige von selbst oder nach einem Druck auf die Taste, meist mit
+        einer Kennzeichnung wie 1.8.1 und 1.8.2 davor. Ein alter Ferraris-Zähler
+        hat zwei Zählwerke übereinander, das aktive ist markiert.</li>
+      <li><strong>Beides.</strong> Ein Haushaltszähler und dazu ein
+        Wärmepumpenzähler mit HT und NT. Dann sind es drei Zahlen, und nur die
+        beiden vom Wärmepumpenzähler gehören in den Rechner oben.</li>
+    </ul>
+
+    <h2>So wird gerechnet</h2>
+    <div class="anschrift">
+      <strong>Verbrauch = (HT jetzt − HT vorher) + (NT jetzt − NT vorher)</strong><br>
+      <strong>Preis im Mittel = (HT-kWh × HT-Preis + NT-kWh × NT-Preis) ÷ alle kWh</strong>
+    </div>
+    <p>
+      Jede Zahl wird für sich abgezogen, erst dann wird zusammengezählt. Den
+      Preis im Mittel bestimmt die Menge: Läuft die Wärmepumpe zu zwei Dritteln
+      im HT, liegt er näher am HT-Preis als in der Mitte.
+    </p>
+
+    <h2>Was dabei am häufigsten schiefgeht</h2>
+    <ul>
+      <li><strong>Nur eine Zahl ablesen.</strong> Wer nur die Zahl notiert, die
+        gerade angezeigt wird, hat am Ende einen halben Verbrauch. Bei einem
+        digitalen Zähler so lange tippen, bis beide Zahlen dran waren.</li>
+      <li><strong>HT und NT vertauschen.</strong> Welche Zahl welche ist, steht
+        auf dem Zähler oder auf der letzten Abrechnung. Einmal nachsehen und
+        immer in derselben Reihenfolge aufschreiben.</li>
+      <li><strong>Den Haushaltszähler mitzählen.</strong> Der Strom der
+        Wärmepumpe ist nur der auf ihrem eigenen Zähler. Wie viel sie im Monat
+        brauchen darf, zeigt
+        <a href="waermepumpe-stromverbrauch-monat.html">Wärmepumpe: Verbrauch im Monat</a>,
+        und wie gut sie arbeitet, die
+        <a href="jahresarbeitszahl-berechnen.html">Jahresarbeitszahl</a>.</li>
+    </ul>
+
+    <aside class="weiterlesen nicht-drucken" aria-labelledby="weiterlesen-titel">
+      <h2 id="weiterlesen-titel">Weiterlesen</h2>
+      <div class="karten">
+      <a class="karte karte-verweis" href="waermepumpe-stromverbrauch-monat.html">
+        <span class="art">Rechner</span>
+        <b>Wärmepumpe: Verbrauch im Monat</b>
+        <p>Was dein Januar oder Juli aufs Jahr bedeutet, und wann ein Monat wirklich zu hoch ist.</p>
+        <span class="weiter">Zum Rechner ›</span>
+      </a>
+      <a class="karte karte-verweis" href="jahresarbeitszahl-berechnen.html">
+        <span class="art">Rechner</span>
+        <b>Jahresarbeitszahl berechnen</b>
+        <p>Strom und Wärme eines Jahres, und du siehst deine Jahresarbeitszahl neben 77 Anlagen, die Fraunhofer gemessen hat.</p>
+        <span class="weiter">Zum Rechner ›</span>
+      </a>
+      <a class="karte karte-verweis" href="zaehlerstand-ablesen.html">
+        <span class="art">Ratgeber</span>
+        <b>Zählerstand ablesen</b>
+        <p>Welche Ziffern du bei Strom, Gas und Wasser aufschreibst, was 1.8.0 heißt und wo die Zählernummer steht.</p>
+        <span class="weiter">Zum Ratgeber ›</span>
+      </a>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="fuss">
+  <div class="bahn fuss-innen">
+    <span>Zählora — gebaut in Deutschland, von einem Menschen.</span>
+    <nav aria-label="Rechtliches">
+      <a href="index.html">Start</a>
+      <a href="ratgeber.html">Ratgeber</a>
+      <a href="entwicklung.html">Entwicklung</a>
+      <a href="hilfe.html">Hilfe &amp; Kontakt</a>
+      <a href="datenschutz.html">Datenschutz</a>
+      <a href="impressum.html">Impressum</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
