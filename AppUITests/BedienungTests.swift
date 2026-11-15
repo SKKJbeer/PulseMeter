@@ -47,8 +47,11 @@ final class BedienungTests: XCTestCase {
             .matching(NSPredicate(format: "label CONTAINS %@", text)).firstMatch
     }
 
+    /// Dieselbe Zeile wie in `LaunchTests.testStaleMeterIsReportedAsDue`. Seit 1.8 (0.150.0)
+    /// steht oben in der Übersicht ein einziger kurzer Satz, der mit „fällig.“ endet; die
+    /// alte Erklärzeile „… nicht abgelesen“ gibt es dort nicht mehr.
     private var ueberfaellig: NSPredicate {
-        NSPredicate(format: "label CONTAINS 'nicht abgelesen'")
+        NSPredicate(format: "label BEGINSWITH 'Gas' AND label ENDSWITH 'fällig.'")
     }
 
     /// Ohne Zahl ist „Sichern“ gesperrt, und der Hinweis sagt, was fehlt.

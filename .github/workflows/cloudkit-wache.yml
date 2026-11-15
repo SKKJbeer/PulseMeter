@@ -87,9 +87,15 @@ jobs:
           path: ${{ runner.temp }}/production.ckdb
           if-no-files-found: ignore
 
+      # Im Pull Request darf das Modell wachsen (Regel 2 der Prüfung): Ein neues
+      # Feld, das die Produktion noch nicht kennt, ist dort ein Hinweis, kein
+      # Fehler. Umbenennen bleibt überall ein Fehler. Streng wird es auf main,
+      # montags und von Hand, und im Bau für TestFlight (testflight.yml).
       - name: Kennt die Produktion alles?
+        env:
+          STRENG: ${{ github.event_name != 'pull_request' && '--auslieferung' || '' }}
         run: |
-          python3 scripts/check-cloudkit-schema.py --auslieferung \
+          python3 scripts/check-cloudkit-schema.py $STRENG \
             --gegen "$RUNNER_TEMP/production.ckdb" | tee "$RUNNER_TEMP/ergebnis.txt"
           status=${PIPESTATUS[0]}
           { echo "### CloudKit-Wache"; echo '```'; cat "$RUNNER_TEMP/ergebnis.txt"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
