@@ -71,6 +71,30 @@ Klick-Dummy: alle Prüfungen durchgelaufen. App-Bau und App-Tests in der CI._
 
 ---
 
+## 0.171.0 — 2026-11-15
+
+**Website: Wärmemengenzähler ablesen**
+
+Die fünfte kleine Frage aus dem Reichweiten-Konzept Stufe 2.
+
+### Neu
+- **`waermemengenzaehler-ablesen.html`**: Zwei Stände vom
+  Wärmemengenzähler eintippen, die Einheit im Display wählen (kWh, MWh, GJ),
+  dazu den Strom derselben Zeit. Die Seite zeigt die Wärme in kWh und die
+  Arbeitszahl. Erklärt, welche Anzeige die Wärme ist (nicht m³, °C oder kW)
+  und die drei häufigsten Fehler (Komma bei MWh, verschiedene Zeiträume, der
+  falsche Strom). Verlinkt aus Ratgeber, Startseite und Sitemap.
+
+### Geändert
+- Vier neue Prüfungen in `check-website.mjs`: 4,5 MWh sind 4.500 kWh und
+  mit 1.300 kWh Strom eine Arbeitszahl von 3,5, 4,5 GJ sind 1.250 kWh, ohne
+  Strom keine Arbeitszahl, ein kleinerer Stand jetzt ergibt einen Hinweis.
+  Einmal rot gesehen (GJ mit 1.000 statt 277,8 gerechnet).
+
+_Website-Prüfung (`check-website.mjs`) vollständig grün. App unverändert._
+
+---
+
 ## 0.170.0 — 2026-11-12
 
 **Website: Heizöl in kWh, Wärmepumpe im Monat, mit zwei Zählern und der Heizstab, die ersten Seiten aus dem Reichweiten-Konzept Stufe 2**

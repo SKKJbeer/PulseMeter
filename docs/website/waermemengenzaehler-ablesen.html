@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wärmemengenzähler ablesen: Wärme in kWh und die Arbeitszahl — Zählora</title>
+<meta name="robots" content="max-image-preview:large">
+<meta name="description" content="Den Wärmemengenzähler der Wärmepumpe ablesen: welche Anzeige die Wärme ist, wie du MWh und GJ in kWh umrechnest und was daraus die Arbeitszahl macht. Mit Rechner.">
+<meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F0E0C" media="(prefers-color-scheme: dark)">
+<!-- Safari auf dem iPhone blendet darüber eine Leiste mit „Öffnen" oder
+     „Laden" ein. Wer über eine Antwortseite kommt, steht damit einen Tipp
+     vor der App statt einen Umweg über den Store. -->
+<meta name="apple-itunes-app" content="app-id=6802262743">
+<link rel="canonical" href="https://zaehlora.de/waermemengenzaehler-ablesen.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Zählora">
+<meta property="og:locale" content="de_DE">
+<meta property="og:title" content="Wärmemengenzähler ablesen: Wärme in kWh und die Arbeitszahl — Zählora">
+<meta property="og:description" content="Den Wärmemengenzähler der Wärmepumpe ablesen: welche Anzeige die Wärme ist, wie du MWh und GJ in kWh umrechnest und was daraus die Arbeitszahl macht. Mit Rechner.">
+<meta property="og:url" content="https://zaehlora.de/waermemengenzaehler-ablesen.html">
+<meta property="og:image" content="https://zaehlora.de/bilder/teilen.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Zählora: Jeden Monat wissen, was du verbrauchst. Daneben die Übersicht der App auf einem iPhone.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="stylesheet" href="stil.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "Wärmemengenzähler ablesen: Wärme in kWh und die Arbeitszahl",
+      "description": "Welche Anzeige am Wärmemengenzähler die Wärme ist, wie man MWh und GJ in kWh umrechnet und mit dem Strom die Arbeitszahl bildet.",
+      "inLanguage": "de",
+      "dateModified": "2026-11-11",
+      "author": {"@type": "Organization", "name": "Zählora", "url": "https://zaehlora.de/"},
+      "publisher": {"@type": "Organization", "name": "Zählora", "url": "https://zaehlora.de/"},
+      "mainEntityOfPage": "https://zaehlora.de/waermemengenzaehler-ablesen.html"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Zählora", "item": "https://zaehlora.de/"},
+        {"@type": "ListItem", "position": 2, "name": "Ratgeber", "item": "https://zaehlora.de/ratgeber.html"},
+        {"@type": "ListItem", "position": 3, "name": "Wärmemengenzähler ablesen"}
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<a class="sprung" href="#inhalt">Zum Inhalt springen</a>
+
+<header class="kopf">
+  <div class="bahn kopf-innen">
+    <a class="marke" href="index.html">
+      <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <path d="M4 23a12 12 0 0 1 24 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".28"/>
+        <path d="M7 23h4.5l2.5-6.5L18 27l2.5-4H25" fill="none" stroke="#C77A0E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Zählora
+    </a>
+    <nav aria-label="Bereiche">
+      <a href="index.html#funktionen">Funktionen</a>
+      <a href="ratgeber.html">Ratgeber</a>
+      <a href="index.html#preise">Preise</a>
+      <a href="entwicklung.html">Entwicklung</a>
+      <a href="hilfe.html">Hilfe</a>
+    </nav>
+  </div>
+</header>
+
+<main id="inhalt" class="rechtstext artikel">
+  <div class="bahn">
+    <nav class="pfad" aria-label="Pfad">
+      <ol>
+        <li><a href="index.html">Zählora</a></li>
+        <li><a href="ratgeber.html">Ratgeber</a></li>
+        <li aria-current="page">Wärmemengenzähler ablesen</li>
+      </ol>
+    </nav>
+    <h1 id="rechner">Wärmemengenzähler ablesen: Wärme in kWh</h1>
+    <p class="blass">
+      Der Wärmemengenzähler zählt, wie viel Wärme die Wärmepumpe ins Haus
+      gebracht hat. Tipp zwei Stände ein, dazu den Strom aus derselben Zeit,
+      und du siehst, wie gut sie gearbeitet hat.
+    </p>
+
+    <form class="rechner" id="wmzrechner" onsubmit="return false" aria-describedby="wmz-ergebnis">
+      <div class="rechner-felder">
+        <label>Stand vorher
+          <span class="eingabe"><input id="w-alt" inputmode="decimal" autocomplete="off" value="12,40"></span>
+          <small>vom Wärmemengenzähler</small>
+        </label>
+        <label>Stand jetzt
+          <span class="eingabe"><input id="w-neu" inputmode="decimal" autocomplete="off" value="16,90"></span>
+          <small>vom Wärmemengenzähler</small>
+        </label>
+        <label>Einheit im Display
+          <span class="eingabe"><select id="w-einheit">
+            <option value="1">kWh</option>
+            <option value="1000" selected>MWh</option>
+            <option value="277.7777777777778">GJ</option>
+          </select></span>
+          <small>steht neben der Zahl</small>
+        </label>
+        <label>Strom derselben Zeit
+          <span class="eingabe"><input id="w-strom" inputmode="decimal" autocomplete="off" value="1.300"><span class="einheit">kWh</span></span>
+          <small>darf leer bleiben</small>
+        </label>
+      </div>
+      <div class="rechner-ergebnis" id="wmz-ergebnis" aria-live="polite"></div>
+    </form>
+    <script src="rechner.js"></script>
+    <script>
+    // 1 MWh = 1.000 kWh, 1 GJ = 1.000 ÷ 3,6 kWh. Die Arbeitszahl ist Wärme
+    // geteilt durch Strom, beide aus demselben Zeitraum. Stimmen die Zeiträume
+    // nicht überein, ist die Zahl falsch, nicht nur ungenau.
+    (function () {
+      var R = window.Rechner;
+      function wert(id) { return R.zahl(document.getElementById(id).value); }
+      function rechne() {
+        var alt = wert("w-alt"), neu = wert("w-neu"), strom = wert("w-strom");
+        var f = Number(document.getElementById("w-einheit").value);
+        var aus = document.getElementById("wmz-ergebnis");
+        if (!(alt >= 0) || !(neu >= 0)) {
+          aus.innerHTML = R.hinweis("Trag beide Stände vom Wärmemengenzähler ein.");
+          return;
+        }
+        if (!(neu > alt)) {
+          aus.innerHTML = R.hinweis("Der Stand jetzt muss größer sein als der Stand vorher.");
+          return;
+        }
+        var kwh = (neu - alt) * f;
+        var liste = [R.kachel("waerme", "Wärme im Zeitraum", R.format(kwh, 0) + " kWh",
+                              f === 1 ? "direkt in kWh gezählt" : "umgerechnet aus " + (f === 1000 ? "MWh" : "GJ"), "haupt")];
+        if (strom > 0) {
+          liste.push(R.kachel("az", "Arbeitszahl", R.format(kwh / strom, 1),
+                              R.format(kwh, 0) + " kWh Wärme ÷ " + R.format(strom, 0) + " kWh Strom"));
+        }
+        aus.innerHTML = R.kacheln(liste);
+      }
+      document.getElementById("wmzrechner").addEventListener("input", rechne);
+      document.getElementById("w-einheit").addEventListener("change", rechne);
+      rechne();
+    })();
+    </script>
+
+    <aside class="app-hinweis nicht-drucken" aria-labelledby="app-hinweis-titel">
+      <h2 id="app-hinweis-titel">Wärme und Strom am selben Tag</h2>
+      <p>
+        Leg in Zählora den Wärmemengenzähler und den Stromzähler der
+        Wärmepumpe an und lies beide am selben Tag ab. Dann passen die
+        Zeiträume immer zusammen.
+      </p>
+      <p class="app-hinweis-fuss">
+        <a class="knopf knopf-voll" href="https://apps.apple.com/de/app/id6802262743">Zählora im App Store</a>
+        <span>Laden kostet nichts. Zwei Zähler mit ihrer ganzen Geschichte sind dauerhaft frei, kein Abo.</span>
+      </p>
+    </aside>
+
+    <h2>Welche Anzeige die Wärme ist</h2>
+    <p>
+      Ein Wärmemengenzähler zeigt nicht nur eine Zahl. Auf Tastendruck wechselt
+      er durch mehrere Werte. Die Wärme ist die Zahl mit kWh, MWh oder GJ
+      daneben. Alles andere gehört nicht in den Rechner:
+    </p>
+    <ul>
+      <li><strong>m³</strong> ist das Wasser, das durch den Zähler geflossen
+        ist, nicht die Wärme.</li>
+      <li><strong>°C</strong> sind Vorlauf und Rücklauf, also wie warm das
+        Wasser hin- und zurückfließt.</li>
+      <li><strong>kW</strong> ist die Leistung in diesem Moment. Sie schwankt
+        und sagt nichts über den Verbrauch.</li>
+      <li><strong>Ein Stichtagswert</strong> mit Datum ist der Stand zu einem
+        festen Tag, oft dem Jahreswechsel. Für den Vergleich mit dem Strom ist
+        er praktisch, wenn du den Stromzähler am selben Tag hast.</li>
+    </ul>
+    <p>
+      Wo der Wärmemengenzähler sitzt, ist verschieden. Oft hängt er am Rohr
+      direkt an der Wärmepumpe. Manche Anlagen zählen die Wärme nur im eigenen
+      Menü, das ist eine Schätzung der Anlage, kein geeichter Zähler.
+    </p>
+
+    <h2>So wird gerechnet</h2>
+    <div class="anschrift">
+      <strong>Wärme in kWh = (Stand jetzt − Stand vorher) × 1.000, bei MWh</strong><br>
+      <strong>Wärme in kWh = (Stand jetzt − Stand vorher) × 277,8, bei GJ</strong><br>
+      <strong>Arbeitszahl = Wärme ÷ Strom</strong>
+    </div>
+    <p>
+      Über ein ganzes Jahr gerechnet heißt die Arbeitszahl Jahresarbeitszahl.
+      Wie deine neben 77 Anlagen aus einem Feldtest steht, zeigt
+      <a href="jahresarbeitszahl-berechnen.html">Jahresarbeitszahl berechnen</a>.
+      Über einen Monat schwankt sie stark: Im Januar liegt sie tiefer, im
+      Herbst höher.
+    </p>
+
+    <h2>Was dabei am häufigsten schiefgeht</h2>
+    <ul>
+      <li><strong>Komma bei MWh.</strong> 16,90 MWh sind 16.900 kWh. Wer das
+        Komma übersieht, liegt um das Tausendfache daneben.</li>
+      <li><strong>Strom und Wärme aus verschiedenen Zeiträumen.</strong> Lies
+        beide Zähler am selben Tag ab. Eine Woche Versatz im Winter verschiebt
+        die Arbeitszahl spürbar.</li>
+      <li><strong>Den falschen Strom.</strong> Gemeint ist nur der Strom der
+        Wärmepumpe, bei zwei Zahlen HT und NT zusammen. Wie das geht, steht
+        unter <a href="waermepumpe-zwei-zaehler.html">Wärmepumpe mit zwei Zählern</a>.</li>
+    </ul>
+
+    <aside class="weiterlesen nicht-drucken" aria-labelledby="weiterlesen-titel">
+      <h2 id="weiterlesen-titel">Weiterlesen</h2>
+      <div class="karten">
+      <a class="karte karte-verweis" href="jahresarbeitszahl-berechnen.html">
+        <span class="art">Rechner</span>
+        <b>Jahresarbeitszahl berechnen</b>
+        <p>Strom und Wärme eines Jahres, und du siehst deine Jahresarbeitszahl neben 77 Anlagen, die Fraunhofer gemessen hat.</p>
+        <span class="weiter">Zum Rechner ›</span>
+      </a>
+      <a class="karte karte-verweis" href="waermepumpe-zwei-zaehler.html">
+        <span class="art">Rechner</span>
+        <b>Wärmepumpe mit zwei Zählern</b>
+        <p>HT und NT ablesen, zusammenzählen und sehen, was die Kilowattstunde im Mittel kostet.</p>
+        <span class="weiter">Zum Rechner ›</span>
+      </a>
+      <a class="karte karte-verweis" href="heizstab-waermepumpe.html">
+        <span class="art">Rechner</span>
+        <b>Heizstab der Wärmepumpe</b>
+        <p>Woran du merkst, dass er mitläuft, und was seine Stunden mehr kosten als die Wärmepumpe.</p>
+        <span class="weiter">Zum Rechner ›</span>
+      </a>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="fuss">
+  <div class="bahn fuss-innen">
+    <span>Zählora — gebaut in Deutschland, von einem Menschen.</span>
+    <nav aria-label="Rechtliches">
+      <a href="index.html">Start</a>
+      <a href="ratgeber.html">Ratgeber</a>
+      <a href="entwicklung.html">Entwicklung</a>
+      <a href="hilfe.html">Hilfe &amp; Kontakt</a>
+      <a href="datenschutz.html">Datenschutz</a>
+      <a href="impressum.html">Impressum</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
