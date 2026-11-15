@@ -3062,7 +3062,7 @@ final class LaunchTests: XCTestCase {
         open.tap()
 
         // Im Debug-Bau braucht das Netz Sekunden je Bild, und es braucht vier gleiche (seit 0.140.0).
-        // **Geduldig warten** (0.164.0): Auf PR #13 fiel der Test hier zweimal, einmal mit
+        // **Geduldig warten** (0.172.0): Auf PR #13 fiel der Test hier zweimal, einmal mit
         // „Timed out while evaluating UI query“. Solange das Netz im Debug-Bau rechnet, beantwortet
         // die App die Frage nach ihrer Oberfläche manchmal nicht rechtzeitig. Das ist eine Grenze
         // des Simulators, kein Fehler der App; ob der Vorschlag kommt, prüft die letzte Frage.
