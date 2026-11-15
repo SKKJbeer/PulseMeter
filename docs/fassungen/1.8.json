@@ -1,0 +1,14 @@
+{
+  "fassung": "1.8",
+  "weg": {
+    "titel": "Vorher und nachher mit der Wärmepumpe",
+    "text": "Du trägst am Gaszähler ein, wann die Wärmepumpe kam, und Zählora legt dieselben Monate vorher und nachher nebeneinander, in kWh und Euro. Ein Zähler nur für die Wärmepumpe rechnet das Jahr nach dem Heizen hoch. Die Übersicht ist kürzer."
+  },
+  "start": {
+    "titel": "Lohnt sich die Wärmepumpe?",
+    "absaetze": [
+      "Am Gas- oder Ölzähler trägst du ein, an welchem Tag die Wärmepumpe kam. Zählora stellt dann dieselben Monate vorher und nachher gegenüber, in kWh und in Euro. Das Ergebnis lässt sich als Bild teilen, ohne deine Zählerstände.",
+      "Misst ein Zähler nur die Wärmepumpe, rechnet Zählora das Jahr nach dem Heizen hoch, nicht nach dem Haushaltsstrom. Dazu ist die Übersicht kürzer geworden: oben ein Satz, ob etwas fällig ist, darunter nur noch, was du brauchst."
+    ]
+  }
+}
