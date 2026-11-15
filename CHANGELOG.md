@@ -65,7 +65,7 @@ Prüfungen haben gleich einen echten Fehler gefunden.
 - Die CloudKit-Wache ist im Pull Request bei neuen Feldern nur ein Hinweis; streng ist sie auf
   main, montags, von Hand und im Bau für TestFlight. Sie hat beim ersten Lauf nach 1.9 gemeldet,
   dass `HeatingChangeRecord` und `MeteringPointRecord.measuresHeatPump` noch nicht in der
-  Produktion stehen.
+  Produktion stehen. Am 15. November standen beide dort; `cloudkit/produktion.ckdb` ist nachgezogen.
 
 ---
 
