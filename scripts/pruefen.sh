@@ -140,6 +140,17 @@ if [ "$SCOPE" != "bilder" ]; then
   # Kostet nichts und hält die Fläche klein, auf der überhaupt etwas
   # schiefgehen kann — siehe docs/11-sicherheit.md, Abschnitt 6.
   run "Angriffsfläche" scripts/check-sicherheit.sh || true
+  # Der iCloud-Abgleich lief von 1.0 bis 1.6 nie, weil in der Produktion von
+  # CloudKit kein Schema stand. Hier: nichts aus der Produktion umbenannt, und
+  # ein Hinweis, was vor dem nächsten Bau noch übertragen werden muss (0.149.0).
+  run "iCloud-Schema" python3 scripts/check-cloudkit-schema.py || true
+  run "iCloud-Schema, Selbsttest" python3 scripts/check-cloudkit-schema.py --selbsttest || true
+  # Vier Stellen, eine Version. Die Kopfzeile des Klick-Dummys stand sechs
+  # Versionen lang auf 0.138.0, gesehen hat es ein Review (0.149.0).
+  run "Versionen" python3 scripts/check-versionen.py || true
+  # Das Testkonzept zeigt nur auf Tests, die es gibt, und nennt jedes
+  # Prüfskript (docs/15-testkonzept.md).
+  run "Testkonzept" python3 scripts/check-testkonzept.py || true
   # Ein Preis steht auf der Website und in `Entitlement.swift`. Zwei Wochen
   # lang stand auf der Hilfeseite „Erinnerungen kostenlos" und „alle vier
   # zusammen", während sie 0,99 € kosteten und es fünf waren. Beide Seiten
@@ -220,7 +231,12 @@ if [ "$SCOPE" != "bilder" ] && [ "$SCOPE" != "app" ]; then
   # ob man es auch kann: Trefferflächen, Kontrast, Namen für die
   # Vorlesefunktion, Zeiten — und die Produktprinzipien 2 bis 4, gezählt statt
   # behauptet.
-  ( node scripts/check-nichtfunktional.mjs > "$NF_LOG" 2>&1 ) &
+  #
+  # Dazu die Bedienung bei Fehlern (0.149.0): was der Ziffernblock sagt, wenn
+  # jemand nichts, zu wenig, zu viel oder dasselbe eintippt. Beide laufen, auch
+  # wenn die erste fällt; rot ist es, wenn eine von beiden fällt.
+  ( node scripts/check-nichtfunktional.mjs; a=$?; node scripts/check-bedienung.mjs; b=$?
+    [ "$a" -eq 0 ] && [ "$b" -eq 0 ] ) > "$NF_LOG" 2>&1 &
   NF_PID=$!
 fi
 
@@ -290,11 +306,15 @@ elif [ "$SCOPE" = "alles" ] || [ "$SCOPE" = "app" ]; then
   if [ -n "$ONLY" ]; then
     # Ein Teilname genügt: Wer eine Prüfung gerade repariert, will sie einzeln
     # laufen lassen und nicht neunzehn.
-    MATCH=$(grep -ho "func test[A-Za-z0-9_]*" AppUITests/*.swift \
+    # Datei und Name zusammen: Seit 0.149.0 gibt es mehr als eine Klasse
+    # (`BedienungTests` neben `LaunchTests`), und die Klasse heißt wie ihre Datei.
+    TREFFER=$(grep -oH "func test[A-Za-z0-9_]*" AppUITests/*.swift \
             | sed 's/func //' | grep -i -- "$ONLY" | head -1)
+    MATCH=${TREFFER#*:}
+    KLASSE=$(basename "${TREFFER%%:*}" .swift)
     [ -n "$MATCH" ] || { printf "%sKeine Prüfung passt auf „%s“.%s\n" "$RED" "$ONLY" "$RESET"; exit 2; }
     note "Nur $MATCH"
-    ARGS+=(-only-testing:"PulseMeterUITests/LaunchTests/$MATCH")
+    ARGS+=(-only-testing:"PulseMeterUITests/$KLASSE/$MATCH")
   elif [ "$PARALLEL" = "1" ]; then
     # Auf geklonten Simulatoren parallel. Die Prüfungen setzen ihren
     # Ausgangszustand selbst (`-pulse-reset`) und hängen deshalb nicht
