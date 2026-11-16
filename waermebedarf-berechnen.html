@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wärmebedarf und Heizlast aus Gas- oder Ölverbrauch — Zählora</title>
+<meta name="robots" content="max-image-preview:large">
+<meta name="description" content="Aus deinem Gas- oder Ölverbrauch die Wärme im Jahr, die Heizlast grob und den Strom einer Wärmepumpe schätzen. Zur Kontrolle vor dem Angebot.">
+<meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F0E0C" media="(prefers-color-scheme: dark)">
+<!-- Safari auf dem iPhone blendet darüber eine Leiste mit „Öffnen" oder
+     „Laden" ein. Wer über eine Antwortseite kommt, steht damit einen Tipp
+     vor der App statt einen Umweg über den Store. -->
+<meta name="apple-itunes-app" content="app-id=6802262743">
+<link rel="canonical" href="https://zaehlora.de/waermebedarf-berechnen">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Zählora">
+<meta property="og:locale" content="de_DE">
+<meta property="og:title" content="Wärmebedarf und Heizlast aus dem Gas- oder Ölverbrauch — Zählora">
+<meta property="og:description" content="Aus deinem Gas- oder Ölverbrauch die Wärme im Jahr, die Heizlast grob und den Strom einer Wärmepumpe schätzen. Zur Kontrolle vor dem Angebot.">
+<meta property="og:url" content="https://zaehlora.de/waermebedarf-berechnen">
+<meta property="og:image" content="https://zaehlora.de/bilder/teilen.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Zählora: Jeden Monat wissen, was du verbrauchst. Daneben die Übersicht der App auf einem iPhone.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="stylesheet" href="stil.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "Wärmebedarf und Heizlast aus dem Gas- oder Ölverbrauch",
+      "description": "Wie viel Wärme dein Haus im Jahr braucht, wie groß die Heizlast ungefähr ist und wie viel Strom eine Wärmepumpe dafür bräuchte.",
+      "inLanguage": "de",
+      "dateModified": "2026-11-11",
+      "author": {"@type": "Organization", "name": "Zählora", "url": "https://zaehlora.de/"},
+      "publisher": {"@type": "Organization", "name": "Zählora", "url": "https://zaehlora.de/"},
+      "mainEntityOfPage": "https://zaehlora.de/waermebedarf-berechnen"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Zählora", "item": "https://zaehlora.de/"},
+        {"@type": "ListItem", "position": 2, "name": "Ratgeber", "item": "https://zaehlora.de/ratgeber"},
+        {"@type": "ListItem", "position": 3, "name": "Wärmebedarf berechnen"}
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<a class="sprung" href="#inhalt">Zum Inhalt springen</a>
+
+<header class="kopf">
+  <div class="bahn kopf-innen">
+    <a class="marke" href="/">
+      <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <path d="M4 23a12 12 0 0 1 24 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".28"/>
+        <path d="M7 23h4.5l2.5-6.5L18 27l2.5-4H25" fill="none" stroke="#C77A0E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Zählora
+    </a>
+    <nav aria-label="Bereiche">
+      <a href="/#funktionen">Funktionen</a>
+      <a href="/ratgeber">Ratgeber</a>
+      <a href="/#preise">Preise</a>
+      <a href="/entwicklung">Entwicklung</a>
+      <a href="/hilfe">Hilfe</a>
+    </nav>
+  </div>
+</header>
+
+<main id="inhalt" class="rechtstext artikel">
+  <div class="bahn">
+    <nav class="pfad" aria-label="Pfad">
+      <ol>
+        <li><a href="/">Zählora</a></li>
+        <li><a href="/ratgeber">Ratgeber</a></li>
+        <li aria-current="page">Wärmebedarf berechnen</li>
+      </ol>
+    </nav>
+    <h1 id="rechner">Wie viel Wärme braucht mein Haus?</h1>
+    <p class="blass">
+      Dein bisheriger Verbrauch an Gas oder Heizöl verrät es ziemlich genau.
+      Daraus folgt grob, wie groß eine Wärmepumpe sein muss und wie viel Strom
+      sie im Jahr ziehen würde.
+    </p>
+
+    <form class="rechner" id="wb-rechner" onsubmit="return false" aria-describedby="wb-ergebnis">
+      <fieldset class="umschalter">
+        <legend>Bisher heize ich mit</legend>
+        <div class="umschalter-wahl umschalter-drei">
+          <label><input type="radio" name="wb-art" value="gas" checked><span>Gas in m³</span></label>
+          <label><input type="radio" name="wb-art" value="gaskwh"><span>Gas in kWh</span></label>
+          <label><input type="radio" name="wb-art" value="oel"><span>Heizöl in Litern</span></label>
+        </div>
+      </fieldset>
+
+      <div class="rechner-felder">
+        <label>Verbrauch im Jahr
+          <span class="eingabe"><input id="wb-menge" inputmode="decimal" autocomplete="off" value="1.800"><span class="einheit" id="wb-einheit">m³</span></span>
+          <small>Schnitt aus mehreren Jahren</small>
+        </label>
+        <label id="wb-faktor-feld">Umrechnung
+          <span class="eingabe"><input id="wb-faktor" inputmode="decimal" autocomplete="off" value="10,5"><span class="einheit" id="wb-faktor-einheit">kWh/m³</span></span>
+          <small id="wb-faktor-hinweis">Zustandszahl × Brennwert</small>
+        </label>
+        <label>Die Heizung ist
+          <span class="eingabe"><select id="wb-kessel">
+            <option value="alt">ein älterer Kessel</option>
+            <option value="brennwert" selected>ein Brennwertkessel</option>
+          </select></span>
+        </label>
+        <label>Das Haus ist
+          <span class="eingabe"><select id="wb-haus">
+            <option value="unsaniert">unsaniert</option>
+            <option value="teilsaniert" selected>teilsaniert</option>
+            <option value="saniert">saniert</option>
+            <option value="neubau">ein Neubau</option>
+          </select></span>
+        </label>
+      </div>
+
+      <div class="rechner-ergebnis" id="wb-ergebnis" aria-live="polite"></div>
+    </form>
+    <script src="rechner.js"></script>
+    <script>
+    // Die Werte stammen aus dem Praxisleitfaden „Die Wärmepumpe im
+    // Einfamilienhaus“ des BürgerNetzwerkSolar Worms (März 2026, in Anlehnung
+    // an VDI 4645 und VDI 4650), Abschnitt 4. Genommen ist jeweils die Mitte
+    // der Spanne; die Spanne selbst steht in der Kachel, weil eine einzelne
+    // Zahl genauer aussähe, als die Methode ist.
+    window.HAUS = {
+      unsaniert:   { name: "Unsanierter Altbau", von: 1800, bis: 2200, mitte: 2000 },
+      teilsaniert: { name: "Teilsaniert",        von: 1500, bis: 1800, mitte: 1650 },
+      saniert:     { name: "Sanierter Altbau",   von: 1300, bis: 1600, mitte: 1450 },
+      neubau:      { name: "Neubau, KfW 40",     von: 900,  bis: 1200, mitte: 1050 }
+    };
+    // Nutzungsgrad: Wie viel von der Energie im Brennstoff als Wärme im Haus
+    // ankommt. Leitfaden: alter Standard- oder Niedertemperaturkessel 0,70 bis
+    // 0,80, Brennwertkessel 0,90 bis 0,95.
+    window.KESSEL = { alt: 0.75, brennwert: 0.92 };
+    // Die Jahresarbeitszahl ist der Schnitt der 61 Luft-Wärmepumpen im
+    // Feldtest „WP-QS im Bestand“ von Fraunhofer ISE, derselbe Wert wie auf
+    // jahresarbeitszahl-berechnen.html.
+    window.JAZ_LUFT = 3.4;
+    (function () {
+      var R = window.Rechner;
+      var ARTEN = {
+        gas:    { einheit: "m³", faktor: "10,5", faktorEinheit: "kWh/m³", hinweis: "Zustandszahl × Brennwert", stoff: "Gas" },
+        gaskwh: { einheit: "kWh", faktor: null, stoff: "Gas" },
+        oel:    { einheit: "Liter", faktor: "10", faktorEinheit: "kWh/Liter", hinweis: "Heizwert, meist 10", stoff: "Heizöl" }
+      };
+      var form = document.getElementById("wb-rechner");
+      function art() { return form.querySelector('input[name="wb-art"]:checked').value; }
+      function wert(id) { return R.zahl(document.getElementById(id).value); }
+      // Auf hundert gerundet: Die Rechnung ist eine Schätzung, und „17.388 kWh“
+      // täte so, als wüsste sie es auf die Kilowattstunde.
+      function hundert(n) { return Math.round(n / 100) * 100; }
+
+      function umstellen() {
+        var a = ARTEN[art()];
+        document.getElementById("wb-einheit").textContent = a.einheit;
+        document.getElementById("wb-faktor-feld").hidden = a.faktor === null;
+        if (a.faktor !== null) {
+          document.getElementById("wb-faktor").value = a.faktor;
+          document.getElementById("wb-faktor-einheit").textContent = a.faktorEinheit;
+          document.getElementById("wb-faktor-hinweis").textContent = a.hinweis;
+        }
+        rechne();
+      }
+
+      function rechne() {
+        var a = ARTEN[art()], aus = document.getElementById("wb-ergebnis");
+        var menge = wert("wb-menge"), faktor = a.faktor === null ? 1 : wert("wb-faktor");
+        if (!(menge > 0) || !(faktor > 0)) {
+          aus.innerHTML = R.hinweis("Trag deinen Verbrauch im Jahr ein.");
+          return;
+        }
+        var haus = window.HAUS[document.getElementById("wb-haus").value];
+        var brennstoff = menge * faktor;
+        var waerme = brennstoff * window.KESSEL[document.getElementById("wb-kessel").value];
+        aus.innerHTML = R.kacheln([
+          R.kachel("waerme", "Wärme im Jahr", "≈ " + R.format(hundert(waerme), 0) + " kWh",
+                   "aus " + R.format(hundert(brennstoff), 0) + " kWh " + a.stoff, "haupt"),
+          R.kachel("heizlast", "Heizlast grob", "≈ " + R.format(waerme / haus.mitte, 1) + " kW",
+                   "Spanne " + R.format(waerme / haus.bis, 1) + " bis " + R.format(waerme / haus.von, 1)),
+          R.kachel("strom", "Strom mit Wärmepumpe", "≈ " + R.format(hundert(waerme / window.JAZ_LUFT), 0) + " kWh",
+                   "bei Jahresarbeitszahl " + R.format(window.JAZ_LUFT, 1))
+        ]);
+      }
+
+      form.querySelectorAll('input[name="wb-art"]').forEach(function (r) { r.addEventListener("change", umstellen); });
+      form.addEventListener("input", function (e) { if (e.target.name !== "wb-art") rechne(); });
+      form.addEventListener("change", function (e) { if (e.target.tagName === "SELECT") rechne(); });
+      umstellen();
+    })();
+    </script>
+
+    <aside class="app-hinweis nicht-drucken" aria-labelledby="app-hinweis-titel">
+      <h2 id="app-hinweis-titel">Den Verbrauch vor dem Wechsel festhalten</h2>
+      <p>
+        Wer seinen Verbrauch an Gas oder Heizöl jetzt jeden Monat in Zählora einträgt, hat
+        später den Vergleich: was die alte Heizung im Winter gebraucht hat und
+        was die Wärmepumpe braucht.
+      </p>
+      <p class="app-hinweis-fuss">
+        <a class="knopf knopf-voll" href="https://apps.apple.com/de/app/id6802262743">Zählora im App Store</a>
+        <span>Laden kostet nichts. Zwei Zähler mit ihrer ganzen Geschichte sind dauerhaft frei, kein Abo.</span>
+      </p>
+    </aside>
+
+    <h2>So wird gerechnet</h2>
+    <div class="anschrift">
+      <strong>Wärme im Jahr = Verbrauch × Umrechnung × Nutzungsgrad</strong><br>
+      <strong>Heizlast = Wärme im Jahr ÷ Volllaststunden</strong><br>
+      <strong>Strom = Wärme im Jahr ÷ Jahresarbeitszahl</strong>
+    </div>
+    <p>
+      Der Nutzungsgrad sagt, wie viel von der Energie im Brennstoff als Wärme im
+      Haus ankommt. Ein älterer Kessel schafft 70 bis 80 Prozent, ein
+      Brennwertkessel 90 bis 95. Der Rechner nimmt 75 und 92 Prozent. Der Rest
+      ging bisher durch den Schornstein, und genau den muss die Wärmepumpe
+      nicht ersetzen.
+    </p>
+    <p>
+      Die Volllaststunden geben an, wie viele Stunden im Jahr die Heizung mit
+      voller Leistung laufen müsste, um die ganze Wärme zu liefern. In einem
+      schlecht gedämmten Haus sind es mehr, weil es auch an milden Tagen viel
+      Wärme verliert. So sieht die Tabelle aus, mit der der Rechner arbeitet:
+    </p>
+    <div class="werte-rahmen">
+    <table class="werte" id="volllast">
+      <thead>
+        <tr><th scope="col">Das Haus ist</th><th scope="col">Volllaststunden im Jahr</th><th scope="col">gerechnet mit</th></tr>
+      </thead>
+      <tbody>
+        <tr data-haus="unsaniert"><th scope="row">Unsanierter Altbau</th><td>1.800 bis 2.200</td><td>2.000</td></tr>
+        <tr data-haus="teilsaniert"><th scope="row">Teilsaniert</th><td>1.500 bis 1.800</td><td>1.650</td></tr>
+        <tr data-haus="saniert"><th scope="row">Sanierter Altbau</th><td>1.300 bis 1.600</td><td>1.450</td></tr>
+        <tr data-haus="neubau"><th scope="row">Neubau, KfW 40</th><td>900 bis 1.200</td><td>1.050</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="quelle">
+      Quelle: BürgerNetzwerkSolar Worms,
+      <a href="https://www.worms.de/neu-de-wAssets/docs/zukunft-gestalten/klima-umwelt/Energie/BuergerSolarBeratung/_BNS_Waermepumpe-Praxisleitfaden-im-Einfamilienhaus.pdf" rel="noopener">Die Wärmepumpe im Einfamilienhaus</a>,
+      März 2026, in Anlehnung an VDI 4645 und VDI 4650.
+    </p>
+    <p>
+      Für den Strom nimmt der Rechner eine Jahresarbeitszahl von 3,4. Das ist
+      der Schnitt von 61 Luft-Wärmepumpen in Bestandshäusern, die Fraunhofer
+      ISE im Feldtest „WP-QS im Bestand“ gemessen hat. Eine Erdwärmepumpe kam
+      dort im Schnitt auf 4,3 und braucht entsprechend weniger. Wie deine
+      eigene Anlage abschneidet, zeigt später der
+      <a href="/jahresarbeitszahl-berechnen">Vergleich der Jahresarbeitszahl</a>.
+    </p>
+
+    <h2>Wofür die Zahl taugt</h2>
+    <ul>
+      <li><strong>Als Kontrolle eines Angebots.</strong> Liegt die angebotene
+        Wärmepumpe weit über deiner Heizlast, frag nach dem Grund. Zu groß
+        bedeutet häufiges An und Aus, und das kostet Strom und Lebensdauer.</li>
+      <li><strong>Nicht als Auslegung.</strong> Für die Förderung und für die
+        Wahl des Geräts braucht es eine Heizlastberechnung nach DIN EN 12831
+        durch einen Fachbetrieb. Sie rechnet Raum für Raum.</li>
+      <li><strong>Mit dem Warmwasser.</strong> Hat der Kessel auch das
+        Warmwasser gemacht, steckt es schon im Verbrauch. Das passt, denn die
+        Wärmepumpe soll es ja übernehmen.</li>
+      <li><strong>Mit mehreren Jahren.</strong> Ein milder Winter allein macht
+        die Heizlast zu klein. Nimm den Schnitt aus zwei oder drei Jahren, beim
+        Öl am besten aus den Lieferungen geteilt durch die Jahre.</li>
+    </ul>
+
+    <h2>Gas in m³ oder in kWh?</h2>
+    <p>
+      Auf der Gasrechnung steht beides. Nimm die Kilowattstunden, wenn du sie
+      hast; dann fällt die Umrechnung weg. Liest du selbst am Zähler ab, sind es
+      Kubikmeter, und die Umrechnung steht auf der Rechnung als Zustandszahl
+      und Brennwert. Wie das genau geht, steht unter
+      <a href="/gas-in-kwh">Gas in kWh umrechnen</a>.
+    </p>
+
+    <aside class="weiterlesen nicht-drucken" aria-labelledby="weiterlesen-titel">
+      <h2 id="weiterlesen-titel">Weiterlesen</h2>
+      <div class="karten">
+      <a class="karte karte-verweis" href="/heizung-auf-waermepumpe-umstellen">
+        <span class="art">Ratgeber</span>
+        <b>Von Öl oder Gas zur Wärmepumpe</b>
+        <p>Was du vor dem Wechsel aufschreibst, was du im ersten Winter ansiehst und woran du merkst, ob es sich gelohnt hat.</p>
+        <span class="weiter">Zum Ratgeber ›</span>
+      </a>
+      <a class="karte karte-verweis" href="/jahresarbeitszahl-berechnen">
+        <span class="art">Vergleich</span>
+        <b>Wie gut arbeitet meine Wärmepumpe?</b>
+        <p>Strom und Wärme eines Jahres, und du siehst deine Jahresarbeitszahl neben 77 Anlagen, die Fraunhofer gemessen hat.</p>
+        <span class="weiter">Zum Vergleich ›</span>
+      </a>
+      <a class="karte karte-verweis" href="/gas-in-kwh">
+        <span class="art">Rechner</span>
+        <b>Gas von m³ in kWh</b>
+        <p>Mit Zustandszahl und Brennwert von deiner Rechnung, und warum „mal zehn“ danebenliegt.</p>
+        <span class="weiter">Zum Rechner ›</span>
+      </a>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="fuss">
+  <div class="bahn fuss-innen">
+    <span>Zählora — gebaut in Deutschland, von einem Menschen.</span>
+    <nav aria-label="Rechtliches">
+      <a href="/">Start</a>
+      <a href="/ratgeber">Ratgeber</a>
+      <a href="/entwicklung">Entwicklung</a>
+      <a href="/hilfe">Hilfe &amp; Kontakt</a>
+      <a href="/datenschutz">Datenschutz</a>
+      <a href="/impressum">Impressum</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>

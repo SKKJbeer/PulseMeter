@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Photovoltaik: Eigenverbrauch und Autarkie berechnen — Zählora</title>
+<meta name="robots" content="max-image-preview:large">
+<meta name="description" content="Aus drei Zählerständen: wie viel Solarstrom du selbst verbrauchst, welchen Teil deines Bedarfs das Dach deckt und was dir das im Jahr spart.">
+<meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F0E0C" media="(prefers-color-scheme: dark)">
+<!-- Safari auf dem iPhone blendet darüber eine Leiste mit „Öffnen" oder
+     „Laden" ein. Wer über eine Antwortseite kommt, steht damit einen Tipp
+     vor der App statt einen Umweg über den Store. -->
+<meta name="apple-itunes-app" content="app-id=6802262743">
+<link rel="canonical" href="https://zaehlora.de/photovoltaik-eigenverbrauch">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Zählora">
+<meta property="og:locale" content="de_DE">
+<meta property="og:title" content="Wie viel vom Solarstrom nutze ich selbst? — Zählora">
+<meta property="og:description" content="Eigenverbrauch, Autarkie und Ersparnis aus Erzeugung, Einspeisung und Bezug.">
+<meta property="og:url" content="https://zaehlora.de/photovoltaik-eigenverbrauch">
+<meta property="og:image" content="https://zaehlora.de/bilder/teilen.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Zählora: Jeden Monat wissen, was du verbrauchst. Daneben die Übersicht der App auf einem iPhone.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="stylesheet" href="stil.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "Wie viel vom Solarstrom nutze ich selbst?",
+      "description": "Eigenverbrauchsanteil, Autarkiegrad und Ersparnis einer Photovoltaikanlage aus den Ständen von Erzeugungszähler, Bezug und Einspeisung.",
+      "inLanguage": "de",
+      "dateModified": "2026-10-08",
+      "author": {"@type": "Organization", "name": "Zählora", "url": "https://zaehlora.de/"},
+      "publisher": {"@type": "Organization", "name": "Zählora", "url": "https://zaehlora.de/"},
+      "mainEntityOfPage": "https://zaehlora.de/photovoltaik-eigenverbrauch"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Zählora", "item": "https://zaehlora.de/"},
+        {"@type": "ListItem", "position": 2, "name": "Ratgeber", "item": "https://zaehlora.de/ratgeber"},
+        {"@type": "ListItem", "position": 3, "name": "Photovoltaik: Eigenverbrauch"}
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<a class="sprung" href="#inhalt">Zum Inhalt springen</a>
+
+<header class="kopf">
+  <div class="bahn kopf-innen">
+    <a class="marke" href="/">
+      <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <path d="M4 23a12 12 0 0 1 24 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".28"/>
+        <path d="M7 23h4.5l2.5-6.5L18 27l2.5-4H25" fill="none" stroke="#C77A0E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Zählora
+    </a>
+    <nav aria-label="Bereiche">
+      <a href="/#funktionen">Funktionen</a>
+      <a href="/ratgeber">Ratgeber</a>
+      <a href="/#preise">Preise</a>
+      <a href="/entwicklung">Entwicklung</a>
+      <a href="/hilfe">Hilfe</a>
+    </nav>
+  </div>
+</header>
+
+<main id="inhalt" class="rechtstext artikel">
+  <div class="bahn">
+    <nav class="pfad" aria-label="Pfad">
+      <ol>
+        <li><a href="/">Zählora</a></li>
+        <li><a href="/ratgeber">Ratgeber</a></li>
+        <li aria-current="page">Photovoltaik: Eigenverbrauch</li>
+      </ol>
+    </nav>
+    <h1 id="rechner">Wie viel vom Solarstrom nutze ich selbst?</h1>
+    <p class="blass">
+      Drei Zahlen aus demselben Zeitraum reichen: was die Anlage erzeugt hat,
+      was du eingespeist hast und was du aus dem Netz bezogen hast. Daraus
+      rechnet sich, wie viel vom Dach im Haus geblieben ist.
+    </p>
+
+    <form class="rechner" id="pv-rechner" onsubmit="return false" aria-describedby="pv-ergebnis">
+      <div class="rechner-felder">
+        <label>Erzeugt
+          <span class="eingabe"><input id="pv-erzeugt" inputmode="decimal" autocomplete="off" value="8.000"><span class="einheit">kWh</span></span>
+          <small>Wechselrichter oder Erzeugungszähler</small>
+        </label>
+        <label>Eingespeist
+          <span class="eingabe"><input id="pv-einspeisung" inputmode="decimal" autocomplete="off" value="5.200"><span class="einheit">kWh</span></span>
+          <small>2.8.0 am Stromzähler</small>
+        </label>
+        <label>Aus dem Netz bezogen
+          <span class="eingabe"><input id="pv-bezug" inputmode="decimal" autocomplete="off" value="2.900"><span class="einheit">kWh</span></span>
+          <small>1.8.0 am Stromzähler</small>
+        </label>
+        <label>Strompreis
+          <span class="eingabe"><input id="pv-preis" inputmode="decimal" autocomplete="off" value="28"><span class="einheit">ct/kWh</span></span>
+          <small>steht auf der Rechnung</small>
+        </label>
+        <label>Einspeisevergütung
+          <span class="eingabe"><input id="pv-verguetung" inputmode="decimal" autocomplete="off" value=""><span class="einheit">ct/kWh</span></span>
+          <small>kann leer bleiben</small>
+        </label>
+      </div>
+
+      <div class="rechner-ergebnis" id="pv-ergebnis" aria-live="polite"></div>
+    </form>
+    <script src="rechner.js"></script>
+    <script>
+    // Nur Rechnung, keine fremden Werte: Selbst verbraucht ist, was erzeugt
+    // und nicht eingespeist wurde. Verbraucht insgesamt ist das plus der
+    // Bezug aus dem Netz. Daraus die beiden Anteile, die man sonst
+    // verwechselt: Eigenverbrauch (vom Solarstrom) und Autarkie (vom Bedarf).
+    (function () {
+      var R = window.Rechner;
+      var form = document.getElementById("pv-rechner");
+      function wert(id) { return R.zahl(document.getElementById(id).value); }
+      function prozent(x) { return R.format(Math.round(x * 100), 0) + " %"; }
+      function balken(teil, ganz, a, b) {
+        var p = Math.max(0, Math.min(100, teil / ganz * 100));
+        return '<span class="fluss" aria-hidden="true"><span class="fluss-teil fluss-dach" style="width:' + p + '%"></span><span class="fluss-teil fluss-rest" style="width:' + (100 - p) + '%"></span></span>' +
+          '<span class="leiste-legende" aria-hidden="true"><span>' + a + '</span><span>' + b + '</span></span>';
+      }
+      function rechne() {
+        var aus = document.getElementById("pv-ergebnis");
+        var erzeugt = wert("pv-erzeugt"), ein = wert("pv-einspeisung"), bezug = wert("pv-bezug");
+        var preis = wert("pv-preis"), verguetung = wert("pv-verguetung");
+        if (!(erzeugt > 0) || !(ein >= 0) || !(bezug >= 0) || isNaN(ein) || isNaN(bezug)) {
+          aus.innerHTML = R.hinweis("Trag Erzeugung, Einspeisung und Bezug aus demselben Zeitraum ein.");
+          return;
+        }
+        if (ein > erzeugt) {
+          aus.innerHTML = R.hinweis("Eingespeist kann nicht mehr sein als erzeugt. Stammen beide Zahlen aus demselben Zeitraum?");
+          return;
+        }
+        var selbst = erzeugt - ein;
+        var gesamt = selbst + bezug;
+        var quote = selbst / erzeugt;
+        var autarkie = gesamt > 0 ? selbst / gesamt : 0;
+        var haupt = R.kachel("selbst", "Selbst verbraucht", R.format(selbst, 0) + " kWh", prozent(quote) + " deines Solarstroms", "haupt");
+        haupt = haupt.replace(/<\/div>$/, balken(selbst, erzeugt, "selbst verbraucht", "eingespeist") + "</div>");
+        var liste = [haupt,
+          R.kachel("autarkie", "Vom Dach gedeckt", prozent(autarkie), "von " + R.format(gesamt, 0) + " kWh Verbrauch")];
+        if (preis > 0) {
+          liste.push(R.kachel("gespart", "Nicht gekauft", R.format(selbst * preis / 100, 0) + " €", "bei " + R.format(preis, 0) + " ct je kWh", "gut"));
+        }
+        if (verguetung > 0) {
+          liste.push(R.kachel("verguetung", "Für die Einspeisung", R.format(ein * verguetung / 100, 0) + " €", "bei " + R.format(verguetung, 1) + " ct je kWh"));
+        }
+        aus.innerHTML = R.kacheln(liste);
+      }
+      form.addEventListener("input", rechne);
+      form.addEventListener("change", rechne);
+      rechne();
+    })();
+    </script>
+
+    <aside class="app-hinweis nicht-drucken" aria-labelledby="app-hinweis-titel">
+      <h2 id="app-hinweis-titel">Jeden Monat sehen, was das Dach bringt</h2>
+      <p>
+        Im Juni bleibt viel im Haus, im Dezember fast nichts. Wer Bezug und
+        Einspeisung jeden Monat abliest, sieht das. Zählora nimmt beide Stände
+        in einem Durchgang auf und legt jeden Monat neben denselben im Vorjahr.
+      </p>
+      <p class="app-hinweis-fuss">
+        <a class="knopf knopf-voll" href="https://apps.apple.com/de/app/id6802262743">Zählora im App Store</a>
+        <span>Laden kostet nichts. Einspeisung neben dem Bezug ist ein Kauf für 1,99 €, einmal, kein Abo.</span>
+      </p>
+    </aside>
+
+    <h2>Was die Zahlen bedeuten</h2>
+    <ul>
+      <li><strong>Selbst verbraucht</strong> ist Erzeugung minus Einspeisung.
+        Der Anteil daran heißt Eigenverbrauchsquote: Wie viel von deinem
+        Solarstrom ist im Haus geblieben?</li>
+      <li><strong>Vom Dach gedeckt</strong> ist der Selbstverbrauch geteilt
+        durch alles, was du verbraucht hast, also Selbstverbrauch plus Bezug.
+        Das ist der Autarkiegrad: Wie viel von deinem Bedarf kam vom eigenen
+        Dach?</li>
+      <li><strong>Nicht gekauft</strong> ist der Selbstverbrauch mal dein
+        Strompreis. So viel hättest du sonst beim Versorger bezahlt. Grundpreis
+        und die Kosten der Anlage sind darin nicht enthalten.</li>
+    </ul>
+    <p>
+      Die beiden Anteile werden oft verwechselt. Eine große Anlage kann viel
+      vom Bedarf decken und trotzdem den größten Teil ihres Stroms einspeisen.
+    </p>
+
+    <h2>Woher die drei Zahlen kommen</h2>
+    <ul>
+      <li><strong>Eingespeist und bezogen</strong> zeigt der Stromzähler: 2.8.0
+        ist die Einspeisung, 1.8.0 der Bezug. Welche Zahl wofür steht, erklärt
+        <a href="/zaehlerstand-ablesen">Zählerstand ablesen</a>.</li>
+      <li><strong>Erzeugt</strong> steht im Wechselrichter, in seiner App oder
+        auf einem eigenen Erzeugungszähler.</li>
+      <li><strong>Derselbe Zeitraum</strong> für alle drei. Am einfachsten liest
+        du alle drei am selben Tag ab, und ein Jahr später wieder.</li>
+    </ul>
+
+    <h2>Mit Speicher</h2>
+    <p>
+      Was in den Speicher geht und später im Haus verbraucht wird, zählt hier
+      als selbst verbraucht. Die Verluste beim Laden und Entladen stecken
+      ebenfalls darin, denn sie wurden erzeugt und nicht eingespeist.
+    </p>
+
+    <aside class="weiterlesen nicht-drucken" aria-labelledby="weiterlesen-titel">
+      <h2 id="weiterlesen-titel">Weiterlesen</h2>
+      <div class="karten">
+      <a class="karte karte-verweis" href="/zaehlerstand-ablesen">
+        <span class="art">Anleitung</span>
+        <b>Zählerstand ablesen</b>
+        <p>Welche Ziffern du bei Strom, Gas und Wasser aufschreibst, was 1.8.0 heißt und wo die Zählernummer steht.</p>
+        <span class="weiter">Zur Anleitung ›</span>
+      </a>
+      <a class="karte karte-verweis" href="/jahresarbeitszahl-berechnen">
+        <span class="art">Vergleich</span>
+        <b>Wie gut arbeitet meine Wärmepumpe?</b>
+        <p>Strom und Wärme eines Jahres, und du siehst deine Jahresarbeitszahl neben 77 Anlagen, die Fraunhofer gemessen hat.</p>
+        <span class="weiter">Zum Vergleich ›</span>
+      </a>
+      <a class="karte karte-verweis" href="/stromkosten-berechnen">
+        <span class="art">Rechner</span>
+        <b>Stromkosten und Abschlag</b>
+        <p>Was dein Strom im Jahr, im Monat und je Kilowattstunde kostet, und ob dein Abschlag dazu passt.</p>
+        <span class="weiter">Zum Rechner ›</span>
+      </a>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="fuss">
+  <div class="bahn fuss-innen">
+    <span>Zählora — gebaut in Deutschland, von einem Menschen.</span>
+    <nav aria-label="Rechtliches">
+      <a href="/">Start</a>
+      <a href="/ratgeber">Ratgeber</a>
+      <a href="/entwicklung">Entwicklung</a>
+      <a href="/hilfe">Hilfe &amp; Kontakt</a>
+      <a href="/datenschutz">Datenschutz</a>
+      <a href="/impressum">Impressum</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
