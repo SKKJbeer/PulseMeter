@@ -92,7 +92,16 @@ def kurz(antwort) -> str:
         fehler = antwort.json().get("errors", [])
         if fehler:
             e = fehler[0]
-            return f"{e.get('title', '')} — {e.get('detail', '')}"[:300]
+            text = f"{e.get('title', '')} — {e.get('detail', '')}"[:300]
+            # **Die eigentliche Ursache steht in `meta.associatedErrors`.** Bei
+            # 1.8 sagte Apple zum Kauf „Wärmepumpe" nur „please check
+            # associated errors" — und genau die schnitt diese Zeile ab.
+            mehr = (e.get("meta") or {}).get("associatedErrors") or {}
+            for pfad, liste in mehr.items():
+                for f in liste or []:
+                    text += (f" | {pfad}: {f.get('code', '')} "
+                             f"{f.get('title', '')} {f.get('detail', '')}")
+            return text
     except ValueError:
         pass
     return antwort.text[:300]
@@ -501,8 +510,10 @@ def einreichen(apple: Apple, app_id: str, fassung) -> int:
     if schon is not None:
         # **Kein Fehler.** Zweimal einreichen zu wollen ist der häufigste Fall,
         # wenn jemand nicht sicher ist, ob der erste Versuch durchging.
-        print(f"::notice::Steht schon bei der Prüfung — {feld(schon, 'state')}. "
-              f"Nichts zu tun.")
+        print(f"::notice::Steht schon bei der Prüfung — {feld(schon, 'state')}.")
+        # Ein Kauf, der beim ersten Versuch nicht mitging, lässt sich einzeln
+        # nachreichen, während die Fassung wartet (Kauf einer App im Laden).
+        kaeufe_einreichen(apple, app_id, wirklich=True)
         return 0
 
     if not bau_anhaengen(apple, app_id, fassung["id"]):

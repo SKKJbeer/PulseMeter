@@ -69,6 +69,23 @@ Prüfungen haben gleich einen echten Fehler gefunden.
 
 ---
 
+## 0.173.1 — 2026-11-15
+
+**Einreichen sagt, warum Apple einen Kauf ablehnt**
+
+Bei 1.8 nahm Apple den Kauf „Wärmepumpe" nicht an und sagte im Protokoll nur
+„please check associated errors". Den eigentlichen Grund schnitt
+`scripts/asc-einreichen.py` ab. Jetzt steht er da, bei 1.8:
+`IAP_SUBMISSION_NOT_ALLOWED_PROVIDER_MISSING_VALID_CONTRACT`, also fehlt die
+Vereinbarung für bezahlte Apps.
+
+Außerdem reicht `einreichen.yml` einen offenen Kauf auch nach, wenn die Fassung
+schon bei der Prüfung wartet. Vorher hieß es dort „Nichts zu tun".
+
+Nur Skripte, kein neuer Bau.
+
+---
+
 ## 0.173.0 — 2026-11-15
 
 **Alle Zähler als Tabelle, und die Tabelle kommt als Datei an**
