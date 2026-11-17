@@ -40,7 +40,8 @@ ENTITLEMENT = WURZEL / "Packages/PulseCore/Sources/PulseCore/Access/Entitlement.
 START = WURZEL / "docs/website/index.html"
 HILFE = WURZEL / "docs/website/hilfe.html"
 
-ZAHLWORT = {1: "ein", 2: "zwei", 3: "drei", 4: "vier", 5: "fünf", 6: "sechs"}
+ZAHLWORT = {1: "ein", 2: "zwei", 3: "drei", 4: "vier", 5: "fünf", 6: "sechs",
+            7: "sieben", 8: "acht"}
 
 
 def euro(wert: str) -> str:
@@ -98,12 +99,11 @@ einzeln_im_quelltext = re.findall(r"\.(\w+)", block.group(1)) if block else []
 # „alle fünf" und „8,95 €", und das ist richtig. **Beim Einreichen von 1.6 kommt der Eintrag
 # hier heraus**, und die Prüfung verlangt dann „alle sechs" und „10,94 €" auf beiden Seiten
 # (`docs/06-uebergabe.md`, Punkt „Kamera", und `CHANGELOG.md` 0.139.0).
-# Seit 0.162.0 wieder belegt: „Wärmepumpe" ist ein Kauf in der App, im Laden erst mit 1.9.
-# Beim Einreichen von 1.9 kommen beide Zeilen heraus (Eintrag hier, Bündelpreis darunter).
-NOCH_NICHT_IM_LADEN: set[str] = {"heatPump"}
-# Das Bündel kostet im Quelltext 7,99 € ab 1.9, im Laden bis dahin 4,99 €
-# (`scripts/asc-kaeufe.py`). Die Website nennt den Ladenpreis. `None` = wie im Quelltext.
-BUENDEL_IM_LADEN: str | None = "4.99"
+# Von 0.162.0 bis zur Freigabe von 1.8 (17. November) stand hier „heatPump“; seitdem leer.
+NOCH_NICHT_IM_LADEN: set[str] = set()
+# Für die Zeit, in der das Bündel im Laden anders kostet als im Quelltext
+# (zuletzt 4,99 statt 7,99 bis zur Freigabe von 1.8). `None` = wie im Quelltext.
+BUENDEL_IM_LADEN: str | None = None
 einzeln = [p for p in einzeln_im_quelltext if p not in NOCH_NICHT_IM_LADEN]
 
 grenze = re.search(r"freeMeterLimit = (\d+)", quelle)
@@ -114,6 +114,9 @@ if funde:
 
 erlaubt = {euro(standard.group(1)), euro(BUENDEL_IM_LADEN or preise["everything"]),
            euro(preise["reminders"])}
+# Jeder eigene Preis eines Stücks, das im Laden ist — seit 1.8 die
+# Wärmepumpe mit 4,99 €, der erste Einzelpreis über dem Standard.
+erlaubt |= {euro(preise[p]) for p in einzeln if p in preise}
 
 # Die Summe der Einzelkäufe. Sie steht auf der Preisseite als Argument für das
 # Bündel („einzeln wären es 8,95 €") und ist damit eine Behauptung über eine

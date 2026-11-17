@@ -89,14 +89,13 @@ KAEUFE = [
     {"kennung": "heatpump",          "referenz": "Wärmepumpe",
      "name": "Wärmepumpe",                  "text": "Heizungswechsel: vorher und nachher.",
      "preis": "4.99"},
-    # **Das Bündel bleibt hier bei 4,99 €, bis 1.9 im Laden ist.** Entschieden
-    # sind 7,99 € ab 1.9 (Gründer, 12. November). Ein Preis bei Apple gilt
-    # sofort: Stünde hier schon 7,99, zahlte jeder Käufer von heute drei Euro
-    # mehr für sechs Stücke statt sieben. Umstellen zusammen mit der Freigabe
-    # von 1.9, dann auch der Text auf „Alle sieben“.
+    # **7,99 € seit 1.8 mit dem Heizungswechsel im Laden ist** (17. November).
+    # Entschieden vom Gründer am 12. November. Bis dahin stand hier 4,99: Ein
+    # Preis bei Apple gilt sofort, und vorher hätte jeder Käufer drei Euro mehr
+    # für sechs Stücke statt sieben gezahlt.
     {"kennung": "everything",        "referenz": "Alles freischalten",
-     "name": "Alles freischalten",          "text": "Alle sechs Freischaltungen zusammen.",
-     "preis": "4.99"},
+     "name": "Alles freischalten",          "text": "Alle sieben Freischaltungen zusammen.",
+     "preis": "7.99"},
 ]
 
 offen: list[str] = []
