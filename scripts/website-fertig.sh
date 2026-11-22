@@ -39,6 +39,10 @@ cat > "$ZIEL/_headers" <<'ENDE'
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: SAMEORIGIN
 
+/rechner-waermebedarf*
+  ! X-Frame-Options
+  Content-Security-Policy: frame-ancestors *
+
 /bilder/*
   Cache-Control: public, max-age=604800, stale-while-revalidate=86400
 
