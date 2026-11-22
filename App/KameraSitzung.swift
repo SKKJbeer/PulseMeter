@@ -34,6 +34,10 @@ final class KameraSitzung: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
         var ansicht = CGSize(width: 1, height: 1)
         var format = MeterFormat(integerDigits: 6, fractionDigits: 0)
         var bereich: ClosedRange<Decimal>?
+        /// Die Bereiche der anderen Zählwerke desselben Zählers. Passt eine Zahl nicht in den eigenen
+        /// Bereich, aber in einen davon, wird sie trotzdem gemeldet: `KameraView` merkt sie für dieses
+        /// Zählwerk (`docs/kamera/stufe-2.md`).
+        var andereBereiche: [ClosedRange<Decimal>] = []
     }
 
     let session = AVCaptureSession()
@@ -154,7 +158,8 @@ final class KameraSitzung: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
                                            bufferWidth: Double(breite), bufferHeight: Double(hoehe))
         guard let fenster = GrayImage.window(around: rahmen, width: breite, height: hoehe, bytesPerRow: zeile,
                                              base: roh.assumingMemoryBound(to: UInt8.self)) else { return }
-        let ergebnis = Self.auswerten(fenster.image, rahmen: fenster.rect, format: v.format, bereich: v.bereich)
+        let ergebnis = Self.auswerten(fenster.image, rahmen: fenster.rect, format: v.format, bereich: v.bereich,
+                                      andereBereiche: v.andereBereiche)
         befund.withLock { $0 }?(ergebnis)
     }
 
@@ -166,17 +171,32 @@ final class KameraSitzung: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
     /// **Jeder für sich durch den Leser, dann verglichen.** Sagt nur einer etwas,
     /// gilt das. Sagen beide etwas Verschiedenes, gilt nichts: Dann ist sich die
     /// Kamera nicht einig, und eine falsche Zahl ist schlimmer als keine.
-    static func auswerten(_ bild: GrayImage, rahmen: PixelRect, format: MeterFormat, bereich: ClosedRange<Decimal>?) -> KameraBefund {
+    ///
+    /// **Andere Bereiche.** Findet sich im eigenen Bereich nichts, wird dieselbe Lesung gegen die
+    /// Bereiche der anderen Zählwerke geprüft, mit denselben Regeln. Gelesen wird dafür nicht noch
+    /// einmal; welches Zählwerk die Zahl bekommt, entscheidet ``RegisterAssignment``.
+    static func auswerten(_ bild: GrayImage, rahmen: PixelRect, format: MeterFormat, bereich: ClosedRange<Decimal>?,
+                          andereBereiche: [ClosedRange<Decimal>] = []) -> KameraBefund {
         let pixel = bild.resampled(rect: rahmen, outWidth: DigitNet.inputWidth, outHeight: DigitNet.inputHeight)
         let zeile = DigitEnsemble.bundled.read(pixels: pixel)
         let qualitaet = FrameQuality(pixels: pixel, width: DigitNet.inputWidth, height: DigitNet.inputHeight).hint
+        let texte = texterkennung(bild, rahmen: rahmen)
 
-        let ausNetz = MeterTextReader.propose(from: zeile.isEmpty ? [] : [zeile.recognized], format: format,
-                                              plausible: bereich, framed: true)
-        // Ohne `framed`: Apples Texterkennung liest im Rahmen auch das Typenschild, wenn er daneben liegt.
-        let ausTexterkennung = MeterTextReader.propose(from: texterkennung(bild, rahmen: rahmen), format: format,
-                                                       plausible: bereich)
-        return KameraBefund(ergebnis: Self.einigen(ausNetz, ausTexterkennung), gelesen: zeile.text, qualitaet: qualitaet)
+        func lesung(_ b: ClosedRange<Decimal>?) -> MeterTextReader.Outcome {
+            let ausNetz = MeterTextReader.propose(from: zeile.isEmpty ? [] : [zeile.recognized], format: format,
+                                                  plausible: b, framed: true)
+            // Ohne `framed`: Apples Texterkennung liest im Rahmen auch das Typenschild, wenn er daneben liegt.
+            let ausTexterkennung = MeterTextReader.propose(from: texte, format: format, plausible: b)
+            return Self.einigen(ausNetz, ausTexterkennung)
+        }
+        var ergebnis = lesung(bereich)
+        if case .none = ergebnis, bereich != nil {
+            for b in andereBereiche {
+                let anders = lesung(b)
+                if case .proposal = anders { ergebnis = anders; break }
+            }
+        }
+        return KameraBefund(ergebnis: ergebnis, gelesen: zeile.text, qualitaet: qualitaet)
     }
 
     /// Siehe ``auswerten(_:rahmen:format:bereich:)``.

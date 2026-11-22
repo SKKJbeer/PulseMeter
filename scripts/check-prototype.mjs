@@ -551,6 +551,48 @@ for (const scheme of ["light", "dark"]) {
     }
   }
 
+  // --- Kamera Stufe 2: Ein Display wechselt zwischen Einspeisung (2.8.0) und Bezug (1.8.0).
+  // Ein Kamerabesuch liest beide: Die Einspeisung wird gemerkt und steht im zweiten Schritt schon da.
+  {
+    await page.locator('[data-pane="home"]:visible').first().click();
+    await page.waitForTimeout(200);
+    await page.locator('[data-capture="strom"]').first().click();
+    await page.waitForTimeout(250);
+    await page.locator("#foto-open").click();
+    note(await page.locator('[data-foto="wechsel"]').count() === 1, "Am Zähler mit zwei Zahlen gibt es das wechselnde Display");
+    const soll = await page.evaluate(() => METERS.find(m => m.id === "strom").registers.map(r => wechselWert(r)));
+    await page.locator('[data-foto="wechsel"]').click();
+    await page.waitForFunction(() => document.getElementById("foto-nimm")
+      || /keinen Zählerstand/.test(document.getElementById("foto-result").innerText), null, { timeout: 90000 });
+    const ergebnis = (await page.locator("#foto-result").innerText()).trim();
+    note((await page.locator("#foto-nimm").count()) === 1 && /^Ich lese/.test(ergebnis),
+         `Vorgeschlagen wird der Bezug, auch wenn zuerst die Einspeisung dastand („${ergebnis.replace(/\s+/g, " ").slice(0, 70)}…“)`);
+    note(/Auch gelesen: „Einspeisung“/.test(ergebnis), "Die Einspeisung, die zuerst im Display stand, ist gemerkt");
+    if (await page.locator("#foto-nimm").count()) {
+      await page.locator("#foto-nimm").click();
+      await page.waitForTimeout(150);
+      note(await page.evaluate(() => currentValue()) === soll[0], `Übernommen ist der Bezug (${soll[0]})`);
+      await page.locator("#save").click();
+      await page.waitForTimeout(400);
+      const zwei = await page.evaluate(() => ({ i: capIndex, wert: currentValue(), hinweis: !document.getElementById("foto-hinweis").hidden }));
+      note(zwei.i === 1 && zwei.wert === soll[1] && zwei.hinweis,
+           `Im zweiten Schritt steht die Einspeisung schon da, als Kamerawert zum Bestätigen (${zwei.wert})`);
+    }
+    // „Zurück“ geht im zweiten Schritt erst zum ersten.
+    for (let n = 0; n < 3 && await page.locator("#sheet-capture.on").count(); n++) {
+      await page.locator("#cap-back").click();
+      await page.waitForTimeout(250);
+    }
+    // Aufräumen: Der Bezug ist gesichert, die Prüfungen danach rechnen mit dem alten Stand.
+    await page.evaluate((soll) => {
+      for (const r of METERS.find(m => m.id === "strom").registers) {
+        const l = r.readings[r.readings.length - 1];
+        if (soll.includes(l.value) && l.origin === "camera") r.readings.pop();
+      }
+      renderAll();
+    }, soll);
+  }
+
   // --- Kamera bei einem Zähler mit Vorgänger: Der Bereich entscheidet
   {
     await page.locator('[data-pane="home"]:visible').first().click();

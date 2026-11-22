@@ -3141,6 +3141,53 @@ final class LaunchTests: XCTestCase {
         }
     }
 
+    /// Kamera Stufe 2 (`docs/kamera/stufe-2.md`): Das Display wechselt zwischen zwei Zahlen, und
+    /// ein Kamerabesuch reicht für beide.
+    ///
+    /// Das gezeichnete Display zeigt erst die Zahl des **anderen** Zählwerks (sie passt nur in dessen Bereich),
+    /// dann die gefragte (`-pulse-kamera-wechsel`). Erwartet: Vorgeschlagen wird die gefragte, die
+    /// andere steht als „Auch gelesen“ auf der Karte, und im nächsten Schritt steht sie schon im
+    /// Ziffernblock, mit dem Hinweis „Von der Kamera gelesen“ und **nicht** gesichert.
+    func testOneCameraVisitReadsBothNumbersOfAnAlternatingDisplay() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-pulse-reset", "-pulse-pro", "-pulse-capture-pv", "-pulse-kamera-test", "-pulse-kamera-wechsel"]
+        app.launch()
+
+        let open = app.buttons["kamera-oeffnen"]
+        XCTAssertTrue(open.waitForExistence(timeout: 15), "Der Knopf „Mit Kamera ablesen“ fehlt im Ziffernblock")
+        open.tap()
+
+        let take = app.buttons["kamera-uebernehmen"]
+        guard wartetGeduldig(auf: take, sekunden: 240) else {
+            XCTFail("Kein Vorschlag nach 240 Sekunden. Zu sehen war: \(beschriftungen(in: app))")
+            return
+        }
+        let auch = app.descendants(matching: .any).matching(identifier: "kamera-gemerkt").firstMatch
+        var gemerktDa = false
+        geduldig { gemerktDa = auch.exists }
+        XCTAssertTrue(gemerktDa, "Die Zahl des anderen Zählwerks fehlt auf der Karte. Zu sehen war: \(beschriftungen(in: app))")
+        tippeRuhig(take)
+        let weg = NSPredicate(format: "exists == false")
+        geduldig { _ = XCTWaiter().wait(for: [XCTNSPredicateExpectation(predicate: weg, object: take)], timeout: 40) }
+
+        let hint = app.descendants(matching: .any).matching(identifier: "kamera-hinweis").firstMatch
+        guard wartetGeduldig(auf: hint, sekunden: 60) else {
+            XCTFail("Nach dem Übernehmen fehlt „Von der Kamera gelesen“. Zu sehen war: \(beschriftungen(in: app))")
+            return
+        }
+        let weiter = app.buttons["Weiter"]
+        XCTAssertTrue(weiter.waitForExistence(timeout: erscheint), "Kein „Weiter“ zum zweiten Schritt")
+        tippeRuhig(weiter)
+        let schritt = app.descendants(matching: .any).matching(identifier: "erfassung-schritt").firstMatch
+        let zwei = NSPredicate(format: "label CONTAINS 'Schritt 2'")
+        XCTAssertEqual(XCTWaiter().wait(for: [XCTNSPredicateExpectation(predicate: zwei, object: schritt)], timeout: erscheint),
+                       .completed, "Der zweite Schritt kam nicht. Zu sehen war: \(beschriftungen(in: app))")
+        // Im zweiten Schritt steht die gemerkte Zahl schon da, gekennzeichnet, zum Prüfen.
+        XCTAssertTrue(wartetGeduldig(auf: hint, sekunden: 30),
+                      "Im zweiten Schritt fehlt die gemerkte Zahl mit „Von der Kamera gelesen“. Zu sehen war: \(beschriftungen(in: app))")
+        XCTAssertTrue(open.exists, "Der Ziffernblock ist noch da, nichts ist von selbst gesichert")
+    }
+
     /// Wartet auf ein Element und lässt dabei **nur** eine Sorte Fehler durch: dass die App die
     /// Frage nach ihrer Oberfläche nicht rechtzeitig beantwortet hat.
     ///

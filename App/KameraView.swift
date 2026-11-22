@@ -22,13 +22,16 @@ struct KameraView: View {
     let format: MeterFormat
     let einheit: String
     let bereich: ClosedRange<Decimal>?
-    /// Die anderen Zählwerke desselben Zählers, mit ihrem Bereich (`nil` ohne letzten
-    /// Stand). Eine Zahl, die auch zu einem von ihnen passen kann, wird nicht
-    /// vorgeschlagen: Das Display wechselt zwischen 1.8.0 und 2.8.0 (`docs/kamera/stufe-2.md`).
-    var andere: [(name: String, bereich: ClosedRange<Decimal>?)] = []
+    /// Alle Zählwerke des Zählers und welches gefragt ist. Das Display wechselt zwischen
+    /// 1.8.0 und 2.8.0 (`docs/kamera/stufe-2.md`): Die Bereiche ordnen die Zahl dem richtigen
+    /// Zählwerk zu.
+    var zaehlwerke = KameraZaehlwerke.einzeln
     let farbe: Color
     /// Der gelesene Stand und ob nur die Stellen vor dem Komma gelesen wurden.
     let uebernehmen: (Decimal, Bool) -> Void
+    /// Zahlen anderer Zählwerke, die die Kamera nebenbei gelesen hat (Index → Wert). Beim
+    /// Schließen übergeben, ob mit oder ohne „Übernehmen“: So reicht ein Kamerabesuch für beide.
+    var gemerkt: ([Int: Decimal]) -> Void = { _ in }
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
@@ -73,8 +76,11 @@ struct KameraView: View {
             }
         }
         .statusBarHidden()
-        .onDisappear { modell.beenden() }
-        .task { await modell.vorbereiten(format: format, bereich: bereich, andere: andere) }
+        .onDisappear {
+            modell.beenden()
+            if !modell.gemerkt.isEmpty { gemerkt(modell.gemerkt) }
+        }
+        .task { await modell.vorbereiten(format: format, bereich: bereich, zaehlwerke: zaehlwerke) }
     }
 
     private func aufmachen(_ groesse: CGSize, _ rahmen: PixelRect) {
@@ -152,9 +158,7 @@ struct KameraView: View {
     /// Der Hinweis zum Bild: ein Satz, der sagt, was sich ändern lässt.
     private var hinweisText: String? {
         if modell.treffer != nil { return nil }
-        if let name = modell.vielleichtVon {
-            return "Diese Zahl kann auch \(name) sein. Warte, bis die andere Zahl kommt, oder tipp sie selbst ein."
-        }
+        if let hinweis = modell.zuordnungsHinweis { return hinweis }
         switch modell.qualitaet {
         case .tooDark: return modell.sitzung.hatTaschenlampe ? "Zu dunkel. Mit der Taschenlampe geht es besser." : "Zu dunkel."
         case .flat: return "Kaum Kontrast. Kipp das Telefon, bis die Spiegelung weg ist."
@@ -183,6 +187,15 @@ struct KameraView: View {
                             .foregroundStyle(PulseColor.inkSecondary)
                             .multilineTextAlignment(.center)
                     }
+                }
+                ForEach(modell.gemerkt.keys.sorted(), id: \.self) { i in
+                    // Was die Kamera für ein anderes Zählwerk schon gelesen hat. Es steht dort im
+                    // Ziffernblock zum Prüfen, gesichert wird es erst mit „Sichern“.
+                    Text("Auch gelesen: \(zaehlwerke.namen[i]) \(zahl(modell.gemerkt[i]!)) \(einheit)")
+                        .font(PulseText.caption)
+                        .foregroundStyle(PulseColor.inkSecondary)
+                        .multilineTextAlignment(.center)
+                        .accessibilityIdentifier("kamera-gemerkt")
                 }
                 .accessibilityElement(children: .combine)
                 Button {
@@ -245,6 +258,27 @@ struct KameraView: View {
     }
 }
 
+// MARK: - Zählwerke
+
+/// Was der Sucher über den Zähler wissen muss, um eine Zahl dem richtigen Zählwerk zuzuordnen.
+struct KameraZaehlwerke {
+    /// Name je Zählwerk für die Hinweise, etwa „„Einspeisung““.
+    var namen: [String]
+    /// Kennzahl je Zählwerk (``ObisCode/effectiveCodes(of:kind:)``), `nil` wo keine gilt.
+    var kennzahlen: [String?]
+    /// Bereich je Zählwerk, `nil` ohne letzten Stand.
+    var bereiche: [ClosedRange<Decimal>?]
+    /// Index des gefragten Zählwerks.
+    var gefragt: Int
+
+    static let einzeln = KameraZaehlwerke(namen: ["der Stand"], kennzahlen: [nil], bereiche: [nil], gefragt: 0)
+
+    /// Die Bereiche der anderen Zählwerke, soweit es sie gibt: In sie darf eine Zahl auch fallen.
+    var andereBereiche: [ClosedRange<Decimal>] {
+        bereiche.indices.filter { $0 != gefragt }.compactMap { bereiche[$0] }
+    }
+}
+
 // MARK: - Modell
 
 @MainActor
@@ -262,22 +296,24 @@ final class KameraModell {
     var lampeAn = false
     /// Nach einer Weile ohne Treffer sagt der Sucher, dass Tippen auch geht.
     var langeOhneTreffer = false
-    /// Name des anderen Zählwerks, zu dem die zuletzt gelesene Zahl auch passen kann.
-    var vielleichtVon: String?
+    /// Warum die zuletzt geeinigte Zahl nicht vorgeschlagen wurde, als Satz für den Sucher.
+    var zuordnungsHinweis: String?
+    /// Zahlen anderer Zählwerke, die die Kamera nebenbei gelesen hat (Index → Wert).
+    var gemerkt: [Int: Decimal] = [:]
     var drehung: CGFloat = 90
 
-    private var konsens = ReadingConsensus()
+    private var konsens = LabeledConsensus()
     private var format = MeterFormat(integerDigits: 6, fractionDigits: 0)
     private var bereich: ClosedRange<Decimal>?
-    private var andere: [(name: String, bereich: ClosedRange<Decimal>?)] = []
+    private var zaehlwerke = KameraZaehlwerke.einzeln
     private var gestartet = Date()
     private var vorfuehrung: Task<Void, Never>?
 
     func vorbereiten(format: MeterFormat, bereich: ClosedRange<Decimal>?,
-                     andere: [(name: String, bereich: ClosedRange<Decimal>?)] = []) async {
+                     zaehlwerke: KameraZaehlwerke = .einzeln) async {
         self.format = format
         self.bereich = bereich
-        self.andere = andere
+        self.zaehlwerke = zaehlwerke
         gestartet = Date()
         // Im Simulator gibt es keine Kamera. Mit `-pulse-kamera-test` läuft ein
         // gezeichnetes Bild durch dieselbe Auswertung, damit der Weg bis in den
@@ -302,9 +338,11 @@ final class KameraModell {
         }
         let formatKopie = self.format
         let bereichKopie = self.bereich
+        let andereKopie = zaehlwerke.andereBereiche
         sitzung.setzeVorgaben {
             $0.format = formatKopie
             $0.bereich = bereichKopie
+            $0.andereBereiche = andereKopie
         }
         zustand = .bereit
         sitzung.starten(drehung: drehung)
@@ -342,28 +380,55 @@ final class KameraModell {
 
     /// Ein Bild ist ausgewertet.
     func aufnehmen(_ befund: KameraBefund) {
-        guard treffer == nil else { return }
-        gelesen = befund.gelesen
-        qualitaet = befund.qualitaet
-        langeOhneTreffer = Date().timeIntervalSince(gestartet) > 12
-        if let einig = konsens.add(befund.ergebnis) {
-            // Einig, aber vielleicht über die Zahl eines anderen Zählwerks: dann nichts
-            // vorschlagen und von vorn zählen. Zeigt das Display gleich die andere Zahl,
-            // findet die Einigung sie von selbst.
-            if case .couldBeOther(let i) = RegisterChoice.check(einig.proposal.value, others: andere.map(\.bereich)) {
-                vielleichtVon = andere[i].name
-                konsens.reset()
-                return
-            }
-            vielleichtVon = nil
-            withAnimation(.snappy) { treffer = einig }
+        // Die Kennzahl liest die App noch nicht: Das Netz dafür las sie auf echten Fotos zu selten
+        // und manchmal falsch (`docs/kamera/stufe-2.md`, Messung). Die Bereiche ordnen zu.
+        guard let einig = konsens.add(befund.ergebnis, code: nil) else {
+            if treffer == nil { anzeigen(befund) }
+            return
+        }
+        let wert = einig.reading.proposal.value
+        let zuordnung = RegisterAssignment.decide(value: wert, code: einig.code, asked: zaehlwerke.gefragt,
+                                                  codes: zaehlwerke.kennzahlen, ranges: zaehlwerke.bereiche)
+        // Nach dem Treffer läuft die Kamera weiter, aber nur noch, um die Zahl eines anderen
+        // Zählwerks zu merken. Der Vorschlag selbst ändert sich nicht mehr.
+        if treffer != nil {
+            if case .remember(let i) = zuordnung { gemerkt[i] = wert; konsens.reset() }
+            return
+        }
+        anzeigen(befund)
+        switch zuordnung {
+        case .propose:
+            zuordnungsHinweis = nil
+            withAnimation(.snappy) { treffer = einig.reading }
             // Die Vorführung hört auf: Sie rechnet im Debug-Bau Sekunden je Bild und hielt die App
             // nach dem Treffer beschäftigt, auf dem langsameren iPad so lange, dass der Test
             // den Hinweis „Von der Kamera gelesen“ nicht rechtzeitig fand.
             vorfuehrung?.cancel()
             UINotificationFeedbackGenerator().notificationOccurred(.success)
             UIAccessibility.post(notification: .announcement, argument: "Zählerstand gefunden")
+        case .remember(let i):
+            // Die Zahl gehört sicher zu einem anderen Zählwerk: merken und auf die gefragte warten.
+            gemerkt[i] = wert
+            zuordnungsHinweis = "\(zaehlwerke.namen[i]) gelesen. Warte, bis \(zaehlwerke.namen[zaehlwerke.gefragt]) kommt."
+            konsens.reset()
+        case .foreign(let code):
+            zuordnungsHinweis = "Im Display steht gerade \(code). Warte, bis \(zaehlwerke.namen[zaehlwerke.gefragt]) kommt."
+            konsens.reset()
+        case .ambiguous(let i):
+            // Einig, aber vielleicht über die Zahl eines anderen Zählwerks: nichts vorschlagen und
+            // von vorn zählen. Zeigt das Display gleich die andere Zahl, findet die Einigung sie.
+            zuordnungsHinweis = "Diese Zahl kann auch \(zaehlwerke.namen[i]) sein. Warte, bis die andere Zahl kommt, oder tipp sie selbst ein."
+            konsens.reset()
+        case .mismatch:
+            zuordnungsHinweis = nil
+            konsens.reset()
         }
+    }
+
+    private func anzeigen(_ befund: KameraBefund) {
+        gelesen = befund.gelesen
+        qualitaet = befund.qualitaet
+        langeOhneTreffer = Date().timeIntervalSince(gestartet) > 12
     }
 
     /// Wie das Bild gedreht werden muss, damit es so steht, wie die Anzeige steht.
@@ -383,26 +448,23 @@ final class KameraModell {
     /// Nur mit `-pulse-kamera-test` (Debug): Der letzte Stand, gezeichnet, geht durch
     /// die Auswertung wie ein Kamerabild.
     private func starteVorfuehrung() {
-        let text: String
-        if let untere = bereich?.lowerBound {
-            let stellen = format.fractionDigits
-            let scaled = NSDecimalNumber(decimal: untere * pow(10, stellen)).intValue
-            var ziffern = String(scaled)
-            if stellen > 0 {
-                while ziffern.count <= stellen { ziffern = "0" + ziffern }
-                ziffern.insert(".", at: ziffern.index(ziffern.endIndex, offsetBy: -stellen))
-            }
-            text = ziffern
-        } else {
-            text = "1936"
-        }
-        let bild = DemoFrame.render(text)
-        let ganz = PixelRect(x: 0, y: 0, width: Double(bild.width), height: Double(bild.height))
         let formatKopie = self.format
         let bereichKopie = self.bereich
+        let andereKopie = zaehlwerke.andereBereiche
+        // Mit `-pulse-kamera-wechsel` zeigt das gezeichnete Display erst die Zahl des anderen
+        // Zählwerks, dann die gefragte, wie die moderne Messeinrichtung, die zwischen 1.8.0 und
+        // 2.8.0 wechselt. Beide gehen durch dieselbe Auswertung wie ein Kamerabild, mit dem
+        // eigenen Bereich und denen der anderen.
+        var folge: [(text: String, bilder: Int)] = []
+        if Startschalter.gesetzt("-pulse-kamera-wechsel"),
+           let anderes = zaehlwerke.bereiche.indices.first(where: { $0 != zaehlwerke.gefragt && zaehlwerke.bereiche[$0] != nil }) {
+            folge.append((Self.demoText(zaehlwerke.bereiche[anderes], format: formatKopie), 6))
+        }
+        folge.append((Self.demoText(bereich, format: formatKopie), .max))
+        let schritte = folge
         vorfuehrung?.cancel()
         vorfuehrung = Task { [weak self] in
-            // Gerechnet wird abseits des Hauptthreads und **einmal**: Das Bild ist immer
+            // Gerechnet wird abseits des Hauptthreads und **einmal** je Bild: Das Bild ist immer
             // dasselbe, also auch der Befund. Vorher lief das Netz für jedes Bild neu,
             // im Debug-Bau eine halbe Minute je Bild auf dem iPad. Mit vier gleichen statt drei
             // kam der Vorschlag erst nach knapp zwei Minuten, und der Hinweis nach dem Übernehmen
@@ -413,14 +475,34 @@ final class KameraModell {
             // mit hohem Vorrang ließ es im Simulator keine Luft für die Fragen des Oberflächentests
             // („Timed out while evaluating UI query“ auf dem iPad, PR #13). Es geht nur um diesen
             // Vorführweg; die echte Kamera wertet in `KameraSitzung` aus.
-            let befund = await Task.detached(priority: .utility) {
-                KameraSitzung.auswerten(bild, rahmen: ganz, format: formatKopie, bereich: bereichKopie)
-            }.value
-            while !Task.isCancelled {
-                self?.aufnehmen(befund)
-                try? await Task.sleep(for: .milliseconds(250))
+            for schritt in schritte {
+                let bild = DemoFrame.render(schritt.text)
+                let ganz = PixelRect(x: 0, y: 0, width: Double(bild.width), height: Double(bild.height))
+                let befund = await Task.detached(priority: .utility) {
+                    KameraSitzung.auswerten(bild, rahmen: ganz, format: formatKopie, bereich: bereichKopie,
+                                            andereBereiche: andereKopie)
+                }.value
+                var n = 0
+                while !Task.isCancelled, n < schritt.bilder {
+                    self?.aufnehmen(befund)
+                    n += 1
+                    try? await Task.sleep(for: .milliseconds(250))
+                }
             }
         }
+    }
+
+    /// Die Zahl für das gezeichnete Display: die untere Grenze des Bereichs, so wie der Zähler sie zeigt.
+    private static func demoText(_ bereich: ClosedRange<Decimal>?, format: MeterFormat) -> String {
+        guard let untere = bereich?.lowerBound else { return "1936" }
+        let stellen = format.fractionDigits
+        let scaled = NSDecimalNumber(decimal: untere * pow(10, stellen)).intValue
+        var ziffern = String(scaled)
+        if stellen > 0 {
+            while ziffern.count <= stellen { ziffern = "0" + ziffern }
+            ziffern.insert(".", at: ziffern.index(ziffern.endIndex, offsetBy: -stellen))
+        }
+        return ziffern
     }
 }
 

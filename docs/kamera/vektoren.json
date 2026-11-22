@@ -1398,5 +1398,531 @@
    ],
    "erwartet": null
   }
+ ],
+ "kennzahl": [
+  {
+   "text": "1.8.0",
+   "erwartet": "1.8.0"
+  },
+  {
+   "text": "180",
+   "erwartet": "1.8.0"
+  },
+  {
+   "text": "18.0",
+   "erwartet": "1.8.0"
+  },
+  {
+   "text": "1.80",
+   "erwartet": "1.8.0"
+  },
+  {
+   "text": "2.8.1",
+   "erwartet": "2.8.1"
+  },
+  {
+   "text": "282",
+   "erwartet": "2.8.2"
+  },
+  {
+   "text": "18.0.",
+   "erwartet": "1.8.0"
+  },
+  {
+   "text": "004",
+   "erwartet": null
+  },
+  {
+   "text": "1.8.3",
+   "erwartet": null
+  },
+  {
+   "text": "16.7.0",
+   "erwartet": null
+  },
+  {
+   "text": "1808",
+   "erwartet": null
+  },
+  {
+   "text": "18",
+   "erwartet": null
+  },
+  {
+   "text": "",
+   "erwartet": null
+  },
+  {
+   "text": "1..80",
+   "erwartet": null
+  },
+  {
+   "text": "8.0",
+   "erwartet": null
+  }
+ ],
+ "zuweisung": [
+  {
+   "name": "gefragte-kennzahl-ohne-bereich",
+   "wert": "5210",
+   "kennzahl": "1.8.0",
+   "gefragt": 0,
+   "kennzahlen": [
+    "1.8.0",
+    "2.8.0"
+   ],
+   "bereiche": [
+    null,
+    null
+   ],
+   "erwartet": "propose"
+  },
+  {
+   "name": "andere-kennzahl-merken",
+   "wert": "987.4",
+   "kennzahl": "2.8.0",
+   "gefragt": 0,
+   "kennzahlen": [
+    "1.8.0",
+    "2.8.0"
+   ],
+   "bereiche": [
+    null,
+    null
+   ],
+   "erwartet": "remember:1"
+  },
+  {
+   "name": "andere-kennzahl-im-bereich",
+   "wert": "987.4",
+   "kennzahl": "2.8.0",
+   "gefragt": 0,
+   "kennzahlen": [
+    "1.8.0",
+    "2.8.0"
+   ],
+   "bereiche": [
+    null,
+    [
+     "950",
+     "1100"
+    ]
+   ],
+   "erwartet": "remember:1"
+  },
+  {
+   "name": "andere-kennzahl-ausserhalb",
+   "wert": "5210",
+   "kennzahl": "2.8.0",
+   "gefragt": 0,
+   "kennzahlen": [
+    "1.8.0",
+    "2.8.0"
+   ],
+   "bereiche": [
+    null,
+    [
+     "950",
+     "1100"
+    ]
+   ],
+   "erwartet": "mismatch"
+  },
+  {
+   "name": "summe-am-zweitarif",
+   "wert": "8000",
+   "kennzahl": "1.8.0",
+   "gefragt": 0,
+   "kennzahlen": [
+    "1.8.1",
+    "1.8.2"
+   ],
+   "bereiche": [
+    null,
+    null
+   ],
+   "erwartet": "foreign:1.8.0"
+  },
+  {
+   "name": "hochtarif-im-nt-schritt",
+   "wert": "3000",
+   "kennzahl": "1.8.1",
+   "gefragt": 1,
+   "kennzahlen": [
+    "1.8.1",
+    "1.8.2"
+   ],
+   "bereiche": [
+    null,
+    null
+   ],
+   "erwartet": "remember:0"
+  },
+  {
+   "name": "ein-zaehlwerk-einspeisung",
+   "wert": "900",
+   "kennzahl": "2.8.0",
+   "gefragt": 0,
+   "kennzahlen": [
+    "1.8.0"
+   ],
+   "bereiche": [
+    null
+   ],
+   "erwartet": "foreign:2.8.0"
+  },
+  {
+   "name": "ein-zaehlwerk-tarif",
+   "wert": "4000",
+   "kennzahl": "1.8.1",
+   "gefragt": 0,
+   "kennzahlen": [
+    "1.8.0"
+   ],
+   "bereiche": [
+    null
+   ],
+   "erwartet": "propose"
+  },
+  {
+   "name": "ohne-kennzahl-weit-weg",
+   "wert": "12345",
+   "kennzahl": null,
+   "gefragt": 0,
+   "kennzahlen": [
+    "1.8.0",
+    "2.8.0"
+   ],
+   "bereiche": [
+    null,
+    [
+     "980",
+     "1100"
+    ]
+   ],
+   "erwartet": "propose"
+  },
+  {
+   "name": "ohne-kennzahl-im-anderen-bereich",
+   "wert": "1000",
+   "kennzahl": null,
+   "gefragt": 0,
+   "kennzahlen": [
+    "1.8.0",
+    "2.8.0"
+   ],
+   "bereiche": [
+    null,
+    [
+     "980",
+     "1100"
+    ]
+   ],
+   "erwartet": "ambiguous:1"
+  },
+  {
+   "name": "ohne-kennzahl-zweiter-schritt",
+   "wert": "1000",
+   "kennzahl": null,
+   "gefragt": 1,
+   "kennzahlen": [
+    "1.8.0",
+    "2.8.0"
+   ],
+   "bereiche": [
+    [
+     "980",
+     "1100"
+    ],
+    null
+   ],
+   "erwartet": "ambiguous:0"
+  },
+  {
+   "name": "ohne-kennzahl-ohne-bereich",
+   "wert": "1000",
+   "kennzahl": null,
+   "gefragt": 0,
+   "kennzahlen": [
+    "1.8.0",
+    "2.8.0"
+   ],
+   "bereiche": [
+    null,
+    null
+   ],
+   "erwartet": "ambiguous:1"
+  },
+  {
+   "name": "zaehler-ohne-kennzahlen",
+   "wert": "1000",
+   "kennzahl": "1.8.0",
+   "gefragt": 0,
+   "kennzahlen": [
+    null
+   ],
+   "bereiche": [
+    null
+   ],
+   "erwartet": "propose"
+  },
+  {
+   "name": "ohne-kennzahl-andere-zahl-gemerkt",
+   "wert": "7172",
+   "kennzahl": null,
+   "gefragt": 0,
+   "kennzahlen": [
+    "1.8.0",
+    "2.8.0"
+   ],
+   "bereiche": [
+    [
+     "41200",
+     "41400"
+    ],
+    [
+     "7150",
+     "7250"
+    ]
+   ],
+   "erwartet": "remember:1"
+  },
+  {
+   "name": "ohne-kennzahl-eigene-zahl",
+   "wert": "41233",
+   "kennzahl": null,
+   "gefragt": 0,
+   "kennzahlen": [
+    "1.8.0",
+    "2.8.0"
+   ],
+   "bereiche": [
+    [
+     "41200",
+     "41400"
+    ],
+    [
+     "7150",
+     "7250"
+    ]
+   ],
+   "erwartet": "propose"
+  },
+  {
+   "name": "ohne-kennzahl-bezug-gemerkt-im-schritt-einspeisung",
+   "wert": "41233",
+   "kennzahl": null,
+   "gefragt": 1,
+   "kennzahlen": [
+    "1.8.0",
+    "2.8.0"
+   ],
+   "bereiche": [
+    [
+     "41200",
+     "41400"
+    ],
+    [
+     "7150",
+     "7250"
+    ]
+   ],
+   "erwartet": "remember:0"
+  },
+  {
+   "name": "passt-zu-keinem-bereich",
+   "wert": "123456",
+   "kennzahl": null,
+   "gefragt": 0,
+   "kennzahlen": [
+    "1.8.0",
+    "2.8.0"
+   ],
+   "bereiche": [
+    [
+     "41200",
+     "41400"
+    ],
+    [
+     "7150",
+     "7250"
+    ]
+   ],
+   "erwartet": "mismatch"
+  },
+  {
+   "name": "anderes-ohne-bereich-merkt-nichts",
+   "wert": "7172",
+   "kennzahl": null,
+   "gefragt": 0,
+   "kennzahlen": [
+    "1.8.0",
+    "2.8.0"
+   ],
+   "bereiche": [
+    [
+     "41200",
+     "41400"
+    ],
+    null
+   ],
+   "erwartet": "mismatch"
+  },
+  {
+   "name": "passt-zu-zwei-anderen",
+   "wert": "7172",
+   "kennzahl": null,
+   "gefragt": 0,
+   "kennzahlen": [
+    "1.8.1",
+    "1.8.2",
+    "2.8.0"
+   ],
+   "bereiche": [
+    [
+     "41200",
+     "41400"
+    ],
+    [
+     "7000",
+     "7300"
+    ],
+    [
+     "7100",
+     "7200"
+    ]
+   ],
+   "erwartet": "mismatch"
+  },
+  {
+   "name": "kennzahl-hebelt-eigenen-bereich-nicht-aus",
+   "wert": "7172",
+   "kennzahl": "1.8.0",
+   "gefragt": 0,
+   "kennzahlen": [
+    "1.8.0",
+    "2.8.0"
+   ],
+   "bereiche": [
+    [
+     "41200",
+     "41400"
+    ],
+    null
+   ],
+   "erwartet": "mismatch"
+  }
+ ],
+ "kennzahl_einigung": [
+  {
+   "name": "drei-ohne-widerspruch",
+   "folge": [
+    [
+     "5",
+     "1.8.0"
+    ],
+    [
+     "5",
+     null
+    ],
+    [
+     "5",
+     "1.8.0"
+    ],
+    [
+     "5",
+     "1.8.0"
+    ]
+   ],
+   "erwartet": "5|1.8.0"
+  },
+  {
+   "name": "zwei-reichen-nicht",
+   "folge": [
+    [
+     "5",
+     "1.8.0"
+    ],
+    [
+     "5",
+     null
+    ],
+    [
+     "5",
+     null
+    ],
+    [
+     "5",
+     "1.8.0"
+    ]
+   ],
+   "erwartet": "5|"
+  },
+  {
+   "name": "widerspruch",
+   "folge": [
+    [
+     "5",
+     "1.8.0"
+    ],
+    [
+     "5",
+     "2.8.0"
+    ],
+    [
+     "5",
+     "1.8.0"
+    ],
+    [
+     "5",
+     "1.8.0"
+    ]
+   ],
+   "erwartet": "5|"
+  },
+  {
+   "name": "andere-im-bild-ohne-zahl",
+   "folge": [
+    [
+     null,
+     "2.8.0"
+    ],
+    [
+     "5",
+     "1.8.0"
+    ],
+    [
+     "5",
+     "1.8.0"
+    ],
+    [
+     "5",
+     "1.8.0"
+    ],
+    [
+     "5",
+     "1.8.0"
+    ]
+   ],
+   "erwartet": "5|"
+  },
+  {
+   "name": "noch-keine-einigung",
+   "folge": [
+    [
+     "5",
+     "1.8.0"
+    ],
+    [
+     "5",
+     "1.8.0"
+    ],
+    [
+     "5",
+     "1.8.0"
+    ]
+   ],
+   "erwartet": null
+  }
  ]
 }

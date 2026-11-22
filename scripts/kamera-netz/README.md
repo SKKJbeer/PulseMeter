@@ -38,3 +38,21 @@ Leser), `ziffernnetz-N.pt` sind die Stände zum Weitertrainieren, `ziffernnetz-N
   eine Seite abweicht.
 - **Neues Training ab dem alten Stand,** wenn der Generator sich ändert (`train.py` lädt den Stand auch aus
   der Fassung mit zwei einfachen Faltungen), sonst kostet jede Runde eine Stunde mehr.
+
+## Kennzahl-Netz (Versuch vom 22.11.2026, nicht in der App)
+
+Für Kamera Stufe 2 (`docs/kamera/stufe-2.md`) ein eigenes Netz für die kleine Kennzahl (1.8.0,
+2.8.0 …) links neben oder über der Zahl. Gleiche Bauart wie das Ziffernnetz, von ihm aus
+weitertrainiert.
+
+```bash
+python kennzahl_gen.py <n> <ausgabe.npz> <seed>   # Ausschnitte wie in der App, gezeichnet
+ECHT=0 python train.py <epochen> ziffernnetz-1.pt <daten.npz> 1e-3 <netz.pt> <val.npz>
+TEIL=b python kennzahl.py <netz.pt>[,<netz2.pt>] 30   # Messung an den echten Fotos
+```
+
+`kennzahl_synth.py` zeichnet die Ausschnitte (Lage des Fensters: `FH`, `FX`, `FY`), mit Störern, die
+an derselben Stelle stehen können (Anzeigeindex, 14-Segment-Wörter wie „E.T2“, Einheiten). Das
+Ergebnis reichte nicht: 4 falsche Kennzahlen in 120 Versuchen, oder mit zwei Netzen, die sich einig
+sein müssen, 1 Treffer in 120. Die Gewichte sind deshalb nicht eingecheckt. Was fehlt, sind echte
+Fotos mit Kennzahl zum Messen; vier reichen nicht.

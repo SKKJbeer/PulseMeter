@@ -68,7 +68,14 @@
     0.5724,
     0.1938
    ],
-   "anzeige": "000000"
+   "anzeige": "000000",
+   "kennzahl": [
+    0.331,
+    0.1681,
+    0.377,
+    0.1938
+   ],
+   "kennzahl_text": "1.8.0"
   },
   {
    "datei": "fotos/06-logarex-leer.jpg",
@@ -184,7 +191,14 @@
     0.5776,
     0.1951
    ],
-   "anzeige": "002426"
+   "anzeige": "002426",
+   "kennzahl": [
+    0.3639,
+    0.1795,
+    0.408,
+    0.1933
+   ],
+   "kennzahl_text": "1.8.0"
   },
   {
    "datei": "fotos/27-meterus.jpg",
@@ -259,7 +273,14 @@
     0.4141,
     0.2328
    ],
-   "anzeige": "0014426"
+   "anzeige": "0014426",
+   "kennzahl": [
+    0.2283,
+    0.1768,
+    0.3084,
+    0.1999
+   ],
+   "kennzahl_text": "1.8.0"
   },
   {
    "datei": "fotos/32-gruenes-display.jpg",

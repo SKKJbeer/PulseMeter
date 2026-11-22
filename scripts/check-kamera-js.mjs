@@ -60,6 +60,34 @@ console.log(`Kamera-Leser im Klick-Dummy: ${faelle.length} Fälle, identisch zu 
   console.log(`Zuordnung im Klick-Dummy: ${faelle.length} Fälle, identisch zu Swift.`);
 }
 
+// Kamera Stufe 2: Kennzahl, Zuordnung und Einigung mit Kennzahl, dieselben Fälle wie in Swift.
+{
+  const a = html.indexOf("/* RegisterChoice:start"), b = html.indexOf("/* RegisterChoice:end */");
+  const c = html.indexOf("/* ReadingConsensus:start"), d = html.indexOf("/* ReadingConsensus:end */");
+  const e = html.indexOf("/* RegisterAssignment:start"), f = html.indexOf("/* RegisterAssignment:end */");
+  if (e < 0 || f < 0) { console.error("✗ Marken für RegisterAssignment fehlen im Klick-Dummy"); process.exit(1); }
+  const M = new Function(html.slice(a, b) + "\n" + html.slice(c, d) + "\n" + html.slice(e, f)
+    + "\nreturn { ObisCode, RegisterAssignment, LabeledConsensus };")();
+  const vek = JSON.parse(readFileSync(join(wurzel, "docs/kamera/vektoren.json"), "utf8"));
+  let schlecht = 0;
+  for (const k of vek.kennzahl) {
+    const ist = M.ObisCode.read(k.text);
+    if (ist !== k.erwartet) { schlecht++; console.error(`✗ Kennzahl „${k.text}“: erwartet ${k.erwartet}, bekommen ${ist}`); }
+  }
+  for (const z of vek.zuweisung) {
+    const ist = M.RegisterAssignment.decide(Number(z.wert), z.kennzahl, z.gefragt, z.kennzahlen, z.bereiche.map(r => r && r.map(Number)));
+    if (ist !== z.erwartet) { schlecht++; console.error(`✗ Zuweisung ${z.name}: erwartet ${z.erwartet}, bekommen ${ist}`); }
+  }
+  for (const g of vek.kennzahl_einigung) {
+    const k = M.LabeledConsensus.neu(); let last = null;
+    for (const [w, code] of g.folge) last = k.add(w === null ? { none: "noCandidate" } : { proposal: { value: Number(w) } }, code);
+    const ist = last ? `${last.reading.proposal.value}|${last.code || ""}` : null;
+    if (ist !== g.erwartet) { schlecht++; console.error(`✗ Einigung mit Kennzahl ${g.name}: erwartet ${g.erwartet}, bekommen ${ist}`); }
+  }
+  if (schlecht) process.exit(1);
+  console.log(`Kennzahl im Klick-Dummy: ${vek.kennzahl.length + vek.zuweisung.length + vek.kennzahl_einigung.length} Fälle, identisch zu Swift.`);
+}
+
 // Ziffernnetz: dieselbe Rechnung wie in Swift und Python, an denselben Referenzwerten.
 const blockVon = (marke) => {
   const a = html.indexOf(`/* ${marke}:start`), b = html.indexOf(`/* ${marke}:end */`);
