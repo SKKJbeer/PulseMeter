@@ -9,7 +9,7 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
-## 0.174.0 — 2026-11-15
+## 0.174.0 — 2026-11-22
 
 **Testkonzept: Bedienung bei Fehlern, iCloud-Wache, ehrliche Abdeckung**
 
@@ -66,6 +66,25 @@ Prüfungen haben gleich einen echten Fehler gefunden.
   main, montags, von Hand und im Bau für TestFlight. Sie hat beim ersten Lauf nach 1.9 gemeldet,
   dass `HeatingChangeRecord` und `MeteringPointRecord.measuresHeatPump` noch nicht in der
   Produktion stehen. Am 15. November standen beide dort; `cloudkit/produktion.ckdb` ist nachgezogen.
+
+---
+
+## 0.173.2 — 2026-11-17
+
+**1.8 ist im Laden, das Bündel kostet jetzt 7,99 €**
+
+Seit 1.8 gibt es den Kauf „Wärmepumpe“ (4,99 €) im Laden. „Alles freischalten“
+umfasst damit sieben Freischaltungen und kostet 7,99 €, so wie der Gründer es
+am 12. November entschieden hat. Einzeln kämen 15,93 € zusammen.
+
+- `scripts/asc-kaeufe.py`: Bündel 7,99 €, Text „Alle sieben Freischaltungen
+  zusammen.“
+- Website (Start und Hilfe): neue Kachel „Wärmepumpe“, Bündel 7,99 €.
+- `scripts/check-versprechen.py`: keine Ausnahme mehr für den Laden. Neu ist
+  die Prüfung, dass jeder eigene Einzelpreis auf der Website stimmt (4,99 € für
+  die Wärmepumpe). Kennt jetzt „sieben“ und „acht“.
+
+Die App selbst ändert sich nicht, deshalb gibt es keinen neuen Bau.
 
 ---
 

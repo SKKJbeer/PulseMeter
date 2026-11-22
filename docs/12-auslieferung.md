@@ -510,6 +510,22 @@ Ablauf die Veröffentlichung ausdrücklich an — und dafür fehlte
 eigene Seite sagte „Bald im App Store". Behoben in 0.106.6, samt einer Prüfung
 am Ende des Ablaufs, die die **Seite abruft** statt den Push zu zählen.
 
+### Die zwölfte, 1.8 — mit Heizungswechsel und Export, im Laden seit 17. November
+
+**„Einfacher“, Heizungswechsel (früher als 1.9 geplant) und „Alle Zähler als
+Tabelle“** in einer Fassung, so vom Gründer am 15. November auf der Karte
+gewählt. Bau 54 (0.173.0 mit der Doku aus #26), eingereicht am 15. November um
+19:35 UTC. Am 17. November um 00:03 UTC meldete `itunes.apple.com/lookup` 1.8.
+
+**Zwei Vereinbarungen, nicht eine.** Der erste Bau scheiterte mit 403
+`REQUIRED_AGREEMENTS_MISSING_OR_EXPIRED`. Nachdem der Gründer zugestimmt hatte,
+lief der Bau durch, aber der neue Kauf „Wärmepumpe“ ging nicht mit:
+`STATE_ERROR.IAP_SUBMISSION_NOT_ALLOWED_PROVIDER_MISSING_VALID_CONTRACT`.
+Dahinter steckte die Vereinbarung für bezahlte Apps unter Business. Erst als er
+die am 16. November auch angenommen hatte, ließ sich der Kauf nachreichen,
+während die Fassung wartete (`asc-einreichen.py`, seit 0.173.1). Mit der
+Freigabe kostet das Bündel 7,99 € für alle sieben Freischaltungen (0.173.2).
+
 ### Die elfte, 1.7 — eingereicht und freigegeben am 12. November
 
 **Neuer Preis ab einem Tag, Gas und Heizöl in kWh**, aus der Mail eines
