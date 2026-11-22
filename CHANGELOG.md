@@ -51,6 +51,9 @@ Gemeinden zeigen unseren Rechner auf ihrer eigenen Website.
   am Rechner: Der Rahmen passt sich an, die Seite wird nicht breiter.
 
 _Website-Prüfung (`check-website.mjs`) vollständig grün. App unverändert._
+
+---
+
 ## 0.174.0 — 2026-11-22
 
 **Testkonzept: Bedienung bei Fehlern, iCloud-Wache, ehrliche Abdeckung**
