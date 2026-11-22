@@ -192,6 +192,12 @@ jobs:
           python3 scripts/check-strings.py
           scripts/check-sicherheit.sh
 
+      # Ein TestFlight-Bau spricht mit der Produktion von CloudKit. Fehlt dort
+      # ein Feld des Modells, lädt die App diese Datensätze nie hoch, und
+      # niemand merkt es — so lief der Abgleich von 1.0 bis 1.6 (0.149.0).
+      - name: Kennt die Produktion von CloudKit jedes Feld?
+        run: python3 scripts/check-cloudkit-schema.py --auslieferung
+
       # Der Rechenkern zuerst. Ein Upload eines Standes, dessen Rechnung falsch
       # ist, kostet Tester-Vertrauen und eine Woche.
       - name: PulseCore
