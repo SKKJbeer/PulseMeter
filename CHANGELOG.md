@@ -33,6 +33,14 @@ Schritt noch einmal mit der Kamera holen oder eintippen.
   gezeichnetes Display, das zwischen Einspeisung und Bezug wechselt, gelesen vom echten Ziffernnetz.
 - Oberflächentest `testOneCameraVisitReadsBothNumbersOfAnAlternatingDisplay`.
 
+### Behoben
+- **Die Kamera schlug im ersten Schritt eines Zählers mit zwei Zahlen nie etwas vor** (seit 1.7). Der
+  Ziffernblock lud nur die Ablesungen des gefragten Zählers. Die anderen hatten deshalb keinen Bereich,
+  und ein Zähler ohne Bereich schließt nichts aus: „Diese Zahl kann auch „Einspeisung“ sein“, bei
+  jedem Bild. Im zweiten Schritt ging es, weil die Ablesungen des ersten da schon geladen waren. Der
+  Klick-Dummy rechnete richtig, deshalb fiel es dort nicht auf. Gefunden hat es der neue
+  Oberflächentest. Jetzt lädt `CaptureView` die Ablesungen aller Zähler des Zählers.
+
 ### Gemessen und zurückgestellt
 - **Die Kennzahl (1.8.0, 2.8.0) liest die App noch nicht.** Ein eigenes Netz dafür, in zwei Runden
   trainiert, las sie auf echten Fotos entweder zu selten (1 von 120) oder manchmal falsch (4 von

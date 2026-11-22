@@ -541,8 +541,13 @@ struct CaptureView: View {
         // gesamte Ablesehistorie aus dem Speicher — bei drei Jahren täglicher
         // Werte über tausend Sätze, zwischen Tastendruck und Ziffer auf dem
         // Schirm. Genau das fühlt sich an wie ein Zähler, der hakt.
-        if history[register.id] == nil {
-            history[register.id] = (try? repository.readings(for: register.id)) ?? []
+        //
+        // Für **alle** Zählwerke des Zählers, nicht nur das gefragte: Die Kamera braucht die Bereiche
+        // der anderen, um eine Zahl zuzuordnen (`zaehlwerkeFuerKamera`). Bis 0.178.0 fehlten sie, ein
+        // anderes Zählwerk ohne Bereich schließt nichts aus, und so schlug die Kamera an einem Zähler
+        // mit Bezug und Einspeisung nie etwas vor.
+        for r in registers where history[r.id] == nil {
+            history[r.id] = (try? repository.readings(for: r.id)) ?? []
         }
     }
 
