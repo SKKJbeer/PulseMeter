@@ -91,5 +91,53 @@ extension PulseStore {
         ]
         return zeilen.joined(separator: "\n") + "\n"
     }
+
+    /// Was am Modell gegen die Regeln von CloudKit verstößt — leer, wenn nichts.
+    ///
+    /// **Warum es das gibt.** Die drei Regeln stehen seit jeher oben in
+    /// `Records.swift`, aber nur als Kommentar. Bricht ein neues Feld eine
+    /// davon, merkt es niemand in der CI: Dort läuft der Speicher ohne iCloud.
+    /// Auf dem Gerät öffnet SwiftData den Speicher dann ohne Abgleich oder gar
+    /// nicht, und der Nutzer sieht nur, dass das iPad leer bleibt — genau das
+    /// Bild, das der Abgleich von 1.0 bis 1.6 abgegeben hat (0.149.0).
+    ///
+    /// Die Regeln sind die von `NSPersistentCloudKitContainer`:
+    /// 1. Jede Eigenschaft ist optional oder hat einen Vorgabewert.
+    /// 2. Keine Eindeutigkeit über den Speicher (`@Attribute(.unique)`).
+    /// 3. Jede Beziehung ist optional, hat eine Umkehrung und löscht nicht
+    ///    mit „verweigern“.
+    public static func cloudKitRegelVerstoesse(in modell: NSManagedObjectModel) -> [String] {
+        var verstoesse: [String] = []
+        for entitaet in modell.entities.sorted(by: { ($0.name ?? "") < ($1.name ?? "") }) {
+            let name = entitaet.name ?? "?"
+            if !entitaet.uniquenessConstraints.isEmpty {
+                verstoesse.append("\(name): eindeutige Felder (@Attribute(.unique)) kennt CloudKit nicht")
+            }
+            for (feld, attribut) in entitaet.attributesByName.sorted(by: { $0.key < $1.key })
+            where !attribut.isOptional && attribut.defaultValue == nil {
+                verstoesse.append("\(name).\(feld): weder optional noch mit Vorgabewert")
+            }
+            for (feld, beziehung) in entitaet.relationshipsByName.sorted(by: { $0.key < $1.key }) {
+                if !beziehung.isOptional {
+                    verstoesse.append("\(name).\(feld): Beziehung muss optional sein")
+                }
+                if beziehung.inverseRelationship == nil {
+                    verstoesse.append("\(name).\(feld): Beziehung ohne Umkehrung")
+                }
+                if beziehung.deleteRule == .denyDeleteRule {
+                    verstoesse.append("\(name).\(feld): Löschregel „verweigern“ kennt CloudKit nicht")
+                }
+            }
+        }
+        return verstoesse
+    }
+
+    /// Das Modell, so wie SwiftData es für den Abgleich baut.
+    public static func cloudKitModell() throws -> NSManagedObjectModel {
+        guard let modell = NSManagedObjectModel.makeManagedObjectModel(for: modelTypes) else {
+            throw StoreError.containerUnavailable(underlying: CocoaError(.featureUnsupported))
+        }
+        return modell
+    }
 }
 #endif
