@@ -80,6 +80,12 @@ enum LaunchFixture {
             var feedIn: (start: Decimal, monthly: [Decimal], price: Decimal)?
             /// Jahresform des Nachtstroms. Gesetzt heißt: zwei Arbeitspreise.
             var lowTariff: (start: Decimal, monthly: [Decimal], price: Decimal)? = nil
+            /// Erste Ablesung so viele Monate zurück. Der Zähler einer
+            /// Wärmepumpe darf erst mit dem Wechsel anfangen, sonst hält der
+            /// Vergleich ihn für den Zähler des ganzen Hauses.
+            var firstMonths: Int = 25
+            /// Der Zähler, der die Wärmepumpe misst (Schalter aus 1.9).
+            var heatPump: Bool = false
         }
 
         // **`-pulse-schaufenster`: der Haushalt für die Bilder im App Store.**
@@ -96,7 +102,33 @@ enum LaunchFixture {
         // Alles abgelesen, die Abschläge reichen. Die Zahlen sind dieselbe Art
         // ausgedachter Verlauf wie unten, nichts davon wird geschönt gerechnet.
         let schaufenster = Startschalter.gesetzt("-pulse-schaufenster")
-        let profiles: [Profile] = schaufenster ? [
+
+        // **`-pulse-waermepumpe`: das Haus nach dem Wechsel, für die eigene
+        // Produktseite „Wärmepumpe“ und das Ereignis im App Store.**
+        //
+        // Vor genau zwölf Monaten kam die Wärmepumpe. Der Gaszähler läuft bis
+        // dahin, der Zähler der Wärmepumpe fängt dort an. So liegt ein ganzes
+        // Jahr nachher gegen ein ganzes Jahr vorher, und die Karte zeigt eine
+        // Zahl statt „Noch kein ganzer Monat“. Die Wärmepumpe ist so gerechnet,
+        // wie sie wäre: Gas in kWh mal 0,9 Wirkungsgrad, durch eine
+        // Jahresarbeitszahl um 3,4, und im Sommer bleibt das warme Wasser.
+        // Nur zwei Zähler, damit die Karte zum Wechsel auf dem Bild noch Platz
+        // hat; sie steht unter den Zählern.
+        let waermepumpe = schaufenster && Startschalter.gesetzt("-pulse-waermepumpe")
+        let wechselVor = 12
+        let profiles: [Profile] = waermepumpe ? [
+            Profile(name: "Wärmepumpe", kind: .electricity, start: 0,
+                    monthly: [1_150, 1_040, 830, 500, 260, 120, 105, 110, 235, 530, 850, 1_110],
+                    staleMonths: 0,
+                    price: Decimal(string: "0.27")!, base: Decimal(string: "9.50")!,
+                    gas: false, prepay: 160, feedIn: nil,
+                    firstMonths: wechselVor, heatPump: true),
+            Profile(name: "Gas", kind: .gas, start: 3_579,
+                    monthly: [418, 376, 298, 178, 92, 41, 36, 39, 84, 192, 308, 402],
+                    staleMonths: wechselVor,
+                    price: Decimal(string: "0.11")!, base: Decimal(string: "14.50")!,
+                    gas: true, prepay: nil, feedIn: nil)
+        ] : schaufenster ? [
             Profile(name: "Strom", kind: .electricity, start: 41_230,
                     monthly: [312, 286, 268, 241, 218, 205, 198, 204, 226, 258, 289, 315],
                     staleMonths: 0,
@@ -162,6 +194,7 @@ enum LaunchFixture {
         ]
 
         let property = try repository.ensureDefaultProperty()
+        var angelegt: [String: MeteringPoint] = [:]
 
         for profile in profiles {
             // Nur Zähler mit Abschlag bekommen einen Abrechnungsrhythmus —
@@ -172,6 +205,10 @@ enum LaunchFixture {
                 propertyID: property.id, name: profile.name, kind: profile.kind,
                 billingCycle: profile.prepay == nil ? nil : BillingCycle(anchorMonth: 1, anchorDay: 1)
             )
+            // Die Reihenfolge der Liste oben ist die auf dem Bild. Ohne
+            // Nummer sortiert die App nach dem Namen, und Gas stünde vorn.
+            if waermepumpe { point.sortIndex = angelegt.count }
+            point.measuresHeatPump = profile.heatPump
             if profile.lowTariff != nil, var first = point.registers.first {
                 first.label = "Hochtarif"
                 point.registers[0] = first
@@ -191,6 +228,7 @@ enum LaunchFixture {
                 )
             }
             try repository.save(point)
+            angelegt[profile.name] = point
             guard let register = point.primaryRegister else { continue }
 
             var value = profile.start
@@ -202,7 +240,7 @@ enum LaunchFixture {
             // darunter. Gesetzt nur bei Zählern, die bis heute abgelesen sind.
             var laufenderStand: (day: CalendarDay, wert: Decimal,
                                  einspeisung: Decimal, niedrig: Decimal)?
-            for offset in stride(from: 25, through: profile.staleMonths, by: -1) {
+            for offset in stride(from: profile.firstMonths, through: profile.staleMonths, by: -1) {
                 var month = today.month - offset
                 var year = today.year
                 while month < 1 { month += 12; year -= 1 }
@@ -326,6 +364,19 @@ enum LaunchFixture {
                     range: running,
                     monthlyPrepayment: prepay
                 ))
+            }
+        }
+
+        // Der Wechsel selbst, am Tag der letzten Gasablesung und der ersten
+        // der Wärmepumpe. Derselbe Wert, den `HeizungsWechselSheet` sichert.
+        if waermepumpe, let gas = angelegt["Gas"], let wp = angelegt["Wärmepumpe"] {
+            var month = today.month - wechselVor
+            var year = today.year
+            while month < 1 { month += 12; year -= 1 }
+            if let tag = CalendarDay(year: year, month: month, day: 1) {
+                try repository.save(HeatingChange(
+                    day: tag, oldMeterID: gas.id, newMeterID: wp.id,
+                    boilerEfficiency: HeatingChange.defaultEfficiency(for: .gas)))
             }
         }
     }

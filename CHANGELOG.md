@@ -9,6 +9,46 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.177.0 — 2026-11-23
+
+**Ereignis „Winter-Check“ und eigene Produktseite „Wärmepumpe“ im App Store, vorbereitet**
+
+Hebel 4 aus dem Reichweiten-Konzept vom 11. November: der App Store als
+zweite Suche. Beides liegt nach diesem Stand als Entwurf bei Apple bereit;
+sichtbar wird es erst nach dem Einreichen und Apples Freigabe.
+
+- **Ein Haus nach dem Wechsel** für die Bilder: `-pulse-schaufenster
+  -pulse-waermepumpe` legt Gas bis vor zwölf Monaten an, seitdem einen Zähler
+  für die Wärmepumpe, und den Wechsel dazwischen. So steht ein ganzes Jahr
+  nachher gegen ein ganzes Jahr vorher.
+- Zwei Startschalter öffnen den Vergleich (`-pulse-heizungsvergleich`) und das
+  Blatt zum Eintragen (`-pulse-heizungswechsel`). Sie gelten nur für die
+  Bildschirmfotos, wie die übrigen `-pulse-`Schalter.
+- `run.sh` fotografiert drei neue Schirme: `store-wp-vergleich`,
+  `store-wp-uebersicht`, `store-wp-wechsel`, auf iPhone und iPad.
+- `store-shots.mjs` setzt auch den Bildersatz der Produktseite, mit eigenem
+  Abschnitt in `docs/09-appstore.md`.
+- Neu `scripts/ereignis-bilder.mjs`: Karte 1920 × 1080 und Seite 1080 × 1920
+  für das Ereignis, ohne Text, weil Apple Name und Beschreibung selbst darauf
+  legt.
+- Neu `scripts/asc-schaufenster.py` mit dem Ablauf `schaufenster.yml`:
+  `stand` fragt nur, `anlegen` legt beides als Entwurf an, `einreichen` nur
+  mit dem getippten Wort EINREICHEN.
+- Texte in `docs/09-appstore.md` unter „Wärmepumpe im Laden“. Ereignis vom 1.
+  bis 31. Dezember in Deutschland, Österreich und der Schweiz, Kennzeichnung
+  „Großes Update“, Kauf nötig.
+
+Tests: neuer Oberflächentest `testTheHeatPumpShowcaseComparesAWholeYear`
+(das Haus zeigt einen Betrag in Euro, nicht „Noch kein ganzer Monat“).
+`asc-schaufenster.py --pruefen` läuft in `pruefen.sh` mit und prüft Apples
+Längengrenzen und das Maß der Bilder; einmal rot gesehen mit einer Karte in
+halber Größe.
+
+Die App ändert sich für Nutzer nicht. Die Änderungen in `App/` greifen nur
+mit Startschaltern.
+
+---
+
 ## 0.176.2 — 2026-11-23
 
 **Website: Wärmebedarf-Rechner zum Einbinden, und die Zählung kennt die Wärmepumpen-Seiten**
