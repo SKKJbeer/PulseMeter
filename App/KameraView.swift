@@ -475,13 +475,19 @@ final class KameraModell {
             // mit hohem Vorrang ließ es im Simulator keine Luft für die Fragen des Oberflächentests
             // („Timed out while evaluating UI query“ auf dem iPad, PR #13). Es geht nur um diesen
             // Vorführweg; die echte Kamera wertet in `KameraSitzung` aus.
-            for schritt in schritte {
-                let bild = DemoFrame.render(schritt.text)
+            // Alle Bilder der Folge werden gleich am Anfang angestoßen und laufen nebeneinander.
+            // Nacheinander gerechnet kam die gefragte Zahl auf dem iPad im Debug-Bau erst nach
+            // rund vier Minuten an, und der Test lief zweimal in seine Frist (PR #33, 23.11.).
+            var rechnungen: [Task<KameraBefund, Never>] = schritte.map { s in
+                let bild = DemoFrame.render(s.text)
                 let ganz = PixelRect(x: 0, y: 0, width: Double(bild.width), height: Double(bild.height))
-                let befund = await Task.detached(priority: .utility) {
+                return Task.detached(priority: .utility) {
                     KameraSitzung.auswerten(bild, rahmen: ganz, format: formatKopie, bereich: bereichKopie,
                                             andereBereiche: andereKopie)
-                }.value
+                }
+            }
+            for schritt in schritte {
+                let befund = await rechnungen.removeFirst().value
                 var n = 0
                 while !Task.isCancelled, n < schritt.bilder {
                     self?.aufnehmen(befund)
