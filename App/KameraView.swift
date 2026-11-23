@@ -188,6 +188,7 @@ struct KameraView: View {
                             .multilineTextAlignment(.center)
                     }
                 }
+                .accessibilityElement(children: .combine)
                 ForEach(modell.gemerkt.keys.sorted(), id: \.self) { i in
                     // Was die Kamera für ein anderes Zählwerk schon gelesen hat. Es steht dort im
                     // Ziffernblock zum Prüfen, gesichert wird es erst mit „Sichern“.
@@ -197,7 +198,6 @@ struct KameraView: View {
                         .multilineTextAlignment(.center)
                         .accessibilityIdentifier("kamera-gemerkt")
                 }
-                .accessibilityElement(children: .combine)
                 Button {
                     uebernehmen(p.value, p.fractionMissing)
                     dismiss()
