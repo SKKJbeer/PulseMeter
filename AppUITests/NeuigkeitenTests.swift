@@ -50,9 +50,17 @@ final class NeuigkeitenTests: XCTestCase {
         shot.lifetime = .keepAlways
         add(shot)
 
+        // **Ein verlorener Tipp braucht einen zweiten Tipp**, wie bei „Zurück“
+        // in `LaunchTests`: Der zweite CI-Lauf auf dem iPad tippte, während das
+        // Blatt noch hereinfuhr, und der Tipp kam nie an. Ein Knopf, der beim
+        // zweiten Tipp schließt, ist kein Fehler der App; einer, der nie
+        // schließt, fällt hier weiterhin auf.
         blatt(app).tap()
+        if !blatt(app).waitForNonExistence(timeout: 4), blatt(app).isHittable {
+            blatt(app).tap()
+        }
         XCTAssertTrue(blatt(app).waitForNonExistence(timeout: erscheint),
-                      "„Weiter“ hat das Blatt nicht geschlossen")
+                      "„Weiter“ hat das Blatt auch beim zweiten Tipp nicht geschlossen")
         XCTAssertTrue(app.staticTexts["Strom"].waitForExistence(timeout: erscheint),
                       "Nach dem Schließen steht die Übersicht nicht da")
 

@@ -63,6 +63,10 @@ Website nicht mehr auseinanderlaufen.
   startet ohne Schalter und bekam das Blatt über die Übersicht, und die Kennung am ganzen Blatt
   überschrieb die des Knopfs „Weiter“. Im Debug-Bau zeigt sich das Blatt jetzt nur mit
   `-pulse-neuigkeiten`, und das Blatt trägt keine Kennung mehr am Ganzen.
+- Der zweite und dritte Lauf: Ein kurzer Wisch bewegt das Blatt nur zwischen halber und voller Höhe, die
+  Prüfung zieht jetzt von der Kopfzeile bis an den Rand. Und auf dem iPad kam ein Tipp auf „Weiter“ nicht
+  an, während das Blatt noch hereinfuhr; ein verlorener Tipp bekommt jetzt einen zweiten, wie in
+  `LaunchTests` üblich.
 
 _PulseCore unter Linux grün, Klick-Dummy und Website-Prüfungen grün. App-Bau und Oberflächentests prüft die
 CI auf dem Mac._
