@@ -70,6 +70,22 @@ Website nicht mehr auseinanderlaufen.
 
 _PulseCore unter Linux grün, Klick-Dummy und Website-Prüfungen grün. App-Bau und Oberflächentests prüft die
 CI auf dem Mac._
+## 0.178.1 — 2026-11-23
+
+**Prüfung: Der Zwei-Zahlen-Kameratest lief auf dem iPad in seine Frist**
+
+### Behoben
+- Die Kamera-Vorführung im Simulator (`-pulse-kamera-test`) rechnet die Bilder einer Folge jetzt
+  nebeneinander statt nacheinander. Im Debug-Bau braucht ein Bild auf dem iPad bis zu zwei
+  Minuten; nacheinander kam die gefragte Zahl erst nach rund vier Minuten, und
+  `testOneCameraVisitReadsBothNumbersOfAnAlternatingDisplay` scheiterte in zwei von drei Läufen
+  von PR #33 mit „Kein Vorschlag nach 240 Sekunden“. Die Frist dort steht jetzt bei 420 Sekunden.
+  Die App selbst ändert sich nicht: Der Weg gilt nur ohne Kamera.
+
+### Prüfungen
+- `scripts/pruefen.sh schnell` unter Linux, iPhone und iPad in der CI.
+
+---
 
 ## 0.178.0 — 2026-11-22
 
