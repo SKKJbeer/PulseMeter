@@ -69,8 +69,11 @@ final class NeuigkeitenTests: XCTestCase {
     func testSwipingItAwayCountsAsSeen() {
         let app = start(["-pulse-reset", "-pulse-pro", "-pulse-neuigkeiten", "-pulse-neuigkeiten-vergessen"])
         XCTAssertTrue(blatt(app).waitForExistence(timeout: erscheint))
-        app.staticTexts["neuigkeiten-titel"].swipeDown(velocity: .fast)
-        if blatt(app).exists { app.staticTexts["neuigkeiten-titel"].swipeDown(velocity: .fast) }
+        // **Von der Kopfzeile bis an den unteren Rand gezogen**, nicht
+        // `swipeDown()` auf dem Text: Der erste CI-Lauf zeigte, dass der kurze
+        // Wisch das Blatt nur zwischen halber und voller Höhe bewegt.
+        wegziehen(app)
+        if blatt(app).exists { wegziehen(app) }
         XCTAssertTrue(blatt(app).waitForNonExistence(timeout: erscheint), "Das Blatt ließ sich nicht wegwischen")
 
         app.terminate()
@@ -78,6 +81,14 @@ final class NeuigkeitenTests: XCTestCase {
         XCTAssertTrue(wieder.staticTexts["Strom"].waitForExistence(timeout: 15))
         XCTAssertFalse(blatt(wieder).waitForExistence(timeout: 3),
                        "Weggewischt, und es kam beim nächsten Start wieder")
+    }
+
+    private func wegziehen(_ app: XCUIApplication) {
+        let oben = app.staticTexts["neuigkeiten-fassung"]
+            .coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        let unten = app.windows.firstMatch
+            .coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.99))
+        oben.press(forDuration: 0.05, thenDragTo: unten, withVelocity: .fast, thenHoldForDuration: 0)
     }
 
     /// Neu installiert: kein Blatt, auch nicht beim zweiten Start mit Zählern.
