@@ -50,6 +50,9 @@ struct RootView: View {
     /// Apples Bitte um eine Bewertung. Wann, entscheidet ``Bewertungsfrage``.
     @Environment(\.requestReview) private var bewerten
 
+    /// „Neu in Zählora …“ nach einem Update. Wann, entscheidet ``Neuigkeiten``.
+    @State private var neuigkeit: ReleaseNote?
+
     /// Die drei Ziele an einer Stelle. Vorher standen Name, Symbol und Nummer
     /// dreimal im `TabView`; mit einer zweiten Navigation wären es sechs
     /// Stellen gewesen, und die laufen auseinander.
@@ -94,6 +97,31 @@ struct RootView: View {
         // Ziffernblock geht an drei Stellen auf (Übersicht, Zählerliste, von
         // außen), und alle melden die Änderung über denselben Datenstand.
         .onChange(of: datenstand.version) { _, _ in fragNachBewertung() }
+        .task { zeigNeuigkeiten() }
+        // Wegwischen zählt wie „Weiter“: Gesehen ist gesehen.
+        .sheet(item: $neuigkeit) { note in
+            NeuigkeitenView(note: note)
+                .onDisappear { Neuigkeiten.gesehen(note) }
+        }
+    }
+
+    /// Zeigt einmal nach einem Update, was neu ist.
+    ///
+    /// **Nicht, wenn ein Tipp von außen den Ziffernblock öffnet.** Wer von der
+    /// Erinnerung kommt, will ablesen; das Blatt wartet dann bis zum nächsten
+    /// Start, gemerkt wird es erst nach dem Wegtippen.
+    ///
+    /// **Einen Augenblick später**, aus demselben Grund wie bei
+    /// ``uebernimmWunsch()``: Ein Blatt, das aufgehen soll, während die Szene
+    /// noch entsteht, verwirft SwiftUI ohne Meldung.
+    private func zeigNeuigkeiten() {
+        let zaehler = (try? context.fetchCount(FetchDescriptor<MeteringPointRecord>())) ?? 0
+        guard let note = Neuigkeiten.beimStart(bestandVorhanden: zaehler > 0) else { return }
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(600))
+            guard vonAussen == nil, wegweiser.ziel == nil else { return }
+            neuigkeit = note
+        }
     }
 
     /// Bittet einmal um eine Bewertung, nach der dritten Ablesung.

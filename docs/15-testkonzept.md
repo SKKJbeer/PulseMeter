@@ -47,7 +47,7 @@ brechen.
 | Speicher | `PulseData`: SwiftData, CloudKit-Regeln | nur Mac | 30 Sekunden |
 | Klick-Dummy | Wege, Bedienbarkeit, Fehlerfälle, Kamera-Leser | Linux (Chromium) | 1 bis 2 Minuten |
 | Website | Inhalte, Versprechen, Darstellung in Chromium und WebKit | Linux | 1 Minute |
-| App-Oberfläche | `LaunchTests`, `BedienungTests` auf iPhone und iPad | Mac (Simulator) | 10 bis 15 Minuten |
+| App-Oberfläche | `LaunchTests`, `BedienungTests`, `NeuigkeitenTests` auf iPhone und iPad | Mac (Simulator) | 10 bis 15 Minuten |
 | Bilder | Bildschirmfotos auf vier Geräten, angesehen statt geprüft | Mac | 5 Minuten |
 | Wachen | CloudKit-Produktion jede Woche und vor jedem TestFlight-Bau | Mac, eigener Ablauf | 1 Minute |
 | Am Gerät | Was kein Simulator kann (Abschnitt 6) | iPhone des Gründers | je Fassung |
@@ -68,6 +68,7 @@ dieselben Schritte an beiden Orten.
 | `scripts/check-versprechen.py` | Website verspricht nur, was die App kann, zu den Preisen der App |
 | `scripts/check-store-texte.py` | Klang der Store-Texte |
 | `scripts/check-versionen.py` | CHANGELOG, `project.yml`, README und Klick-Dummy nennen dieselbe Version |
+| `scripts/check-neuigkeiten.py` | App, Versionshinweise im Laden und Website erzählen zu jeder Fassung dasselbe (`docs/fassungen/`, `docs/09-appstore.md`, Klick-Dummy) |
 | `scripts/check-cloudkit-schema.py` | nichts aus der CloudKit-Produktion umbenannt; vor TestFlight alles dort |
 | `scripts/check-kamerafotos.py` | jedes fremde Foto mit Lizenz und Namensnennung |
 | `scripts/check-kamera-js.mjs` | Kamera-Leser im Klick-Dummy liest dieselben Fälle wie Swift |
@@ -151,6 +152,8 @@ Jede Zeile ist einmal passiert. Die Wache steht daneben.
 | Ein Feld des Modells verstößt gegen die Regeln von CloudKit; in der CI ohne iCloud fiele das nie auf. | 0.174.0 `testTheModelFollowsTheRulesOfCloudKit`, gegengeprüft mit `testEachRuleIsSeenWhenBroken` |
 | Im Ziffernblock stand „rund 0× dein üblicher Verbrauch" und „rund 3.039,2×". Richtig gerechnet, unverständlich gesagt. | 0.174.0 `scripts/check-bedienung.mjs`, `testAnUnchangedReadingIsQuestionedInPlainWords`, `testATenfoldTypoNamesTheUsualAmountForTheSameDays` |
 | Die Kopfzeile des Klick-Dummys stand sechs Versionen lang auf 0.138.0. | 0.174.0 `scripts/check-versionen.py` |
+| `entwicklung.html` kündigte 1.7 und 1.8 noch als „Als Nächstes“ und „Danach“ an, als beide längst im Laden standen. | 0.179.0 `scripts/check-neuigkeiten.py` (Kennungen `plan`/`data-plan`), `scripts/website-fassung.py` streicht sie bei der Freigabe |
+| „Neu in Zählora“ erschiene nach einer Neuinstallation, käme nach dem Wegtippen wieder oder läge über jedem Prüflauf. | 0.179.0 `ReleaseNotesTests`, `testShownOnceAfterAnUpdateAndGoneForGoodAfterOneTap`, `testNeverAfterAFreshInstall`, `testSwipingItAwayCountsAsSeen`, `testOtherTestRunsNeverSeeIt` |
 | Ein Zeitraum mit Daten wurde gegen einen ohne verglichen (die wiederkehrende Fehlerklasse aus `CLAUDE.md`). | `ScenarioMatrixTests`, `PeriodEngineTests` |
 | Die Website versprach Preise und Umfang, die es nicht gab. | 0.103.1 `scripts/check-versprechen.py` |
 | Bau 24 lag in TestFlight, der Schritt danach starb an einem fehlenden `import re`. | `scripts/check-namen.py` |

@@ -157,6 +157,15 @@ def eintrag_start(daten: dict, datum: str) -> str:
     )
 
 
+def plan_streichen(weg: str, kennungen: list[str]) -> str:
+    """Nimmt die Zeilen aus „Als Nächstes“, „Danach“ und „Später“, die eine
+    Fassung erfüllt (`plan` in ihrer Datei, `data-plan` auf der Seite)."""
+    for kennung in kennungen:
+        weg = re.sub(rf'[ \t]*<li[^>]*\bdata-plan="{re.escape(kennung)}"[^>]*>.*?</li>\n',
+                     "", weg, flags=re.S)
+    return weg
+
+
 def einsetzen(fassung: str, datum: str) -> list[str]:
     """Trägt fehlende Einträge ein und gibt zurück, was geändert wurde."""
     daten = text_zu(fassung)
@@ -166,13 +175,19 @@ def einsetzen(fassung: str, datum: str) -> list[str]:
                  "Versionshinweise in docs/09-appstore.md. Vorlage: docs/fassungen/1.5.json")
     geaendert = []
 
-    weg = WEG.read_text(encoding="utf-8")
+    weg = vorher = WEG.read_text(encoding="utf-8")
     if fassung not in im_weg():
         marke = '        <li class="weg-laden">'
         i = weg.index(marke)
         weg = weg[:i] + eintrag_weg(daten, datum) + weg[i:]
         weg = re.sub(r'(data-zahl="fassungen">)(\d+)(<)',
                      lambda m: f"{m.group(1)}{int(m.group(2)) + 1}{m.group(3)}", weg, count=1)
+    # **Was die Fassung mitbringt, ist nicht mehr „Als Nächstes“** (0.179.0).
+    # Bis dahin stand 1.7 schon eine Woche im Laden und „Neuer Tarif ab einem
+    # Tag“ weiter als nächster Schritt da, dahinter 1.8 als „Danach“. Niemand
+    # hatte es vergessen; es war schlicht kein Schritt, der von selbst lief.
+    weg = plan_streichen(weg, daten.get("plan", []))
+    if weg != vorher:
         WEG.write_text(weg, encoding="utf-8")
         geaendert.append("entwicklung.html")
 

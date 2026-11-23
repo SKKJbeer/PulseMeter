@@ -104,6 +104,11 @@ jobs:
       # Das Testkonzept zeigt nur auf Tests, die es gibt (docs/15-testkonzept.md).
       - name: Testkonzept
         run: python3 scripts/check-testkonzept.py
+      # App, Versionshinweise im Laden und Website erzählen zu jeder Fassung
+      # dasselbe: docs/fassungen/<fassung>.json und „Für <fassung>:“ in
+      # docs/09-appstore.md, der Klick-Dummy als Abschrift (0.179.0).
+      - name: Neuigkeiten in App, Laden und Website
+        run: python3 scripts/check-neuigkeiten.py && python3 scripts/website-fassung.py --selbsttest
 
       # Bedienbarkeit und Geschwindigkeit: Trefferflächen, Kontrast, Namen für
       # die Vorlesefunktion, gemessene Zeiten — und die Produktprinzipien 2 bis

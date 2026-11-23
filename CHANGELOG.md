@@ -9,6 +9,58 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.179.0 — 2026-11-23
+
+**Nach einem Update sagt die App einmal, was neu ist. App, Laden und Website aus einer Quelle**
+
+Der Gründer: „wenn neue versionen kommen will ich dass es auch in der app die update notes in kurzform
+kommen dass man direkt sieht dass sich hier etwas weiter entwickelt. es soll einfach wegklickbar dann
+sein und nur einmalig kommen.“ Dazu ein Blick auf die Website und darauf, dass App, Versionshinweise und
+Website nicht mehr auseinanderlaufen.
+
+### Hinzugefügt
+- **„Neu in Zählora 1.9“.** Nach einem Update geht einmal ein halbes Blatt auf: Fassung, Überschrift,
+  höchstens drei Punkte, ein Knopf „Weiter“. Wegwischen zählt wie „Weiter“. Danach kommt es erst mit der
+  nächsten Fassung wieder. Nach einer Neuinstallation kommt es nie, und nicht, wenn eine Erinnerung oder
+  das Widget gerade den Ziffernblock öffnet (dann beim nächsten Start). Gemerkt wird je Gerät
+  (`UserDefaults`), nicht über iCloud.
+- `ReleaseNotes` und `ReleaseNote` in `PulseCore` mit `ReleaseNotesTests` (12 Tests, einmal rot gesehen):
+  die Regel, das Lesen der Datei, Fassungen der Zahl nach (1.10 nach 1.9), und dass die echten Dateien
+  in `docs/fassungen/` sich lesen lassen und die neueste einen Text für die App hat.
+- `App/Neuigkeiten.swift` (Blatt und Speicher), eingehängt in `RootView`. `project.yml` bringt
+  `docs/fassungen/` als Ordner ins Bündel.
+- `AppUITests/NeuigkeitenTests.swift`: erscheint nach einem Update und kommt nach „Weiter“ beim nächsten
+  Start nicht wieder; Wegwischen zählt als gesehen; nach einer Neuinstallation nie, auch nicht beim
+  zweiten Start mit Zählern; andere Prüfläufe sehen es nie (Schalter `-pulse-neuigkeiten`,
+  `-pulse-neuigkeiten-vergessen`).
+- **Eine Quelle für drei Orte.** `docs/fassungen/<fassung>.json` hat jetzt den Block `app` (Kurzform in
+  der App) neben `weg` und `start` (Website) und `plan` (welche angekündigte Zeile die Fassung erfüllt).
+  Die Versionshinweise im Laden bleiben in `docs/09-appstore.md`. `docs/fassungen/1.9.json` und „Für 1.9:“
+  sind geschrieben.
+- `scripts/check-neuigkeiten.py`: zu jeder Fassung ab 1.5 Datei und Versionshinweise, die neueste auf
+  beiden Seiten dieselbe, ab 1.9 eine Kurzform für die App mit derselben Überschrift wie auf der Website,
+  keine Floskel und kein Fachwort darin, keine Zeichen, die Apple ablehnt, nichts mehr als „Als Nächstes“
+  angekündigt, was schon im Laden steht, und der Klick-Dummy zeigt dieselbe Kurzform. Läuft in
+  `pruefen.sh`, in der CI und vor dem Einreichen (`einreichen.yml`). Einmal rot gesehen (fünf
+  Abweichungen an absichtlich verdorbenen Dateien).
+- Klick-Dummy: Knopf „Nach einem Update öffnen“ unter dem Gerät, dasselbe Blatt mit derselben Regel;
+  `check-prototype.mjs` prüft den Weg.
+
+### Geändert
+- **`entwicklung.html` kündigte Erledigtes an.** Unter „Als Nächstes“ stand „Neuer Tarif ab einem Tag,
+  Gas in kWh“ (seit 12. November als 1.7 im Laden), unter „Danach“ der Heizungswechsel (seit 16. November
+  als 1.8 im Laden). Jetzt: „Als Nächstes“ zwei Zahlen mit der Kamera, „Danach“ „Bevor die Wärmepumpe
+  kommt“, unter „Später“ dazu „Läuft die Wärmepumpe gut?“. Jede Zeile trägt `data-plan`, und
+  `website-fassung.py` streicht sie von selbst, sobald die Fassung, die sie erfüllt, im Laden steht.
+- `entwicklung.html`, „Das kann Zählora jetzt“: Kamera, Rundgang, Siri und Erinnerung zum Ziffernblock,
+  Einfügen aus Excel, Gas und Heizöl in kWh, Heizungswechsel, Wärmepumpenzähler, neuer Preis ab einem
+  Tag und alle Zähler als CSV fehlten, obwohl sie seit 1.3 bis 1.8 im Laden stehen.
+- Startseite: „Mit der Kamera“ unter Erfassen, „Heizung gewechselt“ und „Gas und Heizöl in kWh“ unter
+  Besondere Fälle. Beides stand bisher nur bei den Preisen bzw. im Abschnitt „Neu in der App“.
+
+_PulseCore unter Linux grün, Klick-Dummy und Website-Prüfungen grün. App-Bau und Oberflächentests prüft die
+CI auf dem Mac._
+
 ## 0.178.0 — 2026-11-22
 
 **Kamera, Stufe 2: Ein Kamerabesuch liest beide Zahlen eines wechselnden Displays**
