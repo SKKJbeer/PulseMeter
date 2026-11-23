@@ -31,16 +31,6 @@ enum Startschalter {
         #endif
     }
 
-    /// Ob überhaupt ein Schalter gesetzt ist, also eine Prüfung oder ein
-    /// Bildschirmfoto läuft. Im Auslieferungsbau immer `false`.
-    static var irgendeiner: Bool {
-        #if DEBUG
-        return ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("-pulse-") }
-        #else
-        return false
-        #endif
-    }
-
     /// Für Stellen, die mehrere Schalter auf einmal prüfen.
     static func einerVon(_ namen: String...) -> Bool {
         namen.contains(where: gesetzt)

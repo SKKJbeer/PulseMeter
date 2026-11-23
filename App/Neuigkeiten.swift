@@ -62,13 +62,20 @@ enum Neuigkeiten {
         speicher.set(note.version, forKey: gesehenSchluessel)
     }
 
-    /// **Nicht in Prüfungen und Bildschirmfotos**, außer sie verlangen es mit
-    /// `-pulse-neuigkeiten`. Jeder Lauf mit Beispieldaten hätte sonst ein
-    /// Blatt über dem Schirm, den er gerade sucht — und weil der Simulator
-    /// `UserDefaults` zwischen den Läufen behält, nur beim ersten.
+    /// **Im Debug-Bau nur mit `-pulse-neuigkeiten`**, im Auslieferungsbau
+    /// (TestFlight, Laden) immer.
+    ///
+    /// Zuerst hieß es hier „ohne irgendeinen Schalter auch“. Der erste Lauf
+    /// der CI hat das widerlegt: `testAppLaunchesAndOffersItsThreeDestinations`
+    /// startet ganz ohne Schalter, fand Zähler vom Lauf davor und bekam das
+    /// Blatt über die Übersicht. Jede Prüfung und jedes Bildschirmfoto läuft
+    /// im Debug-Bau, also ist der Debug-Bau der Ort, an dem es schweigt.
     private static var zeigenErlaubt: Bool {
-        if Startschalter.gesetzt("-pulse-neuigkeiten") { return true }
-        return !Startschalter.irgendeiner
+        #if DEBUG
+        return Startschalter.gesetzt("-pulse-neuigkeiten")
+        #else
+        return true
+        #endif
     }
 }
 
@@ -133,6 +140,8 @@ struct NeuigkeitenView: View {
         .background(PulseColor.ground)
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
-        .accessibilityIdentifier("neuigkeiten")
+        // **Keine Kennung am Ganzen.** SwiftUI reicht sie an jedes Kind
+        // weiter und überschreibt damit „neuigkeiten-weiter“ — der erste
+        // CI-Lauf fand den Knopf deshalb nicht.
     }
 }

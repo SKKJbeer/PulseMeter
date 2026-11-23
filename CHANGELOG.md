@@ -58,6 +58,12 @@ Website nicht mehr auseinanderlaufen.
 - Startseite: „Mit der Kamera“ unter Erfassen, „Heizung gewechselt“ und „Gas und Heizöl in kWh“ unter
   Besondere Fälle. Beides stand bisher nur bei den Preisen bzw. im Abschnitt „Neu in der App“.
 
+### Prüfungen
+- Der erste CI-Lauf fand zwei Fehler, bevor jemand sie sah: `testAppLaunchesAndOffersItsThreeDestinations`
+  startet ohne Schalter und bekam das Blatt über die Übersicht, und die Kennung am ganzen Blatt
+  überschrieb die des Knopfs „Weiter“. Im Debug-Bau zeigt sich das Blatt jetzt nur mit
+  `-pulse-neuigkeiten`, und das Blatt trägt keine Kennung mehr am Ganzen.
+
 _PulseCore unter Linux grün, Klick-Dummy und Website-Prüfungen grün. App-Bau und Oberflächentests prüft die
 CI auf dem Mac._
 
