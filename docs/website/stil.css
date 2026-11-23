@@ -1544,3 +1544,21 @@ a.karte-verweis .weiter { margin-top: auto; padding-top: 6px; color: var(--tint-
   .karte { padding: 16px 14px; }
   .rechner select { padding-inline: 8px 26px; background-position: right 8px center; }
 }
+
+/* Code zum Kopieren (rechner-einbinden.html). Bricht um statt seitwärts zu
+   rollen: Auf dem Telefon darf die Seite nicht breiter werden als 390 px. */
+pre.code {
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-s);
+  padding: 14px 16px;
+  font: 0.875rem/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+}
+.einbinden-vorschau {
+  border: 1px dashed var(--line-2);
+  border-radius: var(--r-m);
+  padding: 8px;
+}

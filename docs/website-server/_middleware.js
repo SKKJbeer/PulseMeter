@@ -22,7 +22,20 @@
 const SEITEN = new Set([
   "/", "/ratgeber", "/verbrauch-berechnen", "/stromkosten-berechnen", "/stromverbrauch-vergleichen", "/jahresarbeitszahl-berechnen", "/zaehlerstand-ablesen", "/photovoltaik-eigenverbrauch", "/strompreis-entwicklung", "/nachzahlung-pruefen", "/gas-in-kwh",
   "/zaehlerstand-umzug", "/entwicklung", "/hilfe", "/datenschutz", "/impressum",
+  // Bis 0.173.2 fehlten hier alle Seiten zur Heizung und Wärmepumpe. Sie
+  // zählten als „andere“, und der Wochenbericht konnte nicht sagen, ob die
+  // neuen Seiten gelesen werden. `check-website.mjs` prüft jetzt, dass jede
+  // Seite der Website hier steht.
+  "/heizoel-in-kwh", "/waermebedarf-berechnen", "/heizung-auf-waermepumpe-umstellen",
+  "/waermepumpe-stromverbrauch-monat", "/waermepumpe-zwei-zaehler", "/heizstab-waermepumpe",
+  "/waermemengenzaehler-ablesen", "/rechner-einbinden", "/rechner-waermebedarf",
 ]);
+
+// Seiten, die auf fremden Websites in einem Rahmen stehen dürfen. Alle anderen
+// bleiben bei SAMEORIGIN, damit niemand unsere Seiten in eine eigene Hülle
+// steckt. Herkunft ist bei diesen Aufrufen die einbindende Website: So zeigt
+// der Wochenbericht, wer den Rechner zeigt.
+export const EINBETTBAR = new Set(["/rechner-waermebedarf"]);
 
 // Wer uns besucht, ohne Mensch zu sein. Getrennt gezählt, weil gerade das eine
 // Antwort ist: ob Google die Seite überhaupt holt.
@@ -126,7 +139,13 @@ export async function onRequest(context) {
   if ((antwort.headers.get("content-type") || "").startsWith("text/html")) {
     antwort.headers.set("X-Content-Type-Options", "nosniff");
     antwort.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-    antwort.headers.set("X-Frame-Options", "SAMEORIGIN");
+    const pfad = new URL(context.request.url).pathname.replace(/\.html$/, "");
+    if (EINBETTBAR.has(pfad)) {
+      antwort.headers.delete("X-Frame-Options");
+      antwort.headers.set("Content-Security-Policy", "frame-ancestors *");
+    } else {
+      antwort.headers.set("X-Frame-Options", "SAMEORIGIN");
+    }
     // Woran die Prüfung nach dem Hochladen sieht, dass die Funktion läuft.
     antwort.headers.set("X-Zaehlung", "ohne-personenbezug");
   }
