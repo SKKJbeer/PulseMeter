@@ -9,6 +9,22 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.176.1 — 2026-11-22
+
+**Auf Rezensionen im App Store antworten**
+
+### Neu
+- Ablauf „Auf eine Rezension antworten“ (`rezension-antworten.yml`) mit
+  `scripts/asc-rezension-antworten.py`: sucht die Rezension über den
+  Spitznamen und veröffentlicht die Antwort aus `docs/rezensionen/`. Ohne das
+  Wort `senden` läuft nur die Probe. Bei keinem oder mehreren Treffern wird
+  nichts gesendet; eine bestehende Antwort wird ersetzt.
+- Erste Antwort: `docs/rezensionen/2026-11-lionthooth.txt`, auf die Rezension
+  „Eine fast perfekte App ohne Abo“. Der Export als Datei und „Alle Zähler als
+  Tabelle“ sind seit 1.8 im Laden. Vom Gründer am 22. November freigegeben.
+
+_Zeichenketten- und Python-Prüfung grün. App unverändert._
+
 ## 0.174.0 — 2026-11-22
 
 **Testkonzept: Bedienung bei Fehlern, iCloud-Wache, ehrliche Abdeckung**
