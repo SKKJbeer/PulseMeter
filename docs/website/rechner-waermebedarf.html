@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wärmebedarf-Rechner zum Einbinden — Zählora</title>
+<meta name="robots" content="noindex">
+<link rel="canonical" href="https://zaehlora.de/waermebedarf-berechnen.html">
+<meta name="description" content="Wärmebedarf, grobe Heizlast und Strom einer Wärmepumpe aus dem Gas- oder Ölverbrauch. Fassung zum Einbinden in andere Websites.">
+<meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F0E0C" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="stil.css">
+<!-- Diese Seite läuft in einem Rahmen auf fremden Websites (Energieagenturen,
+     Berater, Gemeinden). Darum: kein Kopf, kein Fuß, kein Hinweis auf die App,
+     keine Anfrage an einen fremden Server. Nur der Rechner und eine Zeile, von
+     wem er ist. Rechnung und Felder kommen aus waermebedarf.js, dieselbe Datei
+     wie auf waermebedarf-berechnen.html. -->
+<style>
+  body.eingebettet { padding: 16px; margin: 0; }
+  body.eingebettet main { padding: 0; margin: 0; }
+  body.eingebettet h1 { font-size: 1.25rem; margin: 0 0 12px; }
+  body.eingebettet .rechner { margin: 0; }
+  .herkunft { margin: 12px 0 0; font-size: .875rem; }
+</style>
+</head>
+<body class="eingebettet">
+<main class="rechtstext artikel">
+    <h1>Wie viel Wärme braucht mein Haus?</h1>
+    <form class="rechner" id="wb-rechner" onsubmit="return false" aria-describedby="wb-ergebnis">
+      <fieldset class="umschalter">
+        <legend>Bisher heize ich mit</legend>
+        <div class="umschalter-wahl umschalter-drei">
+          <label><input type="radio" name="wb-art" value="gas" checked><span>Gas in m³</span></label>
+          <label><input type="radio" name="wb-art" value="gaskwh"><span>Gas in kWh</span></label>
+          <label><input type="radio" name="wb-art" value="oel"><span>Heizöl in Litern</span></label>
+        </div>
+      </fieldset>
+
+      <div class="rechner-felder">
+        <label>Verbrauch im Jahr
+          <span class="eingabe"><input id="wb-menge" inputmode="decimal" autocomplete="off" value="1.800"><span class="einheit" id="wb-einheit">m³</span></span>
+          <small>Schnitt aus mehreren Jahren</small>
+        </label>
+        <label id="wb-faktor-feld">Umrechnung
+          <span class="eingabe"><input id="wb-faktor" inputmode="decimal" autocomplete="off" value="10,5"><span class="einheit" id="wb-faktor-einheit">kWh/m³</span></span>
+          <small id="wb-faktor-hinweis">Zustandszahl × Brennwert</small>
+        </label>
+        <label>Die Heizung ist
+          <span class="eingabe"><select id="wb-kessel">
+            <option value="alt">ein älterer Kessel</option>
+            <option value="brennwert" selected>ein Brennwertkessel</option>
+          </select></span>
+        </label>
+        <label>Das Haus ist
+          <span class="eingabe"><select id="wb-haus">
+            <option value="unsaniert">unsaniert</option>
+            <option value="teilsaniert" selected>teilsaniert</option>
+            <option value="saniert">saniert</option>
+            <option value="neubau">ein Neubau</option>
+          </select></span>
+        </label>
+      </div>
+
+      <div class="rechner-ergebnis" id="wb-ergebnis" aria-live="polite"></div>
+    </form>
+    <script src="rechner.js"></script>
+    <script src="waermebedarf.js"></script>
+    <script>
+    // Im Rahmen auf einer fremden Seite: die eigene Höhe nach außen melden,
+    // damit der Rahmen mitwächst, wenn sich die Felder ändern (Gas in kWh
+    // braucht ein Feld weniger als Heizöl). Gemeldet wird nur die Zahl.
+    (function () {
+      if (window.parent === window) return;
+      var letzte = 0;
+      function melde() {
+        var stil = getComputedStyle(document.body);
+        var h = Math.ceil(document.body.getBoundingClientRect().height
+                          + parseFloat(stil.marginTop) + parseFloat(stil.marginBottom));
+        if (h !== letzte) {
+          letzte = h;
+          window.parent.postMessage({ zaehlora: "hoehe", hoehe: h }, "*");
+        }
+      }
+      if (window.ResizeObserver) new ResizeObserver(melde).observe(document.body);
+      window.addEventListener("load", melde);
+      melde();
+    })();
+    </script>
+    <p class="herkunft blass">
+      Rechner von <a href="https://zaehlora.de/waermebedarf-berechnen?von=einbinden" target="_blank" rel="noopener">Zählora</a>.
+      <a href="https://zaehlora.de/waermebedarf-berechnen?von=einbinden#so-wird-gerechnet" target="_blank" rel="noopener">So wird gerechnet</a>
+      · <a href="datenschutz.html" target="_blank" rel="noopener">Datenschutz</a>
+      · <a href="impressum.html" target="_blank" rel="noopener">Impressum</a>
+    </p>
+</main>
+</body>
+</html>

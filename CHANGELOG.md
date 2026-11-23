@@ -9,6 +9,51 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.176.2 — 2026-11-23
+
+**Website: Wärmebedarf-Rechner zum Einbinden, und die Zählung kennt die Wärmepumpen-Seiten**
+
+Hebel 3 aus dem Reichweiten-Konzept Stufe 2: Energieagenturen, Berater und
+Gemeinden zeigen unseren Rechner auf ihrer eigenen Website.
+
+### Neu
+- **`rechner-waermebedarf.html`**: der Wärmebedarf-Rechner allein, ohne Kopf,
+  Fuß und App-Hinweis, zum Einbinden in einen Rahmen. Darunter eine Zeile
+  „Rechner von Zählora. So wird gerechnet · Datenschutz · Impressum“, alle
+  Verweise öffnen ein neues Fenster. `noindex`, kanonisch auf die volle Seite.
+  Im Rahmen meldet er seine Höhe, damit der Rahmen mitwächst.
+- **`rechner-einbinden.html`**: Seite für Berater mit Vorschau, dem Code zum
+  Kopieren (Rahmen plus drei Zeilen Skript für die Höhe, die nur Meldungen von
+  zaehlora.de annehmen) und was dabei gilt: kostenlos, keine Cookies, keine
+  fremden Server, keine App-Werbung im Rechner, Schätzung statt
+  Heizlastberechnung. Verlinkt aus Ratgeber, Startseite, Sitemap und von der
+  Seite Wärmebedarf berechnen.
+- Nur dieser Rechner darf in fremden Rahmen stehen (`frame-ancestors *` in der
+  Funktion und in `_headers`), alle anderen Seiten bleiben bei SAMEORIGIN.
+
+### Behoben
+- **Die Zählung führte keine der Seiten zu Heizung und Wärmepumpe**: Heizöl
+  in kWh, Wärmebedarf, Von Öl oder Gas zur Wärmepumpe, Verbrauch im Monat,
+  zwei Zähler, Heizstab, Wärmemengenzähler. Sie zählten als „andere“, und der
+  Bericht vom 22. November konnte nicht sagen, ob sie gelesen werden. Jetzt
+  stehen sie in der Liste, und eine Prüfung verlangt, dass jede Seite der
+  Website dort steht.
+
+### Geändert
+- Die Rechnung des Wärmebedarf-Rechners liegt in `waermebedarf.js`, eine
+  Datei für beide Seiten. Eine Prüfung vergleicht die Kacheln beider Seiten
+  (einmal rot gesehen mit einer abweichenden Kopie).
+- Neue Prüfungen: Zählung kennt jede Seite (rot gesehen mit einer fehlenden),
+  Einbinden nur für den Rechner (rot gesehen), Rahmen so hoch wie der Rechner
+  (rot gesehen ohne Höhenmeldung), Code zeigt auf zaehlora.de, Verweise im
+  Rahmen öffnen neue Fenster.
+- Von Hand geprüft auf einer fremden Seite (andere Adresse), am Telefon und
+  am Rechner: Der Rahmen passt sich an, die Seite wird nicht breiter.
+
+_Website-Prüfung (`check-website.mjs`) vollständig grün. App unverändert._
+
+---
+
 ## 0.176.1 — 2026-11-22
 
 **Auf Rezensionen im App Store antworten**
