@@ -70,6 +70,7 @@ Website nicht mehr auseinanderlaufen.
 
 _PulseCore unter Linux grün, Klick-Dummy und Website-Prüfungen grün. App-Bau und Oberflächentests prüft die
 CI auf dem Mac._
+
 ## 0.178.1 — 2026-11-23
 
 **Prüfung: Der Zwei-Zahlen-Kameratest lief auf dem iPad in seine Frist**
