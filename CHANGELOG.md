@@ -9,6 +9,51 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.178.0 — 2026-11-22
+
+**Kamera, Stufe 2: Ein Kamerabesuch liest beide Zahlen eines wechselnden Displays**
+
+Der Gründer hat Kamera Stufe 2 als nächste Funktion gewählt („ok machen wir weiter“). Die moderne
+Messeinrichtung zeigt Bezug und Einspeisung, beim Zweitarifzähler Hoch- und Niedertarif, abwechselnd
+auf einem Display. Bisher fand die Kamera die gefragte Zahl, und die andere musste man im nächsten
+Schritt noch einmal mit der Kamera holen oder eintippen.
+
+### Hinzugefügt
+- **Die andere Zahl wird gemerkt.** Passt eine gelesene Zahl nicht in den Bereich des gefragten
+  Zählers, aber in genau einen anderen, merkt die Kamera sie für diesen. Der Sucher sagt
+  „„Einspeisung“ gelesen. Warte, bis „Bezug“ kommt.“, auf der Karte steht „Auch gelesen: …“, und im
+  nächsten Schritt steht die Zahl schon im Ziffernblock, mit „Von der Kamera gelesen“. Gesichert wird
+  erst mit „Sichern“. Das geht ab der zweiten Ablesung, weil es vorher keine Bereiche gibt.
+- `RegisterAssignment` in `PulseCore`: entscheidet vorschlagen, merken, nicht eindeutig oder passt
+  nicht. Der eigene Bereich zählt immer. Im Klick-Dummy dieselbe Regel, mit gemeinsamen Fällen in
+  `docs/kamera/vektoren.json`.
+- `KameraSitzung` prüft eine Lesung nach dem eigenen auch gegen die Bereiche der anderen Zähler,
+  ohne neu zu lesen.
+- Klick-Dummy: Beim Stromzähler gibt es unter den Beispielbildern „Display wechselt“: ein
+  gezeichnetes Display, das zwischen Einspeisung und Bezug wechselt, gelesen vom echten Ziffernnetz.
+- Oberflächentest `testOneCameraVisitReadsBothNumbersOfAnAlternatingDisplay`.
+
+### Behoben
+- **Die Kamera schlug im ersten Schritt eines Zählers mit zwei Zahlen nie etwas vor** (seit 1.7). Der
+  Ziffernblock lud nur die Ablesungen des gefragten Zählers. Die anderen hatten deshalb keinen Bereich,
+  und ein Zähler ohne Bereich schließt nichts aus: „Diese Zahl kann auch „Einspeisung“ sein“, bei
+  jedem Bild. Im zweiten Schritt ging es, weil die Ablesungen des ersten da schon geladen waren. Der
+  Klick-Dummy rechnete richtig, deshalb fiel es dort nicht auf. Gefunden hat es der neue
+  Oberflächentest. Jetzt lädt `CaptureView` die Ablesungen aller Zähler des Zählers.
+
+### Gemessen und zurückgestellt
+- **Die Kennzahl (1.8.0, 2.8.0) liest die App noch nicht.** Ein eigenes Netz dafür, in zwei Runden
+  trainiert, las sie auf echten Fotos entweder zu selten (1 von 120) oder manchmal falsch (4 von
+  120). Eine falsche Kennzahl bei der ersten Ablesung ordnet die Zahl dem falschen Zähler zu. Die
+  Messung und die Werkzeuge (`scripts/kamera-netz/kennzahl*.py`) stehen in `docs/kamera/stufe-2.md`,
+  die Regeln für die Kennzahl (`ObisCode`, `LabeledConsensus`) im Rechenkern, damit ein besseres Netz
+  nur noch angeschlossen werden muss.
+
+### Prüfungen
+- `swift test` für `PulseCore` grün, die neuen Fälle einmal rot gesehen (eigener Bereich abgeschaltet:
+  sieben Fehlschläge).
+- `scripts/check-kamera-js.mjs` und `scripts/check-prototype.mjs` grün.
+
 ## 0.176.2 — 2026-11-23
 
 **Website: Wärmebedarf-Rechner zum Einbinden, und die Zählung kennt die Wärmepumpen-Seiten**

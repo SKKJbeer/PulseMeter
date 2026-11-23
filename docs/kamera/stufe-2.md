@@ -1,4 +1,4 @@
-# Kamera, Stufe 2: zwei Zahlen an einem Zähler (für 1.7)
+# Kamera, Stufe 2: zwei Zahlen an einem Zähler
 
 Stand 8. November 2026. Konzept vor dem ersten Code. **Umgesetzt in 0.144.0:** die Regel über den Bereich (`RegisterChoice`). Offen: die Kennzahl lesen. Es baut auf Stufe 1 auf
 (`README.md` in diesem Ordner, im Laden seit 1.6).
@@ -29,90 +29,83 @@ oft in derselben Größenordnung, und bei der ersten Ablesung gibt es gar keinen
 Bereich. **Das ist ein falscher Vorschlag, der plausibel aussieht: genau die
 Art, die Produktprinzip 7 verbietet.**
 
-## Was 1.7 macht
+## Wie es gekommen ist
 
-1. **Die Kennzahl lesen.** Neben dem Rahmen, links davon und auf derselben
-   Höhe, wird ein zweiter Ausschnitt genommen und mit demselben Ziffernnetz
-   gelesen. Als Kennzahl gilt nur `d.d.d` (auch ohne Punkte als `ddd`, weil
-   manche Displays die Punkte nicht zeigen) und nur, wenn sie zu einer
-   bekannten Kennzahl passt: `1.8.0`, `1.8.1`, `1.8.2`, `2.8.0`, `2.8.1`,
-   `2.8.2`.
-2. **Zuordnen statt raten.** Für einen Zähler mit mehreren Zählwerken, die
-   eine Kennzahl haben (Voreinstellung bei „Strom mit Solar“ und „Strom mit
-   zwei Tarifen“):
-   - Kennzahl gelesen und sie gehört zum gefragten Zählwerk: Vorschlag wie
-     bisher.
-   - Kennzahl gelesen und sie gehört zu einem **anderen** Zählwerk desselben
-     Zählers: Die Zahl wird für dieses Zählwerk gemerkt und **kein** Vorschlag
-     gemacht. Der Sucher sagt „Das ist Einspeisung (2.8.0). Warte, bis 1.8.0
-     kommt.“ Kommt danach 1.8.0, wird vorgeschlagen. Im nächsten Schritt steht
-     die gemerkte Einspeisung schon als Vorschlag im Ziffernblock, mit Herkunft
-     „Kamera“ und zum Bestätigen, nicht gesichert. **So reicht ein
-     Kamerabesuch für beide Zahlen.**
-   - Keine Kennzahl gelesen: vorgeschlagen wird nur, wenn der Bereich die
-     Zahl eindeutig macht, sie also in den Bereich des gefragten Zählwerks
-     passt und **nicht** in den eines anderen. Sonst kein Vorschlag, Hinweis
-     „Halte die Kamera so, dass die Kennzahl links mit im Bild ist.“ Ein
-     Abwarten, ob die Anzeige wechselt, hilft nicht: Der Vorschlag steht nach
-     einer Sekunde, der Wechsel kommt nach fünf bis zehn.
-   - Zähler mit einem Zählwerk und Zählwerke ohne Kennzahl (Rollenzählwerke):
-     wie bisher.
-3. **Der Rahmen bleibt, wie er ist.** Kein zweiter Rahmen, kein neuer Knopf.
-   Der Kennzahl-Ausschnitt ist für den Nutzer unsichtbar; nur die Hinweise
-   sind neu.
+Die Regel über den Bereich (unten Punkt 1) ist seit 0.144.0 drin und seit 1.7 im Laden: Eine Zahl,
+die auch zu einem anderen Zählwerk passen kann, wird nicht vorgeschlagen. Offen blieben die Kennzahl
+und „ein Kamerabesuch für beide Zahlen“. Beides war für 1.9 geplant (Entscheidung vom 22.11.).
 
-Nicht in 1.7: zwei Rollenzählwerke übereinander (Ferraris-Zähler mit Hoch-
-und Niedertarif). Die gibt es kaum noch neu, und dort fängt der Bereich den
-Irrtum meist ab, weil beide Zahlen weit auseinander liegen. Bleibt auf der
-Liste unter „Später“.
+## Messung der Kennzahl (22.11.2026)
+
+Ein eigenes Kennzahl-Netz, gleiche Bauart wie das Ziffernnetz, vom Ziffernnetz aus weitertrainiert
+auf gezeichnete Kennzahl-Ausschnitte (`scripts/kamera-netz/kennzahl_synth.py`, `kennzahl_gen.py`).
+Gemessen wie in der App (`kennzahl.py`, Teil B): Rahmen auf der Zahl, Kennzahl-Fenster links und links
+darüber, 30 Versuche je Foto, je sechs Bilder, gilt nur bei drei gleichen ohne Widerspruch. Auf vier
+der 20 Fotos steht eine Kennzahl (Logarex, Landis, Kamstrup, Kaifa).
+
+| Netz | richtig | **falsch** | Fotos, auf denen etwas falsch kam |
+|---|---|---|---|
+| Ziffernnetz (ohne Kennzahl-Training) | 0–25 % je Foto | 0 | – |
+| Kennzahl-Netz Runde 1 (1 Epoche) | 26 von 120 | **2** | Meterus: „E.T2“ als 282 |
+| Kennzahl-Netz Runde 2 (5 Epochen, 14-Segment-Wörter als Störer, Fenster bis zur Zeile darüber) | 17 von 120 | **4** | Landis, Kaifa |
+| Runde 1 und 2 müssen sich einig sein | 1 von 120 | 0 | – |
+
+Das Ziel war null falsche Kennzahlen bei brauchbarer Trefferquote. Keine Fassung erreicht beides:
+Entweder liest das Netz zu selten, oder es liest manchmal falsch. Eine falsche Kennzahl bei der
+ersten Ablesung, wo es noch keinen Bereich gibt, ordnet die Zahl dem falschen Zählwerk zu. Das ist
+der schlimmste Fall, den diese Stufe verhindern soll.
+
+**Deshalb liest die App die Kennzahl vorerst nicht.** Die Regeln dafür (`ObisCode`, die Zuordnung
+mit Kennzahl, `LabeledConsensus`) bleiben im Rechenkern, geprüft und gleich im Klick-Dummy, damit ein
+besseres Netz nur noch angeschlossen werden muss. Was fehlt, sind echte Fotos mit Kennzahl: vier
+sind zu wenig, um ein Netz zu trainieren, das man nicht auf eben diesen Fotos misst.
+
+## Was 1.9 macht
+
+1. **Die Bereiche entscheiden.** Für einen Zähler mit mehreren Zählwerken liest die Kamera die Zahl
+   im Rahmen und prüft sie zuerst gegen den Bereich des gefragten Zählwerks, dann gegen die der
+   anderen (`KameraSitzung.auswerten`). Danach sagt `RegisterAssignment.decide`:
+   - Die Zahl passt zum gefragten Zählwerk und zu keinem anderen: **Vorschlag** wie bisher.
+   - Sie passt nicht zum gefragten, aber zu **genau einem** anderen: Sie wird für dieses
+     **gemerkt**. Der Sucher sagt „„Einspeisung“ gelesen. Warte, bis „Bezug“ kommt.“ Kommt danach
+     der Bezug, wird er vorgeschlagen, und auf der Karte steht „Auch gelesen: „Einspeisung“
+     7.171,90 kWh“.
+   - Sie passt zum gefragten **und** zu einem anderen: kein Vorschlag (die Regel aus 1.7).
+   - Sie passt zu keinem, oder zu mehreren anderen: nichts vorschlagen, nichts merken.
+2. **Ein Kamerabesuch für beide Zahlen.** Kommt das gemerkte Zählwerk im nächsten Schritt dran und
+   ist dort noch nichts eingetippt, steht die Zahl schon im Ziffernblock, mit „Von der Kamera
+   gelesen“, und wird erst mit „Sichern“ gesichert. Auch nach dem Vorschlag läuft die Kamera weiter
+   und merkt die andere Zahl, wenn sie noch kommt.
+3. **Ab der zweiten Ablesung.** Bei der ersten gibt es keine Bereiche, dann schlägt die Kamera an
+   einem Zähler mit zwei Zahlen nichts vor (wie in 1.7). Ein anderes Zählwerk ohne Bereich bekommt
+   nie eine gemerkte Zahl: Wer nichts weiß, merkt nichts.
+4. **Der Rahmen bleibt, wie er ist.** Kein zweiter Rahmen, kein neuer Knopf. Neu sind nur der
+   Satz im Sucher und die Zeile „Auch gelesen“.
+
+Nicht in 1.9: die Kennzahl (siehe Messung) und zwei Rollenzählwerke übereinander.
 
 ## Wer was darf
 
-- `PulseCore` bekommt die reine Regel: `RegisterAssignment` (Name offen) nimmt
-  die gelesene Kennzahl, die Kennzahlen der Zählwerke des Zählers und das
-  gefragte Zählwerk und sagt *vorschlagen*, *für ein anderes merken* oder
-  *nicht vorschlagen*. Testbar unter Linux, wie `MeterTextReader`.
-- `KameraSitzung` nimmt den zweiten Ausschnitt und liest ihn. Sie entscheidet
-  nichts.
-- `KameraView` hält die Einigung je Kennzahl getrennt (vier von sechs **je
-  Zählwerk**) und reicht gemerkte Zahlen an `CaptureView` zurück.
-- `CaptureView` legt eine gemerkte Zahl beim nächsten Schritt als Vorschlag in
-  den Ziffernblock. Gesichert wird wie immer erst mit „Sichern“.
+- `PulseCore`: `RegisterAssignment.decide` nimmt die Zahl, die Bereiche aller Zählwerke und das
+  gefragte und sagt *vorschlagen*, *für ein anderes merken*, *nicht eindeutig* oder *passt nicht*.
+  Der eigene Bereich zählt immer, auch mit Kennzahl.
+- `KameraSitzung` liest das Bild **einmal** und prüft die Lesung gegen den eigenen, dann gegen die
+  anderen Bereiche. Sie entscheidet nichts.
+- `KameraView` hält die Einigung (vier von sechs), fragt `decide` und reicht gemerkte Zahlen beim
+  Schließen an `CaptureView` zurück.
+- `CaptureView` legt eine gemerkte Zahl beim nächsten Schritt in den Ziffernblock. Gesichert wird
+  wie immer erst mit „Sichern“.
 
-## Messen, bevor gebaut wird
+## Prüfung
 
-Ohne Zahlen wird nichts davon eingebaut. Zuerst `scripts/kamera-netz/`:
-
-1. **Echte Fotos mit Kennzahl** von Wikimedia Commons (deutsche, österreichische,
-   niederländische Zähler: eHZ, EasyMeter, ISKRA MT175/MT681, EMH, Logarex),
-   blind geholt wie die dritte Sammlung. Ziel: mindestens zehn Fotos, auf denen
-   eine Kennzahl lesbar ist.
-2. **Liest das Netz die Kennzahl?** Je Foto viele Ausschnitte links vom Rahmen.
-   Gezählt wird: richtig, falsch, nichts. Maßstab wie in Stufe 1: **eine falsch
-   gelesene Kennzahl, die zu einem anderen Zählwerk passt, ist der schlimmste
-   Fall.** Ziel 0 in allen Versuchen.
-3. Reicht das Netz nicht, wird es mit Kennzahlen im Generator nachtrainiert
-   (`synth.py` zeichnet sie heute schon, aber als Nebenzeichen, die zu
-   übergehen sind) und auf Stufe 1 **neu gemessen**: Die Zahlen für 1.6 dürfen
-   nicht schlechter werden.
-4. Der Wechsel-Fall wird nachgestellt: abwechselnd Bilder von zwei Zahlen in
-   den Ausschnitten, die Einigung darf keinen Vorschlag für das falsche
-   Zählwerk machen.
-
-## Prüfung in der App
-
-- `PulseCoreTests`: alle Fälle der Zuordnung, dazu „Kennzahl `180` ohne
-  Punkte“ und „Kennzahl `1.8.0` an einem Zähler ohne Kennzahlen“ (dann wird
-  sie übergangen).
-- Oberflächentest mit `-pulse-kamera-test`: ein gezeichnetes Display, das
-  zwischen 1.8.0 und 2.8.0 wechselt. Erwartet: Bezug richtig vorgeschlagen,
-  Einspeisung im zweiten Schritt schon vorgeschlagen.
-- Klick-Dummy: der Wechsel zum Durchklicken (Regel 1).
-
-## Offen
-
-- Wie oft Kennzahlen auf Fotos überhaupt lesbar mit im Bild sind, zeigt erst
-  die Messung. Fällt sie schlecht aus, bleibt von 1.7 die Regel über den
-  Bereich, und das Lesen der Kennzahl wandert nach hinten. Auch das wäre schon
-  ein Gewinn: Es verhindert den plausiblen falschen Vorschlag. **Die Regel
-  über den Bereich kommt deshalb zuerst**, sie braucht kein neues Netz.
+- `PulseCoreTests`: `RegisterAssignmentTests` (alle Fälle, jeder neue Test einmal rot gesehen),
+  dazu die gemeinsamen Fälle in `docs/kamera/vektoren.json` (`zuweisung`, `kennzahl`,
+  `kennzahl_einigung`), die `scripts/check-kamera-js.mjs` gegen den Klick-Dummy laufen lässt.
+- Oberflächentest `testOneCameraVisitReadsBothNumbersOfAnAlternatingDisplay` mit
+  `-pulse-kamera-test -pulse-kamera-wechsel`: Das gezeichnete Display zeigt erst die Einspeisung,
+  dann den Bezug, beides durch dieselbe Auswertung wie ein Kamerabild. Erwartet: Bezug
+  vorgeschlagen, „Auch gelesen“ auf der Karte, im zweiten Schritt die Einspeisung im Ziffernblock,
+  nichts von selbst gesichert.
+- Klick-Dummy: Beim Stromzähler gibt es unter den Beispielbildern „Display wechselt“. Das echte
+  Ziffernnetz liest das gezeichnete Display; `scripts/check-prototype.mjs` prüft den ganzen Weg.
+- Die Kennzahl-Messung wiederholen: `TEIL=b python scripts/kamera-netz/kennzahl.py <netz.pt> 30`.

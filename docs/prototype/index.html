@@ -1014,7 +1014,7 @@ select.field { cursor: pointer; }
           stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <h1>Zählora</h1>
-  <p>Klickbarer Entwurf · v0.176.2</p>
+  <p>Klickbarer Entwurf · v0.178.0</p>
 </div>
 
 <div class="device" id="device">
@@ -1629,7 +1629,7 @@ const METERS = [
       // im echten Leben: am dritten, nicht auf die Minute am Monatsersten.
       { id: "strom-bezug", label: "Bezug", unit: "kWh", int: 6, frac: 2,
         readings: buildReadings(41231.4, SHAPE.strom, { frac: 2, partialInto: { m: 8, d: 3 } }) },
-      { id: "strom-eins", label: "Einspeisung", unit: "kWh", int: 6, frac: 2, feedIn: true,
+      { id: "strom-eins", label: "Einspeisung", unit: "kWh", int: 6, frac: 2, feedIn: true, obis: "2.8.0",
         readings: buildReadings(7170.2, SHAPE.einsp, { frac: 2, partialInto: { m: 8, d: 3 } }) }
     ]
   },
@@ -1673,7 +1673,7 @@ const METERS = [
     registers: [
       { id: "wp-ht", label: "Hochtarif", unit: "kWh", int: 6, frac: 2, price: 0.31,
         readings: buildReadings(18420.5, SHAPE.strom, { frac: 2, partialInto: { m: 8, d: 3 } }) },
-      { id: "wp-nt", label: "Niedertarif", unit: "kWh", int: 6, frac: 2, price: 0.21,
+      { id: "wp-nt", label: "Niedertarif", unit: "kWh", int: 6, frac: 2, price: 0.21, obis: "1.8.2",
         readings: buildReadings(24310.8, SHAPE.gas, { frac: 2, partialInto: { m: 8, d: 3 } }) }
     ]
   },
@@ -5005,7 +5005,7 @@ let capMeter = null, digits = "";
    Ein Zweirichtungszähler zeigt beide Zahlen auf demselben Gerät; wer davor
    steht, liest sie in einem Zug ab. Bis 0.26.0 kannte der Entwurf nur
    `registers[0]`, und die Einspeisung ließ sich hier gar nicht eintragen. */
-let capIndex = 0, capEntered = {};
+let capIndex = 0, capEntered = {}, capKameraVorschlag = {};   // Zählwerk → Wert, den die Kamera für ein anderes Zählwerk las
 
 /* Der Rundgang — wie `ReadingRound` in PulseCore.
 
@@ -5045,7 +5045,7 @@ function openReadingEdit(idx) {
   if (!r) return;
   capMeter = m;
   capIndex = 0;
-  capEntered = {};
+  capEntered = {}; capKameraVorschlag = {};
   capRunde = [];
   capGesichert = [];
   capEdit = { idx, value: r.value };
@@ -5388,6 +5388,79 @@ const RegisterChoice = {
 };
 /* RegisterChoice:end */
 
+/* RegisterAssignment:start
+   Spiegel von Packages/PulseCore/Sources/PulseCore/Camera/RegisterAssignment.swift (Kamera Stufe 2).
+   Die Kennzahl im Display (1.8.0, 2.8.0, 1.8.1, 1.8.2) sagt, zu welchem Zählwerk die Zahl gehört.
+   Ohne Kennzahl entscheidet der Bereich wie bisher. Geprüft von scripts/check-kamera-js.mjs. */
+const ObisCode = {
+  known: ["1.8.0", "1.8.1", "1.8.2", "2.8.0", "2.8.1", "2.8.2"],
+  read(text) {
+    const t = String(text || "").replace(/^\.+|\.+$/g, "");
+    const digits = t.replace(/[^0-9]/g, ""), dots = (t.match(/\./g) || []).length;
+    if (digits.length !== 3 || digits.length + dots !== t.length) return null;
+    if (dots > 2) return null;
+    if (dots === 2 && !(t.length === 5 && t[1] === "." && t[3] === ".")) return null;
+    const code = `${digits[0]}.${digits[1]}.${digits[2]}`;
+    return this.known.includes(code) ? code : null;
+  },
+  /* Kennzahl je Zählwerk, ergänzt wo keine eingetragen ist; nur beim Strom. */
+  effective(registers, kind) {
+    if (kind !== "electricity") return registers.map(() => null);
+    const set = new Set(registers.map(r => r.obis).filter(Boolean));
+    return registers.map(r => r.obis || (r.direction === "feedIn" || r.feedIn ? (set.has("2.8.2") ? "2.8.1" : "2.8.0")
+      : r.direction === "consumption" || !r.direction ? (set.has("1.8.2") ? "1.8.1" : "1.8.0") : null));
+  },
+};
+const RegisterAssignment = {
+  /* Ergebnis: "propose", "remember:i", "foreign:k", "ambiguous:i", "mismatch". */
+  decide(value, code, asked, codes, ranges) {
+    const own = codes[asked], drin = (r) => value >= r[0] && value <= r[1];
+    // Der eigene Bereich zählt immer: Eine falsch gelesene Kennzahl darf ihn nicht aushebeln.
+    const inOwn = ranges[asked] ? drin(ranges[asked]) : true;
+    if (code && own) {
+      if (code === own) return inOwn ? "propose" : "mismatch";
+      const other = codes.findIndex((c, i) => i !== asked && c === code);
+      if (other >= 0) {
+        const r = ranges[other];
+        if (r && !drin(r)) return "mismatch";
+        return `remember:${other}`;
+      }
+      if (codes.length === 1 && code.slice(0, 2) === own.slice(0, 2)) return inOwn ? "propose" : "mismatch";
+      return `foreign:${code}`;
+    }
+    const idx = ranges.map((_, i) => i).filter(i => i !== asked);
+    if (!inOwn) {
+      // Nicht die gefragte Zahl. Passt sie in genau einen anderen Bereich, gehört sie dorthin.
+      const passt = idx.filter(i => ranges[i] && drin(ranges[i]));
+      return passt.length === 1 ? `remember:${passt[0]}` : "mismatch";
+    }
+    const k = RegisterChoice.check(value, idx.map(i => ranges[i]));
+    return k === null ? "propose" : `ambiguous:${idx[k]}`;
+  },
+};
+/* Einigung über Zahl und Kennzahl: die Kennzahl in mindestens drei der Bilder mit der geeinigten
+   Zahl, kein Widerspruch, und kein Bild ohne Zahl mit einer anderen Kennzahl. */
+const LabeledConsensus = {
+  neu() {
+    const zahlen = ReadingConsensus.neu(), recent = [];
+    return {
+      add(outcome, code) {
+        recent.push({ value: outcome.proposal ? outcome.proposal.value : null, code: code || null });
+        while (recent.length > 6) recent.shift();
+        const einig = zahlen.add(outcome);
+        if (!einig) return null;
+        const codes = recent.filter(r => r.value === einig.proposal.value).map(r => r.code).filter(Boolean);
+        const fremde = recent.filter(r => r.value === null).map(r => r.code).filter(Boolean);
+        let k = codes.length >= 3 && codes.every(c => c === codes[0]) ? codes[0] : null;
+        if (k && fremde.some(c => c !== k)) k = null;
+        return { reading: einig, code: k };
+      },
+      reset() { zahlen.reset(); recent.length = 0; },
+    };
+  },
+};
+/* RegisterAssignment:end */
+
 /* ReadingConsensus:start
    Spiegel von Packages/PulseCore/Sources/PulseCore/Camera/ReadingConsensus.swift.
    Dieselbe Zahl mehrfach in den letzten Bildern, und keine andere mehr als einmal.
@@ -5456,7 +5529,9 @@ function fotoOeffnen() {
   fotoGewaehlt = null;
   document.getElementById("foto-bild").innerHTML = "";
   document.getElementById("foto-result").innerHTML = "";
-  document.getElementById("foto-strip").innerHTML = FOTOS.map((f, i) =>
+  document.getElementById("foto-strip").innerHTML = (wechselMoeglich()
+    ? `<button type="button" class="foto-thumb" data-foto="wechsel" aria-pressed="false"><img src="${wechselVorschau()}" alt=""><span>Display wechselt</span></button>` : "")
+    + FOTOS.map((f, i) =>
     `<button type="button" class="foto-thumb" data-foto="${i}" aria-pressed="false"><img src="${f.src}" alt=""><span>${f.label}</span></button>`).join("");
 }
 
@@ -5582,6 +5657,126 @@ function fotoZeige(i) {
   }[r.none];
 }
 
+/* ---------- Kamera Stufe 2: ein Display, das wechselt ----------
+   Die moderne Messeinrichtung zeigt Bezug (1.8.0) und Einspeisung (2.8.0), beim Zweitarifzähler
+   1.8.1 und 1.8.2, abwechselnd auf einem Display. Hier wird ein solches Display GEZEICHNET (mit den
+   Ständen dieses Zählers) und vom echten Ziffernnetz gelesen. Welche Zahl zu welchem Zählwerk gehört,
+   sagen die Bereiche (RegisterAssignment wie in PulseCore). Die Kennzahl links daneben wird nicht
+   gelesen: Das Netz dafür war auf echten Fotos zu unsicher (docs/kamera/stufe-2.md). */
+function wechselMoeglich() {
+  return capMeter && capMeter.kind === "electricity" && capMeter.registers.length > 1;
+}
+/* Der Stand, den das gezeichnete Display zeigt: letzter Stand plus der übliche Verbrauch seither.
+   Der Bereich reicht bis zum Vierfachen davon (fotoBereich), also ein Viertel der Spanne. */
+function wechselWert(reg) {
+  const r = fotoBereich(reg);
+  return r ? Math.round((r[0] + (r[1] - r[0]) / 4) * 10 ** reg.frac) / 10 ** reg.frac : 1234.5;
+}
+function wechselText(reg, v) {
+  const s = (Math.round(v * 10 ** reg.frac)).toString().padStart(reg.int + reg.frac, "0");
+  return reg.frac ? s.slice(0, -reg.frac) + "." + s.slice(-reg.frac) : s;
+}
+/* Siebensegment, gezeichnet: dunkle Balken auf grauem Grund, Geistersegmente blass. */
+function wechselZeichnen(kennzahl, text) {
+  const W = 960, H = 400, c = document.createElement("canvas"); c.width = W; c.height = H;
+  const x = c.getContext("2d");
+  x.fillStyle = "#dedede"; x.fillRect(0, 0, W, H);
+  x.fillStyle = "#a8a8a8"; x.strokeStyle = "#787878"; x.lineWidth = 4;
+  x.beginPath(); x.roundRect(60, 60, 840, 280, 18); x.fill(); x.stroke();
+  const SEG = { 0: "abcdef", 1: "bc", 2: "abged", 3: "abgcd", 4: "fgbc", 5: "afgcd", 6: "afgedc", 7: "abc", 8: "abcdefg", 9: "abcdfg" };
+  function zeile(t, x0, y0, hd, farbe, geist) {
+    const w = hd * .52, st = hd * .12, sp = hd * .2; let px = x0, digits = 0;
+    for (const ch of t) {
+      if (ch === ".") { x.fillStyle = farbe; x.fillRect(px - sp * .75, y0 + hd - st, st, st); px += sp * .2; continue; }
+      const on = SEG[ch] || "", h2 = hd / 2;
+      const R = { a: [px + st * .6, y0, w - st * 1.2, st], g: [px + st * .6, y0 + h2 - st / 2, w - st * 1.2, st], d: [px + st * .6, y0 + hd - st, w - st * 1.2, st],
+        b: [px + w - st, y0 + st * .6, st, h2 - st * .9], c: [px + w - st, y0 + h2 + st * .3, st, h2 - st * .9],
+        f: [px, y0 + st * .6, st, h2 - st * .9], e: [px, y0 + h2 + st * .3, st, h2 - st * .9] };
+      for (const k of "abcdefg") { x.fillStyle = on.includes(k) ? farbe : geist; if (on.includes(k) || geist) x.fillRect(...R[k]); }
+      px += w + sp; digits++;
+    }
+    return px - sp;
+  }
+  const hd = 100, gesamt = text.replace(".", "").length * (hd * .72) - hd * .2;
+  const x0 = Math.max(110, 860 - gesamt), ende = zeile(text, x0, 190, hd, "#262626", "rgba(0,0,0,.07)");
+  zeile(kennzahl, 100, 100, 48, "#2b2b2b", "rgba(0,0,0,.06)");
+  x.fillStyle = "#333"; x.font = "bold 22px sans-serif"; x.fillText("kWh", Math.min(ende + 12, 845), 286);
+  const d = x.getImageData(0, 0, W, H).data, g = new Float32Array(W * H);
+  for (let k = 0; k < g.length; k++) g[k] = d[k * 4];
+  // Rahmen um die Zahl, wie ihn der Nutzer hielte: 5 : 1, die Zahl füllt ihn. Gemessen: Mit etwas
+  // Rand (1,45 Ziffernhöhen) las das Netz das gezeichnete Display nur in jedem zweiten Bild.
+  const zw = ende - x0, hc = Math.max(hd * 1.2, zw / 5), cx = x0 + zw / 2, cy = 190 + hd / 2;
+  return { g, w: W, h: H, url: c.toDataURL("image/png"), rahmen: [cx - hc * 2.5, cy - hc / 2, hc * 5, hc] };
+}
+function wechselVorschau() {
+  const reg = capMeter.registers[0];
+  return wechselZeichnen(ObisCode.effective(capMeter.registers, capMeter.kind)[0] || "1.8.0", wechselText(reg, wechselWert(reg))).url;
+}
+
+async function wechselLesen() {
+  fotoGewaehlt = "wechsel";
+  const lauf = ++fotoLauf, reg = capRegister(), regs = capMeter.registers, gefragt = capIndex;
+  document.querySelectorAll(".foto-thumb").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.foto === "wechsel")));
+  const codes = ObisCode.effective(regs, capMeter.kind), bereiche = regs.map(fotoBereich);
+  const anderer = regs.findIndex((_, i) => i !== gefragt);
+  // Das Display zeigt zuerst die ANDERE Zahl, dann die gefragte, und wechselt weiter.
+  const bilder = [anderer, gefragt].map(i => ({ i, ...wechselZeichnen(codes[i], wechselText(regs[i], wechselWert(regs[i]))) }));
+  const out = document.getElementById("foto-result");
+  document.getElementById("foto-bild").innerHTML =
+    `<div class="foto-rahmenbox"><img id="wechsel-bild" src="${bilder[0].url}" alt="Gezeichnetes Display"><div class="foto-rahmen" id="foto-rahmen"></div></div>`
+    + `<div class="foto-sieht" id="foto-sieht" aria-live="off"></div>`;
+  const bild = document.getElementById("wechsel-bild"), rahmen = document.getElementById("foto-rahmen"), sieht = document.getElementById("foto-sieht");
+  const platziere = (r, el) => {
+    const b = bild.getBoundingClientRect(), box = bild.parentElement.getBoundingClientRect();
+    const sc = Math.min(b.width / bild.naturalWidth, b.height / bild.naturalHeight);
+    const w = bild.naturalWidth * sc, h = bild.naturalHeight * sc, ox = b.left - box.left + (b.width - w) / 2, oy = b.top - box.top + (b.height - h) / 2;
+    Object.assign(el.style, { left: ox + r[0] * sc + "px", top: oy + r[1] * sc + "px", width: r[2] * sc + "px", height: r[3] * sc + "px" });
+  };
+  const zeigeRahmen = () => platziere(bilder[0].rahmen, rahmen);
+  if (bild.complete) zeigeRahmen(); else bild.onload = zeigeRahmen;
+  out.textContent = "Ich suche die Zahl …";
+  if (!fotoNetz) fotoNetz = ZIFFERNNETZ_B64.map(b => DigitNet.ladeGewichte(b));
+  const rnd = fotoZufall(11), konsens = LabeledConsensus.neu(), gemerkt = {};
+  const name = i => regs[i].label ? `„${regs[i].label}“` : "die andere Zahl";
+  for (let k = 0; k < 40; k++) {
+    await new Promise(r => setTimeout(r, 120));
+    if (lauf !== fotoLauf) return;
+    const b = bilder[Math.floor(k / 6) % 2];
+    if (bild.getAttribute("src") !== b.url) bild.src = b.url;
+    const [rx, ry, rw, rh] = b.rahmen, s0 = 1 + (rnd() - .5) * .08;
+    const rect = [rx + (rnd() - .5) * .04 * rw - rw * (s0 - 1) / 2, ry + (rnd() - .5) * .08 * rh - rh * (s0 - 1) / 2, rw * s0, rh * s0];
+    const zeile = DigitNet.lesenEnsemble(fotoNetz, DigitNet.verkleinern(b.g, b.w, b.h, rect, DigitNet.W, DigitNet.H));
+    sieht.textContent = zeile.text ? `Ich sehe ${zeile.text}` : "";
+    // Wie KameraSitzung.auswerten: erst der eigene Bereich, dann die der anderen Zählwerke.
+    // Die Kennzahl liest der Entwurf nicht, die App auch nicht (docs/kamera/stufe-2.md, Messung).
+    const lies = (b) => MeterTextReader.propose(zeile.text ? [{ text: zeile.text, confidence: zeile.sicherheit }] : [], { int: reg.int, frac: reg.frac }, b, true);
+    let r = lies(bereiche[gefragt]);
+    if (!r.proposal && bereiche[gefragt]) for (const b of bereiche.filter((x, i) => i !== gefragt && x)) { const a = lies(b); if (a.proposal) { r = a; break; } }
+    const einig = konsens.add(r, null);
+    if (!einig) continue;
+    const p = einig.reading.proposal, z = RegisterAssignment.decide(p.value, einig.code, gefragt, codes, bereiche);
+    if (z.startsWith("remember:")) {
+      const i = Number(z.split(":")[1]); gemerkt[i] = p.value;
+      out.textContent = `${name(i)} gelesen. Warte, bis ${name(gefragt)} kommt.`;
+      konsens.reset(); continue;
+    }
+    if (z.startsWith("ambiguous:")) { out.textContent = `Diese Zahl kann auch ${name(Number(z.split(":")[1]))} sein. Warte, bis die andere Zahl kommt, oder tipp sie selbst ein.`; konsens.reset(); continue; }
+    if (z === "mismatch") { konsens.reset(); continue; }
+    rahmen.classList.add("gefunden"); sieht.textContent = "";
+    out.innerHTML = `Ich lese <b>${nf(p.value, reg.frac)} ${reg.unit}</b>.`
+      + Object.keys(gemerkt).map(i => `<small data-gemerkt>Auch gelesen: ${name(Number(i))} ${nf(gemerkt[i], regs[i].frac)} ${regs[i].unit}</small>`).join("")
+      + `<button type="button" class="save" id="foto-nimm" style="--c:${capMeter.color}">Übernehmen</button>`;
+    document.getElementById("foto-nimm").onclick = () => {
+      Object.keys(gemerkt).forEach(i => { capKameraVorschlag[regs[i].id] = gemerkt[i]; });
+      fotoUebernehmen(p.value);
+    };
+    out.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    return;
+  }
+  Object.keys(gemerkt).forEach(i => { capKameraVorschlag[regs[i].id] = gemerkt[i]; });
+  out.textContent = "Im Rahmen finde ich keinen Zählerstand, dem ich trauen kann. Tipp ihn selbst ein.";
+}
+
 function fotoUebernehmen(value) {
   const reg = capRegister();
   digits = String(Math.round(value * 10 ** reg.frac));
@@ -5611,7 +5806,7 @@ function openCapture(id) {
 function zeigeZaehler(id) {
   capMeter = METERS.find(m => m.id === id);
   capIndex = 0;
-  capEntered = {};
+  capEntered = {}; capKameraVorschlag = {};
   capEdit = null;
   capFotoWert = {};
   document.getElementById("foto-panel").hidden = true;
@@ -5660,6 +5855,12 @@ function showCaptureStep() {
   // leeren hieße, die Korrektur mit einer zweiten Eingabe zu bezahlen.
   const known = capEntered[reg.id];
   digits = known === undefined ? "" : String(Math.round(known * 10 ** reg.frac));
+  // Kamera Stufe 2: Was die Kamera für dieses Zählwerk nebenbei gelesen hat, steht schon da,
+  // gekennzeichnet wie ein übernommener Vorschlag. Gesichert wird erst mit „Sichern“.
+  if (known === undefined && capKameraVorschlag[reg.id] !== undefined) {
+    digits = String(Math.round(capKameraVorschlag[reg.id] * 10 ** reg.frac));
+    capFotoWert[reg.id] = capKameraVorschlag[reg.id];
+  }
   const last = reg.readings[reg.readings.length - 1];
   const many = capMeter.registers.length > 1;
   document.getElementById("cap-title").textContent = capMeter.name;
@@ -6460,6 +6661,7 @@ document.addEventListener("click", e => {
   if (t.id === "ed-archive") return archiveMeter();
   if (t.id === "ed-delete") return deleteMeter();
 
+  if (t.dataset.foto === "wechsel") return wechselLesen();
   if (t.dataset.foto !== undefined) return fotoZeige(Number(t.dataset.foto));
   if (t.dataset.capture) return openCapture(t.dataset.capture);
   if (t.dataset.reading !== undefined) return openReadingEdit(Number(t.dataset.reading));
