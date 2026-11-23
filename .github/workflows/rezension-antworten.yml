@@ -1,0 +1,43 @@
+name: Auf eine Rezension antworten
+
+# Antwortet als Entwickler auf eine Rezension im App Store. Der Text steht in
+# docs/rezensionen/, nicht im Eingabefeld: Eine Antwort ist öffentlich und
+# geht deshalb durch git. Ohne das Wort „senden“ läuft nur die Probe.
+
+on:
+  workflow_dispatch:
+    inputs:
+      spitzname:
+        description: "Spitzname des Rezensenten, wie im Laden"
+        type: string
+        required: true
+      datei:
+        description: "Datei in docs/rezensionen/, z. B. 2026-11-lionthooth.txt"
+        type: string
+        required: true
+      modus:
+        description: "probe oder senden"
+        type: string
+        required: false
+        default: "probe"
+
+permissions:
+  contents: read
+
+jobs:
+  antworten:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Antworten
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+          SPITZNAME: ${{ inputs.spitzname }}
+          DATEI: ${{ inputs.datei }}
+          MODUS: ${{ inputs.modus }}
+        run: |
+          pip3 install --quiet "pyjwt[crypto]" requests
+          python3 scripts/asc-rezension-antworten.py
