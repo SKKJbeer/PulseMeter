@@ -3181,8 +3181,9 @@ final class LaunchTests: XCTestCase {
         open.tap()
 
         let take = app.buttons["kamera-uebernehmen"]
-        guard wartetGeduldig(auf: take, sekunden: 240) else {
-            XCTFail("Kein Vorschlag nach 240 Sekunden. Zu sehen war: \(beschriftungen(in: app))")
+        // Zwei Bilder statt einem, im Debug-Bau auf dem iPad je bis zu zwei Minuten (PR #33).
+        guard wartetGeduldig(auf: take, sekunden: 420) else {
+            XCTFail("Kein Vorschlag nach 420 Sekunden. Zu sehen war: \(beschriftungen(in: app))")
             return
         }
         let auch = app.descendants(matching: .any).matching(identifier: "kamera-gemerkt").firstMatch
