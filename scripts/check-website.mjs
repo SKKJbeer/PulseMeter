@@ -47,10 +47,10 @@ const base = `http://127.0.0.1:${server.address().port}/`;
 // toter Verweis dorthin fällt sonst niemandem auf.
 // Jede Seite mit einem Rechner. Stand bis 0.170.0 fünfmal ausgeschrieben, und
 // eine neue Seite wäre in einer der Listen vergessen worden.
-const rechnerSeiten = ["gas-in-kwh.html", "heizoel-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "waermepumpe-stromverbrauch-monat.html", "waermepumpe-zwei-zaehler.html", "heizstab-waermepumpe.html", "waermemengenzaehler-ablesen.html", "photovoltaik-eigenverbrauch.html", "nachzahlung-pruefen.html"];
+const rechnerSeiten = ["gas-in-kwh.html", "heizoel-in-kwh.html", "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "waermepumpe-stromverbrauch-monat.html", "waermepumpe-zwei-zaehler.html", "heizstab-waermepumpe.html", "waermemengenzaehler-ablesen.html", "photovoltaik-eigenverbrauch.html", "nachzahlung-pruefen.html", "rechner-waermebedarf.html"];
 const seiten = ["index.html", "entwicklung.html", "hilfe.html", "gas-in-kwh.html", "heizoel-in-kwh.html", "waermepumpe-stromverbrauch-monat.html", "waermepumpe-zwei-zaehler.html", "heizstab-waermepumpe.html", "waermemengenzaehler-ablesen.html",
                 "zaehlerstand-umzug.html", "ratgeber.html",
-                "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "heizung-auf-waermepumpe-umstellen.html", "zaehlerstand-ablesen.html", "photovoltaik-eigenverbrauch.html", "strompreis-entwicklung.html", "nachzahlung-pruefen.html", "datenschutz.html", "impressum.html", "404.html"];
+                "verbrauch-berechnen.html", "stromkosten-berechnen.html", "stromverbrauch-vergleichen.html", "jahresarbeitszahl-berechnen.html", "waermebedarf-berechnen.html", "heizung-auf-waermepumpe-umstellen.html", "zaehlerstand-ablesen.html", "photovoltaik-eigenverbrauch.html", "strompreis-entwicklung.html", "nachzahlung-pruefen.html", "rechner-einbinden.html", "rechner-waermebedarf.html", "datenschutz.html", "impressum.html", "404.html"];
 
 // Was nicht in den Index soll: das Impressum (erreichbar, nicht auffindbar)
 // und die Seite für unbekannte Adressen. Beide tragen `noindex`, keine steht
@@ -397,7 +397,9 @@ for (const datei of seiten) {
     return m ? [...m[1].matchAll(/>([^<]+)<\/a>/g)].map(x => x[1].trim()) : [];
   };
   const vorbild = leiste("index.html");
-  for (const datei of seiten) {
+  // Der Rechner zum Einbinden steht in einem Rahmen auf fremden Seiten. Eine
+  // Kopfleiste hätte dort nichts verloren.
+  for (const datei of seiten.filter(d => d !== "rechner-waermebedarf.html")) {
     const hier = leiste(datei);
     note(JSON.stringify(hier) === JSON.stringify(vorbild),
          `${datei}: Kopfleiste wie auf der Startseite (${hier.join(", ")})`);
@@ -953,6 +955,39 @@ console.log("\nVerhalten");
   note(hl.wert === "≈ 10,5 kW" && hl.zusatz === "Spanne 9,7 bis 11,6",
        `Wärmebedarf: teilsaniert 10,5 kW, Spanne 9,7 bis 11,6 (${hl.wert}, ${hl.zusatz})`);
   note((await kachel("strom")).wert === "≈ 5.100 kWh", `Wärmebedarf: durch 3,4 rund 5.100 kWh Strom (${(await kachel("strom")).wert})`);
+  // Die Fassung zum Einbinden rechnet mit derselben Datei. Weichen die
+  // Kacheln voneinander ab, zeigt ein Energieberater andere Zahlen als wir.
+  {
+    const kacheln = async () => page.$$eval("#wb-ergebnis [data-kachel]", ks => ks.map(k => k.textContent.replace(/\s+/g, " ").trim()));
+    const voll = await kacheln();
+    await page.goto(base + "rechner-waermebedarf.html");
+    const eingebettet = await kacheln();
+    note(voll.length === 3 && JSON.stringify(voll) === JSON.stringify(eingebettet),
+         `Rechner zum Einbinden zeigt dieselben drei Kacheln wie die volle Seite (${eingebettet.length} Kacheln)`);
+    note(await page.$("header.kopf") === null && await page.$(".app-hinweis") === null
+         && /Rechner von Zählora/.test(await text(".herkunft")),
+         "Rechner zum Einbinden: kein Kopf, kein App-Hinweis, nur die Zeile „Rechner von Zählora“");
+    const links = await page.$$eval(".herkunft a", as => as.map(a => [a.href, a.target]));
+    note(links.length === 4 && links.slice(0, 2).every(([h, t]) => h.startsWith("https://zaehlora.de/waermebedarf-berechnen?von=einbinden") && t === "_blank"),
+         "Rechner zum Einbinden: Verweise öffnen die volle Seite in einem neuen Fenster, mit ?von=einbinden");
+    note(links.every(([, t]) => t === "_blank"), "Rechner zum Einbinden: jeder Verweis öffnet ein neues Fenster, keiner den Rahmen");
+    // Im Rahmen meldet der Rechner seine Höhe, und der Rahmen folgt ihr.
+    // Ohne diese Meldung bliebe auf dem Rechner ein Drittel leer, oder das
+    // Telefon müsste im Rahmen rollen.
+    await page.goto(base + "rechner-einbinden.html");
+    await page.waitForFunction(() => document.getElementById("vorschau").height !== "1150", null, { timeout: 5000 }).catch(() => {});
+    const rahmen = await page.evaluate(() => {
+      const f = document.getElementById("vorschau");
+      const d = f.contentDocument;
+      return { hoehe: Number(f.height), inhalt: Math.ceil(d.body.getBoundingClientRect().height) };
+    });
+    note(rahmen.hoehe !== 1150 && Math.abs(rahmen.hoehe - rahmen.inhalt) <= 40,
+         `Rechner einbinden: die Vorschau ist so hoch wie der Rechner (${rahmen.hoehe} px Rahmen, ${rahmen.inhalt} px Inhalt)`);
+    const code = await text("#code");
+    note(code.includes('src="https://zaehlora.de/rechner-waermebedarf"') && code.includes('e.origin === "https://zaehlora.de"'),
+         "Rechner einbinden: der Code zeigt auf zaehlora.de und nimmt die Höhe nur von dort an");
+    await page.goto(base + "waermebedarf-berechnen.html");
+  }
   // Heizöl: 2.150 Liter wie im Beispiel des Leitfadens, aber mit dem älteren
   // Kessel zu 0,75 statt 0,80: 16.125 kWh, durch 1.650 Stunden 9,8 kW.
   await page.check('input[name="wb-art"][value="oel"]');
@@ -1461,6 +1496,28 @@ console.log("\nZählung");
   note(!JSON.stringify((await aufruf({ pfad: "/anna.mueller@web.de", status: 404 })).punkte).includes("anna"),
        "Ein 404 mit einer E-Mail-Adresse im Pfad speichert sie nicht");
   note((await aufruf({ pfad: "/irgendwas" })).punkte[0].blobs[0] === "andere", "Eine fremde Seite zählt als „andere“");
+  // Jede Seite der Website zählt unter ihrem Namen. Bis 0.173.2 fehlten alle
+  // Seiten zur Wärmepumpe in der Liste und zählten als „andere“.
+  {
+    const ungenannt = seiten.filter(d => d !== "404.html")
+      .map(d => d === "index.html" ? "/" : "/" + d.replace(/\.html$/, ""))
+      .filter(p => z.seite(p, 200) === "andere");
+    note(ungenannt.length === 0, ungenannt.length ? `Zählung kennt diese Seiten nicht: ${ungenannt.join(", ")}` : `Die Zählung kennt alle ${seiten.length - 1} Seiten beim Namen`);
+  }
+  // Nur der Rechner zum Einbinden darf in einem fremden Rahmen stehen.
+  for (const pfad of ["/rechner-waermebedarf", "/rechner-waermebedarf.html"]) {
+    const h = (await aufruf({ pfad })).antwort.headers;
+    note(h.get("x-frame-options") === null && h.get("content-security-policy") === "frame-ancestors *",
+         `${pfad} darf eingebettet werden (${h.get("x-frame-options")}, ${h.get("content-security-policy")})`);
+  }
+  note((await aufruf({ pfad: "/waermebedarf-berechnen" })).antwort.headers.get("x-frame-options") === "SAMEORIGIN"
+       && (await aufruf({ pfad: "/rechner-einbinden" })).antwort.headers.get("x-frame-options") === "SAMEORIGIN",
+       "Alle anderen Seiten bleiben bei SAMEORIGIN, auch die Seite mit dem Code");
+  {
+    const fertig = readFileSync(new URL("./website-fertig.sh", import.meta.url), "utf8");
+    note(/\/rechner-waermebedarf\*\n  ! X-Frame-Options\n  Content-Security-Policy: frame-ancestors \*/.test(fertig),
+         "_headers nimmt SAMEORIGIN für den Rechner zum Einbinden zurück, wie die Funktion");
+  }
   note((await aufruf({ pfad: "/datenschutz.html" })).punkte[0].blobs[0] === "/datenschutz", "„.html“ und ohne zählen gleich");
   note((await aufruf({ pfad: "/?von=Reddit_Forum!" })).punkte[0].blobs[4] === "redditforum",
        "Eine selbst gesetzte Quelle wird auf ein Kennwort gekürzt");

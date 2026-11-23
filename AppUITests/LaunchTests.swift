@@ -3166,9 +3166,20 @@ final class LaunchTests: XCTestCase {
         var gemerktDa = false
         geduldig { gemerktDa = auch.exists }
         XCTAssertTrue(gemerktDa, "Die Zahl des anderen Zählwerks fehlt auf der Karte. Zu sehen war: \(beschriftungen(in: app))")
+        // Wie in `testCameraProposalLandsInTheKeypadAndIsNotSavedByItself`: Der erste Tipp auf den hereingleitenden Knopf geht
+        // manchmal verloren (hier PR #32, iPad: Danach stand der Sucher noch mit „Gefunden“ da).
         tippeRuhig(take)
         let weg = NSPredicate(format: "exists == false")
-        geduldig { _ = XCTWaiter().wait(for: [XCTNSPredicateExpectation(predicate: weg, object: take)], timeout: 40) }
+        var zu = false
+        geduldig { zu = XCTWaiter().wait(for: [XCTNSPredicateExpectation(predicate: weg, object: take)], timeout: 20) == .completed }
+        if !zu {
+            var nochDa = false
+            geduldig { nochDa = take.exists && take.isHittable }
+            if nochDa {
+                print("Übernehmen: der erste Tipp kam nicht an, zweiter Versuch.")
+                tippeRuhig(take)
+            }
+        }
 
         let hint = app.descendants(matching: .any).matching(identifier: "kamera-hinweis").firstMatch
         guard wartetGeduldig(auf: hint, sekunden: 60) else {
