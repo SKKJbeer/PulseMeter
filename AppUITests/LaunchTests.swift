@@ -3188,6 +3188,11 @@ final class LaunchTests: XCTestCase {
         }
         let weiter = app.buttons["Weiter"]
         XCTAssertTrue(weiter.waitForExistence(timeout: erscheint), "Kein „Weiter“ zum zweiten Schritt")
+        // Erst muss der Sucher ganz weg sein und „Weiter“ im Bild stehen: Auf dem iPad gab es den Knopf
+        // schon, während das Blatt noch hereinfuhr („Activation point invalid“, PR #33).
+        geduldig { _ = XCTWaiter().wait(for: [XCTNSPredicateExpectation(predicate: weg, object: take)], timeout: 40) }
+        expectation(for: NSPredicate { el, _ in (el as? XCUIElement)?.isHittable ?? false }, evaluatedWith: weiter)
+        waitForExpectations(timeout: erscheint)
         tippeRuhig(weiter)
         let schritt = app.descendants(matching: .any).matching(identifier: "erfassung-schritt").firstMatch
         let zwei = NSPredicate(format: "label CONTAINS 'Schritt 2'")
