@@ -49,6 +49,11 @@ struct CaptureView: View {
     /// Ziffernblock den Hinweis „Von der Kamera gelesen". Sobald jemand eine Ziffer
     /// ändert, hat er selbst abgelesen, und beides verschwindet (wie im Klick-Dummy).
     @State private var kameraWert: [Register.ID: Decimal] = [:]
+    /// Was die Kamera für ein **anderes** Zählwerk nebenbei gelesen hat: Das Display wechselt
+    /// zwischen den Zahlen, und die Bereiche sagen, welche dasteht (`docs/kamera/stufe-2.md`).
+    /// Kommt dieses Zählwerk dran und ist noch nichts eingetippt, steht der Wert im Ziffernblock,
+    /// mit dem Hinweis „Von der Kamera gelesen“. Gesichert wird erst mit „Sichern“.
+    @State private var kameraVorschlag: [Register.ID: Decimal] = [:]
 
     /// Wann abgelesen wurde. Vorbelegt auf **jetzt**, mit Uhrzeit.
     ///
@@ -182,11 +187,15 @@ struct CaptureView: View {
             .fullScreenCover(isPresented: $zeigtKamera) {
                 if let register {
                     KameraView(format: MeterFormat(register), einheit: register.unit.symbol,
-                               bereich: kameraBereich(register), andere: andereFuerKamera(register),
-                               farbe: accent) { value, _ in
+                               bereich: kameraBereich(register), zaehlwerke: zaehlwerkeFuerKamera(register),
+                               farbe: accent, uebernehmen: { value, _ in
                         adopt(value, register: register)
                         kameraWert[register.id] = value
-                    }
+                    }, gemerkt: { werte in
+                        for (i, wert) in werte where registers.indices.contains(i) {
+                            kameraVorschlag[registers[i].id] = wert
+                        }
+                    })
                 }
             }
             .sheet(isPresented: $zeigtKameraKauf) {
@@ -338,11 +347,12 @@ struct CaptureView: View {
 
     /// Die übrigen Zählwerke dieses Zählers, für die Kamera: Zeigt das Display gerade
     /// deren Zahl, darf sie nicht für dieses vorgeschlagen werden (`docs/kamera/stufe-2.md`).
-    private func andereFuerKamera(_ register: Register) -> [(name: String, bereich: ClosedRange<Decimal>?)] {
-        registers.filter { $0.id != register.id }.map { anderes in
-            let name = anderes.label.map { "„\($0)“" } ?? "die andere Zahl dieses Zählers"
-            return (name, kameraBereich(anderes))
-        }
+    private func zaehlwerkeFuerKamera(_ register: Register) -> KameraZaehlwerke {
+        KameraZaehlwerke(
+            namen: registers.map { r in r.label.map { "„\($0)“" } ?? "die andere Zahl dieses Zählers" },
+            kennzahlen: ObisCode.effectiveCodes(of: registers, kind: meteringPoint.kind),
+            bereiche: registers.map { kameraBereich($0) },
+            gefragt: registers.firstIndex { $0.id == register.id } ?? 0)
     }
 
     private var kameraHinweisSichtbar: Bool {
@@ -531,8 +541,13 @@ struct CaptureView: View {
         // gesamte Ablesehistorie aus dem Speicher — bei drei Jahren täglicher
         // Werte über tausend Sätze, zwischen Tastendruck und Ziffer auf dem
         // Schirm. Genau das fühlt sich an wie ein Zähler, der hakt.
-        if history[register.id] == nil {
-            history[register.id] = (try? repository.readings(for: register.id)) ?? []
+        //
+        // Für **alle** Zählwerke des Zählers, nicht nur das gefragte: Die Kamera braucht die Bereiche
+        // der anderen, um eine Zahl zuzuordnen (`zaehlwerkeFuerKamera`). Bis 0.178.0 fehlten sie, ein
+        // anderes Zählwerk ohne Bereich schließt nichts aus, und so schlug die Kamera an einem Zähler
+        // mit Bezug und Einspeisung nie etwas vor.
+        for r in registers where history[r.id] == nil {
+            history[r.id] = (try? repository.readings(for: r.id)) ?? []
         }
     }
 
@@ -607,6 +622,9 @@ struct CaptureView: View {
     private func showStep() {
         if let register, let value = entered[register.id] {
             digits = String(ScaledDecimal(value, scale: register.fractionDigits).scaled)
+        } else if let register, let value = kameraVorschlag[register.id] {
+            digits = String(ScaledDecimal(value, scale: register.fractionDigits).scaled)
+            kameraWert[register.id] = value
         } else {
             digits = ""
         }

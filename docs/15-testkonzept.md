@@ -167,7 +167,11 @@ einen echten Kauf. Diese drei Punkte prüft der Gründer je Fassung am iPhone,
 1. **Abgleich**: Auf dem iPhone einen Stand eintragen, auf dem zweiten Gerät
    (iPad) nach spätestens einer Minute sehen. Zuletzt vom Gründer bestätigt am
    11. November.
-2. **Kamera**: einmal am eigenen Zähler ablesen.
+2. **Kamera**: einmal am eigenen Zähler ablesen. An einem Zähler mit zwei Zahlen im Wechsel
+   (Bezug und Einspeisung, Hoch- und Niedertarif) ab der zweiten Ablesung: Ein Kamerabesuch
+   schlägt die gefragte Zahl vor und legt die andere im nächsten Schritt in den Ziffernblock
+   (seit 0.178.0, `docs/kamera/stufe-2.md`). Im Simulator prüft das
+   `testOneCameraVisitReadsBothNumbersOfAnAlternatingDisplay`, aber nur an einem gezeichneten Display.
 3. **Kauf**: mit einem Testkonto in TestFlight einen Kauf auslösen und
    wiederherstellen.
 

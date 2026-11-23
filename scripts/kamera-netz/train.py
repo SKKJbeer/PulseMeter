@@ -120,6 +120,6 @@ if __name__ == '__main__':
         net.eval()
         with torch.no_grad(): dv = decode(net(XV))
         acc = np.mean([a == b for (a, _), b in zip(dv, TV)])
-        ok, wrong, none, per = report(real_eval(net))
+        ok, wrong, none, per = report(real_eval(net)) if os.environ.get('ECHT', '1') == '1' else (0, 0, 0, {})
         print(f'Epoche {ep+1}/{EP} Verlust {tot/(len(X)//BS):.3f} synth-richtig {acc:.3f} echt: richtig {ok} falsch {wrong} nichts {none} | {per} | {time.time()-t0:.0f}s', flush=True)
         torch.save(net.state_dict(), out_name)

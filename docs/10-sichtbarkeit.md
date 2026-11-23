@@ -479,7 +479,7 @@ Ein Kandidat mit echtem Anlass wäre die Kamera (1.6).
 **Eigene Produktseiten** mit eigenen Bildern für Photovoltaik und Wärmepumpe,
 verlinkt aus den passenden Seiten der Website. Erst, wenn die Seiten stehen.
 
-**Stand 22. November (0.177.0):** Die Wärmepumpen-Seiten stehen, und mit 1.8
+**Stand 23. November (0.179.0):** Die Wärmepumpen-Seiten stehen, und mit 1.8
 passiert in der App etwas Neues. Vorbereitet sind deshalb das Ereignis
 „Winter-Check: Heizung“ (1. bis 31. Dezember, „Großes Update“) und die eigene
 Produktseite „Wärmepumpe“. Texte in `09-appstore.md`, Weg zu Apple über

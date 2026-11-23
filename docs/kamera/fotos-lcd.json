@@ -75,7 +75,14 @@
    "quelle": "https://commons.wikimedia.org/wiki/File:Kaifa_MA105H2E_AMS-m%C3%A5ler.jpg",
    "titel": "Kaifa MA105H2E AMS-måler.jpg",
    "urheber": "Fredrik Lindseth",
-   "lizenz": "CC BY-SA 4.0"
+   "lizenz": "CC BY-SA 4.0",
+   "kennzahl": [
+    0.3187,
+    0.3289,
+    0.399,
+    0.3643
+   ],
+   "kennzahl_text": "1.8.0"
   },
   {
    "datei": "fotos-lcd/54-focus-axr.jpg",
