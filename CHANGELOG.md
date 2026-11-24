@@ -58,7 +58,10 @@ Läufe seit dem 17. November.
   nicht aus), dazu Website, Kamera und CloudKit-Wache, wenn der PR dort etwas
   ändert, und mit der Marke `testflight` den Bau. Bei Konflikt oder roter
   Prüfung bleibt er grün mit einem Hinweis, damit es keine Mail gibt. `PROBE=1`
-  prüft alles, ohne zusammenzuführen.
+  prüft alles, ohne zusammenzuführen. Gezählt werden nur Prüfungen aus den
+  Abläufen dieses Repositorys: „Workers Builds: pulsemeter“ (Cloudflare) ist
+  seit Oktober an jedem Commit rot, auch auf main, und hängt an keinem Ablauf
+  hier.
 
 ### Prüfungen
 - `scripts/pruefen.sh schnell` unter Linux. `zusammenfuehren.sh` mit `PROBE=1`

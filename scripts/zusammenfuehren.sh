@@ -64,9 +64,13 @@ if [ "$ci" != "completed success" ]; then
   exit 0
 fi
 
-# Keine andere Prüfung an diesem Commit rot (z. B. CloudKit-Wache).
+# Keine andere Prüfung dieses Repositorys an diesem Commit rot (z. B.
+# CloudKit-Wache). Nur Abläufe aus `.github/workflows` zählen: Fremde Dienste
+# melden auch Prüfungen an jeden Commit. „Workers Builds: pulsemeter" von
+# Cloudflare ist seit Oktober an **jedem** Commit rot, auch auf main, und
+# hängt an keinem Ablauf hier; zählte es mit, ginge nie ein PR durch.
 rot=$(gh api "repos/$REPO/commits/$sha/check-runs?per_page=100" \
-  --jq '[.check_runs[] | select(.conclusion=="failure" or .conclusion=="timed_out" or .conclusion=="action_required") | .name] | join(", ")')
+  --jq '[.check_runs[] | select(.app.slug=="github-actions") | select(.conclusion=="failure" or .conclusion=="timed_out" or .conclusion=="action_required") | .name] | join(", ")')
 if [ -n "$rot" ]; then
   hinweis "an ${sha:0:7} sind Prüfungen rot: $rot."
   exit 0
