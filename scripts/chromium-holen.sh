@@ -29,22 +29,51 @@ else
   npm install --no-save "playwright@${VERSION}"
 fi
 
+# Welche Browser: ohne Angabe Chromium, `scripts/chromium-holen.sh chromium webkit`
+# holt beide in einem Gang (CI, Website in WebKit).
+# (`set --` statt leerem Feld: Die Bash 3.2 eines Macs bricht mit `set -u` an
+# einem leeren Feld ab.)
+if [ $# -eq 0 ]; then set -- chromium; fi
+BROWSER=("$@")
+
 # Der Browser selbst — es sei denn, er liegt schon da. In der Cloud-Sitzung
 # zeigt `PULSE_CHROMIUM` auf ein vorbereitetes Chromium, und der Nachladeversuch
 # wäre dort ohnehin geblockt.
 if [ -n "${PULSE_CHROMIUM:-}" ]; then
   echo "Chromium steht unter $PULSE_CHROMIUM — nichts zu holen."
-else
-  # **Mit Zeitgrenze und zweitem Anlauf.** Am 7. Oktober hing der
-  # Ubuntu-Paketspiegel bei `--with-deps` fünfzehn Minuten ohne eine Zeile,
-  # bis der Lauf abgebrochen wurde; die Website ging an dem Abend nicht raus,
-  # und an der Seite war nichts falsch. Die Pakete, die Chromium braucht, hat
-  # das Ubuntu-Bild von GitHub fast alle schon. Deshalb: zweimal drei Minuten (der ganze Auftrag hat fünfzehn)
-  # mit Paketen, und reicht das nicht, nur den Browser.
-  for versuch in 1 2; do
-    if timeout 180 npx playwright install --with-deps chromium; then exit 0; fi
-    echo "::warning::Chromium mit Paketen, Anlauf $versuch: keine Antwort in drei Minuten."
-  done
-  echo "::warning::Hole Chromium ohne Systempakete."
-  npx playwright install chromium
+  exit 0
 fi
+
+# **Systempakete getrennt vom Browser, und mit Warten auf die Paketsperre, seit
+# 0.180.1.** Vorher stand hier `timeout 180 npx playwright install --with-deps`
+# in zwei Anläufen. Am 24. November (Lauf 45323965381) kam der Spiegel nach drei
+# Minuten nicht durch; `timeout` beendete `npx`, aber nicht das `apt-get`, das
+# Playwright mit `sudo` gestartet hatte. Das lief weiter und hielt die Sperre
+# `/var/lib/dpkg/lock-frontend`. Der zweite Anlauf und danach der WebKit-Schritt
+# scheiterten sofort an „Could not get lock", der Lauf wurde rot, und an der
+# Prüfung selbst war nichts falsch.
+#
+# Jetzt wartet apt bis zu zehn Minuten auf die Sperre, statt aufzugeben, und
+# ein zweiter Anlauf trifft ein noch laufendes apt nicht mehr ins Leere. Nur auf
+# einem Linux-Läufer mit `sudo` ohne Passwort; lokal ändert das Skript nichts am
+# System.
+if [ "$(uname)" = "Linux" ] && [ -n "${CI:-}" ] && sudo -n true 2>/dev/null; then
+  echo 'DPkg::Lock::Timeout "600";' | sudo tee /etc/apt/apt.conf.d/90-pulse-sperre >/dev/null
+  pakete_da=""
+  for versuch in 1 2 3; do
+    if timeout 480 npx playwright install-deps "${BROWSER[@]}"; then pakete_da=1; break; fi
+    echo "::warning::Systempakete für ${BROWSER[*]}, Anlauf $versuch ohne Erfolg."
+    sleep 15
+  done
+  # Das Ubuntu-Bild von GitHub hat fast alles schon. Fehlt trotzdem etwas,
+  # sagt es die Prüfung selbst beim Start des Browsers — deutlicher als apt.
+  [ -n "$pakete_da" ] || echo "::warning::Systempakete nicht vollständig; weiter mit dem, was da ist."
+fi
+
+for versuch in 1 2 3; do
+  if timeout 300 npx playwright install "${BROWSER[@]}"; then exit 0; fi
+  echo "::warning::Browser ${BROWSER[*]} holen, Anlauf $versuch ohne Erfolg."
+  sleep 15
+done
+echo "::error::Browser ${BROWSER[*]} ließen sich nicht holen."
+exit 1

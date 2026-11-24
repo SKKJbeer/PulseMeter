@@ -85,14 +85,28 @@ der teuersten Minute und ohne je ein Ergebnis. Behoben wurde das damals mit
 **zwei Gruppen** in `ci.yml`, und die Regel blieb trotzdem stehen. Sie hat
 danach nur noch Wartezeit gekostet.
 
-| Auftrag | Gruppe | Bei neuem Push |
-|---|---|---|
-| `prototype` (Ubuntu, Minuten) | `entwurf-<zweig>` | wird abgebrochen — soll er, er läuft gleich wieder |
-| `iphone` (macOS, teuer) | `iphone-<zweig>` | `cancel-in-progress: false` — **reiht sich an**, beide laufen durch |
-| `ipad` (macOS, teuer) | `ipad-<zweig>` | dasselbe, eigene Gruppe — sonst bricht der eine den anderen ab |
-| `bilder` (macOS, kurz) | — | wartet auf beide, legt beide Bildersätze in den Zweig `screenshots` |
+**Seit 0.180.1 wieder eine Gruppe für den ganzen Lauf, und nur noch `push`.**
+Die Gruppen je Auftrag (`iphone-<zweig>` ohne Abbruch) hatten zusammen mit dem
+zweiten Auslöser `pull_request` eine Nebenwirkung, die erst am 24. November
+gemessen wurde:
 
-Der teure Auftrag ist also geschützt. Wer wartet, wartet umsonst.
+- Jeder Push auf einen Zweig mit offenem PR startete zwei volle Läufe. Beide
+  standen in derselben Gruppe ohne Abbruch, liefen also **nacheinander**: bis
+  zur Antwort zwei bis drei Stunden statt einer. Mit drei Arbeitszweigen
+  reichten die fünf Mac-Läufer des Kontos nicht mehr.
+- Ein wartender Auftrag, den ein neuerer verdrängt, macht den ganzen Lauf
+  **rot** („failure", nicht „cancelled"). Jede Verdrängung war eine Fehler-Mail
+  an den Gründer, ohne dass etwas falsch war.
+
+| Zweig | Gruppe | Bei neuem Push |
+|---|---|---|
+| Arbeitszweig | `ci-<zweig>` | der alte Lauf wird abgebrochen („cancelled", keine Mail), der neue Stand zählt |
+| `main` | `ci-<commit>` | jeder Commit läuft zu Ende |
+
+Damit gilt: Pushen ist erlaubt, aber jeder Push verwirft das Ergebnis des
+vorigen Standes. Also erst pushen, wenn der Stand fertig ist. Wer fertig ist,
+setzt die Marke `zusammenfuehren` am PR, und `zusammenfuehren.yml` führt ihn
+zusammen, sobald CI grün ist, auch nachts.
 
 ```bash
 git fetch origin screenshots && git show origin/screenshots:README.md | head -3

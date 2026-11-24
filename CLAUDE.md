@@ -260,9 +260,23 @@ auslösen und `scripts/website-fassung.py` ansehen. Alles Weitere steht in
 
 ### Pushen während eines laufenden Prüflaufs ist erlaubt
 
-Der teure Mac-Auftrag reiht sich bei einem neuen Push an, statt abgebrochen zu
-werden (`cancel-in-progress: false`, eigene Gruppen je Gerät). Wer wartet,
-wartet umsonst. Gruppen und Begründung: `docs/14-arbeitsweise-hintergrund.md`.
+Seit 0.180.1 läuft CI nur noch auf `push` (kein zweiter Lauf für den PR), und
+ein neuer Push auf einen Arbeitszweig bricht dessen alten Lauf ab. Gewollt:
+Gezählt wird nur der letzte Stand, und ein abgebrochener Lauf schickt keine
+Fehler-Mail. Auf `main` läuft jeder Commit zu Ende. Also: erst pushen, wenn der
+Stand fertig ist, dann nicht mehr nachschieben. Begründung:
+`docs/14-arbeitsweise-hintergrund.md`.
+
+### Zusammenführen geht ohne wache Sitzung
+
+Seit 0.180.1. Ist ein PR fertig, bekommt er die Marke **`zusammenfuehren`**
+(und **`testflight`**, wenn er die App ändert). Sobald CI für seinen letzten
+Commit grün ist, führt `zusammenfuehren.yml` ihn als Squash zusammen, stößt CI
+auf `main` an und mit `testflight` auch den Bau. Bei einem Konflikt mit `main`
+bleibt der PR offen: abgleichen, pushen, der Rest läuft wieder von selbst. Die
+Marke kommt erst, wenn der Inhalt fertig ist; Entwürfe werden nie
+zusammengeführt. Anlass: PR #33 war am 23. November um 23:53 Uhr grün und lag
+bis zum Morgen, weil nur eine schlafende Sitzung hätte zusammenführen können.
 
 ## Regel 5 — Token sparen
 

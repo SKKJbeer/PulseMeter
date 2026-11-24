@@ -6,37 +6,49 @@ name: CI
 on:
   push:
     branches: [main, "claude/**"]
-  pull_request:
   workflow_dispatch:
 
-# Auf den Zweignamen normalisiert, nicht auf `github.ref`: Bei offener
-# Pull-Request liefert ein Push zwei Ereignisse — `push` mit
-# `refs/heads/claude/x` und `pull_request` mit `refs/pull/1/merge`. Als
-# verschiedene Gruppen liefen beide durch und bauten dieselbe App zweimal.
-# Über den Zweignamen landen sie in derselben Gruppe, und der spätere Lauf
-# bricht den früheren ab.
-# Das `-2` am Ende ist kein Schmuck: Ein Lauf blieb in einem Zustand hängen,
-# den GitHub weder startet noch abbrechen lässt („Cannot cancel a workflow
-# re-run that has not yet queued"). Solange er in der Gruppe steht, entstehen
-# für neue Pushes gar keine Läufe mehr — drei Pushes hintereinander blieben
-# unbemerkt liegen. Ein neuer Gruppenname lässt den Blockierer zurück.
+# **Seit 0.180.1 kein `pull_request` mehr, und eine Gruppe je Zweig für den
+# ganzen Lauf.** Analyse vom 24. November, nachdem PR #33 eine Nacht liegen
+# blieb und lauter „Run failed"-Mails kamen:
 #
-# Zweiter Befund desselben Tages, hier festgehalten statt behoben:
-# `cancel-in-progress` bewertet „neu" nach **Startzeit**, nicht nach
-# Commit-Reihenfolge. Wartet ein Lauf lange auf einen Läufer, kann er dadurch
-# einen jüngeren erschlagen. Das ist selten und kostet einen Lauf; die Regel
-# bleibt, weil sie im Normalfall genau das Richtige tut.
-# **Die Nebenläufigkeit liegt seit 0.33.0 je Auftrag, nicht über dem Ganzen.**
-# Zusammen bewirkten die beiden Regeln oben nämlich genau das Gegenteil dessen,
-# wofür sie da sind: Bei zügiger Arbeit brach jeder neue Push den laufenden
-# App-Build ab — an einem Tag drei Mal, jedes Mal kurz vor dem Ende und ohne je
-# ein Ergebnis geliefert zu haben. Wer nicht am Mac sitzt, stand danach ohne
-# jede Aussage da.
+# 1. Jeder Push auf einen Zweig mit offenem PR startete **zwei** volle Läufe,
+#    `push` und `pull_request`. Beide landeten in denselben Gruppen
+#    `iphone-<zweig>` und `ipad-<zweig>`, ohne Abbruch, also **nacheinander**:
+#    Der PR-Lauf wartete, bis der Push-Lauf mit demselben Stand fertig war. Aus
+#    einer Stunde Mac wurden zwei bis drei Stunden bis zur Antwort (gemessen:
+#    Läufe 45222223677, 45268395601, 45323965381), und mit drei Arbeitszweigen
+#    reichten die fünf Mac-Läufer des Kontos nicht mehr. „Kamera messen" fand
+#    am 23. November zwanzig Minuten lang keinen Mac und fiel ohne einen
+#    einzigen Schritt.
+# 2. Ein wartender Auftrag, den ein neuerer in derselben Auftragsgruppe
+#    verdrängt, wird abgebrochen — und der **Lauf** steht dann auf „failure",
+#    nicht auf „cancelled" (Lauf 45222231921: vier Aufträge abgebrochen, keiner
+#    rot, Lauf rot). Jede solche Verdrängung war eine Fehler-Mail ohne Fehler.
 #
-# Die schnelle Prüfung darf weiter abgebrochen werden: Sie dauert eine Minute,
-# und das Ergebnis eines überholten Standes interessiert niemanden. Der
-# App-Build darf es nicht — er ist die einzige Aussage über die App, wenn
-# gerade niemand an einem Mac sitzt, und ein abgebrochener Lauf ist keine.
+# Darum jetzt: nur `push` (die Prüfungen erscheinen trotzdem am PR, sie hängen
+# am Commit), und eine Gruppe für den ganzen Lauf. Auf einem Arbeitszweig
+# bricht ein neuer Push den alten Lauf ab — der Lauf heißt dann „cancelled",
+# das schickt keine Mail, und der Mac ist sofort frei für den Stand, der
+# zählt. Ein fertiges Ergebnis für einen überholten Stand hilft beim
+# Zusammenführen nicht. Auf `main` bekommt jeder Commit seine eigene Gruppe
+# und läuft zu Ende.
+#
+# Früher (bis 0.33.0) stand hier schon einmal Abbruch für alles, und bei
+# zügiger Arbeit kam nie ein Lauf durch. Damals liefen zwei Läufe je Push und
+# kein Zusammenführen ohne Menschen; beides ist jetzt anders, und wer zehn
+# Minuten nach einem Push noch einmal schiebt, will das Ergebnis des neuen
+# Standes.
+concurrency:
+  group: ci-${{ github.ref_name == 'main' && github.sha || github.ref_name }}
+  cancel-in-progress: ${{ github.ref_name != 'main' }}
+
+# Vorgeschichte, kurz: Bis 0.180.1 lagen die Gruppen je Auftrag
+# (`entwurf-`, `iphone-`, `ipad-<zweig>`), der App-Build ohne Abbruch. Einmal
+# blieb ein Lauf in einem Zustand hängen, den GitHub weder startet noch
+# abbrechen lässt („Cannot cancel a workflow re-run that has not yet queued");
+# hilft das wieder, den Gruppennamen ändern (`ci-` → `ci2-`), dann bleibt der
+# Blockierer zurück.
 
 # Schreibrecht nur, weil der Lauf die Screenshots in einen eigenen Zweig legt.
 # Sonst bliebe es beim Lesen.
@@ -57,17 +69,16 @@ jobs:
     # auf, und `playwright install --with-deps webkit` hing zweimal bis zum
     # Abbruch nach 20 Minuten, obwohl alle Prüfungen davor grün waren.
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    concurrency:
-      group: entwurf-${{ github.event.pull_request.head.ref || github.ref_name }}
-      cancel-in-progress: true
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Chromium
-        run: scripts/chromium-holen.sh
+      # Beide Browser und ihre Systempakete in einem Gang, mit Warten auf die
+      # Paketsperre (Begründung in `chromium-holen.sh`).
+      - name: Chromium und WebKit
+        run: scripts/chromium-holen.sh chromium webkit
       - name: Klick-Dummy prüfen
         run: node scripts/check-prototype.mjs
       # Der Kamera-Leser steht zweimal da, in Swift und im Klick-Dummy. Beide
@@ -133,9 +144,7 @@ jobs:
       # allein prüft also nicht, was die Zielgruppe sieht; am 26. September hat
       # WebKit einen versetzten Pfad gezeigt, den Chromium nicht zeigte.
       - name: Website in WebKit prüfen
-        run: |
-          npx playwright install --with-deps webkit
-          PULSE_ENGINE=webkit node scripts/check-website.mjs
+        run: PULSE_ENGINE=webkit node scripts/check-website.mjs
 
   # **Läuft wieder bei jedem Push**, auch auf einen Arbeitszweig.
   #
@@ -149,9 +158,6 @@ jobs:
   # sitzt, hat sein Ergebnis lange vorher, und der Zweig `pruefungen` sagt, ob
   # das der Fall war.
   #
-  # `cancel-in-progress: false` — anders als bei der schnellen Prüfung. Ein
-  # abgebrochener App-Build ist keine Aussage, sondern eine verlorene
-  # Viertelstunde. Lieber laufen zwei hintereinander als keiner zu Ende.
   # **Seit 0.113.13 laufen iPhone und iPad nebeneinander, nicht nacheinander.**
   #
   # Vorher war das ein Auftrag, der beides der Reihe nach abarbeitete. Gemessen
@@ -180,8 +186,6 @@ jobs:
   # Gesamtkosten an Läuferminuten bleiben etwa gleich: Der iPad-Zweig hat auch
   # vorher schon einen eigenen Bau angelegt.
   #
-  # `cancel-in-progress: false` in **beiden** Zweigen, aus demselben Grund wie
-  # zuvor. Eigene Gruppennamen, sonst bricht der eine den anderen ab.
   iphone:
     runs-on: macos-15
     # **90 statt 60, seit 0.139.1.** Ein Lauf braucht 45 Minuten, ein langsamer Läufer 65: Am
@@ -190,9 +194,6 @@ jobs:
     # Schritts verloren, der rot war. Das Limit soll einen hängenden Lauf stoppen, nicht einen
     # langsamen.
     timeout-minutes: 90
-    concurrency:
-      group: iphone-${{ github.event.pull_request.head.ref || github.ref_name }}
-      cancel-in-progress: false
 
     steps:
       # `fetch-depth: 2`, weil die Prüfung auf verwaiste Namen den Vorgänger
@@ -379,9 +380,6 @@ jobs:
     runs-on: macos-15
     # 90 aus demselben Grund wie beim iPhone; der iPad-Lauf braucht 55 Minuten.
     timeout-minutes: 90
-    concurrency:
-      group: ipad-${{ github.event.pull_request.head.ref || github.ref_name }}
-      cancel-in-progress: false
     env:
       PULSE_FAMILIE: ipad
       PULSE_DERIVED_DATA: build/DerivedData-iPad

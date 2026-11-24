@@ -51,12 +51,26 @@ if [ "$SCOPE" = "all" ] || [ "$SCOPE" = "app" ]; then
   xcrun simctl boot "$DEVICE" 2>/dev/null || true
   xcrun simctl bootstatus "$DEVICE" -b >/dev/null 2>&1 || true
 
+  # **In der CI bekommt eine gefallene Oberflächenprüfung einen zweiten Anlauf,
+  # seit 0.180.1.** Vom 22. bis 24. November fiel der iPad-Zweig neunmal, jedes
+  # Mal an einer einzelnen Prüfung, die im Lauf davor oder danach mit demselben
+  # Code grün war (Kamera-Vorführung, Kaufblatt, Tabellenimport). Jeder rote
+  # Lauf kostete einen neuen von über einer Stunde und hielt die PRs dahinter
+  # fest. Ein echter Fehler fällt zweimal und bleibt rot; was erst im zweiten
+  # Anlauf durchgeht, steht unten als Warnung mit Namen da, damit es niemand
+  # übersieht. Lokal bleibt es bei einem Anlauf: Dort soll man das Wackeln sehen.
+  WIEDERHOLEN=()
+  if [ -n "${CI:-}" ]; then
+    WIEDERHOLEN=(-retry-tests-on-failure -test-iterations 2)
+  fi
+
   set +e
   xcodebuild test \
       -project PulseMeter.xcodeproj \
       -scheme PulseMeter \
       -destination "id=$DEVICE" \
       -derivedDataPath "${PULSE_DERIVED_DATA:-build/DerivedData}" \
+      ${WIEDERHOLEN[@]+"${WIEDERHOLEN[@]}"} \
       CODE_SIGNING_ALLOWED=NO 2>&1 \
     | tee "$LOG" \
     | grep --line-buffered -E "Test Case .*(started|passed|failed)|Test Suite .*(passed|failed)|Executed [0-9]+ test|error:|Assertion Failure|\*\* TEST|^MESSUNG "
@@ -74,6 +88,14 @@ if [ "$SCOPE" = "all" ] || [ "$SCOPE" = "app" ]; then
       | tail -100
     echo "--- Ende ---"
     exit "$status"
+  fi
+
+  # Grün, aber nicht im ersten Anlauf: benennen, nicht verschweigen.
+  wackelig=$(grep -oE "Test Case '-\[[^]]+\]' failed" "$LOG" | sed -E "s/.*[ .]([A-Za-z0-9_]+)\]' failed/\1/" | sort -u || true)
+  if [ -n "$wackelig" ]; then
+    for name in $wackelig; do
+      echo "::warning::Wackelige Oberflächenprüfung (erst im zweiten Anlauf grün): $name"
+    done
   fi
 fi
 

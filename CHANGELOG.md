@@ -9,6 +9,68 @@ Der Ablauf, nach dem diese Datei gepflegt wird, steht in
 
 ---
 
+## 0.180.1 — 2026-11-24
+
+**CI antwortet in einer statt drei Stunden, grüne PRs gehen von selbst rein, keine Fehler-Mails ohne Fehler**
+
+Anlass: PR #33 war am 23. November um 23:53 Uhr grün und lag bis zum Morgen,
+und in zwei Tagen kamen über zwanzig „Run failed"-Mails. Ausgewertet wurden alle
+Läufe seit dem 17. November.
+
+### Ursachen
+- **Zwei volle Läufe je Push.** CI lief auf `push` und auf `pull_request`. Beide
+  standen in denselben Gruppen `iphone-<zweig>` und `ipad-<zweig>` ohne Abbruch,
+  liefen also nacheinander: zwei bis drei Stunden bis zur Antwort statt einer.
+  Mit drei Arbeitszweigen reichten die fünf Mac-Läufer nicht, „Kamera messen"
+  bekam am 23. November zwanzig Minuten lang keinen und fiel ohne einen Schritt.
+- **Verdrängte Aufträge machen den Lauf rot.** Wartet ein Auftrag und kommt ein
+  neuerer in dieselbe Gruppe, bricht GitHub den wartenden ab und setzt den
+  ganzen Lauf auf „failure". Etwa die Hälfte der Fehler-Mails hatte keinen
+  Fehler dahinter.
+- **Wackelige iPad-Prüfungen.** Neunmal fiel der iPad-Zweig an einer einzelnen
+  Prüfung, die davor oder danach mit demselben Code grün war. Jeder rote Lauf
+  kostete einen neuen von über einer Stunde.
+- **Paketsperre auf dem Linux-Läufer.** `timeout` beendete beim Holen von
+  Chromium nur `npx`, nicht das `apt-get` darunter. Das hielt die dpkg-Sperre,
+  und der WebKit-Schritt scheiterte an „Could not get lock" (Lauf 45323965381,
+  PR #33).
+- **Zusammenführen hing an einer wachen Sitzung.** Nach grüner CI passierte
+  nichts, bis jemand schrieb. Kam main in der Zeit weiter, fing alles von vorn an.
+
+### Geändert
+- `ci.yml`: nur noch `push` (die Prüfungen erscheinen trotzdem am PR) und eine
+  Gruppe für den ganzen Lauf. Auf einem Arbeitszweig bricht ein neuer Push den
+  alten Lauf ab („cancelled", keine Mail), auf `main` läuft jeder Commit zu Ende.
+- `scripts/chromium-holen.sh`: wartet bis zu zehn Minuten auf die Paketsperre,
+  holt Systempakete und Browser getrennt, je drei Anläufe, und nimmt mehrere
+  Browser in einem Gang (`chromium webkit`). Der Entwurfs-Auftrag hat dafür 30
+  statt 20 Minuten.
+- `scripts/test.sh`: In der CI bekommt eine gefallene Oberflächenprüfung einen
+  zweiten Anlauf. Was erst dann grün wird, steht als Warnung mit Namen im Lauf.
+  Ein echter Fehler fällt zweimal und bleibt rot. Lokal bleibt es bei einem
+  Anlauf.
+
+### Neu
+- `zusammenfuehren.yml` mit `scripts/zusammenfuehren.sh`: Ein PR mit der Marke
+  `zusammenfuehren` wird als Squash zusammengeführt, sobald CI für seinen
+  letzten Commit grün ist und keine andere Prüfung rot. Danach stößt der Ablauf
+  CI auf main an (ein Zusammenführen mit dem Token des Ablaufs löst das sonst
+  nicht aus), dazu Website, Kamera und CloudKit-Wache, wenn der PR dort etwas
+  ändert, und mit der Marke `testflight` den Bau. Bei Konflikt oder roter
+  Prüfung bleibt er grün mit einem Hinweis, damit es keine Mail gibt. `PROBE=1`
+  prüft alles, ohne zusammenzuführen. Gezählt werden nur Prüfungen aus den
+  Abläufen dieses Repositorys: „Workers Builds: pulsemeter“ (Cloudflare) ist
+  seit Oktober an jedem Commit rot, auch auf main, und hängt an keinem Ablauf
+  hier.
+
+### Prüfungen
+- `scripts/pruefen.sh schnell` unter Linux. `zusammenfuehren.sh` mit `PROBE=1`
+  gegen PR #33 und #36 (nicht offen, ohne Marke, CI nicht grün: alle drei
+  Ausgänge gesehen). Die neue `ci.yml` prüft sich mit dem Push dieses Zweigs
+  selbst.
+
+---
+
 ## 0.180.0 — 2026-11-24
 
 **Nach einem Update sagt die App einmal, was neu ist. App, Laden und Website aus einer Quelle**

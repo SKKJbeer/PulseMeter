@@ -1,0 +1,71 @@
+name: Zusammenführen
+
+# Führt einen PR mit der Marke `zusammenfuehren` zusammen, sobald CI für seinen
+# letzten Commit grün ist, und stößt danach die Abläufe auf main an (mit der
+# Marke `testflight` auch den Bau). Begründung und Regeln stehen in
+# `scripts/zusammenfuehren.sh`.
+#
+# Zwei Auslöser, weil beide Reihenfolgen vorkommen: CI wird grün, nachdem die
+# Marke schon steht — oder die Marke kommt, nachdem CI schon grün ist.
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+  pull_request:
+    types: [labeled, ready_for_review]
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+  checks: read
+
+# Ein Zusammenführen zur Zeit: Zwei PRs, die gleichzeitig grün werden, sollen
+# nicht gegeneinander laufen. Der zweite sieht dann das neue main.
+concurrency:
+  group: zusammenfuehren
+  cancel-in-progress: false
+
+jobs:
+  zusammenfuehren:
+    # Nur grüne CI-Läufe von Arbeitszweigen (nicht main), oder eine neue Marke.
+    if: >-
+      (github.event_name == 'workflow_run'
+        && github.event.workflow_run.conclusion == 'success'
+        && github.event.workflow_run.head_branch != 'main')
+      || (github.event_name == 'pull_request'
+        && github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Das Skript kommt immer von main, nicht aus dem Zweig des PRs:
+          # Was zusammenführen darf, bestimmt nicht der Stand, der hinein will.
+          ref: main
+          sparse-checkout: scripts/zusammenfuehren.sh
+          sparse-checkout-cone-mode: false
+
+      - name: PR finden
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ZWEIG: ${{ github.event.workflow_run.head_branch }}
+          NUMMER: ${{ github.event.pull_request.number }}
+        run: |
+          if [ -n "$NUMMER" ]; then
+            echo "nummer=$NUMMER" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          nummer=$(gh api "repos/$GITHUB_REPOSITORY/pulls?state=open&head=${GITHUB_REPOSITORY_OWNER}:${ZWEIG}" --jq '.[0].number // empty')
+          if [ -z "$nummer" ]; then
+            echo "::notice::Kein offener PR für $ZWEIG."
+          fi
+          echo "nummer=$nummer" >> "$GITHUB_OUTPUT"
+
+      - name: Zusammenführen, wenn grün
+        if: steps.pr.outputs.nummer != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/zusammenfuehren.sh "${{ steps.pr.outputs.nummer }}"

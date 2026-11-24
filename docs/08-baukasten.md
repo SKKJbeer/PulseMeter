@@ -84,10 +84,11 @@ man zum zweiten Mal danebengelegen hat.
 **Ein Filter, der nur die erste Zeile einer Begründung zeigt**, macht genau
 diese Ausgabe wieder unbrauchbar.
 
-**`cancel-in-progress` über dem ganzen Ablauf** bricht den langen Auftrag ab,
-sobald der nächste Push kommt. Drei Läufe an einem Tag endeten so, jeder kurz
-vor dem Ende. Die Nebenläufigkeit gehört **je Auftrag**: Der schnelle darf
-abgebrochen werden, der lange nicht.
+**Nebenläufigkeit je Auftrag ohne Abbruch, dazu `push` und `pull_request`**
+ließ jeden Push zwei Läufe hintereinander abarbeiten (zwei bis drei Stunden bis
+zur Antwort), und jeder verdrängte wartende Auftrag machte den Lauf rot und
+schickte eine Fehler-Mail. Seit 0.180.1: nur `push`, eine Gruppe für den ganzen
+Lauf, auf Arbeitszweigen mit Abbruch, auf `main` je Commit.
 
 **Ein Prüfschritt, der die Testquellen auslässt**, findet Tippfehler dort erst
 nach dem vollständigen Build — nach der teuersten Minute des Laufs.
