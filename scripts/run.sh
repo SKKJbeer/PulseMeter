@@ -112,6 +112,17 @@ shoot light store-verlauf    -pulse-schaufenster -pulse-verlauf
 shoot light store-zaehler    -pulse-schaufenster -pulse-zaehler
 PULSE_WARTEN=15 shoot light store-bericht -pulse-schaufenster -pulse-bericht
 
+# **Die eigene Produktseite „Wärmepumpe“ und das Ereignis „Winter-Check“.**
+#
+# Ein Haus nach dem Wechsel (`-pulse-waermepumpe` in `LaunchFixture`): Gas bis
+# vor einem Jahr, seitdem die Wärmepumpe. Drei Schirme, die es nur dort gibt:
+# der Vergleich vorher und nachher, die Übersicht mit der Karte zum Wechsel,
+# und das Blatt, in dem man den Tag einträgt. Gesetzt werden sie von
+# `store-shots.mjs` mit den Überschriften der Produktseite.
+shoot light store-wp-vergleich   -pulse-schaufenster -pulse-waermepumpe -pulse-heizungsvergleich
+shoot light store-wp-uebersicht  -pulse-schaufenster -pulse-waermepumpe
+shoot light store-wp-wechsel     -pulse-schaufenster -pulse-waermepumpe -pulse-heizungswechsel
+
 # Einlesen aus einer Tabelle, mit dem Beispiel und ohne Zähler vorher.
 shoot light screenshot-import-light -pulse-empty -pulse-import
 shoot dark  screenshot-import-dark  -pulse-empty -pulse-import

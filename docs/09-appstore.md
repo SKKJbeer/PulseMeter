@@ -533,7 +533,7 @@ der Zahl. Die liest die App nicht, gemessen zu unsicher
 (`docs/kamera/stufe-2.md`); welche Zahl wohin gehört, entscheiden die
 Bereiche der bisherigen Ablesungen, darum „ab der zweiten Ablesung“.
 
-**Eine Quelle für drei Orte (0.179.0).** Die Kurzform in der App, der Eintrag
+**Eine Quelle für drei Orte (0.180.0).** Die Kurzform in der App, der Eintrag
 auf der Website und dieser Text gehören zusammen: App und Website lesen
 `docs/fassungen/1.9.json`, der Laden diesen Block. `scripts/check-neuigkeiten.py`
 bricht ab, wenn es zu einer Fassung das eine gibt und das andere nicht.
@@ -671,6 +671,62 @@ Optional und für 1.0 **gestrichen**. Ein schlechtes Video schadet mehr als
 kein Video, und gute Bilder tragen diese App.
 
 ---
+
+## Wärmepumpe im Laden: Ereignis und eigene Produktseite
+
+Seit 22. November vorbereitet, Hebel 4 aus dem Reichweiten-Konzept vom
+11. November. Beides geht über `scripts/asc-schaufenster.py` (Ablauf
+`schaufenster.yml`) zu Apple. **Die Texte hier sind die einzige Quelle**: Das
+Skript liest genau diese Blöcke, und `check-store-texte.py` prüft sie wie jeden
+anderen Store-Text.
+
+**Das Ereignis** läuft vom 1. bis 31. Dezember. Länger als 31 Tage nimmt Apple
+nicht; für Januar braucht es ein zweites. Kennzeichnung „Großes Update“, weil
+der Vergleich mit 1.8 neu kam, und „Kauf nötig“, weil er am Kauf „Wärmepumpe“
+hängt. Name höchstens 30 Zeichen, Kurzbeschreibung 50, Beschreibung 120. Auf
+das Bild legt Apple Name und Kurzbeschreibung selbst, deshalb steht darauf
+kein Text.
+
+### Ereignis: Name
+
+```
+Winter-Check: Heizung
+```
+
+### Ereignis: Kurzbeschreibung
+
+```
+Gas oder Wärmepumpe, was war billiger?
+```
+
+### Ereignis: Beschreibung
+
+```
+Trag ein, wann die Wärmepumpe kam. Zählora stellt dieselben Monate vorher und nachher gegenüber, in kWh und Euro.
+```
+
+**Die eigene Produktseite** heißt bei Apple „Wärmepumpe“ und hat eine eigene
+Adresse mit `?ppid=…`. Auf sie zeigen die Wärmepumpen-Seiten der Website,
+sobald Apple sie freigegeben hat. Werbetext höchstens 170 Zeichen.
+
+### Produktseite Wärmepumpe: Werbetext
+
+```
+Lohnt sich die Wärmepumpe? Zählora legt dieselben Monate mit Gas oder Öl und mit Wärmepumpe nebeneinander, in kWh und Euro. Ohne Konto, die Zählerstände bleiben bei dir.
+```
+
+### Überschriften der Produktseite Wärmepumpe
+
+Dasselbe Format wie die Überschriften der Store-Seite. Die ersten drei Bilder
+kommen aus dem Haus nach dem Wechsel (`-pulse-waermepumpe`), das vierte ist
+dasselbe wie auf der Store-Seite.
+
+```
+store-wp-vergleich | Was hat die *Wärmepumpe* gebracht? | Dieselben Monate vorher und nachher, in kWh und Euro.
+store-wp-uebersicht | Gas und Wärmepumpe *nebeneinander* | Der alte Zähler bleibt im Verlauf und wird nicht mehr gemahnt.
+store-wp-wechsel | Ein Datum *genügt* | Am Gaszähler eintragen, wann die Wärmepumpe kam. Den Rest rechnet Zählora.
+store-ablesen | Am Zähler eintippen, *fertig* | Zählora rechnet sofort nach, ob der Stand zu deinem Verbrauch passt.
+```
 
 ## 4a. Aufnahme-Anfrage bei Apple (Featuring Nomination)
 

@@ -152,8 +152,8 @@ Jede Zeile ist einmal passiert. Die Wache steht daneben.
 | Ein Feld des Modells verstößt gegen die Regeln von CloudKit; in der CI ohne iCloud fiele das nie auf. | 0.174.0 `testTheModelFollowsTheRulesOfCloudKit`, gegengeprüft mit `testEachRuleIsSeenWhenBroken` |
 | Im Ziffernblock stand „rund 0× dein üblicher Verbrauch" und „rund 3.039,2×". Richtig gerechnet, unverständlich gesagt. | 0.174.0 `scripts/check-bedienung.mjs`, `testAnUnchangedReadingIsQuestionedInPlainWords`, `testATenfoldTypoNamesTheUsualAmountForTheSameDays` |
 | Die Kopfzeile des Klick-Dummys stand sechs Versionen lang auf 0.138.0. | 0.174.0 `scripts/check-versionen.py` |
-| `entwicklung.html` kündigte 1.7 und 1.8 noch als „Als Nächstes“ und „Danach“ an, als beide längst im Laden standen. | 0.179.0 `scripts/check-neuigkeiten.py` (Kennungen `plan`/`data-plan`), `scripts/website-fassung.py` streicht sie bei der Freigabe |
-| „Neu in Zählora“ erschiene nach einer Neuinstallation, käme nach dem Wegtippen wieder oder läge über jedem Prüflauf. | 0.179.0 `ReleaseNotesTests`, `testShownOnceAfterAnUpdateAndGoneForGoodAfterOneTap`, `testNeverAfterAFreshInstall`, `testSwipingItAwayCountsAsSeen`, `testOtherTestRunsNeverSeeIt` |
+| `entwicklung.html` kündigte 1.7 und 1.8 noch als „Als Nächstes“ und „Danach“ an, als beide längst im Laden standen. | 0.180.0 `scripts/check-neuigkeiten.py` (Kennungen `plan`/`data-plan`), `scripts/website-fassung.py` streicht sie bei der Freigabe |
+| „Neu in Zählora“ erschiene nach einer Neuinstallation, käme nach dem Wegtippen wieder oder läge über jedem Prüflauf. | 0.180.0 `ReleaseNotesTests`, `testShownOnceAfterAnUpdateAndGoneForGoodAfterOneTap`, `testNeverAfterAFreshInstall`, `testSwipingItAwayCountsAsSeen`, `testOtherTestRunsNeverSeeIt` |
 | Ein Zeitraum mit Daten wurde gegen einen ohne verglichen (die wiederkehrende Fehlerklasse aus `CLAUDE.md`). | `ScenarioMatrixTests`, `PeriodEngineTests` |
 | Die Website versprach Preise und Umfang, die es nicht gab. | 0.103.1 `scripts/check-versprechen.py` |
 | Bau 24 lag in TestFlight, der Schritt danach starb an einem fehlenden `import re`. | `scripts/check-namen.py` |

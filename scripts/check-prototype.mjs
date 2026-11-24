@@ -2517,7 +2517,7 @@ for (const scheme of ["light", "dark"]) {
   await page.close();
 }
 
-// --- „Neu in Zählora …“ nach einem Update (0.179.0): einmal, ein Tipp, und weg.
+// --- „Neu in Zählora …“ nach einem Update (0.180.0): einmal, ein Tipp, und weg.
 // Die Regel prüft auch ReleaseNotesTests in PulseCore, den Text check-neuigkeiten.py.
 {
   console.log("\nNeu in Zählora");

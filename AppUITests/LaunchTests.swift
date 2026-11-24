@@ -1932,6 +1932,29 @@ final class LaunchTests: XCTestCase {
                        "Der abgelöste Gaszähler gilt noch als fällig")
     }
 
+    /// Das Haus nach dem Wechsel, aus dem die Bilder der Produktseite
+    /// „Wärmepumpe“ kommen (`-pulse-waermepumpe`, `run.sh`).
+    ///
+    /// Geprüft wird, was auf dem ersten Bild stehen muss: ein Betrag in Euro.
+    /// Lägen Wechsel und Ablesungen nur einen Monat daneben, zeigte das Blatt
+    /// „Noch kein ganzer Monat“ oder „Vom Gaszähler fehlt …“, und das Bild im
+    /// Laden wäre leer. Der Simulator fotografiert das ohne Einwand.
+    func testTheHeatPumpShowcaseComparesAWholeYear() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-pulse-reset", "-pulse-pro", "-pulse-schaufenster",
+                               "-pulse-waermepumpe", "-pulse-heizungsvergleich"]
+        app.launch()
+        // Betrag und „weniger bezahlt“ liest VoiceOver als einen Satz
+        // (`.combine`), also wird nach dem Satz gesucht, nicht nach der Zahl.
+        let satz = app.descendants(matching: .any).matching(
+            NSPredicate(format: "label CONTAINS '€' AND label CONTAINS 'bezahlt'")
+        ).firstMatch
+        XCTAssertTrue(satz.waitForExistence(timeout: 15),
+                      "Im Vergleich steht kein Betrag in Euro. Zu sehen war: \(beschriftungen(in: app))")
+        XCTAssertTrue(satz.label.contains("weniger bezahlt"),
+                      "Das Haus im Schaufenster soll mit der Wärmepumpe weniger zahlen: „\(satz.label)“")
+    }
+
     /// Ohne den Kauf führt der Knopf zum Kaufblatt „Wärmepumpe“, statt zu
     /// fehlen (Produktprinzip 4).
     func testTheHeatingChangeLeadsToItsPurchaseWithoutIt() {

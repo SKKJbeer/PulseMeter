@@ -182,7 +182,7 @@ def einsetzen(fassung: str, datum: str) -> list[str]:
         weg = weg[:i] + eintrag_weg(daten, datum) + weg[i:]
         weg = re.sub(r'(data-zahl="fassungen">)(\d+)(<)',
                      lambda m: f"{m.group(1)}{int(m.group(2)) + 1}{m.group(3)}", weg, count=1)
-    # **Was die Fassung mitbringt, ist nicht mehr „Als Nächstes“** (0.179.0).
+    # **Was die Fassung mitbringt, ist nicht mehr „Als Nächstes“** (0.180.0).
     # Bis dahin stand 1.7 schon eine Woche im Laden und „Neuer Tarif ab einem
     # Tag“ weiter als nächster Schritt da, dahinter 1.8 als „Danach“. Niemand
     # hatte es vergessen; es war schlicht kein Schritt, der von selbst lief.

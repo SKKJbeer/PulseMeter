@@ -13,7 +13,7 @@ import Foundation
 public struct ReleaseNote: Equatable, Sendable, Identifiable {
 
     /// Die Nummer im App Store, etwa „1.9“. **Nicht** die Version im Bündel:
-    /// `CFBundleShortVersionString` trägt die Entwicklungsnummer (0.179.0),
+    /// `CFBundleShortVersionString` trägt die Entwicklungsnummer (0.180.0),
     /// und die sagt einem Käufer nichts.
     public let version: String
     public let title: String

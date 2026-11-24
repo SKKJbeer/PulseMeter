@@ -106,7 +106,7 @@ jobs:
         run: python3 scripts/check-testkonzept.py
       # App, Versionshinweise im Laden und Website erzählen zu jeder Fassung
       # dasselbe: docs/fassungen/<fassung>.json und „Für <fassung>:“ in
-      # docs/09-appstore.md, der Klick-Dummy als Abschrift (0.179.0).
+      # docs/09-appstore.md, der Klick-Dummy als Abschrift (0.180.0).
       - name: Neuigkeiten in App, Laden und Website
         run: python3 scripts/check-neuigkeiten.py && python3 scripts/website-fassung.py --selbsttest
 

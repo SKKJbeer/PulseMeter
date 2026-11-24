@@ -1,0 +1,88 @@
+name: Ereignis und Produktseite im App Store
+
+# **Das Ereignis „Winter-Check“ und die eigene Produktseite „Wärmepumpe“.**
+#
+# Drei Stufen, damit nichts Sichtbares versehentlich passiert:
+#   stand       fragt Apple und ändert nichts
+#   anlegen     baut die Bilder und legt beides als Entwurf an oder bringt den
+#               Entwurf auf den Stand des Repositorys. Ein Entwurf ist für
+#               niemanden außer uns zu sehen.
+#   einreichen  reicht beides zur Prüfung ein. Nur mit dem getippten Wort
+#               EINREICHEN, weil es nach der Freigabe im Laden steht. Die
+#               Freigabe dazu gibt der Gründer (CLAUDE.md, Regel 4a).
+#
+# Texte: `docs/09-appstore.md`, „Wärmepumpe im Laden“. Skript:
+# `scripts/asc-schaufenster.py`. Bilder kommen aus dem Zweig `screenshots`,
+# den die CI auf dem Mac schreibt; hier wird nur gesetzt.
+
+on:
+  workflow_dispatch:
+    inputs:
+      art:
+        description: "stand, anlegen oder einreichen"
+        type: choice
+        options: [stand, anlegen, einreichen]
+        default: stand
+      bestaetigung:
+        description: "Nur für einreichen: EINREICHEN"
+        type: string
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  schaufenster:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Abhängigkeiten
+        run: pip3 install --quiet "pyjwt[crypto]" requests
+
+      - name: Einreichen nur mit Bestätigung
+        if: inputs.art == 'einreichen' && inputs.bestaetigung != 'EINREICHEN'
+        run: |
+          echo "::error::Zum Einreichen im Feld Bestätigung EINREICHEN eintragen."
+          exit 1
+
+      - name: Bildschirmfotos holen
+        if: inputs.art == 'anlegen'
+        run: |
+          mkdir -p build
+          git fetch --depth 1 origin screenshots
+          git archive origin/screenshots store | tar -x -C build
+          for f in store-wp-vergleich store-wp-uebersicht store-wp-wechsel ipad-store-wp-vergleich; do
+            [ -f "build/store/$f.jpg" ] || { echo "::error::$f.jpg fehlt im Zweig screenshots (entsteht in run.sh auf dem Mac)"; exit 1; }
+          done
+
+      - name: Chromium für die Bilder
+        if: inputs.art == 'anlegen'
+        run: scripts/chromium-holen.sh
+
+      - name: Bilder setzen
+        if: inputs.art == 'anlegen'
+        run: |
+          node scripts/store-shots.mjs build/store build/wp-gesetzt "Überschriften der Produktseite Wärmepumpe"
+          node scripts/ereignis-bilder.mjs build/store build/ereignis
+
+      # Zum Ansehen, bevor jemand einreicht: genau die Dateien, die bei Apple
+      # liegen.
+      - name: Bilder weiterreichen
+        if: inputs.art == 'anlegen'
+        uses: actions/upload-artifact@v4
+        with:
+          name: schaufenster-bilder
+          path: |
+            build/wp-gesetzt/*.jpg
+            build/ereignis/*.jpg
+          retention-days: 30
+
+      - name: Apple
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: python3 scripts/asc-schaufenster.py ${{ inputs.art }}
