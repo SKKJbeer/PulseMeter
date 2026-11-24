@@ -73,6 +73,27 @@ CI auf dem Mac._
 
 ---
 
+## 0.179.1 — 2026-11-24
+
+**„Weiter“ steht nach einer Kameralesung im Bild**
+
+### Behoben
+- Auf dem iPad rutschte „Weiter“ (beim letzten Schritt „Sichern“) nach einer Kameralesung unter
+  den Rand: Der Hinweis „Von der Kamera gelesen“ und die Prüfzeile machen den Inhalt höher als das
+  Blatt. Man musste hochschieben, um weiterzukommen. Jetzt rollt der Ziffernblock den Knopf von
+  selbst ins Bild, sobald der Hinweis erscheint oder der Sucher schließt. Auf dem iPhone passt der
+  Inhalt, dort bewegt sich nichts.
+- Dadurch war `testOneCameraVisitReadsBothNumbersOfAnAlternatingDisplay` auf dem iPad wackelig
+  (PR #34: „Failed to determine hittability of "Weiter"“). Der Test schiebt nicht mehr selbst hoch,
+  sondern verlangt, dass der Knopf im Fenster steht. Er misst dabei den Rahmen und nicht
+  `isHittable`, weil `isHittable` den Test abbricht, solange der Knopf keinen gültigen Tippunkt hat.
+
+### Prüfungen
+- `scripts/pruefen.sh schnell` unter Linux, iPhone und iPad in der CI. Den Klick-Dummy betrifft
+  das nicht: Dort passt der Ziffernblock auf den Schirm.
+
+---
+
 ## 0.179.0 — 2026-11-23
 
 **Ereignis „Winter-Check“ und eigene Produktseite „Wärmepumpe“ im App Store, vorbereitet**
