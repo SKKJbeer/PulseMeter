@@ -103,6 +103,7 @@ struct CaptureView: View {
             // der Abstandhalter Block und Schaltfläche nach unten, auf kleinen
             // greift der Bildlauf.
             GeometryReader { geometry in
+                ScrollViewReader { bildlauf in
                 ScrollView {
                     VStack(spacing: 0) {
                         // Zwei Abstandhalter statt einem: Mit nur einem unten
@@ -147,12 +148,28 @@ struct CaptureView: View {
                         Spacer(minLength: 18)
                         NumberPad(onKey: handle)
                         saveButton
+                            .id(Self.weiterAnker)
                         skipButton
                         momentPicker
                     }
                     .padding(.horizontal, 16)
                     .padding(.bottom, 20)
                     .frame(minHeight: geometry.size.height, alignment: .top)
+                }
+                // Nach einer Kameralesung ist der nächste Schritt „Weiter“ oder „Sichern“. Auf dem
+                // iPad machen Kamera-Hinweis und Prüfzeile den Inhalt höher als das Blatt, und der
+                // Knopf rutschte unter den Rand (PR #33, #34). Wer mit dem Telefon am Zähler steht,
+                // soll nicht erst suchen müssen, also rollt der Inhalt ihn ins Bild.
+                .onChange(of: kameraHinweisSichtbar) { _, sichtbar in
+                    guard sichtbar else { return }
+                    withAnimation(.snappy) { bildlauf.scrollTo(Self.weiterAnker, anchor: .bottom) }
+                }
+                // Übernommen wird, während der Sucher noch darüber liegt. Erst wenn er weg ist,
+                // steht fest, wie hoch der Inhalt ist.
+                .onChange(of: zeigtKamera) { _, offen in
+                    guard !offen, kameraHinweisSichtbar else { return }
+                    withAnimation(.snappy) { bildlauf.scrollTo(Self.weiterAnker, anchor: .bottom) }
+                }
                 }
             }
             .background(PulseColor.ground)
@@ -354,6 +371,9 @@ struct CaptureView: View {
             bereiche: registers.map { kameraBereich($0) },
             gefragt: registers.firstIndex { $0.id == register.id } ?? 0)
     }
+
+    /// Anker für den Bildlauf zum Knopf „Weiter“ bzw. „Sichern“.
+    private static let weiterAnker = "erfassung-weiter"
 
     private var kameraHinweisSichtbar: Bool {
         guard let register, let gelesen = kameraWert[register.id], let aktuell = currentValue else { return false }

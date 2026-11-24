@@ -3212,17 +3212,21 @@ final class LaunchTests: XCTestCase {
         }
         let weiter = app.buttons["Weiter"]
         XCTAssertTrue(weiter.waitForExistence(timeout: erscheint), "Kein „Weiter“ zum zweiten Schritt")
-        // Erst muss der Sucher ganz weg sein. Dann steht „Weiter“ auf dem iPad unter dem Bildrand:
-        // Kamera-Hinweis und Prüfzeile machen den Inhalt höher als das Blatt, und der Knopf liegt
-        // im Bildlauf („Activation point invalid“, PR #33). Wer am Zähler steht, schiebt hoch.
+        // Erst muss der Sucher ganz weg sein. Auf dem iPad lag „Weiter“ danach unter dem Bildrand
+        // (PR #33, #34); seit 0.179.1 rollt die App ihn nach einer Kameralesung selbst ins Bild.
+        // Geprüft wird das am Rahmen des Knopfs und nicht mit `isHittable`: Das bricht den Test ab,
+        // statt `false` zu sagen, solange der Knopf noch keinen gültigen Tippunkt hat.
         geduldig { _ = XCTWaiter().wait(for: [XCTNSPredicateExpectation(predicate: weg, object: take)], timeout: 40) }
-        var sichtbar = false
-        for _ in 0..<4 {
-            geduldig { sichtbar = weiter.exists && weiter.isHittable }
-            if sichtbar { break }
-            app.scrollViews.firstMatch.swipeUp()
+        let fenster = app.windows.firstMatch
+        let imBild = NSPredicate { _, _ in
+            let knopf = weiter.frame, rand = fenster.frame
+            return weiter.exists && !knopf.isEmpty && rand.contains(CGPoint(x: knopf.midX, y: knopf.maxY - 1))
         }
-        XCTAssertTrue(sichtbar, "„Weiter“ ist auch nach dem Hochschieben nicht erreichbar. Zu sehen war: \(beschriftungen(in: app))")
+        var sichtbar = false
+        geduldig {
+            sichtbar = XCTWaiter().wait(for: [XCTNSPredicateExpectation(predicate: imBild, object: nil)], timeout: 30) == .completed
+        }
+        XCTAssertTrue(sichtbar, "„Weiter“ steht nach der Kameralesung nicht im Bild. Zu sehen war: \(beschriftungen(in: app))")
         tippeRuhig(weiter)
         let schritt = app.descendants(matching: .any).matching(identifier: "erfassung-schritt").firstMatch
         let zwei = NSPredicate(format: "label CONTAINS 'Schritt 2'")
