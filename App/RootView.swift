@@ -929,6 +929,14 @@ struct OverviewView: View {
         } else if Startschalter.gesetzt("-pulse-capture") {
             capturing = points.first
         }
+        // Für die eigene Produktseite „Wärmepumpe“: der Vergleich vorher und
+        // nachher, und das Blatt, in dem man den Wechsel einträgt. Beides
+        // erreicht `simctl` sonst nicht, es kann nicht tippen.
+        if Startschalter.gesetzt("-pulse-heizungsvergleich") {
+            heizungOffen = heizungen.first
+        } else if Startschalter.gesetzt("-pulse-heizungswechsel") {
+            heizungBearbeiten = points.first(where: HeatingChange.canBeOldMeter)
+        }
     }
 
     private func reload() {

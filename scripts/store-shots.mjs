@@ -21,7 +21,7 @@
  * Namen der Zähler, die auf dem kleinen Schirm nicht alle Platz haben.
  *
  * Aufruf:
- *     node scripts/store-shots.mjs [eingang] [ausgang]
+ *     node scripts/store-shots.mjs [eingang] [ausgang] [abschnitt]
  * Vorgabe: build/store → build/store-gesetzt. Eingang sind die Bilder in
  * voller Größe aus dem Zweig `screenshots` (`git archive origin/screenshots
  * store`). Jedes Bild behält genau sein Maß, sonst nimmt Apple es nicht.
@@ -32,6 +32,10 @@ import { join } from "node:path";
 
 const IN = process.argv[2] || "build/store";
 const OUT = process.argv[3] || "build/store-gesetzt";
+/* Welcher Satz. Ohne Angabe die Bilder der Store-Seite; die eigene
+ * Produktseite „Wärmepumpe“ hat einen eigenen Block mit eigener Reihenfolge,
+ * im selben Dokument und im selben Format. */
+const ABSCHNITT = process.argv[4] || "Überschriften der Bildschirmfotos";
 
 /* Die Überschriften aus dem Store-Dokument.
  *
@@ -40,10 +44,10 @@ const OUT = process.argv[3] || "build/store-gesetzt";
  * „·" getrennt. Die Reihenfolge der Zeilen ist die Reihenfolge im Laden. */
 function ueberschriften() {
   const doc = readFileSync("docs/09-appstore.md", "utf8");
-  const abschnitt = doc.split("### Überschriften der Bildschirmfotos")[1];
-  if (!abschnitt) throw new Error("09-appstore.md: Abschnitt „Überschriften der Bildschirmfotos“ fehlt");
+  const abschnitt = doc.split(`### ${ABSCHNITT}\n`)[1];
+  if (!abschnitt) throw new Error(`09-appstore.md: Abschnitt „${ABSCHNITT}“ fehlt`);
   const block = abschnitt.match(/```\n([\s\S]*?)```/);
-  if (!block) throw new Error("09-appstore.md: kein Textblock unter „Überschriften der Bildschirmfotos“");
+  if (!block) throw new Error(`09-appstore.md: kein Textblock unter „${ABSCHNITT}“`);
   return block[1].trim().split("\n").map((zeile, i) => {
     const [quelle, kopf, unter, leiste] = zeile.split("|").map(t => (t || "").trim());
     if (!quelle || !kopf || !unter) throw new Error(`09-appstore.md: Zeile ${i + 1} unvollständig: ${zeile}`);
