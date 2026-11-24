@@ -400,7 +400,11 @@ etwas, das niemand beheben kann, ist eine Meldung ohne Handlung.
 | **Falsches Profil am falschen Ziel** | Apples `filter[identifier]` filtert als **Präfix**: `de.x.app` liefert auch `de.x.app.widget`. Genau vergleichen, nicht das erste Ergebnis nehmen |
 | **Zugangsdaten fehlen** | Die Prüfung darauf als **ersten** Schritt, sonst scheitert der Lauf nach zwanzig Minuten an einer Meldung, die das fehlende Geheimnis nicht nennt |
 | **Geheimnisse abtippen** | Nicht abtippen. Öffentlichen Schlüssel des Repositories holen, Wert in eine Sealed Box legen, `PUT /actions/secrets/<name>`. Dafür braucht es ein **fein granuliertes** Token mit „Secrets: Read and write" — ein klassisches mit `repo` genügt nicht |
-| **`cancel-in-progress` über dem ganzen Ablauf** | Nebenläufigkeit **je Auftrag**: der schnelle darf abgebrochen werden, der lange nicht. Drei Läufe an einem Tag endeten sonst kurz vor dem Ziel |
+| **CI auf `push` und `pull_request`** | Nur `push` (die Prüfungen hängen am Commit und erscheinen trotzdem am PR). Sonst laufen je Push zwei volle Läufe, bei Gruppen ohne Abbruch **nacheinander**: zwei bis drei Stunden statt einer |
+| **Nebenläufigkeit je Auftrag** | Eine Gruppe für den **ganzen** Lauf: Arbeitszweig mit `cancel-in-progress: true`, `main` je Commit (`github.sha`). Ein verdrängter wartender **Auftrag** macht den Lauf „failure" — jede Verdrängung eine Fehler-Mail ohne Fehler. Ein abgebrochener **Lauf** heißt „cancelled" und schickt keine |
+| **`timeout` um `playwright install --with-deps`** | `timeout` beendet `npx`, nicht das `sudo apt-get` darunter. Das hält die dpkg-Sperre, und der nächste Anlauf scheitert an „Could not get lock". Vorher `DPkg::Lock::Timeout` setzen, Pakete (`install-deps`) und Browser getrennt holen |
+| **Wackelige Oberflächenprüfung kostet einen ganzen Lauf** | In der CI `-retry-tests-on-failure -test-iterations 2`, und was erst im zweiten Anlauf grün wird, als `::warning::` mit Namen ausgeben. Lokal ohne Wiederholung |
+| **Grüner PR liegt über Nacht** | Zusammenführen darf nicht an einer wachen Sitzung hängen: Marke am PR, Ablauf auf `workflow_run` (CI grün) und `labeled`, Squash mit `--match-head-commit`. Ein Zusammenführen mit `GITHUB_TOKEN` löst **keine** Abläufe auf main aus — die danach per `workflow_dispatch` anstoßen |
 | **Vorgabetext, der nichts sagt** | Ein `default:` wie „Neuer Stand zum Ausprobieren." lässt den Schritt grün melden und liefert den Testern nichts. Vorgabe **leer** lassen und aus dem Änderungsprotokoll ableiten — das steht ohnehin da |
 
 ### Ein Schritt, der nur mit Apple spricht, darf nicht an einem Bau hängen
@@ -2908,11 +2912,13 @@ den Prototyp anfasst, endet im Hauptzweig. Alles, was am Bau etwas ändert, geht
 bis aufs Gerät. Mehrere Versionen dürfen in **einem** Bau zusammenkommen; jeder
 Bau kostet einen gemieteten Mac und eine Nummer, die verbraucht ist.
 
-**Nebenläufigkeit je Auftrag, und dann darf man pushen.** Aus „`cancel-in-progress`
-hat drei Läufe gekostet" war die Regel „nie pushen, solange ein Lauf läuft"
-geworden. Behoben war das längst — mit zwei Gruppen: der schnelle Auftrag darf
-abgebrochen werden, der teure steht auf `cancel-in-progress: false` und reiht
-sich an. Die Regel blieb trotzdem stehen und kostete danach nur noch Wartezeit.
+**Pushen darf man, aber jeder Push zählt allein.** Aus „`cancel-in-progress`
+hat drei Läufe gekostet" war erst „nie pushen, solange ein Lauf läuft"
+geworden, dann Gruppen je Auftrag ohne Abbruch. Die zweite Lösung hat mit dem
+Auslöser `pull_request` zusammen jeden Push zweimal hintereinander geprüft und
+Fehler-Mails für verdrängte Aufträge erzeugt (Zählora, 24. November). Jetzt:
+eine Gruppe je Zweig mit Abbruch, `main` je Commit, und Zusammenführen über
+eine Marke am PR, sobald CI grün ist, damit niemand wach sein muss.
 
 > Eine Regel, die aus einem Schaden entstand, gilt nicht weiter, weil der
 > Schaden einmal echt war. Sie gilt, solange die **Ursache** steht. Wer sie
