@@ -151,6 +151,9 @@ if [ "$SCOPE" != "bilder" ]; then
   # Das Testkonzept zeigt nur auf Tests, die es gibt, und nennt jedes
   # Prüfskript (docs/15-testkonzept.md).
   run "Testkonzept" python3 scripts/check-testkonzept.py || true
+  # App, Versionshinweise im Laden und Website erzählen zu jeder Fassung
+  # dasselbe, aus docs/fassungen/ und 09-appstore.md (0.179.0).
+  run "Neuigkeiten: App, Laden, Website" python3 scripts/check-neuigkeiten.py || true
   # Ein Preis steht auf der Website und in `Entitlement.swift`. Zwei Wochen
   # lang stand auf der Hilfeseite „Erinnerungen kostenlos" und „alle vier
   # zusammen", während sie 0,99 € kosteten und es fünf waren. Beide Seiten

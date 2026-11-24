@@ -82,6 +82,13 @@ jobs:
         if: inputs.bestaetigung == 'einreichen' && inputs.fassung != ''
         run: python3 scripts/website-fassung.py --vorbereitet "${{ inputs.fassung }}"
 
+      # **Und dieselbe Geschichte in App, Laden und Website** (0.180.0): Zu
+      # der Fassung gibt es die Kurzform für die App, den Text für die Website
+      # und die Versionshinweise, und die neueste ist überall dieselbe.
+      - name: Erzählen App, Laden und Website dasselbe?
+        if: inputs.bestaetigung == 'einreichen'
+        run: python3 scripts/check-neuigkeiten.py
+
       - name: Einreichen oder nachsehen
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}

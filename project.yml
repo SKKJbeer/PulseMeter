@@ -68,6 +68,13 @@ targets:
       # Zweimal übersetzt statt zweimal geschrieben: Eine zweite Fassung
       # zeigte früher oder später eine andere Zahl als die erste.
       - path: Shared
+      # „Neu in Zählora …“ nach einem Update (0.180.0). Als Ordner, wie er
+      # ist: Dieselben Dateien füllen die Website und liegen neben den
+      # Versionshinweisen für den Laden. Eine Abschrift im App-Code liefe
+      # auseinander; `scripts/check-neuigkeiten.py` hält die drei zusammen.
+      - path: docs/fassungen
+        type: folder
+        buildPhase: resources
     dependencies:
       - package: PulseCore
       - package: PulseData

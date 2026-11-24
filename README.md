@@ -146,7 +146,7 @@ nicht eingecheckt. Wer gar nicht gefragt werden will, startet mit
 
 ## Klick-Dummy
 
-**[Zuletzt veröffentlichter Entwurf →](https://claude.ai/artifact/CiyodxeXhVHC4aCSVR2i16)**
+**[Zuletzt veröffentlichter Entwurf →](https://claude.ai/artifact/NMiFvasXakgzpFANxQfarK)**
 
 Seit 0.113.0 steht unter dem Gerät ein Knopf **„Auf dem Tablet ansehen"**: Der
 Rahmen wird breit, an die Stelle der Tab-Leiste tritt die Seitenleiste, und die

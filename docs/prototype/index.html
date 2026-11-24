@@ -155,6 +155,20 @@ body {
 .ctl:hover { color: var(--ink); border-color: var(--ink-3); }
 .ctl:focus-visible { outline: 2px solid var(--tint); outline-offset: 2px; }
 
+/* ---------- Neu in Zählora (nach einem Update) ---------- */
+.neu-body { padding: 22px 22px 18px; }
+.neu-fassung { font-size: 13px; color: var(--ink-2); }
+.neu-titel { font-size: 22px; font-weight: 720; letter-spacing: -0.02em; margin: 4px 0 16px; line-height: 1.2; }
+.neu-punkte { list-style: none; margin: 0 0 22px; padding: 0; display: grid; gap: 12px; }
+.neu-punkte li { display: grid; grid-template-columns: 20px 1fr; gap: 10px; font-size: 15px; line-height: 1.4; }
+.neu-punkte li::before { content: ""; width: 18px; height: 18px; margin-top: 1px; border-radius: 50%;
+  background: var(--tint-ink) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='m3 6.2 2 2 4-4.4' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 12px no-repeat; }
+.neu-weiter { width: 100%; min-height: 50px; border: 0; border-radius: 14px; font: inherit;
+  font-size: 17px; font-weight: 640; color: var(--on-accent); background: var(--tint-ink); cursor: pointer; }
+/* tint-ink statt tint: Weiß auf dem hellen Bernstein erreichte 3,4:1, im Dunkeln 2,3:1
+   (check-nichtfunktional.mjs). Dieselbe Paarung wie PulseColor.tintInk/onAccent in der App. */
+.neu-weiter:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
 /* ---------- Gerät ---------- */
 .device {
   width: min(390px, 100%);
@@ -1503,6 +1517,19 @@ select.field { cursor: pointer; }
     </div>
   </div>
 
+  <!-- „Neu in Zählora …“ nach einem Update (0.180.0). Text aus
+       docs/fassungen/<fassung>.json, Block `app`; check-neuigkeiten.py
+       vergleicht die Abschrift unten (NEUIGKEITEN) mit der Datei. -->
+  <div class="sheet" id="sheet-neu" role="dialog" aria-modal="true" aria-labelledby="neu-titel">
+    <div class="grabber"></div>
+    <div class="sheet-body neu-body">
+      <div class="neu-fassung" id="neu-fassung"></div>
+      <h2 class="neu-titel" id="neu-titel"></h2>
+      <ul class="neu-punkte" id="neu-punkte"></ul>
+      <button type="button" class="neu-weiter" id="neu-weiter">Weiter</button>
+    </div>
+  </div>
+
   <div class="sheet" id="sheet-explain" role="dialog" aria-modal="true" aria-label="Erklärung">
     <div class="grabber"></div>
     <div class="sheet-head">
@@ -1532,6 +1559,7 @@ select.field { cursor: pointer; }
 <div class="controls" data-entwurf="1">
   <button type="button" class="ctl" id="theme">Dunkel / Hell</button>
   <button type="button" class="ctl" id="familie" aria-pressed="false">Auf dem Tablet ansehen</button>
+  <button type="button" class="ctl" id="update-start">Nach einem Update öffnen</button>
   <button type="button" class="ctl" id="reset">Entwurf zurücksetzen</button>
 </div>
 
@@ -6315,6 +6343,8 @@ function openSheet(id) {
   document.getElementById("scrim").classList.add("on");
 }
 function closeSheets() {
+  // Wegwischen oder daneben tippen zählt wie „Weiter“: gesehen ist gesehen.
+  if (document.getElementById("sheet-neu").classList.contains("on")) NEU_GESEHEN = NEUIGKEITEN.fassung;
   paywallZurueck = null;
   document.getElementById("scrim").classList.remove("on");
   document.querySelectorAll(".sheet").forEach(s => s.classList.remove("on"));
@@ -6769,6 +6799,43 @@ document.addEventListener("click", e => {
 });
 document.getElementById("print").addEventListener("click", () => window.print());
 document.getElementById("scrim").addEventListener("click", closeSheets);
+
+/* ============================================================
+   Neu in Zählora — einmal nach einem Update (0.180.0)
+   Dieselbe Regel wie ReleaseNotes in PulseCore: zeigen, wenn die
+   Fassung neuer ist als die zuletzt gesehene; nach einer
+   Neuinstallation nicht. Der Entwurf ist immer jemand, der schon
+   Zähler hat, also ein Update.
+   ============================================================ */
+const NEUIGKEITEN = {"titel": "Die Kamera liest beide Zahlen", "punkte": ["Wechselt die Anzeige zwischen Bezug und Einspeisung oder Hoch- und Niedertarif, liest die Kamera ab der zweiten Ablesung beide Zahlen in einem Durchgang.", "Die zweite Zahl steht im nächsten Schritt schon im Ziffernblock. Gesichert wird sie erst, wenn du „Sichern“ tippst.", "Bei solchen Zählern schlägt die Kamera auch im ersten Schritt wieder etwas vor."], "fassung": "1.9"};
+let NEU_GESEHEN = null;
+function vergleicheFassung(a, b) {
+  const x = a.split(".").map(Number), y = b.split(".").map(Number);
+  for (let i = 0; i < Math.max(x.length, y.length); i++) {
+    const l = x[i] || 0, r = y[i] || 0;
+    if (l !== r) return l < r ? -1 : 1;
+  }
+  return 0;
+}
+function neuigkeitenBeimStart(zaehlerDa) {
+  if (NEU_GESEHEN === null && !zaehlerDa) { NEU_GESEHEN = NEUIGKEITEN.fassung; return false; }
+  if (NEU_GESEHEN !== null && vergleicheFassung(NEUIGKEITEN.fassung, NEU_GESEHEN) <= 0) return false;
+  document.getElementById("neu-fassung").textContent = `Neu in Zählora ${NEUIGKEITEN.fassung}`;
+  document.getElementById("neu-titel").textContent = NEUIGKEITEN.titel;
+  const liste = document.getElementById("neu-punkte");
+  liste.replaceChildren(...NEUIGKEITEN.punkte.map(p => {
+    const li = document.createElement("li"); li.textContent = p; return li;
+  }));
+  openSheet("sheet-neu");
+  return true;
+}
+document.getElementById("neu-weiter").addEventListener("click", closeSheets);
+document.getElementById("update-start").addEventListener("click", e => {
+  closeSheets();
+  if (!neuigkeitenBeimStart(true)) {
+    e.currentTarget.textContent = "Schon gesehen: erst mit der nächsten Fassung wieder";
+  }
+});
 document.getElementById("save").addEventListener("click", saveReading);
 document.getElementById("cap-back").addEventListener("click", capBack);
 document.getElementById("cap-skip").addEventListener("click", ueberspringen);

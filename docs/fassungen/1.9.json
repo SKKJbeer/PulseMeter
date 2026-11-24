@@ -1,0 +1,23 @@
+{
+  "fassung": "1.9",
+  "plan": ["kamera-zwei-zahlen"],
+  "app": {
+    "titel": "Die Kamera liest beide Zahlen",
+    "punkte": [
+      "Wechselt die Anzeige zwischen Bezug und Einspeisung oder Hoch- und Niedertarif, liest die Kamera ab der zweiten Ablesung beide Zahlen in einem Durchgang.",
+      "Die zweite Zahl steht im nächsten Schritt schon im Ziffernblock. Gesichert wird sie erst, wenn du „Sichern“ tippst.",
+      "Bei solchen Zählern schlägt die Kamera auch im ersten Schritt wieder etwas vor."
+    ]
+  },
+  "weg": {
+    "titel": "Die Kamera liest beide Zahlen",
+    "text": "Wechselt die Anzeige deines Zählers zwischen Bezug und Einspeisung oder Hoch- und Niedertarif, liest die Kamera ab der zweiten Ablesung beide Zahlen in einem Durchgang. Die zweite steht dann schon im Ziffernblock. Und nach einem Update sagt die App einmal kurz, was neu ist."
+  },
+  "start": {
+    "titel": "Zwei Zahlen, ein Durchgang mit der Kamera",
+    "absaetze": [
+      "Viele Stromzähler zeigen abwechselnd zwei Zahlen: Bezug und Einspeisung bei Solar, Hoch- und Niedertarif bei Nachtstrom. Ab der zweiten Ablesung liest die Kamera beide, während du das Telefon davorhältst. Die gefragte Zahl schlägt sie vor, die andere steht im nächsten Schritt schon im Ziffernblock. Gesichert wird erst, wenn du „Sichern“ tippst.",
+      "Nach einem Update zeigt Zählora einmal kurz, was neu ist. Ein Tipp, und es ist weg."
+    ]
+  }
+}
