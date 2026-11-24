@@ -2517,6 +2517,57 @@ for (const scheme of ["light", "dark"]) {
   await page.close();
 }
 
+// --- „Neu in Zählora …“ nach einem Update (0.180.0): einmal, ein Tipp, und weg.
+// Die Regel prüft auch ReleaseNotesTests in PulseCore, den Text check-neuigkeiten.py.
+{
+  console.log("\nNeu in Zählora");
+  const page = await browser.newPage({ viewport: { width: 440, height: 1300 } });
+  await page.goto(url);
+  await page.waitForTimeout(300);
+  note(!(await page.evaluate(() => document.getElementById("sheet-neu").classList.contains("on"))),
+       "Beim gewöhnlichen Öffnen des Entwurfs steht kein Blatt im Weg");
+  await page.click("#update-start");
+  await page.waitForTimeout(400);
+  const blatt = await page.evaluate(() => ({
+    offen: document.getElementById("sheet-neu").classList.contains("on"),
+    fassung: document.getElementById("neu-fassung").textContent,
+    titel: document.getElementById("neu-titel").textContent,
+    punkte: [...document.querySelectorAll("#neu-punkte li")].map(li => li.textContent),
+    knopf: document.getElementById("neu-weiter").getBoundingClientRect().height,
+    soll: NEUIGKEITEN,
+  }));
+  note(blatt.offen, "Nach einem Update geht das Blatt auf");
+  note(blatt.fassung === `Neu in Zählora ${blatt.soll.fassung}` && blatt.titel === blatt.soll.titel,
+       `Kopf und Überschrift aus der Fassung („${blatt.fassung}“, „${blatt.titel}“)`);
+  note(blatt.punkte.length >= 1 && blatt.punkte.length <= 3 && blatt.punkte.join("|") === blatt.soll.punkte.join("|"),
+       `Ein bis drei Punkte, dieselben wie in der Datei (${blatt.punkte.length})`);
+  note(blatt.knopf >= 44, `„Weiter“ ist groß genug zum Treffen (${Math.round(blatt.knopf)} pt)`);
+  await page.click("#neu-weiter");
+  await page.waitForTimeout(400);
+  note(!(await page.evaluate(() => document.getElementById("sheet-neu").classList.contains("on"))),
+       "Ein Tipp auf „Weiter“, und das Blatt ist weg");
+  await page.click("#update-start");
+  await page.waitForTimeout(400);
+  note(!(await page.evaluate(() => document.getElementById("sheet-neu").classList.contains("on"))),
+       "Beim nächsten Start nach demselben Update kommt es nicht wieder");
+  // Daneben tippen zählt wie „Weiter“, und eine Neuinstallation sieht nichts.
+  const regel = await page.evaluate(() => {
+    NEU_GESEHEN = "1.8";
+    const zeigt = neuigkeitenBeimStart(true);
+    document.getElementById("scrim").click();
+    const danach = neuigkeitenBeimStart(true);
+    NEU_GESEHEN = null;
+    const neu = neuigkeitenBeimStart(false);
+    const gemerkt = NEU_GESEHEN;
+    const zweiter = neuigkeitenBeimStart(true);
+    return { zeigt, danach, neu, gemerkt, zweiter };
+  });
+  note(regel.zeigt && !regel.danach, "Daneben tippen zählt wie „Weiter“");
+  note(!regel.neu && regel.gemerkt !== null && !regel.zweiter,
+       "Nach einer Neuinstallation kommt es nicht, auch nicht beim zweiten Start");
+  await page.close();
+}
+
 await browser.close();
 console.log(failures.length
   ? `\n${failures.length} Prüfung(en) gefallen.`

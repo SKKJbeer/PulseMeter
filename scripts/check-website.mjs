@@ -266,7 +266,7 @@ for (const datei of seiten) {
   const zahl = Number((roh.match(/data-zahl="fassungen">(\d+)</) || [])[1]);
   const eintraege = (roh.match(/<li class="weg-laden">/g) || []).length;
   note(zahl === eintraege, `entwicklung.html: ${zahl} Fassungen oben, ${eintraege} Einträge im Weg`);
-  const geplant = [...roh.matchAll(/<li class="weg-(?:spaeter|danach|naechstes)">([\s\S]*?)<\/li>\s*(?=<li class="weg-)/g)].map(m => m[1]);
+  const geplant = [...roh.matchAll(/<li class="weg-(?:spaeter|danach|naechstes)"[^>]*>([\s\S]*?)<\/li>\s*(?=<li class="weg-)/g)].map(m => m[1]);
   note(geplant.length === 3 && geplant.every(g => !/<time/.test(g)),
        `entwicklung.html: ${geplant.length} geplante Schritte, keiner mit Datum`);
 }

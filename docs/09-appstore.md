@@ -511,6 +511,33 @@ hat, bekommt sie mit (Gründer, 12. November). Den Preis setzt
 `scripts/asc-kaeufe.py` erst bei der Freigabe, weil ein Preis bei Apple
 sofort gilt.
 
+
+Für 1.9:
+
+```
+Viele Stromzähler zeigen abwechselnd zwei Zahlen: Bezug und Einspeisung
+bei Solar, Hoch- und Niedertarif bei Nachtstrom. Die Kamera liest jetzt
+beide in einem Durchgang. Sie schlägt die gefragte Zahl vor und merkt sich
+die andere, die im nächsten Schritt schon im Ziffernblock steht. Das klappt
+ab der zweiten Ablesung an so einem Zähler.
+
+Behoben: Bei Zählern mit zwei Zahlen hat die Kamera im ersten Schritt
+bisher nie etwas vorgeschlagen.
+
+Nach einem Update zeigt Zählora einmal kurz, was neu ist. Ein Tipp, und es
+ist weg.
+```
+
+**Was der Text nicht verspricht:** die kleine Kennzahl (1.8.0, 2.8.0) neben
+der Zahl. Die liest die App nicht, gemessen zu unsicher
+(`docs/kamera/stufe-2.md`); welche Zahl wohin gehört, entscheiden die
+Bereiche der bisherigen Ablesungen, darum „ab der zweiten Ablesung“.
+
+**Eine Quelle für drei Orte (0.180.0).** Die Kurzform in der App, der Eintrag
+auf der Website und dieser Text gehören zusammen: App und Website lesen
+`docs/fassungen/1.9.json`, der Laden diesen Block. `scripts/check-neuigkeiten.py`
+bricht ab, wenn es zu einer Fassung das eine gibt und das andere nicht.
+
 ---
 
 ## 2. Einordnung
